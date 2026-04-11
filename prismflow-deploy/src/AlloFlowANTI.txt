@@ -128,6 +128,350 @@ async function loadWordAudioBank() {
     }
     */
 }
+// #region --- GLOBAL GAMEPAD / ADAPTIVE CONTROLLER SUPPORT ---
+// Enables Xbox Adaptive Controller, Quadstick, switch interfaces, and standard
+// gamepads to control the entire AlloFlow UI. Maps controller inputs to keyboard
+// and mouse events so all existing components work without modification.
+// This runs globally — works in STEM Lab, SEL Hub, BehaviorLens, and the main app.
+if (!window._alloGamepadGlobal) {
+  window._alloGamepadGlobal = true;
+  const _gpad = { prev: {}, axisKeys: {}, deadzone: 0.2, connected: false, scrollAccum: 0,
+    cursorMode: false, cursorX: 0, cursorY: 0, cursorSpeed: 8, lastHovered: null };
+
+  // ── Visible cursor reticle for spatial pointing ──
+  const _gpadCur = document.createElement('div');
+  _gpadCur.id = 'alloflow-gpad-cursor';
+  _gpadCur.setAttribute('aria-hidden', 'true');
+  _gpadCur.style.cssText = 'position:fixed;width:28px;height:28px;border-radius:50%;border:2px solid #6366f1;background:rgba(99,102,241,0.12);pointer-events:none;z-index:99999;display:none;box-shadow:0 0 8px rgba(99,102,241,0.3);transform:translate(-50%,-50%);transition:width 0.1s,height 0.1s';
+  const _gpadDot = document.createElement('div');
+  _gpadDot.style.cssText = 'position:absolute;top:50%;left:50%;width:4px;height:4px;background:#6366f1;border-radius:50%;transform:translate(-50%,-50%)';
+  _gpadCur.appendChild(_gpadDot);
+  document.body.appendChild(_gpadCur);
+
+  function _gpadShowCursor() {
+    if (!_gpad.cursorMode) { _gpad.cursorMode = true; _gpad.cursorX = window.innerWidth / 2; _gpad.cursorY = window.innerHeight / 2; _gpadCur.style.display = 'block'; }
+  }
+  function _gpadHideCursor() {
+    _gpad.cursorMode = false; _gpadCur.style.display = 'none';
+    if (_gpad.lastHovered) { try { _gpad.lastHovered.style.outline = ''; } catch(e) {} _gpad.lastHovered = null; }
+  }
+  // ── Haptic feedback (vibration) ──
+  // Works on Xbox, PlayStation, Switch Pro controllers. Gracefully no-ops on unsupported hardware.
+  window._alloHaptic = function(type) {
+    try {
+      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+      let gp = null;
+      for (let i = 0; i < gamepads.length; i++) { if (gamepads[i]) { gp = gamepads[i]; break; } }
+      if (!gp || !gp.vibrationActuator) return;
+      const va = gp.vibrationActuator;
+      switch (type) {
+        case 'tap':       va.playEffect('dual-rumble', { duration: 50,  strongMagnitude: 0.2, weakMagnitude: 0.4 }); break;
+        case 'click':     va.playEffect('dual-rumble', { duration: 30,  strongMagnitude: 0.1, weakMagnitude: 0.3 }); break;
+        case 'bump':      va.playEffect('dual-rumble', { duration: 120, strongMagnitude: 0.7, weakMagnitude: 0.3 }); break;
+        case 'place':     va.playEffect('dual-rumble', { duration: 40,  strongMagnitude: 0.15, weakMagnitude: 0.3 }); break;
+        case 'break':     va.playEffect('dual-rumble', { duration: 80,  strongMagnitude: 0.5, weakMagnitude: 0.2 }); break;
+        case 'correct':   va.playEffect('dual-rumble', { duration: 60,  strongMagnitude: 0.2, weakMagnitude: 0.5 });
+                          setTimeout(() => { try { va.playEffect('dual-rumble', { duration: 60, strongMagnitude: 0.2, weakMagnitude: 0.5 }); } catch(e){} }, 120); break;
+        case 'wrong':     va.playEffect('dual-rumble', { duration: 200, strongMagnitude: 0.4, weakMagnitude: 0.1 }); break;
+        case 'achieve':   [0,120,240].forEach((d2) => { setTimeout(() => { try { va.playEffect('dual-rumble', { duration: 80, strongMagnitude: 0.15 + d2/800, weakMagnitude: 0.4 + d2/600 }); } catch(e){} }, d2); }); break;
+        case 'launch':    va.playEffect('dual-rumble', { duration: 500, strongMagnitude: 0.6, weakMagnitude: 0.3 }); break;
+        case 'echo':      va.playEffect('dual-rumble', { duration: 30,  strongMagnitude: 0.05, weakMagnitude: 0.15 }); break;
+        case 'land':      va.playEffect('dual-rumble', { duration: 150, strongMagnitude: 0.5, weakMagnitude: 0.2 }); break;
+        default:          va.playEffect('dual-rumble', { duration: 40,  strongMagnitude: 0.15, weakMagnitude: 0.2 }); break;
+      }
+    } catch(e) { /* Vibration not supported — graceful no-op */ }
+  };
+
+  function _gpadCursorClick() {
+    if (!_gpad.cursorMode) return;
+    try {
+      const el = document.elementFromPoint(_gpad.cursorX, _gpad.cursorY);
+      if (!el) return;
+      _gpadCur.style.width = '20px'; _gpadCur.style.height = '20px';
+      setTimeout(() => { _gpadCur.style.width = '28px'; _gpadCur.style.height = '28px'; }, 120);
+      window._alloHaptic('click');
+      const target = el.closest('button,a,[role="button"],input,select,textarea,[tabindex]') || el;
+      target.focus(); target.click();
+      if (window.speechSynthesis) {
+        const lbl = target.getAttribute('aria-label') || target.title || (target.textContent||'').trim().substring(0,80);
+        if (lbl) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(lbl); u.rate = 1.1; u.volume = 0.7; window.speechSynthesis.speak(u); }
+      }
+    } catch(e) {}
+  }
+
+
+  window.addEventListener('gamepadconnected', (e) => {
+    _gpad.connected = true;
+    console.log('[Gamepad] Connected globally: ' + e.gamepad.id);
+  });
+  window.addEventListener('gamepaddisconnected', () => { _gpad.connected = false; });
+
+  const _gpadKey = (code, type) => {
+    try {
+      const ev = new KeyboardEvent(type, { code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true });
+      document.dispatchEvent(ev);
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.dispatchEvent(new KeyboardEvent(type, { code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true }));
+      }
+    } catch(e) {}
+  };
+
+  const _gpadClick = (button) => {
+    try {
+      const target = document.activeElement || document.querySelector('canvas') || document.body;
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      target.dispatchEvent(new MouseEvent('mousedown', { button, clientX: cx, clientY: cy, bubbles: true }));
+      setTimeout(() => target.dispatchEvent(new MouseEvent('mouseup', { button, clientX: cx, clientY: cy, bubbles: true })), 50);
+    } catch(e) {}
+  };
+
+  const _gpadBtnEdge = (idx, pressed) => {
+    const was = !!_gpad.prev[idx];
+    _gpad.prev[idx] = pressed;
+    return pressed && !was;
+  };
+
+  const _gpadAxis = (val, negKey, posKey, id) => {
+    const neg = val < -_gpad.deadzone, pos = val > _gpad.deadzone;
+    if (neg && !_gpad.axisKeys[id+'_n']) _gpadKey(negKey, 'keydown');
+    if (!neg && _gpad.axisKeys[id+'_n']) _gpadKey(negKey, 'keyup');
+    if (pos && !_gpad.axisKeys[id+'_p']) _gpadKey(posKey, 'keydown');
+    if (!pos && _gpad.axisKeys[id+'_p']) _gpadKey(posKey, 'keyup');
+    _gpad.axisKeys[id+'_n'] = neg;
+    _gpad.axisKeys[id+'_p'] = pos;
+  };
+
+  const _gpadPoll = () => {
+    requestAnimationFrame(_gpadPoll);
+    if (!_gpad.connected) return;
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let gp = null;
+    for (let i = 0; i < gamepads.length; i++) { if (gamepads[i]) { gp = gamepads[i]; break; } }
+    if (!gp) return;
+
+    // Left stick → WASD (3D tools) or focus navigation (UI mode)
+    _gpadAxis(gp.axes[1], 'KeyW', 'KeyS', 'ls_y');
+    _gpadAxis(gp.axes[0], 'KeyA', 'KeyD', 'ls_x');
+
+    // Right stick: 3D = Arrow keys (camera), UI = cursor mode OR scroll
+    const inCanvas3d = document.activeElement && document.activeElement.tagName === 'CANVAS';
+    if (gp.axes.length >= 4) {
+      const rsX = gp.axes[2], rsY = gp.axes[3];
+      const rsActive = Math.abs(rsX) > _gpad.deadzone || Math.abs(rsY) > _gpad.deadzone;
+
+      if (inCanvas3d) {
+        // In 3D: arrow keys for camera, no cursor
+        _gpadAxis(rsY, 'ArrowUp', 'ArrowDown', 'rs_y');
+        _gpadAxis(rsX, 'ArrowLeft', 'ArrowRight', 'rs_x');
+        if (_gpad.cursorMode) _gpadHideCursor();
+      } else if (_gpad.cursorMode) {
+        // Cursor mode: move the visible reticle
+        if (rsActive) {
+          _gpad.cursorX = Math.max(0, Math.min(window.innerWidth, _gpad.cursorX + rsX * _gpad.cursorSpeed));
+          _gpad.cursorY = Math.max(0, Math.min(window.innerHeight, _gpad.cursorY + rsY * _gpad.cursorSpeed));
+          _gpadCur.style.left = _gpad.cursorX + 'px';
+          _gpadCur.style.top = _gpad.cursorY + 'px';
+          // Highlight element under cursor
+          try {
+            const hoverEl = document.elementFromPoint(_gpad.cursorX, _gpad.cursorY);
+            const clickable = hoverEl?.closest('button,a,[role="button"],input,select,textarea,[tabindex]');
+            if (clickable !== _gpad.lastHovered) {
+              if (_gpad.lastHovered) _gpad.lastHovered.style.outline = '';
+              if (clickable) clickable.style.outline = '2px solid #6366f1';
+              _gpad.lastHovered = clickable || null;
+            }
+          } catch(e) {}
+        }
+        // Suppress arrow key generation in cursor mode
+      } else {
+        // Tab navigation mode (no cursor): arrow keys + scroll
+        _gpadAxis(rsY, 'ArrowUp', 'ArrowDown', 'rs_y');
+        _gpadAxis(rsX, 'ArrowLeft', 'ArrowRight', 'rs_x');
+        if (Math.abs(rsY) > _gpad.deadzone) {
+          _gpad.scrollAccum += rsY * 4;
+          if (Math.abs(_gpad.scrollAccum) >= 1) {
+            const sa = Math.round(_gpad.scrollAccum); _gpad.scrollAccum -= sa;
+            try { (document.activeElement?.closest('[style*="overflow"]') || document.scrollingElement).scrollTop += sa * 8; } catch(e) {}
+          }
+        }
+        // Auto-activate cursor mode when right stick moves significantly in UI
+        if (rsActive && (Math.abs(rsX) > 0.5 || Math.abs(rsY) > 0.5)) {
+          _gpadShowCursor();
+        }
+      }
+    }
+
+    const btns = gp.buttons;
+    if (btns.length >= 4) {
+      // A/Cross → cursor click (if cursor mode) OR space/click (otherwise)
+      if (_gpadBtnEdge(0, btns[0].pressed)) {
+        if (_gpad.cursorMode) {
+          _gpadCursorClick();
+        } else {
+          const ae = document.activeElement;
+          if (ae && (ae.tagName === 'BUTTON' || ae.tagName === 'A' || ae.getAttribute('role') === 'button')) {
+            ae.click();
+          } else {
+            _gpadKey('Space', 'keydown');
+          setTimeout(() => _gpadKey('Space', 'keyup'), 100);
+        }
+      }
+      // B/Circle → Escape
+      if (_gpadBtnEdge(1, btns[1].pressed)) { _gpadKey('Escape', 'keydown'); setTimeout(() => _gpadKey('Escape', 'keyup'), 100); }
+      // X/Square → E (interact) OR Tab (focus next in UI)
+      if (_gpadBtnEdge(2, btns[2].pressed)) {
+        const ae2 = document.activeElement;
+        if (ae2 && ae2.tagName === 'CANVAS') {
+          _gpadKey('KeyE', 'keydown'); setTimeout(() => _gpadKey('KeyE', 'keyup'), 100);
+        } else {
+          // Tab to next focusable element
+          try {
+            const focusables = Array.from(document.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), a[href]'));
+            const idx = focusables.indexOf(document.activeElement);
+            if (idx >= 0 && idx < focusables.length - 1) focusables[idx + 1].focus();
+            else if (focusables.length > 0) focusables[0].focus();
+          } catch(e) {}
+        }
+      }
+      // Y/Triangle → M (measure in 3D) OR Shift+Tab (focus previous in UI)
+      if (_gpadBtnEdge(3, btns[3].pressed)) {
+        const ae3 = document.activeElement;
+        if (ae3 && ae3.tagName === 'CANVAS') {
+          _gpadKey('KeyM', 'keydown'); setTimeout(() => _gpadKey('KeyM', 'keyup'), 100);
+        } else {
+          try {
+            const focusables2 = Array.from(document.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), a[href]'));
+            const idx2 = focusables2.indexOf(document.activeElement);
+            if (idx2 > 0) focusables2[idx2 - 1].focus();
+            else if (focusables2.length > 0) focusables2[focusables2.length - 1].focus();
+          } catch(e) {}
+        }
+      }
+    }
+    if (btns.length >= 8) {
+      const inCanvas = document.activeElement && document.activeElement.tagName === 'CANVAS';
+      // LB: 3D = cycle tool (Q), UI = open AlloBot chat
+      if (_gpadBtnEdge(4, btns[4].pressed)) {
+        if (inCanvas) { _gpadKey('KeyQ', 'keydown'); }
+        else { window.dispatchEvent(new CustomEvent('alloflow:open-bot')); }
+      }
+      if (_gpadBtnEdge(5, btns[5].pressed)) _gpadClick(2);                 // RB → right-click
+      // LT → Shift (analog threshold)
+      if (btns[6].value > 0.3 && !_gpad.axisKeys['lt']) { _gpadKey('ShiftLeft', 'keydown'); _gpad.axisKeys['lt'] = true; }
+      if (btns[6].value <= 0.3 && _gpad.axisKeys['lt']) { _gpadKey('ShiftLeft', 'keyup'); _gpad.axisKeys['lt'] = false; }
+      if (_gpadBtnEdge(7, btns[7].pressed)) _gpadClick(0);                 // RT → left-click
+    }
+    if (btns.length >= 10) {
+      const inCanvas2 = document.activeElement && document.activeElement.tagName === 'CANVAS';
+      // Select: 3D = grid, UI = toggle cursor/tab navigation mode
+      if (_gpadBtnEdge(8, btns[8].pressed)) {
+        if (inCanvas2) { _gpadKey('KeyG', 'keydown'); }
+        else {
+          if (_gpad.cursorMode) { _gpadHideCursor(); if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Tab navigation'); u.rate = 1.2; window.speechSynthesis.speak(u); } }
+          else { _gpadShowCursor(); if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Cursor mode'); u.rate = 1.2; window.speechSynthesis.speak(u); } }
+        }
+      }
+      // Start: 3D = fly toggle (F), UI = open AlloBot chat
+      if (_gpadBtnEdge(9, btns[9].pressed)) {
+        if (inCanvas2) { _gpadKey('KeyF', 'keydown'); }
+        else { window.dispatchEvent(new CustomEvent('alloflow:open-bot')); }
+      }
+    }
+    // ── L3 (left stick click, index 10) → Read focused element aloud ──
+    // Unlike a full screen reader that reads everything, this speaks ONLY the
+    // currently focused element — its aria-label, title, or text content.
+    // Perfect for visually impaired users who need on-demand feedback.
+    if (btns.length >= 11 && _gpadBtnEdge(10, btns[10].pressed)) {
+      try {
+        const ae = document.activeElement;
+        let txt = '';
+        if (ae) {
+          txt = ae.getAttribute('aria-label') || ae.getAttribute('title') || '';
+          if (!txt) {
+            // Read visible text, but prioritize short label over entire container
+            const innerText = (ae.textContent || '').trim();
+            txt = innerText.length <= 200 ? innerText : innerText.substring(0, 200) + '...';
+          }
+          // Add context: element type
+          if (ae.tagName === 'BUTTON') txt = 'Button: ' + txt;
+          else if (ae.tagName === 'INPUT') txt = 'Input: ' + (ae.getAttribute('placeholder') || txt || ae.type);
+          else if (ae.tagName === 'SELECT') txt = 'Dropdown: ' + (txt || ae.options?.[ae.selectedIndex]?.text || '');
+          else if (ae.tagName === 'TEXTAREA') txt = 'Text area: ' + (txt || ae.getAttribute('placeholder') || '');
+          else if (ae.tagName === 'A') txt = 'Link: ' + txt;
+          else if (ae.getAttribute('role') === 'button') txt = 'Button: ' + txt;
+        }
+        if (!txt) {
+          const heading = document.querySelector('h1, h2, h3, [role="heading"]');
+          if (heading) txt = 'Page: ' + heading.textContent.trim();
+        }
+        if (txt && window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+          const utt = new SpeechSynthesisUtterance(txt);
+          utt.rate = 1.0;
+          window.speechSynthesis.speak(utt);
+        }
+      } catch(e) {}
+    }
+    // ── R3 (right stick click, index 11) → Toggle microphone / dictation ──
+    if (btns.length >= 12 && _gpadBtnEdge(11, btns[11].pressed)) {
+      try {
+        // First try: find an existing mic/dictation button on screen and click it
+        const micBtn = document.querySelector('[aria-label*="ictation"], [aria-label*="Mic"], [aria-label*="icrophone"], [aria-label*="Start dictation"], [aria-label*="Stop dictation"]');
+        if (micBtn) {
+          micBtn.click();
+        } else {
+          // Fallback: start browser speech recognition directly
+          if (!window._gpadSpeechRecog) {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SR) {
+              window._gpadSpeechRecog = new SR();
+              window._gpadSpeechRecog.continuous = false;
+              window._gpadSpeechRecog.interimResults = false;
+              window._gpadSpeechRecog.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                const target = document.activeElement;
+                if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+                  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set || Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+                  if (setter) { setter.call(target, target.value + text); target.dispatchEvent(new Event('input', { bubbles: true })); }
+                }
+              };
+            }
+          }
+          if (window._gpadSpeechRecog) {
+            if (window._gpadSpeechRecogActive) {
+              window._gpadSpeechRecog.stop(); window._gpadSpeechRecogActive = false;
+              if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Microphone off'); u.rate = 1.2; window.speechSynthesis.speak(u); }
+            } else {
+              window._gpadSpeechRecog.start(); window._gpadSpeechRecogActive = true;
+              if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Listening'); u.rate = 1.2; window.speechSynthesis.speak(u); }
+            }
+          }
+        }
+      } catch(e) {}
+    }
+    // D-pad: context-aware — block selection in 3D, navigation in UI
+    if (btns.length >= 16) {
+      const inCanvas = document.activeElement && document.activeElement.tagName === 'CANVAS';
+      if (inCanvas) {
+        if (_gpadBtnEdge(12, btns[12].pressed)) _gpadKey('Digit1', 'keydown');
+        if (_gpadBtnEdge(13, btns[13].pressed)) _gpadKey('Digit2', 'keydown');
+        if (_gpadBtnEdge(14, btns[14].pressed)) _gpadKey('Digit3', 'keydown');
+        if (_gpadBtnEdge(15, btns[15].pressed)) _gpadKey('Digit4', 'keydown');
+      } else {
+        // UI mode: D-pad Up/Down scroll, Left/Right move focus
+        if (_gpadBtnEdge(12, btns[12].pressed)) { try { (document.activeElement?.closest('[style*="overflow"]') || document.scrollingElement).scrollTop -= 80; } catch(e){} }
+        if (_gpadBtnEdge(13, btns[13].pressed)) { try { (document.activeElement?.closest('[style*="overflow"]') || document.scrollingElement).scrollTop += 80; } catch(e){} }
+        if (_gpadBtnEdge(14, btns[14].pressed)) { try { const f = Array.from(document.querySelectorAll('button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"]),a[href]')); const i = f.indexOf(document.activeElement); if (i > 0) f[i-1].focus(); } catch(e){} }
+        if (_gpadBtnEdge(15, btns[15].pressed)) { try { const f = Array.from(document.querySelectorAll('button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"]),a[href]')); const i = f.indexOf(document.activeElement); if (i < f.length-1) f[i+1].focus(); } catch(e){} }
+      }
+    }
+  };
+  _gpadPoll();
+  }
+}
+// #endregion --- GLOBAL GAMEPAD ---
+
 // #region --- CONFIGURATION & SETUP ---
 const firebaseConfig = typeof __firebase_config !== 'undefined'
   ? JSON.parse(__firebase_config)
@@ -518,7 +862,7 @@ const LargeFileTranscriptionModal = React.memo(({
                     aria-label={t('common.close')}
                     onClick={onClose} data-help-key="dashboard_close_btn"
                     disabled={isProcessing}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-xl">×</span>
                 </button>
@@ -532,7 +876,7 @@ const LargeFileTranscriptionModal = React.memo(({
                                 ? (t?.('large_file.title_video') || 'Large Video File Detected')
                                 : (t?.('large_file.title') || 'Large Audio File Detected')}
                         </h3>
-                        <p className="text-sm text-slate-500 font-medium">{file.name}</p>
+                        <p className="text-sm text-slate-600 font-medium">{file.name}</p>
                     </div>
                 </div>
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
@@ -547,7 +891,7 @@ const LargeFileTranscriptionModal = React.memo(({
                 {isProcessing && (
                     <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                                 {status || 'Processing...'}
                             </span>
                             <span className="text-xs font-bold text-indigo-600">
@@ -567,7 +911,7 @@ const LargeFileTranscriptionModal = React.memo(({
                         aria-label={t('common.close')}
                         onClick={onClose}
                         disabled={isProcessing}
-                        className="px-4 py-2 text-slate-500 font-bold hover:text-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-slate-600 font-bold hover:text-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {t?.('common.cancel') || 'Cancel'}
                     </button>
@@ -1520,7 +1864,7 @@ const VisualPanelGrid = React.memo((props) => {
         <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-200">
             <div className="text-3xl mb-2">🎨</div>
             <p className="text-sm font-bold text-slate-600">Loading Visual Panel...</p>
-            <p className="text-xs text-slate-400 mt-1">Module loading from CDN.</p>
+            <p className="text-xs text-slate-600 mt-1">Module loading from CDN.</p>
         </div>
     );
 });
@@ -1536,7 +1880,7 @@ const WordSoundsGenerator = React.memo((props) => {
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">🔤</div>
                 <p className="text-lg font-bold text-slate-700">Loading Word Sounds Studio...</p>
-                <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
+                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -1827,7 +2171,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 pointer-events-none">
                                 <strong className="block mb-1">📖 Phonics Counting Guide</strong>
                                 <p className="mb-2">R-controlled vowels (ar, er, ir, or, ur) are counted as <strong>single sounds</strong> because the vowel and R blend together.</p>
-                                <p className="text-slate-500">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
+                                <p className="text-slate-600">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
                             </div>
                         </span>
                     </h2>
@@ -1889,14 +2233,14 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 aria-label={t('common.move_up')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'up'); }}
                                                 disabled={idx === 0}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-600'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_up')}
                                             >▲</button>
                                             <button
                                                 aria-label={t('common.move_down')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'down'); }}
                                                 disabled={idx === preloadedWords.length - 1}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-600'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_down')}
                                             >▼</button>
                                         </div>
@@ -2045,11 +2389,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             <option value="medium">🟡 Medium</option>
                                             <option value="hard">🔴 Hard</option>
                                         </select>
-                                        <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">
+                                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
                                             {word.phonemes?.length || 0} sounds
                                         </span>
                                     </div>
-                                    <ChevronDown size={20} className={`text-slate-500 transition-transform ${expandedIndex === idx ? 'rotate-180' : ''}`} />
+                                    <ChevronDown size={20} className={`text-slate-600 transition-transform ${expandedIndex === idx ? 'rotate-180' : ''}`} />
                                 </div>
                                 {expandedIndex === idx && (
                                     <div className="border-t border-slate-100 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
@@ -2057,7 +2401,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex items-center gap-2">
-                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
+                                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
                                                     <button
                                                         onClick={() => onRegenerateWord && onRegenerateWord(idx)}
                                                         disabled={regeneratingIndex === idx}
@@ -2092,7 +2436,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onDragEnd={handleDragEnd}
                                                     >
                                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof p === "string" && typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : (typeof p === "string" ? p : "")}>
-                                                            <span className="text-slate-500 text-xs mr-1">⠿</span>
+                                                            <span className="text-slate-600 text-xs mr-1">⠿</span>
                                                             {p}
                                                             <button
                                                                 aria-label={t('common.remove')}
@@ -2104,17 +2448,17 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     </div>
                                                 ))}
                                                 {((() => { const p = word.phonemes; const a = Array.isArray(p) ? p : (p?.phonemes && Array.isArray(p.phonemes)) ? p.phonemes : []; return a.length === 0; })()) && (
-                                                    <span className="text-slate-500 text-sm italic">No phonemes - click "Add Sound" to build</span>
+                                                    <span className="text-slate-600 text-sm italic">No phonemes - click "Add Sound" to build</span>
                                                 )}
                                             </div>
                                             {showPhonemeBank === idx && (
                                                 <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs text-slate-500 italic">💡 Hover any sound for teaching tips</span>
+                                                        <span className="text-xs text-slate-600 italic">💡 Hover any sound for teaching tips</span>
                                                     </div>
                                                     {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
                                                         <div key={category} className="mb-3">
-                                                            <div className="text-xs font-bold text-slate-500 uppercase mb-1" title={
+                                                            <div className="text-xs font-bold text-slate-600 uppercase mb-1" title={
                                                                 category === 'Consonants' ? 'Single consonant sounds — pair voiced (b,d,g) with unvoiced (p,t,k)' :
                                                                 category === 'Vowels (Short)' ? 'Quick vowel sounds — cat, pet, sit, hot, cup, book' :
                                                                 category === 'Vowels (Long)' ? 'Longer vowel sounds — see, moon, cue, saw + vowel teams ai, ea, oa' :
@@ -2128,7 +2472,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     <div key={p} className="inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors">
                                                                         <button
                                                                             onClick={() => onPlayAudio && onPlayAudio(p)}
-                                                                            className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-500 hover:text-pink-600 transition-colors border-r border-slate-300"
+                                                                            className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"
                                                                             title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play sound: ${p}`}
                                                                         >🔊</button>
                                                                         <button
@@ -2177,7 +2521,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 transition-colors min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-600 hover:text-orange-600 transition-colors min-w-[32px] flex justify-center"
                                                                 data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
                                                             >
                                                                 {playingAudioKey === `${idx}-rhyme-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -2234,7 +2578,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-500 hover:text-violet-600 transition-colors min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-600 transition-colors min-w-[32px] flex justify-center"
                                                                 data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
                                                             >
                                                                 {playingAudioKey === `${idx}-blend-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -2266,7 +2610,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 </div>
                                             </div>
                                         <div>
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Sound Positions (Find Sounds Activity)</label>
+                                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">Sound Positions (Find Sounds Activity)</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {(() => {
                                                     const phonemesRaw = word.phonemes;
@@ -2283,7 +2627,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     );
                                                 })}
                                                 {(!word.phonemes || word.phonemes.length === 0) && (
-                                                    <span className="text-slate-500 text-sm italic">{t('word_sounds.no_phonemes')}</span>
+                                                    <span className="text-slate-600 text-sm italic">{t('word_sounds.no_phonemes')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -2356,7 +2700,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     {generatingImageIndex === idx ? <RefreshCw size={12} className="animate-spin"/> : <Send size={12}/>}
                                                                 </button>
                                                             </div>
-                                                            <span className="text-[10px] text-slate-500 italic">✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"</span>
+                                                            <span className="text-[10px] text-slate-600 italic">✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -2460,7 +2804,7 @@ const StudentAnalyticsPanel = React.memo((props) => {
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">📊</div>
                 <p className="text-lg font-bold text-slate-700">Loading Assessment Center...</p>
-                <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>,
@@ -2786,6 +3130,40 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     }
     .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* ═══ WCAG 2.1 AA Remediation — Context-Aware Contrast Fixes ═══ */
+    /* Only targets elements on LIGHT backgrounds. Dark container children are excluded
+       via :not() selectors to prevent false-positive "fixes" that would break dark UIs. */
+
+    /* 1. Focus indicators (WCAG 2.4.7) — ALL interactive elements get visible focus */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+    textarea:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible,
+    summary:focus-visible, details:focus-visible {
+      outline: 2px solid #4f46e5 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px rgba(79,70,229,0.15) !important;
+    }
+
+    /* 2. Hover-only actions must also show on focus-within (WCAG 2.1.1) */
+    .group:focus-within .group-hover\\:opacity-100 { opacity: 1 !important; }
+    .group:focus-within .group-hover\\:visible { visibility: visible !important; }
+
+    /* 3. Reduced motion (WCAG 2.3.3) */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-spin, .animate-pulse, .animate-bounce, .animate-ping,
+      [class*="animate-in"], [class*="slide-in"], [class*="fade-in"], [class*="zoom-in"] {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    /* 4. Minimum touch target size (WCAG 2.5.8) */
+    @media (pointer: coarse) {
+      button, [role="button"], a, input[type="checkbox"], input[type="radio"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
   `;
     document.head.appendChild(style);
     const disabledEls = document.querySelectorAll('button[disabled], input[disabled], textarea[disabled]');
@@ -3904,7 +4282,7 @@ const UiLanguageSelector = () => {
             {currentUiLanguage !== 'English' && (
                 <button
                     onClick={handleRegenerate}
-                    className="p-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                    className="p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
                     title={t('language_selector.regenerate_tooltip')}
                     aria-label={t('language_selector.regenerate_tooltip')}
                     data-help-key="ui_lang_regenerate_btn"
@@ -3951,7 +4329,7 @@ const UiLanguageSelector = () => {
                     onChange={(e) => setManualInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
                     placeholder={t('language_selector.search_placeholder')}
-                    className="text-[10px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-500"
+                    className="text-[10px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600"
                     aria-label={t('language_selector.search_placeholder')}
                     data-help-key="ui_lang_manual_input"
                 />
@@ -4518,7 +4896,7 @@ const StudentQuizOverlay = React.memo((props) => {
 const DraftFeedbackInterface = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.DraftFeedbackInterface;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-8 text-center text-slate-500">Loading feedback interface...</div>;
+    return <div className="p-8 text-center text-slate-600">Loading feedback interface...</div>;
 });
 // @section TEACHER_GATE — Teacher verification modal
 const TeacherGate = React.memo((props) => {
@@ -5590,43 +5968,43 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
 // Games load during app init; by the time user opens a game, they're available.
 const MemoryGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.MemoryGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const MatchingGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.MatchingGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const TimelineGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.TimelineGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const ConceptSortGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.ConceptSortGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const VennGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.VennGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const CrosswordGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CrosswordGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const SyntaxScramble = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.SyntaxScramble;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const BingoGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.BingoGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const StudentBingoGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.StudentBingoGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const WordScrambleGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.WordScrambleGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-500">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
 const SkeletonLoader = ({ type }) => {
   return (
@@ -5707,7 +6085,7 @@ const RosterKeyPanel = React.memo((props) => {
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">👥</div>
                 <p className="text-lg font-bold text-slate-700">Loading Roster Panel...</p>
-                <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
+                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>
@@ -5718,12 +6096,12 @@ const RosterKeyPanel = React.memo((props) => {
 const SimpleBarChart = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.SimpleBarChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-400 italic text-center py-4">Loading chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">Loading chart...</div>;
 });
 const SimpleDonutChart = (props) => {
     const Ext = window.AlloModules && window.AlloModules.SimpleDonutChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-400 italic text-center py-4">Loading chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">Loading chart...</div>;
 };
 const ConfettiEffect = ({ isActive }) => {
     if (!isActive) return null;
@@ -5761,7 +6139,7 @@ const calculateAnalyticsMetrics = (dashboardData) => {
 const LongitudinalProgressChart = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.LongitudinalProgressChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-400 italic text-center py-4">Loading progress chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">Loading progress chart...</div>;
 });
 
 // @section LEARNER_PROGRESS — CDN wrapper (source: teacher_module.js)
@@ -5773,7 +6151,7 @@ const LearnerProgressView = React.memo((props) => {
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
                 <div className="text-4xl mb-3">📊</div>
                 <p className="text-lg font-bold text-slate-700">Loading Learning Progress...</p>
-                <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
+                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -5789,7 +6167,7 @@ const TeacherDashboard = React.memo((props) => {
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl border border-slate-200">
                 <div className="text-4xl mb-3">📋</div>
                 <p className="text-lg font-bold text-slate-700">Loading Teacher Dashboard...</p>
-                <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
+                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -5805,7 +6183,7 @@ const QuickStartWizard = React.memo((props) => {
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">🚀</div>
                 <p className="text-lg font-bold text-slate-700">Loading Setup Wizard...</p>
-                <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
+                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>
@@ -6640,6 +7018,23 @@ const AlloFlowContent = () => {
   const [isAppReady, setIsAppReady] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [hasSelectedMode, setHasSelectedMode] = useState(false);
+  const [micBannerDismissed, setMicBannerDismissed] = useState(false);
+  const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
+  const requestMicPermission = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { setMicPermissionStatus('unavailable'); setMicBannerDismissed(true); return; }
+    setMicPermissionStatus('requesting');
+    try {
+      const recognition = new SR();
+      recognition.onstart = () => { setMicPermissionStatus('granted'); recognition.stop(); setMicBannerDismissed(true); };
+      recognition.onerror = (event) => {
+        if (event.error === 'not-allowed' || event.error === 'permission-denied') { setMicPermissionStatus('denied'); }
+        else { setMicPermissionStatus('granted'); }
+        setMicBannerDismissed(true);
+      };
+      recognition.start();
+    } catch (e) { setMicPermissionStatus('denied'); setMicBannerDismissed(true); }
+  }, []);
   const [guidedMode, setGuidedMode] = useState(false);
   const [guidedStep, setGuidedStep] = useState(0);
   const GUIDED_STEPS = [
@@ -7351,27 +7746,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
-    loadModule('LitLab', './story_stage_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7387,7 +7782,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a847cd6/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7443,6 +7838,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_singing.js',
         'stem_lab/stem_tool_migration.js',
         'stem_lab/stem_tool_echolocation.js',
+        'stem_lab/stem_tool_echotrainer.js',
         'stem_lab/stem_tool_beehive.js',
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
@@ -10648,7 +11044,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                     <path d="M-50,-30 L35,-30 L50,-15 L50,30 L-50,30 Z" fill="#fff7ed" stroke={strokeColor} strokeWidth={1} strokeDasharray="4 2"/>
                     <path d="M35,-30 L35,-15 L50,-15" fill="none" stroke={strokeColor} strokeWidth={1} />
                     <foreignObject x="-45" y="-25" width="90" height="50" style={STYLE_POINTER_EVENTS_NONE}>
-                         <div className="flex items-center justify-center h-full text-center text-[10px] text-slate-500 italic select-none px-1">
+                         <div className="flex items-center justify-center h-full text-center text-[10px] text-slate-600 italic select-none px-1">
                              {text}
                          </div>
                     </foreignObject>
@@ -11162,7 +11558,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                   setIsInteractiveMap(false);
                                   setIsInteractiveVenn(false);
                               }}
-                              className="flex items-center gap-1 text-slate-500 hover:text-slate-700 px-3 py-1.5 rounded text-xs font-bold hover:bg-slate-100 transition-colors"
+                              className="flex items-center gap-1 text-slate-600 hover:text-slate-700 px-3 py-1.5 rounded text-xs font-bold hover:bg-slate-100 transition-colors"
                           >
                               <List size={14} /> {t('concept_map.venn.return_list')}
                           </button>
@@ -11291,7 +11687,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                                           AI Score: {challengeFeedback.score}%
                                                        </span>
                                                        {challengeFeedback.feedbackText && (
-                                                           <div className="text-[11px] text-slate-500 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-200 shadow-sm animate-in slide-in-from-right-2">
+                                                           <div className="text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-200 shadow-sm animate-in slide-in-from-right-2">
                                                                {challengeFeedback.feedbackText}
                                                            </div>
                                                        )}
@@ -11318,7 +11714,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                           {isTeacherMode && (
                                               <button
                                                   onClick={handleExitChallenge}
-                                                  className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-500 border border-slate-200 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
+                                                  className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-500 border border-slate-200 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
                                                   title={t('concept_map.challenge.exit')}
                                                   aria-label={t('concept_map.challenge.exit')}
                                               >
@@ -11510,7 +11906,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           )}
                       </div>
                   ))}
-                  <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-slate-500 pointer-events-none border border-slate-200 shadow-sm">
+                  <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-slate-600 pointer-events-none border border-slate-200 shadow-sm">
                       {isVenn
                           ? t('concept_map.overlay.venn_instructions')
                           : (isChallengeActive ? t('concept_map.overlay.challenge_instructions') : t('concept_map.overlay.standard_instructions'))
@@ -20927,6 +21323,12 @@ ${t('export.readme_json_desc')}`;
           setTimeout(() => udlInputRef.current?.focus(), 100);
       }
   }, [isTeacherMode]);
+  // Gamepad / adaptive controller: listen for custom event to open AlloBot
+  useEffect(() => {
+    const onOpenBot = () => { handleBotClick(); };
+    window.addEventListener('alloflow:open-bot', onOpenBot);
+    return () => window.removeEventListener('alloflow:open-bot', onOpenBot);
+  }, [handleBotClick]);
   const handleAutoFillToggle = (e) => {
       const checked = e.target.checked;
       setIsAutoFillMode(checked);
@@ -28802,7 +29204,7 @@ Return ONLY JSON:
                 ) : (
                     <>
                         <h3 className="text-2xl font-black text-slate-800">{main}</h3>
-                        {main_en && <p className="text-sm text-slate-500 italic">({main_en})</p>}
+                        {main_en && <p className="text-sm text-slate-600 italic">({main_en})</p>}
                     </>
                 )}
              </div>
@@ -28821,7 +29223,7 @@ Return ONLY JSON:
                                  <input aria-label={t('common.common_placeholder_title_trans')}
                                     value={branch.title_en || ''}
                                     onChange={(e) => handleOutlineChange(bIdx, 'title', e.target.value, null, true)}
-                                    className="text-xs text-slate-500 w-full bg-transparent outline-none border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1"
+                                    className="text-xs text-slate-600 w-full bg-transparent outline-none border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1"
                                     placeholder={t('common.placeholder_title_trans')}
                                  />
                              )}
@@ -28829,7 +29231,7 @@ Return ONLY JSON:
                      ) : (
                          <>
                              <h4 className="font-bold text-lg text-indigo-900">{branch.title}</h4>
-                             {branch.title_en && <p className="text-xs text-slate-500 italic">({branch.title_en})</p>}
+                             {branch.title_en && <p className="text-xs text-slate-600 italic">({branch.title_en})</p>}
                          </>
                      )}
                 </div>
@@ -28849,7 +29251,7 @@ Return ONLY JSON:
                                             <input aria-label={t('common.common_placeholder_item_trans')}
                                                 value={branch.items_en?.[iIdx] || ''}
                                                 onChange={(e) => handleOutlineChange(bIdx, 'item', e.target.value, iIdx, true)}
-                                                className="w-full bg-white/50 rounded px-2 py-0.5 text-xs text-slate-500 italic outline-none focus:ring-2 focus:ring-indigo-300"
+                                                className="w-full bg-white/50 rounded px-2 py-0.5 text-xs text-slate-600 italic outline-none focus:ring-2 focus:ring-indigo-300"
                                                 placeholder={t('common.placeholder_item_trans')}
                                             />
                                         )}
@@ -28857,7 +29259,7 @@ Return ONLY JSON:
                                 ) : (
                                     <>
                                         <span>{item}</span>
-                                        {branch.items_en?.[iIdx] && <div className="text-xs text-slate-500 italic">({branch.items_en[iIdx]})</div>}
+                                        {branch.items_en?.[iIdx] && <div className="text-xs text-slate-600 italic">({branch.items_en[iIdx]})</div>}
                                     </>
                                 )}
                             </div>
@@ -28987,7 +29389,7 @@ Return ONLY JSON:
                             <h3 className="text-2xl font-black text-indigo-900 flex items-center justify-center gap-2">
                                 <Layout size={24} className="text-purple-500"/> {t('concept_map.venn.setup_title')}
                             </h3>
-                            <p className="text-slate-500 text-sm">{t('concept_map.venn.setup_desc')}</p>
+                            <p className="text-slate-600 text-sm">{t('concept_map.venn.setup_desc')}</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div className="bg-rose-50 rounded-xl border-2 border-rose-200 p-4 flex flex-col">
@@ -29274,7 +29676,7 @@ Return ONLY JSON:
                      </div>
                      <div className="relative max-w-3xl mx-auto">
                          <div className="absolute -top-16 left-1/2 -translate-x-1/2 h-16 w-1 bg-slate-200 flex items-end justify-center pb-1">
-                             <ArrowDown size={24} className="text-slate-500" />
+                             <ArrowDown size={24} className="text-slate-600" />
                          </div>
                          <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 text-center relative shadow-lg">
                              <div className="inline-flex items-center justify-center p-3 bg-blue-100 text-blue-600 rounded-full mb-4 shadow-sm border border-blue-200">
@@ -29393,7 +29795,7 @@ Return ONLY JSON:
                                                         <input aria-label={t('common.common_placeholder_translation')}
                                                             value={branch.title_en || ''}
                                                             onChange={(e) => handleOutlineChange(i, 'title', e.target.value, null, true)}
-                                                            className="text-xs text-slate-500 w-full bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 border-b border-dashed border-slate-200"
+                                                            className="text-xs text-slate-600 w-full bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 border-b border-dashed border-slate-200"
                                                             placeholder={t('common.placeholder_translation')}
                                                         />
                                                     )}
@@ -29401,7 +29803,7 @@ Return ONLY JSON:
                                             ) : (
                                                 <div className="border-b border-slate-50 pb-2">
                                                     <h4 className="font-bold text-lg text-indigo-900">{branch.title}</h4>
-                                                    {branch.title_en && <p className="text-xs text-slate-500 italic">({branch.title_en})</p>}
+                                                    {branch.title_en && <p className="text-xs text-slate-600 italic">({branch.title_en})</p>}
                                                 </div>
                                             )}
                                         </div>
@@ -29422,7 +29824,7 @@ Return ONLY JSON:
                                                                 <input aria-label={t('common.common_placeholder_translation')}
                                                                     value={branch.items_en?.[k] || ''}
                                                                     onChange={(e) => handleOutlineChange(i, 'item', e.target.value, k, true)}
-                                                                    className="w-full bg-white rounded px-2 py-0.5 text-xs text-slate-500 italic outline-none focus:ring-2 focus:ring-indigo-400 border border-slate-100"
+                                                                    className="w-full bg-white rounded px-2 py-0.5 text-xs text-slate-600 italic outline-none focus:ring-2 focus:ring-indigo-400 border border-slate-100"
                                                                     placeholder={t('common.placeholder_translation')}
                                                                 />
                                                             )}
@@ -29430,7 +29832,7 @@ Return ONLY JSON:
                                                     ) : (
                                                         <>
                                                             <span className="leading-relaxed">{item}</span>
-                                                            {branch.items_en?.[k] && <div className="text-xs text-slate-500 italic mt-0.5">({branch.items_en[k]})</div>}
+                                                            {branch.items_en?.[k] && <div className="text-xs text-slate-600 italic mt-0.5">({branch.items_en[k]})</div>}
                                                         </>
                                                     )}
                                                 </div>
@@ -30946,7 +31348,7 @@ Return ONLY JSON:
               userBubble: 'bg-indigo-900 text-indigo-100 border border-indigo-700',
               modelBubble: 'bg-slate-800 text-slate-200 border border-slate-700',
               inputArea: 'bg-slate-900 border-t border-slate-700',
-              input: 'bg-slate-800 border-slate-600 text-slate-200 focus:border-indigo-500 placeholder:text-slate-500',
+              input: 'bg-slate-800 border-slate-600 text-slate-200 focus:border-indigo-500 placeholder:text-slate-600',
               button: 'bg-indigo-700 text-indigo-100 hover:bg-indigo-600 border border-indigo-600',
               secondaryButton: 'bg-slate-800 text-slate-500 border border-slate-600 hover:bg-slate-700',
               text: 'text-slate-200',
@@ -31064,13 +31466,13 @@ Return ONLY JSON:
               <div className="bg-amber-100 p-3 rounded-full"><span className="text-2xl">🎤</span></div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Cloud Voice Unavailable</h3>
-                <p className="text-xs text-slate-500">Gemini TTS is temporarily unavailable (quota or network issue)</p>
+                <p className="text-xs text-slate-600">Gemini TTS is temporarily unavailable (quota or network issue)</p>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-4">
               Would you like to download a free browser-based voice? It's ~40MB and works completely offline — no cloud needed.
             </p>
-            <p className="text-xs text-slate-400 mb-4">
+            <p className="text-xs text-slate-600 mb-4">
               Note: In this environment, the download won't persist between sessions.
             </p>
             <div className="flex gap-3">
@@ -31205,14 +31607,14 @@ Return ONLY JSON:
       {showSessionModal && activeSessionCode && (
         <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
-                <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
+                <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
                 <div className="flex justify-center mb-4">
                     <div className="bg-green-100 p-4 rounded-full shadow-inner">
                         <Wifi size={48} className="text-green-600 animate-pulse" />
                     </div>
                 </div>
                 <h2 className="text-2xl font-black text-slate-800 mb-2">{t('session.live_title')}</h2>
-                <p className="text-slate-500 mb-6 font-medium">{t('session.live_instruction')}</p>
+                <p className="text-slate-600 mb-6 font-medium">{t('session.live_instruction')}</p>
                 <div
                     className="bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative"
                     onClick={() => copyToClipboard(activeSessionCode)}
@@ -31226,7 +31628,7 @@ Return ONLY JSON:
                     </div>
                 </div>
                 <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
+                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
                     <button
                         aria-label={t('common.copy')}
                         onClick={() => copyToClipboard(appId)}
@@ -31255,7 +31657,7 @@ Return ONLY JSON:
                     <div className="mb-8 flex justify-center">
                         <button
                             onClick={toggleSessionMode}
-                            className={`flex items-center gap-3 px-4 py-2 rounded-full border-2 transition-all w-full justify-center ${sessionData.mode === 'sync' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}
+                            className={`flex items-center gap-3 px-4 py-2 rounded-full border-2 transition-all w-full justify-center ${sessionData.mode === 'sync' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}
                         >
                             <div className={`w-10 h-5 rounded-full relative transition-colors ${sessionData.mode === 'sync' ? 'bg-indigo-500' : 'bg-slate-300'}`}>
                                 <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${sessionData.mode === 'sync' ? 'left-6' : 'left-1'}`}></div>
@@ -31427,7 +31829,7 @@ Return ONLY JSON:
                         </div>
                         <div>
                             <h2 className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
-                            <p className="text-sm text-slate-500">{t('groups.modal_subtitle')}</p>
+                            <p className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -31449,7 +31851,7 @@ Return ONLY JSON:
                             <Plus size={18} /> {t('groups.add_button')}
                         </button>
                     </div>
-                    <button onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
+                    <button onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
                         <X size={24}/>
                     </button>
                 </div>
@@ -31458,7 +31860,7 @@ Return ONLY JSON:
                         <div className="flex items-center gap-2 mb-3">
                             <FileText size={16} className="text-indigo-600" />
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
-                            <span className="text-xs text-slate-500 ml-2">({sessionData.resources?.length || 0} items)</span>
+                            <span className="text-xs text-slate-600 ml-2">({sessionData.resources?.length || 0} items)</span>
                             <span className="text-[10px] text-purple-400 ml-auto italic flex items-center gap-1">
                                 <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag to reorder'}
                             </span>
@@ -31493,7 +31895,7 @@ Return ONLY JSON:
                                                 `}
                                                 title={res.title || 'Untitled'}
                                             >
-                                                <div className="absolute top-1 right-1 text-slate-500 hover:text-slate-500">
+                                                <div className="absolute top-1 right-1 text-slate-600 hover:text-slate-500">
                                                     <GripVertical size={14} />
                                                 </div>
                                                 <div className="absolute -top-2 -left-2 bg-slate-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
@@ -31503,7 +31905,7 @@ Return ONLY JSON:
                                                     <span className="text-2xl">{icon}</span>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="text-sm font-semibold text-slate-700 truncate">{res.title || 'Untitled'}</div>
-                                                        <div className="text-[10px] text-slate-500 capitalize">{res.type?.replace('-', ' ')}</div>
+                                                        <div className="text-[10px] text-slate-600 capitalize">{res.type?.replace('-', ' ')}</div>
                                                     </div>
                                                 </div>
                                                 {description && (
@@ -31527,7 +31929,7 @@ Return ONLY JSON:
                                                             )
                                                         )}
                                                         {dateStr && (
-                                                            <span className="inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                                                            <span className="inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                                                                 <Clock size={8} /> {dateStr}
                                                             </span>
                                                         )}
@@ -31543,7 +31945,7 @@ Return ONLY JSON:
                                     })}
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-center h-full text-slate-500 italic">
+                                <div className="flex items-center justify-center h-full text-slate-600 italic">
                                     {t('groups.no_resources') || 'No resources in this session'}
                                 </div>
                             )}
@@ -31561,7 +31963,7 @@ Return ONLY JSON:
                                             <span className="font-bold text-slate-700">{group.name}</span>
                                             <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
                                         </div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">{t('groups.assign_resource_label')}</label>
+                                        <label className="text-[10px] font-bold text-slate-600 uppercase mb-1 block">{t('groups.assign_resource_label')}</label>
                                         <select aria-label={t('common.selection')}
                                             value={group.resourceId || ""}
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value || null)}
@@ -31581,7 +31983,7 @@ Return ONLY JSON:
                                     </div>
                                 ))}
                                 {(!sessionData.groups || Object.values(sessionData.groups).filter(g => g !== null).length === 0) && (
-                                    <div className="text-sm text-slate-500 italic text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">{t('groups.no_groups')}</div>
+                                    <div className="text-sm text-slate-600 italic text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">{t('groups.no_groups')}</div>
                                 )}
                             </div>
                         </div>
@@ -31612,7 +32014,7 @@ Return ONLY JSON:
                                         ))}
                                     </div>
                                  ) : (
-                                     <div className="flex items-center justify-center h-full text-sm text-slate-500 italic">{t('session.waiting_for_students')}</div>
+                                     <div className="flex items-center justify-center h-full text-sm text-slate-600 italic">{t('session.waiting_for_students')}</div>
                                  )}
                             </div>
                         </div>
@@ -32037,7 +32439,7 @@ Return ONLY JSON:
                                                     <label className="text-xs font-bold flex items-center gap-1 text-slate-500 dark:text-slate-500">{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
                                                     <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{readingTheme === 'default' ? 'Default' : readingTheme}</span>
                                                 </div>
-                                                <p className="text-[9px] text-slate-400 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
+                                                <p className="text-[9px] text-slate-600 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
                                                     {[
                                                         { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
@@ -32168,7 +32570,7 @@ Return ONLY JSON:
                                                                 🎵 High Quality (~86MB)
                                                             </button>
                                                         </div>
-                                                        <p className="text-[8px] text-slate-500 mt-1">Fast uses a smaller model for quicker response. High Quality is richer but slower.</p>
+                                                        <p className="text-[10px] text-slate-600 mt-1">Fast uses a smaller model for quicker response. High Quality is richer but slower.</p>
                                                     </div>
                                                 )}
                                                 {/* ── Non-English Language TTS Indicator ── */}
@@ -32211,7 +32613,7 @@ Return ONLY JSON:
                                                         />
                                                     </div>
                                                 </div>
-                                                <p className="text-[11px] text-slate-500 mt-2 italic leading-tight">
+                                                <p className="text-[11px] text-slate-600 mt-2 italic leading-tight">
                                                     {t('settings.voice.helper')}
                                                 </p>
                                             </div>
@@ -32499,7 +32901,7 @@ Return ONLY JSON:
                                                 <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-200 z-[100] animate-in fade-in zoom-in-95">
                                                     <div className="space-y-2">
                                                         <div>
-                                                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">{t('session.host_id_optional')}</label>
+                                                            <label className="block text-[10px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
                                                             <input aria-label={t('common.session_default_placeholder')}
                                                                 type="text"
                                                                 value={joinAppIdInput}
@@ -32509,7 +32911,7 @@ Return ONLY JSON:
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">{t('session.code')}</label>
+                                                            <label className="block text-[10px] font-bold text-slate-600 mb-1 uppercase">{t('session.code')}</label>
                                                             <div className="flex gap-1">
                                                                 <input aria-label={t('common.enter_join_code_input')}
                                                                     autoFocus
@@ -32665,13 +33067,13 @@ Return ONLY JSON:
                 <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">
                     <button
                         onClick={handleSetInfoModalTabToAbout}
-                        className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                     >
                         {t('about.tab_about')}
                     </button>
                     <button
                         onClick={handleSetInfoModalTabToFeatures}
-                        className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                     >
                         {t('about.tab_features')}
                     </button>
@@ -32714,7 +33116,7 @@ Return ONLY JSON:
                                     </li>
                                 </ul>
                             </div>
-                            <div className="bg-slate-50 p-3 rounded border border-slate-200 text-xs text-slate-500 italic text-center space-y-2">
+                            <div className="bg-slate-50 p-3 rounded border border-slate-200 text-xs text-slate-600 italic text-center space-y-2">
                                 <p>{t('about.ai_guide_tip')}</p>
                                 <div className="border-t border-slate-200 pt-2">
                                     <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 transition-colors">
@@ -32729,7 +33131,7 @@ Return ONLY JSON:
                                             setShowWizard(true);
                                             setShowInfoModal(false);
                                         }}
-                                        className="text-slate-500 hover:text-indigo-600 font-bold transition-colors flex items-center justify-center gap-1 mx-auto"
+                                        className="text-slate-600 hover:text-indigo-600 font-bold transition-colors flex items-center justify-center gap-1 mx-auto"
                                     >
                                         <RefreshCw size={10} /> {t('about.reset_wizard')}
                                     </button>
@@ -32739,7 +33141,7 @@ Return ONLY JSON:
                                         href="https://Ko-fi.com/aaronpomeranz207"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-slate-500 hover:text-pink-500 font-bold transition-colors flex items-center justify-center gap-2 mx-auto group"
+                                        className="text-slate-600 hover:text-pink-500 font-bold transition-colors flex items-center justify-center gap-2 mx-auto group"
                                     >
                                         {t('about.support_kofi')}
                                         <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-400 group-hover:text-pink-500 transition-colors" aria-hidden="true">
@@ -32841,7 +33243,7 @@ Return ONLY JSON:
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-4">
                     {hintHistory.length === 0 ? (
-                        <div className="text-center py-10 text-slate-500 italic">
+                        <div className="text-center py-10 text-slate-600 italic">
                             {t('hints.empty_state')}
                         </div>
                     ) : (
@@ -32851,7 +33253,7 @@ Return ONLY JSON:
                                     <span className={`text-[10px] font-bold uppercase tracking-wider ${hint.isExtension ? 'text-purple-600' : 'text-yellow-600'}`}>
                                         {hint.tool}
                                     </span>
-                                    <span className="text-[10px] text-slate-500">{new Date(hint.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span className="text-[10px] text-slate-600">{new Date(hint.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                                 <div className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3">
                                     {renderFormattedText(hint.text, false)}
@@ -32896,7 +33298,7 @@ Return ONLY JSON:
       {showXPModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowXPModalToFalse} role="presentation">
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transition-all animate-in zoom-in-95" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
-                <button onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
+                <button onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
                 <div className="text-center mb-6 relative">
                     <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative">
                         <Trophy size={40} className="text-indigo-900 fill-current" />
@@ -32905,10 +33307,10 @@ Return ONLY JSON:
                         </div>
                     </div>
                     <h2 id="xp-modal-title" className="text-2xl font-black text-indigo-900 uppercase tracking-tight" data-help-key="xp_modal_summary">{t('student_dashboard.level_progress')}</h2>
-                    <p className="text-slate-500 font-bold text-sm">{t('student_dashboard.total_xp')}: <span className="text-green-600">{globalPoints}</span></p>
+                    <p className="text-slate-600 font-bold text-sm">{t('student_dashboard.total_xp')}: <span className="text-green-600">{globalPoints}</span></p>
                 </div>
                 <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 shadow-inner">
-                    <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <div className="flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
                         <span>{t('common.progress')}</span>
                         <span>{Math.round(globalProgress)}%</span>
                     </div>
@@ -32920,24 +33322,24 @@ Return ONLY JSON:
                             <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
                         </div>
                     </div>
-                    <div className="flex justify-between text-[10px] font-mono font-bold text-slate-500 mt-1.5">
+                    <div className="flex justify-between text-[10px] font-mono font-bold text-slate-600 mt-1.5">
                         <span>{currentLevelXP} XP</span>
                         <span>{globalXPNext} XP to Lvl {globalLevel + 1}</span>
                     </div>
                 </div>
                 <div className="border-t border-slate-100 pt-4">
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1">
+                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
                         <History size={12}/> Recent History
                     </h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                         {pointHistory.length === 0 ? (
-                            <div className="text-center text-slate-500 text-xs italic py-4">{t('student_dashboard.no_activities')}</div>
+                            <div className="text-center text-slate-600 text-xs italic py-4">{t('student_dashboard.no_activities')}</div>
                         ) : (
                             pointHistory.slice(0, 20).map((entry) => (
                                 <div key={entry.id} className="flex justify-between items-center text-sm p-2 rounded hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
                                     <div className="flex flex-col">
                                         <span className="font-bold text-slate-700 truncate max-w-[200px]" title={entry.activity}>{entry.activity}</span>
-                                        <span className="text-[10px] text-slate-500">{new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                        <span className="text-[10px] text-slate-600">{new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                     </div>
                                     <span className="font-black text-green-600">+{entry.points} XP</span>
                                 </div>
@@ -32982,7 +33384,7 @@ Return ONLY JSON:
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-800">{t('adventure.storybook')}</h3>
-                  <p className="text-sm text-slate-500">{t('adventure.export_options')}</p>
+                  <p className="text-sm text-slate-600">{t('adventure.export_options')}</p>
                 </div>
               </div>
               <p className="text-slate-600 mb-6">
@@ -33016,12 +33418,12 @@ Return ONLY JSON:
                 </button>
                 <button
                   onClick={handleSetShowStorybookExportModalToFalse}
-                  className="w-full px-4 py-2 text-slate-500 hover:text-slate-700 text-sm transition-colors"
+                  className="w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors"
                 >
                   {t('common.cancel')}
                 </button>
               </div>
-              <p className="text-xs text-slate-500 text-center mt-4">
+              <p className="text-xs text-slate-600 text-center mt-4">
                 {t('adventure.storybook_image_warning')}
               </p>
             </div>
@@ -33078,7 +33480,7 @@ Return ONLY JSON:
                              <button
                                 data-help-key="persona_close" data-help-ignore
                                 onClick={handleClosePersonaChat}
-                                className="absolute right-4 p-2 text-slate-500 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+                                className="absolute right-4 p-2 text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
                                 aria-label={t('common.close')}
                              >
                                 <X size={20} />
@@ -33272,7 +33674,7 @@ Return ONLY JSON:
                                                             });
                                                         })()
                                                     )}
-                                                    {!isUser && <span className="block text-[8px] text-slate-400 mt-1 opacity-70">🔊 Click any sentence to listen</span>}
+                                                    {!isUser && <span className="block text-[10px] text-slate-600 mt-1 opacity-70">🔊 Click any sentence to listen</span>}
                                                  </div>
                                                  <span className="text-[9px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
                                                     {speakerLabel}
@@ -33308,13 +33710,13 @@ Return ONLY JSON:
                                                 <button
                                                     aria-label={t('common.close_definition')}
                                                     onClick={handleSetPersonaDefinitionDataToNull}
-                                                    className="text-slate-500 hover:text-slate-600 p-1"
+                                                    className="text-slate-600 hover:text-slate-600 p-1"
                                                 >
                                                     <X size={16}/>
                                                 </button>
                                             </div>
                                             {isPersonaDefining ? (
-                                                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                                                <div className="flex items-center gap-2 text-slate-600 text-sm">
                                                     <RefreshCw size={14} className="animate-spin"/>
                                                     Looking up definition...
                                                 </div>
@@ -33337,7 +33739,7 @@ Return ONLY JSON:
                                 </div>
                                 {(personaState.panelSuggestions || []).length > 0 && !personaState.isLoading ? (
                                     <div className="p-4 bg-white border-t border-slate-200">
-                                        <p className="text-xs text-slate-500 text-center mb-3 font-medium">{t('persona.panel_choose_response')}</p>
+                                        <p className="text-xs text-slate-600 text-center mb-3 font-medium">{t('persona.panel_choose_response')}</p>
                                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">
                                             {personaState.panelSuggestions.map((opt, i) => (
                                                 <button
@@ -33368,7 +33770,7 @@ Return ONLY JSON:
                                                 value={personaInput}
                                                 onChange={(e) => setPersonaInput(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handlePanelChatSubmit(personaInput)}
-                                                className="flex-1 p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-500"
+                                                className="flex-1 p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600"
                                                 placeholder={t('persona.panel_question_placeholder')}
                                                 disabled={personaState.isLoading}
                                             />
@@ -33398,7 +33800,7 @@ Return ONLY JSON:
                                                 <Sparkles size={40} className="fill-current" />
                                             </div>
                                             <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
-                                            <p className="text-slate-500 text-sm">{reflectionFeedback.subjectName}</p>
+                                            <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
                                         </div>
                                         <div className="flex-1 overflow-y-auto space-y-4">
                                             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
@@ -33413,7 +33815,7 @@ Return ONLY JSON:
                                                 </div>
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}</h4>
+                                                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}</h4>
                                                 <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                             </div>
                                         </div>
@@ -33428,7 +33830,7 @@ Return ONLY JSON:
                                         <div className="text-center mb-6 relative">
                                             <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"><PenTool size={32} /></div>
                                             <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
-                                            <p className="text-slate-500 text-sm">{t('persona.reflection_subtitle')}</p>
+                                            <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
                                         </div>
                                         <div className="flex-1 overflow-y-auto">
                                             <div className="space-y-4">
@@ -33444,7 +33846,7 @@ Return ONLY JSON:
                                             </div>
                                         </div>
                                         <div className="mt-6 flex gap-3">
-                                            <button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
+                                            <button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
                                             <button aria-label={t('common.submit_reflection_for_grading')} onClick={handleSaveReflection} disabled={!personaReflectionInput.trim() || isGradingReflection} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                                 {isGradingReflection ? <RefreshCw size={18} className="animate-spin"/> : <Sparkles size={18} className="text-yellow-400 fill-current"/>}
                                                 {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
@@ -33503,7 +33905,7 @@ Return ONLY JSON:
                      </div>
                      <div className="w-full mt-6">
                          <div className="flex justify-between items-end mb-1">
-                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Trust / Rapport</label>
+                             <label className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Trust / Rapport</label>
                              <span className={`text-xs font-bold ${
                                  (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'text-green-600' :
                                  (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'text-yellow-600' : 'text-red-500'
@@ -33523,7 +33925,7 @@ Return ONLY JSON:
                      </div>
                      {personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && (
                          <div className="w-full mt-6 text-left">
-                             <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1">
+                             <h4 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
                                  <Search size={12}/> Secrets to Uncover
                              </h4>
                              <div className="space-y-2">
@@ -33553,7 +33955,7 @@ Return ONLY JSON:
                 <div className="flex-1 flex flex-col h-full bg-white relative min-w-0">
                     <button
                         onClick={handleClosePersonaChat}
-                        className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-colors z-50"
+                        className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-50"
                         aria-label={t('common.close')}
                     >
                         <X size={24} />
@@ -33562,12 +33964,12 @@ Return ONLY JSON:
                         <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
                             <Star size={16} className="text-yellow-500" />
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('common.xp')}</span>
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">{t('common.xp')}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-black text-yellow-600">
                                         {personaState.selectedCharacter?.accumulatedXP || 0}
                                     </span>
-                                    <span className="text-[10px] text-slate-500">/ 300</span>
+                                    <span className="text-[10px] text-slate-600">/ 300</span>
                                 </div>
                             </div>
                             <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -33698,7 +34100,7 @@ Return ONLY JSON:
                     </div>
                     <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-label="Interview conversation with character">
                         {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
-                            <div className="text-center py-10 text-slate-500 italic">
+                            <div className="text-center py-10 text-slate-600 italic">
                                 {t('persona.empty_chat_instruction')}
                             </div>
                         )}
@@ -33768,7 +34170,7 @@ Return ONLY JSON:
                                          })()}
                                      </div>
                                  </div>
-                                 <span className={`text-[10px] text-slate-500 mt-1 px-1 font-bold uppercase tracking-wider ${!isUser && avatarUrl ? 'ml-11' : ''}`}>
+                                 <span className={`text-[10px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider ${!isUser && avatarUrl ? 'ml-11' : ''}`}>
                                      {speakerName}
                                  </span>
                              </div>
@@ -33776,7 +34178,7 @@ Return ONLY JSON:
                         })}
                         {personaState.isLoading && (
                             <div className="flex items-start">
-                                <div className="bg-white p-3 rounded-2xl border border-slate-200 rounded-bl-none text-xs text-slate-500 italic flex items-center gap-2 shadow-sm animate-pulse">
+                                <div className="bg-white p-3 rounded-2xl border border-slate-200 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-2 shadow-sm animate-pulse">
                                     <History size={14} className="animate-spin text-yellow-600"/>
                                     {t('persona.status_thinking', { name: personaState.selectedCharacter?.name })}
                                 </div>
@@ -33821,7 +34223,7 @@ Return ONLY JSON:
                                     onChange={(e) => setPersonaInput(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit()}
                                     placeholder={t('persona.character_question_placeholder', {name: personaState.selectedCharacter?.name})}
-                                    className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
+                                    className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all placeholder:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
                                     autoFocus
                                     disabled={personaState.isLoading}
                                 />
@@ -33837,7 +34239,7 @@ Return ONLY JSON:
                             </div>
                         )}
                         {!isPersonaFreeResponse && personaState.isLoading && (
-                            <div className="p-8 text-center text-slate-500 italic text-xs flex items-center justify-center gap-2">
+                            <div className="p-8 text-center text-slate-600 italic text-xs flex items-center justify-center gap-2">
                                 <RefreshCw size={14} className="animate-spin"/> {t('persona.status_generating_options')}
                             </div>
                         )}
@@ -33851,7 +34253,7 @@ Return ONLY JSON:
                                             <Sparkles size={40} className="fill-current" />
                                         </div>
                                         <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
-                                        <p className="text-slate-500 text-sm">{reflectionFeedback.subjectName}</p>
+                                        <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
                                     </div>
                                     <div className="flex-1 overflow-y-auto space-y-4">
                                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
@@ -33868,7 +34270,7 @@ Return ONLY JSON:
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                                                 <MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}
                                             </h4>
                                             <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
@@ -33896,7 +34298,7 @@ Return ONLY JSON:
                                             <PenTool size={32} />
                                         </div>
                                         <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
-                                        <p className="text-slate-500 text-sm">{t('persona.reflection_subtitle')}</p>
+                                        <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
                                     </div>
                                     <div className="flex-1 overflow-y-auto">
                                         <div className="space-y-4">
@@ -33927,7 +34329,7 @@ Return ONLY JSON:
                                             aria-label={t('common.refresh')}
                                             onClick={handleSetIsPersonaReflectionOpenToFalse} data-help-key="persona_back_btn"
                                             disabled={isGradingReflection}
-                                            className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {t('persona.back_to_chat')}
                                         </button>
@@ -34261,7 +34663,7 @@ Return ONLY JSON:
                 id="tab-create"
                 aria-label={t('common.create_new_content')}
               onClick={handleSetActiveSidebarTabToCreate}
-              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
               data-help-key="sidebar_tab_create"
             >
                <Sparkles size={16} aria-hidden="true" /> {t('sidebar.create_tab')}
@@ -34276,7 +34678,7 @@ Return ONLY JSON:
                   setActiveSidebarTab('history');
                   setIsHistoryPulsing(false);
               }}
-              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'} ${isHistoryPulsing ? 'pulse-history shadow-indigo-500/50' : ''}`}
+              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-700'} ${isHistoryPulsing ? 'pulse-history shadow-indigo-500/50' : ''}`}
               data-help-key="sidebar_tab_history"
             >
                <History size={16} aria-hidden="true" /> {t('sidebar.history_tab')}
@@ -34445,7 +34847,7 @@ Return ONLY JSON:
                         {showSourceGen ? t('common.cancel') : t('input.actions.generate_short')}
                      </button>
                  </div>
-                 {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                 {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </div>
             </div>
             {expandedTools.includes('source-input') && (
@@ -34455,13 +34857,13 @@ Return ONLY JSON:
                       <div className="flex justify-center bg-white p-1 rounded-lg border border-indigo-100 mb-2 shadow-sm">
                           <button
                               onClick={handleSetIsUrlSearchModeToFalse}
-                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${!isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${!isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                           >
                               {t('wizard.paste_link_label')}
                           </button>
                           <button
                               onClick={handleSetIsUrlSearchModeToTrue}
-                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                              className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${isUrlSearchMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                           >
                               {t('wizard.find_ai_label')}
                           </button>
@@ -34498,8 +34900,8 @@ Return ONLY JSON:
                                                 className="w-full text-left p-3 pr-10 rounded-lg border border-indigo-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
                                             >
                                                 <div className="font-bold text-slate-700 group-hover:text-teal-800 mb-0.5 text-xs">{opt.title || "Untitled Resource"}</div>
-                                                <div className="text-[10px] text-slate-500 group-hover:text-teal-600 line-clamp-2 leading-snug">{opt.description || "No description available."}</div>
-                                                <div className="text-[11px] text-slate-500 mt-1 truncate max-w-[200px]">{opt.url}</div>
+                                                <div className="text-[10px] text-slate-600 group-hover:text-teal-600 line-clamp-2 leading-snug">{opt.description || "No description available."}</div>
+                                                <div className="text-[11px] text-slate-600 mt-1 truncate max-w-[200px]">{opt.url}</div>
                                             </button>
                                             <a
                                                 href={opt.url}
@@ -34512,7 +34914,7 @@ Return ONLY JSON:
                                                     setUrlToFetch('');
                                                     addToast(t('common.link_opened_copy_paste'), "info");
                                                 }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
                                                 title={t('common.open_link_paste_mode')}
                                             >
                                                 <ExternalLink size={14} />
@@ -34554,12 +34956,14 @@ Return ONLY JSON:
                 {showSourceGen && (
                   <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3">
                       <div>
-                        <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.topic')}</label>
+                        <label htmlFor="allo-source-topic" className="block text-xs font-medium text-indigo-900 mb-1">{t('input.topic')}</label>
                         <input
+                          id="allo-source-topic"
                           type="text"
                           value={sourceTopic}
                           onChange={(e) => setSourceTopic(e.target.value)}
                           placeholder={t('wizard.topic_placeholder')}
+                          aria-label={t('input.topic')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                           onKeyDown={(e) => e.key === 'Enter' && handleGenerateSource()}
                           autoFocus
@@ -34617,13 +35021,13 @@ Return ONLY JSON:
                                 <div className="flex bg-white rounded-md border border-slate-200 p-0.5 shadow-sm">
                                     <button
                                         onClick={handleSetStandardModeToAi}
-                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:text-slate-600'}`}
+                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         {t('standards.ai_match')}
                                     </button>
                                     <button
                                         onClick={handleSetStandardModeToManual}
-                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:text-slate-600'}`}
+                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         {t('standards.manual')}
                                     </button>
@@ -34686,7 +35090,7 @@ Return ONLY JSON:
                                         </div>
                                     )}
                                     {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
-                                        <div className="text-[10px] text-slate-500 italic text-center p-1">
+                                        <div className="text-[10px] text-slate-600 italic text-center p-1">
                                             {t('standards.press_search_hint')}
                                         </div>
                                     )}
@@ -34883,7 +35287,7 @@ Return ONLY JSON:
                 className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors"
               >
                 <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Search size={16}/> {t('sidebar.tool_analysis')}</div>
-                {expandedTools.includes('analysis') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                {expandedTools.includes('analysis') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
               {expandedTools.includes('analysis') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
@@ -34899,7 +35303,7 @@ Return ONLY JSON:
                                 <Globe size={12} className="text-blue-500"/> {t('analysis.check_accuracy')}
                             </span>
                         </label>
-                        <p className="text-[10px] text-slate-500 mt-1 ml-6 mb-2">{t('analysis.grounding_desc')}</p>
+                        <p className="text-[10px] text-slate-600 mt-1 ml-6 mb-2">{t('analysis.grounding_desc')}</p>
                     </div>
                     <button
                         aria-label={t('common.generate')}
@@ -34925,14 +35329,14 @@ Return ONLY JSON:
                 <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
                     <Globe size={16}/> {isParentMode ? t('glossary.word_helper') : t('sidebar.tool_glossary')}
                 </div>
-                {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
                 {expandedTools.includes('glossary') && (
               <div className="animate-in slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100" data-help-key="tour-glossary-settings">
                     <div className="grid grid-cols-3 gap-2 mb-3">
                         <div data-help-key="glossary_tier2_count">
-                            <label className="block text-xs text-slate-500 mb-1 font-medium flex items-center">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center">
                                 {t('glossary.tier2')}
                                 <InfoTooltip text={t('glossary.tier2_tooltip')} />
                             </label>
@@ -34946,7 +35350,7 @@ Return ONLY JSON:
                             />
                         </div>
                         <div data-help-key="glossary_tier3_count">
-                            <label className="block text-xs text-slate-500 mb-1 font-medium flex items-center">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center">
                                 {t('glossary.tier3')}
                                 <InfoTooltip text={t('glossary.tier3_tooltip')} />
                             </label>
@@ -34960,7 +35364,7 @@ Return ONLY JSON:
                             />
                         </div>
                         <div data-help-key="glossary_definition_level">
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('glossary.def_level')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('glossary.def_level')}</label>
                             <select aria-label={t('common.selection')}
                                 value={glossaryDefinitionLevel}
                                 onChange={(e) => setGlossaryDefinitionLevel(e.target.value)}
@@ -34984,7 +35388,7 @@ Return ONLY JSON:
                         </div>
                     </div>
                     <div className="mb-3" data-help-key="glossary_custom_instructions">
-                        <label className="block text-xs text-slate-500 mb-1 font-medium">
+                        <label className="block text-xs text-slate-600 mb-1 font-medium">
                             {t('input.custom_instructions')} <span className="text-violet-600 font-normal">{t('common.optional')}</span>
                         </label>
                         <textarea
@@ -34995,7 +35399,7 @@ Return ONLY JSON:
                             className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-200 outline-none resize-none h-16"
                         />
                     </div>
-                    <p className="text-xs text-slate-500 mb-2">{t('glossary.add_languages_label')}</p>
+                    <p className="text-xs text-slate-600 mb-2">{t('glossary.add_languages_label')}</p>
                     <div className="flex gap-2 mb-3" data-help-key="glossary_language_input">
                     <input
                         type="text"
@@ -35022,7 +35426,7 @@ Return ONLY JSON:
                         <button onClick={() => removeLanguage(lang)} className="hover:text-sky-900" aria-label={"Remove " + lang}><X size={12} /></button>
                         </span>
                     ))}
-                    {selectedLanguages.length === 0 && <span className="text-xs text-slate-500 italic">{t('glossary.no_languages')}</span>}
+                    {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
                     </div>
                     <div className="mt-3 pt-2 border-t border-slate-100">
                         <div className="mb-3" data-help-key="glossary_image_style">
@@ -35036,7 +35440,7 @@ Return ONLY JSON:
                                 placeholder={t('glossary.style_placeholder')}
                                 className="w-full text-xs p-2 border border-slate-200 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 outline-none"
                             />
-                            <p className="text-[10px] text-slate-500 mt-1">{t('glossary.image_style_hint')}</p>
+                            <p className="text-[10px] text-slate-600 mt-1">{t('glossary.image_style_hint')}</p>
                         </div>
                         <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none" data-help-key="glossary_auto_remove">
                             <input aria-label={t('common.toggle_auto_remove_words')}
@@ -35046,7 +35450,7 @@ Return ONLY JSON:
                                 className="rounded border-slate-300 text-indigo-600 focus:ring-sky-500 h-4 w-4"
                             />
                             <span className="flex items-center gap-1">
-                                <Ban size={12} className="text-red-400"/> {t('glossary.auto_remove')} <span className="text-[10px] text-slate-500 font-normal">{t('glossary.slower')}</span>
+                                <Ban size={12} className="text-red-400"/> {t('glossary.auto_remove')} <span className="text-[10px] text-slate-600 font-normal">{t('glossary.slower')}</span>
                             </span>
                         </label>
                     </div>
@@ -35075,14 +35479,14 @@ Return ONLY JSON:
                     <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
                         <BookOpen size={16}/> {isParentMode ? t('simplified.parent_mode_label') : t('sidebar.tool_simplified')}
                     </div>
-                    {expandedTools.includes('simplified') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                    {expandedTools.includes('simplified') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
               {expandedTools.includes('simplified') && (
               <div className="animate-in slide-in-from-top-2 duration-200">
                 <div id="tour-level-settings" data-help-key="tour-simplified-settings" className="p-3 border-b border-slate-100 space-y-3">
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('wizard.grade_level')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.grade_level')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_grade_level"
                                 value={gradeLevel}
@@ -35107,7 +35511,7 @@ Return ONLY JSON:
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('simplified.diff_label')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('simplified.diff_label')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_differentiation"
                                 value={differentiationRange}
@@ -35121,7 +35525,7 @@ Return ONLY JSON:
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('wizard.output_format')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_format')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_format"
                                 value={textFormat}
@@ -35139,7 +35543,7 @@ Return ONLY JSON:
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('input.length')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('input.length')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_length"
                                 value={leveledTextLength}
@@ -35155,7 +35559,7 @@ Return ONLY JSON:
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('wizard.output_language')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_language')}</label>
                             <select aria-label={t('common.selection')}
                                 data-help-key="simplified_language"
                                 value={leveledTextLanguage}
@@ -35168,7 +35572,7 @@ Return ONLY JSON:
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium flex items-center gap-1">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
                                 {t('quiz.dok_target')}
                                 <InfoTooltip text="Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." />
                             </label>
@@ -35195,13 +35599,13 @@ Return ONLY JSON:
                                 <div className="flex bg-white rounded-md border border-slate-200 p-0.5 shadow-sm">
                                     <button
                                         onClick={handleSetStandardModeToAi}
-                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:text-slate-600'}`}
+                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         AI Match
                                     </button>
                                     <button
                                         onClick={handleSetStandardModeToManual}
-                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:text-slate-600'}`}
+                                        className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         Manual
                                     </button>
@@ -35256,7 +35660,7 @@ Return ONLY JSON:
                                         </div>
                                     )}
                                     {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
-                                        <div className="text-[10px] text-slate-500 italic text-center p-1">
+                                        <div className="text-[10px] text-slate-600 italic text-center p-1">
                                             {t('standards.press_search_hint')}
                                         </div>
                                     )}
@@ -35300,7 +35704,7 @@ Return ONLY JSON:
                             </div>
                         )}
                         <div data-help-key="simplified_interests">
-                            <label className="block text-xs text-slate-500 mb-1 font-medium flex items-center gap-1 mt-2">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2">
                                 <Heart size={12} className="text-indigo-500"/> {t('input.interests_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                             </label>
                             <div className="flex gap-2 mb-2">
@@ -35327,11 +35731,11 @@ Return ONLY JSON:
                                         <button onClick={() => removeInterest(interest)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
                                     </span>
                                 ))}
-                                {studentInterests.length === 0 && <span className="text-xs text-slate-500 italic">{t('input.no_interests')}</span>}
+                                {studentInterests.length === 0 && <span className="text-xs text-slate-600 italic">{t('input.no_interests')}</span>}
                             </div>
                         </div>
                         <div className="mt-3" data-help-key="simplified_custom_instructions">
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">
                             {t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                             </label>
                             <textarea
@@ -35406,11 +35810,11 @@ Return ONLY JSON:
                         <span className="text-sm font-bold text-slate-700 block">Word Sounds</span>
                       </div>
                   </div>
-                  {expandedTools.includes('ui-tool-wordsounds') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('ui-tool-wordsounds') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                  {expandedTools.includes('ui-tool-wordsounds') && (
                     <div className="p-4 bg-white animate-in slide-in-from-top-2" data-help-key="tour-wordsounds-panel">
-                        <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                        <p className="text-xs text-slate-600 mb-3 leading-relaxed">
                             Generate phonics activities from any word list. Includes automatic segmentation, rhyming, and image generation.
                         </p>
                         <button
@@ -35433,13 +35837,13 @@ Return ONLY JSON:
                 className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors"
               >
                 <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Layout size={16}/> {t('sidebar.tool_outline')}</div>
-                {expandedTools.includes('outline') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                {expandedTools.includes('outline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
                 {expandedTools.includes('outline') && (
               <div className="animate-in slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100 bg-orange-50/50 flex flex-col gap-3">
                     <div>
-                        <label className="block text-xs text-slate-500 mb-1 font-medium">{t('outline.structure_label')}</label>
+                        <label className="block text-xs text-slate-600 mb-1 font-medium">{t('outline.structure_label')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="outline_structure"
                             value={outlineType}
@@ -35489,7 +35893,7 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ImageIcon size={16}/> {t('sidebar.tool_visual')}</div>
-                  {expandedTools.includes('image') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('image') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('image') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
@@ -35514,7 +35918,7 @@ Return ONLY JSON:
                                     onChange={(e) => setUseLowQualityVisuals(e.target.checked)}
                                     className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4"
                                 />
-                                <MonitorPlay size={12} className="text-slate-500" /> {t('visuals.low_quality_label')}
+                                <MonitorPlay size={12} className="text-slate-600" /> {t('visuals.low_quality_label')}
                                 <span className="text-[11px] text-slate-500 ml-1">{t('visuals.low_quality_hint')}</span>
                             </label>
                         </div>
@@ -35578,13 +35982,13 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-cyan-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileQuestion size={16}/> {t('sidebar.tool_faq')}</div>
-                  {expandedTools.includes('faq') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('faq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('faq') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-cyan-50/50 flex flex-col gap-3" data-help-key="tour-faq-settings">
                         <div>
-                        <label className="block text-xs text-slate-500 mb-1 font-medium">{t('faq.count')}</label>
+                        <label className="block text-xs text-slate-600 mb-1 font-medium">{t('faq.count')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="faq_count"
                             value={faqCount}
@@ -35639,13 +36043,13 @@ Return ONLY JSON:
                       {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">StoryForge</span>
                     </span>
                   </div>
-                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('sentence-frames') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-rose-50/50 flex flex-col gap-3" data-help-key="tour-scaffolds-settings">
                         <div>
-                        <label className="block text-xs text-slate-500 mb-1 font-medium">{t('scaffolds.type')}</label>
+                        <label className="block text-xs text-slate-600 mb-1 font-medium">{t('scaffolds.type')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="scaffolds_type"
                             value={frameType}
@@ -35690,7 +36094,7 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-yellow-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_brainstorm')}</div>
-                  {expandedTools.includes('brainstorm') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('brainstorm') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('brainstorm') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
@@ -35719,7 +36123,7 @@ Return ONLY JSON:
                     <div className="px-3 pb-3">
                         <div className="flex items-center gap-2 my-2">
                             <div className="h-px bg-slate-200 flex-grow"></div>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('brainstorm.divider_or')}</span>
+                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">{t('brainstorm.divider_or')}</span>
                             <div className="h-px bg-slate-200 flex-grow"></div>
                         </div>
                         <div className="bg-violet-50 p-3 rounded-lg border border-violet-100 mb-3 space-y-3">
@@ -35762,7 +36166,7 @@ Return ONLY JSON:
                                     onChange={(e) => setBridgeStepCount(parseInt(e.target.value))}
                                     className="w-full h-1.5 bg-violet-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
                                 />
-                                <p className="text-[11px] text-slate-500 mt-1">
+                                <p className="text-[11px] text-slate-600 mt-1">
                                     {t('bridge.step_desc')}
                                 </p>
                              </div>
@@ -35791,7 +36195,7 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><History size={16}/> {t('persona.title')}</div>
-                  {expandedTools.includes('persona') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('persona') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('persona') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
@@ -35867,7 +36271,7 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ListOrdered size={16}/> {t('timeline.title')}</div>
-                  {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('timeline') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
@@ -35922,13 +36326,13 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Filter size={16}/> {t('concept_sort.title')}</div>
-                  {expandedTools.includes('concept-sort') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('concept-sort') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('concept-sort') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-amber-50 flex flex-col gap-3">
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="text-amber-600 font-normal">{t('common.optional')}</span></label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="text-amber-600 font-normal">{t('common.optional')}</span></label>
                             <div className="flex gap-2 mb-2">
                                 <input aria-label={t('common.enter_concept_input')}
                                     data-help-key="concept_sort_categories"
@@ -35954,11 +36358,11 @@ Return ONLY JSON:
                                         <button onClick={() => removeConcept(c)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
                                     </span>
                                 ))}
-                                {selectedConcepts.length === 0 && <span className="text-xs text-slate-500 italic">{t('concept_sort.auto_detect')}</span>}
+                                {selectedConcepts.length === 0 && <span className="text-xs text-slate-600 italic">{t('concept_sort.auto_detect')}</span>}
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1 font-medium">{t('concept_sort.items')}</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('concept_sort.items')}</label>
                             <input aria-label={t('common.text_field')}
                                 data-help-key="concept_sort_items"
                                 type="number"
@@ -35994,7 +36398,7 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
-                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('dbq') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
@@ -36002,7 +36406,7 @@ Return ONLY JSON:
                         <p className="text-xs text-slate-600">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
                         {/* DBQ Mode Selector */}
                         <div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Analysis Mode</div>
+                            <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Analysis Mode</div>
                             <div className="flex gap-1">
                                 {[['standard', '📄 Standard DBQ', 'Extract documents from your source text'],
                                   ['perspectives', '⚔️ Competing Perspectives', 'AI finds 2+ viewpoints that agree and disagree'],
@@ -36011,7 +36415,7 @@ Return ONLY JSON:
                                   ['custom', '✏️ Teacher Docs', 'Paste your own document text directly']
                                 ].map(([mode, label, desc]) => (
                                     <button key={mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
-                                        className={`flex-1 text-left p-2 rounded-lg text-[10px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-500 hover:bg-rose-50'}`}>
+                                        className={`flex-1 text-left p-2 rounded-lg text-[10px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
                                         <div>{label}</div>
                                         <div className="font-normal mt-0.5 opacity-70">{desc}</div>
                                     </button>
@@ -36021,7 +36425,7 @@ Return ONLY JSON:
                         {/* Optional: Focus topic for search/perspectives/links modes */}
                         {(window._dbqMode === 'search' || window._dbqMode === 'perspectives' || window._dbqMode === 'links') && (
                             <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                                <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
                                     {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : window._dbqMode === 'links' ? 'Topic Context (helps AI understand the links)' : 'Perspectives to Compare (optional)'}
                                 </label>
                                 <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === 'links' ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"'}
@@ -36033,13 +36437,13 @@ Return ONLY JSON:
                         {/* Teacher Links mode — paste URLs */}
                         {window._dbqMode === 'links' && (
                             <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Document URLs (one per line)</label>
+                                <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Document URLs (one per line)</label>
                                 <textarea
                                     id="dbq-teacher-links"
                                     placeholder={"https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/..."}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none h-20 font-mono"
                                     aria-label="Document URLs for DBQ" />
-                                <p className="text-[9px] text-slate-400 mt-1">Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.</p>
+                                <p className="text-[9px] text-slate-600 mt-1">Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.</p>
                             </div>
                         )}
                         {/* Teacher Documents mode — paste your own documents */}
@@ -36053,7 +36457,7 @@ Return ONLY JSON:
                                 {/* Import tools — URL fetch + image upload */}
                                 <div className="flex gap-2 flex-wrap items-end">
                                     <div className="flex-1 min-w-[200px]">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Import from URL</label>
+                                        <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Import from URL</label>
                                         <div className="flex gap-1">
                                             <input type="text" id="dbq-import-url"
                                                 className="flex-1 text-xs border border-indigo-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
@@ -36079,7 +36483,7 @@ Return ONLY JSON:
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Upload Document Image</label>
+                                        <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Upload Document Image</label>
                                         <div className="flex gap-1">
                                             <input type="file" id="dbq-import-image" accept="image/*,.pdf" className="hidden"
                                                 onChange={async (e) => {
@@ -36155,7 +36559,7 @@ Return ONLY JSON:
                             </div>
                         )}
                         <div className="bg-white rounded-lg p-2 border border-rose-100">
-                            <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
+                            <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
                             <div className="flex flex-wrap gap-1">
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📄 Document Excerpts</span>
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔍 HAPP Sourcing</span>
@@ -36199,17 +36603,17 @@ Return ONLY JSON:
                       🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                    </span>
 
-                  {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                 {expandedTools.includes('math') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-blue-50/50 flex flex-col gap-3">
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('math.subject')}</label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('math.subject')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <BookOpen size={12} className="text-slate-500" />
+                                        <BookOpen size={12} className="text-slate-600" />
                                     </div>
                                     <select aria-label={t('common.selection')}
                                         data-help-key="math_subject"
@@ -36231,10 +36635,10 @@ Return ONLY JSON:
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('math.mode')}</label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('math.mode')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <Settings2 size={12} className="text-slate-500" />
+                                        <Settings2 size={12} className="text-slate-600" />
                                     </div>
                                     <select aria-label={t('common.selection')}
                                         data-help-key="math_mode"
@@ -36360,7 +36764,7 @@ Return ONLY JSON:
                                 <div className="grid grid-cols-3 gap-2">
                                     {['l','w','h'].map(dim => (
                                         <div key={dim}>
-                                            <label className="block text-xs text-slate-500 mb-1 font-bold uppercase">{dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'}</label>
+                                            <label className="block text-xs text-slate-600 mb-1 font-bold uppercase">{dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'}</label>
                                             <input type="range" min="1" max="10" value={cubeDims[dim]}
                                                 onChange={(e) => { setCubeDims(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); }}
                                                 className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
@@ -36405,21 +36809,21 @@ Return ONLY JSON:
                                             <div className="text-lg font-bold text-emerald-800">
                                                 V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = <span className="text-2xl text-emerald-600">{volume}</span>
                                             </div>
-                                            <div className="text-xs text-slate-500">{volume} unit cube{volume !== 1 ? 's' : ''}</div>
+                                            <div className="text-xs text-slate-600">{volume} unit cube{volume !== 1 ? 's' : ''}</div>
                                         </div>
                                         <div className="text-center">
                                             <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}</div>
                                             <div className="text-lg font-bold text-teal-800">
                                                 SA = <span className="text-2xl text-teal-600">{surfaceArea}</span>
                                             </div>
-                                            <div className="text-xs text-slate-500">2({cubeDims.l}×{cubeDims.w} + {cubeDims.l}×{cubeDims.h} + {cubeDims.w}×{cubeDims.h})</div>
+                                            <div className="text-xs text-slate-600">2({cubeDims.l}×{cubeDims.w} + {cubeDims.l}×{cubeDims.h} + {cubeDims.w}×{cubeDims.h})</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-xs font-bold text-emerald-700">Difficulty:</span>
                                     <div className="flex gap-0.5">
-                                        {['easy','medium','hard'].map(d => <button key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')}>{d}</button>)}
+                                        {['easy','medium','hard'].map(d => <button key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{d}</button>)}
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
@@ -36464,10 +36868,10 @@ Return ONLY JSON:
                         })()}
                         {(mathMode === 'Problem Set Generator' || mathMode === 'Word Problems from Source' || mathMode === 'Freeform Builder') && (
                             <div>
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('math.quantity')}</label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('math.quantity')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <ListOrdered size={12} className="text-slate-500" />
+                                        <ListOrdered size={12} className="text-slate-600" />
                                     </div>
                                     <input aria-label={t('common.text_field')}
                                         data-help-key="math_quantity"
@@ -36492,7 +36896,7 @@ Return ONLY JSON:
                             </label>
                             <div className="relative">
                                 <div className="absolute top-2.5 left-2 pointer-events-none">
-                                    <Calculator size={14} className="text-slate-500" />
+                                    <Calculator size={14} className="text-slate-600" />
                                 </div>
                                 <textarea
                                     aria-label={t('math.labels.problem_question') || 'Math problem input'}
@@ -36563,7 +36967,7 @@ Return ONLY JSON:
                         <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_adventure')}</span>
                     </div>
                 </div>
-                {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
               {expandedTools.includes('adventure') && (
               <div className="animate-in slide-in-from-top-2 duration-200">
@@ -36582,7 +36986,7 @@ Return ONLY JSON:
                         <div className="bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in zoom-in">
                             <Lock size={32} className="mx-auto mb-2 text-yellow-400"/>
                             <h4 className="font-bold text-lg mb-1">{t('adventure.locked_title')}</h4>
-                            <p className="text-sm text-slate-500 mb-3">
+                            <p className="text-sm text-slate-600 mb-3">
                                 {t('adventure.locked_desc_prefix')} <span className="font-bold text-yellow-400">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.locked_desc_suffix')}
                             </p>
                             <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600">
@@ -36597,7 +37001,7 @@ Return ONLY JSON:
                     ) : (
                         <>
                             <div data-help-key="adventure_input_mode">
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('adventure.interaction_mode')}</label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('adventure.interaction_mode')}</label>
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_input_mode" value={adventureInputMode}
                                     onChange={(e) => setAdventureInputMode(e.target.value)}
@@ -36607,14 +37011,14 @@ Return ONLY JSON:
                                     <option value="debate">{t('adventure.mode_debate')}</option>
                                     <option value="system">{t('adventure.mode_system')}</option>
                                 </select>
-                                <p className="text-[10px] text-slate-500 mt-1">
+                                <p className="text-[10px] text-slate-600 mt-1">
                                     {adventureInputMode === 'choice' ? t('adventure.mode_choice_desc') :
                                     adventureInputMode === 'debate' ? t('adventure.mode_debate_desc') :
                                     t('adventure.mode_system_desc')}
                                 </p>
                             </div>
                             <div data-help-key="adventure_difficulty">
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('adventure.difficulty_label')}</label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('adventure.difficulty_label')}</label>
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
                                     onChange={(e) => setAdventureDifficulty(e.target.value)}
@@ -36625,7 +37029,7 @@ Return ONLY JSON:
                                     <option value="Hard">{t('adventure.diff_hard_option')}</option>
                                     <option value="Hardcore">{t('adventure.diff_hardcore_option')}</option>
                                 </select>
-                                <p className="text-[10px] text-slate-500 mt-1">
+                                <p className="text-[10px] text-slate-600 mt-1">
                                     {adventureDifficulty === 'Story' ? t('adventure.diff_story_desc') :
                                      adventureDifficulty === 'Hard' ? t('adventure.diff_hard_desc') :
                                      adventureDifficulty === 'Hardcore' ? t('adventure.diff_hardcore_desc') :
@@ -36633,7 +37037,7 @@ Return ONLY JSON:
                                 </p>
                             </div>
                             <div data-help-key="adventure_language">
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('adventure.language_label')}</label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('adventure.language_label')}</label>
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_language" value={adventureLanguageMode}
                                     onChange={(e) => setAdventureLanguageMode(e.target.value)}
@@ -36657,12 +37061,12 @@ Return ONLY JSON:
                                         </option>
                                     )}
                                 </select>
-                                <p className="text-[10px] text-slate-500 mt-1">
+                                <p className="text-[10px] text-slate-600 mt-1">
                                 {t('adventure.language_help')}
                                 </p>
                             </div>
                             <div data-help-key="adventure_custom_instructions">
-                                <label className="block text-xs text-slate-500 mb-1 font-medium">{t('input.custom_instructions')} <span className="text-purple-600 font-normal">{t('common.optional')}</span></label>
+                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('input.custom_instructions')} <span className="text-purple-600 font-normal">{t('common.optional')}</span></label>
                                 <textarea
                                     aria-label={t('input.custom_instructions') || 'Custom instructions for adventure'}
                                     value={adventureCustomInstructions}
@@ -36877,7 +37281,7 @@ Return ONLY JSON:
                             </div>
                             <details className="group/adv-settings">
                                 <summary className="flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-200 cursor-pointer select-none hover:bg-slate-100 transition-colors list-none">
-                                    <Settings size={14} className="text-slate-500"/>
+                                    <Settings size={14} className="text-slate-600"/>
                                     <span className="text-xs font-bold text-slate-600">⚙️ {t('adventure.advanced_settings') || 'Advanced Settings'}</span>
                                     <ChevronDown size={12} className="text-slate-500 ml-auto transition-transform group-open/adv-settings:rotate-180"/>
                                 </summary>
@@ -37009,7 +37413,7 @@ Return ONLY JSON:
                                     </label>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <label className="text-xs text-slate-500 font-medium">{t('adventure.climax.min_rounds_label')}</label>
+                                    <label className="text-xs text-slate-600 font-medium">{t('adventure.climax.min_rounds_label')}</label>
                                     <input aria-label={t('common.enter_adventure_state')}
                                         type="number"
                                         min="3"
@@ -37020,7 +37424,7 @@ Return ONLY JSON:
                                     />
                                 </div>
                                 <div className="bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2">
-                                    <div className="flex justify-between text-[10px] text-slate-500">
+                                    <div className="flex justify-between text-[10px] text-slate-600">
                                         <div className="flex flex-col items-center">
                                             <span>{t('adventure.climax.status_turns')}</span>
                                             <span className={`font-bold ${adventureState.turnCount >= (adventureState.climaxMinTurns || 20) ? 'text-green-600' : 'text-slate-500'}`}>
@@ -37092,14 +37496,14 @@ Return ONLY JSON:
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><CheckSquare size={16}/> {t('sidebar.tool_quiz')}</div>
-                  {expandedTools.includes('quiz') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                  {expandedTools.includes('quiz') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                  {expandedTools.includes('quiz') && (
                  <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-teal-50/50 space-y-3">
                         <div className="flex gap-4">
                          <div className="flex-1">
-                             <label className="block text-xs text-slate-500 mb-1 font-medium">{t('quiz.mcq_count')}</label>
+                             <label className="block text-xs text-slate-600 mb-1 font-medium">{t('quiz.mcq_count')}</label>
                              <input aria-label={t('common.text_field')}
                                  data-help-key="quiz_question_count"
                                  type="number"
@@ -37111,7 +37515,7 @@ Return ONLY JSON:
                              />
                          </div>
                          <div className="flex-1">
-                             <label className="block text-xs text-slate-500 mb-1 font-medium">{t('quiz.reflections')}</label>
+                             <label className="block text-xs text-slate-600 mb-1 font-medium">{t('quiz.reflections')}</label>
                              <input aria-label={t('common.text_field')}
                                  data-help-key="quiz_reflection_count"
                                  type="number"
@@ -37124,7 +37528,7 @@ Return ONLY JSON:
                          </div>
                          </div>
                          <div>
-                             <label className="block text-xs text-slate-500 mb-1 font-medium flex items-center gap-1">
+                             <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
                                  {t('quiz.dok_target')}
                                  <InfoTooltip text="Set cognitive complexity. Level 1 (Recall) -> Level 4 (Extended Thinking)." />
                              </label>
@@ -37184,13 +37588,13 @@ Return ONLY JSON:
                      <ClipboardList size={16} className="text-indigo-600"/>
                      {isIndependentMode ? t('common.study_guide') : (isParentMode ? t('lesson_plan.family_guide') : t('lesson_plan.title'))}
                    </div>
-                   {expandedTools.includes('lesson-plan') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                   {expandedTools.includes('lesson-plan') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                  </button>
                  {expandedTools.includes('lesson-plan') && (
                  <div className="animate-in slide-in-from-top-2 duration-200">
                      <div className="p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3">
                          <div>
-                             <label className="block text-xs font-bold text-slate-500 mb-1">
+                             <label className="block text-xs font-bold text-slate-600 mb-1">
                                  {t('lesson_plan.custom_additions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                              </label>
                              <textarea
@@ -37276,7 +37680,7 @@ Return ONLY JSON:
                             {isProcessing ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Sparkles size={18} className="text-yellow-600 fill-yellow-600" />}
                             {t('fullpack.button_label')}
                         </span>
-                        <span className="text-[10px] text-slate-500 block mt-0.5">{t('fullpack.helper_text')}</span>
+                        <span className="text-[10px] text-slate-600 block mt-0.5">{t('fullpack.helper_text')}</span>
                     </div>
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
@@ -37294,7 +37698,7 @@ Return ONLY JSON:
                             {isProcessing && activeView === 'alignment-report' ? <RefreshCw className="animate-spin text-teal-600" size={18} /> : <ShieldCheck size={18} className={standardsInput ? "text-emerald-500 fill-emerald-100" : "text-slate-500"} />}
                             {isIndependentMode ? "Skill Check" : t(isParentMode ? 'sidebar.tool_alignment_parent' : 'sidebar.tool_alignment')}
                         </span>
-                        <span className="text-[10px] text-slate-500 block mt-0.5">
+                        <span className="text-[10px] text-slate-600 block mt-0.5">
                             {!standardsInput ? "⚠️ Requires Target Standard above" : (isIndependentMode ? "Verify your mastery against standards." : (isParentMode ? "See how this matches school goals" : "Audits text & quiz for rigor/alignment"))}
                         </span>
                     </div>
@@ -37310,7 +37714,7 @@ Return ONLY JSON:
                             <button
                                 aria-label={t('common.minimize')}
                                 onClick={handleSetIsJoinPanelExpandedToFalse}
-                                className="absolute -top-2 -right-2 p-2 text-slate-500 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50"
+                                className="absolute -top-2 -right-2 p-2 text-slate-600 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50"
                                 title={t('common.minimize')}
                             >
                                 <Minimize size={16} />
@@ -37319,10 +37723,10 @@ Return ONLY JSON:
                                 <Wifi size={32} />
                             </div>
                             <h2 className="text-xl font-black text-slate-800 mb-2 tracking-tight">{t('session.join_panel_title')}</h2>
-                            <p className="text-slate-500 text-sm mb-6 font-medium">{t('session.join_instructions')}</p>
+                            <p className="text-slate-600 text-sm mb-6 font-medium">{t('session.join_instructions')}</p>
                             <div className="flex flex-col gap-3 max-w-xs mx-auto">
                                 <div className="text-left">
-                                     <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{t('session.host_id_optional')}</label>
+                                     <label className="block text-[10px] font-bold text-slate-600 mb-1 uppercase tracking-wider">{t('session.host_id_optional')}</label>
                                      <input aria-label={t('common.enter_join_app_id_input')}
                                         type="text"
                                         value={joinAppIdInput}
@@ -37338,7 +37742,7 @@ Return ONLY JSON:
                                     onKeyDown={(e) => e.key === 'Enter' && joinClassSession(joinCodeInput)}
                                     placeholder={t('session.code_placeholder')}
                                     maxLength={4}
-                                    className="w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 border-slate-200 rounded-2xl p-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 text-indigo-800 uppercase transition-all placeholder:text-slate-500"
+                                    className="w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 border-slate-200 rounded-2xl p-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 text-indigo-800 uppercase transition-all placeholder:text-slate-600"
                                 />
                                 <button
                                     aria-label={t('common.continue')}
@@ -37362,7 +37766,7 @@ Return ONLY JSON:
                                 </div>
                                 <div className="text-left">
                                     <h3 className="font-bold text-slate-700 text-sm">{t('session.join')}</h3>
-                                    <p className="text-[10px] text-slate-500">{t('session.sync_desc')}</p>
+                                    <p className="text-[10px] text-slate-600">{t('session.sync_desc')}</p>
                                 </div>
                             </div>
                             <div className="bg-indigo-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity shadow-sm">
@@ -37432,7 +37836,7 @@ Return ONLY JSON:
                      <div className="p-4">
                          {globalPoints < studentProjectSettings.adventureUnlockXP ? (
                              <div className="space-y-3">
-                                 <div className="flex items-center gap-3 text-slate-500 mb-2">
+                                 <div className="flex items-center gap-3 text-slate-600 mb-2">
                                      <div className="bg-slate-100 p-2 rounded-full"><Lock size={20}/></div>
                                      <div className="text-xs">
                                         <strong className="block text-slate-700">{t('adventure.locked_status')}</strong>
@@ -37445,7 +37849,7 @@ Return ONLY JSON:
                                          style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
                                      ></div>
                                  </div>
-                                 <div className="text-[10px] text-right text-slate-500 font-mono">
+                                 <div className="text-[10px] text-right text-slate-600 font-mono">
                                      {globalPoints} / {studentProjectSettings.adventureUnlockXP} XP
                                  </div>
                              </div>
@@ -37535,7 +37939,7 @@ Return ONLY JSON:
                         </>
                     ) : (
                         <div className="text-center py-2">
-                            <p className="text-xs text-slate-500 mb-1">{t('roster.strip_empty') || 'No class roster yet'}</p>
+                            <p className="text-xs text-slate-600 mb-1">{t('roster.strip_empty') || 'No class roster yet'}</p>
                             <button onClick={() => setIsRosterKeyOpen(true)} className="text-xs text-indigo-600 font-bold hover:underline">
                                 {t('roster.strip_create') || 'Create one'}
                             </button>
@@ -37897,7 +38301,7 @@ Return ONLY JSON:
                                         </button>
                                         {movingItemId === item.id && (
                                             <div className="absolute left-0 top-6 z-[100] bg-white shadow-xl border border-indigo-200 rounded-lg p-1 w-40 animate-in fade-in zoom-in-95 origin-top-left">
-                                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-2 py-1">{t('history.move_to_label')}</div>
+                                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2 py-1">{t('history.move_to_label')}</div>
                                                 <div className="flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar">
                                                     <button
                                                         onClick={() => handleMoveToUnit(item.id, 'uncategorized')}
@@ -37915,7 +38319,7 @@ Return ONLY JSON:
                                                         </button>
                                                     ))}
                                                     {units.length === 0 && (
-                                                        <div className="text-[10px] text-slate-500 px-2 py-1 italic">{t('history.no_units')}</div>
+                                                        <div className="text-[10px] text-slate-600 px-2 py-1 italic">{t('history.no_units')}</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -38083,14 +38487,14 @@ Return ONLY JSON:
                 activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
                 // Fallback: derive from generatedContent.type via getDefaultTitle so we never silently mislabel
-                generatedContent?.type ? <><FileText className="text-slate-500" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
+                generatedContent?.type ? <><FileText className="text-slate-600" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h3>
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-1 py-0.5 ml-2">
                         <button
                             onClick={handleToggleIsStickerMode}
-                            className={`p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ${isStickerMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-500 hover:bg-slate-100'}`}
+                            className={`p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ${isStickerMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100'}`}
                             title={t('toolbar.stickers_tooltip')}
                         >
                             <Smile size={14} /> {t('toolbar.stickers_label')}
@@ -38108,7 +38512,7 @@ Return ONLY JSON:
                                     </button>
                                 ))}
                                 <div className="w-px h-4 bg-slate-200 mx-1"></div>
-                                <button onClick={clearStickers} className="p-1 text-slate-500 hover:text-red-500 rounded-full" title={t('toolbar.clear_stickers')} aria-label={t('toolbar.clear_stickers')}>
+                                <button onClick={clearStickers} className="p-1 text-slate-600 hover:text-red-500 rounded-full" title={t('toolbar.clear_stickers')} aria-label={t('toolbar.clear_stickers')}>
                                     <Trash2 size={12}/>
                                 </button>
                             </div>
@@ -38127,7 +38531,7 @@ Return ONLY JSON:
             <div className="flex items-center gap-2">
                 <button
                     onClick={() => setIsOutputHeaderCollapsed(p => !p)}
-                    className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 transition-colors"
+                    className="p-1.5 rounded-md hover:bg-slate-200 text-slate-600 transition-colors"
                     title={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header to give content more space'}
                     aria-label={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header'}
                     aria-expanded={!isOutputHeaderCollapsed}
@@ -38137,7 +38541,7 @@ Return ONLY JSON:
                 {!isZenMode && (
                     <button
                         onClick={handleToggleIsFullscreen}
-                        className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 transition-colors"
+                        className="p-1.5 rounded-md hover:bg-slate-200 text-slate-600 transition-colors"
                         title={isFullscreen ? t('common.restore_view') : t('common.maximize_view')}
                         aria-label={isFullscreen ? t('common.restore_view') : t('common.maximize_view')}
                     >
@@ -38190,7 +38594,7 @@ Return ONLY JSON:
                              )}
                         </div>
                         {processingProgress.total > 0 && (
-                             <div className="flex justify-between w-full text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                             <div className="flex justify-between w-full text-[10px] font-bold text-slate-600 uppercase tracking-wider">
                                  <span>Step {processingProgress.current} of {processingProgress.total}</span>
                                  <span>{Math.round((processingProgress.current / processingProgress.total) * 100)}%</span>
                              </div>
@@ -38254,7 +38658,7 @@ Return ONLY JSON:
                 </div>
             ) : (!generatedContent && activeView === 'input') ? (
                 <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 p-8">
-                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Sparkles size={40} className="text-slate-500" /></div>
+                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Sparkles size={40} className="text-slate-600" /></div>
                 <p className="text-lg font-medium text-slate-600">{t('input.empty_title')}</p>
                 <p className="text-sm max-w-xs mt-2">{t('input.empty_desc')}</p>
               </div>
@@ -38271,7 +38675,7 @@ Return ONLY JSON:
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-                                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>
+                                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>
                                  {typeof generatedContent?.data.readingLevel === 'object' ? (
                                     <>
                                         <div className="text-2xl font-bold text-indigo-600 mb-2">{generatedContent?.data.readingLevel.range}</div>
@@ -38291,7 +38695,7 @@ Return ONLY JSON:
                                                 {generatedContent?.data.localStats.score}
                                             </span>
                                          </div>
-                                         <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-500 text-center">
+                                         <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-600 text-center">
                                              <div className="bg-slate-50 rounded p-1 border border-slate-100">
                                                  <span className="block font-bold text-slate-700 text-xs">{generatedContent?.data.localStats.words}</span> {t('analysis.readability.label_words')}
                                              </div>
@@ -38306,7 +38710,7 @@ Return ONLY JSON:
                                  )}
                              </div>
                              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-                                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4>
+                                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4>
                                  <div className="flex flex-wrap gap-2 content-start">
                                      {generatedContent?.data.concepts.map((concept, idx) => (
                                          <span key={idx} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100">{formatInlineText(concept, false)}</span>
@@ -38316,7 +38720,7 @@ Return ONLY JSON:
                           </div>
                           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
                                  <div className="flex items-center gap-3 mb-3">
-                                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('output.analysis_verification')}</h4>
+                                     <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_verification')}</h4>
                                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${generatedContent?.data.accuracy.rating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{generatedContent?.data.accuracy.rating}</span>
                                  </div>
                                  <p className="text-sm text-slate-600 leading-relaxed">{formatInlineText(generatedContent?.data.accuracy.reason, false)}</p>
@@ -38406,7 +38810,7 @@ Return ONLY JSON:
                                  })()}
                                  {generatedContent?.data.accuracy.citations && (
                                      <div className="mt-4 pt-4 border-t border-slate-100">
-                                         <div className="text-xs text-slate-500 leading-relaxed">
+                                         <div className="text-xs text-slate-600 leading-relaxed">
                                              {renderFormattedText(generatedContent?.data.accuracy.citations, false)}
                                          </div>
                                      </div>
@@ -38493,7 +38897,7 @@ Return only the corrected version of this exact text:`;
                               return (
                                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
                                       <div className="flex items-center gap-3 mb-3">
-                                          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>
+                                          <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>
                                           {hasGrammarErrors && (
                                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200">
                                                   {realGrammarErrors.length} {realGrammarErrors.length === 1 ? 'Issue' : 'Issues'}
@@ -38570,12 +38974,12 @@ Return only the corrected version of this exact text:`;
                           })()}
                           <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative group">
                              <div className="flex justify-between items-center mb-3">
-                                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('output.common_original')}</h4>
+                                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.common_original')}</h4>
                                 {isTeacherMode && (
                                 <button
                                     aria-label={t('common.toggle_edit_analysis')}
                                     onClick={handleToggleIsEditingAnalysis}
-                                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`}
+                                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`}
                                 >
                                     {isEditingAnalysis ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
                                     {isEditingAnalysis ? t('common.done') : t('common.edit')}
@@ -38670,7 +39074,7 @@ Return only the corrected version of this exact text:`;
                                     {renderFormattedText(generatedContent?.data.originalText, false)}
                                     {generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && (
                                         <div className="mt-8 pt-8 border-t border-slate-200 opacity-80">
-                                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                                                 <FileText size={14}/> {t('output.original_source_label')}
                                             </h4>
                                             {renderFormattedText(generatedContent?.data.rawEnglishText, false)}
@@ -38687,7 +39091,7 @@ Return only the corrected version of this exact text:`;
                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
                       <div className="text-4xl mb-3">🎵</div>
                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || 'Word Sounds Studio'}</h3>
-                      <p className="text-sm text-slate-500 mb-1">{generatedContent?.configSummary || 'Ready to practice'}</p>
+                      <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || 'Ready to practice'}</p>
                       {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{generatedContent.data.length} words loaded</p>}
                       <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
                         <button
@@ -38780,7 +39184,7 @@ Return only the corrected version of this exact text:`;
                             <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl">
                                 <div className="text-4xl mb-3">⚙️</div>
                                 <p className="text-lg font-bold text-slate-700">Loading Word Sounds...</p>
-                                <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
+                                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
                                 <button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">Close</button>
                             </div>
                         </div>
@@ -38951,7 +39355,7 @@ Return only the corrected version of this exact text:`;
                                 <button
                                     data-help-key="glossary_filter_all"
                                     onClick={handleSetGlossaryFilterToAll}
-                                    className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-all ${glossaryFilter === 'all' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}
+                                    className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-all ${glossaryFilter === 'all' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-600'}`}
                                 >
                                     {t('glossary.filter_all')}
                                 </button>
@@ -38959,7 +39363,7 @@ Return only the corrected version of this exact text:`;
                                     aria-label={t('common.close')}
                                     data-help-key="glossary_filter_tier2"
                                     onClick={handleSetGlossaryFilterToAcademic}
-                                    className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-all ${glossaryFilter === 'academic' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}
+                                    className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-all ${glossaryFilter === 'academic' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-600'}`}
                                 >
                                     {t('glossary.filter_tier2')}
                                 </button>
@@ -38967,7 +39371,7 @@ Return only the corrected version of this exact text:`;
                                     aria-label={t('common.close')}
                                     data-help-key="glossary_filter_tier3"
                                     onClick={handleSetGlossaryFilterToDomain}
-                                    className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-all ${glossaryFilter === 'domain' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}
+                                    className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-all ${glossaryFilter === 'domain' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-600'}`}
                                 >
                                     {t('glossary.filter_tier3')}
                                 </button>
@@ -39219,7 +39623,7 @@ Return only the corrected version of this exact text:`;
                                                     </p>
                                                 </>
                                             )}
-                                            <div className="absolute bottom-6 text-slate-500 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse">
+                                            <div className="absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse">
                                                 {t('flashcards.flip_hint')} <RefreshCw size={10}/>
                                             </div>
                                         </div>
@@ -39505,7 +39909,7 @@ Return only the corrected version of this exact text:`;
                                 <div className="w-full bg-slate-100 rounded-full h-2 mb-4">
                                     <div className="bg-emerald-500 h-2 rounded-full transition-all duration-500" style={{ width: `${Math.round((screenerSession.currentIndex / screenerSession.subtests.length) * 100)}%` }}></div>
                                 </div>
-                                <p className="text-xs text-slate-500">{screenerSession.currentIndex} of {screenerSession.subtests.length} subtests complete</p>
+                                <p className="text-xs text-slate-600">{screenerSession.currentIndex} of {screenerSession.subtests.length} subtests complete</p>
                             </div>
                         </div>
                     )}
@@ -39517,16 +39921,16 @@ Return only the corrected version of this exact text:`;
                                         <Award size={32} />
                                     </div>
                                     <h3 className="text-2xl font-black text-slate-800">{t('common.screening_complete')}</h3>
-                                    <p className="text-slate-500 text-sm mt-1">{screenerSession.student} &mdash; Grade {screenerSession.grade} &mdash; Form {screenerSession.form}</p>
+                                    <p className="text-slate-600 text-sm mt-1">{screenerSession.student} &mdash; Grade {screenerSession.grade} &mdash; Form {screenerSession.form}</p>
                                 </div>
                                 <div className="space-y-3 mb-6">
                                     {screenerSession.results.map((r, idx) => (
                                         <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
                                             <span className="font-bold text-slate-700 capitalize">{r.activity}</span>
                                             <div className="flex items-center gap-3">
-                                                <span className="text-sm text-slate-500">{r.correct}/{r.total}</span>
+                                                <span className="text-sm text-slate-600">{r.correct}/{r.total}</span>
                                                 <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${r.accuracy >= 80 ? 'bg-emerald-100 text-emerald-700' : r.accuracy >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{r.accuracy}%</span>
-                                                {r.itemsPerMin > 0 && <span className="text-xs text-slate-500">{r.itemsPerMin} items/min</span>}
+                                                {r.itemsPerMin > 0 && <span className="text-xs text-slate-600">{r.itemsPerMin} items/min</span>}
                                             </div>
                                         </div>
                                     ))}
@@ -39538,7 +39942,7 @@ Return only the corrected version of this exact text:`;
                                 <p className="text-3xl mb-1">{risk.emoji}</p>
                                 <p className="text-sm font-bold" style={{ color: risk.color }}>{risk.label}</p>
                                 <p className={`text-4xl font-black ${risk.tier === 1 ? 'text-emerald-600' : risk.tier === 2 ? 'text-amber-600' : 'text-red-600'}`}>{risk.avgAccuracy}%</p>
-                                <p className="text-xs text-slate-500 mt-1">{t('glossary_health.composite_accuracy')}</p>
+                                <p className="text-xs text-slate-600 mt-1">{t('glossary_health.composite_accuracy')}</p>
                                 {risk.reasons.length > 0 && (
                                     <div className="mt-3 space-y-1">
                                         {risk.reasons.map((r, ri) => (<p key={ri} className="text-xs" style={{ color: risk.color }}>{r}</p>))}
@@ -39590,11 +39994,11 @@ Return only the corrected version of this exact text:`;
                                         </button>
                                     )}
                                     {isTeacherMode && <button onClick={handlePrintGame} className="text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-bold hover:bg-teal-200 transition-colors"><Printer size={14}/> {t('glossary.print_puzzle')}</button>}
-                                    <button onClick={handleSetGameModeToNull} className="text-slate-500 hover:text-slate-600 p-1" aria-label={t('common.close')}><X size={18}/></button>
+                                    <button onClick={handleSetGameModeToNull} className="text-slate-600 hover:text-slate-600 p-1" aria-label={t('common.close')}><X size={18}/></button>
                                 </div>
                             </div>
                             <div id="printable-game-area" className="flex flex-col items-center">
-                                <div className="no-print text-xs text-slate-500 mb-2 italic">{t('glossary.word_search_instructions')}</div>
+                                <div className="no-print text-xs text-slate-600 mb-2 italic">{t('glossary.word_search_instructions')}</div>
                                 <h2 className="hidden print-only font-bold text-xl mb-4">{t('glossary.word_search_title')}</h2>
                                 <div className="inline-block border-2 border-slate-800 p-1 bg-white">
                                     {gameData.grid.map((row, r) => (
@@ -39620,7 +40024,7 @@ Return only the corrected version of this exact text:`;
                                     ))}
                                 </div>
                                 <div className="mt-6 w-full max-w-md">
-                                    <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">{t('glossary.word_search_find')}</h4>
+                                    <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">{t('glossary.word_search_find')}</h4>
                                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 word-list">
                                         {gameData.words.map((word, i) => {
                                             const isFound = foundWords.has(word);
@@ -39655,7 +40059,7 @@ Return only the corrected version of this exact text:`;
                             value={glossaryImageStyle}
                             onChange={(e) => setGlossaryImageStyle(e.target.value)}
                             placeholder={t('glossary.style_placeholder')}
-                            className="w-1/3 text-sm border-r border-slate-200 pr-2 mr-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-500 rounded px-2"
+                            className="w-1/3 text-sm border-r border-slate-200 pr-2 mr-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded px-2"
                             disabled={isAddingTerm}
                         />
                         <input aria-label={t('common.enter_new_glossary_term')}
@@ -39664,7 +40068,7 @@ Return only the corrected version of this exact text:`;
                             onChange={(e) => setNewGlossaryTerm(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddGlossaryTerm()}
                             placeholder={t('glossary.add_term_placeholder')}
-                            className="flex-grow text-sm border-none outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-500 rounded px-2"
+                            className="flex-grow text-sm border-none outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded px-2"
                             disabled={isAddingTerm}
                         />
                         <button aria-label={t('common.add_glossary_term')}
@@ -39751,13 +40155,13 @@ Return only the corrected version of this exact text:`;
                                 {Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && (
                                     <div className="mt-1.5 space-y-0.5">
                                         {glossaryHealthCheck.tierAudit.notes.map((note, i) => (
-                                            <p key={i} className="text-xs text-slate-500 italic">💡 {typeof note === 'string' ? note : JSON.stringify(note)}</p>
+                                            <p key={i} className="text-xs text-slate-600 italic">💡 {typeof note === 'string' ? note : JSON.stringify(note)}</p>
                                         ))}
                                     </div>
                                 )}
                                 {typeof glossaryHealthCheck.tierAudit.notes === 'string' && glossaryHealthCheck.tierAudit.notes.length > 0 && (
                                     <div className="mt-1.5">
-                                        <p className="text-xs text-slate-500 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p>
+                                        <p className="text-xs text-slate-600 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p>
                                     </div>
                                 )}
                             </div>
@@ -39769,7 +40173,7 @@ Return only the corrected version of this exact text:`;
                                     {glossaryHealthCheck.coverageGaps.map((gap, i) => (
                                         <div key={i} className="flex items-center gap-2 bg-white/60 rounded-md px-2.5 py-1.5 border border-amber-100">
                                             <span className="text-sm font-semibold text-slate-800">"{gap.term}"</span>
-                                            <span className="text-xs text-slate-500 flex-grow">{gap.reason}</span>
+                                            <span className="text-xs text-slate-600 flex-grow">{gap.reason}</span>
                                             {isTeacherMode && (
                                             <button
                                                 onClick={async () => {
@@ -39810,10 +40214,10 @@ Return only the corrected version of this exact text:`;
                                         <div key={i} className="bg-white/60 rounded-md px-2.5 py-1.5 border border-amber-100">
                                             <div className="flex items-center gap-1.5">
                                                 <span className="text-sm font-bold text-indigo-700">🔗 {cc.concept}</span>
-                                                <span className="text-xs text-slate-500">→</span>
+                                                <span className="text-xs text-slate-600">→</span>
                                                 <span className="text-xs text-slate-600">{(cc.connectedTerms || []).join(', ')}</span>
                                             </div>
-                                            {cc.note && <p className="text-[11px] text-slate-500 mt-0.5">{cc.note}</p>}
+                                            {cc.note && <p className="text-[11px] text-slate-600 mt-0.5">{cc.note}</p>}
                                         </div>
                                     ))}
                                 </div>
@@ -39991,7 +40395,7 @@ Return only the corrected version of this exact text:`;
                                                                         {isGeneratingTermImage[idx] ? <RefreshCw size={10} className="animate-spin"/> : <Send size={10}/>}
                                                                     </button>
                                                                 </div>
-                                                                <span className="text-[11px] text-slate-500 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>
+                                                                <span className="text-[11px] text-slate-600 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -40009,8 +40413,8 @@ Return only the corrected version of this exact text:`;
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-1 opacity-50 group-hover/row:opacity-100 transition-opacity mt-1">
-                                                <button onClick={() => handleSpeak(item.term, `term-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `term-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `term-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`} data-help-key="glossary_speak_term">{playingContentId === `term-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `term-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
-                                                <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled={downloadingContentId === `dl-term-${idx}`} className="text-slate-500 hover:text-indigo-600 p-1 rounded-full transition-colors" data-help-key="glossary_download_audio">{downloadingContentId === `dl-term-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
+                                                <button onClick={() => handleSpeak(item.term, `term-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `term-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `term-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`} data-help-key="glossary_speak_term">{playingContentId === `term-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `term-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
+                                                <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled={downloadingContentId === `dl-term-${idx}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors" data-help-key="glossary_download_audio">{downloadingContentId === `dl-term-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                             </div>
                                         </div>
                                     </td>
@@ -40035,8 +40439,8 @@ Return only the corrected version of this exact text:`;
                                                 </div>
                                             )}
                                             <div className="flex items-center gap-1 opacity-50 group-hover/row:opacity-100 transition-opacity">
-                                                <button onClick={() => handleSpeak(item.def, `def-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `def-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
-                                                <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="text-slate-500 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
+                                                <button onClick={() => handleSpeak(item.def, `def-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `def-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
+                                                <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                             </div>
                                         </div>
                                     </td>
@@ -40064,8 +40468,8 @@ Return only the corrected version of this exact text:`;
                                                         className="flex items-center gap-1 opacity-50 group-hover/row:opacity-100 transition-opacity justify-center"
                                                         dir="ltr"
                                                     >
-                                                        <button onClick={() => handleSpeak(item.translations[lang], `trans-${idx}-${lang}`)} disabled={isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `trans-${idx}-${lang}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
-                                                        <button onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`)} disabled={downloadingContentId === `dl-trans-${idx}-${lang}`} className="text-slate-500 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-trans-${idx}-${lang}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
+                                                        <button onClick={() => handleSpeak(item.translations[lang], `trans-${idx}-${lang}`)} disabled={isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `trans-${idx}-${lang}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
+                                                        <button onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`)} disabled={downloadingContentId === `dl-trans-${idx}-${lang}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-trans-${idx}-${lang}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                                     </div>
                                                 )}
                                             </div>
@@ -40074,7 +40478,7 @@ Return only the corrected version of this exact text:`;
                                     </tr>
                                 );
                             })}
-                            {generatedContent?.data.length === 0 && <tr><td colSpan={3 + selectedLanguages.length} className="p-8 text-center text-slate-500 italic">{t('glossary.no_terms')}</td></tr>}
+                            {generatedContent?.data.length === 0 && <tr><td colSpan={3 + selectedLanguages.length} className="p-8 text-center text-slate-600 italic">{t('glossary.no_terms')}</td></tr>}
                             </tbody>
                         </table>
                       </div>
@@ -40261,7 +40665,7 @@ Return only the corrected version of this exact text:`;
                             <div className="flex flex-wrap justify-center sm:justify-start bg-white rounded-2xl sm:rounded-full p-1 border border-indigo-200 shadow-sm sm:flex-nowrap gap-y-1">
                                 <button
                                     onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_read')}
                                     aria-label={t('simplified.read_mode')}
                                     data-help-key="simplified_read_mode"
@@ -40270,7 +40674,7 @@ Return only the corrected version of this exact text:`;
                                 </button>
                                 <button
                                     onClick={() => { setIsFluencyMode(true); stopPlayback(); setInteractionMode('read'); setIsCompareMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isFluencyMode ? 'bg-rose-100 text-rose-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isFluencyMode ? 'bg-rose-100 text-rose-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_read_along')}
                                     aria-label={t('simplified.read_along')}
                                     data-help-key="simplified_read_along"
@@ -40279,7 +40683,7 @@ Return only the corrected version of this exact text:`;
                                 </button>
                                 <button
                                     onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_define')}
                                     aria-label={t('simplified.define_mode')}
                                     data-help-key="simplified_define_mode"
@@ -40288,7 +40692,7 @@ Return only the corrected version of this exact text:`;
                                 </button>
                                 <button
                                     onClick={() => { setInteractionMode('phonics'); stopPlayback(); setPhonicsData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'phonics' && !isCompareMode ? 'bg-emerald-100 text-emerald-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'phonics' && !isCompareMode ? 'bg-emerald-100 text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_phonics')}
                                     aria-label={t('simplified.phonics_mode')}
                                     data-help-key="simplified_phonics_mode"
@@ -40298,7 +40702,7 @@ Return only the corrected version of this exact text:`;
                                 {isTeacherMode && (
                                 <button
                                     onClick={() => { setInteractionMode('add-glossary'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'add-glossary' && !isCompareMode ? 'bg-green-100 text-green-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'add-glossary' && !isCompareMode ? 'bg-green-100 text-green-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_add_term')}
                                     aria-label={t('simplified.add_term')}
                                     data-help-key="simplified_add_term"
@@ -40308,7 +40712,7 @@ Return only the corrected version of this exact text:`;
                                 )}
                                 <button
                                     onClick={() => { setInteractionMode('explain'); stopPlayback(); setIsCompareMode(false); setIsFluencyMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_explain')}
                                     aria-label={t('simplified.explain_mode')}
                                     data-help-key="simplified_explain_mode"
@@ -40317,7 +40721,7 @@ Return only the corrected version of this exact text:`;
                                 </button>
                                 <button
                                     onClick={() => { setInteractionMode('cloze'); stopPlayback(); setIsCompareMode(false); setIsFluencyMode(false); }}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'cloze' && !isCompareMode ? 'bg-blue-100 text-blue-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'cloze' && !isCompareMode ? 'bg-blue-100 text-blue-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                     title={t('simplified.tip_cloze')}
                                     aria-label={t('simplified.cloze_mode')}
                                     data-help-key="simplified_cloze_mode"
@@ -40337,7 +40741,7 @@ Return only the corrected version of this exact text:`;
                                     <>
                                         <button
                                             onClick={() => { setInteractionMode('revise'); stopPlayback(); setIsCompareMode(false); }}
-                                            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'revise' && !isCompareMode ? 'bg-purple-100 text-purple-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'revise' && !isCompareMode ? 'bg-purple-100 text-purple-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                             title={t('simplified.tip_revise')}
                                             aria-label={t('simplified.revise_mode')}
                                             data-help-key="simplified_revise_mode"
@@ -40347,7 +40751,7 @@ Return only the corrected version of this exact text:`;
                                         <button
                                             data-help-key="simplified_compare_mode"
                                             onClick={() => { setIsCompareMode(!isCompareMode); stopPlayback(); }}
-                                            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isCompareMode ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isCompareMode ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
                                             title={t('simplified.tip_compare')}
                                             aria-label={t('simplified.compare_mode')}
                                         >
@@ -40474,7 +40878,7 @@ Return only the corrected version of this exact text:`;
                           >
                               <div className="flex justify-between items-start mb-2">
                                   <h5 className="font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5>
-                                  <button onClick={closeDefinition} className="text-slate-500 hover:text-slate-600" aria-label={t('common.close')}><X size={14}/></button>
+                                  <button onClick={closeDefinition} className="text-slate-600 hover:text-slate-600" aria-label={t('common.close')}><X size={14}/></button>
                               </div>
                               {definitionData.text ? (
                                   <div className="text-sm text-slate-700 leading-relaxed">
@@ -40499,7 +40903,7 @@ Return only the corrected version of this exact text:`;
                           >
                               <div className="flex justify-between items-start mb-3">
                                   <h5 className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5>
-                                  <button onClick={closePhonics} className="text-slate-500 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14}/></button>
+                                  <button onClick={closePhonics} className="text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14}/></button>
                               </div>
                               {phonicsData.isLoading ? (
                                   <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600">
@@ -40530,11 +40934,11 @@ Return only the corrected version of this exact text:`;
                                       </div>
                                       <div className="grid grid-cols-2 gap-2">
                                           <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div>
+                                              <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div>
                                               <div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div>
                                           </div>
                                           <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div>
+                                              <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div>
                                               <div className="flex flex-wrap gap-1">
                                                   {phonicsData.data.syllables.map((syl, i) => (
                                                       <span key={i} className="bg-white px-1.5 rounded border border-slate-200 text-sm font-bold text-slate-700 shadow-sm">{syl}</span>
@@ -40575,7 +40979,7 @@ Return only the corrected version of this exact text:`;
                                                 if(e.key === 'Escape') setIsCustomReviseOpen(false);
                                             }}
                                             placeholder={t('text_tools.menu_placeholder')}
-                                            className="text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 outline-none text-white w-48 placeholder:text-slate-500"
+                                            className="text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 outline-none text-white w-48 placeholder:text-slate-600"
                                           />
                                           <button
                                               aria-label={t('common.continue')}
@@ -40588,7 +40992,7 @@ Return only the corrected version of this exact text:`;
                                           <button
                                               aria-label={t('common.close_revision_panel')}
                                             onClick={handleSetIsCustomReviseOpenToFalse}
-                                            className="p-1.5 text-slate-500 hover:text-white rounded-full transition-colors"
+                                            className="p-1.5 text-slate-600 hover:text-white rounded-full transition-colors"
                                           >
                                               <X size={12}/>
                                           </button>
@@ -40669,7 +41073,7 @@ Return only the corrected version of this exact text:`;
                                        revisionData.type === 'custom' ? t('simplified.revision.header_custom') :
                                        t('simplified.revision.header_explain')}
                                   </h5>
-                                  <button onClick={closeRevision} className="text-slate-500 hover:text-slate-600" aria-label={t('common.close')}><X size={14}/></button>
+                                  <button onClick={closeRevision} className="text-slate-600 hover:text-slate-600" aria-label={t('common.close')}><X size={14}/></button>
                               </div>
                               {revisionData.result ? (
                                   <>
@@ -40703,7 +41107,7 @@ Return only the corrected version of this exact text:`;
                                t('simplified.complexity_controls.adjust_relative')}
                           </label>
                           <div className="flex items-center gap-3">
-                              <span className="text-xs font-bold text-slate-500 uppercase w-20 text-right">
+                              <span className="text-xs font-bold text-slate-600 uppercase w-20 text-right">
                                   {generatedContent.type === 'quiz'
                                       ? t('simplified.complexity_controls.easier')
                                       : generatedContent.type === 'sentence-frames'
@@ -40726,7 +41130,7 @@ Return only the corrected version of this exact text:`;
                                       className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative"
                                   />
                               </div>
-                              <span className="text-xs font-bold text-slate-500 uppercase w-20">
+                              <span className="text-xs font-bold text-slate-600 uppercase w-20">
                                   {generatedContent.type === 'quiz'
                                       ? t('simplified.complexity_controls.harder')
                                       : generatedContent.type === 'sentence-frames'
@@ -40741,7 +41145,7 @@ Return only the corrected version of this exact text:`;
                           <div className="text-center mt-2 text-xs font-medium h-4">
                               {complexityLevel < 5 && <span className="text-green-600 animate-pulse">{t('status.adjusting')}...</span>}
                               {complexityLevel > 5 && <span className="text-indigo-600 animate-pulse">{t('status.adjusting')}...</span>}
-                              {complexityLevel === 5 && <span className="text-slate-500">{t('simplified.complexity_controls.drag_hint')}</span>}
+                              {complexityLevel === 5 && <span className="text-slate-600">{t('simplified.complexity_controls.drag_hint')}</span>}
                           </div>
                            <div className="flex items-center justify-center mt-4 pt-3 border-t border-slate-100">
                                <label className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full cursor-pointer select-none transition-all border ${saveOriginalOnAdjust ? 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-2 ring-indigo-500 ring-offset-1 shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700'}`} title={t('common.choose_overwrite_version')} data-help-key="simplified_overwrite_toggle">
@@ -40770,7 +41174,7 @@ Return only the corrected version of this exact text:`;
                                       </h4>
                                       {generatedContent.levelCheck.rubric ? (
                                           <div className="mt-3 space-y-3 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm">
-                                              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('simplified.complexity_rubric_title')}</p>
+                                              <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('simplified.complexity_rubric_title')}</p>
                                               {Object.entries(generatedContent.levelCheck.rubric).map(([key, data]) => {
                                                   const percent = ((data.score + 5) / 10) * 100;
                                                   const isAligned = Math.abs(data.score) <= 1;
@@ -40793,11 +41197,11 @@ Return only the corrected version of this exact text:`;
                                                                   }}
                                                               ></div>
                                                           </div>
-                                                          <p className="text-[10px] text-slate-500 italic">{data.reason}</p>
+                                                          <p className="text-[10px] text-slate-600 italic">{data.reason}</p>
                                                       </div>
                                                   );
                                               })}
-                                              <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                              <div className="flex justify-between text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1">
                                                   <span>{t('simplified.gauge_simple')}</span>
                                                   <span>{t('simplified.gauge_aligned')}</span>
                                                   <span>{t('simplified.gauge_complex')}</span>
@@ -40818,7 +41222,7 @@ Return only the corrected version of this exact text:`;
                                       const updated = { ...generatedContent };
                                       delete updated.levelCheck;
                                       setGeneratedContent(updated);
-                                  }} className="text-slate-500 hover:text-slate-600 p-1"><X size={14}/></button>
+                                  }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14}/></button>
                              </div>
                          </div>
                        )}
@@ -40863,7 +41267,7 @@ Return only the corrected version of this exact text:`;
                                      const updated = { ...generatedContent };
                                      delete updated.alignmentCheck;
                                      setGeneratedContent(updated);
-                                 }} className="text-slate-500 hover:text-slate-600 p-1"><X size={14}/></button>
+                                 }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14}/></button>
                             </div>
                         </div>
                       )}
@@ -40894,7 +41298,7 @@ Return only the corrected version of this exact text:`;
                                 return (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full pb-8">
                                         <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar">
-                                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 border-b pb-2 sticky top-0 bg-white z-10">{t('simplified.diff_original')}</h4>
+                                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 border-b pb-2 sticky top-0 bg-white z-10">{t('simplified.diff_original')}</h4>
                                             <div className="text-sm text-slate-700 leading-relaxed font-serif whitespace-pre-wrap">
                                                 {diff.map((part, i) => {
                                                     if (part.type === 'add') return null;
@@ -41575,7 +41979,7 @@ Return only the corrected version of this exact text:`;
                                         </button>
                                     </div>
                                 </div>
-                                <p className="text-slate-500 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive diagram.</p>
+                                <p className="text-slate-600 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive diagram.</p>
                                 <button aria-label={t('common.initialize_map')}
                                     onClick={handleInitializeMap}
                                     disabled={isProcessing}
@@ -41775,7 +42179,7 @@ Return only the corrected version of this exact text:`;
                                         <h2 className="text-3xl font-black text-yellow-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
                                             <Gamepad2 size={32}/> {t('review_game.title')}
                                         </h2>
-                                        <p className="text-slate-500 text-sm mt-1 font-medium">{t('review_game.subtitle')}</p>
+                                        <p className="text-slate-600 text-sm mt-1 font-medium">{t('review_game.subtitle')}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <button aria-label={t('common.volume')}
@@ -41821,7 +42225,7 @@ Return only the corrected version of this exact text:`;
                                         </div>
                                     ))}
                                     {gameTeams.length < 6 && (
-                                        <button aria-label={t('common.add')} onClick={handleAddTeam} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-500 hover:text-white hover:border-slate-400 transition-colors">
+                                        <button aria-label={t('common.add')} onClick={handleAddTeam} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 hover:text-white hover:border-slate-400 transition-colors">
                                             <Plus size={24}/>
                                             <span className="text-xs font-bold mt-1">{t('review_game.add_team')}</span>
                                         </button>
@@ -41928,7 +42332,7 @@ Return only the corrected version of this exact text:`;
                                                             ))}
                                                             <button
                                                                 onClick={() => { playSound('incorrect'); closeReviewModal(true); }}
-                                                                className="bg-slate-700 text-slate-500 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold transition-colors"
+                                                                className="bg-slate-700 text-slate-600 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold transition-colors"
                                                             >
                                                                 {t('review_game.no_points')}
                                                             </button>
@@ -41981,7 +42385,7 @@ Return only the corrected version of this exact text:`;
                                             </div>
                                             <div className="flex-grow">
                                                 <h3 className="text-2xl font-bold text-slate-800 leading-tight">{formatInlineText(q.question, false)}</h3>
-                                                {q.question_en && <p className="text-lg text-slate-500 italic mt-2">{formatInlineText(q.question_en, false)}</p>}
+                                                {q.question_en && <p className="text-lg text-slate-600 italic mt-2">{formatInlineText(q.question_en, false)}</p>}
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 md:ml-14">
@@ -42108,7 +42512,7 @@ Return only the corrected version of this exact text:`;
                                                                 aria-label={t('quiz.edit_question_english') || 'Edit question English translation'}
                                                                 value={q.question_en || ''}
                                                                 onChange={(e) => handleQuizChange(i, 'question', e.target.value, null, true)}
-                                                                className="w-full text-sm text-slate-500 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                                                className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
                                                                 rows={getRows(q.question_en || '')}
                                                                 placeholder={t('common.placeholder_english_trans')}
                                                             />
@@ -42117,7 +42521,7 @@ Return only the corrected version of this exact text:`;
                                                 ) : (
                                                     <>
                                                         <p className="font-bold text-slate-800 px-2 py-1">{q.question}</p>
-                                                        {q.question_en && <p className="text-sm text-slate-500 italic px-2">{q.question_en}</p>}
+                                                        {q.question_en && <p className="text-sm text-slate-600 italic px-2">{q.question_en}</p>}
                                                     </>
                                                 )}
                                             </div>
@@ -42155,7 +42559,7 @@ Return only the corrected version of this exact text:`;
                                                                         aria-label={t('quiz.edit_option_translation') || 'Edit option translation'}
                                                                         value={q.options_en[optIdx] || ''}
                                                                         onChange={(e) => handleQuizChange(i, 'option', e.target.value, optIdx, true)}
-                                                                        className="w-full text-xs text-slate-500 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all mt-1"
+                                                                        className="w-full text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all mt-1"
                                                                         rows={getRows(q.options_en[optIdx] || '', 30)}
                                                                         placeholder={t('common.placeholder_option_trans')}
                                                                     />
@@ -42164,7 +42568,7 @@ Return only the corrected version of this exact text:`;
                                                         ) : (
                                                             <>
                                                                 <p className={`px-1 py-0.5 ${(showQuizAnswers && (isTeacherMode || isParentMode)) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`}>{opt}</p>
-                                                                {q.options_en && q.options_en[optIdx] && <p className="text-xs text-slate-500 mt-1 px-1 italic">{q.options_en[optIdx]}</p>}
+                                                                {q.options_en && q.options_en[optIdx] && <p className="text-xs text-slate-600 mt-1 px-1 italic">{q.options_en[optIdx]}</p>}
                                                             </>
                                                         )}
                                                     </div>
@@ -42337,7 +42741,7 @@ Return only the corrected version of this exact text:`;
                                                         aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'}
                                                         value={faq.question_en || ''}
                                                         onChange={(e) => handleFaqChange(idx, 'question_en', e.target.value)}
-                                                        className="w-full text-sm text-slate-500 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                                        className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
                                                         rows={getRows(faq.question_en || '')}
                                                         placeholder={t('common.placeholder_question_trans')}
                                                     />
@@ -42356,7 +42760,7 @@ Return only the corrected version of this exact text:`;
                                                             aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'}
                                                             value={faq.answer_en || ''}
                                                             onChange={(e) => handleFaqChange(idx, 'answer_en', e.target.value)}
-                                                            className="w-full text-xs text-slate-500 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200"
+                                                            className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200"
                                                             rows={getRows(faq.answer_en || '')}
                                                             placeholder={t('common.placeholder_answer_trans')}
                                                         />
@@ -42385,7 +42789,7 @@ Return only the corrected version of this exact text:`;
                                                         });
                                                     })()}
                                                 </h4>
-                                                {faq.question_en && <p className="text-sm text-slate-500 italic mb-2">({faq.question_en})</p>}
+                                                {faq.question_en && <p className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}
                                                 <div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed">
                                                     {(() => {
                                                         const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
@@ -42405,7 +42809,7 @@ Return only the corrected version of this exact text:`;
                                                             );
                                                         });
                                                     })()}
-                                                    {faq.answer_en && <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}
+                                                    {faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}
                                                 </div>
                                             </>
                                         )}
@@ -42503,7 +42907,7 @@ Return only the corrected version of this exact text:`;
                                                             aria-label={t('scaffolds.edit_item_translation') || `Edit scaffold item ${idx + 1} translation`}
                                                             value={item.text_en || ''}
                                                             onChange={(e) => handleScaffoldChange(idx, 'text_en', e.target.value, true)}
-                                                            className="w-full text-sm text-slate-500 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                                            className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
                                                             rows={getRows(item.text_en || '')}
                                                             placeholder={t('common.placeholder_translation')}
                                                         />
@@ -42512,7 +42916,7 @@ Return only the corrected version of this exact text:`;
                                             ) : (
                                                 <>
                                                     <p className="text-lg font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
-                                                    {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-500 italic px-2">{item.text_en}</p>}
+                                                    {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-600 italic px-2">{item.text_en}</p>}
                                                     <textarea
                                                         aria-label={t('scaffolds.student_response') || `Student response for item ${idx + 1}`}
                                                         value={studentResponses[generatedContent.id]?.[idx] || ''}
@@ -42533,7 +42937,7 @@ Return only the corrected version of this exact text:`;
                         </div>
                     ) : (
                         <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm" data-help-key="scaffolds_paragraph_frame">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{t('scaffolds.paragraph_frame') || 'Paragraph Frame'}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">{t('scaffolds.paragraph_frame') || 'Paragraph Frame'}</h4>
                             {isEditingScaffolds ? (
                                 <textarea
                                     aria-label={t('scaffolds.edit_paragraph_frame') || 'Edit paragraph frame text'}
@@ -42560,18 +42964,18 @@ Return only the corrected version of this exact text:`;
                             )}
                             {(leveledTextLanguage !== 'English' || generatedContent?.data.text_en) && (
                                 <div className="mt-8 pt-6 border-t border-slate-100">
-                                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('common.english_translation')}</h4>
+                                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('common.english_translation')}</h4>
                                     {isEditingScaffolds ? (
                                         <textarea
                                             aria-label={t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation'}
                                             value={generatedContent?.data.text_en || ''}
                                             onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
-                                            className="w-full text-slate-500 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                            className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
                                             rows={getRows(generatedContent?.data.text_en || '')}
                                             placeholder={t('common.placeholder_translation')}
                                         />
                                     ) : (
-                                        generatedContent?.data.text_en && <p className="text-slate-500 italic leading-relaxed px-2 py-1">{generatedContent?.data.text_en}</p>
+                                        generatedContent?.data.text_en && <p className="text-slate-600 italic leading-relaxed px-2 py-1">{generatedContent?.data.text_en}</p>
                                     )}
                                 </div>
                             )}
@@ -42601,7 +43005,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 aria-label={t('common.maximize')}
                                                 onClick={handleToggleRubricZoom}
-                                                className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-500 hover:text-indigo-600 border-slate-200'}`}
+                                                className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-600 hover:text-indigo-600 border-slate-200'}`}
                                                 title={t('scaffolds.rubric_toggle_tooltip')}
                                             >
                                                 {rubricZoom ? <Maximize size={12}/> : <Minimize size={12}/>}
@@ -42610,7 +43014,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 aria-label={t('common.copy')}
                                                 onClick={() => copyToClipboard(generatedContent?.data.rubric)}
-                                                className="text-xs flex items-center gap-1 bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-2 py-1 rounded transition-colors"
+                                                className="text-xs flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-2 py-1 rounded transition-colors"
                                                 title={t('scaffolds.rubric_copy_tooltip')}
                                             >
                                                 <Copy size={12}/> {t('scaffolds.rubric_copy')}
@@ -42679,7 +43083,7 @@ Return only the corrected version of this exact text:`;
                                                             <span>{s.criteria}</span>
                                                             <span>{s.score}</span>
                                                         </div>
-                                                        <p className="text-slate-500 text-xs italic">{s.comment}</p>
+                                                        <p className="text-slate-600 text-xs italic">{s.comment}</p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -42903,13 +43307,13 @@ Return only the corrected version of this exact text:`;
                       {showLedger && (
                         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
                             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                                <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
+                                <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
                                     <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-2">
                                         <BookOpen size={24} />
                                     </div>
                                     <h3 className="text-xl font-black text-indigo-900">{t('adventure.ledger_title')}</h3>
-                                    <p className="text-xs text-slate-500">{t('adventure.ledger_subtitle')}</p>
+                                    <p className="text-xs text-slate-600">{t('adventure.ledger_subtitle')}</p>
                                 </div>
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif">
                                     {adventureState.narrativeLedger || t('adventure.ledger_empty')}
@@ -42929,7 +43333,7 @@ Return only the corrected version of this exact text:`;
                                     </button>
                                     <button
                                         onClick={handleSetShowLedgerToFalse}
-                                        className="w-full px-6 py-2 text-slate-500 font-bold hover:text-slate-700 transition-colors"
+                                        className="w-full px-6 py-2 text-slate-600 font-bold hover:text-slate-700 transition-colors"
                                     >
                                         {t('common.close')}
                                     </button>
@@ -43161,7 +43565,7 @@ Return only the corrected version of this exact text:`;
                                                     <MapIcon size={40} />
                                                 </div>
                                                 <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_title')}</h2>
-                                                <p className="text-slate-500 mb-6 font-medium">
+                                                <p className="text-slate-600 mb-6 font-medium">
                                                     {t('adventure.paused_desc')}
                                                 </p>
                                                 <button
@@ -43175,7 +43579,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 aria-label={t('common.new_game_setup')}
                                                 onClick={handleSetShowNewGameSetupToTrue}
-                                                className="text-slate-500 hover:text-red-500 font-bold text-xs flex items-center justify-center gap-2 transition-colors py-2 uppercase tracking-wider"
+                                                className="text-slate-600 hover:text-red-500 font-bold text-xs flex items-center justify-center gap-2 transition-colors py-2 uppercase tracking-wider"
                                             >
                                                 <RefreshCw size={12}/> {t('adventure.start_overwrite')}
                                             </button>
@@ -43204,9 +43608,9 @@ Return only the corrected version of this exact text:`;
                                                     <div className="space-y-4">
                                                         <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.core')}</h4>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-500 mb-1 flex items-center justify-between">
+                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
                                                                 {t('adventure.interaction_mode')}
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
                                                             </label>
                                                             <select aria-label={t('common.selection')}
                                                                 data-help-key="adventure_setup_input_mode" value={adventureInputMode}
@@ -43220,9 +43624,9 @@ Return only the corrected version of this exact text:`;
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-500 mb-1 flex items-center justify-between">
+                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
                                                                 {t('adventure.difficulty_label')}
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
                                                             </label>
                                                             <select aria-label={t('common.selection')}
                                                                 data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
@@ -43237,9 +43641,9 @@ Return only the corrected version of this exact text:`;
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-500 mb-1 flex items-center justify-between">
+                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
                                                                 {t('adventure.language_label')}
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
                                                             </label>
                                                             <select aria-label={t('common.selection')}
                                                                 data-help-key="adventure_setup_language" value={adventureLanguageMode}
@@ -43279,7 +43683,7 @@ Return only the corrected version of this exact text:`;
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.free_response_label')}</span>
-                                                                    <span className="block text-[10px] text-slate-500 opacity-80">{t('adventure.free_response_desc')}</span>
+                                                                    <span className="block text-[10px] text-slate-600 opacity-80">{t('adventure.free_response_desc')}</span>
                                                                 </div>
                                                             </label>
                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -43292,7 +43696,7 @@ Return only the corrected version of this exact text:`;
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.chance_mode_label')}</span>
-                                                                    <span className="block text-[10px] text-slate-500 opacity-80">{t('adventure.chance_mode_desc')}</span>
+                                                                    <span className="block text-[10px] text-slate-600 opacity-80">{t('adventure.chance_mode_desc')}</span>
                                                                 </div>
                                                             </label>
                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -43305,7 +43709,7 @@ Return only the corrected version of this exact text:`;
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.story_mode_label')}</span>
-                                                                    <span className="block text-[10px] text-slate-500 opacity-80">{t('adventure.story_mode_desc')}</span>
+                                                                    <span className="block text-[10px] text-slate-600 opacity-80">{t('adventure.story_mode_desc')}</span>
                                                                 </div>
                                                             </label>
                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -43318,7 +43722,7 @@ Return only the corrected version of this exact text:`;
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">🎭 {t('adventure.consistent_characters_label') || 'Consistent Characters'}</span>
-                                                                    <span className="block text-[10px] text-slate-500 opacity-80">{t('adventure.consistent_characters_desc') || 'Persistent visual cast across scenes'}</span>
+                                                                    <span className="block text-[10px] text-slate-600 opacity-80">{t('adventure.consistent_characters_desc') || 'Persistent visual cast across scenes'}</span>
                                                                 </div>
                                                             </label>
                                                             <div className="flex items-center gap-3 p-2 rounded-lg border border-indigo-100 bg-indigo-50/50">
@@ -43348,7 +43752,7 @@ Return only the corrected version of this exact text:`;
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.low_quality_label')}</span>
-                                                                    <span className="block text-[10px] text-slate-500 opacity-80">{t('adventure.low_quality_desc')}</span>
+                                                                    <span className="block text-[10px] text-slate-600 opacity-80">{t('adventure.low_quality_desc')}</span>
                                                                 </div>
                                                             </label>
                                                             {adventureInputMode === 'system' && (
@@ -43362,7 +43766,7 @@ Return only the corrected version of this exact text:`;
                                                                     />
                                                                     <div>
                                                                         <span className="block text-xs font-bold text-slate-700">{t('adventure.system_state_label')}</span>
-                                                                        <span className="block text-[10px] text-slate-500 opacity-80">{t('adventure.system_state_desc')}</span>
+                                                                        <span className="block text-[10px] text-slate-600 opacity-80">{t('adventure.system_state_desc')}</span>
                                                                     </div>
                                                                 </label>
                                                             )}
@@ -43385,7 +43789,7 @@ Return only the corrected version of this exact text:`;
                                                                 </label>
                                                             </div>
                                                             <div className="flex items-center justify-between">
-                                                                <label className="text-[10px] text-slate-500 font-bold uppercase">{t('adventure.climax.min_rounds_label')}</label>
+                                                                <label className="text-[10px] text-slate-600 font-bold uppercase">{t('adventure.climax.min_rounds_label')}</label>
                                                                 <input aria-label={t('common.enter_adventure_state')}
                                                                     type="number"
                                                                     min="3"
@@ -43398,11 +43802,11 @@ Return only the corrected version of this exact text:`;
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-500 mb-1 flex items-center justify-between">
+                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
                                                                 <span>
                                                                     {t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                                                                 </span>
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
                                                             </label>
                                                             <textarea
                                                                 aria-label={t('input.custom_instructions') || 'Custom instructions for adventure'}
@@ -43461,7 +43865,7 @@ Return only the corrected version of this exact text:`;
                             )}
                             {adventureState.isLoading && (
                                 <div className="flex justify-start animate-pulse">
-                                    <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-200 flex items-center gap-2 text-slate-500 text-sm">
+                                    <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-200 flex items-center gap-2 text-slate-600 text-sm">
                                         <RefreshCw size={14} className="animate-spin"/> {t('adventure.status.loading_story')}
                                     </div>
                                 </div>
@@ -43564,7 +43968,7 @@ Return only the corrected version of this exact text:`;
                                     <div className="bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500">
                                         <Trophy size={18}/> {t('adventure.game_over')}
                                     </div>
-                                    <div className="text-sm text-slate-500 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>
+                                    <div className="text-sm text-slate-600 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>
                                     {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
                                         <button
                                             onClick={handleSetShowStorybookExportModalToTrue}
@@ -43577,7 +43981,7 @@ Return only the corrected version of this exact text:`;
                                             {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
                                         </button>
                                     ) : (
-                                        <div className="flex items-center gap-2 bg-slate-100 text-slate-500 px-6 py-3 rounded-xl font-bold border-2 border-slate-200 shadow-inner animate-in slide-in-from-bottom-4 cursor-not-allowed opacity-80">
+                                        <div className="flex items-center gap-2 bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold border-2 border-slate-200 shadow-inner animate-in slide-in-from-bottom-4 cursor-not-allowed opacity-80">
                                             <Lock size={18} />
                                             <span>{t('adventure.storybook_locked', { needed: studentProjectSettings.adventureMinXP - adventureState.xp })}</span>
                                         </div>
@@ -44033,7 +44437,7 @@ Return only the corrected version of this exact text:`;
                                                 </button>
                                                 <button
                                                     onClick={handleSetIsEditingOptionsToFalse}
-                                                    className="px-6 py-3 bg-white text-slate-500 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
+                                                    className="px-6 py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
                                                 >
                                                     {t('common.cancel')}
                                                 </button>
@@ -44087,7 +44491,7 @@ Return only the corrected version of this exact text:`;
                                                         setTimeout(() => adventureInputRef.current.focus(), 100);
                                                     }
                                                 }}
-                                                className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 min-w-[50px] ${isDictationMode ? 'bg-red-50 border-red-400 text-red-500 animate-pulse' : 'bg-white border-indigo-100 text-slate-500 hover:text-indigo-500 hover:border-indigo-300'}`}
+                                                className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 min-w-[50px] ${isDictationMode ? 'bg-red-50 border-red-400 text-red-500 animate-pulse' : 'bg-white border-indigo-100 text-slate-600 hover:text-indigo-500 hover:border-indigo-300'}`}
                                                 title={isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')}
                                             >
                                                 {isDictationMode ? <Mic size={20} /> : <MicOff size={20} />}
@@ -44118,7 +44522,7 @@ Return only the corrected version of this exact text:`;
                                     )}
                                     {adventureState.canStartSequel && (
                                         <div className="w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 flex flex-col items-center">
-                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">
                                                 {t('adventure.sequel_prompt')}
                                             </p>
                                             <button
@@ -44133,7 +44537,7 @@ Return only the corrected version of this exact text:`;
                                     )}
                                 </div>
                             ) : (
-                                <div className="text-center text-xs text-slate-500 italic">
+                                <div className="text-center text-xs text-slate-600 italic">
                                     {adventureState.isGameOver ? t('adventure.status.reset_prompt') : t('adventure.status.waiting')}
                                 </div>
                             )}
@@ -44143,7 +44547,7 @@ Return only the corrected version of this exact text:`;
                     {selectedInventoryItem && (
                         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
                             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                                <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
+                                <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-24 h-24 bg-indigo-50 rounded-xl border-2 border-indigo-100 flex items-center justify-center mb-4 shadow-inner relative overflow-hidden group">
                                         {selectedInventoryItem.image ? (
@@ -44165,7 +44569,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 aria-label={t('common.locked')}
                                                 disabled
-                                                className="flex-1 bg-slate-100 text-slate-500 font-bold py-3 rounded-xl border-2 border-slate-200 cursor-not-allowed flex items-center justify-center gap-2"
+                                                className="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl border-2 border-slate-200 cursor-not-allowed flex items-center justify-center gap-2"
                                             >
                                                 <Lock size={16}/> {t('adventure.key_item_btn')}
                                             </button>
@@ -44286,7 +44690,7 @@ Return only the corrected version of this exact text:`;
                             )}
                         </div>
                         <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-6" data-help-key="visuals_prompt">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('visuals.prompt_label')}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('visuals.prompt_label')}</h4>
                             <p className="text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm">"{generatedContent?.data.prompt}"</p>
                         </div>
                         {isTeacherMode && (
@@ -44314,7 +44718,7 @@ Return only the corrected version of this exact text:`;
                                     {isProcessing ? <RefreshCw size={16} className="animate-spin"/> : <Send size={16}/>}
                                 </button>
                              </div>
-                             <span className="text-[11px] text-slate-500 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>
+                             <span className="text-[11px] text-slate-600 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>
                         </div>
                         )}
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg text-sm text-red-800 mb-6">
@@ -44361,11 +44765,11 @@ Return only the corrected version of this exact text:`;
                               </div>
                               <div className="mt-6 pt-6 border-t border-black/10 grid grid-cols-1 md:grid-cols-2 gap-6">
                                   <div>
-                                      <h4 className="text-xs font-bold uppercase text-slate-500 mb-1">{t('alignment.cognitive_demand')}</h4>
+                                      <h4 className="text-xs font-bold uppercase text-slate-600 mb-1">{t('alignment.cognitive_demand')}</h4>
                                       <p className="text-sm font-medium text-slate-800">{report.standardBreakdown.cognitiveDemand}</p>
                                   </div>
                                   <div>
-                                      <h4 className="text-xs font-bold uppercase text-slate-500 mb-1">{t('alignment.content_focus')}</h4>
+                                      <h4 className="text-xs font-bold uppercase text-slate-600 mb-1">{t('alignment.content_focus')}</h4>
                                       <p className="text-sm font-medium text-slate-800">{report.standardBreakdown.contentFocus}</p>
                                   </div>
                               </div>
@@ -44381,11 +44785,11 @@ Return only the corrected version of this exact text:`;
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-500"><Quote size={16} className="fill-current"/></div>
-                                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
+                                          <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
                                           <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.textAlignment.evidence}"</p>
                                       </div>
                                       <div>
-                                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1">{t('alignment.audit_notes')}</span>
+                                          <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
                                           <p className="text-slate-600 leading-relaxed">{report.analysis.textAlignment.notes}</p>
                                       </div>
                                   </div>
@@ -44402,11 +44806,11 @@ Return only the corrected version of this exact text:`;
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-500"><Quote size={16} className="fill-current"/></div>
-                                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
+                                          <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
                                           <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.activityAlignment?.evidence || "No interactive activities found."}"</p>
                                       </div>
                                       <div>
-                                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1">{t('alignment.audit_notes')}</span>
+                                          <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
                                           <p className="text-slate-600 leading-relaxed">{report.analysis.activityAlignment?.notes || "Generate activities like Sorts or Timelines to populate this."}</p>
                                       </div>
                                   </div>
@@ -44421,11 +44825,11 @@ Return only the corrected version of this exact text:`;
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-500"><Quote size={16} className="fill-current"/></div>
-                                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
+                                          <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
                                           <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.assessmentAlignment.evidence}"</p>
                                       </div>
                                       <div>
-                                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1">{t('alignment.audit_notes')}</span>
+                                          <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
                                           <p className="text-slate-600 leading-relaxed">{report.analysis.assessmentAlignment.notes}</p>
                                       </div>
                                   </div>
@@ -44513,7 +44917,7 @@ Return only the corrected version of this exact text:`;
                             <div className="absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"></div>
                             {isEditingTimeline ? (
                                 <div className="space-y-4">
-                                    <div className="text-xs text-slate-500 italic text-center mb-2">
+                                    <div className="text-xs text-slate-600 italic text-center mb-2">
                                         {t('timeline.edit_instruction')}
                                     </div>
                                     {(Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
@@ -44565,7 +44969,7 @@ Return only the corrected version of this exact text:`;
                                                             type="text"
                                                             value={item.event_en || ''}
                                                             onChange={(e) => handleTimelineChange(idx, 'event', e.target.value, true)}
-                                                            className="w-2/3 text-xs text-slate-500 bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
+                                                            className="w-2/3 text-xs text-slate-600 bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
                                                             placeholder={t('timeline.event_en_placeholder')}
                                                         />
                                                     </div>
@@ -44574,7 +44978,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 aria-label={t('common.delete')}
                                                 onClick={() => handleDeleteTimelineStep(idx)}
-                                                className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-1"
+                                                className="p-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-1"
                                                 title={t('timeline.remove_step_title')}
                                             >
                                                 <Trash2 size={16} />
@@ -44602,7 +45006,7 @@ Return only the corrected version of this exact text:`;
                                                 {item.event}
                                             </p>
                                             {item.event_en && (
-                                                <p className="text-xs text-slate-500 italic mt-1">{item.event_en}</p>
+                                                <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
                                             )}
                                         </div>
                                     </div>
@@ -44614,7 +45018,7 @@ Return only the corrected version of this exact text:`;
                                                 <ListOrdered size={48} className="text-indigo-500" />
                                             </div>
                                             <h3 className="text-xl font-black text-slate-700 mb-2">{t('timeline.ready_title')}</h3>
-                                            <p className="text-slate-500 mb-8 max-w-md">
+                                            <p className="text-slate-600 mb-8 max-w-md">
                                                 {t('timeline.ready_desc')}
                                             </p>
                                             <button
@@ -44663,7 +45067,7 @@ Return only the corrected version of this exact text:`;
                                      <Filter size={48} className="text-indigo-500" />
                                  </div>
                                  <h3 className="text-xl font-black text-slate-700 mb-2">{t('concept_sort.ready_title')}</h3>
-                                 <p className="text-slate-500 mb-8 max-w-md">{t('concept_sort.ready_desc')}</p>
+                                 <p className="text-slate-600 mb-8 max-w-md">{t('concept_sort.ready_desc')}</p>
                                  <button
                                      aria-label={t('common.start_game')}
                                     onClick={handleSetIsConceptSortGameToTrue}
@@ -44691,7 +45095,7 @@ Return only the corrected version of this exact text:`;
                                                 </div>
                                             ))}
                                             {(generatedContent?.data.items || []).filter(item => item.categoryId === cat.id).length > 3 && (
-                                                <div className="text-[10px] text-slate-500 text-center italic">
+                                                <div className="text-[10px] text-slate-600 text-center italic">
                                                     {t('concept_sort.more_items_indicator', {
                                                         count: (generatedContent?.data.items || []).filter(item => item.categoryId === cat.id).length - 3
                                                     })}
@@ -44808,7 +45212,7 @@ Return only the corrected version of this exact text:`;
                                         <button
                                             aria-label={isMathEditing(pIdx) ? "Save edits" : "Edit problem"}
                                             onClick={() => toggleMathEdit(pIdx)}
-                                            className={`shrink-0 p-1.5 rounded-lg transition-all ${isMathEditing(pIdx) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'}`}
+                                            className={`shrink-0 p-1.5 rounded-lg transition-all ${isMathEditing(pIdx) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`}
                                             title={isMathEditing(pIdx) ? "Done editing" : "Edit this problem"}
                                         >
                                             {isMathEditing(pIdx) ? <CheckCircle2 size={16} /> : <Pencil size={14} />}
@@ -44936,7 +45340,7 @@ Return only the corrected version of this exact text:`;
                                                     </div>
                                                     <textarea
                                                         aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
-                                                        className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-500 min-h-[120px]"
+                                                        className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
                                                         placeholder={t('math.display.placeholder_work')}
                                                         value={studentResponses[generatedContent.id]?.[pIdx] || ''}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
@@ -44953,7 +45357,7 @@ Return only the corrected version of this exact text:`;
                                                 {problem.steps.map((step, idx) => (
                                                     <div key={idx} className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
                                                         <div className="flex items-start gap-3">
-                                                            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">{t('math.display.step_label')} {idx + 1}</div>
+                                                            <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mt-1">{t('math.display.step_label')} {idx + 1}</div>
                                                             <div className="flex-grow w-full overflow-hidden">
                                                                 {isMathEditing(pIdx) ? (
                                                                     <div className="space-y-2">
@@ -45035,7 +45439,7 @@ Return only the corrected version of this exact text:`;
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="ml-12 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm text-slate-500 italic flex items-center justify-center gap-2 mt-4">
+                                        <div className="ml-12 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4">
                                             {isIndependentMode ? (
                                                 <button
                                                     aria-label={t('common.show_math_answers')}
@@ -45058,7 +45462,7 @@ Return only the corrected version of this exact text:`;
                                             </div>
                                             <textarea
                                                 aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
-                                                className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-500 min-h-[120px]"
+                                                className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
                                                 placeholder={t('math.display.placeholder_work') || 'Show your work here... Type your answer and explain your thinking.'}
                                                 value={studentResponses[generatedContent.id]?.[pIdx] || ''}
                                                 onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
@@ -45659,7 +46063,7 @@ Return only the corrected version of this exact text:`;
                                          <button
                                              aria-label={t('common.close')}
                                             onClick={handleSetProgressionDataToNull}
-                                            className="text-slate-500 hover:text-indigo-600 p-1 rounded-full transition-colors"
+                                            className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors"
                                             title={t('common.close')}
                                          >
                                             <X size={20} />
@@ -45680,7 +46084,7 @@ Return only the corrected version of this exact text:`;
                                                 <h5 className="font-bold text-slate-800 text-sm mb-2 leading-tight" title={option.nextTopic}>
                                                     {option.nextTopic}
                                                 </h5>
-                                                <p className="text-xs text-slate-500 italic mb-4 flex-grow leading-relaxed border-l-2 border-indigo-50 pl-2">
+                                                <p className="text-xs text-slate-600 italic mb-4 flex-grow leading-relaxed border-l-2 border-indigo-50 pl-2">
                                                     "{option.rationale}"
                                                 </p>
                                                 <button
@@ -45707,7 +46111,7 @@ Return only the corrected version of this exact text:`;
                                      <Terminal size={18} />
                                      <span>{t('bridge.prompt_header')}</span>
                                  </div>
-                                 <div className="text-xs text-slate-500 font-sans">
+                                 <div className="text-xs text-slate-600 font-sans">
                                      {Array.isArray(generatedContent?.data)
                                         ? t('bridge.steps_count_label', { count: generatedContent?.data.length })
                                         : t('bridge.single_prompt_label')
@@ -45737,7 +46141,7 @@ Return only the corrected version of this exact text:`;
                                     </div>
                                  ))}
                              </div>
-                             <div className="mt-8 pt-4 border-t border-slate-700 text-xs text-slate-500 flex items-center gap-2 justify-center">
+                             <div className="mt-8 pt-4 border-t border-slate-700 text-xs text-slate-600 flex items-center gap-2 justify-center">
                                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                                  {t('bridge.next_step')}
                              </div>
@@ -45945,14 +46349,14 @@ Return only the corrected version of this exact text:`;
                                                         {mins}:{secs < 10 ? '0' : ''}{secs}
                                                     </span>
                                                     <button onClick={() => { if (r._dbqTimerInterval) clearInterval(r._dbqTimerInterval); setDbq('_dbqTimerEnd', null); setDbq('_dbqTimerInterval', null); }}
-                                                        className="text-[10px] text-slate-500 hover:text-red-600" aria-label="Cancel timer">✕</button>
+                                                        className="text-[10px] text-slate-600 hover:text-red-600" aria-label="Cancel timer">✕</button>
                                                 </div>
                                             )}
                                             {timerDone && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse">⏰ Time's up!</span>
                                                     <button onClick={() => { setDbq('_dbqTimerEnd', null); }}
-                                                        className="text-[10px] text-slate-500 hover:text-slate-700" aria-label="Dismiss timer">Dismiss</button>
+                                                        className="text-[10px] text-slate-600 hover:text-slate-700" aria-label="Dismiss timer">Dismiss</button>
                                                 </div>
                                             )}
                                         </>
@@ -46000,7 +46404,7 @@ Return only the corrected version of this exact text:`;
                                         {steps.map((s, i) => (
                                             <div key={i} className="flex items-center gap-1">
                                                 <span style={{ color: s.done ? '#22c55e' : s.partial ? '#f59e0b' : '#cbd5e1', fontWeight: 700 }}>{s.done ? '●' : s.partial ? '◐' : '○'}</span>
-                                                <span className="text-slate-500">{s.label}</span>
+                                                <span className="text-slate-600">{s.label}</span>
                                                 {s.detail && <span className="text-slate-400">({s.detail})</span>}
                                             </div>
                                         ))}
@@ -46035,7 +46439,7 @@ Return only the corrected version of this exact text:`;
                                         {docTypeBadge(activeDoc.documentType)}
                                         {activeDoc.perspective && <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: '#7c3aed20', color: '#7c3aed', marginLeft: '4px' }}>⚔️ {activeDoc.perspective}</span>}
                                     </div>
-                                    {activeDoc.source && <p className="text-xs text-slate-500 italic -mt-2 mb-3">Source: {activeDoc.source}</p>}
+                                    {activeDoc.source && <p className="text-xs text-slate-600 italic -mt-2 mb-3">Source: {activeDoc.source}</p>}
                                     {activeDoc.sourceUrl && (
                                       <a href={activeDoc.sourceUrl} target="_blank" rel="noopener noreferrer"
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">
@@ -46390,7 +46794,7 @@ Rules:
                                             {claim.guideQuestion && <p className="text-xs text-emerald-600 italic mb-3">{claim.guideQuestion}</p>}
                                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3">
                                                 <div className="flex-1"><div className="text-[10px] font-bold text-green-700 uppercase mb-1">✅ Supporting</div><div className="flex gap-1 flex-wrap">{(claim.supportingDocs || []).map(id => <span key={id} className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full border border-green-200">Doc {id}</span>)}</div></div>
-                                                <div className="flex-1"><div className="text-[10px] font-bold text-red-700 uppercase mb-1">❌ Challenging</div><div className="flex gap-1 flex-wrap">{(claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => <span key={id} className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full border border-red-200">Doc {id}</span>) : <span className="text-xs text-slate-500 italic">None</span>}</div></div>
+                                                <div className="flex-1"><div className="text-[10px] font-bold text-red-700 uppercase mb-1">❌ Challenging</div><div className="flex gap-1 flex-wrap">{(claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => <span key={id} className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full border border-red-200">Doc {id}</span>) : <span className="text-xs text-slate-600 italic">None</span>}</div></div>
                                             </div>
                                             <textarea value={corrobNotes[ci] || ''} onChange={(e) => setDbq('_corrobNotes', { ...corrobNotes, [ci]: e.target.value })}
                                                 rows={2} placeholder="How do these documents support or contradict this claim?"
@@ -46506,14 +46910,14 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                             return <span key={doc.id} className={`text-xs font-bold px-3 py-1.5 rounded-full border-2 transition-all ${cited ? 'bg-green-100 border-green-400 text-green-800' : 'bg-slate-100 border-slate-200 text-slate-500'}`}>{cited ? '✅' : '⬜'} Doc {doc.id}</span>;
                                         })}
                                     </div>
-                                    <p className="text-[10px] text-slate-500 mt-2 italic">Reference documents in your essay (e.g., "Document A shows...") to track them.</p>
+                                    <p className="text-[10px] text-slate-600 mt-2 italic">Reference documents in your essay (e.g., "Document A shows...") to track them.</p>
                                 </div>
                                 <div className="relative">
                                     <textarea value={essayText} onChange={(e) => setDbq('_essayText', e.target.value)} rows={14}
                                         placeholder={dbqData.thesisStarter || 'Write your synthesis essay here. Use evidence from multiple documents to support your argument...'}
                                         className="w-full text-base font-serif leading-loose border-2 border-slate-200 rounded-xl p-5 resize-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none"
                                         aria-label="Synthesis essay" />
-                                    <div className="absolute bottom-3 right-4 text-xs text-slate-500 font-mono">{essayText.split(/\s+/).filter(Boolean).length} words</div>
+                                    <div className="absolute bottom-3 right-4 text-xs text-slate-600 font-mono">{essayText.split(/\s+/).filter(Boolean).length} words</div>
                                 </div>
                                 <div className="flex gap-3 items-start">
                                     <button onClick={async () => {
@@ -46536,7 +46940,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                             handleScoreUpdate(essayXP, 'DBQ Synthesis Essay', `dbq-essay-${resId}`);
                                         } catch (e) { setDbq('_aiFeedback', { error: 'Could not generate feedback. Try again.' }); }
                                     }} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 shrink-0">✨ Get AI Feedback</button>
-                                    {aiFeedback && typeof aiFeedback === 'string' && <p className="text-sm text-slate-500 italic flex-1">{aiFeedback}</p>}
+                                    {aiFeedback && typeof aiFeedback === 'string' && <p className="text-sm text-slate-600 italic flex-1">{aiFeedback}</p>}
                                 </div>
                                 {aiFeedback && typeof aiFeedback === 'object' && !aiFeedback.error && (
                                     <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3">
@@ -46627,7 +47031,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                 </div>
                                 <div className="text-left flex-grow">
                                     <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
-                                    <p className="text-slate-500 text-xs truncate max-w-[300px] hidden sm:block">
+                                    <p className="text-slate-600 text-xs truncate max-w-[300px] hidden sm:block">
                                         {personaState.mode === 'single'
                                             ? t('persona.instruction_single')
                                             : t('persona.instruction_panel', { current: personaState.selectedCharacters.length })
@@ -46659,7 +47063,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         <Sparkles size={28} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse" />
                                     </div>
                                     <p className="mt-6 text-lg font-bold text-slate-700">{t('persona.identifying')}</p>
-                                    <p className="text-sm text-slate-500 mt-1">Analyzing content for historical figures...</p>
+                                    <p className="text-sm text-slate-600 mt-1">Analyzing content for historical figures...</p>
                                 </div>
                             )}
                             {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((persona, idx) => {
@@ -46689,7 +47093,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         <h3 className="font-black text-2xl text-slate-800 leading-tight mb-1 group-hover:text-indigo-900 transition-colors line-clamp-2">
                                             {persona.name}
                                         </h3>
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">
+                                        <p className="text-xs font-bold text-slate-600 uppercase tracking-wider line-clamp-1">
                                             {persona.role}
                                         </p>
                                     </div>
@@ -46822,7 +47226,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 >
                     <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
                 </button>
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                     {t('common.resource_counter', { current: currentResourceIndex + 1, total: filteredHistory.length })}
                 </div>
                 <button
@@ -47213,13 +47617,13 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                         </button>
                     ) : (
                         <>
-                            <button onClick={handleSetRunTourToFalse} className="text-xs font-bold text-slate-500 hover:text-slate-600">{t('common.skip')}</button>
+                            <button onClick={handleSetRunTourToFalse} className="text-xs font-bold text-slate-600 hover:text-slate-600">{t('common.skip')}</button>
                             <div className="flex gap-2">
                                 <button
                                     aria-label={t('common.continue')}
                                     onClick={handlePrevTourStep}
                                     disabled={tourStep === 0}
-                                    className="text-slate-500 hover:text-indigo-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-30"
+                                    className="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-30"
                                 >
                                     {t('common.back')}
                                 </button>
@@ -47264,7 +47668,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                          </div>
                          <div>
                              <h3 className="font-black text-lg text-slate-800 leading-tight">{t('fluency.title')}</h3>
-                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('fluency.instruction')}</p>
+                             <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('fluency.instruction')}</p>
                          </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -47296,7 +47700,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                         )}
                         <button
                             onClick={() => { setIsFluencyMode(false); setFluencyStatus('idle'); setFluencyTimeRemaining(fluencyTimeLimit); }}
-                            className="p-1.5 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                            className="p-1.5 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                             aria-label={t('fluency.close_label')}
                         >
                             <X size={24} />
@@ -47316,7 +47720,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                 return (<>
                             <div className="flex justify-center mb-4 gap-4 flex-wrap">
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center relative overflow-hidden">
-                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">{t('fluency.accuracy_score')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.accuracy_score')}</div>
                                     <div className={`text-6xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-500' : fluencyResult.accuracy >= 70 ? 'text-yellow-500' : 'text-red-500'}`}>
                                         {fluencyResult.accuracy}%
                                     </div>
@@ -47325,18 +47729,18 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                     </div>
                                 </div>
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100">
-                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">{t('fluency.rate_label')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.rate_label')}</div>
                                     <div className="text-6xl font-black text-indigo-600">
                                         {fluencyResult.wcpm}
                                     </div>
-                                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">{t('fluency.wcpm_label')}</div>
+                                    <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mt-1">{t('fluency.wcpm_label')}</div>
                                     <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}`}>
                                         {levelLabels[benchmarkResult.level]}
                                     </div>
                                 </div>
                             </div>
                             <div className="flex justify-center gap-3 mb-4 items-center">
-                                <label className="text-xs font-bold text-slate-500 uppercase">{t('fluency.benchmark_title')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase">{t('fluency.benchmark_title')}</label>
                                 <select aria-label={t('common.grade')} value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                     {Object.keys(FLUENCY_BENCHMARKS).map(g => (<option key={g} value={g}>{t('fluency.grade_select')} {g}</option>))}
                                     <option value="custom">{t('fluency.custom_norms') || 'Custom (Manual)'}</option>
@@ -47346,11 +47750,11 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                     <option value="winter">{t('fluency.season_winter')}</option>
                                     <option value="spring">{t('fluency.season_spring')}</option>
                                 </select>
-                                <span className="text-xs text-slate-500">{t('fluency.benchmark_target')}: {benchmarkResult.target} WCPM</span>
+                                <span className="text-xs text-slate-600">{t('fluency.benchmark_target')}: {benchmarkResult.target} WCPM</span>
                             </div>
                             {fluencyBenchmarkGrade === 'custom' && (
                                 <div className="flex justify-center gap-3 mb-4 items-center animate-in slide-in-from-top duration-200">
-                                    <label className="text-[10px] font-bold text-slate-500 uppercase">{t('fluency.custom_wcpm') || 'Target WCPM'}:</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase">{t('fluency.custom_wcpm') || 'Target WCPM'}:</label>
                                     {['fall', 'winter', 'spring'].map(s => (
                                         <div key={s} className="flex flex-col items-center gap-0.5">
                                             <input
@@ -47363,7 +47767,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                                 placeholder="0"
                                                 aria-label={`${s} target WCPM`}
                                             />
-                                            <span className="text-[11px] text-slate-500 font-bold uppercase">{t(`fluency.season_${s}`) || s}</span>
+                                            <span className="text-[11px] text-slate-600 font-bold uppercase">{t(`fluency.season_${s}`) || s}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -47387,9 +47791,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                 </div>
                             </div>
                             <div className="flex justify-center gap-6 mb-6 text-xs">
-                                <div className="text-center"><span className="block text-lg font-black text-slate-700">1:{rrMetrics.errorRate}</span><span className="text-slate-500 font-bold uppercase">{t('fluency.error_rate')}</span></div>
-                                <div className="text-center"><span className="block text-lg font-black text-slate-700">{rrMetrics.scRate}%</span><span className="text-slate-500 font-bold uppercase">{t('fluency.sc_rate')}</span></div>
-                                <div className="text-center"><span className="block text-lg font-black text-slate-700">{rrMetrics.totalErrors}</span><span className="text-slate-500 font-bold uppercase">{t('fluency.errors_label')}</span></div>
+                                <div className="text-center"><span className="block text-lg font-black text-slate-700">1:{rrMetrics.errorRate}</span><span className="text-slate-600 font-bold uppercase">{t('fluency.error_rate')}</span></div>
+                                <div className="text-center"><span className="block text-lg font-black text-slate-700">{rrMetrics.scRate}%</span><span className="text-slate-600 font-bold uppercase">{t('fluency.sc_rate')}</span></div>
+                                <div className="text-center"><span className="block text-lg font-black text-slate-700">{rrMetrics.totalErrors}</span><span className="text-slate-600 font-bold uppercase">{t('fluency.errors_label')}</span></div>
                             </div>
                             {fluencyResult.prosody && (
                                 <div className="grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300">
@@ -47411,7 +47815,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         );
                                     })}
                                     {Boolean(fluencyResult.prosody.note) && (
-                                        <div className="col-span-3 text-xs text-slate-500 italic text-center mt-1">{fluencyResult.prosody.note}</div>
+                                        <div className="col-span-3 text-xs text-slate-600 italic text-center mt-1">{fluencyResult.prosody.note}</div>
                                     )}
                                 </div>
                             )}
@@ -47424,7 +47828,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         </div>
                                         <div>
                                             <div className="text-xs font-bold text-slate-700">AI Confidence in This Analysis</div>
-                                            <div className="text-[10px] text-slate-500">{fluencyResult.confidence.overall >= 7 ? 'High confidence' : fluencyResult.confidence.overall >= 4 ? 'Moderate confidence — some results may be inaccurate' : 'Low confidence — human verification recommended'}</div>
+                                            <div className="text-[10px] text-slate-600">{fluencyResult.confidence.overall >= 7 ? 'High confidence' : fluencyResult.confidence.overall >= 4 ? 'Moderate confidence — some results may be inaccurate' : 'Low confidence — human verification recommended'}</div>
                                         </div>
                                     </div>
                                     <div className="flex gap-3 text-[10px] mb-2">
@@ -47437,9 +47841,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                     {fluencyResult.confidence.lowConfidenceWordCount > 0 && (
                                         <div className="text-[10px] text-amber-700 font-medium">⚠ {fluencyResult.confidence.lowConfidenceWordCount} word(s) marked with low confidence — look for ⚠ in the word display below</div>
                                     )}
-                                    {fluencyResult.confidence.note && <div className="text-[10px] text-slate-500 mt-1 italic">{fluencyResult.confidence.note}</div>}
+                                    {fluencyResult.confidence.note && <div className="text-[10px] text-slate-600 mt-1 italic">{fluencyResult.confidence.note}</div>}
                                     {fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== 'none' && fluencyResult.confidence.limitationsApplied !== 'none detected' && (
-                                        <div className="text-[11px] text-slate-500 mt-1">Research basis: {fluencyResult.confidence.limitationsApplied}</div>
+                                        <div className="text-[11px] text-slate-600 mt-1">Research basis: {fluencyResult.confidence.limitationsApplied}</div>
                                     )}
                                 </div>
                             )}
@@ -47479,7 +47883,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                 ))}
                             </div>
                             <div className="mt-8 pt-6 border-t border-slate-100 w-full">
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center mb-3">
+                                <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest text-center mb-3">
                                     {t('fluency.analysis_key')}
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-600">
@@ -47535,7 +47939,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     ) : (
                         <div className="max-w-2xl">
                              {fluencyTranscript && (
-                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500 italic">
+                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-sm text-slate-600 italic">
                                     <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
                                     "{fluencyTranscript}"
                                 </div>
@@ -47552,7 +47956,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         .replace(/\*{1,3}/g, '')
                                         .trim()
                                 ) : (
-                                   <span className="text-slate-500 italic text-base">{t('fluency.format_error')}</span>
+                                   <span className="text-slate-600 italic text-base">{t('fluency.format_error')}</span>
                                 )}
                             </div>
                         </div>
@@ -47754,7 +48158,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 ))}
                 {isSocraticThinking && (
                     <div className="flex items-start">
-                        <div className="bg-white p-2 rounded-xl border border-slate-200 rounded-bl-none text-xs text-slate-500 italic flex items-center gap-1 shadow-sm">
+                        <div className="bg-white p-2 rounded-xl border border-slate-200 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-1 shadow-sm">
                             <RefreshCw size={10} className="animate-spin"/> {t('socratic.thinking')}
                         </div>
                     </div>
@@ -49657,7 +50061,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 <button
                     aria-label={t('common.close_save_dialog')}
                     onClick={handleSetShowSaveModalToFalse}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                 >
                     <X size={20} />
                 </button>
@@ -49665,7 +50069,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     <Save size={24} className="text-indigo-600"/> {t('modals.save_project.title')}
                 </h2>
                 <div className="mb-6">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('modals.save_project.filename_label')}</label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('modals.save_project.filename_label')}</label>
                     <input aria-label={t('common.modals_save_project_placeholder')}
                         type="text"
                         value={saveFileName}
@@ -49675,13 +50079,13 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
                     />
-                    <p className="text-xs text-slate-500 mt-2 italic text-right">{t('modals.save_project.extension_note')}</p>
+                    <p className="text-xs text-slate-600 mt-2 italic text-right">{t('modals.save_project.extension_note')}</p>
                 </div>
                 <div className="flex gap-3 justify-end">
                     <button
                         aria-label={t('common.save')}
                         onClick={handleSetShowSaveModalToFalse}
-                        className="px-4 py-2 text-slate-500 font-bold hover:text-slate-700 transition-colors"
+                        className="px-4 py-2 text-slate-600 font-bold hover:text-slate-700 transition-colors"
                     >
                         {t('modals.save_project.cancel_btn')}
                     </button>
@@ -49700,14 +50104,14 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       {isTranslateModalOpen && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
+                <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
                 <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
                     <div className="bg-indigo-100 p-2 rounded-full text-indigo-600"><Languages size={20}/></div>
                     {t('header.translate_button')}
                 </h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1">{t('translate.target_label')}</label>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">{t('translate.target_label')}</label>
                         <input aria-label={t('common.enter_target_translation_lang')}
                             type="text"
                             value={targetTranslationLang}
@@ -49759,7 +50163,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     <div className="flex gap-3">
                         <button
                             onClick={handleSetShowCloudWarningToFalse}
-                            className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors"
+                            className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors"
                         >
                             {t('modals.cloud_sync.cancel_btn')}
                         </button>
@@ -49783,20 +50187,20 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 {/* ── Batch Mode Toggle ── */}
                 <div className="flex justify-center mb-4">
                   <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
-                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📄 Single PDF</button>
-                    <button onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📂 Batch</button>
-                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>🌐 Website / HTML</button>
+                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📄 Single PDF</button>
+                    <button onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📂 Batch</button>
+                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>🌐 Website / HTML</button>
                   </div>
                 </div>
                 {pdfWebMode ? (
                   /* ═══ WEBSITE / HTML MODE ═══ */
                   <div className="text-left space-y-4">
                     <h3 className="text-lg font-black text-slate-800 mb-1 text-center">🌐 Website & HTML Accessibility</h3>
-                    <p className="text-xs text-slate-500 text-center">Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation</p>
+                    <p className="text-xs text-slate-600 text-center">Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation</p>
 
                     {/* URL Input */}
                     <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase" htmlFor="web-audit-url">Website URL</label>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase" htmlFor="web-audit-url">Website URL</label>
                       <div className="flex gap-2 mt-1">
                         <input type="url" id="web-audit-url" placeholder="https://example.com" aria-label="Website URL to audit"
                           className="flex-1 text-sm border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
@@ -49823,12 +50227,12 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                           🔍 Fetch
                         </button>
                       </div>
-                      <p className="text-[9px] text-slate-400 mt-1">Or paste HTML source code directly below</p>
+                      <p className="text-[9px] text-slate-600 mt-1">Or paste HTML source code directly below</p>
                     </div>
 
                     {/* HTML Input */}
                     <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase" htmlFor="web-audit-html">HTML Source</label>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">HTML Source</label>
                       <textarea id="web-audit-html" rows={8} placeholder="Paste HTML source code here, or use Fetch above..."
                         className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
                         aria-label="HTML source code to audit" />
@@ -49913,7 +50317,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                         🔧 Audit & Remediate
                       </button>
                     </div>
-                    <p className="text-[10px] text-slate-400 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
+                    <p className="text-[10px] text-slate-600 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
                   </div>
                 ) : pdfBatchMode ? (
                   /* ═══ BATCH MODE UI ═══ */
@@ -49944,7 +50348,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       >
                         <div className="text-4xl mb-2">📥</div>
                         <p className="text-sm font-bold text-indigo-600">Drag & drop PDFs here</p>
-                        <p className="text-xs text-slate-400 mt-1">or click to browse</p>
+                        <p className="text-xs text-slate-600 mt-1">or click to browse</p>
                         <input type="file" accept=".pdf" multiple className="hidden" id="batch-pdf-input" onChange={(e) => {
                           const files = [...(e.target.files || [])].filter(f => f.type === 'application/pdf');
                           files.forEach(file => {
@@ -50003,9 +50407,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       <div className="mb-4 p-4 bg-green-50 rounded-xl border border-green-200">
                         <h4 className="text-sm font-black text-green-800 mb-2">{'\u2705'} Batch Complete</h4>
                         <div className="grid grid-cols-3 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[9px] text-slate-500">Succeeded</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[9px] text-slate-500">Avg Improvement</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[9px] text-slate-500">Scored 90+</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[9px] text-slate-600">Succeeded</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[9px] text-slate-600">Avg Improvement</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[9px] text-slate-600">Scored 90+</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
                           <p>{'\ud83d\udcc8'} Average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter}</p>
@@ -50170,8 +50574,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <>
                 <div className="text-5xl mb-4">📄</div>
                 <h3 className="text-lg font-black text-slate-800 mb-2">PDF Uploaded: {pdfAuditResult.fileName}</h3>
-                <p className="text-sm text-slate-500 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
-                <p className="text-sm text-slate-500 mb-4">Choose how to process this PDF:</p>
+                <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
+                <p className="text-sm text-slate-600 mb-4">Choose how to process this PDF:</p>
 
                 <details className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
                   <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
@@ -50182,7 +50586,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-slate-400">{pdfAuditorCount <= 2 ? 'Fast' : pdfAuditorCount <= 5 ? 'Balanced' : pdfAuditorCount <= 7 ? 'Thorough' : 'Research-grade'}</span>
                       </div>
                       <input type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label="Number of audit passes" />
-                      <div className="flex justify-between text-[8px] text-slate-400"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
+                      <div className="flex justify-between text-[10px] text-slate-500"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
@@ -50190,7 +50594,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-slate-400">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
                       <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label="Target accessibility score" />
-                      <div className="flex justify-between text-[8px] text-slate-400"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
+                      <div className="flex justify-between text-[10px] text-slate-500"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
@@ -50198,7 +50602,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-slate-400">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
                       </div>
                       <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
-                      <div className="flex justify-between text-[8px] text-slate-400"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
+                      <div className="flex justify-between text-[10px] text-slate-500"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
@@ -50206,7 +50610,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-slate-400">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
                       </div>
                       <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label="Polish pass count" />
-                      <div className="flex justify-between text-[8px] text-slate-400"><span>0</span><span>2 (default)</span><span>3</span></div>
+                      <div className="flex justify-between text-[10px] text-slate-500"><span>0</span><span>2 (default)</span><span>3</span></div>
                     </div>
                   </div>
                 </details>
@@ -50218,19 +50622,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="px-3 pb-3 pt-1 space-y-3">
                     {/* Branding source */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Brand Colors</div>
-                      <p className="text-[8px] text-slate-400 mb-1">Where do the colors come from?</p>
+                      <div className="text-[9px] font-bold text-slate-600 uppercase mb-0.5">Brand Colors</div>
+                      <p className="text-[10px] text-slate-600 mb-1">Where do the colors come from?</p>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200">
                           <div className="text-[9px] font-bold text-slate-700">🎨 Match Original</div>
-                          <div className="text-[8px] text-slate-400">Extract colors from this PDF</div>
+                          <div className="text-[10px] text-slate-500">Extract colors from this PDF</div>
                         </button>
                         <label data-brand-mode="upload"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer">
                           <div className="text-[9px] font-bold text-slate-700">📎 Upload Brand Guide</div>
-                          <div className="text-[8px] text-slate-400">Use a different doc/logo</div>
+                          <div className="text-[10px] text-slate-500">Use a different doc/logo</div>
                           <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
                             addToast('🎨 Extracting brand colors...', 'info');
@@ -50260,14 +50664,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           data-brand-mode="none"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
                           <div className="text-[9px] font-bold text-slate-700">⬜ No Branding</div>
-                          <div className="text-[8px] text-slate-400">Use default palette</div>
+                          <div className="text-[10px] text-slate-500">Use default palette</div>
                         </button>
                       </div>
                     </div>
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Style Seed</div>
-                      <p className="text-[8px] text-slate-400 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
+                      <div className="text-[9px] font-bold text-slate-600 uppercase mb-0.5">Style Seed</div>
+                      <p className="text-[10px] text-slate-600 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
                       <div className="flex flex-wrap gap-1">
                         {[
                           { id: 'professional', label: '💼 Professional', desc: 'Clean, corporate' },
@@ -50285,7 +50689,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             data-style-pref={s.id}
                             className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
                             <div className="text-[9px] font-bold text-slate-700">{s.label}</div>
-                            <div className="text-[8px] text-slate-400">{s.desc}</div>
+                            <div className="text-[10px] text-slate-500">{s.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -50298,7 +50702,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <>
                             {savedKeys.length > 0 && (
                               <div className="mt-2">
-                                <div className="text-[8px] text-slate-500 font-bold mb-1">Your Custom Styles</div>
+                                <div className="text-[10px] text-slate-600 font-bold mb-1">Your Custom Styles</div>
                                 <div className="flex flex-wrap gap-1">
                                   {savedKeys.map(k => {
                                     var s = saved[k];
@@ -50313,7 +50717,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         }}
                                           className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
                                           <div className="text-[9px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
-                                          <div className="text-[8px] text-slate-400">{s.font || 'Custom'}</div>
+                                          <div className="text-[10px] text-slate-500">{s.font || 'Custom'}</div>
                                         </button>
                                         <button onClick={() => {
                                           var updated = {...saved}; delete updated[k];
@@ -50331,12 +50735,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-[8px] text-slate-500 font-bold">Style Name</label>
-                                    <input id="custom-style-name" type="text" placeholder="My Style" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded" />
+                                    <label htmlFor="custom-style-name" className="text-[10px] text-slate-600 font-bold">Style Name</label>
+                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded" />
                                   </div>
                                   <div>
-                                    <label className="text-[8px] text-slate-500 font-bold">Font</label>
-                                    <select id="custom-style-font" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded">
+                                    <label htmlFor="custom-style-font" className="text-[10px] text-slate-600 font-bold">Font</label>
+                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded">
                                       <option value="'Inter', system-ui, sans-serif">Inter (Clean)</option>
                                       <option value="'Georgia', serif">Georgia (Serif)</option>
                                       <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (A11y)</option>
@@ -50349,16 +50753,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <label className="text-[8px] text-slate-500 font-bold">Heading Color</label>
-                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <label htmlFor="custom-style-heading" className="text-[10px] text-slate-600 font-bold">Heading Color</label>
+                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label="Heading color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label className="text-[8px] text-slate-500 font-bold">Accent Color</label>
-                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <label htmlFor="custom-style-accent" className="text-[10px] text-slate-600 font-bold">Accent Color</label>
+                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label="Accent color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label className="text-[8px] text-slate-500 font-bold">Background</label>
-                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <label htmlFor="custom-style-bg" className="text-[10px] text-slate-600 font-bold">Background</label>
+                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label="Background color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                 </div>
                                 <button onClick={() => {
@@ -50400,9 +50804,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400 text-center mt-2">"Audit & Remediate" analyzes accessibility, fixes issues, and verifies with axe-core. "Text Extraction" extracts raw text for content generation.</p>
+                <p className="text-[10px] text-slate-600 text-center mt-2">"Audit & Remediate" analyzes accessibility, fixes issues, and verifies with axe-core. "Text Extraction" extracts raw text for content generation.</p>
                 {pdfAuditResult?.pageCount > 0 && (
-                  <p className="text-[10px] text-slate-500 text-center mt-1 font-medium">
+                  <p className="text-[10px] text-slate-600 text-center mt-1 font-medium">
                     ⏱ Estimated time: {pdfAuditResult.pageCount <= 5 ? '1-3 minutes' : pdfAuditResult.pageCount <= 20 ? '3-8 minutes' : pdfAuditResult.pageCount <= 50 ? '8-15 minutes' : '15-30+ minutes'} for {pdfAuditResult.pageCount} page{pdfAuditResult.pageCount !== 1 ? 's' : ''} — longer documents take proportionally more time
                   </p>
                 )}
@@ -50445,14 +50849,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="text-xs text-slate-400 hover:text-slate-600 font-bold">Cancel</button>
+                  <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
                 </div>
               </div>
             ) : pdfAuditLoading ? (
               <div className="p-12 text-center" role="status" aria-live="polite">
                 <div className="text-5xl mb-4 animate-pulse" aria-hidden="true">♿</div>
                 <h3 className="text-lg font-black text-slate-800 mb-2">Auditing PDF Accessibility...</h3>
-                <p className="text-sm text-slate-500">Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.</p>
+                <p className="text-sm text-slate-600">Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.</p>
                 <div className="mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden" role="progressbar" aria-label="Audit in progress" aria-valuemin={0} aria-valuemax={100}>
                   <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 rounded-full" style={{animation: 'auditProgress 25s ease-out forwards'}}></div>
                 </div>
@@ -50531,15 +50935,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="bg-white/70 rounded-lg border border-indigo-100 p-2.5">
                     <div className="flex gap-4 justify-center text-center">
                       <div>
-                        <div className="text-[9px] font-bold text-slate-500 uppercase">Web</div>
+                        <div className="text-[9px] font-bold text-slate-600 uppercase">Web</div>
                         <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
                       </div>
                       <div>
-                        <div className="text-[9px] font-bold text-slate-500 uppercase">Email</div>
+                        <div className="text-[9px] font-bold text-slate-600 uppercase">Email</div>
                         <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
                       </div>
                       <div>
-                        <div className="text-[9px] font-bold text-slate-500 uppercase">Phone</div>
+                        <div className="text-[9px] font-bold text-slate-600 uppercase">Phone</div>
                         <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
                       </div>
                     </div>
@@ -50609,20 +51013,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="grid grid-cols-2 gap-2 mt-1">
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.ci95?.[0]}–{pdfAuditResult.ci95?.[1]}</div>
-                            <div className="text-[8px] text-slate-500 font-bold uppercase">95% Confidence Interval</div>
+                            <div className="text-[10px] text-slate-600 font-bold uppercase">95% Confidence Interval</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.scoreSD}</div>
-                            <div className="text-[8px] text-slate-500 font-bold uppercase">Standard Deviation</div>
+                            <div className="text-[10px] text-slate-600 font-bold uppercase">Standard Deviation</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
-                            <div className="text-[8px] text-slate-500 font-bold uppercase">Agreement Score</div>
+                            <div className="text-[10px] text-slate-600 font-bold uppercase">Agreement Score</div>
                           </div>
                           {pdfAuditResult.cronbachAlpha !== null && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                               <div className={`text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? 'text-green-700' : 'text-amber-700'}`}>{pdfAuditResult.cronbachAlpha}</div>
-                              <div className="text-[8px] text-slate-500 font-bold uppercase">Cronbach's α</div>
+                              <div className="text-[10px] text-slate-600 font-bold uppercase">Cronbach's α</div>
                             </div>
                           )}
                         </div>
@@ -50665,7 +51069,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
-                          <div className="text-[9px] text-slate-500 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
+                          <div className="text-[9px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
                         )}
                       </div>
                       {/* Two-engine scores side by side */}
@@ -50726,12 +51130,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-blue-800 font-black">{axeScore}</span>
                             <span className="text-slate-400">)</span>
                             <span className="text-slate-400 mx-1">/</span>
-                            <span className="text-slate-500 font-bold">2</span>
+                            <span className="text-slate-600 font-bold">2</span>
                             <span className="text-slate-400 mx-2">=</span>
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-400 text-xs">/100</span>
                           </div>
-                          <div className="text-[8px] text-slate-500 mt-0.5">Average of both engines (equal weight)</div>
+                          <div className="text-[10px] text-slate-600 mt-0.5">Average of both engines (equal weight)</div>
                         </div>
                       )}
                     </div>
@@ -50949,7 +51353,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label="Fix and verify progress" aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
                           <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : pdfFixStep.includes('Auto-fix') ? '96%' : '5%' }}></div>
                         </div>
-                        <div className="text-[10px] text-slate-500 mt-0.5 text-center">{pdfFixStep}</div>
+                        <div className="text-[10px] text-slate-600 mt-0.5 text-center">{pdfFixStep}</div>
 
                         {/* ── Why Accessibility Matters — educational content during wait ── */}
                         <div className="mt-4 bg-gradient-to-br from-sky-50 via-blue-50/40 to-indigo-50/30 border border-sky-200/60 rounded-2xl p-5 space-y-3" style={{ animation: 'fadeInUp 0.9s ease-out 1.5s both' }}>
@@ -50988,7 +51392,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           </div>
 
-                          <p className="text-[9px] text-slate-500 text-center leading-relaxed italic">
+                          <p className="text-[9px] text-slate-600 text-center leading-relaxed italic">
                             Accessibility is the digital expression of equity. When we design for the margins, we create better experiences for the center.
                           </p>
                         </div>
@@ -51090,15 +51494,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="bg-white/80 rounded-lg border border-indigo-100 p-3">
                             <div className="grid grid-cols-3 gap-2 text-center">
                               <div>
-                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Web</div>
+                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Web</div>
                                 <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
                               </div>
                               <div>
-                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Email</div>
+                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Email</div>
                                 <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
                               </div>
                               <div>
-                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Phone</div>
+                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Phone</div>
                                 <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
                               </div>
                             </div>
@@ -51115,7 +51519,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 border-t border-indigo-100"></div>
                           </div>
 
-                          <p className="text-[9px] text-slate-500 text-center leading-relaxed italic">
+                          <p className="text-[9px] text-slate-600 text-center leading-relaxed italic">
                             While AlloFlow handles automated fixes, Knowbility's team ensures documents are
                             fully usable by people with disabilities — not just technically compliant. Serving
                             corporations, government agencies, educational institutions, and nonprofits since 1999.
@@ -51164,7 +51568,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           a.download = `a11y-audit-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.json`;
                           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                           if (addToast) addToast('JSON data exported', 'success');
-                        }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100">
+                        }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100">
                           📊 JSON Data (research)
                         </button>
                       </div>
@@ -51173,7 +51577,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       Text Extract
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-500 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
+                  <p className="text-[10px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
 
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
@@ -51210,14 +51614,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className={`text-3xl font-black ${(blendedBefore || 0) < 50 ? 'text-red-600' : (blendedBefore || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
                             {beforeDisplay}<span className="text-sm opacity-60">/100</span>
                           </div>
-                          <div className="text-[10px] font-bold text-slate-500 uppercase">Before</div>
+                          <div className="text-[10px] font-bold text-slate-600 uppercase">Before</div>
                         </div>
                         <div className="text-2xl text-slate-300">{'\u2192'}</div>
                         <div className="text-center">
                           <div className={`text-3xl font-black ${(blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
                             {afterDisplay}<span className="text-sm opacity-60">/100</span>
                           </div>
-                          <div className="text-[10px] font-bold text-slate-500 uppercase">After</div>
+                          <div className="text-[10px] font-bold text-slate-600 uppercase">After</div>
                         </div>
                         {gain > 0 && (
                           <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
@@ -51310,7 +51714,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           {pdfFixResult.axeAudit.minor.length > 0 && (
                             <div className="bg-slate-50 rounded-lg p-2 border border-slate-200">
-                              <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Minor ({pdfFixResult.axeAudit.minor.length})</div>
+                              <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Minor ({pdfFixResult.axeAudit.minor.length})</div>
                               {pdfFixResult.axeAudit.minor.map((v, i) => (
                                 <div key={i} className="text-[10px] text-slate-600 mb-0.5">⚪ {v.description}</div>
                               ))}
@@ -51379,7 +51783,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       )}
                       {!pdfFixResult.axeAudit && (
                         <div className="bg-slate-50 rounded-lg p-2 border border-slate-200 text-center">
-                          <div className="text-[10px] text-slate-500">axe-core automated check could not run (CDN may be blocked). AI verification above is still valid.</div>
+                          <div className="text-[10px] text-slate-600">axe-core automated check could not run (CDN may be blocked). AI verification above is still valid.</div>
                         </div>
                       )}
 
@@ -51409,7 +51813,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="flex gap-2 mt-1.5 flex-wrap">
                                     <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility.org</a>
                                     <a href="mailto:knowbility@knowbility.org" className="text-[9px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility@knowbility.org</a>
-                                    <span className="text-[9px] text-slate-500">512-527-3138</span>
+                                    <span className="text-[9px] text-slate-600">512-527-3138</span>
                                   </div>
                                 </div>
                               </div>
@@ -51662,7 +52066,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                               addToast('JSON data exported', 'success');
-                            }} className="w-full px-4 py-2 text-left text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors border-t border-slate-100">
+                            }} className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
                               📊 JSON Data (research)
                             </button>
                           </div>
@@ -51802,10 +52206,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Alternative Formats (matching Anthology Ally feature set) */}
                       <details className="group">
                         <summary className="text-[10px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
-                          📑 Alternative Formats <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                          📑 Alternative Formats <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-3 space-y-1.5">
-                          <p className="text-[9px] text-slate-500">Download the remediated document in accessible alternative formats</p>
+                          <p className="text-[9px] text-slate-600">Download the remediated document in accessible alternative formats</p>
 
                           {/* ePub */}
                           <button onClick={() => {
@@ -51997,7 +52401,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             ))}
                           </div>
                         )}
-                        <p className="text-[9px] text-slate-500">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
+                        <p className="text-[9px] text-slate-600">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
                       </div>
 
                       {/* Differentiation Tools */}
@@ -52268,7 +52672,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* ── Remediation Changelog ── */}
                       <details className="group">
                         <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
-                          📋 What Changed <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                          📋 What Changed <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-white rounded-lg border border-slate-200 p-3 space-y-1.5 text-xs text-slate-600">
                           {(() => {
@@ -52301,26 +52705,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* ── Plain Language Summary Generator ── */}
                       <details className="group">
                         <summary className="text-[10px] font-bold text-blue-600 uppercase tracking-widest cursor-pointer hover:text-blue-800 transition-colors flex items-center gap-1">
-                          📖 Plain Language Summary <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                          📖 Plain Language Summary <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 space-y-2">
-                          <p className="text-[10px] text-slate-500">Generate an easy-to-read version for parents, guardians, or community members.</p>
+                          <p className="text-[10px] text-slate-600">Generate an easy-to-read version for parents, guardians, or community members.</p>
                           <div className="flex gap-2">
                             <div className="flex-1">
-                              <label className="text-[9px] font-bold text-slate-500 uppercase">Language</label>
+                              <label className="text-[9px] font-bold text-slate-600 uppercase">Language</label>
                               <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
                               <datalist id="summary-lang-list">
                                 <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
                               </datalist>
                             </div>
                             <div className="w-20">
-                              <label className="text-[9px] font-bold text-slate-500 uppercase">Level</label>
+                              <label className="text-[9px] font-bold text-slate-600 uppercase">Level</label>
                               <select id="summary-level" className="w-full text-[10px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="5">
                                 <option value="3">3rd</option><option value="5">5th</option><option value="8">8th</option><option value="adult">Adult</option>
                               </select>
                             </div>
                             <div className="w-20">
-                              <label className="text-[9px] font-bold text-slate-500 uppercase">Length</label>
+                              <label className="text-[9px] font-bold text-slate-600 uppercase">Length</label>
                               <select id="summary-length" className="w-full text-[10px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="medium">
                                 <option value="brief">Brief</option><option value="medium">Medium</option><option value="detailed">Detailed</option>
                               </select>
@@ -52395,12 +52799,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <X size={18} />
                 </button>
               </div>
-              <p className="text-[10px] text-slate-500">Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.</p>
+              <p className="text-[10px] text-slate-600">Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.</p>
 
               {/* Style Seed picker — WCAG-validated styling */}
               <div>
                 <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Style</div>
-                <p className="text-[8px] text-slate-400 mb-1">WCAG compliance guaranteed — sanitizer runs on every style change.</p>
+                <p className="text-[10px] text-slate-600 mb-1">WCAG compliance guaranteed — sanitizer runs on every style change.</p>
                 <div className="grid grid-cols-2 gap-1">
                   {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === 'Match Original').map(([key, s]) => (
                     <button key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}
@@ -52462,13 +52866,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     }} className="px-2 py-1 bg-red-50 border border-red-200 rounded-md text-[9px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
                   )}
                 </div>
-                <p className="text-[9px] text-slate-400 mb-2">One-click AI restyling. These override the theme above.</p>
+                <p className="text-[9px] text-slate-600 mb-2">One-click AI restyling. These override the theme above.</p>
               </div>
 
               {/* Reference document theme extraction */}
               <div>
                 <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">📎 Brand Match</div>
-                <label className="w-full flex items-center gap-2 px-2 py-1.5 bg-white border border-dashed border-slate-300 rounded-lg text-[10px] text-slate-500 hover:border-indigo-400 hover:text-indigo-600 cursor-pointer transition-colors">
+                <label className="w-full flex items-center gap-2 px-2 py-1.5 bg-white border border-dashed border-slate-300 rounded-lg text-[10px] text-slate-600 hover:border-indigo-400 hover:text-indigo-600 cursor-pointer transition-colors">
                   📎 Upload brand reference (PDF, image, or logo)
                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
@@ -52513,7 +52917,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Manual color/font editor */}
               <details className="group">
                 <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
-                  🎨 Custom Colors & Fonts <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                  🎨 Custom Colors & Fonts <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200">
                   {[
@@ -52599,7 +53003,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <input type="range" min="12" max="28" value={pdfPreviewFontSize}
                   onChange={(e) => { const v = parseInt(e.target.value); setPdfPreviewFontSize(v); setTimeout(() => updatePdfPreview(undefined, v), 50); }}
                   className="w-full" aria-label="Font size" />
-                <div className="flex justify-between text-[9px] text-slate-400"><span>12px</span><span>28px</span></div>
+                <div className="flex justify-between text-[9px] text-slate-500"><span>12px</span><span>28px</span></div>
               </div>
 
               {/* A11y Inspect toggle */}
@@ -52608,7 +53012,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 🔍 A11y Inspect {pdfPreviewA11yInspect ? 'ON' : 'OFF'}
               </button>
               {pdfPreviewA11yInspect && (
-                <div className="text-[9px] text-slate-500 space-y-0.5 bg-slate-50 rounded-lg p-2">
+                <div className="text-[9px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2">
                   <div><span className="inline-block w-3 h-2 bg-violet-600 rounded mr-1"></span> Headings (H1-H6)</div>
                   <div><span className="inline-block w-3 h-2 bg-blue-600 rounded mr-1"></span> Images + alt text</div>
                   <div><span className="inline-block w-3 h-2 bg-emerald-600 rounded mr-1"></span> Tables + headers</div>
@@ -52706,7 +53110,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {callImagen && (
                 <details className="group">
                   <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
-                    🖼️ AI Image Tools <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                    🖼️ AI Image Tools <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                   </summary>
                   <div className="mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-200">
                     <div>
@@ -52743,7 +53147,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ✨ Generate & Insert
                       </button>
                     </div>
-                    <p className="text-[9px] text-slate-400">Or click an image in the preview, then:</p>
+                    <p className="text-[9px] text-slate-500">Or click an image in the preview, then:</p>
                     <button onClick={async () => {
                       const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                       const sel = doc.getSelection();
@@ -52768,10 +53172,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Layout & Design Tools */}
               <details className="group">
                 <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
-                  📐 Layout & Design <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                  📐 Layout & Design <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200">
-                  <div className="text-[9px] font-bold text-slate-500 uppercase">Insert Blocks</div>
+                  <div className="text-[9px] font-bold text-slate-600 uppercase">Insert Blocks</div>
                   <div className="grid grid-cols-2 gap-1">
                     {[
                       { label: 'Info Box', icon: 'ℹ️', html: '<div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:8px;margin:12px 0"><strong style="color:#1e40af">Note:</strong> <span>Enter info here</span></div>' },
@@ -52813,7 +53217,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ))}
                   </div>
 
-                  <div className="text-[9px] font-bold text-slate-500 uppercase mt-2">Spacing</div>
+                  <div className="text-[9px] font-bold text-slate-600 uppercase mt-2">Spacing</div>
                   <div className="flex gap-1">
                     {[
                       { label: 'Compact', val: '0.25rem' },
@@ -52831,7 +53235,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ))}
                   </div>
 
-                  <div className="text-[9px] font-bold text-slate-500 uppercase mt-2">Header / Branding</div>
+                  <div className="text-[9px] font-bold text-slate-600 uppercase mt-2">Header / Branding</div>
                   <button onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const existing = doc.getElementById('doc-header-brand');
@@ -52863,7 +53267,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     📋 Toggle Document Footer
                   </button>
 
-                  <div className="text-[9px] font-bold text-slate-500 uppercase mt-2">Templates</div>
+                  <div className="text-[9px] font-bold text-slate-600 uppercase mt-2">Templates</div>
                   <select onChange={(e) => {
                     if (!e.target.value) return;
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
@@ -52907,7 +53311,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     try { savedTemplates = JSON.parse(localStorage.getItem('alloflow_templates') || '[]'); } catch(e) {}
                     return savedTemplates.length > 0 ? (
                       <div className="mt-1.5">
-                        <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Saved Accessible Templates</div>
+                        <div className="text-[9px] font-bold text-slate-600 uppercase mb-1">Saved Accessible Templates</div>
                         <div className="space-y-1">
                           {savedTemplates.map((tmpl, i) => (
                             <button key={i} onClick={() => {
@@ -52977,7 +53381,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Document Stats & Readability */}
               <details className="group">
                 <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
-                  📊 Stats & Readability <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                  📊 Stats & Readability <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-2">
                   <button onClick={() => {
@@ -53191,7 +53595,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Watermark / Draft Stamp */}
               <details className="group">
                 <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
-                  🔒 Watermark & Stamps <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                  🔒 Watermark & Stamps <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-1">
                   {[
@@ -53219,7 +53623,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </button>
                   ))}
                   <div className="border-t border-slate-200 pt-1.5 mt-1">
-                    <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Version Stamp</div>
+                    <div className="text-[9px] font-bold text-slate-600 uppercase mb-1">Version Stamp</div>
                     {[
                       { label: 'Version 1.0', icon: '📌' },
                       { label: 'Revised ' + new Date().toLocaleDateString(), icon: '📝' },
@@ -53403,7 +53807,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 }} className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
                   📄 Save as HTML
                 </button>
-                <button onClick={() => { setPdfPreviewOpen(false); }} className="w-full text-[10px] text-slate-400 hover:text-slate-600 font-bold text-center py-1">
+                <button onClick={() => { setPdfPreviewOpen(false); }} className="w-full text-[10px] text-slate-600 hover:text-slate-600 font-bold text-center py-1">
                   Close Preview
                 </button>
               </div>
@@ -53411,7 +53815,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
             {/* Right panel: live preview iframe */}
             <div className="flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-200 overflow-hidden flex flex-col">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[10px] text-slate-500 shrink-0">
+              <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[10px] text-slate-600 shrink-0">
                 <span className="font-bold text-slate-700">Live Preview</span>
                 <span>— select text, then use the toolbar to format</span>
                 <span className="ml-auto font-mono">{(pendingPdfFile?.name || 'document.pdf')}</span>
@@ -53613,7 +54017,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       {isProjectSettingsOpen && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetIsProjectSettingsOpenToFalse}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={handleSetIsProjectSettingsOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={20}/></button>
+            <button onClick={handleSetIsProjectSettingsOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-indigo-900">
                 <div className="bg-indigo-100 p-2 rounded-full"><Settings2 size={20} className="text-indigo-600"/></div>
                 <h3 className="font-black text-lg">{t('project_settings.title')}</h3>
@@ -53687,7 +54091,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             className="flex-grow p-2 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-sm font-bold text-slate-700"
                         />
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1.5 font-medium ml-1">{t('project_settings.unlock_xp_desc')}</p>
+                    <p className="text-[10px] text-slate-600 mt-1.5 font-medium ml-1">{t('project_settings.unlock_xp_desc')}</p>
                 </div>
                 <div>
                     <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">{t('project_settings.base_xp')}</label>
@@ -53703,7 +54107,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             className="flex-grow p-2 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-sm font-bold text-slate-700"
                         />
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1.5 font-medium ml-1">{t('project_settings.base_xp_desc')}</p>
+                    <p className="text-[10px] text-slate-600 mt-1.5 font-medium ml-1">{t('project_settings.base_xp_desc')}</p>
                 </div>
                 <div>
                     <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">{t('project_settings.storybook_xp')}</label>
@@ -53719,7 +54123,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             className="flex-grow p-2 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-sm font-bold text-slate-700"
                         />
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1.5 font-medium ml-1">{t('project_settings.storybook_xp_desc')}</p>
+                    <p className="text-[10px] text-slate-600 mt-1.5 font-medium ml-1">{t('project_settings.storybook_xp_desc')}</p>
                 </div>
                 <div className="pt-4 border-t border-slate-100 mt-4">
                     <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">{t('project_settings.permissions_header')}</h4>
@@ -53808,14 +54212,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
       {showAIBackendModal && _isCanvasEnv && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
+            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
                 <h3 className="font-black text-lg">Advanced Settings</h3>
             </div>
             <div className="space-y-4">
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Google Search API Key <span className="normal-case font-normal text-slate-500">(optional)</span></label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Google Search API Key <span className="normal-case font-normal text-slate-500">(optional)</span></label>
                     <input
                         id="ai-canvas-cse-key" aria-label="Google Search API Key"
                         type="password"
@@ -53828,10 +54232,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-500 mt-1">Power users: enter your own Google Custom Search API key (100 free queries/day)</p>
+                    <p className="text-[11px] text-slate-600 mt-1">Power users: enter your own Google Custom Search API key (100 free queries/day)</p>
                 </div>
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional)</span></label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional)</span></label>
                     <input
                         id="ai-canvas-wolfram" aria-label="Wolfram Alpha App ID"
                         type="text"
@@ -53843,7 +54247,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-500 mt-1">Free: 2,000 queries/month. Adds exact math solving and step-by-step verification</p>
+                    <p className="text-[11px] text-slate-600 mt-1">Free: 2,000 queries/month. Adds exact math solving and step-by-step verification</p>
                 </div>
                 <div className="flex justify-end pt-2">
                     <button
@@ -53861,7 +54265,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       {showAIBackendModal && !_isCanvasEnv && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
+            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
                 <h3 className="font-black text-lg">AI Backend Settings</h3>
@@ -53869,7 +54273,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
             <div className="space-y-4">
                 {/* ─── Section 1: Provider & Connection ─── */}
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Provider</label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Provider</label>
                     <select
                         aria-label="AI Backend Provider"
                         id="ai-backend-provider"
@@ -53894,7 +54298,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </select>
                 </div>
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Server URL</label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Server URL</label>
                     <input
                         id="ai-backend-url" aria-label="Custom AI backend URL"
                         type="text"
@@ -53908,7 +54312,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     />
                 </div>
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">API Key <span className="normal-case font-normal text-slate-500">(cloud providers only)</span></label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">API Key <span className="normal-case font-normal text-slate-500">(cloud providers only)</span></label>
                     <input
                         id="ai-backend-apikey" aria-label="Custom AI backend API key"
                         type="password"
@@ -53922,7 +54326,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     />
                 </div>
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional — enhances math)</span></label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional — enhances math)</span></label>
                     <input
                         id="ai-backend-wolfram" aria-label="Custom backend Wolfram App ID"
                         type="text"
@@ -53934,7 +54338,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-500 mt-1">Free: 2,000 queries/month • Adds exact math solving & step-by-step verification</p>
+                    <p className="text-[11px] text-slate-600 mt-1">Free: 2,000 queries/month • Adds exact math solving & step-by-step verification</p>
                 </div>
                 <div className="flex gap-2 pt-1">
                     <button
@@ -54013,7 +54417,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </div>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Default Model <span className="normal-case font-normal text-slate-500">(text generation)</span></label>
+                            <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">Default Model <span className="normal-case font-normal text-slate-500">(text generation)</span></label>
                             <select
                                 aria-label="Default AI model"
                                 id="ai-backend-model-default"
@@ -54030,7 +54434,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Fallback Model <span className="normal-case font-normal text-slate-500">(rate-limit cascade)</span></label>
+                            <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">Fallback Model <span className="normal-case font-normal text-slate-500">(rate-limit cascade)</span></label>
                             <select
                                 aria-label="Fallback AI model"
                                 id="ai-backend-model-fallback"
@@ -54046,7 +54450,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                                 <option value="">Same as default</option>
                             </select>
                         </div>
-                        <p className="text-[11px] text-slate-500 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
+                        <p className="text-[11px] text-slate-600 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
                     </div>
                 </div>
 
@@ -54116,11 +54520,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* ─── Active Config Summary ─── */}
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                    <p className="text-[10px] text-slate-600 font-medium leading-relaxed">
                         <strong className="text-slate-600">Active:</strong>{' '}
                         {(() => { try { const c = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}'); return c.backend ? (c.backend.charAt(0).toUpperCase() + c.backend.slice(1)) + (c.baseUrl ? ' → ' + c.baseUrl : '') : 'Gemini (default)'; } catch { return 'Gemini (default)'; } })()}
                     </p>
-                    <p className="text-[10px] text-slate-500 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>
+                    <p className="text-[10px] text-slate-600 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>
                 </div>
             </div>
           </div>
@@ -54143,7 +54547,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     aria-label={t('common.close_study_timer')}
                     data-help-key="timer_close_btn"
                     onClick={handleSetShowStudyTimerModalToFalse}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                 >
                     <X size={20} />
                 </button>
@@ -54152,7 +54556,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <h3 className="font-black text-lg">{t('timer.title')}</h3>
                 </div>
                 <div className="mb-6">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('timer.label_task')}</label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('timer.label_task')}</label>
                     <input aria-label={t('common.enter_study_task_label')}
                         data-help-key="timer_task_input"
                         type="text"
@@ -54218,7 +54622,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                                     style={{ width: `${Math.max(0, Math.min(100, ((studyDuration - studyTimeLeft) / studyDuration) * 100))}%` }}
                                 />
                             </div>
-                            <div className="text-[10px] text-slate-500 mt-1 font-medium">
+                            <div className="text-[10px] text-slate-600 mt-1 font-medium">
                                 {Math.round(((studyDuration - studyTimeLeft) / studyDuration) * 100)}% complete
                             </div>
                         </div>
@@ -54251,7 +54655,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             setStudyTimeLeft(0);
                             setStudyDuration(0);
                         }}
-                        className="px-4 py-3 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-red-500 rounded-xl font-bold transition-colors"
+                        className="px-4 py-3 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-red-500 rounded-xl font-bold transition-colors"
                         title={t('timer.reset')}
                     >
                         <RefreshCw size={20}/>
@@ -54275,10 +54679,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <button onClick={() => setShowVisualSupports(false)} className="text-white/70 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center">×</button>
               </div>
               <div className="flex border-b border-slate-200 bg-slate-50 flex-shrink-0">
-                <button onClick={() => setVsTab('boards')} className={`flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === 'boards' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => setVsTab('boards')} className={`flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === 'boards' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-600 hover:text-slate-700'}`}>
                   📋 Boards ({vsBoards.length})
                 </button>
-                <button onClick={() => setVsTab('schedules')} className={`flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === 'schedules' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => setVsTab('schedules')} className={`flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === 'schedules' ? 'text-purple-700 border-b-2 border-purple-600 bg-white' : 'text-slate-600 hover:text-slate-700'}`}>
                   📅 Schedules ({vsSchedules.length})
                 </button>
               </div>
@@ -54478,6 +54882,74 @@ Return ONLY the plain language summary in ${lang}.`, false);
             <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
             <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
           </div>
+          {/* ── Mic Permission Banner ── */}
+          {!micBannerDismissed && (
+            <div style={{
+              maxWidth: '620px', width: '100%', padding: '0 24px', marginBottom: '24px',
+              animation: 'fadeIn 0.5s ease-out',
+            }}>
+              <div style={{
+                backdropFilter: 'blur(20px)',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(129,140,248,0.3)',
+                borderRadius: '20px',
+                padding: '20px 24px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>🎤</span>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>
+                      {t('launch_pad.mic_title') || 'Microphone Setup'}
+                    </p>
+                    <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.7)', margin: 0, lineHeight: '1.5' }}>
+                      {t('launch_pad.mic_desc') || 'Some tools use your microphone for dictation, recording, and voice input.'}
+                    </p>
+                  </div>
+                </div>
+                {_isCanvasEnv && (
+                  <p style={{ fontSize: '10px', color: '#fbbf24', margin: 0, textAlign: 'center', lineHeight: '1.5', fontWeight: 600 }}>
+                    ⚠️ {t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'}
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <button
+                    onClick={requestMicPermission}
+                    disabled={micPermissionStatus === 'requesting'}
+                    aria-label="Enable microphone access"
+                    style={{
+                      padding: '10px 24px', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                      background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                      color: 'white', fontSize: '13px', fontWeight: 700,
+                      opacity: micPermissionStatus === 'requesting' ? 0.6 : 1,
+                      transition: 'all 0.2s',
+                      boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
+                    }}
+                  >
+                    {micPermissionStatus === 'requesting' ? '⏳ Requesting...' : '🎤 Enable Microphone'}
+                  </button>
+                  <button
+                    onClick={() => setMicBannerDismissed(true)}
+                    aria-label="Skip microphone setup"
+                    style={{
+                      padding: '10px 24px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.2)',
+                      cursor: 'pointer', background: 'rgba(255,255,255,0.06)',
+                      color: 'rgba(165,180,252,0.8)', fontSize: '13px', fontWeight: 600,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    Skip for Now
+                  </button>
+                </div>
+                {micPermissionStatus === 'granted' && (
+                  <p style={{ fontSize: '11px', color: '#34d399', margin: 0, fontWeight: 700 }}>✅ Microphone enabled!</p>
+                )}
+                {micPermissionStatus === 'denied' && (
+                  <p style={{ fontSize: '11px', color: '#f87171', margin: 0, fontWeight: 600 }}>Microphone was denied. You can enable it later in browser settings.</p>
+                )}
+              </div>
+            </div>
+          )}
           <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
             <div className="lp-card" style={{ animationDelay: '0.1s' }} onClick={() => { setHasSelectedMode(true); }}>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }}>🚀</div>
@@ -54584,7 +55056,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
+                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" aria-label="Close document builder"><X size={16} /></button>
                   </div>
                 </div>
@@ -54594,7 +55066,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Presets */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Presets</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Presets</div>
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => (
                       <button key={key} onClick={() => applyExportPreset(preset)}
@@ -54618,14 +55090,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <button onClick={() => {
                     const name = prompt('Preset name:');
                     if (name && name.trim()) saveExportPreset(name.trim());
-                  }} className="mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[10px] font-bold text-slate-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+                  }} className="mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[10px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
                     + Save Current as Preset
                   </button>
                 </div>
 
                 {/* Export Mode */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Format</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
                   <div className="flex gap-1">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
                       <button key={m} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
@@ -54638,7 +55110,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Style */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Style</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Style</div>
                   <div className="grid grid-cols-2 gap-1">
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
                       <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
@@ -54650,19 +55122,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Font */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Typography</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Typography</div>
                   <label className="flex items-center gap-2 text-xs text-slate-700 mb-2 cursor-pointer">
                     <input type="checkbox" checked={exportConfig.useAppFont} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, useAppFont: e.target.checked }))} className="rounded" />
                     Use app font ({FONT_OPTIONS.find(f => f.id === selectedFont)?.label || 'Default'})
                   </label>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500 shrink-0">Size:</span>
+                    <span className="text-[10px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
                       className="flex-1 accent-indigo-600" aria-label="Font size" />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-slate-500 shrink-0">Margins:</span>
+                    <span className="text-[10px] text-slate-600 shrink-0">Margins:</span>
                     <div className="flex gap-1 flex-1">
                       {[
                         { label: 'Narrow', val: '0.5in' },
@@ -54688,7 +55160,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {/* Word count + goal */}
                 <div className="bg-slate-50 rounded-lg border border-slate-200 p-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase">Word Count</span>
+                    <span className="text-[9px] font-bold text-slate-600 uppercase">Word Count</span>
                     <span className="text-[10px] font-mono text-slate-600" aria-live="polite">
                       {(() => {
                         const iframe = exportPreviewRef.current;
@@ -54698,7 +55170,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-[9px] text-slate-400 shrink-0" htmlFor="word-goal-input">Goal:</label>
+                    <label className="text-[9px] text-slate-500 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
                       className="flex-1 text-[10px] border border-slate-200 rounded px-2 py-1 bg-white"
                       aria-label="Target word count goal"
@@ -54720,8 +55192,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label="Word count progress">
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
-                  <div id="word-goal-label" className="text-[8px] text-slate-400 mt-0.5"></div>
-                  <div className="text-[8px] text-slate-500 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
+                  <div id="word-goal-label" className="text-[10px] text-slate-600 mt-0.5"></div>
+                  <div className="text-[10px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
                 {/* ── SECTION: Content ── */}
@@ -54730,7 +55202,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {/* Resource Toggles */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase">Include Resources</div>
+                    <div className="text-[10px] font-bold text-slate-600 uppercase">Include Resources</div>
                     {(() => {
                       const resourceKeys = ['includeAnalysis','includeSimplified','includeGlossary','includeQuiz','includeOutline','includeFaq','includeSentenceFrames','includeImage','includeMath','includeDbq','includeLessonPlan','includeUdlAdvice','includeBrainstorm'];
                       const allOn = resourceKeys.every(k => exportConfig[k]);
@@ -54766,7 +55238,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ['includeBrainstorm', '💡 Brainstorm', 'brainstorm'],
                       ].filter(([,, type]) => history.some(h => h && h.type === type));
                       if (available.length === 0) return (
-                        <p className="text-[10px] text-slate-400 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
+                        <p className="text-[10px] text-slate-600 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
                       );
                       return available.map(([key, label]) => {
                         const isTeacherOnly = teacherOnlyDefault.has(key);
@@ -54802,7 +55274,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Additional Options */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Options</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Options</div>
                   <div className="space-y-1">
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.includeTeacherKey} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeTeacherKey: e.target.checked }))} className="rounded" />
@@ -54817,7 +55289,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Audio Embedding */}
                 <div className={exportPreviewMode !== 'html' ? 'opacity-50' : ''}>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">🔊 Audio</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">🔊 Audio</div>
                   <div className="space-y-1">
                     <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' ? 'cursor-pointer hover:bg-white' : 'cursor-not-allowed'}`}>
                       <input type="checkbox" checked={exportConfig.includeAudioSource} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeAudioSource: e.target.checked }))} className="rounded" disabled={exportPreviewMode !== 'html'} />
@@ -54830,14 +55302,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     {exportPreviewMode !== 'html' ? (
                       <p className="text-[10px] text-amber-500 font-medium px-1">Switch to HTML format to enable audio embedding</p>
                     ) : (
-                      <p className="text-[10px] text-slate-400 italic px-1">Audio embeds as inline players in HTML exports.</p>
+                      <p className="text-[10px] text-slate-600 italic px-1">Audio embeds as inline players in HTML exports.</p>
                     )}
                   </div>
                 </div>
 
                 {/* AI Custom Style */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">✨ AI Style Studio</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">✨ AI Style Studio</div>
                   {/* Quick restyle presets */}
                   <div className="flex flex-wrap gap-1 mb-1.5">
                     {[
@@ -54867,13 +55339,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   {customExportCSS && <div className="flex items-center gap-2 mt-1">
                     <div className="text-[10px] text-green-600 font-medium">✓ Custom style active</div>
-                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[9px] text-slate-400 hover:text-red-500 font-bold">Reset</button>
+                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[9px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
 
                 {/* ── Accessibility Audit ── */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">♿ Accessibility Audit</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">♿ Accessibility Audit</div>
                   <button
                     onClick={async () => {
                       setExportAuditLoading(true); setExportAuditResult(null);
@@ -54905,7 +55377,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <div className="mt-2 space-y-2">
                       <div className={`text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? 'bg-green-50 border border-green-200' : exportAuditResult.score >= 60 ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
                         <div className={`text-2xl font-black ${exportAuditResult.score >= 80 ? 'text-green-700' : exportAuditResult.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{exportAuditResult.score}/100</div>
-                        <div className="text-[10px] font-bold text-slate-500 uppercase">WCAG 2.1 AA Score</div>
+                        <div className="text-[10px] font-bold text-slate-600 uppercase">WCAG 2.1 AA Score</div>
                       </div>
                       <p className="text-[11px] text-slate-600">{exportAuditResult.summary}</p>
                       {exportAuditResult.issues?.length > 0 && (
@@ -54917,7 +55389,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               <span>{typeof issue === 'string' ? issue : issue.issue}{issue.wcag ? ` (${issue.wcag})` : ''}</span>
                             </div>
                           ))}
-                          {exportAuditResult.issues.length > 5 && <div className="text-[10px] text-slate-400 italic">+{exportAuditResult.issues.length - 5} more</div>}
+                          {exportAuditResult.issues.length > 5 && <div className="text-[10px] text-slate-600 italic">+{exportAuditResult.issues.length - 5} more</div>}
                         </div>
                       )}
                       {exportAuditResult.passes?.length > 0 && (
@@ -54940,7 +55412,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0">
                   <div className="flex items-center gap-3">
                     <h3 className="text-sm font-bold text-slate-700">Live Preview</h3>
-                    <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
+                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <span className="text-[10px] text-indigo-500 font-medium">Click text to edit directly</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -54974,18 +55446,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         reader.readAsDataURL(file);
                       };
                       input.click();
-                    }} className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" title="Insert image into document">
+                    }} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" title="Insert image into document">
                       <ImageIcon size={12} /> Add Image
                     </button>
                     <div className="w-px h-5 bg-slate-200"></div>
                     <button onClick={toggleA11yInspect}
-                      className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-500 hover:text-violet-600 hover:bg-slate-100'}`}
+                      className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-600 hover:text-violet-600 hover:bg-slate-100'}`}
                       title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Click any badge to edit.">
                       ♿ A11y Inspect
                     </button>
                     <div className="w-px h-5 bg-slate-200"></div>
                                         {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
-<button onClick={updateExportPreview} className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
+<button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
                     <button onClick={executeExportFromPreview}
                       disabled={exportPreviewMode === 'slides' && !pptxLoaded}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -54994,7 +55466,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     {/* Alternative format exports */}
                     <details className="relative">
                       <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
-                        ♿ Alt Formats <span className="text-[8px] text-slate-400">▾</span>
+                        ♿ Alt Formats <span className="text-[10px] text-slate-500">▾</span>
                       </summary>
                       <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl p-2 z-50 w-48 space-y-1">
                         <button onClick={() => {
@@ -55260,7 +55732,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">⚙️</div>
                     <p className="text-lg font-bold text-slate-700">Loading STEM Lab...</p>
-                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowStemLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -55272,9 +55744,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
-                <p className="text-sm text-slate-500 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
+                <p className="text-sm text-slate-600 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
               </div>
-              <button onClick={() => setShowEducatorHub(false)} className="text-slate-500 hover:text-slate-600 text-xl" aria-label="Close educator tools">✕</button>
+              <button onClick={() => setShowEducatorHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label="Close educator tools">✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
@@ -55364,9 +55836,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>
-                <p className="text-sm text-slate-500 mt-1">{t('learning_hub.subtitle') || 'Choose a tool to explore'}</p>
+                <p className="text-sm text-slate-600 mt-1">{t('learning_hub.subtitle') || 'Choose a tool to explore'}</p>
               </div>
-              <button onClick={() => setShowLearningHub(false)} className="text-slate-500 hover:text-slate-600 text-xl" aria-label="Close learning hub">{'\u2715'}</button>
+              <button onClick={() => setShowLearningHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label="Close learning hub">{'\u2715'}</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
@@ -55424,7 +55896,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">📝</div>
                     <p className="text-lg font-bold text-slate-700">{t('report_writer.loading') || 'Loading Report Writer...'}</p>
-                    <p className="text-sm text-slate-500 mt-2">{t('report_writer.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('report_writer.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowReportWriter(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
                 </div>
             </div>
@@ -55480,7 +55952,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎨</div>
                     <p className="text-lg font-bold text-slate-700">Loading Symbol Studio...</p>
-                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -55496,6 +55968,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     onCallGeminiImageEdit: callGeminiImageEdit,
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
+                    onCallGeminiVision: callGeminiVision,
                     selectedVoice,
                     gradeLevel,
                     sourceTopic,
@@ -55538,7 +56011,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">📖</div>
                     <p className="text-lg font-bold text-slate-700">Loading StoryForge...</p>
-                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -55569,7 +56042,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎭</div>
                     <p className="text-lg font-bold text-slate-700">Loading LitLab...</p>
-                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -55595,7 +56068,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
                     <p className="text-lg font-bold text-slate-700">Loading SEL Hub...</p>
-                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -55626,7 +56099,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🔍</div>
                     <p className="text-lg font-bold text-slate-700">{t('behavior_lens.hub.title') || 'Loading BehaviorLens...'}</p>
-                    <p className="text-sm text-slate-500 mt-2">{t('behavior_lens.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('behavior_lens.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowBehaviorLens(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
                 </div>
             </div>
@@ -55699,7 +56172,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           />
                           <span className="text-[11px] font-bold">Keyboard Focus Narration</span>
                       </label>
-                      <span className="text-[10px] text-slate-500">{focusNarrationEnabled ? 'Tab to hear controls' : 'Off'}</span>
+                      <span className="text-[10px] text-slate-600">{focusNarrationEnabled ? 'Tab to hear controls' : 'Off'}</span>
                   </div>
                   {/* Content Items */}
                   <div className="flex-1 overflow-y-auto p-2 space-y-1" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
@@ -55718,7 +56191,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       ))}
                   </div>
                   {/* Footer Stats */}
-                  <div className="px-3 py-2 text-[10px] text-slate-500 border-t" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
+                  <div className="px-3 py-2 text-[10px] text-slate-600 border-t" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
                       {items.length} items &middot; Click any item to hear it &middot; Tab narration {focusNarrationEnabled ? 'ON' : 'OFF'}
                   </div>
               </div>

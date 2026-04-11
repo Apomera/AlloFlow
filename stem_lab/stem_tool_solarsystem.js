@@ -2258,49 +2258,101 @@ const d = labToolData.solarSystem;
                             ctx.restore();
                           }
                         } else if (sel.terrainType === 'earthlike') {
-                          // Earth: continents + ocean areas
-                          ctx.globalAlpha = 0.3;
-                          // Simplified continent shapes as organic blobs
-                          var continents = [
-                            { x: -0.2, y: -0.15, w: 0.25, h: 0.35, color: '#2d6a4f' }, // Americas-like
-                            { x: 0.15, y: -0.25, w: 0.2, h: 0.2, color: '#40916c' },   // Europe/Africa-like
-                            { x: 0.35, y: -0.1, w: 0.15, h: 0.25, color: '#52b788' },  // Asia-like
-                            { x: 0.25, y: 0.3, w: 0.18, h: 0.12, color: '#74c69d' },   // Australia-like
-                            { x: -0.1, y: 0.35, w: 0.3, h: 0.1, color: '#d8f3dc' },    // Antarctica-like
-                          ];
-                          var rotPhase = tick * 0.003 + _dragRotation; // slow auto-rotation + drag
-                          continents.forEach(function(cont) {
-                            var contX = cx + (cont.x + Math.sin(rotPhase) * 0.1) * planetR * 1.5;
-                            var contY = cy + cont.y * planetR * 1.5;
-                            if (Math.sqrt(Math.pow(contX - cx, 2) + Math.pow(contY - cy, 2)) < planetR * 0.85) {
-                              ctx.fillStyle = cont.color;
-                              ctx.beginPath();
-                              ctx.ellipse(contX, contY, cont.w * planetR, cont.h * planetR, rotPhase * 0.3, 0, Math.PI * 2);
-                              ctx.fill();
-                            }
-                          });
-                          ctx.globalAlpha = 1;
-                          // Ocean blue tint
-                          ctx.fillStyle = 'rgba(30,80,150,0.08)';
-                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
-                          // Ocean depth zone indicator (right edge)
+                          // Earth: realistic continents + ocean + clouds + atmosphere
+                          var rotPhase = tick * 0.003 + _dragRotation;
                           ctx.save();
-                          ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2); ctx.clip();
-                          var depthZones = [
-                            { y: 0, h: 0.15, color: 'rgba(14,165,233,0.06)', label: 'Sunlight' },
-                            { y: 0.15, h: 0.15, color: 'rgba(3,105,161,0.06)', label: 'Twilight' },
-                            { y: 0.30, h: 0.20, color: 'rgba(30,58,138,0.06)', label: 'Midnight' },
-                            { y: 0.50, h: 0.25, color: 'rgba(15,23,42,0.06)', label: 'Abyssal' },
-                            { y: 0.75, h: 0.25, color: 'rgba(0,10,20,0.08)', label: 'Hadal' }
-                          ];
-                          depthZones.forEach(function(dz) {
-                            ctx.fillStyle = dz.color;
-                            ctx.fillRect(cx - planetR, cy - planetR + dz.y * planetR * 2, planetR * 2, dz.h * planetR * 2);
-                          });
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 0.98, 0, Math.PI * 2); ctx.clip();
+                          // Ocean base — deep blue gradient
+                          var oceanGrad = ctx.createRadialGradient(cx - planetR * 0.2, cy - planetR * 0.2, planetR * 0.1, cx, cy, planetR);
+                          oceanGrad.addColorStop(0, '#1e6091'); oceanGrad.addColorStop(0.5, '#155e75'); oceanGrad.addColorStop(1, '#0c4a6e');
+                          ctx.globalAlpha = 0.35;
+                          ctx.fillStyle = oceanGrad;
+                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                          // Continent shapes (multi-point polygons for realistic coastlines)
+                          ctx.globalAlpha = 0.35;
+                          function drawContinent(points, color, offsetX) {
+                            var ox = Math.sin(rotPhase) * planetR * 0.4 + (offsetX || 0);
+                            ctx.beginPath();
+                            for (var ci = 0; ci < points.length; ci++) {
+                              var px = cx + (points[ci][0] + ox / planetR) * planetR;
+                              var py = cy + points[ci][1] * planetR;
+                              if (ci === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                            }
+                            ctx.closePath();
+                            ctx.fillStyle = color; ctx.fill();
+                            // Coastline
+                            ctx.strokeStyle = '#1b4332'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.15; ctx.stroke();
+                            ctx.globalAlpha = 0.35;
+                          }
+                          // North America
+                          drawContinent([[-0.35,-0.35],[-0.25,-0.45],[-0.15,-0.42],[-0.08,-0.35],[-0.05,-0.25],[-0.12,-0.15],[-0.18,-0.12],[-0.08,-0.05],[-0.15,0.0],[-0.25,-0.05],[-0.35,-0.15],[-0.40,-0.25]], '#2d6a4f');
+                          // South America
+                          drawContinent([[-0.15,0.02],[-0.08,0.0],[-0.03,0.05],[0.0,0.15],[-0.02,0.30],[-0.08,0.38],[-0.15,0.35],[-0.18,0.22],[-0.20,0.10]], '#40916c');
+                          // Europe
+                          drawContinent([[0.10,-0.38],[0.18,-0.42],[0.25,-0.38],[0.22,-0.32],[0.15,-0.28],[0.10,-0.30]], '#52b788');
+                          // Africa
+                          drawContinent([[0.12,-0.25],[0.20,-0.28],[0.28,-0.22],[0.30,-0.10],[0.28,0.05],[0.22,0.15],[0.15,0.18],[0.10,0.10],[0.08,-0.05],[0.10,-0.15]], '#3a8f5c');
+                          // Asia (large)
+                          drawContinent([[0.25,-0.40],[0.35,-0.45],[0.50,-0.42],[0.60,-0.35],[0.55,-0.25],[0.50,-0.15],[0.45,-0.05],[0.35,-0.08],[0.30,-0.18],[0.25,-0.28]], '#2d6a4f');
+                          // India
+                          drawContinent([[0.35,-0.10],[0.40,-0.05],[0.38,0.08],[0.33,0.12],[0.30,0.05],[0.32,-0.05]], '#4ade80');
+                          // Australia
+                          drawContinent([[0.45,0.18],[0.55,0.15],[0.60,0.22],[0.58,0.30],[0.50,0.32],[0.42,0.28],[0.42,0.22]], '#74c69d');
+                          // Antarctica (ice cap)
+                          drawContinent([[-0.30,0.42],[-0.10,0.40],[0.10,0.42],[0.25,0.44],[0.15,0.48],[-0.05,0.48],[-0.25,0.46]], '#e2e8f0');
+                          ctx.globalAlpha = 1;
+                          // Mountain ranges (subtle brown ridges)
+                          ctx.save(); ctx.globalAlpha = 0.08;
+                          // Andes
+                          ctx.beginPath(); ctx.moveTo(cx - planetR * 0.18 + Math.sin(rotPhase) * planetR * 0.4, cy + planetR * 0.02);
+                          ctx.lineTo(cx - planetR * 0.16 + Math.sin(rotPhase) * planetR * 0.4, cy + planetR * 0.30);
+                          ctx.strokeStyle = '#78350f'; ctx.lineWidth = 2; ctx.stroke();
+                          // Himalayas
+                          ctx.beginPath(); ctx.moveTo(cx + planetR * 0.32 + Math.sin(rotPhase) * planetR * 0.4, cy - planetR * 0.12);
+                          ctx.lineTo(cx + planetR * 0.42 + Math.sin(rotPhase) * planetR * 0.4, cy - planetR * 0.08);
+                          ctx.stroke();
+                          ctx.restore();
+                          // Cloud layer (white wisps, rotating slightly faster than surface)
+                          ctx.save(); ctx.globalAlpha = 0.12;
+                          var cloudRot = rotPhase * 1.15; // clouds move faster than surface
+                          for (var cli = 0; cli < 8; cli++) {
+                            var clAngle = (cli / 8) * Math.PI * 2 + cloudRot;
+                            var clDist = planetR * (0.3 + cli * 0.08);
+                            var clx = cx + Math.cos(clAngle) * clDist * 0.7;
+                            var cly = cy + Math.sin(clAngle) * clDist * 0.4;
+                            if (Math.sqrt(Math.pow(clx - cx, 2) + Math.pow(cly - cy, 2)) < planetR * 0.9) {
+                              ctx.beginPath();
+                              ctx.ellipse(clx, cly, planetR * 0.12 + cli * 2, planetR * 0.03, clAngle * 0.5, 0, Math.PI * 2);
+                              ctx.fillStyle = '#ffffff'; ctx.fill();
+                            }
+                          }
+                          // Tropical storm spiral (near equator)
+                          var stormX = cx + Math.sin(cloudRot * 0.5) * planetR * 0.3;
+                          var stormY = cy + planetR * 0.05;
+                          if (Math.sqrt(Math.pow(stormX - cx, 2) + Math.pow(stormY - cy, 2)) < planetR * 0.8) {
+                            ctx.beginPath();
+                            for (var sti = 0; sti < 20; sti++) {
+                              var stAngle = sti * 0.4 + tick * 0.02;
+                              var stDist2 = 2 + sti * 1.2;
+                              ctx.lineTo(stormX + Math.cos(stAngle) * stDist2, stormY + Math.sin(stAngle) * stDist2);
+                            }
+                            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+                          }
+                          ctx.restore();
+                          ctx.restore();
+                          // Atmosphere rim glow (blue haze at edges)
+                          ctx.save(); ctx.globalAlpha = 0.25;
+                          var atmosGrad = ctx.createRadialGradient(cx, cy, planetR * 0.85, cx, cy, planetR * 1.05);
+                          atmosGrad.addColorStop(0, 'transparent');
+                          atmosGrad.addColorStop(0.6, 'rgba(56,189,248,0.3)');
+                          atmosGrad.addColorStop(1, 'rgba(14,165,233,0.1)');
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 1.05, 0, Math.PI * 2);
+                          ctx.fillStyle = atmosGrad; ctx.fill();
                           ctx.restore();
                           // Feature labels
                           _featureLabels.push({ x: cx - planetR * 0.3, y: cy - planetR * 0.2, r: planetR * 0.15, name: 'Pacific Ocean', desc: 'Largest ocean \u2014 covers more area than all land combined (165.25 million km\u00B2)' });
                           _featureLabels.push({ x: cx + planetR * 0.2, y: cy + planetR * 0.15, r: planetR * 0.1, name: 'Mid-Ocean Ridge', desc: '65,000 km underwater mountain chain where new ocean floor is born' });
+                          _featureLabels.push({ x: cx + planetR * 0.35, y: cy - planetR * 0.12, r: planetR * 0.08, name: 'Himalayas', desc: 'Highest mountain range on Earth, formed by Indian plate collision' });
                         } else if (sel.terrainType === 'desert') {
                           // Mars: Valles Marineris canyon scar + Olympus Mons
                           _featureLabels.push({ x: cx - planetR * 0.35, y: cy - planetR * 0.2, r: planetR * 0.12, name: 'Olympus Mons', desc: 'Tallest volcano in the solar system (21.9 km)' });
@@ -9029,6 +9081,422 @@ const d = labToolData.solarSystem;
                       React.createElement("div", null, "\u2460 Orbits are ellipses with the Sun at one focus (not circles!)"),
                       React.createElement("div", null, "\u2461 A planet sweeps equal areas in equal times (faster when closer to Sun)"),
                       React.createElement("div", null, "\u2462 T\u00B2 \u221D a\u00B3 \u2014 orbital period squared is proportional to distance cubed")
+                    )
+                  ),
+                  // ── KEPLER'S LAWS — FULL INTERACTIVE ORBITAL MECHANICS LABORATORY ──
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800' : 'bg-indigo-50') + " rounded-xl overflow-hidden border " + (isDark ? 'border-slate-600' : 'border-indigo-200') },
+                    // Planet selector buttons
+                    React.createElement("div", { className: "flex flex-wrap gap-1 p-2 " + (isDark ? 'bg-slate-900' : 'bg-indigo-100') },
+                      React.createElement("span", { className: "text-[8px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-500' : 'text-indigo-400') }, "Body:"),
+                      [{ id: 'custom', emoji: '\u2699', name: 'Custom' }].concat(PLANETS.map(function(p) { return { id: p.name, emoji: p.emoji, name: p.name }; })).concat([{ id: 'halley', emoji: '\u2604', name: "Halley's Comet" }]).map(function(body) {
+                        var isActive = (d._keplerBody || 'custom') === body.id;
+                        return React.createElement("button", {
+                          key: body.id, 'aria-label': body.name + ' orbit',
+                          onClick: function() {
+                            upd('_keplerBody', body.id);
+                            var cv2 = document.querySelector('[data-kepler-canvas]');
+                            if (cv2) { cv2._keplerBody = body.id; cv2._keplerTrail = []; }
+                          },
+                          className: "px-1.5 py-0.5 rounded text-[9px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-200'))
+                        }, body.emoji + ' ' + body.name);
+                      })
+                    ),
+                    // Math toggle buttons
+                    React.createElement("div", { className: "flex gap-1 px-2 py-1 " + (isDark ? 'bg-slate-900/50' : 'bg-indigo-50') },
+                      React.createElement("span", { className: "text-[8px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-500' : 'text-indigo-400') }, "Show:"),
+                      [{ id: 'equations', label: '\uD83D\uDCDD Equations' }, { id: 'energy', label: '\u26A1 Energy' }, { id: 'calculus', label: '\u222B Calculus' }, { id: 'vectors', label: '\u2192 Vectors' }].map(function(tog) {
+                        var on = d['_keplerShow_' + tog.id] !== false; // default ON
+                        return React.createElement("button", {
+                          key: tog.id,
+                          onClick: function() { upd('_keplerShow_' + tog.id, !on); },
+                          className: "px-1.5 py-0.5 rounded text-[8px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-500' : 'bg-white text-slate-400 border border-slate-200'))
+                        }, tog.label);
+                      })
+                    ),
+                    React.createElement("canvas", {
+                      'data-kepler-canvas': true,
+                      'aria-label': 'Kepler Laws orbital simulation with calculus equations',
+                      width: 520, height: 580,
+                      style: { width: '100%', height: 'auto', display: 'block' },
+                      ref: function(cv) {
+                        if (!cv || cv._keplerInit) return;
+                        cv._keplerInit = true;
+                        var kCtx = cv.getContext('2d');
+                        var kW = 520, kH = 580;
+                        var kTick = 0;
+                        cv._keplerBody = d._keplerBody || 'custom';
+                        cv._keplerEcc = d._keplerEcc || 0.5;
+                        cv._keplerSemiA = d._keplerSemiA || 100;
+                        cv._keplerTrail = [];
+                        // Real orbital data for each body
+                        var BODY_DATA = {
+                          custom: { ecc: 0.5, a: 100, color: '#a78bfa', name: 'Custom', emoji: '\u2699', periodYr: 1, vScale: 1 },
+                          halley: { ecc: 0.967, a: 130, color: '#67e8f9', name: "Halley's Comet", emoji: '\u2604', periodYr: 75.3, vScale: 0.8 }
+                        };
+                        PLANETS.forEach(function(p) {
+                          var realEcc = p.name === 'Mercury' ? 0.206 : p.name === 'Venus' ? 0.007 : p.name === 'Earth' ? 0.017 : p.name === 'Mars' ? 0.093 : p.name === 'Jupiter' ? 0.049 : p.name === 'Saturn' ? 0.057 : p.name === 'Uranus' ? 0.046 : p.name === 'Neptune' ? 0.010 : 0.25;
+                          BODY_DATA[p.name] = { ecc: realEcc, a: Math.min(140, Math.max(40, p.dist * 2.5)), color: p.color, name: p.name, emoji: p.emoji, periodYr: parseFloat(p.yearLen) || 1, vScale: p.speed };
+                        });
+
+                        function drawKepler() {
+                          kTick++;
+                          kCtx.clearRect(0, 0, kW, kH);
+                          // Read selected body or custom params
+                          var bodyId = cv._keplerBody || 'custom';
+                          var bodyDat = BODY_DATA[bodyId] || BODY_DATA.custom;
+                          var ecc = bodyId === 'custom' ? (cv._keplerEcc || 0.5) : bodyDat.ecc;
+                          var semiA = bodyId === 'custom' ? (cv._keplerSemiA || 100) : bodyDat.a;
+                          var semiB = semiA * Math.sqrt(1 - ecc * ecc);
+                          var focusOffset = semiA * ecc;
+                          var bodyColor = bodyDat.color;
+                          var bodyName = bodyDat.name;
+                          var bodyEmoji = bodyDat.emoji;
+                          var periodYr = bodyId === 'custom' ? Math.pow(semiA / 50, 1.5) : bodyDat.periodYr;
+                          // Toggle states (read from canvas data attrs set by React)
+                          var showEq = cv.dataset.showEq !== 'false';
+                          var showEnergy = cv.dataset.showEnergy !== 'false';
+                          var showCalc = cv.dataset.showCalc !== 'false';
+                          var showVec = cv.dataset.showVec !== 'false';
+                          // Layout
+                          var orbitCY = 165;
+                          var centerX = kW * 0.5, centerY = orbitCY;
+                          var sunX = centerX + focusOffset, sunY = centerY;
+                          // Background
+                          kCtx.fillStyle = '#0f172a';
+                          kCtx.fillRect(0, 0, kW, kH);
+                          // Stars
+                          for (var ksi = 0; ksi < 50; ksi++) {
+                            kCtx.fillStyle = 'rgba(255,255,255,' + (0.08 + 0.15 * Math.sin(kTick * 0.02 + ksi)) + ')';
+                            kCtx.fillRect((ksi * 97 + 13) % kW, (ksi * 151 + 7) % kH, 1, 1);
+                          }
+
+                          // ── LAW 1: Elliptical orbit with Sun at focus ──
+                          // Draw orbit ellipse
+                          kCtx.beginPath(); kCtx.ellipse(centerX, centerY, semiA, semiB, 0, 0, Math.PI * 2);
+                          kCtx.strokeStyle = 'rgba(168,85,247,0.3)'; kCtx.lineWidth = 1; kCtx.stroke();
+                          // Mark both foci
+                          kCtx.beginPath(); kCtx.arc(sunX, sunY, 6, 0, Math.PI * 2); // Sun at focus 1
+                          var sunGrad = kCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 6);
+                          sunGrad.addColorStop(0, '#fff'); sunGrad.addColorStop(0.5, '#fbbf24'); sunGrad.addColorStop(1, '#f59e0b');
+                          kCtx.fillStyle = sunGrad; kCtx.fill();
+                          // Empty focus (marked with x)
+                          var emptyFocusX = kW * 0.5 - focusOffset;
+                          kCtx.save(); kCtx.globalAlpha = 0.25;
+                          kCtx.beginPath(); kCtx.moveTo(emptyFocusX - 3, sunY - 3); kCtx.lineTo(emptyFocusX + 3, sunY + 3);
+                          kCtx.moveTo(emptyFocusX + 3, sunY - 3); kCtx.lineTo(emptyFocusX - 3, sunY + 3);
+                          kCtx.strokeStyle = '#a78bfa'; kCtx.lineWidth = 1; kCtx.stroke();
+                          kCtx.restore();
+
+                          // ── Planet position (true anomaly, Kepler equation) ──
+                          // Use mean anomaly for smooth animation, convert to true anomaly for Kepler's 2nd law
+                          var meanAnomaly = kTick * 0.015;
+                          // Approximate eccentric anomaly (Newton's method, 3 iterations)
+                          var E = meanAnomaly;
+                          for (var ni = 0; ni < 3; ni++) { E = E - (E - ecc * Math.sin(E) - meanAnomaly) / (1 - ecc * Math.cos(E)); }
+                          // True anomaly
+                          var trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(E / 2), Math.sqrt(1 - ecc) * Math.cos(E / 2));
+                          // Position on ellipse
+                          var r = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(trueAnomaly));
+                          var px = sunX + r * Math.cos(trueAnomaly + Math.PI);
+                          var py = sunY + r * Math.sin(trueAnomaly + Math.PI);
+
+                          // ── LAW 2: Equal areas in equal times (area sweep sectors) ──
+                          // Draw two swept sectors at different orbital positions to show equal areas
+                          var sectorSpan = 0.5; // angular span of each sector
+                          kCtx.save(); kCtx.globalAlpha = 0.15;
+                          // Sector near perihelion (narrow but fast — short arc, wide angle)
+                          kCtx.beginPath(); kCtx.moveTo(sunX, sunY);
+                          for (var sa = 0; sa < 20; sa++) {
+                            var sAngle = sa / 20 * sectorSpan - 0.1;
+                            var sE2 = sAngle; for (var sn = 0; sn < 3; sn++) { sE2 = sE2 - (sE2 - ecc * Math.sin(sE2) - sAngle) / (1 - ecc * Math.cos(sE2)); }
+                            var sTA = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(sE2 / 2), Math.sqrt(1 - ecc) * Math.cos(sE2 / 2));
+                            var sR = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(sTA));
+                            kCtx.lineTo(sunX + sR * Math.cos(sTA + Math.PI), sunY + sR * Math.sin(sTA + Math.PI));
+                          }
+                          kCtx.closePath(); kCtx.fillStyle = '#22c55e'; kCtx.fill();
+                          // Sector near aphelion (wide but slow — long arc, narrow angle)
+                          kCtx.beginPath(); kCtx.moveTo(sunX, sunY);
+                          for (var sa2 = 0; sa2 < 20; sa2++) {
+                            var sAngle2 = Math.PI + sa2 / 20 * sectorSpan * 0.35;
+                            var sE3 = sAngle2; for (var sn2 = 0; sn2 < 3; sn2++) { sE3 = sE3 - (sE3 - ecc * Math.sin(sE3) - sAngle2) / (1 - ecc * Math.cos(sE3)); }
+                            var sTA2 = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(sE3 / 2), Math.sqrt(1 - ecc) * Math.cos(sE3 / 2));
+                            var sR2 = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(sTA2));
+                            kCtx.lineTo(sunX + sR2 * Math.cos(sTA2 + Math.PI), sunY + sR2 * Math.sin(sTA2 + Math.PI));
+                          }
+                          kCtx.closePath(); kCtx.fillStyle = '#3b82f6'; kCtx.fill();
+                          kCtx.restore();
+
+                          // Planet / body
+                          var bodyR = bodyId === 'halley' ? 3 : 5;
+                          kCtx.beginPath(); kCtx.arc(px, py, bodyR, 0, Math.PI * 2);
+                          var pGrad = kCtx.createRadialGradient(px - 1, py - 1, 0.5, px, py, bodyR);
+                          pGrad.addColorStop(0, '#ffffff'); pGrad.addColorStop(1, bodyColor);
+                          kCtx.fillStyle = pGrad; kCtx.fill();
+                          // Velocity vector (shows speed variation — longer near perihelion)
+                          var speed = Math.sqrt(2 / r - 1 / semiA) * 25;
+                          var vAngle = trueAnomaly + Math.PI + Math.PI / 2;
+                          kCtx.beginPath(); kCtx.moveTo(px, py);
+                          kCtx.lineTo(px + Math.cos(vAngle) * speed, py + Math.sin(vAngle) * speed);
+                          kCtx.strokeStyle = '#fbbf24'; kCtx.lineWidth = 1.5; kCtx.stroke();
+                          // Arrow head
+                          var arX = px + Math.cos(vAngle) * speed, arY = py + Math.sin(vAngle) * speed;
+                          kCtx.beginPath();
+                          kCtx.moveTo(arX, arY);
+                          kCtx.lineTo(arX - Math.cos(vAngle - 0.4) * 5, arY - Math.sin(vAngle - 0.4) * 5);
+                          kCtx.moveTo(arX, arY);
+                          kCtx.lineTo(arX - Math.cos(vAngle + 0.4) * 5, arY - Math.sin(vAngle + 0.4) * 5);
+                          kCtx.stroke();
+
+                          // ── Trajectory trail (fading orbital path) ──
+                          var trail = cv._keplerTrail || [];
+                          trail.push({ x: px, y: py, s: speed });
+                          if (trail.length > 250) trail.shift();
+                          cv._keplerTrail = trail;
+                          kCtx.save();
+                          for (var ti = 1; ti < trail.length; ti++) {
+                            kCtx.globalAlpha = ti / trail.length * 0.4;
+                            kCtx.beginPath(); kCtx.moveTo(trail[ti - 1].x, trail[ti - 1].y);
+                            kCtx.lineTo(trail[ti].x, trail[ti].y);
+                            // Color by speed: blue=slow, yellow=fast
+                            var speedNorm = Math.min(1, trail[ti].s / 35);
+                            kCtx.strokeStyle = 'rgb(' + Math.round(59 + speedNorm * 196) + ',' + Math.round(130 + speedNorm * 61) + ',' + Math.round(246 - speedNorm * 210) + ')';
+                            kCtx.lineWidth = 1.5; kCtx.stroke();
+                          }
+                          kCtx.restore();
+
+                          // ── Radial distance line (r vector from Sun to planet) ──
+                          kCtx.save(); kCtx.globalAlpha = 0.2;
+                          kCtx.beginPath(); kCtx.moveTo(sunX, sunY); kCtx.lineTo(px, py);
+                          kCtx.strokeStyle = '#f472b6'; kCtx.lineWidth = 0.8; kCtx.setLineDash([3, 3]); kCtx.stroke(); kCtx.setLineDash([]);
+                          kCtx.font = '7px monospace'; kCtx.fillStyle = '#f472b6'; kCtx.textAlign = 'center';
+                          kCtx.fillText('r=' + r.toFixed(0), (sunX + px) / 2 + 8, (sunY + py) / 2 - 4);
+                          kCtx.restore();
+
+                          // ── True anomaly angle arc ──
+                          kCtx.save(); kCtx.globalAlpha = 0.15;
+                          kCtx.beginPath(); kCtx.moveTo(sunX, sunY);
+                          kCtx.arc(sunX, sunY, 20, Math.PI, Math.PI + trueAnomaly, trueAnomaly < 0);
+                          kCtx.strokeStyle = '#a78bfa'; kCtx.lineWidth = 1; kCtx.stroke();
+                          kCtx.font = '6px monospace'; kCtx.fillStyle = '#a78bfa'; kCtx.textAlign = 'left';
+                          var taDeg = ((trueAnomaly * 180 / Math.PI) % 360 + 360) % 360;
+                          kCtx.fillText('\u03b8=' + taDeg.toFixed(0) + '\u00B0', sunX + 22, sunY - 4);
+                          kCtx.restore();
+
+                          // ══════════════════════════════════════════
+                          // BOTTOM PANELS: Energy Diagram + Calculations
+                          // ══════════════════════════════════════════
+                          var panelY = centerY + semiB + 30;
+
+                          // ── PANEL 1: Orbital Energy Diagram (left) ──
+                          var enX = 15, enY = panelY, enW = kW * 0.45, enH = 80;
+                          kCtx.save();
+                          kCtx.fillStyle = 'rgba(15,23,42,0.7)';
+                          kCtx.beginPath(); kCtx.roundRect(enX, enY, enW, enH, 4); kCtx.fill();
+                          kCtx.strokeStyle = 'rgba(99,102,241,0.2)'; kCtx.lineWidth = 0.5; kCtx.stroke();
+                          // Title
+                          kCtx.font = 'bold 8px Inter, system-ui, sans-serif'; kCtx.fillStyle = '#a78bfa'; kCtx.textAlign = 'left';
+                          kCtx.fillText('\u26A1 Orbital Energy vs. Position', enX + 6, enY + 12);
+                          // Energy curves
+                          var egCx = enX + 10, egW2 = enW - 20, egCy = enY + 50, egH2 = 30;
+                          // Axes
+                          kCtx.beginPath(); kCtx.moveTo(egCx, egCy - egH2); kCtx.lineTo(egCx, egCy + 5); kCtx.lineTo(egCx + egW2, egCy + 5);
+                          kCtx.strokeStyle = 'rgba(255,255,255,0.15)'; kCtx.lineWidth = 0.5; kCtx.stroke();
+                          kCtx.font = '5px monospace'; kCtx.fillStyle = 'rgba(255,255,255,0.2)'; kCtx.textAlign = 'center';
+                          kCtx.fillText('r (distance)', egCx + egW2 / 2, egCy + 13);
+                          kCtx.textAlign = 'right'; kCtx.fillText('E', egCx - 3, egCy - egH2 + 4);
+                          // Potential energy curve (1/r — hyperbolic)
+                          kCtx.beginPath();
+                          for (var ei = 1; ei < egW2; ei++) {
+                            var rr = 0.3 + ei / egW2 * 2;
+                            var pe = -1 / rr * egH2 * 0.6;
+                            if (ei === 1) kCtx.moveTo(egCx + ei, egCy + pe); else kCtx.lineTo(egCx + ei, egCy + pe);
+                          }
+                          kCtx.strokeStyle = '#ef4444'; kCtx.lineWidth = 1; kCtx.stroke();
+                          // Total energy line (constant, negative for bound orbit)
+                          var totalE = -1 / (2 * semiA / 50) * egH2 * 0.6;
+                          kCtx.beginPath(); kCtx.moveTo(egCx, egCy + totalE); kCtx.lineTo(egCx + egW2, egCy + totalE);
+                          kCtx.strokeStyle = '#22c55e'; kCtx.lineWidth = 0.8; kCtx.setLineDash([3, 2]); kCtx.stroke(); kCtx.setLineDash([]);
+                          // Current position marker
+                          var curRnorm = (r / (semiA * 2)) * egW2;
+                          if (curRnorm > 0 && curRnorm < egW2) {
+                            var curPE = -1 / (0.3 + curRnorm / egW2 * 2) * egH2 * 0.6;
+                            kCtx.beginPath(); kCtx.arc(egCx + curRnorm, egCy + curPE, 3, 0, Math.PI * 2);
+                            kCtx.fillStyle = '#fbbf24'; kCtx.fill();
+                            // KE = Total - PE (gap between green line and red curve)
+                            kCtx.beginPath(); kCtx.moveTo(egCx + curRnorm, egCy + curPE); kCtx.lineTo(egCx + curRnorm, egCy + totalE);
+                            kCtx.strokeStyle = '#60a5fa'; kCtx.lineWidth = 1.5; kCtx.stroke();
+                          }
+                          // Legend
+                          kCtx.font = '6px Inter, system-ui, sans-serif'; kCtx.textAlign = 'left';
+                          kCtx.fillStyle = '#ef4444'; kCtx.fillText('U(r) = \u2212GMm/r', enX + 8, enY + 22);
+                          kCtx.fillStyle = '#22c55e'; kCtx.fillText('E\u209C\u2092\u209C = const', enX + enW * 0.45, enY + 22);
+                          kCtx.fillStyle = '#60a5fa'; kCtx.fillText('KE = \u00BDmv\u00B2', enX + enW * 0.75, enY + 22);
+                          kCtx.restore();
+
+                          // ── PANEL 2: Live Calculations (right) ──
+                          var calcX = kW * 0.5 + 10, calcY = panelY, calcW = kW * 0.45, calcH = 80;
+                          kCtx.save();
+                          kCtx.fillStyle = 'rgba(15,23,42,0.7)';
+                          kCtx.beginPath(); kCtx.roundRect(calcX, calcY, calcW, calcH, 4); kCtx.fill();
+                          kCtx.strokeStyle = 'rgba(99,102,241,0.2)'; kCtx.lineWidth = 0.5; kCtx.stroke();
+                          kCtx.font = 'bold 8px Inter, system-ui, sans-serif'; kCtx.fillStyle = '#fbbf24'; kCtx.textAlign = 'left';
+                          kCtx.fillText('\uD83D\uDCCA Live Orbital Calculations', calcX + 6, calcY + 12);
+                          // Computed values
+                          var rMin = semiA * (1 - ecc), rMax = semiA * (1 + ecc);
+                          var orbPeriod = Math.pow(semiA / 50, 1.5); // in "years" (normalized)
+                          var vPeri = Math.sqrt(2 / rMin - 1 / semiA) * 25;
+                          var vAphe = Math.sqrt(Math.max(0.01, 2 / rMax - 1 / semiA)) * 25;
+                          var specEnergy = -1 / (2 * semiA);
+                          var angMom = Math.sqrt(semiA * (1 - ecc * ecc));
+                          kCtx.font = '7px monospace'; kCtx.fillStyle = '#e2e8f0';
+                          var calcLines = [
+                            'a = ' + semiA + '    b = ' + semiB.toFixed(1) + '    e = ' + ecc.toFixed(3),
+                            'r\u2098\u2097\u2099 = ' + rMin.toFixed(1) + '   r\u2098\u2090\u2093 = ' + rMax.toFixed(1) + '   r = ' + r.toFixed(1),
+                            'v = ' + (speed * 1.5).toFixed(1) + ' km/s   v\u209A = ' + (vPeri * 1.5).toFixed(1) + '   v\u2090 = ' + (vAphe * 1.5).toFixed(1),
+                            'T = ' + orbPeriod.toFixed(2) + ' yr   \u03b8 = ' + taDeg.toFixed(1) + '\u00B0',
+                            '\u03B5 = ' + (specEnergy * 100).toFixed(2) + '   L = ' + angMom.toFixed(3),
+                            'dA/dt = ' + (angMom * 0.5).toFixed(3) + ' = const (Kepler II)'
+                          ];
+                          for (var cli = 0; cli < calcLines.length; cli++) {
+                            kCtx.fillText(calcLines[cli], calcX + 6, calcY + 24 + cli * 9.5);
+                          }
+                          kCtx.restore();
+
+                          // ── Labels + Equation Panel ──
+                          kCtx.font = 'bold 10px Inter, system-ui, sans-serif'; kCtx.textAlign = 'center';
+                          // Title
+                          kCtx.fillStyle = 'rgba(255,255,255,0.75)';
+                          kCtx.fillText("Kepler\u2019s Laws of Planetary Motion", kW * 0.5, 14);
+                          kCtx.font = '8px Inter, system-ui, sans-serif';
+                          kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText("Live orbital mechanics simulation with calculus", kW * 0.5, 26);
+
+                          // Perihelion / Aphelion markers + distance labels
+                          kCtx.font = 'bold 8px Inter, system-ui, sans-serif';
+                          kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText('Perihelion', centerX - semiA + 25, centerY - 12);
+                          kCtx.font = '7px monospace'; kCtx.fillStyle = 'rgba(255,255,255,0.25)';
+                          kCtx.fillText('r\u2098\u2097\u2099 = a(1\u2212e)', centerX - semiA + 25, centerY - 3);
+                          kCtx.font = 'bold 8px Inter, system-ui, sans-serif';
+                          kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText('Aphelion', centerX + semiA - 5, centerY - 12);
+                          kCtx.font = '7px monospace'; kCtx.fillStyle = 'rgba(255,255,255,0.25)';
+                          kCtx.fillText('r\u2098\u2090\u2093 = a(1+e)', centerX + semiA - 5, centerY - 3);
+
+                          // Focus labels
+                          kCtx.font = '8px Inter, system-ui, sans-serif';
+                          kCtx.fillStyle = '#fbbf24'; kCtx.fillText('\u2609 Sun (focus F\u2081)', sunX, sunY + 16);
+                          kCtx.fillStyle = 'rgba(167,139,250,0.4)'; kCtx.fillText('F\u2082 (empty)', emptyFocusX, sunY + 16);
+
+                          // Semi-major axis label with line
+                          kCtx.save(); kCtx.globalAlpha = 0.2;
+                          kCtx.beginPath(); kCtx.moveTo(centerX - semiA, centerY + 20); kCtx.lineTo(centerX + semiA, centerY + 20);
+                          kCtx.strokeStyle = '#a78bfa'; kCtx.lineWidth = 0.8; kCtx.stroke();
+                          kCtx.beginPath(); kCtx.moveTo(centerX - semiA, centerY + 17); kCtx.lineTo(centerX - semiA, centerY + 23); kCtx.stroke();
+                          kCtx.beginPath(); kCtx.moveTo(centerX + semiA, centerY + 17); kCtx.lineTo(centerX + semiA, centerY + 23); kCtx.stroke();
+                          kCtx.restore();
+                          kCtx.font = '7px monospace'; kCtx.fillStyle = 'rgba(167,139,250,0.5)';
+                          kCtx.fillText('2a (major axis)', centerX, centerY + 30);
+
+                          // Area labels
+                          kCtx.font = 'bold 7px monospace';
+                          kCtx.fillStyle = '#22c55e80'; kCtx.fillText('\u0394A\u2081', centerX - semiA + 45, centerY + 8);
+                          kCtx.fillStyle = '#3b82f680'; kCtx.fillText('\u0394A\u2082', centerX + semiA - 30, centerY + 18);
+
+                          // Velocity vector label
+                          kCtx.font = '7px monospace'; kCtx.fillStyle = '#fbbf24'; kCtx.textAlign = 'left';
+                          kCtx.fillText('\u2192 v = ' + (speed * 1.5).toFixed(1) + ' km/s', 8, centerY - semiB - 8);
+
+                          // ══════════════════════════════════════════
+                          // EQUATION PANEL (bottom third of canvas)
+                          // ══════════════════════════════════════════
+                          var eqY = kH - 120;
+                          kCtx.save();
+                          // Background for equation area
+                          kCtx.fillStyle = 'rgba(15,23,42,0.6)';
+                          kCtx.fillRect(0, eqY - 8, kW, kH - eqY + 8);
+                          kCtx.beginPath(); kCtx.moveTo(0, eqY - 8); kCtx.lineTo(kW, eqY - 8);
+                          kCtx.strokeStyle = 'rgba(99,102,241,0.3)'; kCtx.lineWidth = 0.5; kCtx.stroke();
+
+                          // Law 1: Ellipse equation
+                          kCtx.font = 'bold 9px Inter, system-ui, sans-serif'; kCtx.textAlign = 'left';
+                          kCtx.fillStyle = '#a78bfa'; kCtx.fillText('Law 1 \u2014 Elliptical Orbits', 10, eqY + 6);
+                          kCtx.font = '10px monospace'; kCtx.fillStyle = '#e2e8f0';
+                          kCtx.fillText('r(\u03b8) = a(1 \u2212 e\u00B2) / (1 + e\u00B7cos\u03b8)', 10, eqY + 20);
+                          kCtx.font = '7px Inter, system-ui, sans-serif'; kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText('a = ' + semiA + ' (semi-major)  e = ' + ecc + ' (eccentricity)  r = ' + r.toFixed(1) + ' (current)', 10, eqY + 31);
+
+                          // Law 2: Equal areas (calculus form)
+                          kCtx.font = 'bold 9px Inter, system-ui, sans-serif'; kCtx.textAlign = 'left';
+                          kCtx.fillStyle = '#22c55e'; kCtx.fillText('Law 2 \u2014 Equal Areas (Calculus)', kW * 0.5 + 5, eqY + 6);
+                          kCtx.font = '10px monospace'; kCtx.fillStyle = '#e2e8f0';
+                          kCtx.fillText('dA/dt = \u00BD r\u00B2 d\u03b8/dt = const', kW * 0.5 + 5, eqY + 20);
+                          kCtx.font = '7px Inter, system-ui, sans-serif'; kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText('Angular momentum L = mr\u00B2\u03c9 is conserved', kW * 0.5 + 5, eqY + 31);
+                          // Area integral
+                          kCtx.font = '9px monospace'; kCtx.fillStyle = '#86efac';
+                          kCtx.fillText('\u222B dA = \u00BD \u222B r\u00B2 d\u03b8 = \u0394A\u2081 = \u0394A\u2082', kW * 0.5 + 5, eqY + 44);
+
+                          // Law 3: Period-distance relationship
+                          kCtx.font = 'bold 9px Inter, system-ui, sans-serif'; kCtx.textAlign = 'left';
+                          kCtx.fillStyle = '#f59e0b'; kCtx.fillText('Law 3 \u2014 Harmonic Law', 10, eqY + 52);
+                          kCtx.font = '12px monospace'; kCtx.fillStyle = '#fde68a';
+                          kCtx.fillText('T\u00B2 = (4\u03c0\u00B2/GM) \u00B7 a\u00B3', 10, eqY + 68);
+                          kCtx.font = '7px Inter, system-ui, sans-serif'; kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText('Period squared \u221D semi-major axis cubed', 10, eqY + 79);
+
+                          // Vis-viva equation (energy)
+                          kCtx.font = 'bold 9px Inter, system-ui, sans-serif';
+                          kCtx.fillStyle = '#f472b6'; kCtx.fillText('Vis-Viva (Orbital Energy)', kW * 0.5 + 5, eqY + 52);
+                          kCtx.font = '10px monospace'; kCtx.fillStyle = '#fda4af';
+                          kCtx.fillText('v\u00B2 = GM(2/r \u2212 1/a)', kW * 0.5 + 5, eqY + 68);
+                          kCtx.font = '7px Inter, system-ui, sans-serif'; kCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                          kCtx.fillText('Relates velocity to position on orbit', kW * 0.5 + 5, eqY + 79);
+
+                          // Gravitational constant
+                          kCtx.font = '7px monospace'; kCtx.textAlign = 'center';
+                          kCtx.fillStyle = 'rgba(255,255,255,0.25)';
+                          kCtx.fillText('G = 6.674 \u00D7 10\u207B\u00B9\u00B9 N\u00B7m\u00B2/kg\u00B2  |  M\u2609 = 1.989 \u00D7 10\u00B3\u2070 kg', kW * 0.5, eqY + 94);
+                          kCtx.restore();
+
+                          cv._keplerAnim = requestAnimationFrame(drawKepler);
+                        }
+                        drawKepler();
+                      }
+                    }),
+                    // ── Interactive Controls (eccentricity + semi-major axis sliders) ──
+                    React.createElement("div", { className: "p-3 space-y-2 " + (isDark ? 'bg-slate-900' : 'bg-indigo-100/50') },
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-[9px] font-bold w-20 " + (isDark ? 'text-slate-400' : 'text-indigo-600') }, "Eccentricity (e):"),
+                        React.createElement("input", {
+                          type: "range", min: 0.01, max: 0.95, step: 0.01, value: d._keplerEcc || 0.5,
+                          'aria-label': 'Orbital eccentricity',
+                          onChange: function(e) {
+                            var val = parseFloat(e.target.value);
+                            upd('_keplerEcc', val);
+                            var cv2 = document.querySelector('[aria-label="Kepler Laws orbital simulation with calculus equations"]');
+                            if (cv2) cv2._keplerEcc = val;
+                          },
+                          className: "flex-1 h-1.5 accent-purple-500"
+                        }),
+                        React.createElement("span", { className: "text-[10px] font-mono w-8 " + (isDark ? 'text-purple-300' : 'text-purple-700') }, (d._keplerEcc || 0.5).toFixed(2))
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-[9px] font-bold w-20 " + (isDark ? 'text-slate-400' : 'text-indigo-600') }, "Semi-major (a):"),
+                        React.createElement("input", {
+                          type: "range", min: 40, max: 140, step: 5, value: d._keplerSemiA || 100,
+                          'aria-label': 'Semi-major axis length',
+                          onChange: function(e) {
+                            var val = parseInt(e.target.value);
+                            upd('_keplerSemiA', val);
+                            var cv2 = document.querySelector('[aria-label="Kepler Laws orbital simulation with calculus equations"]');
+                            if (cv2) cv2._keplerSemiA = val;
+                          },
+                          className: "flex-1 h-1.5 accent-amber-500"
+                        }),
+                        React.createElement("span", { className: "text-[10px] font-mono w-8 " + (isDark ? 'text-amber-300' : 'text-amber-700') }, (d._keplerSemiA || 100) + ' AU')
+                      ),
+                      React.createElement("p", { className: "text-[8px] " + (isDark ? 'text-slate-500' : 'text-indigo-400') + " italic" }, "Adjust eccentricity to see how orbits change from circular (e\u22480) to highly elliptical (e\u22481). Watch how the velocity vector and swept areas respond in real-time.")
                     )
                   ),
                   // Orbital speed visualization

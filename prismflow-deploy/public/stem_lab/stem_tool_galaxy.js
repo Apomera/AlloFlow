@@ -29,6 +29,14 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _galAC = null;
+  function getGalAC() { if (!_galAC) { try { _galAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_galAC && _galAC.state === "suspended") { try { _galAC.resume(); } catch(e) {} } return _galAC; }
+  function galTone(f,d,tp,v) { var ac = getGalAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxGalClick() { galTone(600, 0.03, "sine", 0.04); }
+  function sfxGalSuccess() { galTone(523, 0.08, "sine", 0.07); setTimeout(function() { galTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { galTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-galaxy')) return;
@@ -1987,7 +1995,7 @@ if (!window._galaxyHasLoadedOnce) {
                       var stage = cvEl._stellarStage || 'main_sequence';
                       var cx = W * 0.5, cy = H * 0.5;
                       var dim = Math.min(W, H);
-                      var baseR = Math.max(dim * 0.06, Math.min(dim * 0.35, Math.pow(mass, 0.55) * (dim * 0.09)));
+                      var baseR = Math.max(dim * 0.10, Math.min(dim * 0.40, Math.pow(mass, 0.55) * (dim * 0.14)));
 
                       // Determine star color based on mass
                       var coreColor, glowColor, coronaColor;
@@ -2374,21 +2382,77 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }
 
-                      // ── HUD Labels ──
+                      // ── HUD Labels + Physical Properties ──
                       ctx.textAlign = 'center';
                       // Stage name (top)
-                      ctx.font = 'bold 13px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                      ctx.fillText(stageLabel, cx, 24);
-                      // Mass label (bottom)
-                      ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                      ctx.fillText(mass + ' Solar Masses', cx, H - 12);
+                      ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                      ctx.fillText(stageLabel, cx, 22);
                       // Classification
                       var cls = mass < 0.45 ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
-                      ctx.font = '9px Inter, system-ui, sans-serif';
+                      ctx.font = '10px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                      ctx.fillText(cls, cx, 36);
+
+                      // ── Physical properties panel (bottom center) ──
+                      var surfTemp = mass < 0.45 ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
+                      var luminosity = Math.pow(mass, 3.5);
+                      var radius = mass < 0.8 ? Math.pow(mass, 0.8) : mass < 2 ? Math.pow(mass, 0.57) : Math.pow(mass, 0.78);
+                      var lifetime = mass < 0.2 ? '>100' : (10 / Math.pow(mass, 2.5)).toFixed(mass < 1 ? 0 : 1);
+                      ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+                      ctx.fillText(mass + ' Solar Masses', cx, H - 40);
+                      ctx.font = '9px monospace';
                       ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                      ctx.fillText(cls, cx, H - 2);
+                      ctx.fillText('T: ' + surfTemp.toLocaleString() + ' K  |  L: ' + (luminosity < 100 ? luminosity.toFixed(1) : Math.round(luminosity).toLocaleString()) + ' L\u2609  |  R: ' + radius.toFixed(2) + ' R\u2609', cx, H - 26);
+                      ctx.fillText('Lifespan: ' + lifetime + ' billion years', cx, H - 14);
+
+                      // ── Radiative/Convective zone indicators (on main sequence stars) ──
+                      if (stage === 'main_sequence' || stage === 'protostar') {
+                        ctx.save(); ctx.globalAlpha = 0.12;
+                        // Inner radiative zone ring
+                        var rzR = baseR * 0.5;
+                        ctx.beginPath(); ctx.arc(cx, cy, rzR, 0, Math.PI * 2);
+                        ctx.setLineDash([2, 3]); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.8; ctx.stroke(); ctx.setLineDash([]);
+                        // Outer convective zone ring
+                        ctx.beginPath(); ctx.arc(cx, cy, baseR * 0.85, 0, Math.PI * 2);
+                        ctx.setLineDash([3, 2]); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.6; ctx.stroke(); ctx.setLineDash([]);
+                        ctx.restore();
+                        // Zone labels (left side)
+                        ctx.save(); ctx.globalAlpha = 0.2;
+                        ctx.font = '6px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#fbbf24';
+                        ctx.fillText('Radiative', cx - rzR - 4, cy - 2);
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillText('Convective', cx - baseR * 0.85 - 4, cy + 8);
+                        ctx.restore();
+                      }
+
+                      // ── Solar wind particles (emanating outward from star) ──
+                      if (stage === 'main_sequence' || stage === 'red_giant' || stage === 'blue_giant') {
+                        ctx.save(); ctx.globalAlpha = 0.15;
+                        for (var swi = 0; swi < 12; swi++) {
+                          var swAngle = (swi / 12) * Math.PI * 2 + tick * 0.003;
+                          var swDist = baseR * 1.5 + (tick * 0.5 + swi * 30) % (dim * 0.4);
+                          var swx = cx + Math.cos(swAngle) * swDist;
+                          var swy = cy + Math.sin(swAngle) * swDist;
+                          if (swx > 0 && swx < W && swy > 0 && swy < H) {
+                            ctx.beginPath(); ctx.arc(swx, swy, 1, 0, Math.PI * 2);
+                            ctx.fillStyle = glowColor; ctx.fill();
+                          }
+                        }
+                        ctx.restore();
+                      }
+
+                      // ── Size comparison reference (bottom-left) ──
+                      ctx.save(); ctx.globalAlpha = 0.25;
+                      ctx.font = '7px monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#94a3b8';
+                      var sunRefR = dim * 0.14; // reference: what 1 solar mass looks like
+                      if (mass !== 1 && stage === 'main_sequence') {
+                        ctx.fillText('Sun (1 M\u2609)', 12, H - 50);
+                        ctx.beginPath(); ctx.arc(12 + sunRefR * 0.3, H - 60, sunRefR * 0.3, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.5; ctx.setLineDash([1, 2]); ctx.stroke(); ctx.setLineDash([]);
+                      }
+                      ctx.restore();
 
 
 

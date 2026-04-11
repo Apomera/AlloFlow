@@ -32,6 +32,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 (function() {
   'use strict';
 
+  // ── Audio System (auto-injected) ──
+  var _colAC = null;
+  function getColAC() { if (!_colAC) { try { _colAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_colAC && _colAC.state === "suspended") { try { _colAC.resume(); } catch(e) {} } return _colAC; }
+  function colTone(f,d,tp,v) { var ac = getColAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxColBuild() { colTone(440,0.06,"square",0.05); }
+  function sfxColHarvest() { colTone(523,0.06,"sine",0.06); }
+  function sfxColAlert() { colTone(880,0.08,"square",0.06); }
+
+
   window.StemLab.registerTool('spaceColony', {
     icon: '\uD83D\uDE80',
     label: 'Kepler Colony',

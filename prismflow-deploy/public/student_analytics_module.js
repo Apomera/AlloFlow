@@ -229,14 +229,14 @@
             h('span', { className: 'text-sm font-medium text-slate-500' },
               'Item ' + (currentIndex + 1) + ' of ' + totalItems)
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
+          h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
             // Score tally
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
+            h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
+              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
+              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
             ),
             // Timer
-            timer !== undefined && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            timer !== undefined && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
                 (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
               'aria-live': 'polite'
@@ -262,15 +262,15 @@
           })
         ),
         // Instruction
-        instruction && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          className: 'text-center py-2 text-xs text-slate-500 font-semibold uppercase tracking-wider bg-slate-50/50 shrink-0'
+        instruction && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+          className: 'text-center py-2 text-xs text-slate-600 font-semibold uppercase tracking-wider bg-slate-50/50 shrink-0'
         }, instruction),
         // Main content area (probe-specific content)
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
+        h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
           children
         ),
         // Bottom scoring bar (for teacher-scored probes)
-        showScoreButtons && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        showScoreButtons && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
         },
           h('button', { "aria-label": "Correct",
@@ -288,7 +288,7 @@
         ),
         // Keyboard hint
         showScoreButtons && h('div', {
-          className: 'text-center py-1.5 text-[10px] text-slate-500 bg-slate-50 shrink-0'
+          className: 'text-center py-1.5 text-[10px] text-slate-600 bg-slate-50 shrink-0'
         }, 'Keyboard: 1/\u2192/C = Correct \u00B7 2/\u2190/X = Incorrect \u00B7 Space/S = Skip \u00B7 Esc = End Early')
       ), document.body
     );
@@ -1046,11 +1046,11 @@
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
           React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
           React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
-          React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
+          React.createElement("span", { className: "text-[10px] text-slate-600 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
         ),
         React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
         result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
-          React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Recommendations:"),
+          React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase" }, "Recommendations:"),
           result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-[10px] text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
         ) : null
       );
@@ -1167,11 +1167,11 @@
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
           React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
           React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
-          React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
+          React.createElement("span", { className: "text-[10px] text-slate-600 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
         ),
         React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
         result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
-          React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Recommendations:"),
+          React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase" }, "Recommendations:"),
           ...result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-[10px] text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
         ) : null
       );
@@ -1230,10 +1230,10 @@
             React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold", style: { background: growthColor[adequacy] + '15', color: growthColor[adequacy] } }, growthLabel[adequacy])
           ),
           React.createElement("div", { className: "grid grid-cols-4 gap-2 text-center mb-2" },
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-slate-700" }, firstScore), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Baseline")),
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: growthColor[adequacy] } }, lastScore), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Latest")),
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: change >= 0 ? '#16a34a' : '#dc2626' } }, (change >= 0 ? '+' : '') + Math.round(change * 10) / 10), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Change")),
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-indigo-600" }, '+' + (Math.round(weeklyGrowth * 10) / 10) + '/wk'), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Growth Rate"))
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-slate-700" }, firstScore), React.createElement("div", { className: "text-[10px] text-slate-600" }, "Baseline")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: growthColor[adequacy] } }, lastScore), React.createElement("div", { className: "text-[10px] text-slate-600" }, "Latest")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: change >= 0 ? '#16a34a' : '#dc2626' } }, (change >= 0 ? '+' : '') + Math.round(change * 10) / 10), React.createElement("div", { className: "text-[10px] text-slate-600" }, "Change")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-indigo-600" }, '+' + (Math.round(weeklyGrowth * 10) / 10) + '/wk'), React.createElement("div", { className: "text-[10px] text-slate-600" }, "Growth Rate"))
           ),
           React.createElement("div", { className: "flex justify-between text-[9px] text-slate-400" },
             React.createElement("span", null, items.length + " probes over " + Math.round(weeks) + " weeks"),
@@ -1450,9 +1450,9 @@
         return React.createElement('div', {
           className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center'
         }, React.createElement('p', {
-          className: 'text-sm text-slate-500'
+          className: 'text-sm text-slate-600'
         }, '\u{1F4CA} Need at least 2 progress snapshots to generate insights. Currently: ' + insights.snapshots + ' snapshot(s), ' + insights.probes + ' probe(s).'), React.createElement('p', {
-          className: 'text-xs text-slate-500 mt-1'
+          className: 'text-xs text-slate-600 mt-1'
         }, 'Import student data at different time points to build a longitudinal profile.'));
       }
       const strengthColor = {
@@ -1518,7 +1518,7 @@
       }, React.createElement('div', {
         className: 'text-lg font-black ' + (val > 0 ? 'text-emerald-600' : val < 0 ? 'text-red-500' : 'text-slate-500')
       }, (val > 0 ? '+' : '') + Math.round(val) + unit), React.createElement('div', {
-        className: 'text-[10px] text-slate-500 mt-0.5'
+        className: 'text-[10px] text-slate-600 mt-0.5'
       }, label))))), insights.correlations.practiceToQuiz && !insights.correlations.practiceToQuiz.insufficient ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-200 p-4'
       }, React.createElement('h5', {
@@ -1530,7 +1530,7 @@
       }, 'r = ' + insights.correlations.practiceToQuiz.r), React.createElement('div', null, React.createElement('div', {
         className: 'text-xs font-bold ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || '')
       }, insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation'), React.createElement('div', {
-        className: 'text-[10px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)')))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-200 p-4'
       }, React.createElement('h5', {
@@ -1569,15 +1569,15 @@
       }, React.createElement('div', null, React.createElement('div', {
         className: 'text-lg font-black text-indigo-600'
       }, insights.dosage.totalInterventions), React.createElement('div', {
-        className: 'text-[10px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Interventions')), React.createElement('div', null, React.createElement('div', {
         className: 'text-lg font-black text-indigo-600'
       }, insights.dosage.avgFrequency + 'x/wk'), React.createElement('div', {
-        className: 'text-[10px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Avg Frequency')), React.createElement('div', null, React.createElement('div', {
         className: 'text-lg font-black text-indigo-600'
       }, insights.dosage.avgMinutes + ' min'), React.createElement('div', {
-        className: 'text-[10px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Avg Duration')))) : null);
     };
     const renderClassInsights = () => {
@@ -1585,7 +1585,7 @@
       if (!classData) return React.createElement('div', {
         className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center'
       }, React.createElement('p', {
-        className: 'text-sm text-slate-500'
+        className: 'text-sm text-slate-600'
       }, '\u{1F4CA} Import student data with multiple snapshots to see class-wide insights.'));
       return React.createElement('div', {
         className: 'mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4'
@@ -1604,13 +1604,13 @@
       }, React.createElement('div', {
         className: 'text-xl font-black text-indigo-600'
       }, 'r = ' + classData.avgCorrelation), React.createElement('div', {
-        className: 'text-[10px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Avg Practice↔Outcome Correlation')) : null, classData.commonWeakness ? React.createElement('div', {
         className: 'bg-white rounded-lg p-3 text-center'
       }, React.createElement('div', {
         className: 'text-xl font-black text-amber-600'
       }, DOMAIN_LABELS[classData.commonWeakness] || classData.commonWeakness), React.createElement('div', {
-        className: 'text-[10px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Most Common Area to Watch (' + classData.commonWeaknessCount + ' students)')) : null));
     };
     const exportResearchCSV = () => {
@@ -1760,7 +1760,7 @@
         MAP: ['RIT Score', 'Percentile'],
         Other: ['Custom']
       };
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-indigo-200',
@@ -2044,7 +2044,7 @@
       const questions = SURVEY_QUESTIONS[showSurveyModal] || [];
       const typeLabel = showSurveyModal.charAt(0).toUpperCase() + showSurveyModal.slice(1);
       const allAnswered = questions.every(q => surveyAnswers[q.id] !== undefined);
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full border-2 border-purple-200 max-h-[85vh] overflow-y-auto',
@@ -2052,7 +2052,7 @@
       }, React.createElement('h3', {
         className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2'
       }, React.createElement('span', null, '\u{1F4DD}'), typeLabel + ' Survey'), React.createElement('p', {
-        className: 'text-xs text-slate-500 mb-4'
+        className: 'text-xs text-slate-600 mb-4'
       }, 'Rate each item on a scale of 1-5. Your responses help us improve.'), React.createElement('div', {
         className: 'mb-4'
       }, React.createElement('label', {
@@ -2226,13 +2226,13 @@
         fill: '#94a3b8',
         textAnchor: 'end'
       }, Math.round(yMax))), React.createElement('p', {
-        className: 'text-[10px] text-slate-500 text-center mt-1'
+        className: 'text-[10px] text-slate-600 text-center mt-1'
       }, 'Dashed line = trend (' + (slope > 0 ? 'positive' : slope < 0 ? 'negative' : 'flat') + '). ' + snapshots.length + ' data points.'));
     };
     const renderResearchToolbar = () => {
       const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200 p-3'
       }, React.createElement('div', {
         className: 'flex items-center gap-2 mb-2'
@@ -2352,7 +2352,7 @@
     });
     const renderResearchSetupModal = () => {
       if (!showResearchSetup) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-emerald-200',
@@ -2360,7 +2360,7 @@
       }, React.createElement('h3', {
         className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2'
       }, React.createElement('span', null, '\u{1F52C}'), 'Research Mode Setup'), React.createElement('p', {
-        className: 'text-xs text-slate-500 mb-4'
+        className: 'text-xs text-slate-600 mb-4'
       }, 'Configure research data collection. This enables auto-surveys, session fidelity logging, and study tracking.'), React.createElement('div', {
         className: 'space-y-3'
       }, React.createElement('div', null, React.createElement('label', {
@@ -2446,7 +2446,7 @@
     };
     const renderAutoSurveyPrompt = () => {
       if (!showAutoSurveyPrompt) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-purple-200 text-center'
@@ -2461,7 +2461,7 @@
       }, 'You\'ve completed ' + sessionCounter + ' sessions. Would you like to share your feedback?'), React.createElement('div', {
         className: 'flex gap-2 justify-center'
       }, React.createElement('button', {
-        className: 'px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg',
+        className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
         onClick: () => setShowAutoSurveyPrompt(false)
       }, 'Skip'), React.createElement('button', {
         className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold',
@@ -2491,7 +2491,7 @@
       const expectedSurveys = researchMode.surveyFrequency && researchMode.surveyFrequency !== '0' ? Math.floor(sessionCounter / parseInt(researchMode.surveyFrequency)) : 0;
       const studentSurveys = Object.entries(surveyResponses).filter(([k]) => k.startsWith('student_')).reduce((s, [, arr]) => s + arr.length, 0);
       const responseRate = expectedSurveys > 0 ? Math.round(studentSurveys / expectedSurveys * 100) : null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'mt-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl border-2 border-emerald-300 p-4'
       }, React.createElement('div', {
         className: 'flex items-center justify-between mb-3'
@@ -2516,7 +2516,7 @@
       }, React.createElement('div', {
         className: 'text-sm font-bold text-slate-800'
       }, researchMode.studyName), React.createElement('div', {
-        className: 'flex gap-4 text-[10px] text-slate-500 mt-1'
+        className: 'flex gap-4 text-[10px] text-slate-600 mt-1'
       }, React.createElement('span', null, '\u{1F4C5} Started: ' + studyStartDate.toLocaleDateString()), React.createElement('span', null, '\u{23F1} Day ' + daysSinceStart + ' (Week ' + weeksSinceStart + ')'), researchMode.irb ? React.createElement('span', null, '\u{1F4CB} IRB: ' + researchMode.irb) : null)), React.createElement('div', {
         className: 'grid grid-cols-4 gap-2 mb-3'
       }, ...[['\u{1F4CA}', totalSessions, 'Sessions Logged', 'bg-blue-50 text-blue-700'], ['\u{23F1}', Math.round(totalMinutes), 'Total Minutes', 'bg-purple-50 text-purple-700'], ['\u{1F9D1}', uniqueStudents, 'Students', 'bg-amber-50 text-amber-700'], ['\u{1F4C8}', sessionsPerWeek + '/wk', 'Frequency', 'bg-emerald-50 text-emerald-700']].map(([icon, value, label, cls]) => React.createElement('div', {
@@ -2544,27 +2544,27 @@
       }, React.createElement('div', {
         className: 'text-lg font-black ' + (responseRate >= 80 ? 'text-emerald-600' : responseRate >= 50 ? 'text-amber-600' : 'text-red-500')
       }, responseRate + '%'), React.createElement('div', {
-        className: 'text-[9px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Survey Response Rate'), React.createElement('div', {
-        className: 'text-[8px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, studentSurveys + '/' + expectedSurveys + ' expected')) : React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
-        className: 'text-sm text-slate-500'
+        className: 'text-sm text-slate-600'
       }, 'No auto-surveys yet'), React.createElement('div', {
-        className: 'text-[9px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, sessionCounter + ' sessions completed')), topActivity ? React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
         className: 'text-sm font-bold text-slate-700'
       }, topActivity[0]), React.createElement('div', {
-        className: 'text-[9px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Most Used Activity (' + topActivity[1] + 'x)')) : React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
-        className: 'text-sm text-slate-500'
+        className: 'text-sm text-slate-600'
       }, 'No sessions logged'), React.createElement('div', {
-        className: 'text-[9px] text-slate-500'
+        className: 'text-[10px] text-slate-600'
       }, 'Activities will appear here'))), fidelityLog.length > 0 ? React.createElement('div', {
         className: 'mt-3 bg-white/70 rounded-lg p-3'
       }, React.createElement('h5', {
@@ -3521,7 +3521,7 @@
       if (addToast) addToast('\u{1F4CA} Your progress report has been downloaded!', 'success');
     };
     if (!isOpen) return null;
-    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
       className: "fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
@@ -3540,7 +3540,7 @@
     })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
       className: "text-xl font-bold text-slate-800"
     }, isIndependentMode ? '\u{1F4CA} My Learning Journey' : '🎯 Assessment Center'), importedStudents.length > 0 && /*#__PURE__*/React.createElement("p", {
-      className: "text-sm text-slate-500"
+      className: "text-sm text-slate-600"
     }, t('class_analytics.students_loaded', {
       count: importedStudents.length
     })))), /*#__PURE__*/React.createElement("button", {
@@ -3573,7 +3573,7 @@
           if (typeof renderResearchSetupModal === 'function') setShowResearchSetup(true);
         }
       },
-      className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${assessmentCenterTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`
+      className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${assessmentCenterTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`
     }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
       className: `text-[10px] font-normal ${assessmentCenterTab === tab.id ? 'text-indigo-400' : 'text-slate-500'}`
     }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
@@ -3667,7 +3667,7 @@
     }, "\uD83C\uDF1F"), /*#__PURE__*/React.createElement("h3", {
       className: "text-lg font-bold text-slate-800 mt-2"
     }, "Welcome to Your Learning Journey!"), /*#__PURE__*/React.createElement("p", {
-      className: "text-sm text-slate-500 mt-1"
+      className: "text-sm text-slate-600 mt-1"
     }, "Track your progress and celebrate your growth")), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-3 gap-3 mb-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3675,19 +3675,19 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-indigo-600"
     }, globalLevel), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500 font-semibold"
+      className: "text-xs text-slate-600 font-semibold"
     }, "Level")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-xl p-3 text-center border border-purple-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-purple-600"
     }, globalPoints), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500 font-semibold"
+      className: "text-xs text-slate-600 font-semibold"
     }, "XP")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-xl p-3 text-center border border-pink-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-pink-600"
     }, history.length), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500 font-semibold"
+      className: "text-xs text-slate-600 font-semibold"
     }, "Activities"))), /*#__PURE__*/React.createElement("div", {
       className: "mt-4 p-3 bg-white/80 rounded-xl border border-slate-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3702,7 +3702,7 @@
       placeholder: "Start",
       "aria-label": "Report start date"
     }), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "to"), /*#__PURE__*/React.createElement("input", {
       type: "date",
       value: reportEndDate,
@@ -3715,10 +3715,10 @@
         setReportStartDate('');
         setReportEndDate('');
       },
-      className: "text-xs text-slate-500 hover:text-red-500 px-1",
+      className: "text-xs text-slate-600 hover:text-red-500 px-1",
       title: "Clear dates"
     }, "\u2716")), /*#__PURE__*/React.createElement("p", {
-      className: "text-[10px] text-slate-500 mt-1"
+      className: "text-[10px] text-slate-600 mt-1"
     }, t('learner.leave_empty_all_sessions'))), /*#__PURE__*/React.createElement("button", {
       onClick: () => generateStudentFriendlyReport({
         history,
@@ -3900,11 +3900,11 @@
     }, "\uD83C\uDFAF RTI Tier Distribution"), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, classSummary.totalStudents, " students"), /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.configure_rti_thresholds'),
       onClick: () => setShowRTISettings(true),
-      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-500 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
+      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
       title: t('common.configure_rti_thresholds')
     }, /*#__PURE__*/React.createElement(Settings, {
       size: 14
@@ -4040,7 +4040,7 @@
     }, /*#__PURE__*/React.createElement(X, {
       size: 18
     }))), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-4"
+      className: "text-xs text-slate-600 mb-4"
     }, "Adjust classification cutoffs to match your grade level, district benchmarks, or screening tool norms. Changes apply immediately to all student classifications."), /*#__PURE__*/React.createElement("div", {
       className: "space-y-4"
     }, [{
@@ -4107,7 +4107,7 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-sm font-semibold text-slate-700"
     }, item.label), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, item.desc)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("input", {
@@ -4136,7 +4136,7 @@
         fluencyMin: 60,
         labelChallengeMin: 50
       }),
-      className: "text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+      className: "text-xs text-slate-600 hover:text-indigo-600 font-medium transition-colors"
     }, "\u21BA Reset to Defaults"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowRTISettings(false),
       className: "px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md text-sm"
@@ -4179,7 +4179,7 @@
             React.createElement("span", { className: "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "2-3: ORF + Math Fluency"),
             React.createElement("span", { className: "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "4+: ORF + Math Fluency")
           ),
-          React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "Use Form A (Fall), Form B (Winter), Form C (Spring) to avoid practice effects.")
+          React.createElement("p", { className: "text-[10px] text-slate-600 mt-1.5 italic" }, "Use Form A (Fall), Form B (Winter), Form C (Spring) to avoid practice effects.")
         ),
         React.createElement("div", { className: "bg-white rounded-lg p-3 border border-amber-200" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" },
@@ -4191,7 +4191,7 @@
             React.createElement("span", { className: "text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Reading: ORF (same grade-level passages)"),
             React.createElement("span", { className: "text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Math: DCPM (same operation type)")
           ),
-          React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "Aim for 8+ data points before making instructional decisions.")
+          React.createElement("p", { className: "text-[10px] text-slate-600 mt-1.5 italic" }, "Aim for 8+ data points before making instructional decisions.")
         ),
         React.createElement("div", { className: "bg-white rounded-lg p-3 border border-violet-200" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" },
@@ -4205,7 +4205,7 @@
             React.createElement("span", { className: "text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Naming speed: RAN"),
             React.createElement("span", { className: "text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Full battery: Benchmark Battery")
           ),
-          React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "Low ORF + adequate NWF = fluency deficit (practice). Low ORF + low NWF = decoding deficit (phonics).")
+          React.createElement("p", { className: "text-[10px] text-slate-600 mt-1.5 italic" }, "Low ORF + adequate NWF = fluency deficit (practice). Low ORF + low NWF = decoding deficit (phonics).")
         ),
         React.createElement("div", { className: "bg-slate-100 rounded-lg p-3" },
           React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83D\uDCCA Quick Interpretation"),
@@ -4214,7 +4214,7 @@
             React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, React.createElement("div", { className: "text-[10px] font-bold text-amber-700" }, "15th-39th %ile"), React.createElement("div", { className: "text-[10px] text-amber-600" }, "Tier 2: Strategic")),
             React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, React.createElement("div", { className: "text-[10px] font-bold text-red-700" }, "< 15th %ile"), React.createElement("div", { className: "text-[10px] text-red-600" }, "Tier 3: Intensive"))
           ),
-          React.createElement("p", { className: "text-[10px] text-slate-500 mt-2 italic" }, "General guidelines. Use RTI Settings to customize for your district norms.")
+          React.createElement("p", { className: "text-[10px] text-slate-600 mt-2 italic" }, "General guidelines. Use RTI Settings to customize for your district norms.")
         )
       ) : null
     ),
@@ -4230,7 +4230,7 @@
     }, t('probes.benchmark_battery')), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "Standardized")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Curated word lists with fixed activity order per grade. No gamification \u2014 designed for formal assessment."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
@@ -4284,7 +4284,7 @@
     }, "\u25B6 Start Battery")), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] text-slate-500 font-semibold"
+      className: "text-[10px] text-slate-600 font-semibold"
     }, "Battery order:"), (GRADE_SUBTEST_BATTERIES[probeGradeLevel] || []).map((act, i, arr) => /*#__PURE__*/React.createElement("span", {
       key: act,
       className: "text-[10px] font-bold text-violet-600"
@@ -4299,7 +4299,7 @@
     }, t('probes.math_fluency')), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "Standardized")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Fixed problem sets with DCPM scoring. 25 problems, 2-minute timer. Forms A/B/C for progress monitoring."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
@@ -4381,7 +4381,7 @@
       "aria-label": "Start math probe",
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
     }, "\u25B6 Start Math Probe")), /*#__PURE__*/React.createElement("div", {
-      className: "mt-2 text-[10px] text-slate-500 font-semibold"
+      className: "mt-2 text-[10px] text-slate-600 font-semibold"
     }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -4393,7 +4393,7 @@
     }, t('probes.literacy_fluency')), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "Standardized")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), and Rapid Automatized Naming (RAN) assessments."), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 sm:grid-cols-3 gap-2"
     }, /*#__PURE__*/React.createElement("button", {
@@ -4428,7 +4428,7 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "NWF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-500 font-normal"
+      className: "text-[10px] text-slate-600 font-normal"
     }, t('probes.nwf')))), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = 'K';
@@ -4459,7 +4459,7 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "LNF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-500 font-normal"
+      className: "text-[10px] text-slate-600 font-normal"
     }, t('probes.lnf')))), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = ranGrade || 'K';
@@ -4492,7 +4492,7 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "RAN"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-500 font-normal"
+      className: "text-[10px] text-slate-600 font-normal"
     }, t('probes.ran')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-emerald-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -4535,7 +4535,7 @@
         width: `${nwfProbeIndex / nwfProbeWords.length * 100}%`
       }
     })), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
+      className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
     }, "Say: \u201CLook at this word. Tell me the sounds.\u201D \u2014 Score each sound"), nwfProbeTimer > 0 && nwfProbeIndex < nwfProbeWords.length ? (() => {
       const currentWord = nwfProbeWords[nwfProbeIndex];
       const markWord = isCorrect => {
@@ -4565,10 +4565,10 @@
           setNwfProbeActive(false);
         }
       };
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-500 mb-2 font-semibold uppercase tracking-wider"
+        className: "text-xs text-slate-600 mb-2 font-semibold uppercase tracking-wider"
       }, "Student reads aloud \u2014 Teacher scores"), /*#__PURE__*/React.createElement("div", {
         className: "bg-gradient-to-br from-slate-50 to-emerald-50 rounded-2xl p-8 mb-6 border border-emerald-100"
       }, /*#__PURE__*/React.createElement("div", {
@@ -4602,9 +4602,9 @@
             setNwfProbeActive(false);
           }
         },
-        className: "text-sm text-slate-500 hover:text-slate-600 font-bold px-4 py-2"
+        className: "text-sm text-slate-600 hover:text-slate-600 font-bold px-4 py-2"
       }, "Skip \u2192")), /*#__PURE__*/React.createElement("div", {
-        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-500"
+        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-600"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-green-500 font-bold"
       }, nwfProbeWords.filter(w => w.scored && w.correct).length, " correct"), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
@@ -4626,27 +4626,27 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-emerald-600"
     }, nwfProbeResults.cls), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "CLS"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-500"
+      className: "text-[10px] text-slate-600"
     }, "Correct Letter Sounds")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-green-600"
     }, nwfProbeResults.correctWords), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Words Correct")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-slate-700"
     }, nwfProbeResults.totalScored), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Words Scored")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-indigo-600"
     }, nwfProbeResults.totalScored > 0 ? Math.round(nwfProbeResults.correctWords / nwfProbeResults.totalScored * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setLatestProbeResult({
@@ -4737,9 +4737,9 @@
         }
       };
       return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
+        className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
       }, "Student names each letter \u2014 Teacher scores"), /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
+        className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
       }, "Say: \u201CPoint to each letter and tell me its name.\u201D Start timing on first response"), /*#__PURE__*/React.createElement("div", {
         className: "grid grid-cols-10 gap-1 mb-6"
       }, lnfProbeLetters.map((item, idx) => /*#__PURE__*/React.createElement("div", {
@@ -4772,9 +4772,9 @@
             setLnfProbeActive(false);
           }
         },
-        className: "text-sm text-slate-500 hover:text-slate-600 font-bold px-4 py-2"
+        className: "text-sm text-slate-600 hover:text-slate-600 font-bold px-4 py-2"
       }, "Skip \u2192")), /*#__PURE__*/React.createElement("div", {
-        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-500"
+        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-600"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-green-500 font-bold"
       }, lnfProbeLetters.filter(l => l.scored && l.correct).length, " correct"), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
@@ -4796,21 +4796,21 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-blue-600"
     }, lnfProbeResults.lpm), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "LPM"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-500"
+      className: "text-[10px] text-slate-600"
     }, "Letters Per Minute")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-slate-700"
     }, lnfProbeResults.totalScored), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Letters Scored")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-indigo-600"
     }, lnfProbeResults.totalScored > 0 ? Math.round(lnfProbeResults.correct / lnfProbeResults.totalScored * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setLatestProbeResult({
@@ -4846,7 +4846,7 @@
     }, "\u26A1 RAN PROBE"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-medium text-slate-600"
     }, "Item ", ranProbeIndex + 1, " of ", ranProbeItems.length), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-500 capitalize"
+      className: "text-xs text-slate-600 capitalize"
     }, ranProbeType)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
@@ -4916,7 +4916,7 @@
         }
       };
       return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
+        className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
       }, "Student names each item as fast as possible \u2014 Teacher scores"), /*#__PURE__*/React.createElement("div", {
         className: "grid grid-cols-10 gap-1.5 mb-6"
       }, ranProbeItems.map((entry, idx) => {
@@ -4965,9 +4965,9 @@
             setRanProbeActive(false);
           }
         },
-        className: "text-sm text-slate-500 hover:text-slate-600 font-bold px-4 py-2"
+        className: "text-sm text-slate-600 hover:text-slate-600 font-bold px-4 py-2"
       }, "Skip \u2192")), /*#__PURE__*/React.createElement("div", {
-        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-500"
+        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-600"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-green-500 font-bold"
       }, ranProbeItems.filter(it => it.scored && it.correct).length, " correct"), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
@@ -4985,27 +4985,27 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-amber-600"
     }, ranProbeResults.elapsedSeconds, "s"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Completion Time")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-green-600"
     }, ranProbeResults.correct), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Correct")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-slate-700"
     }, ranProbeResults.totalScored), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Items Scored")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-indigo-600"
     }, ranProbeResults.totalScored > 0 ? Math.round(ranProbeResults.correct / ranProbeResults.totalScored * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy"))), /*#__PURE__*/React.createElement("div", {
-      className: "text-center text-xs text-slate-500 mb-2"
+      className: "text-center text-xs text-slate-600 mb-2"
     }, "Type: ", /*#__PURE__*/React.createElement("span", {
       className: "font-bold capitalize"
     }, ranProbeResults.subType), " \xB7 Grade ", ranProbeResults.grade), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
@@ -5062,7 +5062,7 @@
         width: `${orfProbeTimer > 0 ? (60 - orfProbeTimer) / 60 * 100 : 100}%`
       }
     })), orfProbeTimer > 0 ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
+      className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
     }, "Say: \u201CStart here. Read this story aloud. Do your best reading.\u201D Tap words read INCORRECTLY"), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-slate-50 to-rose-50 rounded-2xl p-6 mb-4 border border-rose-100 leading-relaxed"
     }, orfProbeWords.map((item, idx) => /*#__PURE__*/React.createElement("span", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
@@ -5077,7 +5077,7 @@
       },
       className: `inline-block cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none ${item.error ? 'bg-red-200 text-red-700 line-through font-bold' : 'hover:bg-rose-100 text-slate-800'}`
     }, item.word))), /*#__PURE__*/React.createElement("div", {
-      className: "text-center text-xs text-slate-500"
+      className: "text-center text-xs text-slate-600"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-red-500 font-bold"
     }, orfProbeWords.filter(w => w.error).length, " errors marked"), /*#__PURE__*/React.createElement("span", {
@@ -5119,21 +5119,21 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-3xl font-bold text-rose-600"
     }, orfProbeResults.wcpm), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500 font-bold"
+      className: "text-xs text-slate-600 font-bold"
     }, "WCPM"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-500"
+      className: "text-[10px] text-slate-600"
     }, "Words Correct Per Min")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-red-500"
     }, orfProbeResults.errors), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Errors")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-indigo-600"
     }, orfProbeResults.wordsAttempted > 0 ? Math.round((orfProbeResults.wordsAttempted - orfProbeResults.errors) / orfProbeResults.wordsAttempted * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setLatestProbeResult({
@@ -5172,7 +5172,7 @@
         key: oi,
         className: `text-xs px-2 py-1 rounded-full cursor-default ${opt === q.answer ? 'bg-green-100 text-green-700 font-bold ring-1 ring-green-300' : 'bg-slate-100 text-slate-500'}`
       }, opt, " ", opt === q.answer ? '✅' : ''))))), /*#__PURE__*/React.createElement("p", {
-        className: "text-[10px] text-slate-500 mt-2 italic"
+        className: "text-[10px] text-slate-600 mt-2 italic"
       }, "Ask each question orally. Correct answers highlighted."));
     })(),
     renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
@@ -5193,11 +5193,11 @@
     }, t('probes.missing_number')), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-2")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Find the missing number: \"3 + __ = 7\". Measures algebraic thinking and number relationships."), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mb-3 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "\uD83D\uDCCB Student:"), /*#__PURE__*/React.createElement("select", {
       "aria-label": "Assign probe to student",
       value: mathProbeStudent || "",
@@ -5381,7 +5381,7 @@
             setMnProbeActive(false);
           }
         },
-        className: "text-sm text-slate-500 hover:text-slate-600 font-bold"
+        className: "text-sm text-slate-600 hover:text-slate-600 font-bold"
       }, "Skip \u2192")));
     })() : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-4"
@@ -5411,19 +5411,19 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-green-600"
     }, mnProbeResults.correct), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Correct")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-slate-700"
     }, mnProbeResults.total), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Attempted")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-indigo-600"
     }, mnProbeResults.total > 0 ? Math.round(mnProbeResults.correct / mnProbeResults.total * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setLatestProbeResult({
@@ -5450,7 +5450,7 @@
     }, t('probes.qd')), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-1")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Circle the bigger number. 1-minute timed. Measures number magnitude understanding."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
@@ -5546,10 +5546,10 @@
       }
     })), qdProbeTimer > 0 && qdProbeIndex < qdProbeProblems.length ? (() => {
       const problem = qdProbeProblems[qdProbeIndex];
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
-        className: "text-sm text-slate-500 mb-4 font-medium"
+        className: "text-sm text-slate-600 mb-4 font-medium"
       }, "Which number is bigger?"), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-8"
       }, [problem.a, problem.b].map((num, i) => /*#__PURE__*/React.createElement("button", {
@@ -5609,19 +5609,19 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-green-600"
     }, qdProbeResults.correct), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Correct")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-slate-700"
     }, qdProbeResults.total), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Attempted")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-2xl font-bold text-cyan-600"
     }, qdProbeResults.total > 0 ? Math.round(qdProbeResults.correct / qdProbeResults.total * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setLatestProbeResult({
@@ -5648,7 +5648,7 @@
     }, "Nonsense Word Fluency (NWF)"), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-1")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Student reads CVC pseudowords aloud (e.g., \"sig\", \"bim\", \"tob\"). Scored as Correct Letter Sounds (CLS) per minute. Tests phonetic decoding."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
@@ -5684,7 +5684,7 @@
     }, "Letter Naming Fluency (LNF)"), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Student names randomly arranged uppercase and lowercase letters. Scored as letters per minute. Tests basic letter recognition."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
@@ -5711,7 +5711,7 @@
     }, "Rapid Automatized Naming (RAN)"), /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-2")), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500 mb-3"
+      className: "text-xs text-slate-600 mb-3"
     }, "Student names colors (K), letters (1), or numbers (2) as fast as possible. Measures processing speed \u2014 a key predictor of reading fluency."), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
@@ -5745,7 +5745,7 @@
       "aria-label": t('common.export_rti_progress_report_as_csv'),
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-bold text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md"
     }, "\uD83D\uDCCA Export RTI Report"), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Download CSV with tier classifications, metrics, and recommendations")), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
       className: "text-center py-12 text-slate-500"
     }, /*#__PURE__*/React.createElement(Users, {
@@ -6760,25 +6760,25 @@
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-rose-600"
       }, rr.substitutions), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-500"
+        className: "text-xs text-slate-600"
       }, t('fluency.substitutions') || 'Substitutions')), /*#__PURE__*/React.createElement("div", {
         className: "bg-white rounded-lg p-2 text-center border border-indigo-100"
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-orange-600"
       }, rr.omissions), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-500"
+        className: "text-xs text-slate-600"
       }, t('fluency.omissions') || 'Omissions')), /*#__PURE__*/React.createElement("div", {
         className: "bg-white rounded-lg p-2 text-center border border-indigo-100"
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-purple-600"
       }, rr.insertions), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-500"
+        className: "text-xs text-slate-600"
       }, t('fluency.insertions_label') || 'Insertions')), /*#__PURE__*/React.createElement("div", {
         className: "bg-white rounded-lg p-2 text-center border border-indigo-100"
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-blue-600"
       }, rr.selfCorrections), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-500"
+        className: "text-xs text-slate-600"
       }, t('fluency.self_corrections') || 'Self-Corrections'))), /*#__PURE__*/React.createElement("div", {
         className: "mt-2 flex flex-wrap gap-3 text-xs text-slate-600"
       }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, t('fluency.error_rate') || 'Error Rate', ":"), " 1:", rr.errorRate), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, t('fluency.sc_rate') || 'SC Rate', ":"), " ", rr.scRate), /*#__PURE__*/React.createElement("span", {
@@ -6819,25 +6819,25 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-emerald-600"
     }, selectedStudent.stats.wsAccuracy, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Accuracy")), selectedStudent.stats?.wsWordsCompleted > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-teal-600"
     }, selectedStudent.stats.wsWordsCompleted), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, t('class_analytics.words_completed'))), selectedStudent.stats?.wsBestStreak > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-amber-600"
     }, selectedStudent.stats.wsBestStreak, "\uD83D\uDD25"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, t('class_analytics.best_streak'))), selectedStudent.data.wordSoundsState.phonemeMastery && Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-purple-600"
     }, Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, t('class_analytics.phonemes_practiced')))), selectedStudent.data.wordSoundsState.badges?.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex flex-wrap gap-1"
     }, selectedStudent.data.wordSoundsState.badges.map((badge, bi) => /*#__PURE__*/React.createElement("span", {
@@ -6896,7 +6896,7 @@
       }, /*#__PURE__*/React.createElement("span", {
         className: "font-medium text-sm text-slate-700"
       }, game.icon, " ", game.label), /*#__PURE__*/React.createElement("span", {
-        className: "text-xs text-slate-500"
+        className: "text-xs text-slate-600"
       }, s.attempts, " play", s.attempts !== 1 ? 's' : '')), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3"
       }, /*#__PURE__*/React.createElement("div", {
@@ -6904,7 +6904,7 @@
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-violet-600"
       }, Math.round(s.best), "%"), /*#__PURE__*/React.createElement("div", {
-        className: "text-[10px] text-slate-500 uppercase"
+        className: "text-[10px] text-slate-600 uppercase"
       }, "Best")), /*#__PURE__*/React.createElement("div", {
         className: "flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"
       }, /*#__PURE__*/React.createElement("div", {
@@ -6918,7 +6918,7 @@
       }, /*#__PURE__*/React.createElement("div", {
         className: `text-xs font-bold ${s.best > s.initial ? 'text-emerald-600' : 'text-slate-500'}`
       }, s.best > s.initial ? `+${Math.round(s.best - s.initial)}%` : '—'), /*#__PURE__*/React.createElement("div", {
-        className: "text-[10px] text-slate-500 uppercase"
+        className: "text-[10px] text-slate-600 uppercase"
       }, "Growth"))));
     }))), selectedStudent.data?.labelChallengeResults?.length > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_label_challenge",
@@ -6932,19 +6932,19 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-blue-600"
     }, selectedStudent.stats.labelChallengeAvg, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Average")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-blue-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-emerald-600"
     }, selectedStudent.stats.labelChallengeBest, "%"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, t('class_analytics.best_score'))), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-blue-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-violet-600"
     }, selectedStudent.stats.labelChallengeAttempts), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Attempts"))), /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 max-h-48 overflow-y-auto"
     }, selectedStudent.data.labelChallengeResults.map((result, ri) => /*#__PURE__*/React.createElement("div", {
@@ -6955,9 +6955,9 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `font-bold ${result.score >= 80 ? 'text-emerald-600' : result.score >= 50 ? 'text-amber-600' : 'text-rose-600'}`
     }, result.score, "% \u2014 ", result.totalCorrect, "/", result.totalExpected, " correct"), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, result.timestamp ? new Date(result.timestamp).toLocaleDateString() : '')), result.feedback && /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-500 mt-1 italic"
+      className: "text-xs text-slate-600 mt-1 italic"
     }, result.feedback))))), selectedStudent.data?.socraticChatHistory?.messages?.length > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_socratic",
       className: "mb-4 border border-teal-200 rounded-xl overflow-hidden"
@@ -6969,7 +6969,7 @@
       key: idx,
       className: `p-2 rounded-lg text-sm ${msg.role === 'user' ? 'bg-teal-100 ml-8' : 'bg-slate-100 mr-8'}`
     }, /*#__PURE__*/React.createElement("div", {
-      className: "font-medium text-xs text-slate-500 mb-1"
+      className: "font-medium text-xs text-slate-600 mb-1"
     }, msg.role === 'user' ? 'Student' : 'Socratic Tutor'), msg.content || msg.text)))), selectedStudent.data.personaState?.chatHistory?.length > 0 ? /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_transcript",
       className: "border border-slate-200 rounded-xl overflow-hidden"
@@ -6981,7 +6981,7 @@
       key: idx,
       className: `p-2 rounded-lg text-sm ${msg.role === 'user' || msg.sender === 'student' ? 'bg-indigo-100 ml-8' : 'bg-slate-100 mr-8'}`
     }, /*#__PURE__*/React.createElement("div", {
-      className: "font-medium text-xs text-slate-500 mb-1"
+      className: "font-medium text-xs text-slate-600 mb-1"
     }, msg.role === 'user' || msg.sender === 'student' ? 'Student' : 'Character'), msg.content || msg.text)))) : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-8 text-slate-500"
     }, t('class_analytics.no_transcript'),
@@ -7070,7 +7070,7 @@
                 students.slice(0, 5).map(function(name, i) {
                   return React.createElement("span", { key: i, className: "text-[10px] px-1.5 py-0.5 rounded-full bg-white/70 font-medium", style: { color: t.color } }, name);
                 }),
-                students.length > 5 && React.createElement("span", { className: "text-[10px] text-slate-500" }, '+' + (students.length - 5) + ' more')
+                students.length > 5 && React.createElement("span", { className: "text-[10px] text-slate-600" }, '+' + (students.length - 5) + ' more')
               )
             );
           })
@@ -7090,7 +7090,7 @@
         React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600" },
           '\uD83D\uDCCB ' + sortedAndFiltered.length + ' Student' + (sortedAndFiltered.length !== 1 ? 's' : '') + ' Loaded'
         ),
-        React.createElement("div", { className: "p-2 text-xs text-slate-500 text-center" },
+        React.createElement("div", { className: "p-2 text-xs text-slate-600 text-center" },
           'Click a student name in the Assessments tab to view their full detail profile.'
         )
       ),
@@ -7100,7 +7100,7 @@
       },
         React.createElement("div", { className: "text-4xl mb-3" }, '\uD83D\uDCCB'),
         React.createElement("h3", { className: "text-lg font-bold text-slate-700 mb-2" }, 'Import Student Data'),
-        React.createElement("p", { className: "text-sm text-slate-500 mb-4" }, 'Upload exported student JSON files to view analytics, RTI classification, and progress data.'),
+        React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, 'Upload exported student JSON files to view analytics, RTI classification, and progress data.'),
         React.createElement("label", { className: "cursor-pointer inline-block" },
           React.createElement("input", { type: "file", accept: ".json", multiple: true, onChange: handleFileImport, className: "hidden", "aria-label": "Upload student JSON files" }),
           React.createElement("div", { className: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-colors" },
@@ -7118,7 +7118,7 @@
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
       className: "text-lg font-bold text-slate-800"
     }, "\uD83D\uDCCA Research & Insights"), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-500"
+      className: "text-xs text-slate-600"
     }, "Longitudinal analytics, growth tracking, and practice-to-outcome correlations")), importedStudents.length > 0 && /*#__PURE__*/React.createElement("select", {
       value: researchStudent || '',
       onChange: e => setResearchStudent(e.target.value || null),
@@ -7155,19 +7155,19 @@
       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
         React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCCA"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Research Mode")),
-          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Start a named study with auto-session logging, configurable survey prompts, and IRB tracking.")
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Start a named study with auto-session logging, configurable survey prompts, and IRB tracking.")
         ),
         React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCDD"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Built-In Surveys")),
-          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Student, teacher, and parent surveys with pre/mid/post timepoints. Responses export as CSV for analysis.")
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Student, teacher, and parent surveys with pre/mid/post timepoints. Responses export as CSV for analysis.")
         ),
         React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC8"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Growth Tracking & Insights")),
-          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and RTI tier recommendations.")
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and RTI tier recommendations.")
         ),
         React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC4"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Data Export")),
-          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Three CSV exports: student-level research data, session-level fidelity log, and survey responses with timepoints. Plus CBM import.")
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Three CSV exports: student-level research data, session-level fidelity log, and survey responses with timepoints. Plus CBM import.")
         )
       ),
       React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
@@ -7192,7 +7192,7 @@
       onClick: () => setResearchStudent(null),
       className: "text-sm text-indigo-600 hover:text-indigo-800 font-bold"
     }, "\u2190 Back to class"), /*#__PURE__*/React.createElement("span", {
-      className: "text-sm text-slate-500"
+      className: "text-sm text-slate-600"
     }, "|"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-slate-700"
     }, researchStudent),
@@ -7221,7 +7221,7 @@
         title: f.detail,
         className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-600'}`
       }, f.icon, " ", f.label))), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-500 mt-1"
+        className: "text-xs text-slate-600 mt-1"
       }, "View insights \u2192"));
     }))), typeof renderResearchDashboard === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200"

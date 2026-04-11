@@ -30,6 +30,14 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _molAC = null;
+  function getMolAC() { if (!_molAC) { try { _molAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_molAC && _molAC.state === "suspended") { try { _molAC.resume(); } catch(e) {} } return _molAC; }
+  function molTone(f,d,tp,v) { var ac = getMolAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxMolClick() { molTone(600, 0.03, "sine", 0.04); }
+  function sfxMolSuccess() { molTone(523, 0.08, "sine", 0.07); setTimeout(function() { molTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { molTone(784, 0.1, "sine", 0.08); }, 140); }
+
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
   window.StemLab.registerTool('molecule', {

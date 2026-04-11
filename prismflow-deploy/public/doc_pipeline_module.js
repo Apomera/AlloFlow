@@ -583,10 +583,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     // Check for user style seed (set via UI before remediation) — unified with STYLE_SEEDS
     const _styleSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
     const _styleSeed = STYLE_SEEDS[_styleSeedId];
-    // Support user-created custom styles (saved via pipeline UI, stored on window.__pdfCustomStyle)
-    const _customStyle = (_styleSeedId === 'custom' && typeof window !== 'undefined' && window.__pdfCustomStyle) ? window.__pdfCustomStyle : null;
-    const _styleInstructions = _customStyle?.promptInstructions ? '\n' + _customStyle.promptInstructions :
-      (_styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '');
+    const _styleInstructions = _styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '';
 
     const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
 
@@ -595,7 +592,7 @@ ${batchIssueList}
 
 TEXT CONTENT TO TRANSFORM:
 ${'\"\"\"'}
-${extractedText.substring(0, 50000)}
+${extractedText.substring(0, 30000)}
 ${'\"\"\"'}
 
 Create a COMPLETE, polished HTML document following ALL of these requirements:
@@ -635,7 +632,7 @@ VISUAL STYLING (inline CSS):
 
 Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
 
-    let accessibleHtml = await callGemini(batchTransformPrompt, false);
+    let accessibleHtml = await callGemini(batchTransformPrompt, true);
 
     if (!accessibleHtml || accessibleHtml.length < 100) {
       throw new Error('HTML generation failed');
@@ -653,83 +650,20 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       }
     }
 
-    // Safety net: unwrap JSON-wrapped HTML (AI sometimes returns {"html":"..."} or [{"html":"..."}])
-    var trimmedCheck = accessibleHtml.trim();
-    if ((trimmedCheck.startsWith('{') || trimmedCheck.startsWith('[')) && !trimmedCheck.startsWith('<!') && !trimmedCheck.startsWith('<html')) {
-      try {
-        var parsed = JSON.parse(trimmedCheck);
-        var extracted = null;
-        if (Array.isArray(parsed) && parsed[0]) extracted = parsed[0].html || parsed[0].html_content || parsed[0].content || parsed[0].text;
-        else if (parsed.html) extracted = parsed.html;
-        else if (parsed.html_content) extracted = parsed.html_content;
-        else if (parsed.content) extracted = parsed.content;
-        if (extracted && extracted.length > 100) {
-          warnLog('[Pipeline] Unwrapped JSON-wrapped HTML (' + extracted.length + ' chars)');
-          accessibleHtml = extracted;
-        }
-      } catch(e) { /* not valid JSON, keep as-is */ }
-    }
-
     log(`Generated ${accessibleHtml.length} chars HTML`);
-
-    // ── Content verification: check for significant content loss ──
-    // Deterministic word count comparison — no API calls needed.
-    // If the output has significantly fewer words than the input, warn the user.
-    var inputWordCount = extractedText.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-    var outputText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/&[^;]+;/g, ' ');
-    var outputWordCount = outputText.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-    var contentRetention = inputWordCount > 0 ? Math.round(outputWordCount / inputWordCount * 100) : 100;
-    log(`Content verification: input ${inputWordCount} words → output ${outputWordCount} words (${contentRetention}% retained)`);
-    if (contentRetention < 70 && inputWordCount > 200) {
-      warnLog(`[Content Loss] Only ${contentRetention}% of content retained! Input: ${inputWordCount} words, Output: ${outputWordCount} words.`);
-      if (addToast) addToast(`⚠️ Content verification: ${contentRetention}% retained (${inputWordCount} → ${outputWordCount} words). Some content may have been lost during transformation.`, 'warning');
-      // If severe loss and the input was truncated, try to recover by appending the missing tail
-      if (extractedText.length > 50000 && contentRetention < 50) {
-        log('Attempting to recover truncated content...');
-        var tail = extractedText.substring(50000).trim();
-        if (tail.length > 200) {
-          // Convert the tail to simple paragraphs and append before </main>
-          var tailParagraphs = tail.split(/\n{2,}/).filter(function(p) { return p.trim().length > 10; });
-          var tailHtml = tailParagraphs.map(function(p) {
-            return '<p style="margin:0.6em 0;line-height:1.7">' + p.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>';
-          }).join('\n');
-          if (tailHtml.length > 100) {
-            var insertBefore = accessibleHtml.lastIndexOf('</main>');
-            if (insertBefore < 0) insertBefore = accessibleHtml.lastIndexOf('</body>');
-            if (insertBefore > 0) {
-              accessibleHtml = accessibleHtml.substring(0, insertBefore) +
-                '\n<!-- Content recovery: appended truncated tail -->\n' +
-                '<section aria-label="Additional content">\n' + tailHtml + '\n</section>\n' +
-                accessibleHtml.substring(insertBefore);
-              outputWordCount = accessibleHtml.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-              log(`Content recovery: appended ${tailParagraphs.length} paragraphs. Now ${outputWordCount} words.`);
-              if (addToast) addToast('📄 Recovered ' + tailParagraphs.length + ' additional paragraphs from truncated content.', 'info');
-            }
-          }
-        }
-      }
-    }
 
     // ── Phase 3b: Deterministic a11y fixes (full set — mirroring single-file pipeline) ──
     let aiFixCount = 0;
 
-    // 1. Missing alt on images — try to derive from context (src filename, nearby text, figcaption)
+    // 1. Missing alt on images — derive from src/title or add descriptive placeholder
     accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
       if (/alt\s*=/.test(attrs)) return match;
       aiFixCount++;
-      // Try to derive a useful alt from src filename or title attribute
       var srcMatch = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
       var titleMatch = attrs.match(/title\s*=\s*["']([^"']+)["']/i);
       var altText = 'Image';
-      if (titleMatch && titleMatch[1]) {
-        altText = titleMatch[1];
-      } else if (srcMatch && srcMatch[1]) {
-        // Extract filename from URL, strip extension, convert dashes/underscores to spaces
-        var fname = srcMatch[1].split('/').pop().split('?')[0].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim();
-        if (fname && fname.length > 2 && !/^(img|image|photo|pic|figure)\d*$/i.test(fname)) {
-          altText = fname.charAt(0).toUpperCase() + fname.slice(1);
-        }
-      }
+      if (titleMatch && titleMatch[1]) { altText = titleMatch[1]; }
+      else if (srcMatch && srcMatch[1]) { var fname = srcMatch[1].split('/').pop().split('?')[0].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim(); if (fname && fname.length > 2 && !/^(img|image|photo|pic|figure)\d*$/i.test(fname)) altText = fname.charAt(0).toUpperCase() + fname.slice(1); }
       return `<img alt="${altText}"${attrs}>`;
     });
 
@@ -756,24 +690,24 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     }
 
     // 3. Ensure <html> has valid lang attribute (BCP 47)
-    // Common AI mistakes: lang="English", lang="en_US", lang='en', lang="" (empty), or missing entirely
-    var _langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi', 'vietnamese': 'vi', 'thai': 'th', 'hebrew': 'he', 'haitian creole': 'ht', 'somali': 'so', 'turkish': 'tr', 'polish': 'pl', 'ukrainian': 'uk', 'swahili': 'sw' };
     if (!accessibleHtml.includes('lang=')) {
       accessibleHtml = accessibleHtml.replace(/<html/, '<html lang="en"'); aiFixCount++;
     } else {
-      // Match both single and double quotes, plus unquoted values
-      var validLangPattern = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-      accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang\s*=\s*["']?([^"'\s>]+)["']?/i, function(m, before, langVal) {
-        var trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+      // Validate existing lang value — fix common AI mistakes like "English", "en_US", empty string
+      const validLangPattern = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+      accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
+        const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
         if (!trimmed || !validLangPattern.test(trimmed)) {
-          var fixed = _langMap[trimmed] || 'en';
+          // Map common invalid values to valid BCP 47 codes
+          const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi' };
+          const fixed = langMap[trimmed] || 'en';
           aiFixCount++;
-          warnLog('[Det Fix] Invalid lang="' + langVal + '" \u2192 lang="' + fixed + '"');
-          return '<html' + before + 'lang="' + fixed + '"';
+          warnLog(`[Det Fix] Invalid lang="${langVal}" → lang="${fixed}"`);
+          return `<html${before}lang="${fixed}"`;
         }
         if (trimmed !== langVal) {
           aiFixCount++;
-          return '<html' + before + 'lang="' + trimmed + '"';
+          return `<html${before}lang="${trimmed}"`;
         }
         return m;
       });
@@ -1062,7 +996,6 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     ];
     langPatterns.forEach(function(lp) {
       accessibleHtml = accessibleHtml.replace(lp.regex, function(match, p1, offset) {
-        // Check if already inside a lang tag for this language
         var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
         if (new RegExp('lang=["\']' + lp.lang + '["\'][^>]*>[^<]*$', 'i').test(preceding)) return match;
         aiFixCount++;
@@ -1295,189 +1228,6 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
         return style + html;
       },
-
-      // ── PHASE 2: Advanced micro-tools ──
-
-      // 24. Fix reading order — reorder HTML elements based on logical flow
-      // Expert provides the correct order as an array of content identifiers
-      fix_reading_order: function(html, p) {
-        if (!p.order || !Array.isArray(p.order) || p.order.length < 2) return html;
-        // Extract sections by id or heading text
-        var sections = [];
-        var remaining = html;
-        // Find all section/div blocks with ids
-        html.replace(/<(section|div|article)([^>]*id=["']([^"']+)["'][^>]*)>([\s\S]*?)<\/\1>/gi, function(match, tag, attrs, id, content, offset) {
-          sections.push({ id: id, match: match, offset: offset });
-        });
-        if (sections.length < 2) return html; // can't reorder without multiple sections
-        // Reorder: for each id in p.order, move that section to the front
-        var reordered = html;
-        var insertPoint = sections[0].offset;
-        var orderedContent = '';
-        p.order.forEach(function(targetId) {
-          var sec = sections.find(function(s) { return s.id === targetId || s.id.indexOf(targetId) >= 0; });
-          if (sec) {
-            orderedContent += sec.match + '\n';
-            reordered = reordered.replace(sec.match, '<!-- reordered: ' + targetId + ' -->');
-          }
-        });
-        // Replace the placeholder markers with the reordered content
-        var firstMarker = reordered.indexOf('<!-- reordered:');
-        if (firstMarker >= 0) {
-          reordered = reordered.substring(0, firstMarker) + orderedContent + reordered.substring(firstMarker).replace(/<!-- reordered: [^>]+ -->\n?/g, '');
-        }
-        return reordered;
-      },
-
-      // 25. Reconstruct form fields from text descriptions
-      // AI detects "Name: ___" or "[ ] checkbox" patterns and creates proper form elements
-      fix_forms: function(html, p) {
-        var modified = html;
-        // Convert text input patterns: "Name: ___" or "Name: _________"
-        modified = modified.replace(/([A-Za-z\s]+):\s*_{3,}/g, function(match, label) {
-          var labelText = label.trim();
-          var fieldId = 'field-' + labelText.toLowerCase().replace(/\s+/g, '-');
-          return '<label for="' + fieldId + '" style="font-weight:bold">' + labelText + ':</label> ' +
-            '<input type="text" id="' + fieldId + '" name="' + fieldId + '" aria-label="' + labelText + '" ' +
-            'style="border:1px solid #999;padding:4px 8px;border-radius:4px;min-width:200px" />';
-        });
-        // Convert checkbox patterns: "[ ]" or "[x]" before text
-        modified = modified.replace(/\[(\s|x|X)?\]\s*([^\n<]+)/g, function(match, checked, labelText) {
-          var isChecked = checked && checked.trim().toLowerCase() === 'x';
-          var fieldId = 'check-' + labelText.trim().substring(0, 20).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer">' +
-            '<input type="checkbox" id="' + fieldId + '"' + (isChecked ? ' checked' : '') + ' aria-label="' + labelText.trim() + '" /> ' +
-            '<span>' + labelText.trim() + '</span></label>';
-        });
-        // Add form wrapper if fields were created and no <form> exists
-        if (modified !== html && !/<form[\s>]/i.test(modified)) {
-          // Wrap the first cluster of form elements
-          var firstInput = modified.indexOf('<input');
-          if (firstInput > 0) {
-            var beforeInput = modified.lastIndexOf('<', firstInput - 1);
-            if (beforeInput >= 0) {
-              // Find the container div/section
-              modified = modified.replace(/<input/, '<form role="form" aria-label="' + (p.formLabel || 'Document form') + '">\n<input');
-              // Add close form after the last input in the cluster
-              var lastInput = modified.lastIndexOf('</label>');
-              if (lastInput > 0) modified = modified.substring(0, lastInput + 8) + '\n</form>' + modified.substring(lastInput + 8);
-            }
-          }
-        }
-        return modified;
-      },
-
-      // 26. Convert math notation to MathML with aria-label fallback
-      fix_math: function(html, p) {
-        var modified = html;
-        // Common math patterns → MathML
-        // Superscripts: x^2, x^n, a^{bc}
-        modified = modified.replace(/(\w)\^(\w)/g, function(m, base, exp) {
-          return '<math aria-label="' + base + ' to the power of ' + exp + '"><msup><mi>' + base + '</mi><mn>' + exp + '</mn></msup></math>';
-        });
-        modified = modified.replace(/(\w)\^\{([^}]+)\}/g, function(m, base, exp) {
-          return '<math aria-label="' + base + ' to the power of ' + exp + '"><msup><mi>' + base + '</mi><mrow><mn>' + exp + '</mn></mrow></msup></math>';
-        });
-        // Subscripts: x_2, H_2O
-        modified = modified.replace(/(\w)_(\w)/g, function(m, base, sub) {
-          return '<math aria-label="' + base + ' sub ' + sub + '"><msub><mi>' + base + '</mi><mn>' + sub + '</mn></msub></math>';
-        });
-        // Fractions: a/b (only when surrounded by spaces or at word boundaries)
-        modified = modified.replace(/(?:^|\s)(\d+)\s*\/\s*(\d+)(?:\s|$|[.,;])/g, function(m, num, den) {
-          return ' <math aria-label="' + num + ' over ' + den + '"><mfrac><mn>' + num + '</mn><mn>' + den + '</mn></mfrac></math> ';
-        });
-        // Square root: sqrt(x), √x
-        modified = modified.replace(/(?:sqrt|√)\(([^)]+)\)/g, function(m, content) {
-          return '<math aria-label="square root of ' + content + '"><msqrt><mi>' + content + '</mi></msqrt></math>';
-        });
-        modified = modified.replace(/√(\w+)/g, function(m, content) {
-          return '<math aria-label="square root of ' + content + '"><msqrt><mi>' + content + '</mi></msqrt></math>';
-        });
-        // Plus/minus/equals with proper mo elements (only if inside math context or if p.wrapAll)
-        if (p && p.wrapAll) {
-          modified = modified.replace(/(\d+)\s*([+\-×÷=≤≥≠])\s*(\d+)/g, function(m, a, op, b) {
-            var spoken = a + ' ' + ({'+':'plus','-':'minus','×':'times','÷':'divided by','=':'equals','≤':'is less than or equal to','≥':'is greater than or equal to','≠':'is not equal to'}[op] || op) + ' ' + b;
-            return '<math aria-label="' + spoken + '"><mn>' + a + '</mn><mo>' + op + '</mo><mn>' + b + '</mn></math>';
-          });
-        }
-        return modified;
-      },
-
-      // 27. Fix non-text contrast (borders, outlines, focus indicators)
-      fix_nontext_contrast: function(html, p) {
-        var modified = html;
-        // Inject focus indicator styles (WCAG 2.4.7 + 1.4.11)
-        var focusCSS = '<style id="alloflow-nontext-contrast">' +
-          '/* WCAG 1.4.11: Non-text contrast — 3:1 minimum */\n' +
-          'a:focus, button:focus, input:focus, select:focus, textarea:focus, [tabindex]:focus { ' +
-            'outline: 3px solid #2563eb !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(37,99,235,0.25) !important; }\n' +
-          'input, select, textarea { border: 1px solid #6b7280 !important; }\n' +
-          'input:hover, select:hover, textarea:hover { border-color: #374151 !important; }\n' +
-          'table, th, td { border-color: #6b7280 !important; }\n' +
-          'hr { border-color: #9ca3af !important; }\n' +
-          // Fix light borders that fail 3:1
-          'img { border-color: #6b7280 !important; }\n' +
-          '</style>';
-        if (modified.includes('</head>')) {
-          modified = modified.replace('</head>', focusCSS + '</head>');
-        } else {
-          modified = focusCSS + modified;
-        }
-        // Fix inline border styles that are too light
-        modified = modified.replace(/border(?:-[a-z]+)?:\s*\d+px\s+solid\s+(#[a-fA-F0-9]{3,8}|rgb[a]?\([^)]+\))/gi, function(match, color) {
-          // Parse color and check luminance
-          var hex = color.replace('#', '');
-          if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-          if (hex.length >= 6) {
-            var r = parseInt(hex.substring(0, 2), 16) / 255;
-            var g = parseInt(hex.substring(2, 4), 16) / 255;
-            var b = parseInt(hex.substring(4, 6), 16) / 255;
-            var lum = 0.2126 * (r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4)) +
-                      0.7152 * (g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4)) +
-                      0.0722 * (b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4));
-            // If border is too light (luminance > 0.5), darken it
-            if (lum > 0.5) {
-              return match.replace(color, '#6b7280');
-            }
-          }
-          return match;
-        });
-        return modified;
-      },
-
-      // 28. Add responsive reflow CSS (WCAG 1.4.10)
-      fix_reflow: function(html) {
-        var reflowCSS = '<style id="alloflow-reflow">' +
-          '/* WCAG 1.4.10: Reflow — content readable at 320px without horizontal scroll */\n' +
-          '@media (max-width: 640px) {\n' +
-          '  body { padding: 0.5rem !important; max-width: 100% !important; font-size: 14px !important; }\n' +
-          '  img { max-width: 100% !important; height: auto !important; }\n' +
-          '  table { display: block; overflow-x: auto; max-width: 100%; font-size: 0.85em; }\n' +
-          '  .grid { display: block !important; }\n' +
-          '  .grid > * { margin-bottom: 0.5rem; }\n' +
-          '  pre, code { white-space: pre-wrap !important; word-break: break-word !important; }\n' +
-          '  h1 { font-size: 1.4rem !important; } h2 { font-size: 1.2rem !important; } h3 { font-size: 1.05rem !important; }\n' +
-          '}\n' +
-          '@media (max-width: 320px) {\n' +
-          '  body { padding: 0.25rem !important; font-size: 13px !important; }\n' +
-          '  table { font-size: 0.75em; }\n' +
-          '  .section { padding: 0.5rem !important; }\n' +
-          '}\n' +
-          '/* Fluid widths */\n' +
-          'img, video, iframe, object, embed { max-width: 100%; height: auto; }\n' +
-          'table { max-width: 100%; }\n' +
-          '</style>';
-        // Replace fixed-width inline styles
-        var modified = html.replace(/width:\s*\d{3,}px/gi, function(match) {
-          return 'max-width: 100%';
-        });
-        if (modified.includes('</head>')) {
-          modified = modified.replace('</head>', reflowCSS + '</head>');
-        } else {
-          modified = reflowCSS + modified;
-        }
-        return modified;
-      },
     };
 
     // Run surgical diagnosis (1 API call) + deterministic execution
@@ -1523,12 +1273,6 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           '- fix_table_header_row: { "tool": "fix_table_header_row", "index": <table# 0-based> }\n' +
           '- fix_list_wrap: { "tool": "fix_list_wrap", "ordered": false }\n' +
           '- fix_skip_nav: { "tool": "fix_skip_nav" }\n\n' +
-          'ADVANCED FIXES:\n' +
-          '- fix_reading_order: { "tool": "fix_reading_order", "order": ["section-id-1", "section-id-2"] } — reorder sections by ID\n' +
-          '- fix_forms: { "tool": "fix_forms" } — convert text input patterns (Name: ___) to accessible form fields\n' +
-          '- fix_math: { "tool": "fix_math" } — convert math notation (x^2, fractions) to MathML with aria-labels\n' +
-          '- fix_nontext_contrast: { "tool": "fix_nontext_contrast" } — fix borders, focus indicators, UI contrast\n' +
-          '- fix_reflow: { "tool": "fix_reflow" } — add responsive CSS for WCAG 1.4.10 reflow at 320px\n\n' +
           'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
@@ -1622,7 +1366,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         const violIns = axeIns.concat(aiIns).join('\n');
 
         try {
-          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML:\n${'\"\"\"'}\n${accessibleHtml.substring(0, 25000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, false);
+          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML:\n${'\"\"\"'}\n${accessibleHtml.substring(0, 25000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, true);
           // Strip markdown fencing if AI wrapped response
           if (fixed && fixed.includes('`' + '``')) {
             const fParts = fixed.split('`' + '``');
@@ -1654,18 +1398,13 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           _roleFixCount++; return '';
         });
         if (_roleFixCount > 0) log(`  Deterministic: fixed ${_roleFixCount} invalid ARIA roles`);
-        // Fix invalid lang attribute (match single/double/unquoted, map common invalid values)
-        var _validLangPat2 = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-        var _langMap2 = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi', 'vietnamese': 'vi', 'thai': 'th', 'hebrew': 'he', 'haitian creole': 'ht', 'somali': 'so' };
-        accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang\s*=\s*["']?([^"'\s>]+)["']?/i, function(m, before, langVal) {
-          var trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-          if (!trimmed || !_validLangPat2.test(trimmed)) {
-            var fixed = _langMap2[trimmed] || 'en';
-            log('  Deterministic: fixed invalid lang="' + langVal + '" \u2192 "' + fixed + '"');
-            return '<html' + before + 'lang="' + fixed + '"';
-          }
-          if (trimmed !== langVal) {
-            return '<html' + before + 'lang="' + trimmed + '"';
+        // Fix invalid lang attribute
+        const _validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+        accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
+          const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+          if (!trimmed || !_validLangPat.test(trimmed)) {
+            log(`  Deterministic: fixed invalid lang="${langVal}" → "en"`);
+            return `<html${before}lang="en"`;
           }
           return m;
         });
@@ -2717,7 +2456,7 @@ HTML TO FIX:
 ${currentHtml.substring(0, 30000)}${currentHtml.length > 30000 ? '\n[... document continues, ' + currentHtml.length + ' chars total — fix violations in the portion shown and propagate fixes to similar patterns throughout ...]' : ''}
 """
 
-Return ONLY the complete fixed HTML.`, false);
+Return ONLY the complete fixed HTML.`, true);
 
         if (fixedHtml && fixedHtml.length > currentHtml.length * 0.5) {
           currentHtml = fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') ? fixedHtml : currentHtml;
@@ -2753,7 +2492,7 @@ Return the COMPLETE HTML document.
 HTML:
 """
 ${currentHtml.substring(0, 20000)}
-"""`, false);
+"""`, true);
               if (targetedFix && targetedFix.length > currentHtml.length * 0.5 && (targetedFix.includes('<!DOCTYPE') || targetedFix.includes('<html'))) {
                 const targetedAxe = await runAxeAudit(targetedFix);
                 if (targetedAxe && targetedAxe.totalViolations < currentAxe.totalViolations) {
@@ -2773,270 +2512,6 @@ ${currentHtml.substring(0, 20000)}
     }
 
     return { html: currentHtml, axe: currentAxe, passes: passCount };
-  };
-
-  // ═══════════════════════════════════════════════════════════════
-  // AUTONOMOUS REMEDIATION AGENT
-  // Self-prompting AI loop: audit → analyze → plan tools → fix → re-audit
-  // The AI generates its own fix plan using the surgical micro-tools,
-  // executes them, and loops until score plateaus or target is reached.
-  // ═══════════════════════════════════════════════════════════════
-  const runAutonomousRemediation = async (htmlContent, options = {}) => {
-    const maxPasses = options.maxPasses || 5;
-    const targetScore = options.targetScore || 90;
-    const onProgress = options.onProgress || function() {};
-    const onActivity = options.onActivity || function() {};
-
-    let currentHtml = htmlContent;
-    let passCount = 0;
-    let prevScore = 0;
-    let plateauCount = 0;
-    const activityLog = [];
-
-    function logActivity(msg, type) {
-      var entry = { text: msg, type: type || 'info', time: new Date().toLocaleTimeString() };
-      activityLog.push(entry);
-      onActivity(entry, activityLog);
-      warnLog('[Agent] ' + msg);
-    }
-
-    // Build tool descriptions for the AI prompt
-    var toolDescriptions = Object.keys(surgicalTools).map(function(name) {
-      return '- ' + name + '(html, params)';
-    }).join('\n');
-
-    logActivity('\uD83E\uDD16 Autonomous remediation agent started. Target: ' + targetScore + '/100, max ' + maxPasses + ' passes.', 'start');
-
-    while (passCount < maxPasses) {
-      passCount++;
-      onProgress('Agent pass ' + passCount + '/' + maxPasses + ': auditing...');
-      logActivity('\uD83D\uDD0D Pass ' + passCount + ': Running WCAG audit...', 'audit');
-
-      // AUDIT: Run axe-core on current HTML
-      var axeResult;
-      try {
-        axeResult = await runAxeAudit(currentHtml);
-      } catch (e) {
-        logActivity('\u274C Audit failed: ' + (e.message || e), 'error');
-        break;
-      }
-      if (!axeResult) { logActivity('\u274C Audit returned no results.', 'error'); break; }
-
-      var currentScore = 100 - ((axeResult.critical || []).length * 15 + (axeResult.serious || []).length * 10 + (axeResult.moderate || []).length * 5 + (axeResult.minor || []).length * 2);
-      currentScore = Math.max(0, Math.min(100, currentScore));
-      logActivity('\uD83D\uDCCA Score: ' + currentScore + '/100 (' + axeResult.totalViolations + ' violations)', 'score');
-
-      // CHECK: Target reached?
-      if (currentScore >= targetScore) {
-        logActivity('\u2705 Target score ' + targetScore + ' reached! Final: ' + currentScore + '/100', 'success');
-        break;
-      }
-
-      // CHECK: Plateau (no improvement for 2 passes)?
-      if (currentScore <= prevScore) {
-        plateauCount++;
-        if (plateauCount >= 2) {
-          logActivity('\uD83D\uDFE1 Plateau detected — score not improving after ' + plateauCount + ' passes. Stopping.', 'plateau');
-          break;
-        }
-      } else {
-        plateauCount = 0;
-      }
-      prevScore = currentScore;
-
-      // ANALYZE: Ask AI to plan tool calls based on audit results
-      onProgress('Agent pass ' + passCount + '/' + maxPasses + ': analyzing violations...');
-      logActivity('\uD83E\uDDE0 Analyzing ' + axeResult.totalViolations + ' violations and planning fixes...', 'analyze');
-
-      var violationSummary = [];
-      (axeResult.critical || []).forEach(function(v) { violationSummary.push('CRITICAL: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
-      (axeResult.serious || []).forEach(function(v) { violationSummary.push('SERIOUS: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
-      (axeResult.moderate || []).forEach(function(v) { violationSummary.push('MODERATE: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
-
-      var analyzePrompt = 'You are a WCAG 2.1 AA remediation agent with surgical micro-tools.\n\n' +
-        'AVAILABLE TOOLS:\n' + toolDescriptions + '\n\n' +
-        'CURRENT SCORE: ' + currentScore + '/100\nTARGET: ' + targetScore + '/100\n\n' +
-        'AXE-CORE VIOLATIONS (' + axeResult.totalViolations + ' total):\n' +
-        violationSummary.slice(0, 15).join('\n') + '\n\n' +
-        'HTML PREVIEW (first 3000 chars):\n' + currentHtml.substring(0, 3000) + '\n\n' +
-        'Plan exactly which tools to call and with what parameters to fix the top violations.\n' +
-        'Focus on the highest-impact fixes first (CRITICAL > SERIOUS > MODERATE).\n' +
-        'Be specific: provide exact index numbers, alt text strings, heading levels, etc.\n\n' +
-        'Return ONLY JSON:\n' +
-        '{\n' +
-        '  "analysis": "Brief summary of remaining issues",\n' +
-        '  "actions": [\n' +
-        '    {"tool": "fix_alt_text", "params": {"index": 0, "alt": "descriptive text"}, "reason": "why"},\n' +
-        '    {"tool": "fix_heading", "params": {"index": 2, "newLevel": "h3"}, "reason": "why"}\n' +
-        '  ],\n' +
-        '  "shouldContinue": true\n' +
-        '}';
-
-      var plan;
-      try {
-        var planResult = await callGemini(analyzePrompt, true);
-        var planStr = (typeof planResult === 'string' ? planResult : (planResult && planResult.text ? planResult.text : String(planResult || '{}')));
-        planStr = planStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-        var jsonS = planStr.indexOf('{'), jsonE = planStr.lastIndexOf('}');
-        if (jsonS >= 0 && jsonE > jsonS) planStr = planStr.substring(jsonS, jsonE + 1);
-        plan = JSON.parse(planStr);
-      } catch (e) {
-        logActivity('\u26A0\uFE0F AI analysis failed to parse: ' + (e.message || e), 'error');
-        break;
-      }
-
-      if (!plan || !plan.actions || plan.actions.length === 0) {
-        logActivity('\uD83D\uDFE2 AI found no actionable fixes remaining.', 'complete');
-        break;
-      }
-
-      logActivity('\uD83D\uDCCB Plan: ' + plan.analysis, 'plan');
-      logActivity('\uD83D\uDD27 Executing ' + plan.actions.length + ' tool calls...', 'fix');
-
-      // FIX: Execute planned tool calls
-      var fixedCount = 0;
-      for (var ai = 0; ai < plan.actions.length; ai++) {
-        var action = plan.actions[ai];
-        var toolFn = surgicalTools[action.tool];
-        if (toolFn && action.params) {
-          try {
-            var newHtml = toolFn(currentHtml, action.params);
-            if (newHtml && newHtml !== currentHtml) {
-              currentHtml = newHtml;
-              fixedCount++;
-              logActivity('  \u2705 ' + action.tool + ': ' + (action.reason || 'applied'), 'tool');
-            } else {
-              logActivity('  \u23E9 ' + action.tool + ': no change (already fixed or invalid params)', 'skip');
-            }
-          } catch (e) {
-            logActivity('  \u274C ' + action.tool + ' failed: ' + (e.message || e), 'error');
-          }
-        } else {
-          logActivity('  \u26A0\uFE0F Unknown tool: ' + action.tool, 'error');
-        }
-      }
-
-      logActivity('\uD83D\uDD27 Applied ' + fixedCount + '/' + plan.actions.length + ' fixes.', 'result');
-
-      if (fixedCount === 0) {
-        logActivity('\uD83D\uDFE1 No fixes were effective this pass. Stopping.', 'plateau');
-        break;
-      }
-
-      if (plan.shouldContinue === false) {
-        logActivity('\uD83D\uDFE2 Agent determined no further improvement possible.', 'complete');
-        break;
-      }
-    }
-
-    // Final audit
-    var finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });
-    var finalScore = finalAxe ? Math.max(0, 100 - ((finalAxe.critical || []).length * 15 + (finalAxe.serious || []).length * 10 + (finalAxe.moderate || []).length * 5 + (finalAxe.minor || []).length * 2)) : currentScore;
-    logActivity('\uD83C\uDFC1 Agent complete. Final score: ' + finalScore + '/100 after ' + passCount + ' passes.', 'complete');
-
-    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe };
-  };
-
-  // ═══════════════════════════════════════════════════════════════
-  // EXPERT COMMAND PROCESSOR
-  // Parses natural language commands into surgical tool calls.
-  // Built-in commands (audit, auto, score, inspect, undo) are handled
-  // directly; everything else goes through AI interpretation.
-  // ═══════════════════════════════════════════════════════════════
-  const processExpertCommand = async (command, currentHtml, options = {}) => {
-    var cmd = (command || '').trim().toLowerCase();
-    var onActivity = options.onActivity || function() {};
-
-    // Built-in commands
-    if (cmd === 'audit' || cmd === 'check') {
-      onActivity({ text: '\uD83D\uDD0D Running WCAG audit...', type: 'audit', time: new Date().toLocaleTimeString() });
-      var axe = await runAxeAudit(currentHtml);
-      var sc = axe ? Math.max(0, 100 - ((axe.critical || []).length * 15 + (axe.serious || []).length * 10 + (axe.moderate || []).length * 5 + (axe.minor || []).length * 2)) : 0;
-      onActivity({ text: '\uD83D\uDCCA Score: ' + sc + '/100 — ' + (axe ? axe.totalViolations : '?') + ' violations', type: 'score', time: new Date().toLocaleTimeString() });
-      return { type: 'audit', html: currentHtml, score: sc, axe: axe };
-    }
-    if (cmd === 'auto' || cmd === 'auto-fix' || cmd === 'agent') {
-      var result = await runAutonomousRemediation(currentHtml, {
-        onProgress: options.onProgress || function() {},
-        onActivity: function(entry) { onActivity(entry); }
-      });
-      return { type: 'agent', html: result.html, score: result.score, log: result.log };
-    }
-    if (cmd === 'score') {
-      var ax = await runAxeAudit(currentHtml);
-      var s = ax ? Math.max(0, 100 - ((ax.critical || []).length * 15 + (ax.serious || []).length * 10 + (ax.moderate || []).length * 5 + (ax.minor || []).length * 2)) : 0;
-      onActivity({ text: '\uD83D\uDCCA Current score: ' + s + '/100', type: 'score', time: new Date().toLocaleTimeString() });
-      return { type: 'score', html: currentHtml, score: s };
-    }
-    if (cmd === 'contrast' || cmd === 'fix contrast') {
-      onActivity({ text: '\uD83C\uDFA8 Fixing color contrast violations...', type: 'fix', time: new Date().toLocaleTimeString() });
-      var fixed = fixContrastViolations(currentHtml);
-      return { type: 'fix', html: fixed };
-    }
-
-    // AI-interpreted commands
-    onActivity({ text: '\uD83E\uDD16 Interpreting: "' + command + '"', type: 'thinking', time: new Date().toLocaleTimeString() });
-
-    var toolList = Object.keys(surgicalTools).map(function(name) { return name; }).join(', ');
-    var interpretPrompt = 'You are a remediation command interpreter. Parse this accessibility expert\'s instruction into surgical tool calls.\n\n' +
-      'AVAILABLE TOOLS: ' + toolList + '\n\n' +
-      'Each tool takes (html, params). Common params:\n' +
-      '- fix_alt_text: {index: N, alt: "text"}\n' +
-      '- fix_heading: {index: N, newLevel: "h2"}\n' +
-      '- fix_link_text: {index: N, newText: "descriptive text"}\n' +
-      '- fix_table_caption: {index: N, caption: "text"}\n' +
-      '- fix_aria_label: {tag: "nav", index: N, label: "text"}\n' +
-      '- fix_contrast: {oldColor: "#aaa", newColor: "#333"}\n' +
-      '- fix_skip_nav: {} (no params)\n' +
-      '- fix_lang: {lang: "en"}\n' +
-      '- fix_input_label: {index: N, label: "text"}\n' +
-      '- fix_math: {} (convert x^2, fractions, sqrt to MathML with aria-labels)\n' +
-      '- fix_nontext_contrast: {} (fix borders, focus indicators, UI element contrast)\n' +
-      '- fix_reflow: {} (add responsive CSS for 320px reflow)\n' +
-      '- fix_reading_order: {order: ["id1","id2"]} (reorder sections by ID)\n' +
-      '- fix_forms: {} (convert text patterns like "Name: ___" to accessible form fields)\n\n' +
-      'EXPERT COMMAND: "' + command + '"\n\n' +
-      'HTML PREVIEW (first 1500 chars):\n' + currentHtml.substring(0, 1500) + '\n\n' +
-      'Return ONLY JSON:\n' +
-      '{"interpretation":"what the expert wants","actions":[{"tool":"fix_alt_text","params":{"index":0,"alt":"text"},"reason":"why"}],"confirmation":"I will..."}';
-
-    try {
-      var aiResult = await callGemini(interpretPrompt, true);
-      var aiStr = (typeof aiResult === 'string' ? aiResult : (aiResult && aiResult.text ? aiResult.text : '{}'));
-      aiStr = aiStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      var jS = aiStr.indexOf('{'), jE = aiStr.lastIndexOf('}');
-      if (jS >= 0 && jE > jS) aiStr = aiStr.substring(jS, jE + 1);
-      var parsed = JSON.parse(aiStr);
-
-      if (parsed.confirmation) {
-        onActivity({ text: '\uD83D\uDCAC ' + parsed.confirmation, type: 'confirm', time: new Date().toLocaleTimeString() });
-      }
-
-      // Execute actions
-      var resultHtml = currentHtml;
-      if (parsed.actions && parsed.actions.length > 0) {
-        for (var ci = 0; ci < parsed.actions.length; ci++) {
-          var act = parsed.actions[ci];
-          var fn = surgicalTools[act.tool];
-          if (fn && act.params) {
-            try {
-              var newH = fn(resultHtml, act.params);
-              if (newH && newH !== resultHtml) {
-                resultHtml = newH;
-                onActivity({ text: '  \u2705 ' + act.tool + ': ' + (act.reason || 'applied'), type: 'tool', time: new Date().toLocaleTimeString() });
-              }
-            } catch (e) {
-              onActivity({ text: '  \u274C ' + act.tool + ' failed: ' + (e.message || e), type: 'error', time: new Date().toLocaleTimeString() });
-            }
-          }
-        }
-      }
-
-      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation };
-    } catch (e) {
-      onActivity({ text: '\u274C Could not interpret command: ' + (e.message || e), type: 'error', time: new Date().toLocaleTimeString() });
-      return { type: 'error', html: currentHtml, error: e.message };
-    }
   };
 
   // ── PDF Fix & Verify: Audit → Extract → Transform → Verify → axe-core → Auto-fix ──
@@ -3377,12 +2852,11 @@ ${currentHtml.substring(0, 20000)}
             if (idMatch) { block.id = idMatch[1]; block.text = block.text.replace(idMatch[0], '').trim(); }
           }
           const id = block.id ? ` id="${block.id}"` : '';
-          const alignStyle = block.align === 'center' ? 'text-align:center;' : block.align === 'right' ? 'text-align:right;' : '';
           switch (block.type) {
-            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em;${alignStyle}">${block.text}</h1>`;
-            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${alignStyle}${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${block.text}</h2>`;
-            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em;${alignStyle}">${block.text}</h3>`;
-            case 'p': return `<p style="margin:0.6em 0;line-height:1.7;${alignStyle}">${block.text}</p>`;
+            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${block.text}</h1>`;
+            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${block.text}</h2>`;
+            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${block.text}</h3>`;
+            case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${block.text}</p>`;
             case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${sanitizeField(i)}</li>`).join('')}</ul>`;
             case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${sanitizeField(i)}</li>`).join('')}</ol>`;
             case 'table': {
@@ -3402,9 +2876,9 @@ ${currentHtml.substring(0, 20000)}
               return `<figure data-img-placeholder="true" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
             }
             case 'link': return `<a href="${block.url || '#'}" style="color:${docStyle.accentColor}">${block.text}</a>`;
-            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic;${alignStyle}">${block.text}</blockquote>`;
+            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
             case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
-            case 'banner': return `<div style="background:${docStyle.headerBg};color:${docStyle.headerText};padding:24px 28px;border-radius:12px;margin-bottom:24px;${alignStyle || 'text-align:center;'}"><div style="font-size:1.5em;font-weight:bold">${block.title || ''}</div>${block.subtitle ? '<div style="font-size:0.9em;opacity:0.85;margin-top:4px">' + block.subtitle + '</div>' : ''}</div>`;
+            case 'banner': return `<div style="background:${docStyle.headerBg};color:${docStyle.headerText};padding:24px 28px;border-radius:12px;margin-bottom:24px"><div style="font-size:1.5em;font-weight:bold">${block.title || ''}</div>${block.subtitle ? '<div style="font-size:0.9em;opacity:0.85;margin-top:4px">' + block.subtitle + '</div>' : ''}</div>`;
             case 'rawhtml': return block.html || '';
             default: return `<div style="margin:0.6em 0">${block.text || ''}</div>`;
           }
@@ -3422,23 +2896,22 @@ ${currentHtml.substring(0, 20000)}
 
 Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
-BLOCK TYPES (all blocks support optional "align":"center" or "align":"right" — use when the original has centered or right-aligned content):
+BLOCK TYPES:
 - {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — the document's main title
-- {"type":"h1","text":"Title","id":"slug-id","align":"center"} — ONE per document only. Add "align":"center" if the original title is centered.
+- {"type":"h1","text":"Title","id":"slug-id"} — ONE per document only (WCAG 2.4.2: page titled)
 - {"type":"h2","text":"Section Title","id":"slug-id"} — major sections. Headings MUST NOT skip levels (no h1→h3)
 - {"type":"h3","text":"Subsection Title","id":"slug-id"} — subsections under h2
-- {"type":"p","text":"Full paragraph text...","align":"center"} — add "align" if original text is centered or right-aligned
-- {"type":"ul","items":["item 1","item 2"]} — unordered lists
-- {"type":"ol","items":["step 1","step 2"]} — ordered lists
-- {"type":"table","caption":"Descriptive caption","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
-- {"type":"image","description":"2-3 sentences","alt":"concise alt under 125 chars","align":"center"} — preserve original image alignment
+- {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
+- {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
+- {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
+- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
+- {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
 - {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
-- {"type":"hr"} — for section breaks
+- {"type":"hr"} — for section breaks between major content areas
 
 ACCESSIBILITY RULES (WCAG 2.1 AA):
 - Include EVERY piece of content from the document. Do NOT summarize or omit.
 - Preserve the LOGICAL reading order (which may differ from visual layout).
-- PRESERVE ALIGNMENT: If text, headings, or images are centered or right-aligned in the original, add "align":"center" or "align":"right" to that block. Left-aligned content doesn't need an align property.
   For multi-column layouts: determine the intended reading sequence, don't just read left-to-right across columns.
 - Heading hierarchy MUST be sequential: h1 → h2 → h3. Never skip a level.
   If the PDF uses bold text as a heading, identify it as such and assign the correct level.
@@ -3515,15 +2988,13 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               `- {"type":"p","text":"... with <strong>bold</strong> <em>italic</em> <a href='url'>links</a>"}\n` +
               `- {"type":"ul","items":["...","..."]} / ol\n` +
               `- {"type":"table","caption":"...","headers":["..."],"rows":[["...","..."]]}\n` +
-              `- {"type":"image","description":"2-3 sentence detailed description","alt":"concise alt text under 125 chars describing purpose"}\n` +
-              `- {"type":"blockquote","text":"...","cite":"attribution"}\n` +
+              `- {"type":"image","description":"...","alt":"brief"}\n` +
+              `- {"type":"blockquote","text":"..."}\n` +
               `- {"type":"hr"}\n\n` +
-              `ACCESSIBILITY RULES:\n` +
-              `- Include ALL content. ALL table rows (not samples). Tables MUST have caption + headers.\n` +
-              `- Heading hierarchy MUST be sequential (h1→h2→h3, never skip levels).\n` +
-              `- LINKS: Preserve ALL hyperlinks. Link text must be descriptive (not "click here").\n` +
-              `- IMAGES: alt text must describe PURPOSE, not just appearance ("Bar graph showing 45% increase" not "a graph").\n` +
-              `- Preserve LOGICAL reading order (multi-column: determine intended sequence).\n` +
+              `RULES:\n` +
+              `- Include ALL content. ALL table rows (not just samples).\n` +
+              `- LINKS: Preserve ALL hyperlinks as <a href='URL'>text</a> inside text fields. If text is blue/underlined, include it as a link.\n` +
+              `- Describe all images thoroughly for alt text.\n` +
               `- Generate slug IDs for h2/h3 headings.\n` +
               `- Use <strong> for bold text and <em> for italic within text fields.\n\n` +
               `Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
@@ -3864,16 +3335,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       {
         let aiFixCount = 0;
 
-        // 1. Missing alt on images → derive from src/title or add descriptive placeholder
+        // 1. Missing alt on images → derive from figcaption or add descriptive placeholder
         accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
           if (/alt\s*=/.test(attrs)) return match;
           aiFixCount++;
-          var srcM = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
-          var titleM = attrs.match(/title\s*=\s*["']([^"']+)["']/i);
-          var altT = 'Image';
-          if (titleM && titleM[1]) { altT = titleM[1]; }
-          else if (srcM && srcM[1]) { var fn = srcM[1].split('/').pop().split('?')[0].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim(); if (fn && fn.length > 2 && !/^(img|image|photo|pic|figure)\d*$/i.test(fn)) altT = fn.charAt(0).toUpperCase() + fn.slice(1); }
-          return `<img alt="${altT}"${attrs}>`;
+          return `<img alt="Document image"${attrs}>`;
         });
 
         // 2. Ensure exactly one h1 (document title)
@@ -4067,7 +3533,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
 
           try {
-            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML:\n"""\n${accessibleHtml.substring(0, 25000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, false);
+            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML:\n"""\n${accessibleHtml.substring(0, 25000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, true);
             if (fixedHtml && fixedHtml.length > accessibleHtml.length * 0.5 && (fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') || fixedHtml.includes('<main'))) {
               accessibleHtml = fixedHtml;
             }
@@ -5941,9 +5407,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
-    // Expert Workbench — Advanced Mode
-    runAutonomousRemediation: _wrapAsync(runAutonomousRemediation),
-    processExpertCommand: _wrapAsync(processExpertCommand),
   };
 };
 

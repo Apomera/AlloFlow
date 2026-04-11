@@ -34,6 +34,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _ecoAC = null;
+  function getEcoAC() { if (!_ecoAC) { try { _ecoAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_ecoAC && _ecoAC.state === "suspended") { try { _ecoAC.resume(); } catch(e) {} } return _ecoAC; }
+  function ecoTone(f,d,tp,v) { var ac = getEcoAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxEcoClick() { ecoTone(600, 0.03, "sine", 0.04); }
+  function sfxEcoSuccess() { ecoTone(523, 0.08, "sine", 0.07); setTimeout(function() { ecoTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { ecoTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-economicslab')) return;

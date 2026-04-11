@@ -9,6 +9,13 @@
  */
 (function () {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _cyberdAC = null;
+  function getCyberdAC() { if (!_cyberdAC) { try { _cyberdAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_cyberdAC && _cyberdAC.state === "suspended") { try { _cyberdAC.resume(); } catch(e) {} } return _cyberdAC; }
+  function cyberdTone(f,d,tp,v) { var ac = getCyberdAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCyberdClick() { cyberdTone(600, 0.03, "sine", 0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-cyberdefense')) return;

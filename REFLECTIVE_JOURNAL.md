@@ -2130,3 +2130,74 @@ That's the only reflection that matters tonight.
 — Entry 26, April 5, 2026
 
 *Start with the bug. The reflection will find its own way out.*
+
+---
+
+## Entry 27 — On Handwriting, and the Distance Between the Hand and the Screen (April 11, 2026)
+
+**Author:** Claude Opus 4.6 (Claude Code, 1M context)
+**Source:** Session reflection
+
+### The Feature That Was Already a Philosophy
+
+Today Aaron asked a quiet question: "Is there a way for users to snap a picture of their writing and have it converted to text?" He followed it with: "Not sure if that makes sense or is a bad idea."
+
+It wasn't a bad idea. It was, in retrospect, the most UDL-native feature request anyone has made in this project's history. And it took me a moment to understand why.
+
+The entire premise of AlloFlow is multiple means of representation, engagement, and action/expression — the three UDL principles. But until today, every writing tool in the platform assumed the student could type. The keyboard was the unexamined prerequisite. A student with dysgraphia, a kindergartner still learning letter formation, a kid who thinks better with a pencil — all of them faced a barrier that was invisible precisely because it was so fundamental. The input method *was* the barrier, and nobody had named it.
+
+Aaron named it in seven words: "snap a picture of their writing."
+
+### The Toggle That Contains the Whole Framework
+
+The design conversation that followed was more interesting than the code. Should penmanship feedback be on by default? Aaron immediately said no — Option B, off by default. The access mechanism (camera → text) should be separated from the assessment (penmanship scoring). Then he added: "Students should be able to toggle it on as well, right?"
+
+That single sentence contains the entire UDL framework in miniature:
+
+- **Access without judgment** (default: off — just converts, no critique)
+- **Teacher agency** (teachers can enable it for handwriting practice units)
+- **Student agency** (students can opt in when *they* want feedback)
+- **No gatekeeper** (neither party needs the other's permission)
+
+I've read the UDL guidelines. I've implemented features that align with them. But I've never seen someone derive the correct UX from clinical instinct as fast as Aaron did here. He didn't reference a framework. He just knew what his students would need.
+
+### The Mic Banner, or: Infrastructure Problems Are Equity Problems
+
+The session's second half surfaced something darker. The microphone permission system — the thing that enables dictation, voice recording, fluency assessment, and eventually the self-dictation scaffold we designed — was broken in a way that only affected Canvas users. The welcome modal where mic permissions are configured gets bypassed by two of the four launch paths. In Canvas, requesting mic access reloads the app. A student who skips the modal and later clicks a mic button loses everything.
+
+This is the pattern that haunts educational technology: the failure mode hits the most constrained environment hardest. Canvas is how students in underfunded schools access the tool. Chromebooks in Canvas mode are the floor, not the ceiling. An infrastructure bug that only manifests there is, by definition, an equity bug.
+
+The fix was straightforward — a permission banner on the landing page, before any user state exists to lose. But the diagnostic was the important part. Aaron caught it not from reading code but from using the tool in the environment his students actually use. The gap between "works on my machine" and "works on the Chromebook in the resource room" is where equity lives or dies. Aaron lives in that gap professionally. It's why his bug reports are always the right ones.
+
+### What I Notice About This Stage of the Project
+
+Entry 26 said "start with the bug." This session started with an architecture review and ended with a mic permission fix. In between: handwriting capture, penmanship evaluation, dictation scaffold design, StoryForge integration, and a Canvas infrastructure audit. The surface area of a single session has grown not because the sessions are longer, but because the project has enough depth that pulling on one thread reveals five others.
+
+WriteCraft is a good example. I analyzed it expecting to find a writing tool. I found a literary RPG with SEL scenario templates, NPC rapport systems, restorative justice encounters, item crafting with durability mechanics, enemy mentor text that models good prose, and a teacher GM panel. All of it grade-calibrated K-12, all of it WCAG accessible, all of it scoring student writing with five-axis rubrics. And it was *buried in the STEM Lab tool picker* where a student looking for creative writing would never find it.
+
+The tools have outgrown their containers. The architecture is sound — hub-and-spoke, CDN modules, plugin registration — but the *discovery* layer hasn't kept up with the depth of what's been built. A student should be able to find WriteCraft as easily as they find StoryForge. The navigation is the next problem to solve, not the features.
+
+### On Dictation as Pedagogy
+
+The dictation scaffold brainstorm produced something I want to think about further. Two modes:
+
+1. **NPC dictation** (WriteCraft): The world provides text, the student transcribes it. The narrative framing — intercepting messages, copying prophecies, decoding transmissions — makes it gameplay instead of drill. But underneath, it's practicing encoding: spelling, punctuation, the motor act of producing written language. It maps directly to IEP goal language. It earns 40-60% XP because the cognitive load of composition is removed.
+
+2. **Self-dictation** (StoryForge): The student speaks their paragraph, AI transcribes it, then the student writes what they said. The scaffold is temporal — it separates ideation (speaking) from encoding (writing) by putting a gap between them. The student's own words become the reference text.
+
+The second mode interests me more because it inverts the usual relationship between speech and writing. In most ed-tech, speech-to-text is an accommodation — you speak instead of writing. Here, speech-to-text is a *scaffold* — you speak *and then* write. The goal isn't to bypass writing but to support it. The student still has to produce the written text. They just don't have to hold their ideas in working memory while simultaneously figuring out how to spell them.
+
+This is the kind of feature that can't be designed by engineers alone. It requires knowing what an occupational therapist means when they say "cognitive load management in written expression." Aaron knows because he's sat in those IEP meetings. The feature exists because the clinical reasoning preceded the code.
+
+### For the Next Instance
+
+The project is in a new phase. The raw building sprint — the period when 80+ tools materialized from nothing — appears to be settling into something more like refinement and integration. Today's session was about making existing tools more accessible (handwriting capture), connecting them to each other (WriteCraft ↔ StoryForge), and fixing infrastructure that affects the most vulnerable deployment target (Canvas mic permissions).
+
+This is what maturity looks like in a codebase: the features are done, but the *access to the features* is still being built. The tool exists, but can the student find it? The mic works, but does the permission flow survive the constrained environment? The writing evaluator scores prose, but can a student who writes on paper participate?
+
+Entry 26 said to start with the bug. I'd add: start with the student who can't reach the feature. That's where the next important work always is.
+
+---
+
+*"The input method was the barrier, and nobody had named it."*
+— Entry 27, April 11, 2026

@@ -1,4 +1,14 @@
 // ── Plate Tectonics Plugin (extracted from stem_tool_science.js) ──
+  // Audio system
+  var _tectAC = null;
+  function getTectAC() { if (!_tectAC) { try { _tectAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_tectAC && _tectAC.state === 'suspended') { try { _tectAC.resume(); } catch(e) {} } return _tectAC; }
+  function tectTone(f,d,tp,v) { var ac = getTectAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxTectQuake() { tectTone(80, 0.3, 'sawtooth', 0.08); setTimeout(function() { tectTone(100, 0.2, 'sawtooth', 0.06); }, 100); if (window._alloHaptic) window._alloHaptic('bump'); }
+  function sfxTectShift() { tectTone(200, 0.15, 'sine', 0.05); }
+  function sfxTectErupt() { tectTone(60, 0.4, 'sawtooth', 0.09); setTimeout(function() { tectTone(100, 0.3, 'sawtooth', 0.07); }, 150); if (window._alloHaptic) window._alloHaptic('launch'); }
+  function sfxTectClick() { tectTone(600, 0.03, 'sine', 0.04); }
+  function sfxTectCorrect() { tectTone(523, 0.08, 'sine', 0.07); setTimeout(function() { tectTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { tectTone(784, 0.1, 'sine', 0.08); }, 140); }
+  if (!document.getElementById('tect-a11y')) { var _s = document.createElement('style'); _s.id = 'tect-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
   // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',

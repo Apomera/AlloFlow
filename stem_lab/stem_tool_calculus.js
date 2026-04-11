@@ -1,6 +1,14 @@
 window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _calcAC = null;
+  function getCalcAC() { if (!_calcAC) { try { _calcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_calcAC && _calcAC.state === "suspended") { try { _calcAC.resume(); } catch(e) {} } return _calcAC; }
+  function calcTone(f,d,tp,v) { var ac = getCalcAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCalcClick() { calcTone(600, 0.03, "sine", 0.04); }
+  function sfxCalcSuccess() { calcTone(523, 0.08, "sine", 0.07); setTimeout(function() { calcTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { calcTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-calculus')) return;

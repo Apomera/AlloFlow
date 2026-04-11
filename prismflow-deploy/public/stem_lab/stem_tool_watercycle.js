@@ -15,6 +15,53 @@
     document.body.appendChild(liveRegion);
   })();
 
+  // ── Water Cycle Audio System ──
+  var _wcAC = null;
+  function getWCAC() { if (!_wcAC) { try { _wcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
+  function wcTone(f, d2, t, v) { var ac = getWCAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d2||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d2||0.1)); } catch(e) {} }
+  function wcNoise(dur, vol, hz, type) { var ac = getWCAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.1)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type=type||'lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.1)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
+  function sfxRain() { for (var i = 0; i < 5; i++) { (function(d3) { setTimeout(function() { wcNoise(0.03, 0.02 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); }, d3); })(i * 25 + Math.random() * 15); } }
+  function sfxEvaporate() { wcTone(400, 0.1, 'sine', 0.05); setTimeout(function() { wcTone(600, 0.08, 'sine', 0.05); }, 60); setTimeout(function() { wcTone(800, 0.12, 'sine', 0.06); }, 120); }
+  function sfxCondense() { wcTone(600, 0.08, 'sine', 0.05); setTimeout(function() { wcTone(400, 0.1, 'sine', 0.05); }, 60); }
+  function sfxCollect() { wcNoise(0.15, 0.05, 300, 'lowpass'); wcTone(200, 0.1, 'sine', 0.04); }
+  function sfxStream() { wcNoise(0.2, 0.04, 400, 'bandpass'); }
+  function sfxFreeze() { wcTone(1200, 0.04, 'sine', 0.04); setTimeout(function() { wcTone(1400, 0.03, 'sine', 0.03); }, 30); setTimeout(function() { wcTone(1600, 0.03, 'sine', 0.03); }, 60); }
+  function sfxWcCorrect() { wcTone(523, 0.08, 'sine', 0.07); setTimeout(function() { wcTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { wcTone(784, 0.1, 'sine', 0.08); }, 140); }
+  function sfxWcClick() { wcTone(600, 0.03, 'sine', 0.04); }
+
+  // Ambient water background
+  var _wcAmb = null;
+  function startWcAmbient() {
+    if (_wcAmb) return;
+    var ac = getWCAC(); if (!ac) return;
+    try {
+      var bs = ac.sampleRate * 2; var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0);
+      for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1);
+      var s = ac.createBufferSource(); s.buffer=b; s.loop=true;
+      var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=250;
+      var lfo = ac.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.12;
+      var lg = ac.createGain(); lg.gain.value=40; lfo.connect(lg); lg.connect(f.frequency);
+      var m = ac.createGain(); m.gain.setValueAtTime(0,ac.currentTime); m.gain.linearRampToValueAtTime(0.008,ac.currentTime+2);
+      s.connect(f); f.connect(m); m.connect(ac.destination); s.start(); lfo.start();
+      _wcAmb = { src:s, lfo:lfo, master:m };
+      _wcAmb._int = setInterval(function() {
+        if (Math.random() > 0.5) sfxRain();
+        if (Math.random() > 0.8) wcTone(200 + Math.random() * 100, 0.3, 'sine', 0.01); // distant thunder
+      }, 3000 + Math.random() * 4000);
+    } catch(e) {}
+  }
+  function stopWcAmbient() {
+    if (_wcAmb) {
+      try { var ac = getWCAC(); if (ac) _wcAmb.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+      if (_wcAmb._int) clearInterval(_wcAmb._int);
+      var n = _wcAmb; setTimeout(function() { try { n.src.stop(); n.lfo.stop(); } catch(e) {} }, 600);
+      _wcAmb = null;
+    }
+  }
+
+  // WCAG a11y CSS
+  if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
@@ -1500,6 +1547,14 @@ const d = labToolData.waterCycle;
             };
             // Bridge canvas clicks to React state (called from click handler)
             canvasEl._wcSyncReact = function(nextState, pathKey) {
+              // Play state-specific water cycle sound
+              if (nextState && nextState.indexOf('evap') >= 0) sfxEvaporate();
+              else if (nextState && nextState.indexOf('cloud') >= 0) sfxCondense();
+              else if (nextState && (nextState.indexOf('rain') >= 0 || nextState.indexOf('precip') >= 0 || nextState.indexOf('snow') >= 0)) sfxRain();
+              else if (nextState && (nextState.indexOf('river') >= 0 || nextState.indexOf('runoff') >= 0 || nextState.indexOf('stream') >= 0)) sfxStream();
+              else if (nextState && (nextState.indexOf('collect') >= 0 || nextState.indexOf('ocean') >= 0 || nextState.indexOf('lake') >= 0)) sfxCollect();
+              else if (nextState && (nextState.indexOf('freez') >= 0 || nextState.indexOf('ice') >= 0 || nextState.indexOf('glacier') >= 0)) sfxFreeze();
+              else sfxWcClick();
               upd('journeyState', nextState);
               if (pathKey) {
                 var paths = Object.assign({}, d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });

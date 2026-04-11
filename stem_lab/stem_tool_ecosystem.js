@@ -1978,13 +1978,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         animId = requestAnimationFrame(draw);
 
-        // Cleanup on canvas removal
-        canvas._ecoCleanup = function() {
-
         canvas._checkEcoChallenges = function(hist) {
           try { checkEcoChallenges(hist); } catch(e) {}
         };
 
+        // Cleanup on canvas removal
+        canvas._ecoCleanup = function() {
           if (animId) cancelAnimationFrame(animId);
           canvas.removeEventListener('mousemove', onMouseMove);
           canvas.removeEventListener('mousedown', onMouseDown);

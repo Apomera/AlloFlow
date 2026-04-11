@@ -38,6 +38,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio System (auto-injected) ──
+  var _phyAC = null;
+  function getPhyAC() { if (!_phyAC) { try { _phyAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_phyAC && _phyAC.state === "suspended") { try { _phyAC.resume(); } catch(e) {} } return _phyAC; }
+  function phyTone(f,d,tp,v) { var ac = getPhyAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxPhyLaunch() { phyTone(200,0.15,"sine",0.07); }
+  function sfxPhyCollide() { phyTone(150,0.1,"sawtooth",0.08); }
+  function sfxPhyTick() { phyTone(600,0.03,"sine",0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-physics')) return;
@@ -193,7 +202,7 @@ const d = labToolData.physics;
               if ((d.targetAttempts || 0) >= 2 && !d.targetShowScaffold) {
                 upd('targetShowScaffold', true);
               }
-              if (addToast) addToast(missMsg + ' — try again!', 'warning');
+              phyTone(200, 0.12, 'sawtooth', 0.05); if (addToast) addToast(missMsg + ' — try again!', 'warning');
             }
           }
 

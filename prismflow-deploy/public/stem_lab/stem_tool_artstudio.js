@@ -32,6 +32,14 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _artAC = null;
+  function getArtAC() { if (!_artAC) { try { _artAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_artAC && _artAC.state === "suspended") { try { _artAC.resume(); } catch(e) {} } return _artAC; }
+  function artTone(f,d,tp,v) { var ac = getArtAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxArtClick() { artTone(600, 0.03, "sine", 0.04); }
+  function sfxArtSuccess() { artTone(523, 0.08, "sine", 0.07); setTimeout(function() { artTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { artTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-artstudio')) return;

@@ -270,14 +270,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function addSuper() {
           updAll({ morale: Math.min(100, morale + 10), wax: wax + 2 });
-          if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
+          sfxBeeBuzz(); if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
         }
         function harvestHoney() {
-          if (honey < 15) { if (addToast) addToast('⚠️ Not enough surplus honey to harvest safely. Leave 15+ lbs for the bees.', 'info'); return; }
+          if (honey < 15) { sfxBeeWaggle(); if (addToast) addToast('⚠️ Not enough surplus honey to harvest safely. Leave 15+ lbs for the bees.', 'info'); return; }
           var harvested = Math.round((honey - 15) * 10) / 10;
           updAll({ honey: 15, score: score + Math.round(harvested * 20) });
-          if (addToast) addToast('🍯 Harvested ' + harvested + ' lbs of honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
+          sfxBeeCollect(); if (addToast) addToast('🍯 Harvested ' + harvested + ' lbs of honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
           if (awardStemXP) awardStemXP('beehive', 15, 'Harvested honey');
         }
         function feedBees() {

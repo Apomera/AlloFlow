@@ -105,25 +105,106 @@ var d = labToolData.cell;
           var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
 
       // ── Sound Effects (Web Audio) ──
+      // ── Cell Biology Audio System (singleton context) ──
+      var _cellAC = null;
+      function getCellAC() {
+        if (!_cellAC) { try { _cellAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        if (_cellAC && _cellAC.state === 'suspended') { try { _cellAC.resume(); } catch(e) {} }
+        return _cellAC;
+      }
+      function cellTone(freq, dur, type, vol) {
+        var ac = getCellAC(); if (!ac) return;
+        try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.1)); } catch(e) {}
+      }
       var cellSound = function (type) {
         try {
-          var AC = window.AudioContext || window.webkitAudioContext;
-          if (!AC) return;
-          var a = new AC();
-          var o = a.createOscillator();
-          var g = a.createGain();
-          o.connect(g);
-          g.connect(a.destination);
-          var freqs = { select: [520, 0.08], food: [660, 0.1], correct: [880, 0.15], wrong: [220, 0.18], streak: [740, 0.12], badge: [990, 0.2], photosynthesis: [440, 0.14] };
-          var f = freqs[type] || [440, 0.1];
-          o.frequency.value = f[0];
-          g.gain.value = 0.13;
-          o.type = type === 'wrong' ? 'sawtooth' : type === 'badge' ? 'triangle' : 'sine';
-          o.start();
-          g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + f[1]);
-          o.stop(a.currentTime + f[1] + 0.01);
+          switch (type) {
+            case 'select':
+              cellTone(520, 0.06, 'sine', 0.07);
+              setTimeout(function() { cellTone(660, 0.05, 'sine', 0.06); }, 40);
+              break;
+            case 'food':
+              cellTone(440, 0.04, 'sine', 0.06);
+              setTimeout(function() { cellTone(554, 0.04, 'sine', 0.06); }, 30);
+              setTimeout(function() { cellTone(660, 0.06, 'sine', 0.07); }, 60);
+              break;
+            case 'photosynthesis':
+              // Gentle rising shimmer (sun energy)
+              cellTone(330, 0.08, 'sine', 0.05);
+              setTimeout(function() { cellTone(440, 0.08, 'sine', 0.06); }, 60);
+              setTimeout(function() { cellTone(554, 0.1, 'sine', 0.07); }, 120);
+              break;
+            case 'correct':
+              cellTone(523, 0.08, 'sine', 0.08);
+              setTimeout(function() { cellTone(659, 0.08, 'sine', 0.08); }, 70);
+              setTimeout(function() { cellTone(784, 0.1, 'sine', 0.09); }, 140);
+              break;
+            case 'wrong':
+              cellTone(250, 0.15, 'sawtooth', 0.06);
+              setTimeout(function() { cellTone(200, 0.12, 'sawtooth', 0.04); }, 80);
+              break;
+            case 'streak':
+              cellTone(784, 0.06, 'sine', 0.07);
+              setTimeout(function() { cellTone(880, 0.06, 'sine', 0.07); }, 50);
+              setTimeout(function() { cellTone(1047, 0.1, 'sine', 0.08); }, 100);
+              break;
+            case 'badge':
+              [523, 659, 784, 1047].forEach(function(f, i) { setTimeout(function() { cellTone(f, 0.1, 'triangle', 0.08); }, i * 90); });
+              break;
+            case 'divide':
+              // Cell division — splitting wobble
+              cellTone(300, 0.06, 'sine', 0.05);
+              setTimeout(function() { cellTone(350, 0.05, 'sine', 0.05); }, 40);
+              setTimeout(function() { cellTone(300, 0.04, 'sine', 0.04); cellTone(400, 0.04, 'sine', 0.04); }, 80);
+              break;
+            case 'death':
+              cellTone(180, 0.2, 'sine', 0.04);
+              break;
+            default:
+              cellTone(440, 0.08, 'sine', 0.06);
+          }
+          if (window._alloHaptic) {
+            if (type === 'correct' || type === 'badge') window._alloHaptic('correct');
+            else if (type === 'wrong') window._alloHaptic('wrong');
+            else if (type === 'food' || type === 'select') window._alloHaptic('tap');
+          }
         } catch (e) {}
       };
+
+      // ── Ambient petri dish soundscape ──
+      var _cellAmbient = null;
+      function startCellAmbient() {
+        if (_cellAmbient) return;
+        var ac = getCellAC(); if (!ac) return;
+        try {
+          var bufSize = ac.sampleRate * 2;
+          var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+          var data = buf.getChannelData(0);
+          for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+          var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+          var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 180; filt.Q.value = 0.5;
+          var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+          master.gain.linearRampToValueAtTime(0.006, ac.currentTime + 2);
+          src.connect(filt); filt.connect(master); master.connect(ac.destination);
+          src.start();
+          _cellAmbient = { src: src, master: master };
+          // Random microscopic bubbles
+          _cellAmbient._interval = setInterval(function() {
+            if (Math.random() > 0.6) {
+              cellTone(1200 + Math.random() * 800, 0.02, 'sine', 0.02);
+            }
+          }, 2000 + Math.random() * 3000);
+        } catch(e) {}
+      }
+      function stopCellAmbient() {
+        if (_cellAmbient) {
+          try { var ac = getCellAC(); if (ac) _cellAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+          if (_cellAmbient._interval) clearInterval(_cellAmbient._interval);
+          var nodes = _cellAmbient;
+          setTimeout(function() { try { nodes.src.stop(); } catch(e) {} }, 600);
+          _cellAmbient = null;
+        }
+      }
 
       // ── Extended state for badges ──
       var ext = d._cellExt || { badges: [], totalFood: 0, organismsObserved: [], organellesClicked: [], quizCorrect: 0, playModeUsed: false };
@@ -3320,7 +3401,7 @@ var d = labToolData.cell;
 
                 (d.simSpeed || 1) + "x",
 
-                React.createElement("button", { "aria-label": "Play", onClick: function () { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { "aria-label": "Play", onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
 
               ),
 

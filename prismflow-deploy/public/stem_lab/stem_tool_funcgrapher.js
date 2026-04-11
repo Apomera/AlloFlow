@@ -29,6 +29,13 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _funcgrAC = null;
+  function getFuncgrAC() { if (!_funcgrAC) { try { _funcgrAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_funcgrAC && _funcgrAC.state === "suspended") { try { _funcgrAC.resume(); } catch(e) {} } return _funcgrAC; }
+  function funcgrTone(f,d,tp,v) { var ac = getFuncgrAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxFuncgrClick() { funcgrTone(600, 0.03, "sine", 0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-funcgrapher')) return;

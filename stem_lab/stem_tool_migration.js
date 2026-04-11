@@ -271,14 +271,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       }, []);
 
       // ══════════════════════════════════════════
+      // HOISTED HOOKS — all useRef/useEffect must be called unconditionally
+      // (React Rules of Hooks: same number in same order every render)
+      // ══════════════════════════════════════════
+      // Tab 1: V-Formation refs
+      var _vfCanvasRef = useRef(null);
+      var _vfAnimRef = useRef(null);
+      var _vfBirdsRef = useRef(null);
+      var _vfDragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
+      var _vfTimeRef = useRef(0);
+      // Tab 2: Wind Currents refs
+      var _wcCanvasRef = useRef(null);
+      var _wcAnimRef = useRef(null);
+      var _wcParticlesRef = useRef(null);
+      var _wcObjectsRef = useRef(null);
+      var _wcBirdsRef = useRef([]);
+      var _wcTimeRef = useRef(0);
+      // Tab 3: Routes refs
+      var _rtCanvasRef = useRef(null);
+      var _rtAnimRef = useRef(null);
+      var _rtTimeRef = useRef(0);
+      // Tab 4: Aero refs
+      var _arCanvasRef = useRef(null);
+      var _arAnimRef = useRef(null);
+      var _arTimeRef = useRef(0);
+      // Tab 5: Navigate refs
+      var _nvCanvasRef = useRef(null);
+      var _nvAnimRef = useRef(null);
+      var _nvTimeRef = useRef(0);
+      // Live values ref — updated every render so animation loops read fresh state
+      var _liveVals = useRef({});
+      _liveVals.current = {
+        birdCount: d.vBirdCount || 9, simSpeed: d.vSpeed || 1,
+        windDir: d.windDir || 0, windSpeed: d.windSpeed || 15,
+        showStreamlines: d.showStreamlines, placingObj: d.placingObj,
+        selectedSpecies: d.selectedSpecies, aoa: d.aoa || 5,
+        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab
+      };
+
+      // ══════════════════════════════════════════
       // TAB 1: V-FORMATION SIMULATOR
       // ══════════════════════════════════════════
       function renderVFormation() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var birdsRef = useRef(null);
-        var dragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
-        var timeRef = useRef(0);
+        var canvasRef = _vfCanvasRef;
+        var animRef = _vfAnimRef;
+        var birdsRef = _vfBirdsRef;
+        var dragRef = _vfDragRef;
+        var timeRef = _vfTimeRef;
 
         var birdCount = d.vBirdCount || 9;
         var simSpeed = d.vSpeed || 1;
@@ -355,9 +394,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return Math.round((inUpwash / (birds.length - 1)) * 100);
         }
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        // Canvas init via ref callback (avoids useEffect inside conditional render)
+        var _vfInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._vfInit) return;
+          canvas._vfInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -387,12 +429,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           function frame() {
             if (reducedMotionRef.current) {
-              // Static render for reduced-motion
               c.clearRect(0, 0, W, H);
               renderFrame(c, W, H, birds, vortices, windParts, 0);
               return;
             }
-            timeRef.current += 0.016 * simSpeed;
+            // Read fresh values from live ref (updated every React render)
+            var lv = _liveVals.current;
+            // Dynamically update bird count if changed
+            if (birdsRef.current && birdsRef.current.length !== lv.birdCount) {
+              birdsRef.current = makeFlock(lv.birdCount);
+              birds = birdsRef.current;
+            }
+            timeRef.current += 0.016 * lv.simSpeed;
             c.clearRect(0, 0, W, H);
             renderFrame(c, W, H, birds, vortices, windParts, timeRef.current);
             animRef.current = requestAnimationFrame(frame);
@@ -667,7 +715,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             canvas.removeEventListener('touchmove', onTouchMove);
             canvas.removeEventListener('touchend', onTouchEnd);
           };
-        }, [birdCount, simSpeed, isDark]);
+          // Cleanup when canvas unmounts
+          var obs = new MutationObserver(function() { if (!document.contains(canvas)) { cancelAnimationFrame(animRef.current); obs.disconnect(); canvas._vfInit = false; } });
+          obs.observe(document.body, { childList: true, subtree: true });
+        };
 
         // Read aloud helper
         var vReadAloud = function() {
@@ -688,7 +739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
             h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+              ref: _vfInitCanvas,
               role: 'img',
               'aria-label': 'V-formation simulator canvas. Drag birds to reposition them. Leader bird shown with star. Energy bars above each bird show current energy level. Green cones behind each bird show upwash zones where trailing birds save energy. Red zone directly behind shows downwash area.',
               tabIndex: 0,
@@ -816,12 +867,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // TAB 2: WIND CURRENTS SANDBOX
       // ══════════════════════════════════════════
       function renderWindCurrents() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var particlesRef = useRef(null);
-        var objectsRef = useRef(null);
-        var windBirdsRef = useRef([]);
-        var timeRef = useRef(0);
+        var canvasRef = _wcCanvasRef;
+        var animRef = _wcAnimRef;
+        var particlesRef = _wcParticlesRef;
+        var objectsRef = _wcObjectsRef;
+        var windBirdsRef = _wcBirdsRef;
+        var timeRef = _wcTimeRef;
 
         var windDir = d.windDir || 0; // degrees, 0=East
         var windSpeed = d.windSpeed || 15;
@@ -847,9 +898,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           { label: 'SE', angle: 315 }
         ];
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        var _wcInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._wcInit) return;
+          canvas._wcInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -870,11 +923,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
           if (!objectsRef.current) objectsRef.current = d.windObjects || [];
 
-          var windRad = windDir * Math.PI / 180;
-          var baseVx = Math.cos(windRad) * windSpeed * 0.06;
-          var baseVy = -Math.sin(windRad) * windSpeed * 0.06;
-
           function getWindAt(x, y) {
+            // Read fresh wind values from live ref (updated every React render)
+            var lv = _liveVals.current;
+            var windRad2 = lv.windDir * Math.PI / 180;
+            var baseVx = Math.cos(windRad2) * lv.windSpeed * 0.06;
+            var baseVy = -Math.sin(windRad2) * lv.windSpeed * 0.06;
             var vx = baseVx;
             var vy = baseVy;
             var objs = objectsRef.current || [];
@@ -1118,13 +1172,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             if (animRef.current) cancelAnimationFrame(animRef.current);
             canvas.removeEventListener('click', onClick);
           };
-        }, [windDir, windSpeed, showStreamlines, placingObj, isDark]);
+          var obs2 = new MutationObserver(function() { if (!document.contains(canvas)) { cancelAnimationFrame(animRef.current); obs2.disconnect(); canvas._wcInit = false; } });
+          obs2.observe(document.body, { childList: true, subtree: true });
+        };
 
         return h('div', { className: 'space-y-3' },
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
             h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+              ref: _wcInitCanvas,
               role: 'img',
               'aria-label': 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction. ' + windSpeed + ' mph ' + getBeaufort(windSpeed) + ' wind.',
               tabIndex: 0,
@@ -1285,9 +1341,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // TAB 3: MIGRATION ROUTE EXPLORER
       // ══════════════════════════════════════════
       function renderRoutes() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var timeRef = useRef(0);
+        var canvasRef = _rtCanvasRef;
+        var animRef = _rtAnimRef;
+        var timeRef = _rtTimeRef;
         var selectedSpecies = d.selectedSpecies || null;
         var routeAnimProgress = d.routeAnimProgress || 0;
         var aiExplorerText = d.aiExplorerText || '';
@@ -1336,9 +1392,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           { name: 'Chesapeake Bay', x: 430, y: 200, flyway: 'atlantic', fact: 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese' }
         ];
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        var _rtInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._rtInit) return;
+          canvas._rtInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -1592,7 +1650,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return function() {
             if (animRef.current) cancelAnimationFrame(animRef.current);
           };
-        }, [selectedSpecies, isDark]);
+          var obs3 = new MutationObserver(function() { if (!document.contains(canvas)) { cancelAnimationFrame(animRef.current); obs3.disconnect(); canvas._rtInit = false; } });
+          obs3.observe(document.body, { childList: true, subtree: true });
+        };
 
         function getSpeciesById(id) {
           for (var i = 0; i < SPECIES.length; i++) {
@@ -1602,12 +1662,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         function handleAIExplorer() {
-          if (!selectedSpecies || !callGemini) return;
+          if (!selectedSpecies || !callGemini || d.aiExplorerLoading) return; // prevent double-click
           var sp = getSpeciesById(selectedSpecies);
-          upd('aiExplorerLoading', true);
+          var reqId = Date.now();
+          updMulti({ aiExplorerLoading: true, aiExplorerReqId: reqId });
           var prompt = 'You are a wildlife biologist teaching grade ' + (gradeLevel || 5) + ' students. Tell me 3 fascinating facts about ' + sp.name + ' migration that most people don\'t know. Include one fact about their navigation, one about their physical adaptations, and one about conservation. Keep each fact to 1-2 sentences. Format as numbered list.';
           callGemini(prompt).then(function(result) {
-            updMulti({ aiExplorerText: result, aiExplorerLoading: false });
+            // Only update if this is still the latest request
+            if (d.aiExplorerReqId === reqId || !d.aiExplorerReqId) {
+              updMulti({ aiExplorerText: result, aiExplorerLoading: false });
+            }
           }).catch(function() {
             updMulti({ aiExplorerText: 'Could not load AI facts. Try again later.', aiExplorerLoading: false });
           });
@@ -1617,7 +1681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Map canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
             h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+              ref: _rtInitCanvas,
               role: 'img',
               'aria-label': 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific. ' + (selectedSpecies ? 'Currently tracking ' + getSpeciesById(selectedSpecies).name : 'Select a species to see its route.'),
               tabIndex: 0,
@@ -1864,9 +1928,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // TAB 4: AERODYNAMICS LAB
       // ══════════════════════════════════════════
       function renderAero() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var timeRef = useRef(0);
+        var canvasRef = _arCanvasRef;
+        var animRef = _arAnimRef;
+        var timeRef = _arTimeRef;
 
         var aoa = typeof d.aoa === 'number' ? d.aoa : 5; // angle of attack
         var selectedWing = d.selectedWing || 'flapping';
@@ -1887,9 +1951,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var isStalling = aoa > wing.stallAngle;
         var ldRatio = cd > 0.001 ? cl / cd : 0;
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        var _arInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._arInit) return;
+          canvas._arInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -1904,8 +1970,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             timeRef.current += 0.016;
             c.clearRect(0, 0, W, H);
 
+            // Read fresh values from live ref
+            var lv = _liveVals.current;
+            var _aoa = lv.aoa;
+            var _selWing = lv.selectedWing;
+            var _wing = getWingType(_selWing);
+            var _aoaRad = _aoa * Math.PI / 180;
+            var _cl = _aoa <= _wing.stallAngle ? _wing.liftCoeff * Math.sin(2 * _aoaRad) : _wing.liftCoeff * 0.5 * Math.sin(2 * _aoaRad) * 0.4;
+            var _cd = _wing.dragCoeff + (_cl * _cl) / (Math.PI * 5 * 0.85);
+            var _isStalling = _aoa > _wing.stallAngle;
+            var aoaRad = _aoaRad;
+            var isStalling = _isStalling;
+
             // Background
-            c.fillStyle = isDark ? '#0f172a' : '#f8fafc';
+            c.fillStyle = lv.isDark ? '#0f172a' : '#f8fafc';
             c.fillRect(0, 0, W, H);
 
             var cx = W * 0.35;
@@ -2064,12 +2142,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.fillText('DRAG', cx + dragLen + 8, cy + 4);
             }
 
-            // Stall warning
+            // Stall warning (enhanced with flashing border + red overlay)
             if (isStalling) {
-              c.fillStyle = 'rgba(239,68,68,0.8)';
-              c.font = 'bold 14px system-ui';
+              // Red screen flash (pulsing)
+              var stallPulse = 0.05 + Math.sin(timeRef.current * 8) * 0.04;
+              c.fillStyle = 'rgba(239,68,68,' + stallPulse + ')';
+              c.fillRect(0, 0, W, H);
+              // Warning banner
+              c.fillStyle = 'rgba(239,68,68,0.9)';
+              c.fillRect(0, 8, W, 28);
+              c.fillStyle = '#fff';
+              c.font = 'bold 13px system-ui';
               c.textAlign = 'center';
-              c.fillText('\u26A0 STALL \u2014 Flow Separation!', W / 2, 28);
+              c.fillText('\u26A0 STALL \u2014 Flow Separation! Lift drops dramatically above ' + _wing.stallAngle + '\u00B0', W / 2, 27);
+              // Red border flash
+              c.strokeStyle = 'rgba(239,68,68,' + (0.4 + Math.sin(timeRef.current * 6) * 0.3) + ')';
+              c.lineWidth = 3;
+              c.strokeRect(1, 1, W - 2, H - 2);
             }
 
             // Pressure labels
@@ -2189,13 +2278,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           frame();
           return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
-        }, [aoa, selectedWing, isDark]);
+          var obs4 = new MutationObserver(function() { if (!document.contains(canvas)) { cancelAnimationFrame(animRef.current); obs4.disconnect(); canvas._arInit = false; } });
+          obs4.observe(document.body, { childList: true, subtree: true });
+        };
 
         return h('div', { className: 'space-y-3' },
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
             h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+              ref: _arInitCanvas,
               role: 'img',
               'aria-label': 'Aerodynamics lab showing airfoil cross-section with streamlines. Current angle of attack: ' + aoa + ' degrees. ' + (isStalling ? 'Wing is stalling, flow separation occurring.' : 'Lift coefficient: ' + cl.toFixed(2) + ', Drag coefficient: ' + cd.toFixed(3) + ', L/D ratio: ' + ldRatio.toFixed(1)),
               tabIndex: 0,
@@ -2357,14 +2448,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // ══════════════════════════════════════════
       function renderNavigate() {
         var expandedNav = d.expandedNav || null;
-        var navCanvasRef = useRef(null);
-        var navAnimRef = useRef(null);
-        var navTimeRef = useRef(0);
+        var navCanvasRef = _nvCanvasRef;
+        var navAnimRef = _nvAnimRef;
+        var navTimeRef = _nvTimeRef;
 
-        // Navigation demo canvas
-        useEffect(function() {
-          var canvas = navCanvasRef.current;
+        // Navigation demo canvas (ref callback, not useEffect)
+        var _nvInitCanvas = function(canvas) {
           if (!canvas) return;
+          navCanvasRef.current = canvas;
+          if (canvas._nvInit) return;
+          canvas._nvInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -2529,7 +2622,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           frame();
           return function() { if (navAnimRef.current) cancelAnimationFrame(navAnimRef.current); };
-        }, [isDark]);
+          var obs5 = new MutationObserver(function() { if (!document.contains(canvas)) { cancelAnimationFrame(navAnimRef.current); obs5.disconnect(); canvas._nvInit = false; } });
+          obs5.observe(document.body, { childList: true, subtree: true });
+        };
 
         // Challenge state
         var challengeActive = d.challengeActive || false;
@@ -2690,7 +2785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Night sky navigation canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
             h('canvas', { 'aria-label': 'Migration visualization',
-              ref: navCanvasRef,
+              ref: _nvInitCanvas,
               role: 'img',
               'aria-label': 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.',
               tabIndex: 0,

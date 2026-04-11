@@ -32,6 +32,13 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _geoAC = null;
+  function getGeoAC() { if (!_geoAC) { try { _geoAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_geoAC && _geoAC.state === "suspended") { try { _geoAC.resume(); } catch(e) {} } return _geoAC; }
+  function geoTone(f,d,tp,v) { var ac = getGeoAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxGeoClick() { geoTone(600, 0.03, "sine", 0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-geo')) return;
@@ -1212,7 +1219,7 @@ var d = labToolData || {};
 
                 ref: function(el) { if (el && window.L && !mapRef.current) initMap(el); },
 
-                style: { height: 'calc(100vh - 280px)', minHeight: 400, maxHeight: 700, width: '100%', background: '#1a202c' },
+                style: { height: '100%', minHeight: 400, maxHeight: 'calc(100vh - 200px)', width: '100%', background: '#1a202c' },
 
                 id: 'geo-quiz-map'
 

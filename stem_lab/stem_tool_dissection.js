@@ -3,6 +3,17 @@
 // Uses window.StemLab.registerTool() plugin architecture
 
   // â•â•â• ðŸ”¬ dissection (dissection) â•â•â•
+  // ── Dissection Lab Audio System ──
+  var _disAC = null;
+  function getDisAC() { if (!_disAC) { try { _disAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_disAC && _disAC.state === 'suspended') { try { _disAC.resume(); } catch(e) {} } return _disAC; }
+  function disTone(f,d,tp,v) { var ac = getDisAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function disNoise(dur,vol,hz) { var ac = getDisAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.05)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.05)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
+  function sfxDisCut() { disNoise(0.06, 0.05, 800); disTone(300, 0.08, 'sawtooth', 0.05); }
+  function sfxDisProbe() { disTone(800, 0.04, 'sine', 0.05); setTimeout(function() { disTone(1000, 0.03, 'sine', 0.04); }, 30); }
+  function sfxDisReveal() { disTone(440, 0.06, 'sine', 0.06); setTimeout(function() { disTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { disTone(659, 0.08, 'sine', 0.07); }, 100); }
+  function sfxDisPin() { disTone(1200, 0.03, 'square', 0.04); }
+  function sfxDisLabel() { disTone(600, 0.04, 'sine', 0.05); }
+
   console.log('[Dissection Plugin] Registering dissection tool...');
   window.StemLab.registerTool('dissection', {
     icon: '\uD83D\uDD2C',
@@ -842,6 +853,8 @@ var d = labToolData.dissection || {};
           function peelCurrentLayer() {
 
             // Trigger animated incision line before peeling
+            sfxDisCut(); // Scalpel cutting sound
+            if (window._alloHaptic) window._alloHaptic('break');
             upd('_incisionAnim', { active: true, startTick: Date.now(), layerName: activeLayer });
 
             // Delay the actual peel so the scalpel cut animation plays first (~500ms)
@@ -858,6 +871,7 @@ var d = labToolData.dissection || {};
 
               upd('_incisionAnim', null);
               awardStemXP('dissection', 3, 'Peeled ' + activeLayer + ' layer');
+              sfxDisReveal(); // Layer reveal chime
               if (addToast) addToast('\uD83D\uDD2C +3 XP Layer revealed!', 'success');
             }, 500);
 
@@ -5597,7 +5611,8 @@ var d = labToolData.dissection || {};
             upd('selectedOrgan', hit ? (hit.id === d.selectedOrgan ? null : hit.id) : null);
 
             if (hit) {
-              playDissectSound('pin');
+              playDissectSound('pin'); sfxDisPin();
+              if (window._alloHaptic) window._alloHaptic('click');
               if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'organSelect', 'Selected ' + hit.name + '. ' + hit.fn.split('.')[0] + '.', { debounce: 500 });
             }
 
@@ -5661,6 +5676,7 @@ var d = labToolData.dissection || {};
 
                 awardStemXP('dissection', 2, 'Found ' + hit.name + ' in guided tour');
 
+                sfxDisProbe(); if (window._alloHaptic) window._alloHaptic('tap');
                 if (addToast) addToast('\uD83D\uDCCD ' + 'Found organ!'.replace('{name}', hit.name), 'success');
 
                 if (guidedStep + 1 >= guidedSteps.length) {

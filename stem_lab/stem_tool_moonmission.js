@@ -393,12 +393,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         if (typeof announceToSR === 'function') announceToSR('Mission phase ' + (p + 1) + ' of 10: ' + phaseName + '. ' + (PHASES[p] ? PHASES[p].desc : 'The mission is complete.'));
         // Phase-specific sounds + ambient audio
         sfxPhaseAdvance();
-        if (p === 1) { sfxLaunch(); startMissionAmbient('launch'); }           // Launch
-        else if (p === 2) { sfxStageSeparation(); startMissionAmbient('space'); } // Earth Orbit
+        if (p === 1) { sfxLaunch(); startMissionAmbient('launch'); if (window._alloHaptic) window._alloHaptic('launch'); } // Launch
+        else if (p === 2) { sfxStageSeparation(); startMissionAmbient('space'); if (window._alloHaptic) window._alloHaptic('bump'); } // Earth Orbit
         else if (p === 3) { sfxEngineIgnition(); startMissionAmbient('space'); }  // Trans-Lunar
         else if (p === 4) { sfxThrust(); startMissionAmbient('space'); }          // Lunar Orbit
-        else if (p === 5) { sfxThrust(); startMissionAmbient('thrust'); }         // Powered Descent
-        else if (p === 6) { sfxLanding(); startMissionAmbient('eva'); }           // Moonwalk EVA
+        else if (p === 5) { sfxThrust(); startMissionAmbient('thrust'); if (window._alloHaptic) window._alloHaptic('launch'); } // Powered Descent
+        else if (p === 6) { sfxLanding(); startMissionAmbient('eva'); if (window._alloHaptic) window._alloHaptic('land'); } // Moonwalk EVA
         else if (p === 7) { sfxEngineIgnition(); startMissionAmbient('thrust'); } // Lunar Ascent
         else if (p === 8) { sfxStageSeparation(); startMissionAmbient('space'); } // Trans-Earth
         else if (p === 9) { sfxSplashdown(); stopMissionAmbient(); }              // Re-entry
@@ -1201,7 +1201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     drawVignette(ctx, W, H, 0.3);
-                    requestAnimationFrame(drawLaunch);
+                    if (document.contains(canvasEl)) requestAnimationFrame(drawLaunch);
                   }
                   drawLaunch();
                 }
@@ -1361,7 +1361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(commsMessages[commsIdx], W * 0.5, H3 - 12);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, H3, 0.25);
-                    requestAnimationFrame(drawTransit);
+                    if (document.contains(canvasEl)) requestAnimationFrame(drawTransit);
                   }
                   drawTransit();
                 }
@@ -1459,7 +1459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(orbitComms[ocIdx], W * 0.5, HO - 10);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HO, 0.2);
-                    requestAnimationFrame(drawOrbit);
+                    if (document.contains(canvasEl)) requestAnimationFrame(drawOrbit);
                   }
                   drawOrbit();
                 }
@@ -1806,7 +1806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     drawVignette(ctx, W, H, 0.2);
-                    if (!landed && !crashed) requestAnimationFrame(drawDescent);
+                    if (!landed && !crashed && document.contains(canvasEl)) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
                       setTimeout(function() { drawDescent(); }, 100);
@@ -2363,6 +2363,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
                 onClick: function() {
+                  // Clean up EVA canvas (Three.js, RAF, event listeners)
+                  var evaCanvas = document.querySelector('[data-eva-canvas]');
+                  if (evaCanvas && evaCanvas._evaCleanup) evaCanvas._evaCleanup();
                   advancePhase(7);
                   log('\uD83D\uDC68\u200D\uD83D\uDE80 EVA complete. ' + (d.lunarSamples || []).length + ' samples collected. Preparing for ascent.');
                   addXP(25);
@@ -2618,7 +2621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(reComms[reentryPhase], W * 0.5, 16);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HR, 0.35);
-                    if (reentryPhase < 4) requestAnimationFrame(drawReentry);
+                    if (reentryPhase < 4 && document.contains(canvasEl)) requestAnimationFrame(drawReentry);
                   }
                   drawReentry();
                 }

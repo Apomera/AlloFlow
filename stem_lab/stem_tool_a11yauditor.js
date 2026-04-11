@@ -16,6 +16,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _a11yauAC = null;
+  function getA11yauAC() { if (!_a11yauAC) { try { _a11yauAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_a11yauAC && _a11yauAC.state === "suspended") { try { _a11yauAC.resume(); } catch(e) {} } return _a11yauAC; }
+  function a11yauTone(f,d,tp,v) { var ac = getA11yauAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxA11yauClick() { a11yauTone(600, 0.03, "sine", 0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-a11yauditor')) return;

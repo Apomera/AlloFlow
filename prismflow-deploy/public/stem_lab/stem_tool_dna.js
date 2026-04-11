@@ -32,6 +32,14 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
+  // ── Audio (auto-injected) ──
+  var _dnaAC = null;
+  function getDnaAC() { if (!_dnaAC) { try { _dnaAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_dnaAC && _dnaAC.state === "suspended") { try { _dnaAC.resume(); } catch(e) {} } return _dnaAC; }
+  function dnaTone(f,d,tp,v) { var ac = getDnaAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxDnaClick() { dnaTone(600, 0.03, "sine", 0.04); }
+  function sfxDnaSuccess() { dnaTone(523, 0.08, "sine", 0.07); setTimeout(function() { dnaTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { dnaTone(784, 0.1, "sine", 0.08); }, 140); }
+
+
   // ═══════════════════════════════════════════════════════
   // IIFE-Scope Static Data (shared across renders)
   // ═══════════════════════════════════════════════════════

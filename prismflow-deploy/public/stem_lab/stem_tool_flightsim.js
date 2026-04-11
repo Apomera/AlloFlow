@@ -113,6 +113,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { name: 'Antarctica', type: 'landmark', country: 'International', lat: -85.0, lon: 0, pop: null, fact: 'Antarctica contains 70% of Earth\'s fresh water locked in its ice sheet. It\'s the coldest, driest, and windiest continent.' },
     { name: 'Galápagos Islands', type: 'landmark', country: 'Ecuador', lat: -0.953, lon: -90.966, pop: null, fact: 'Charles Darwin\'s observations here inspired the theory of evolution. Giant tortoises can live over 175 years.' },
     { name: 'Machu Picchu', type: 'landmark', country: 'Peru', lat: -13.163, lon: -72.545, pop: null, fact: 'Built around 1450 AD by the Inca Empire at 7,970 ft elevation. It was unknown to the outside world until 1911.' },
+    // Additional Natural Wonders & Landmarks
+    { name: 'Victoria Falls', type: 'landmark', country: 'Zambia/Zimbabwe', lat: -17.925, lon: 25.857, pop: null, fact: 'Victoria Falls is 5,604 ft wide and 354 ft tall \u2014 the largest sheet of falling water on Earth. The spray can be seen from 30 miles away.' },
+    { name: 'Great Wall of China', type: 'landmark', country: 'China', lat: 40.432, lon: 116.570, pop: null, fact: 'The Great Wall stretches over 13,000 miles. Contrary to myth, it\u2019s not visible from space with the naked eye.' },
+    { name: 'Mount Kilimanjaro', type: 'landmark', country: 'Tanzania', lat: -3.076, lon: 37.353, pop: null, fact: 'Kilimanjaro is Africa\u2019s tallest mountain at 19,341 ft. It\u2019s a dormant volcano with glaciers at its summit \u2014 though they\u2019re melting fast.' },
+    { name: 'Niagara Falls', type: 'landmark', country: 'US/Canada', lat: 43.084, lon: -79.074, pop: null, fact: 'Six million cubic feet of water flow over Niagara Falls every minute. The falls have migrated 7 miles upstream over 12,000 years due to erosion.' },
+    { name: 'Mount Fuji', type: 'landmark', country: 'Japan', lat: 35.361, lon: 138.727, pop: null, fact: 'Mount Fuji is 12,388 ft tall and last erupted in 1707. Over 200,000 people climb it every year during the July-August season.' },
+    { name: 'Uluru (Ayers Rock)', type: 'landmark', country: 'Australia', lat: -25.345, lon: 131.036, pop: null, fact: 'Uluru is a sacred site for the Anangu Aboriginal people. The sandstone monolith is 1,142 ft tall and 5.8 miles around.' },
+    { name: 'Dead Sea', type: 'landmark', country: 'Jordan/Israel', lat: 31.510, lon: 35.473, pop: null, fact: 'The Dead Sea is the lowest point on land at 1,412 ft below sea level. Its salt concentration (34%) makes swimming impossible \u2014 you just float.' },
+    { name: 'Yellowstone', type: 'landmark', country: 'United States', lat: 44.428, lon: -110.588, pop: null, fact: 'Yellowstone sits on a supervolcano. Old Faithful erupts roughly every 90 minutes. The park has over 10,000 geothermal features.' },
+    { name: 'Mariana Trench', type: 'landmark', country: 'Pacific Ocean', lat: 11.350, lon: 142.200, pop: null, fact: 'The Mariana Trench is 36,070 ft deep \u2014 deeper than Mount Everest is tall. Only 3 people have ever been to the bottom.' },
+    { name: 'Serengeti', type: 'landmark', country: 'Tanzania', lat: -2.333, lon: 34.833, pop: null, fact: 'The Serengeti hosts the Great Migration \u2014 1.5 million wildebeest and 250,000 zebras move in a 500-mile loop every year.' },
+    { name: 'Baikal', type: 'landmark', country: 'Russia', lat: 53.558, lon: 108.165, pop: null, fact: 'Lake Baikal is the deepest lake on Earth (5,387 ft) and holds 20% of the world\u2019s unfrozen surface fresh water. It\u2019s over 25 million years old.' },
+    { name: 'Petra', type: 'landmark', country: 'Jordan', lat: 30.329, lon: 35.443, pop: null, fact: 'Petra was carved into rose-red sandstone cliffs by the Nabataeans over 2,000 years ago. It was lost to the Western world until 1812.' },
+    { name: 'Iguaz\u00fa Falls', type: 'landmark', country: 'Argentina/Brazil', lat: -25.695, lon: -54.437, pop: null, fact: 'Iguaz\u00fa Falls consists of 275 individual waterfalls spanning nearly 2 miles. Eleanor Roosevelt reportedly said: "Poor Niagara!"' },
+    { name: 'Angkor Wat', type: 'landmark', country: 'Cambodia', lat: 13.412, lon: 103.867, pop: null, fact: 'Angkor Wat is the largest religious monument in the world, covering 402 acres. It was built in the 12th century as a Hindu temple.' },
+    { name: 'Mount Everest', type: 'landmark', country: 'Nepal/China', lat: 27.988, lon: 86.925, pop: null, fact: 'At 29,032 ft, Everest is the tallest mountain above sea level. The summit has roughly 1/3 the oxygen of sea level.' },
+    { name: 'Bermuda Triangle', type: 'landmark', country: 'Atlantic Ocean', lat: 25.0, lon: -71.0, pop: null, fact: 'The Bermuda Triangle between Miami, Bermuda, and Puerto Rico has no more disappearances than any comparable area of ocean. The myth began in the 1960s.' },
+    { name: 'Maldives', type: 'landmark', country: 'Maldives', lat: 3.203, lon: 73.221, pop: '540K', fact: 'The Maldives is the lowest country on Earth \u2014 average elevation just 3 ft above sea level. It could be underwater by 2100 due to rising seas.' },
+    { name: 'Patagonia', type: 'landmark', country: 'Argentina/Chile', lat: -46.0, lon: -71.5, pop: null, fact: 'Patagonia has some of the strongest winds on Earth. The Perito Moreno Glacier is one of only 3 glaciers in the world that\u2019s growing, not shrinking.' },
   ];
 
   // ── CHALLENGES: Structured flight missions ──
@@ -903,27 +922,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var cdist = Math.abs(scanLat - WAYPOINTS[ci2].lat) + Math.abs(scanLon - WAYPOINTS[ci2].lon);
               if (cdist < 3) { isNearCity = true; break; }
             }
-            // Urban areas: lights at night, grey patches by day
+            // Urban areas: building silhouettes by day, lights at night
             if (isNearCity && elev < 1500) {
               var isNight2 = typeof dayNight2 !== 'undefined' && dayNight2 && dayNight2.isNight;
               if (isNight2) {
-                // City lights: orange/white dots
-                var lightDensity = Math.min(8, Math.floor(depth * 12));
+                // Night: city light grid — streets + building windows
+                var lightDensity = Math.min(12, Math.floor(depth * 16));
+                // Street grid glow
+                if (depth > 0.25) {
+                  gfx.strokeStyle = 'rgba(255,160,40,' + (0.08 + depth * 0.06) + ')';
+                  gfx.lineWidth = 0.5;
+                  for (var sgi = 0; sgi < 3; sgi++) {
+                    var sgx = terrainHash(scanLat * 20 + sgi, scanLon * 20) * W;
+                    gfx.beginPath(); gfx.moveTo(sgx, y - 2); gfx.lineTo(sgx + (terrainHash(sgi, r) - 0.5) * 20, y + rowH); gfx.stroke();
+                  }
+                }
+                // Individual lights (windows, streetlights, cars)
                 for (var li = 0; li < lightDensity; li++) {
                   var lx = terrainHash(scanLat * 30 + li, scanLon * 30) * W;
-                  var isStreet = terrainHash(li + r * 7, scanLat * 20) > 0.6;
-                  gfx.fillStyle = isStreet ? 'rgba(255,180,50,' + (0.3 + terrainHash(li, r) * 0.4) + ')' : 'rgba(255,255,200,' + (0.15 + terrainHash(li + 5, r) * 0.25) + ')';
-                  gfx.fillRect(lx, y - elevBump + li * 1.5, isStreet ? 3 : 1.5, 1.5);
+                  var lightType = terrainHash(li + r * 7, scanLat * 20);
+                  if (lightType > 0.7) {
+                    // Streetlight: warm orange
+                    gfx.fillStyle = 'rgba(255,180,50,' + (0.35 + terrainHash(li, r) * 0.35) + ')';
+                    gfx.fillRect(lx, y - elevBump + li * 1.2, 3, 1.5);
+                  } else if (lightType > 0.4) {
+                    // Building window: warm white
+                    gfx.fillStyle = 'rgba(255,255,200,' + (0.2 + terrainHash(li + 5, r) * 0.25) + ')';
+                    gfx.fillRect(lx, y - elevBump + li * 1.5, 1.5, 1);
+                  } else {
+                    // Car headlight: white, moving
+                    gfx.fillStyle = 'rgba(255,255,255,' + (0.15 + terrainHash(li + 10, r) * 0.15) + ')';
+                    gfx.fillRect(lx + Math.sin(time * 0.5 + li) * 5, y - elevBump + li * 1.5, 2, 0.8);
+                  }
+                }
+                // City glow on horizon (orange dome of light)
+                if (r < 3) {
+                  var glowGrad = gfx.createRadialGradient(W / 2, y, 0, W / 2, y, W * 0.4);
+                  glowGrad.addColorStop(0, 'rgba(255,150,30,0.04)');
+                  glowGrad.addColorStop(1, 'rgba(255,100,0,0)');
+                  gfx.fillStyle = glowGrad;
+                  gfx.fillRect(0, y - 20, W, 40);
                 }
               } else {
-                // Daytime urban: grey patches
-                if (terrainHash(scanLat * 15, scanLon * 15) > 0.5) {
-                  gfx.fillStyle = 'rgba(140,140,145,' + (0.08 * depth) + ')';
-                  var uw = 30 + terrainHash(r + 3, scanLat * 8) * 50;
-                  gfx.fillRect(terrainHash(scanLat * 12, scanLon * 12) * W, y - elevBump, uw, rowH * 0.6);
+                // Daytime: building silhouettes + grid pattern
+                var buildingDensity = Math.min(6, Math.floor(depth * 8));
+                for (var bi = 0; bi < buildingDensity; bi++) {
+                  var bx = terrainHash(scanLat * 18 + bi, scanLon * 18) * W;
+                  var bw2 = 2 + terrainHash(bi + 3, r) * 6;
+                  var bh = 2 + terrainHash(bi + r, scanLat * 12) * (6 * depth);
+                  gfx.fillStyle = 'rgba(120,125,135,' + (0.1 + depth * 0.08) + ')';
+                  gfx.fillRect(bx, y - elevBump - bh, bw2, bh);
+                }
+                // Road grid (visible at lower altitude)
+                if (alt < 8000 && depth > 0.3) {
+                  gfx.strokeStyle = 'rgba(160,155,150,' + (0.06 * depth) + ')';
+                  gfx.lineWidth = 0.5;
+                  for (var rgi = 0; rgi < 2; rgi++) {
+                    var rgx = terrainHash(scanLat * 14 + rgi, scanLon * 14) * W;
+                    gfx.beginPath(); gfx.moveTo(rgx, y); gfx.lineTo(rgx + 5, y + rowH); gfx.stroke();
+                  }
+                }
+                // Green parks within cities
+                if (terrainHash(scanLat * 25, scanLon * 25) > 0.75 && depth > 0.35) {
+                  gfx.fillStyle = 'rgba(60,140,60,' + (0.1 * depth) + ')';
+                  var parkW = 10 + terrainHash(r + 7, scanLat * 10) * 20;
+                  gfx.fillRect(terrainHash(scanLat * 22, scanLon * 22) * W, y - elevBump, parkW, rowH * 0.5);
                 }
               }
             }
+          }
+
+          // Mountain peak markers (visible at altitude)
+          if (!water && elev > 6000 && snow > 20 && depth > 0.2 && alt > 3000 && alt < 25000) {
+            gfx.fillStyle = 'rgba(255,255,255,0.7)';
+            gfx.font = 'bold 7px system-ui'; gfx.textAlign = 'center';
+            var peakX = terrainHash(scanLat * 7, scanLon * 7) * W;
+            gfx.fillText('\u25B2', peakX, y - elevBump - 3);
+            if (depth > 0.4 && alt < 15000) {
+              gfx.fillStyle = 'rgba(255,255,255,0.4)';
+              gfx.font = '6px system-ui';
+              gfx.fillText(Math.round(elev) + 'ft', peakX, y - elevBump - 10);
+            }
+          }
+
+          // Atmospheric haze at distance (gives depth perception)
+          if (r < 4) {
+            var hazeAlpha = (4 - r) * 0.04;
+            gfx.fillStyle = dayNight2 && dayNight2.isNight ? 'rgba(10,10,30,' + hazeAlpha + ')' : 'rgba(150,180,220,' + hazeAlpha + ')';
+            gfx.fillRect(0, y - elevBump, W, rowH);
           }
 
           // Perspective grid lines
@@ -1053,31 +1139,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var fontSize = Math.round(8 + depthFactor * 6);
           var alpha = 0.4 + depthFactor * 0.5;
 
-          // Type-based styling
+          // Type-based styling with richer icons
           var color, icon;
-          if (p.type === 'capital') { color = '#fbbf24'; icon = '★'; }
-          else if (p.type === 'city') { color = '#60a5fa'; icon = '●'; }
-          else { color = '#4ade80'; icon = '◆'; }
+          if (p.type === 'capital') { color = '#fbbf24'; icon = '\u2605'; }  // Gold star
+          else if (p.type === 'city') { color = '#60a5fa'; icon = '\u25CF'; } // Blue dot
+          else if (p.name.indexOf('Canyon') >= 0 || p.name.indexOf('Mountain') >= 0 || p.name.indexOf('Himalaya') >= 0) { color = '#a78bfa'; icon = '\u26F0'; } // Mountain
+          else if (p.name.indexOf('Reef') >= 0 || p.name.indexOf('Island') >= 0 || p.name.indexOf('Gal\u00e1pagos') >= 0) { color = '#22d3ee'; icon = '\uD83C\uDF0A'; } // Wave
+          else if (p.name.indexOf('Forest') >= 0 || p.name.indexOf('Amazon') >= 0) { color = '#4ade80'; icon = '\uD83C\uDF33'; } // Tree
+          else if (p.name.indexOf('Desert') >= 0 || p.name.indexOf('Sahara') >= 0) { color = '#fbbf24'; icon = '\uD83C\uDFDC'; } // Desert
+          else if (p.name.indexOf('Pole') >= 0 || p.name.indexOf('Antarctica') >= 0) { color = '#bfdbfe'; icon = '\u2744'; } // Snowflake
+          else { color = '#4ade80'; icon = '\u25C6'; } // Green diamond
 
-          // Label
-          gfx.globalAlpha = alpha;
+          // Connecting line from label to ground point
+          gfx.globalAlpha = alpha * 0.3;
+          gfx.strokeStyle = color;
+          gfx.lineWidth = 0.5;
+          gfx.setLineDash([2, 3]);
+          gfx.beginPath();
+          gfx.moveTo(screenX, screenY + 4);
+          gfx.lineTo(screenX, screenY + 15 + depthFactor * 20);
+          gfx.stroke();
+          gfx.setLineDash([]);
+          // Ground dot
+          gfx.fillStyle = color;
+          gfx.globalAlpha = alpha * 0.5;
+          gfx.beginPath(); gfx.arc(screenX, screenY + 15 + depthFactor * 20, 2, 0, Math.PI * 2); gfx.fill();
+
+          // Label background for readability
+          gfx.globalAlpha = alpha * 0.6;
+          var labelText = icon + ' ' + p.name;
           gfx.font = 'bold ' + fontSize + 'px system-ui';
+          var textWidth = gfx.measureText(labelText).width;
+          gfx.fillStyle = 'rgba(0,0,0,0.5)';
+          gfx.fillRect(screenX - textWidth / 2 - 4, screenY - fontSize + 2, textWidth + 8, fontSize + 4);
+
+          // Label text
+          gfx.globalAlpha = alpha;
           gfx.fillStyle = color;
           gfx.textAlign = 'center';
-          gfx.fillText(icon + ' ' + p.name, screenX, screenY);
+          gfx.fillText(labelText, screenX, screenY);
 
-          // Country name (smaller, below)
+          // Country + population (smaller, below)
           if (alt > 3000) {
             gfx.font = (fontSize - 3) + 'px system-ui';
             gfx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.6) + ')';
-            gfx.fillText(p.country + (p.type === 'capital' ? ' (Capital)' : ''), screenX, screenY + fontSize);
+            var subText = p.country + (p.type === 'capital' ? ' \u2605' : '') + (p.pop ? ' \u2022 Pop: ' + p.pop : '');
+            gfx.fillText(subText, screenX, screenY + fontSize);
           }
 
-          // Distance indicator
-          if (dist < 30) {
-            gfx.font = '9px monospace';
-            gfx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.5) + ')';
-            gfx.fillText(Math.round(dist) + ' nm', screenX, screenY + fontSize + (alt > 3000 ? fontSize - 1 : 2));
+          // Distance + bearing indicator
+          if (dist < 50) {
+            gfx.font = '8px monospace';
+            gfx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.4) + ')';
+            var brgTo = Math.round(bearing(state.lat, state.lon, p.lat, p.lon));
+            gfx.fillText(Math.round(dist) + ' nm \u2022 ' + String(brgTo).padStart(3, '0') + '\u00b0', screenX, screenY + fontSize + (alt > 3000 ? fontSize - 1 : 2));
           }
 
           gfx.globalAlpha = 1;
@@ -1098,22 +1213,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var p = latest.place;
 
           gfx.globalAlpha = fadeAlpha;
-          // Background card
-          var cardW = Math.min(W - 40, 500);
+          // Background card — larger with gradient header
+          var cardW = Math.min(W - 40, 520);
           var cardX = (W - cardW) / 2;
-          var cardY = H - 185;
-          gfx.fillStyle = 'rgba(0,0,0,0.85)';
-          gfx.beginPath();
-          gfx.roundRect(cardX, cardY, cardW, 60, 10);
-          gfx.fill();
-
-          // Border color by type
+          var cardY = H - 200;
+          // Card body
+          gfx.fillStyle = 'rgba(15,23,42,0.92)';
+          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 75, 12); gfx.fill(); }
+          else { gfx.fillRect(cardX, cardY, cardW, 75); }
+          // Header gradient bar
+          var hdrColor = p.type === 'capital' ? '#b45309' : p.type === 'city' ? '#1e40af' : '#065f46';
+          var hdrGrad = gfx.createLinearGradient(cardX, cardY, cardX + cardW, cardY);
+          hdrGrad.addColorStop(0, hdrColor);
+          hdrGrad.addColorStop(1, 'rgba(15,23,42,0.9)');
+          gfx.fillStyle = hdrGrad;
+          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 22, [12, 12, 0, 0]); gfx.fill(); }
+          else { gfx.fillRect(cardX, cardY, cardW, 22); }
+          // Border
           gfx.strokeStyle = p.type === 'capital' ? '#fbbf24' : p.type === 'city' ? '#60a5fa' : '#4ade80';
-          gfx.lineWidth = 2; gfx.stroke();
+          gfx.lineWidth = 1.5;
+          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 75, 12); gfx.stroke(); }
 
-          // Content
-          gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'left';
-          gfx.fillText('📍 Discovered: ' + p.name + (p.type === 'capital' ? ' ★ Capital of ' + p.country : ', ' + p.country), cardX + 12, cardY + 18);
+          // Header text
+          var discIcon = p.type === 'capital' ? '\u2605' : p.type === 'city' ? '\uD83C\uDFD9\uFE0F' : '\uD83C\uDF0D';
+          gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
+          gfx.fillText(discIcon + '  DISCOVERED: ' + p.name.toUpperCase(), cardX + 10, cardY + 15);
+          // XP indicator
+          gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'right';
+          gfx.fillText('+5 XP', cardX + cardW - 10, cardY + 15);
+
+          // Subtitle line
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'left';
+          gfx.fillText((p.type === 'capital' ? '\u2605 Capital of ' : '') + p.country + (p.pop ? ' \u2022 Pop: ' + p.pop : ''), cardX + 10, cardY + 32);
 
           gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
           // Wrap fact text
@@ -1665,8 +1796,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ls.scored = true;
           ls.wasAirborne = false;
           // Grade the landing
-          ls.grade = fpm < 100 ? 'BUTTER! 🧈' : fpm < 200 ? 'Smooth 😊' : fpm < 400 ? 'Firm 😐' : fpm < 600 ? 'Hard ⚠️' : 'CRASH 💥';
+          ls.grade = fpm < 100 ? 'BUTTER! \uD83E\uDDC8' : fpm < 200 ? 'Smooth \uD83D\uDE0A' : fpm < 400 ? 'Firm \uD83D\uDE10' : fpm < 600 ? 'Hard \u26A0\uFE0F' : 'CRASH \uD83D\uDCA5';
           ls.gradeColor = fpm < 100 ? '#fbbf24' : fpm < 200 ? '#4ade80' : fpm < 400 ? '#60a5fa' : fpm < 600 ? '#f97316' : '#ef4444';
+          // Haptic feedback for landing
+          if (window._alloHaptic) {
+            if (fpm < 100) window._alloHaptic('achieve');      // Butter!
+            else if (fpm < 200) window._alloHaptic('correct'); // Smooth
+            else if (fpm < 400) window._alloHaptic('land');    // Firm
+            else window._alloHaptic('bump');                    // Hard/Crash
+          }
+          // Landing sound
+          try {
+            var lac = audioRef.current.ctx;
+            if (lac) {
+              // Tire screech
+              var scLen = Math.floor(lac.sampleRate * (0.1 + fpm / 2000));
+              var scBuf = lac.createBuffer(1, scLen, lac.sampleRate);
+              var scData = scBuf.getChannelData(0);
+              for (var sci = 0; sci < scLen; sci++) scData[sci] = (Math.random() * 2 - 1) * Math.exp(-sci / (scLen * 0.3));
+              var scSrc = lac.createBufferSource(); scSrc.buffer = scBuf;
+              var scFilt = lac.createBiquadFilter(); scFilt.type = 'bandpass'; scFilt.frequency.value = 800 + fpm; scFilt.Q.value = 2;
+              var scGain = lac.createGain(); scGain.gain.value = Math.min(0.08, fpm / 5000);
+              scSrc.connect(scFilt); scFilt.connect(scGain); scGain.connect(lac.destination); scSrc.start();
+            }
+          } catch(e) {}
           skyAnnounce('Landing: ' + ls.grade + '. ' + Math.round(fpm) + ' feet per minute. ' + Math.round(ls.touchdownSpeed) + ' knots.');
         }
         if (!ls.wasAirborne) ls.lastVSI = state.vsi * 60;
@@ -1728,6 +1881,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           try { if (a.ctx && a.ctx.state !== 'closed') a.ctx.close(); } catch(e) {}
           a.started = false;
         }, 150);
+      };
+
+      // ── Wind Noise (scales with airspeed) ──
+      var windRef = useRef({ src: null, gain: null, filter: null, started: false });
+      var updateWindSound = function(speed, altitude) {
+        var w = windRef.current;
+        if (!w.started) {
+          try {
+            var ac = audioRef.current.ctx;
+            if (!ac) return;
+            // White noise buffer
+            var bufSize = ac.sampleRate * 2;
+            var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+            var data = buf.getChannelData(0);
+            for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+            w.src = ac.createBufferSource(); w.src.buffer = buf; w.src.loop = true;
+            w.filter = ac.createBiquadFilter(); w.filter.type = 'bandpass'; w.filter.frequency.value = 300; w.filter.Q.value = 0.5;
+            w.gain = ac.createGain(); w.gain.gain.value = 0;
+            w.src.connect(w.filter); w.filter.connect(w.gain); w.gain.connect(ac.destination);
+            w.src.start();
+            w.started = true;
+          } catch(e) {}
+        }
+        if (!w.gain || !audioRef.current.ctx) return;
+        var ac2 = audioRef.current.ctx;
+        // Wind volume increases with speed, filter frequency increases (higher pitch at speed)
+        var kts = speed * 0.5925;
+        var windVol = Math.min(0.05, (kts / 200) * 0.04);
+        windVol *= Math.max(0.5, 1 - altitude / 30000); // Less wind at altitude
+        var windFreq = 200 + Math.min(kts, 250) * 2;
+        w.gain.gain.setTargetAtTime(windVol, ac2.currentTime, 0.2);
+        w.filter.frequency.setTargetAtTime(windFreq, ac2.currentTime, 0.2);
+      };
+      var stopWindSound = function() {
+        var w = windRef.current;
+        if (w.gain) { try { w.gain.gain.setTargetAtTime(0, audioRef.current.ctx.currentTime, 0.1); } catch(e) {} }
+        setTimeout(function() { try { if (w.src) { w.src.stop(); w.src.disconnect(); } } catch(e) {} w.started = false; }, 200);
       };
 
       // ── Aircraft Selection State ──
@@ -2387,6 +2577,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             pausedRef.current = !pausedRef.current;
             skyAnnounce(pausedRef.current ? 'Flight paused. Press Space to resume.' : 'Flight resumed.');
           }
+          // V key: toggle first-person / third-person view
+          if (keys['v']) {
+            keys['v'] = false;
+            upd('thirdPerson', !d.thirdPerson);
+            skyAnnounce(d.thirdPerson ? 'First-person cockpit view' : 'Third-person chase camera');
+          }
           if (keys['i']) {
             keys['i'] = false;
             var st = flightRef.current;
@@ -2490,6 +2686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Engine sound
           updateEngineSound(ctrl.throttle, state.speed, state.altitude);
+          updateWindSound(state.speed, state.altitude);
 
           // Find nearest waypoint
           var nearDist = Infinity; var nearWp = null;
@@ -2508,7 +2705,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillRect(0, 0, W, H);
 
           // Horizon & ground
-          var horizonY = H * 0.55 + state.vsi * 0.05 + ctrl.pitch * 3;
+          // Third-person: horizon is higher (camera above/behind), first-person: normal
+          var horizonY = d.thirdPerson
+            ? H * 0.4 + state.vsi * 0.03 + ctrl.pitch * 2  // Higher horizon = see more ground
+            : H * 0.55 + state.vsi * 0.05 + ctrl.pitch * 3;
           horizonY = Math.max(H * 0.2, Math.min(H * 0.8, horizonY));
 
           // Procedural terrain (replaces flat gradient)
@@ -2542,6 +2742,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               // Secondary puff
               gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, cloudY + ci * 6 - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
             }
+          }
+
+          // ── Third-Person Aircraft Silhouette ──
+          if (d.thirdPerson) {
+            gfx.save();
+            var acX = W / 2, acY = H * 0.6;
+            gfx.translate(acX, acY);
+            gfx.rotate(ctrl.bank * Math.PI / 180 * 0.02); // Subtle bank
+            // Shadow on ground
+            gfx.fillStyle = 'rgba(0,0,0,0.15)';
+            gfx.beginPath(); gfx.ellipse(2, 12, 30, 5, 0, 0, Math.PI * 2); gfx.fill();
+            // Fuselage
+            gfx.fillStyle = '#d1d5db';
+            gfx.beginPath(); gfx.ellipse(0, 0, 28, 5, 0, 0, Math.PI * 2); gfx.fill();
+            // Wings
+            gfx.fillStyle = '#e2e8f0';
+            gfx.beginPath(); gfx.moveTo(-8, -1); gfx.lineTo(-50, -8); gfx.lineTo(-48, -2); gfx.lineTo(-8, 1); gfx.fill();
+            gfx.beginPath(); gfx.moveTo(-8, -1); gfx.lineTo(-50, 8); gfx.lineTo(-48, 2); gfx.lineTo(-8, 1); gfx.fill();
+            // Tail
+            gfx.fillStyle = '#94a3b8';
+            gfx.beginPath(); gfx.moveTo(22, -1); gfx.lineTo(32, -12); gfx.lineTo(28, -1); gfx.fill();
+            gfx.beginPath(); gfx.moveTo(22, 1); gfx.lineTo(32, 12); gfx.lineTo(28, 1); gfx.fill();
+            // Vertical stabilizer
+            gfx.fillStyle = '#6366f1';
+            gfx.beginPath(); gfx.moveTo(25, -2); gfx.lineTo(30, -14); gfx.lineTo(28, -2); gfx.fill();
+            // Engine glow (when throttle > 0)
+            if (ctrl.throttle > 0.1) {
+              var engGlow = gfx.createRadialGradient(28, 0, 0, 28, 0, 8 + ctrl.throttle * 10);
+              engGlow.addColorStop(0, 'rgba(251,191,36,' + (ctrl.throttle * 0.4) + ')');
+              engGlow.addColorStop(1, 'rgba(251,146,60,0)');
+              gfx.fillStyle = engGlow;
+              gfx.fillRect(20, -10, 20, 20);
+            }
+            // Nav lights (blinking)
+            if (Math.sin(timeRef.current * 3) > 0) {
+              gfx.fillStyle = '#ef4444'; gfx.beginPath(); gfx.arc(-48, -5, 2, 0, Math.PI * 2); gfx.fill(); // Left wing red
+              gfx.fillStyle = '#22c55e'; gfx.beginPath(); gfx.arc(-48, 5, 2, 0, Math.PI * 2); gfx.fill();  // Right wing green
+            }
+            gfx.restore();
           }
 
           // Day/night cycle (computed early so sun/lens flare/haze can use it)
@@ -2586,6 +2825,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             hazeGrad.addColorStop(1, 'rgba(' + hazeBlue + ',0)');
             gfx.fillStyle = hazeGrad;
             gfx.fillRect(0, hazeY, W, hazeH);
+          }
+
+          // ── Aurora Borealis (visible at high latitudes at night) ──
+          if (dayNight.isNight && Math.abs(state.lat) > 55 && state.altitude > 1000) {
+            var auroraIntensity = Math.min(0.3, (Math.abs(state.lat) - 55) / 30);
+            for (var ai = 0; ai < 6; ai++) {
+              var ax = (ai / 6 + Math.sin(timeRef.current * 0.1 + ai * 1.3) * 0.1) * W;
+              var ay = horizonY * 0.1 + Math.sin(timeRef.current * 0.2 + ai * 0.9) * 15;
+              var aw = 40 + Math.sin(timeRef.current * 0.15 + ai * 2.1) * 25;
+              var ah = 30 + ai * 8;
+              var aGrad = gfx.createLinearGradient(ax, ay, ax, ay + ah);
+              aGrad.addColorStop(0, 'rgba(100,255,150,' + (auroraIntensity * 0.6) + ')');
+              aGrad.addColorStop(0.4, 'rgba(50,200,255,' + (auroraIntensity * 0.4) + ')');
+              aGrad.addColorStop(0.7, 'rgba(150,100,255,' + (auroraIntensity * 0.2) + ')');
+              aGrad.addColorStop(1, 'rgba(100,50,200,0)');
+              gfx.fillStyle = aGrad;
+              gfx.fillRect(ax - aw / 2, ay, aw, ah);
+            }
+          }
+
+          // ── Shooting Stars (rare, at high altitude at night) ──
+          if (dayNight.isNight && state.altitude > 15000 && Math.sin(timeRef.current * 0.7) > 0.95) {
+            var ssX = Math.random() * W;
+            var ssY = Math.random() * horizonY * 0.5;
+            gfx.strokeStyle = 'rgba(255,255,255,0.6)';
+            gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(ssX, ssY); gfx.lineTo(ssX + 30, ssY + 8); gfx.stroke();
+            gfx.strokeStyle = 'rgba(255,255,255,0.2)';
+            gfx.beginPath(); gfx.moveTo(ssX + 30, ssY + 8); gfx.lineTo(ssX + 50, ssY + 14); gfx.stroke();
           }
 
           // ── HUD Instruments (Glass Cockpit PFD Layout) ──
@@ -2684,7 +2952,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = 'rgba(239,68,68,' + (0.4 + Math.sin(timeRef.current * 8) * 0.3) + ')';
             gfx.fillRect(0, 32, W, 28);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⚠️ STALL WARNING — PUSH NOSE DOWN, ADD POWER', W / 2, 50);
+            gfx.fillText('\u26A0\uFE0F STALL WARNING \u2014 PUSH NOSE DOWN, ADD POWER', W / 2, 50);
+            // Stall haptic — continuous vibration while stalling
+            if (Math.floor(timeRef.current * 4) % 2 === 0 && window._alloHaptic) window._alloHaptic('bump');
           }
 
           // Force diagram
@@ -3020,9 +3290,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = vigGrad;
           gfx.fillRect(0, 0, W, H);
 
+          // ── Cockpit Frame Overlay (first-person mode only) ──
+          if (!d.thirdPerson) {
+            gfx.save();
+            // Windshield frame — dark border simulating cockpit interior
+            gfx.strokeStyle = '#1a1a2e';
+            gfx.lineWidth = 3;
+            // Top rail
+            gfx.fillStyle = 'rgba(20,20,35,0.85)';
+            gfx.fillRect(0, H - 48, W, 48); // Instrument panel bottom bar
+            gfx.fillRect(0, 0, W, 28); // Top bar (status already draws here)
+            // Side pillars (A-pillars)
+            gfx.fillStyle = 'rgba(20,20,35,0.6)';
+            gfx.beginPath();
+            gfx.moveTo(0, 28); gfx.lineTo(20, 28); gfx.lineTo(12, H - 48); gfx.lineTo(0, H - 48); gfx.fill();
+            gfx.beginPath();
+            gfx.moveTo(W, 28); gfx.lineTo(W - 20, 28); gfx.lineTo(W - 12, H - 48); gfx.lineTo(W, H - 48); gfx.fill();
+            // Center post (thin divider like real windshield)
+            gfx.fillStyle = 'rgba(20,20,35,0.2)';
+            gfx.fillRect(W / 2 - 1, 28, 2, H * 0.35);
+            // Yoke silhouette (bottom center) — subtle dark semicircle
+            gfx.fillStyle = 'rgba(15,15,25,0.7)';
+            gfx.beginPath();
+            gfx.ellipse(W / 2, H - 18, 55, 22, 0, Math.PI, 0);
+            gfx.fill();
+            // Yoke column
+            gfx.fillStyle = 'rgba(25,25,40,0.6)';
+            gfx.fillRect(W / 2 - 4, H - 48, 8, 30);
+            // Glare/reflection on windshield (subtle)
+            var glareGrad = gfx.createLinearGradient(W * 0.3, 30, W * 0.7, H * 0.4);
+            glareGrad.addColorStop(0, 'rgba(255,255,255,0.02)');
+            glareGrad.addColorStop(0.5, 'rgba(255,255,255,0.04)');
+            glareGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            gfx.fillStyle = glareGrad;
+            gfx.fillRect(0, 28, W, H - 76);
+            gfx.restore();
+          }
+
+          // ── First-time Flying Tutorial (shows for first 15 seconds) ──
+          if (timeRef.current < 15 && !d.tutorialDismissed) {
+            var tutAlpha = timeRef.current < 12 ? 0.9 : 0.9 * (1 - (timeRef.current - 12) / 3);
+            gfx.fillStyle = 'rgba(15,23,42,' + tutAlpha + ')';
+            var tutW = Math.min(360, W * 0.6);
+            var tutX = W / 2 - tutW / 2;
+            gfx.fillRect(tutX, H * 0.3, tutW, 180);
+            gfx.strokeStyle = 'rgba(99,102,241,' + tutAlpha + ')';
+            gfx.lineWidth = 1;
+            gfx.strokeRect(tutX, H * 0.3, tutW, 180);
+            gfx.fillStyle = 'rgba(255,255,255,' + tutAlpha + ')';
+            gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('\u2708\uFE0F HOW TO FLY', W / 2, H * 0.3 + 24);
+            gfx.font = '11px system-ui';
+            gfx.fillStyle = 'rgba(148,163,184,' + tutAlpha + ')';
+            var tutLines = [
+              '1. Hold SHIFT to increase throttle to 100%',
+              '2. At 60 knots, press W to pitch up',
+              '3. You\u2019re flying! Use A/D to bank (turn)',
+              '4. Press W/S to pitch up/down',
+              '5. CTRL reduces throttle',
+              '',
+              'V = Toggle view | Space = Pause',
+              'Q = Quiz | I = Flight info | ? = Help'
+            ];
+            tutLines.forEach(function(line, li) {
+              gfx.fillText(line, W / 2, H * 0.3 + 44 + li * 17);
+            });
+          }
+
           // Controls help (bottom-right)
-          gfx.fillStyle = 'rgba(0,0,0,0.4)'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
-          gfx.fillText('W/S: Pitch | A/D: Bank | Shift/Ctrl: Throttle | Q: Quiz | F: Forces | Space: Pause | I: Info', W - 10, H - 8);
+          gfx.fillStyle = 'rgba(200,200,220,0.5)'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
+          gfx.fillText('W/S: Pitch | A/D: Bank | Shift/Ctrl: Throttle | V: View | Q: Quiz | F: Forces | Space: Pause | ?: Help', W - 10, H - 8);
 
           animRef.current = requestAnimationFrame(loop);
           } catch(loopErr) { console.error('[SkySchool] Render loop error:', loopErr); animRef.current = requestAnimationFrame(loop); }
@@ -3033,7 +3370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         return function() {
           flyingRef.current = false;
           cancelAnimationFrame(animRef.current);
-          stopEngineSound();
+          stopEngineSound(); stopWindSound();
           updateStallHorn(false);
           // Close stall horn audio context
           try { if (stallHornRef.current.ctx && stallHornRef.current.ctx.state !== 'closed') stallHornRef.current.ctx.close(); } catch(e) {}
@@ -3054,16 +3391,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }, '\u2190 STEM Lab')
           ),
           // Header
-          h('div', { style: { textAlign: 'center', padding: '16px 24px 16px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\u2708\uFE0F'),
+          h('div', { style: { textAlign: 'center', padding: '16px 24px 8px' } },
+            h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, '\u2708\uFE0F'),
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '2px' } }, 'SKYSCHOOL'),
-            h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Learn to fly. Learn the world.')
+            h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Learn to fly. Learn the world.'),
+            // Stats bar
+            (d.totalFlightTime || 0) > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px', fontSize: '10px', color: '#64748b' } },
+              h('span', null, '\u23F1 ' + Math.floor((d.totalFlightTime || 0) / 60) + ' min flight time'),
+              h('span', null, '\uD83C\uDF0D ' + (d.visitedAirports || []).length + ' airports'),
+              h('span', null, '\uD83D\uDCCD ' + Object.keys(d.geoDiscovered || {}).length + ' places discovered')
+            )
           ),
-          // Quick Fly
-          h('div', { style: { padding: '0 24px 16px' } },
+          // Welcome guide for new users (shows when no flight time)
+          !(d.totalFlightTime > 0) && h('div', { style: { margin: '0 24px 12px', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.1))', border: '1px solid rgba(99,102,241,0.25)' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, '\uD83C\uDFAE First Time? Here\u2019s How to Get Airborne:'),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6 } },
+              '1. Click "Free Flight" below to start on a runway', h('br'),
+              '2. Hold ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'SHIFT'), ' to increase throttle to 100%', h('br'),
+              '3. When your speed reaches ~60 knots, press ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'W'), ' to pitch up', h('br'),
+              '4. You\u2019re flying! Use ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'A/D'), ' to bank and turn', h('br'),
+              '5. Press ', h('span', { style: { background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '3px', fontFamily: 'monospace', fontWeight: 700, color: '#e2e8f0' } }, 'V'), ' to toggle cockpit/chase camera'
+            )
+          ),
+          // Quick Fly — more prominent with description
+          h('div', { style: { padding: '0 24px 12px' } },
             h('button', { onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
-              style: { width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }
-            }, '🛫 Free Flight from Portland, ME')
+              style: { width: '100%', padding: '16px', borderRadius: '14px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '16px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(59,130,246,0.3)' }
+            }, '\uD83D\uDEEB Free Flight from Portland, ME'),
+            h('div', { style: { textAlign: 'center', fontSize: '10px', color: '#475569', marginTop: '4px' } }, 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world')
           ),
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },
@@ -3304,7 +3659,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             },
               'aria-label': 'Toggle fullscreen flight view',
               style: { padding: '6px 10px', borderRadius: '6px', background: document.fullscreenElement ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, '⛶ Fullscreen'),
+            }, '\u26F6 Fullscreen'),
+            h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },
+              'aria-label': d.thirdPerson ? 'Switch to cockpit view' : 'Switch to third-person view',
+              style: { padding: '6px 10px', borderRadius: '6px', background: d.thirdPerson ? 'rgba(99,102,241,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, d.thirdPerson ? '\uD83C\uDFA5 Cockpit View' : '\uD83C\uDFA5 Chase Cam'),
             h('button', { onClick: function() { upd('showForces', !d.showForces); },
               style: { padding: '6px 10px', borderRadius: '6px', background: d.showForces ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.showForces ? '#22d3ee' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, d.showForces ? '⚡ Forces ON' : '⚡ Forces'),

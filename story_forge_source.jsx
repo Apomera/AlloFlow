@@ -247,6 +247,7 @@ const StoryForge = React.memo(({
   onCallGeminiImageEdit,
   onCallGemini,
   onCallTTS,
+  onCallGeminiVision,
   selectedVoice,
   gradeLevel,
   sourceTopic,
@@ -443,6 +444,73 @@ const StoryForge = React.memo(({
       };
       fluencyRecorderRef.current.stop();
     });
+  };
+
+  // ── Handwriting Capture ──
+  const [hwPenmanshipOn, setHwPenmanshipOn] = useState(false);
+  const [hwLoading, setHwLoading] = useState(false);
+  const [hwResult, setHwResult] = useState(null);
+  const [hwTargetParagraph, setHwTargetParagraph] = useState(null); // which paragraph index to fill
+
+  const handleHandwritingCapture = (e, paragraphIdx) => {
+    const file = e.target.files?.[0];
+    if (!file || !onCallGeminiVision) return;
+    e.target.value = '';
+    setHwLoading(true);
+    setHwTargetParagraph(paragraphIdx);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result.split(',')[1];
+      const mimeType = file.type || 'image/png';
+      const showPenmanship = hwPenmanshipOn;
+      const gl = gradeLevel || '5th Grade';
+
+      let prompt = 'You are an expert at reading student handwriting.\n\n' +
+        'TASK 1 — TRANSCRIBE: Extract ALL handwritten text from this image exactly as written. ' +
+        'Preserve the student\'s original wording, spelling, and punctuation �� do NOT correct anything. ' +
+        'If text is unclear, make your best guess and note uncertainty with [?].\n\n';
+
+      if (showPenmanship) {
+        prompt += 'TASK 2 — PENMANSHIP EVALUATION:\n' +
+          'This student is in ' + gl + '.\n' +
+          'CRITICAL: Score relative to what is EXPECTED at ' + gl + ' level, NOT against adult writing.\n' +
+          'Score these areas (each 0-25, total 0-100):\n' +
+          '- LETTER FORMATION (0-25): Are letters shaped correctly for this grade level?\n' +
+          '- SPACING (0-25): Appropriate space between words?\n' +
+          '- ALIGNMENT (0-25): Writing follows the line? Consistent baseline?\n' +
+          '- NEATNESS (0-25): Overall legibility? Clean strokes?\n\n' +
+          'Be encouraging and grade-appropriate.\n\n' +
+          'Return ONLY JSON:\n' +
+          '{"text":"the transcribed handwriting exactly as written",' +
+          '"penmanship":{"score":0-100,' +
+          '"letterFormation":0-25,"spacing":0-25,"alignment":0-25,"neatness":0-25,' +
+          '"strengths":"1-2 specific things done well",' +
+          '"tips":"1-2 encouraging suggestions for improvement",' +
+          '"legibility":"easy|moderate|difficult"}}';
+      } else {
+        prompt += 'Return ONLY JSON:\n{"text":"the transcribed handwriting exactly as written"}';
+      }
+
+      try {
+        const result = await onCallGeminiVision(prompt, base64, mimeType);
+        let parsed;
+        try {
+          parsed = JSON.parse(cleanJson(result));
+        } catch {
+          parsed = { text: result.trim() };
+        }
+        if (parsed.text && paragraphIdx != null) {
+          updateParagraph(paragraphIdx, parsed.text);
+        }
+        setHwResult(parsed);
+        setHwLoading(false);
+        if (addToast) addToast('✍️ Handwriting converted!' + (parsed.penmanship ? ' Penmanship: ' + parsed.penmanship.score + '/100' : ''), 'success');
+      } catch {
+        setHwLoading(false);
+        if (addToast) addToast('Could not read handwriting — try a clearer photo', 'error');
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   // ── Unsaved changes guard ──
@@ -2493,6 +2561,70 @@ show();
                       placeholder={p.scaffoldFrame ? "Continue from the scaffold above..." : layoutMode === 'journal' ? "Dear diary..." : layoutMode === 'dark' ? "Begin your story..." : "Write your paragraph here..."}
                       aria-label={`Paragraph ${idx + 1} text`}
                     />
+                  )}
+                  {/* ── Handwriting Capture Row ── */}
+                  {onCallGeminiVision && (
+                    <div className={`px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-100'
+                    }`}>
+                      <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-dashed rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                        hwLoading && hwTargetParagraph === idx ? 'opacity-50 pointer-events-none' : ''
+                      } ${
+                        layoutMode === 'dark' ? 'border-cyan-700 text-cyan-400 hover:bg-cyan-900/30' : 'border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400'
+                      }`}
+                        aria-label={`Snap or upload handwriting for paragraph ${idx + 1}`}
+                      >
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={(e) => handleHandwritingCapture(e, idx)}
+                          className="sr-only"
+                          disabled={hwLoading}
+                          aria-hidden="true"
+                        />
+                        {hwLoading && hwTargetParagraph === idx ? <span className="animate-spin">⏳</span> : '📷'}
+                        {hwLoading && hwTargetParagraph === idx ? ' Reading...' : ' Snap Your Writing'}
+                      </label>
+                      <button
+                        onClick={() => setHwPenmanshipOn(!hwPenmanshipOn)}
+                        aria-label={`${hwPenmanshipOn ? 'Disable' : 'Enable'} penmanship feedback`}
+                        aria-pressed={hwPenmanshipOn}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                          hwPenmanshipOn
+                            ? (layoutMode === 'dark' ? 'bg-cyan-900 border-cyan-600 text-cyan-300' : 'bg-violet-100 border-violet-300 text-violet-700')
+                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-500 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
+                        }`}
+                      >
+                        ✏️ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  )}
+                  {/* Penmanship Feedback Card */}
+                  {hwResult?.penmanship && hwTargetParagraph === idx && (
+                    <div className={`px-4 py-3 border-t ${
+                      layoutMode === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border-violet-200'
+                    }`} role="region" aria-label="Penmanship feedback">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>✏️ Penmanship Feedback</span>
+                        <span className="text-lg font-black" style={{ color: hwResult.penmanship.score >= 75 ? '#eab308' : hwResult.penmanship.score >= 50 ? '#8b5cf6' : hwResult.penmanship.score >= 25 ? '#3b82f6' : '#94a3b8' }}>
+                          {hwResult.penmanship.score}<span className="text-xs opacity-60">/100</span>
+                        </span>
+                      </div>
+                      <div className="flex gap-2 mb-2">
+                        {[['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(([key, label]) => (
+                          <div key={key} className="flex-1 text-center">
+                            <div className={`text-sm font-black ${(hwResult.penmanship[key] || 0) >= 18 ? 'text-green-600' : (hwResult.penmanship[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-500'}`}>
+                              {hwResult.penmanship[key] || 0}<span className="text-[8px] opacity-60">/25</span>
+                            </div>
+                            <div className="text-[8px] text-slate-400 font-bold uppercase">{label}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {hwResult.penmanship.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {hwResult.penmanship.strengths}</p>}
+                      {hwResult.penmanship.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {hwResult.penmanship.tips}</p>}
+                      <button onClick={() => setHwResult(null)} className="text-[9px] text-slate-400 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
+                    </div>
                   )}
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (

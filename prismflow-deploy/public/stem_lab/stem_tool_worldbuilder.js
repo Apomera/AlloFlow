@@ -16,6 +16,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
 (function() {
   'use strict';
+
+  // ── Audio System (auto-injected) ──
+  var _wbAC = null;
+  function getWbAC() { if (!_wbAC) { try { _wbAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wbAC && _wbAC.state === "suspended") { try { _wbAC.resume(); } catch(e) {} } return _wbAC; }
+  function wbTone(f,d,tp,v) { var ac = getWbAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxWbCreate() { wbTone(440,0.06,"sine",0.06); }
+  function sfxWbMagic() { wbTone(880,0.08,"sine",0.05); }
+  function sfxWbClick() { wbTone(600,0.03,"sine",0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-worldbuilder')) return;
@@ -147,6 +156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiImageEdit = ctx.callGeminiImageEdit;
+      var callGeminiVision = ctx.callGeminiVision;
       var ctxGradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
@@ -253,7 +263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 'Remove any text, watermarks, or blurry artifacts. Keep composition centered. No text.';
               callGeminiImageEdit(refinePrompt, rawBase64, 400, 0.85).then(function(refined) {
                 updMulti({ characterPortrait: refined || imageUrl, characterPortraitLoading: false, characterAppearance: description });
-                if (addToast) addToast('🎨 Character portrait created!', 'success');
+                sfxWbCreate(); if (addToast) addToast('🎨 Character portrait created!', 'success');
                 if (announceToSR) announceToSR('Character portrait generated successfully.');
               }).catch(function() {
                 updMulti({ characterPortrait: imageUrl, characterPortraitLoading: false, characterAppearance: description });
@@ -268,7 +278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           }
         }).catch(function() {
           upd('characterPortraitLoading', false);
-          if (addToast) addToast('Portrait generation failed — try again', 'error');
+          sfxWbClick(); if (addToast) addToast('Portrait generation failed — try again', 'error');
         });
       };
 
@@ -537,8 +547,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       var pasteDetected = d.pasteDetected || false;
       var lastInputTime = d.lastInputTime || 0;
 
+      // ── Handwriting Capture state ──
+      var hwPenmanshipOn = d.hwPenmanshipOn || false;        // student toggle
+      var hwTeacherPenmanship = d.hwTeacherPenmanship || false; // teacher toggle
+      var hwLoading = d.hwLoading || false;
+      var hwResult = d.hwResult || null; // { text, penmanship: { score, feedback, strengths, tips } | null }
+
       var world = WORLDS.find(function(w) { return w.id === selectedWorld; });
       var room = world ? world.rooms.find(function(r) { return r.id === currentRoom; }) : null;
+
+      // ── Handwriting Capture ──
+      var handleHandwritingCapture = function(e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file || !callGeminiVision) return;
+        // Reset file input so the same file can be re-selected
+        e.target.value = '';
+        upd('hwLoading', true);
+        var reader = new FileReader();
+        reader.onload = function() {
+          var base64 = reader.result.split(',')[1];
+          var mimeType = file.type || 'image/png';
+          var showPenmanship = hwPenmanshipOn || hwTeacherPenmanship;
+
+          // Build OCR + optional penmanship prompt
+          var prompt = 'You are an expert at reading student handwriting.\n\n' +
+            'TASK 1 — TRANSCRIBE: Extract ALL handwritten text from this image exactly as written. ' +
+            'Preserve the student\'s original wording, spelling, and punctuation — do NOT correct anything. ' +
+            'If text is unclear, make your best guess and note uncertainty with [?].\n\n';
+
+          if (showPenmanship) {
+            prompt += 'TASK 2 — PENMANSHIP EVALUATION:\n' +
+              getGradeCalibration(gradeLevel) +
+              'Evaluate the handwriting quality for a ' + gradeLevel + ' student.\n' +
+              'Score these areas (each 0-25, total 0-100):\n' +
+              '- LETTER FORMATION (0-25): Are letters shaped correctly for this grade level? Consistent sizing?\n' +
+              '- SPACING (0-25): Appropriate space between words? Letters not too cramped or spread out?\n' +
+              '- ALIGNMENT (0-25): Writing follows the line? Consistent baseline? Not drifting up or down?\n' +
+              '- NEATNESS (0-25): Overall legibility? Consistent pressure? Clean strokes?\n\n' +
+              'Be encouraging and grade-appropriate. A kindergartner\'s big wobbly letters can still score well if they show effort and are recognizable.\n\n' +
+              'Return ONLY JSON:\n' +
+              '{"text":"the transcribed handwriting exactly as written",' +
+              '"penmanship":{"score":0-100,' +
+              '"letterFormation":0-25,"spacing":0-25,"alignment":0-25,"neatness":0-25,' +
+              '"strengths":"1-2 specific things done well (e.g. \'Your letter g has great descenders!\')",' +
+              '"tips":"1-2 encouraging, specific suggestions for improvement",' +
+              '"legibility":"easy|moderate|difficult"}}';
+          } else {
+            prompt += 'Return ONLY JSON:\n{"text":"the transcribed handwriting exactly as written"}';
+          }
+
+          callGeminiVision(prompt, base64, mimeType).then(function(result) {
+            try {
+              var cleaned = result.trim();
+              if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+              var parsed = JSON.parse(cleaned);
+              updMulti({
+                actionText: parsed.text || '',
+                hwResult: parsed,
+                hwLoading: false
+              });
+              if (addToast) addToast('✍️ Handwriting converted! ' + (parsed.penmanship ? 'Penmanship: ' + parsed.penmanship.score + '/100' : 'You can edit before submitting.'), 'success');
+              if (announceToSR) announceToSR('Handwriting converted to text.' + (parsed.penmanship ? ' Penmanship score: ' + parsed.penmanship.score + ' out of 100.' : ' You may edit the text before submitting.'));
+            } catch(err) {
+              // Fallback: treat entire result as plain text
+              updMulti({ actionText: result.trim(), hwResult: { text: result.trim() }, hwLoading: false });
+              if (addToast) addToast('��️ Handwriting converted to text!', 'success');
+            }
+          }).catch(function() {
+            upd('hwLoading', false);
+            if (addToast) addToast('Could not read handwriting — try a clearer photo', 'error');
+          });
+        };
+        reader.readAsDataURL(file);
+      };
 
       // ── Paste detection ──
       var handleActionInput = function(e) {
@@ -1336,11 +1417,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 : 'Describe what your character does... (The more vivid and detailed, the more effective!)',
               'aria-label': 'Describe your action in the world',
               className: 'w-full text-sm p-3 border border-violet-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-400 resize-none h-28' + (pasteDetected ? ' border-red-400 bg-red-50' : ''),
-              disabled: actionLoading,
+              disabled: actionLoading || hwLoading,
             }),
-            pasteDetected && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-red-600 font-bold mt-1' }, '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mt-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-400' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
+
+            // ── Handwriting Capture Row ──
+            callGeminiVision && h('div', { className: 'flex items-center gap-2 mt-1.5 flex-wrap' },
+              // Camera / file upload button
+              h('label', {
+                className: 'inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-dashed border-violet-300 rounded-lg text-xs font-bold text-violet-600 cursor-pointer hover:bg-violet-50 hover:border-violet-400 transition-all' + (hwLoading ? ' opacity-50 pointer-events-none' : ''),
+                'aria-label': 'Snap or upload a photo of your handwriting'
+              },
+                h('input', {
+                  type: 'file',
+                  accept: 'image/*',
+                  capture: 'environment',
+                  onChange: handleHandwritingCapture,
+                  className: 'sr-only',
+                  disabled: hwLoading,
+                  'aria-hidden': 'true'
+                }),
+                hwLoading ? h('span', { className: 'animate-spin' }, '⏳') : '📷',
+                hwLoading ? ' Reading...' : ' Snap Your Writing'
+              ),
+              // Penmanship feedback toggle (student can turn on/off)
+              h('button', {
+                onClick: function() { upd('hwPenmanshipOn', !hwPenmanshipOn); },
+                'aria-label': (hwPenmanshipOn || hwTeacherPenmanship ? 'Disable' : 'Enable') + ' penmanship feedback',
+                'aria-pressed': String(hwPenmanshipOn || hwTeacherPenmanship),
+                className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
+                  (hwPenmanshipOn || hwTeacherPenmanship
+                    ? 'bg-violet-100 border-violet-300 text-violet-700'
+                    : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
+              }, '✏️ Penmanship Tips ', hwPenmanshipOn || hwTeacherPenmanship ? 'ON' : 'OFF'),
+              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[8px] text-violet-500 font-medium' }, '(teacher enabled)')
+            ),
+
+            // ── Penmanship Feedback Card ──
+            hwResult && hwResult.penmanship && h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border border-violet-200 rounded-xl p-3 mt-2', role: 'region', 'aria-label': 'Penmanship feedback' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', { className: 'text-[10px] font-bold text-violet-600 uppercase tracking-widest' }, '✏️ Penmanship Feedback'),
+                h('div', { className: 'text-lg font-black', style: { color: getQualityTier(hwResult.penmanship.score).color } },
+                  hwResult.penmanship.score, h('span', { className: 'text-xs opacity-60' }, '/100')
+                )
+              ),
+              // Category breakdown
+              h('div', { className: 'flex gap-2 mb-2' },
+                [['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(function(pair) {
+                  var val = hwResult.penmanship[pair[0]] || 0;
+                  return h('div', { key: pair[0], className: 'flex-1 text-center' },
+                    h('div', { className: 'text-sm font-black ' + (val >= 18 ? 'text-green-600' : val >= 12 ? 'text-amber-600' : 'text-slate-500') }, val, h('span', { className: 'text-[8px] opacity-60' }, '/25')),
+                    h('div', { className: 'text-[8px] text-slate-400 font-bold uppercase' }, pair[1])
+                  );
+                })
+              ),
+              // Strengths + Tips
+              hwResult.penmanship.strengths && h('p', { className: 'text-xs text-green-700 font-medium mb-1' }, '💪 ' + hwResult.penmanship.strengths),
+              hwResult.penmanship.tips && h('p', { className: 'text-xs text-violet-600 font-medium' }, '💡 ' + hwResult.penmanship.tips),
+              h('button', {
+                onClick: function() { upd('hwResult', null); },
+                className: 'text-[9px] text-slate-400 hover:text-slate-600 font-bold mt-1',
+                'aria-label': 'Dismiss penmanship feedback'
+              }, 'Dismiss')
+            ),
+
+            pasteDetected && h('div', { className: 'text-[10px] text-red-600 font-bold mt-1' }, '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.'),
+            h('div', { className: 'flex items-center justify-between mt-2' },
+              h('span', { className: 'text-[10px] text-slate-400' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
               h('button', { 'aria-label': 'Worldbuilder action',
                 onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
                 disabled: actionText.trim().length < 5 || actionLoading,
@@ -1479,6 +1621,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-3' },
               h('p', { className: 'text-xs text-amber-600' }, 'Create individual characters or launch full scenarios with multiple NPCs interacting.'),
 
+              // Teacher penmanship toggle
+              callGeminiVision && h('div', { className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-amber-200' },
+                h('button', {
+                  onClick: function() { upd('hwTeacherPenmanship', !hwTeacherPenmanship); },
+                  'aria-label': (hwTeacherPenmanship ? 'Disable' : 'Enable') + ' penmanship feedback for students',
+                  'aria-pressed': String(hwTeacherPenmanship),
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
+                    (hwTeacherPenmanship
+                      ? 'bg-violet-100 border-violet-300 text-violet-700'
+                      : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300')
+                }, '✏️ Penmanship Feedback: ' + (hwTeacherPenmanship ? 'ON' : 'OFF')),
+                h('span', { className: 'text-[10px] text-slate-500' }, hwTeacherPenmanship ? 'Students will see handwriting feedback when they snap photos' : 'Enable to give students penmanship tips on handwritten submissions')
+              ),
+
               // Scenario templates
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, '📋 Quick Scenarios (creates multiple characters)'),
@@ -1504,7 +1660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                             var npcs = JSON.parse(cleaned);
                             if (Array.isArray(npcs)) {
                               updMulti({ gmCharacters: gmCharacters.concat(npcs), actionLoading: false });
-                              if (addToast) addToast(tmpl.label + ' scenario created — ' + npcs.length + ' characters!', 'success');
+                              sfxWbMagic(); if (addToast) addToast(tmpl.label + ' scenario created — ' + npcs.length + ' characters!', 'success');
                             }
                           } catch(e) { upd('actionLoading', false); }
                         }).catch(function() { upd('actionLoading', false); });
@@ -1546,7 +1702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             )
           ),
 
-          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null }); }, className: 'text-[10px] text-slate-400 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
+          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[10px] text-slate-400 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
         )
       );
     }
