@@ -183,8 +183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     questHooks: [
       { id: 'find_goal_1', label: 'Find the goal in any environment', icon: '\u2B50', check: function(d) { return d.goalsFound >= 1; }, progress: function(d) { return (d.goalsFound || 0) + '/1'; } },
       { id: 'find_goal_5', label: 'Find goals in 5 different environments', icon: '\uD83C\uDFC6', check: function(d) { return d.goalsFound >= 5; }, progress: function(d) { return (d.goalsFound || 0) + '/5'; } },
-      { id: 'blind_navigation', label: 'Find a goal in Audio Only mode', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
-      { id: 'cross_urban', label: 'Survive Urban Street without getting hit by a car', icon: '\uD83D\uDE97', check: function(d) { return d.urbanNoCarHit; }, progress: function(d) { return d.urbanNoCarHit ? 'Done!' : 'Not yet'; } },
+      { id: 'blind_navigation', label: 'Find a goal without ever revealing the map', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -381,85 +380,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         }
       }
 
-      // ── 3D Scene setup + render loop ──
+      // ── Animation loop ──
       useEffect(function() {
-        if (!has3D || !mountRef.current) return;
-        var THREE = window.THREE;
-        var container = mountRef.current;
-        var map = mapRef.current;
-        var agents = agentsRef.current;
-        if (!map) return;
-
-        // Build scene
-        var sceneData = build3DScene(THREE, map, agents);
-        var scene = sceneData.scene;
-        var meshes = sceneData.meshes;
-        var agentMeshes = sceneData.agentMeshes;
-        var SCALE = sceneData.SCALE;
-
-        // Camera (first-person)
-        var camera = new THREE.PerspectiveCamera(75, container.clientWidth / Math.max(container.clientHeight, 200), 0.1, 100);
-        var player = playerRef.current;
-        camera.position.set(player.x * SCALE, 1.5, player.y * SCALE);
-        camera.rotation.order = 'YXZ';
-
-        // Renderer
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, Math.max(container.clientHeight, 200));
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.domElement.style.borderRadius = '12px';
-        container.appendChild(renderer.domElement);
-
-        threeRef.current = { scene: scene, camera: camera, renderer: renderer, meshes: meshes, agentMeshes: agentMeshes, SCALE: SCALE };
-
-        // Pointer lock for mouse-look
-        var isLocked = false;
-        var yaw = player.angle;
-        var pitch = 0;
-        renderer.domElement.addEventListener('click', function() {
-          if (!isLocked) renderer.domElement.requestPointerLock();
-          else emitClick(); // click = sonar pulse while locked
-        });
-        function onPointerLockChange() { isLocked = document.pointerLockElement === renderer.domElement; }
-        document.addEventListener('pointerlockchange', onPointerLockChange);
-        function onMouseMove(e) {
-          if (!isLocked) return;
-          yaw += e.movementX * 0.003;
-          pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * 0.003));
-        }
-        document.addEventListener('mousemove', onMouseMove);
-
-        // 3D Render loop (replaces 2D animation for 3D envs)
+        if (!canvasRef.current) return;
+        var canvas = canvasRef.current;
+        var gfx = canvas.getContext('2d');
         var running = true;
-        var lastTime = performance.now();
-        var goalCheckTimer3D = 0;
+        var goalCheckTimer = 0;
 
-        function render3D() {
+        function loop() {
           if (!running) return;
-          requestAnimationFrame(render3D);
-          var now = performance.now();
-          var dt = Math.min(0.05, (now - lastTime) / 1000);
-          lastTime = now;
+          animRef.current = requestAnimationFrame(loop);
 
-          var player = playerRef.current;
+          var W = canvas.width = canvas.clientWidth || 800;
+          var H = canvas.height = canvas.clientHeight || 400;
           var map = mapRef.current;
+          var player = playerRef.current;
           var keys = keysRef.current;
           if (!map) return;
 
-          // Movement (sync yaw back to player.angle)
+          // Movement with wall collision
           var ms = 2.5, ts = 0.045;
-          if (!isLocked) {
-            if (keys['ArrowLeft'] || keys['KeyA']) yaw -= ts;
-            if (keys['ArrowRight'] || keys['KeyD']) yaw += ts;
-          }
-          player.angle = yaw;
+          if (keys['ArrowLeft'] || keys['KeyA']) player.angle -= ts;
+          if (keys['ArrowRight'] || keys['KeyD']) player.angle += ts;
           var fdx = Math.cos(player.angle) * ms, fdy = Math.sin(player.angle) * ms;
           if (keys['KeyW'] || keys['ArrowUp']) {
             var nx = player.x + fdx, ny = player.y + fdy;
             if (canMoveTo(nx, ny, map)) { player.x = nx; player.y = ny; }
             else if (!player._bumpCooldown) {
-              player._bumpCooldown = 20;
+              // Bump! Player hit a wall
+              player._bumpCooldown = 20; // frames
               updMulti({ bumps: (d.bumps || 0) + 1 }); if (window._alloHaptic) window._alloHaptic('bump');
+              // Bump sound — dull thud
               try { var bac = audioRef.current && audioRef.current.ctx; if (bac) { var bo = bac.createOscillator(); var bg = bac.createGain(); bo.type = 'sine'; bo.frequency.value = 120; bg.gain.setValueAtTime(0.08, bac.currentTime); bg.gain.exponentialRampToValueAtTime(0.001, bac.currentTime + 0.1); bo.connect(bg); bg.connect(bac.destination); bo.start(); bo.stop(bac.currentTime + 0.1); } } catch(e) {}
             }
           }
@@ -472,290 +424,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               try { var bac2 = audioRef.current && audioRef.current.ctx; if (bac2) { var bo2 = bac2.createOscillator(); var bg2 = bac2.createGain(); bo2.type = 'sine'; bo2.frequency.value = 120; bg2.gain.setValueAtTime(0.08, bac2.currentTime); bg2.gain.exponentialRampToValueAtTime(0.001, bac2.currentTime + 0.1); bo2.connect(bg2); bg2.connect(bac2.destination); bo2.start(); bo2.stop(bac2.currentTime + 0.1); } } catch(e) {}
             }
           }
+          // Bump cooldown decay
           if (player._bumpCooldown > 0) player._bumpCooldown--;
-
-          // Agent collision (pedestrians, cars)
-          if (agents) {
-            for (var ai = 0; ai < agents.length; ai++) {
-              var ag = agents[ai];
-              var adx = player.x - ag.x, ady = player.y - ag.y;
-              var adist = Math.sqrt(adx * adx + ady * ady);
-              if (adist < ag.radius + 12 && !player._agentBumpCooldown) {
-                player._agentBumpCooldown = 40;
-                var penalty = ag.kind === 'car' ? 3 : 1;
-                updMulti({ bumps: (d.bumps || 0) + penalty });
-                if (addToast) addToast(ag.kind === 'car' ? '\uD83D\uDE97 Hit by a car! -' + penalty + ' bumps' : '\uD83D\uDEB6 Bumped a pedestrian!', 'warning');
-                if (window._alloHaptic) window._alloHaptic('bump');
-                try { var bac3 = audioRef.current && audioRef.current.ctx; if (bac3) { var bo3 = bac3.createOscillator(); var bg3 = bac3.createGain(); bo3.type = 'square'; bo3.frequency.value = ag.kind === 'car' ? 200 : 160; bg3.gain.setValueAtTime(0.12, bac3.currentTime); bg3.gain.exponentialRampToValueAtTime(0.001, bac3.currentTime + 0.2); bo3.connect(bg3); bg3.connect(bac3.destination); bo3.start(); bo3.stop(bac3.currentTime + 0.2); } } catch(e) {}
-              }
-            }
-            if (player._agentBumpCooldown > 0) player._agentBumpCooldown--;
-          }
-
-          // Strafe (Q/E)
-          var sdx = Math.cos(player.angle + Math.PI * 0.5) * ms * 0.6;
-          var sdy = Math.sin(player.angle + Math.PI * 0.5) * ms * 0.6;
-          if (keys['KeyQ'] || keys['KeyE']) {
-            var sign = keys['KeyE'] ? 1 : -1;
-            var sx = player.x + sdx * sign, sy = player.y + sdy * sign;
-            if (canMoveTo(sx, sy, map)) { player.x = sx; player.y = sy; }
-          }
-
-          // Update agents
-          updateAgents(agents, dt, map);
-
-          // Sync agent meshes + play agent audio
-          for (var ami = 0; ami < agentMeshes.length; ami++) {
-            var am = agentMeshes[ami];
-            am.mesh.position.set(am.agent.x * SCALE, am.agent.height * 0.5, am.agent.y * SCALE);
-            // Face movement direction
-            if (am.agent.waypoints && am.agent.waypoints.length > 1) {
-              var tgt = am.agent.waypoints[am.agent.targetIdx || 0];
-              am.mesh.rotation.y = -Math.atan2(tgt.y - am.agent.y, tgt.x - am.agent.x);
-            }
-            // Agent HRTF positional audio
-            if (audioRef.current && audioRef.current.ctx) {
-              var ac = audioRef.current.ctx;
-              if (!agentAudioRef.current[am.agent.id]) {
-                var osc = ac.createOscillator();
-                var gain = ac.createGain();
-                var panner = ac.createPanner();
-                panner.panningModel = 'HRTF';
-                panner.distanceModel = 'inverse';
-                panner.refDistance = 1;
-                panner.maxDistance = 60;
-                panner.rolloffFactor = 1.5;
-                // Each agent kind gets a distinctive continuous sound
-                if (am.agent.kind === 'car') {
-                  osc.type = 'sawtooth'; osc.frequency.value = 55; gain.gain.value = 0.025;
-                } else if (am.agent.kind === 'bat') {
-                  osc.type = 'sine'; osc.frequency.value = 3200; gain.gain.value = 0.006;
-                } else {
-                  osc.type = 'triangle'; osc.frequency.value = 200; gain.gain.value = 0.008;
-                }
-                osc.connect(gain); gain.connect(panner); panner.connect(ac.destination);
-                osc.start();
-                agentAudioRef.current[am.agent.id] = { osc: osc, gain: gain, panner: panner };
-              }
-              // Update panner position relative to listener
-              var aRef = agentAudioRef.current[am.agent.id];
-              var relX = (am.agent.x - player.x) * 0.05;
-              var relZ = (am.agent.y - player.y) * 0.05;
-              var cosP = Math.cos(-player.angle), sinP = Math.sin(-player.angle);
-              aRef.panner.positionX.value = relX * cosP - relZ * sinP;
-              aRef.panner.positionY.value = (am.agent.height || 1) - 1.5;
-              aRef.panner.positionZ.value = relX * sinP + relZ * cosP;
-            }
-          }
-
-          // Update camera
-          camera.position.set(player.x * SCALE, 1.5, player.y * SCALE);
-          camera.rotation.set(pitch, -yaw + Math.PI * 0.5, 0);
-
-          // ── Sonar pulse glow logic (3D) ──
-          var nowMs = Date.now();
-          var pulseExpansionRate = SPEED_OF_SOUND * 0.5; // match 2D
-
-          // Reset all mesh glow for this frame
-          for (var mi = 0; mi < meshes.length; mi++) {
-            var m = meshes[mi];
-            if (!m.userData) continue;
-            // Decay glow
-            if (m.userData.glowAmt > 0) {
-              m.userData.glowAmt = Math.max(0, m.userData.glowAmt - dt * 1.2);
-            }
-          }
-
-          // Process active pulses
-          if (viewMode === 'echo' && pulsesRef.current.length > 0) {
-            var activePulses3 = [];
-            for (var pi = 0; pi < pulsesRef.current.length; pi++) {
-              var pulse = pulsesRef.current[pi];
-              var age = (nowMs - pulse.birth) / 1000;
-              var pulseR = age * pulseExpansionRate;
-              var pulseAlpha = Math.max(0, 1 - age * 1.2);
-              if (pulseAlpha <= 0) continue;
-              activePulses3.push(pulse);
-
-              for (var mi2 = 0; mi2 < meshes.length; mi2++) {
-                var mesh = meshes[mi2];
-                if (!mesh.userData || !mesh.userData.ref) continue;
-                var mdx = (mesh.userData.mapX || 0) - pulse.x;
-                var mdy = (mesh.userData.mapY || 0) - pulse.y;
-                var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-                var band = mesh.userData.kind === 'agent' ? 25 : 20;
-                if (Math.abs(mdist - pulseR) < band) {
-                  var intensity = pulseAlpha * mesh.userData.ref * (1 - Math.abs(mdist - pulseR) / band);
-                  mesh.userData.glowAmt = Math.max(mesh.userData.glowAmt || 0, intensity);
-                }
-              }
-            }
-            pulsesRef.current = activePulses3;
-          }
-
-          // Agent ambient glow (constant faint self-illumination from their sound)
-          if (viewMode === 'echo') {
-            for (var agi = 0; agi < agentMeshes.length; agi++) {
-              var agm = agentMeshes[agi];
-              var ambientLevel = AGENT_AMBIENT_GLOW[agm.agent.kind] || 0.1;
-              var pulseFactor = 0.5 + 0.5 * Math.sin(nowMs * 0.004 + agi);
-              agm.mesh.userData.glowAmt = Math.max(agm.mesh.userData.glowAmt || 0, ambientLevel * pulseFactor);
-            }
-          }
-
-          // Apply glow to materials
-          var isRevealMode = viewMode === 'reveal';
-          for (var mi3 = 0; mi3 < meshes.length; mi3++) {
-            var mesh3 = meshes[mi3];
-            if (!mesh3.material || !mesh3.material.userData) continue;
-            var matData = mesh3.material.userData;
-            if (isRevealMode) {
-              mesh3.material.color.setHex(matData.baseColor);
-            } else if (viewMode === 'audio') {
-              mesh3.material.color.setHex(0x000000);
-            } else {
-              var glow = mesh3.userData.glowAmt || 0;
-              if (glow > 0.01) {
-                var r = ((matData.baseColor >> 16) & 0xff) / 255;
-                var g = ((matData.baseColor >> 8) & 0xff) / 255;
-                var b = (matData.baseColor & 0xff) / 255;
-                mesh3.material.color.setRGB(r * glow, g * glow, b * glow);
-              } else {
-                mesh3.material.color.setHex(0x000000);
-              }
-            }
-          }
-
-          // Set ambient light based on mode
-          scene.children.forEach(function(child) {
-            if (child.isAmbientLight) child.intensity = isRevealMode ? 0.7 : 0.02;
-          });
-          if (scene.fog) scene.fog.far = isRevealMode ? 100 : 40;
-
-          // Proximity beep + goal detection
-          goalCheckTimer3D++;
-          if (goalCheckTimer3D % 10 === 0) {
-            map.objects.forEach(function(o) {
-              if (!o.isGoal || d.goalFoundThisRun) return;
-              var gdist = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
-              if (gdist < 200) {
-                var interval = Math.max(8, Math.floor(gdist / 3));
-                if (goalCheckTimer3D % interval === 0) {
-                  var pingFreq = 800 + (1 - Math.min(1, gdist / 200)) * 600;
-                  try { var ac2 = audioRef.current && audioRef.current.ctx; if (ac2) { var po = ac2.createOscillator(); var pg = ac2.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(0.04, ac2.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, ac2.currentTime + 0.05); po.connect(pg); pg.connect(ac2.destination); po.start(); po.stop(ac2.currentTime + 0.05); } } catch(e) {}
-                  if (window._alloHaptic && gdist < 80) window._alloHaptic('echo');
-                }
-              }
-            });
-          }
-          if (goalCheckTimer3D % 30 === 0) {
-            map.objects.forEach(function(o) {
-              if (!o.isGoal) return;
-              var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
-              if (gd < o.r + 12 && !d.goalFoundThisRun) {
-                var baseXP = viewMode === 'audio' ? 30 : viewMode === 'echo' ? 20 : 10;
-                var bumpPenalty = Math.min(baseXP - 5, bumps);
-                var finalXP = Math.max(5, baseXP - bumpPenalty);
-                var modeLabel = viewMode === 'audio' ? 'Audio-only' : viewMode === 'echo' ? 'Echo Vision' : 'Reveal';
-                updMulti({ goalFoundThisRun: true, goalsFound: goalsFound + 1, blindWins: viewMode === 'audio' ? blindWins + 1 : blindWins });
-                if (addToast) addToast('\uD83C\uDFC6 Goal found! ' + (d.clicks || 0) + ' clicks, ' + bumps + ' bumps \u2192 ' + finalXP + ' XP (' + modeLabel + ')', 'success');
-                if (window._alloHaptic) window._alloHaptic('achieve');
-                if (awardXP) awardXP('echoTrainer', finalXP, modeLabel + ': ' + bumps + ' bumps');
-                if (announceToSR) announceToSR('Goal found! ' + finalXP + ' XP earned. ' + bumps + ' wall bumps. ' + modeLabel + ' mode.');
-                // Tutorial progression
-                if (envType === 'simple_room' && tutStep < 4) upd('tutStep', 4);
-              }
-            });
-          }
-
-          // Bump flash (full-screen red tint via overlay quad)
-          if (player._bumpCooldown > 15) {
-            renderer.domElement.style.boxShadow = 'inset 0 0 80px rgba(239,68,68,' + ((player._bumpCooldown - 15) / 5 * 0.3) + ')';
-          } else {
-            renderer.domElement.style.boxShadow = 'none';
-          }
-
-          // Handle resize
-          if (container.clientWidth > 0 && container.clientHeight > 0) {
-            if (renderer.domElement.width !== container.clientWidth || renderer.domElement.height !== container.clientHeight) {
-              renderer.setSize(container.clientWidth, Math.max(container.clientHeight, 200));
-              camera.aspect = container.clientWidth / Math.max(container.clientHeight, 200);
-              camera.updateProjectionMatrix();
-            }
-          }
-
-          renderer.render(scene, camera);
-        }
-        render3D();
-
-        return function() {
-          running = false;
-          document.removeEventListener('pointerlockchange', onPointerLockChange);
-          document.removeEventListener('mousemove', onMouseMove);
-          if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
-          // Stop agent audio oscillators
-          Object.keys(agentAudioRef.current).forEach(function(k) {
-            try { agentAudioRef.current[k].osc.stop(); } catch(e) {}
-          });
-          agentAudioRef.current = {};
-          renderer.dispose();
-          if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
-          threeRef.current = null;
-        };
-      }, [seed, envType, has3D, viewMode]);
-
-      // ── 2D Minimap / fallback animation loop ──
-      useEffect(function() {
-        if (!canvasRef.current) return;
-        var canvas = canvasRef.current;
-        var gfx = canvas.getContext('2d');
-        var running = true;
-        var goalCheckTimer = 0;
-        var isMinimap = has3D; // if 3D is active, this canvas is the minimap
-
-        function loop() {
-          if (!running) return;
-          animRef.current = requestAnimationFrame(loop);
-
-          var W, H;
-          if (isMinimap) {
-            W = canvas.width = 200;
-            H = canvas.height = 200;
-          } else {
-            W = canvas.width = canvas.clientWidth || 800;
-            H = canvas.height = canvas.clientHeight || 400;
-          }
-          var map = mapRef.current;
-          var player = playerRef.current;
-          var keys = keysRef.current;
-          if (!map) return;
-
-          // Movement (only in 2D-only mode — 3D useEffect handles movement when has3D)
-          if (!isMinimap) {
-            var ms = 2.5, ts = 0.045;
-            if (keys['ArrowLeft'] || keys['KeyA']) player.angle -= ts;
-            if (keys['ArrowRight'] || keys['KeyD']) player.angle += ts;
-            var fdx = Math.cos(player.angle) * ms, fdy = Math.sin(player.angle) * ms;
-            if (keys['KeyW'] || keys['ArrowUp']) {
-              var nx = player.x + fdx, ny = player.y + fdy;
-              if (canMoveTo(nx, ny, map)) { player.x = nx; player.y = ny; }
-              else if (!player._bumpCooldown) {
-                player._bumpCooldown = 20;
-                updMulti({ bumps: (d.bumps || 0) + 1 }); if (window._alloHaptic) window._alloHaptic('bump');
-                try { var bac = audioRef.current && audioRef.current.ctx; if (bac) { var bo = bac.createOscillator(); var bg = bac.createGain(); bo.type = 'sine'; bo.frequency.value = 120; bg.gain.setValueAtTime(0.08, bac.currentTime); bg.gain.exponentialRampToValueAtTime(0.001, bac.currentTime + 0.1); bo.connect(bg); bg.connect(bac.destination); bo.start(); bo.stop(bac.currentTime + 0.1); } } catch(e) {}
-              }
-            }
-            if (keys['KeyS'] || keys['ArrowDown']) {
-              var nx2 = player.x - fdx, ny2 = player.y - fdy;
-              if (canMoveTo(nx2, ny2, map)) { player.x = nx2; player.y = ny2; }
-              else if (!player._bumpCooldown) {
-                player._bumpCooldown = 20;
-                updMulti({ bumps: (d.bumps || 0) + 1 }); if (window._alloHaptic) window._alloHaptic('bump');
-                try { var bac2 = audioRef.current && audioRef.current.ctx; if (bac2) { var bo2 = bac2.createOscillator(); var bg2 = bac2.createGain(); bo2.type = 'sine'; bo2.frequency.value = 120; bg2.gain.setValueAtTime(0.08, bac2.currentTime); bg2.gain.exponentialRampToValueAtTime(0.001, bac2.currentTime + 0.1); bo2.connect(bg2); bg2.connect(bac2.destination); bo2.start(); bo2.stop(bac2.currentTime + 0.1); } } catch(e) {}
-              }
-            }
-            if (player._bumpCooldown > 0) player._bumpCooldown--;
-          }
 
           // Render
           var scale = Math.min(W / map.W, H / map.H);
@@ -767,10 +437,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           gfx.translate(ox, oy);
           gfx.scale(scale, scale);
 
-          // Map (show in minimap always; in standalone only when reveal mode)
-          var showMap = isMinimap || viewMode === 'reveal';
-          if (showMap) {
-            gfx.lineWidth = isMinimap ? 1.5 : 3;
+          // Map (revealed)
+          if (reveal) {
+            gfx.lineWidth = 3;
             map.walls.forEach(function(w) {
               gfx.strokeStyle = w.mat === 'metal' ? '#94a3b8' : w.mat === 'wood' ? '#a16207' : w.mat === 'glass' ? '#7dd3fc55' : '#475569';
               gfx.beginPath(); gfx.moveTo(w.x1, w.y1); gfx.lineTo(w.x2, w.y2); gfx.stroke();
@@ -778,88 +447,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             map.objects.forEach(function(o) {
               gfx.fillStyle = o.isGoal ? '#fbbf24' : o.mat === 'metal' ? '#94a3b8' : o.mat === 'wood' ? '#92400e' : '#64748b';
               gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.fill();
-              if (o.isGoal && !isMinimap) { gfx.fillStyle = '#080810'; gfx.font = 'bold 14px sans-serif'; gfx.textAlign = 'center'; gfx.fillText('\u2B50', o.x, o.y + 5); }
+              if (o.isGoal) { gfx.fillStyle = '#080810'; gfx.font = 'bold 14px sans-serif'; gfx.textAlign = 'center'; gfx.fillText('\u2B50', o.x, o.y + 5); }
             });
           }
 
-          // Draw agents on minimap / 2D
-          var agents = agentsRef.current;
-          if (agents && (showMap || viewMode === 'echo')) {
-            for (var dai = 0; dai < agents.length; dai++) {
-              var ag = agents[dai];
-              gfx.fillStyle = ag.kind === 'car' ? '#ffc47c' : ag.kind === 'bat' ? '#a78bfa' : '#ff9c9c';
-              gfx.beginPath(); gfx.arc(ag.x, ag.y, isMinimap ? 4 : ag.radius, 0, Math.PI * 2); gfx.fill();
-            }
-          }
-
-          // Player trail
+          // Player trail (breadcrumbs showing where you've walked)
           if (!player._trail) player._trail = [];
           if (player._trail.length === 0 || Math.abs(player.x - player._trail[player._trail.length - 1].x) > 5 || Math.abs(player.y - player._trail[player._trail.length - 1].y) > 5) {
             player._trail.push({ x: player.x, y: player.y });
             if (player._trail.length > 200) player._trail.shift();
           }
-          if (!isMinimap) {
-            for (var ti = 0; ti < player._trail.length; ti++) {
-              var trailAlpha = (ti / player._trail.length) * 0.15;
-              gfx.fillStyle = 'rgba(99,102,241,' + trailAlpha + ')';
-              gfx.beginPath(); gfx.arc(player._trail[ti].x, player._trail[ti].y, 2, 0, Math.PI * 2); gfx.fill();
-            }
+          for (var ti = 0; ti < player._trail.length; ti++) {
+            var trailAlpha = (ti / player._trail.length) * 0.15;
+            gfx.fillStyle = 'rgba(99,102,241,' + trailAlpha + ')';
+            gfx.beginPath(); gfx.arc(player._trail[ti].x, player._trail[ti].y, 2, 0, Math.PI * 2); gfx.fill();
           }
 
-          // Compass rose
-          if (!isMinimap) {
-            gfx.save();
-            gfx.translate(map.W - 30, 40);
-            gfx.strokeStyle = 'rgba(148,163,184,0.3)'; gfx.lineWidth = 1;
-            gfx.beginPath(); gfx.moveTo(0, -16); gfx.lineTo(0, 16); gfx.stroke();
-            gfx.beginPath(); gfx.moveTo(-16, 0); gfx.lineTo(16, 0); gfx.stroke();
-            gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 8px sans-serif'; gfx.textAlign = 'center';
-            gfx.fillText('N', 0, -19);
-            gfx.fillStyle = 'rgba(148,163,184,0.3)'; gfx.fillText('S', 0, 24); gfx.fillText('E', 20, 3); gfx.fillText('W', -20, 3);
-            gfx.restore();
-          }
+          // Compass rose (top-right of map area)
+          gfx.save();
+          gfx.translate(map.W - 30, 40);
+          gfx.strokeStyle = 'rgba(148,163,184,0.3)'; gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(0, -16); gfx.lineTo(0, 16); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(-16, 0); gfx.lineTo(16, 0); gfx.stroke();
+          gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 8px sans-serif'; gfx.textAlign = 'center';
+          gfx.fillText('N', 0, -19);
+          gfx.fillStyle = 'rgba(148,163,184,0.3)'; gfx.fillText('S', 0, 24); gfx.fillText('E', 20, 3); gfx.fillText('W', -20, 3);
+          gfx.restore();
 
-          // Player dot
+          // Player (always visible)
           gfx.fillStyle = '#6366f1';
-          gfx.beginPath(); gfx.arc(player.x, player.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill();
-          gfx.strokeStyle = '#a5b4fc'; gfx.lineWidth = isMinimap ? 1 : 2;
+          gfx.beginPath(); gfx.arc(player.x, player.y, 8, 0, Math.PI * 2); gfx.fill();
+          gfx.strokeStyle = '#a5b4fc'; gfx.lineWidth = 2;
           gfx.beginPath(); gfx.moveTo(player.x, player.y);
-          gfx.lineTo(player.x + Math.cos(player.angle) * (isMinimap ? 12 : 22), player.y + Math.sin(player.angle) * (isMinimap ? 12 : 22)); gfx.stroke();
-          if (!isMinimap) {
-            gfx.strokeStyle = 'rgba(99,102,241,0.15)'; gfx.lineWidth = 1;
-            gfx.beginPath(); gfx.arc(player.x, player.y, 80, player.angle - 0.33 * Math.PI, player.angle + 0.33 * Math.PI); gfx.stroke();
-          }
+          gfx.lineTo(player.x + Math.cos(player.angle) * 22, player.y + Math.sin(player.angle) * 22); gfx.stroke();
+          // Field of view arc (subtle)
+          gfx.strokeStyle = 'rgba(99,102,241,0.15)'; gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.arc(player.x, player.y, 80, player.angle - 0.33 * Math.PI, player.angle + 0.33 * Math.PI); gfx.stroke();
 
-          // ── 2D Echo Vision pulse visualization (only for non-3D fallback) ──
-          if (!isMinimap && viewMode === 'echo' && pulsesRef.current.length > 0) {
+          // ── Echo Vision: "Toph Mode" sonar pulse visualization ──
+          // Expanding rings illuminate surfaces as the wavefront reaches them
+          if (echoVision && pulsesRef.current.length > 0) {
             var now = Date.now();
             var activePulses = [];
             pulsesRef.current.forEach(function(pulse) {
-              var age = (now - pulse.birth) / 1000;
-              var pulseRadius = age * SPEED_OF_SOUND * 0.5;
-              var pulseAlpha = Math.max(0, 1 - age * 1.5);
+              var age = (now - pulse.birth) / 1000; // seconds
+              var pulseRadius = age * SPEED_OF_SOUND * 0.5; // visual expansion (scaled for display)
+              var pulseAlpha = Math.max(0, 1 - age * 1.5); // fade out over ~0.67s
               if (pulseAlpha <= 0) return;
               activePulses.push(pulse);
+
+              // Draw expanding ring
               gfx.strokeStyle = 'rgba(120,180,255,' + (pulseAlpha * 0.2) + ')';
               gfx.lineWidth = 2;
-              gfx.beginPath(); gfx.arc(pulse.x, pulse.y, pulseRadius, 0, Math.PI * 2); gfx.stroke();
+              gfx.beginPath();
+              gfx.arc(pulse.x, pulse.y, pulseRadius, 0, Math.PI * 2);
+              gfx.stroke();
+
+              // Illuminate walls that the pulse has reached
               map.walls.forEach(function(w) {
+                // Find the closest point on the wall to the pulse origin
                 var wx = w.x2 - w.x1, wy = w.y2 - w.y1;
                 var wl2 = wx * wx + wy * wy;
                 if (wl2 < 1) return;
+                // Sample 5 points along the wall
                 for (var si = 0; si <= 4; si++) {
                   var t2 = si / 4;
                   var px = w.x1 + wx * t2, py = w.y1 + wy * t2;
                   var dx2 = px - pulse.x, dy2 = py - pulse.y;
                   var dist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                  // Is this point within the pulse wavefront? (±15px band)
                   if (Math.abs(dist - pulseRadius) < 15) {
                     var intensity = pulseAlpha * w.ref * (1 - Math.abs(dist - pulseRadius) / 15);
                     var color = w.mat === 'metal' ? '200,220,255' : w.mat === 'wood' ? '180,140,80' : w.mat === 'glass' ? '150,220,255' : '100,160,220';
                     gfx.fillStyle = 'rgba(' + color + ',' + (intensity * 0.7) + ')';
-                    gfx.beginPath(); gfx.arc(px, py, 6, 0, Math.PI * 2); gfx.fill();
+                    gfx.beginPath();
+                    gfx.arc(px, py, 6, 0, Math.PI * 2);
+                    gfx.fill();
                   }
                 }
               });
+
+              // Illuminate objects
               map.objects.forEach(function(o) {
                 var odx = o.x - pulse.x, ody = o.y - pulse.y;
                 var odist = Math.sqrt(odx * odx + ody * ody);
@@ -867,85 +535,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var oIntensity = pulseAlpha * o.ref * (1 - Math.abs(odist - pulseRadius) / (o.r + 10));
                   var oColor = o.isGoal ? '255,220,50' : o.mat === 'metal' ? '200,220,255' : '100,160,220';
                   gfx.fillStyle = 'rgba(' + oColor + ',' + (oIntensity * 0.6) + ')';
-                  gfx.beginPath(); gfx.arc(o.x, o.y, o.r + 3, 0, Math.PI * 2); gfx.fill();
+                  gfx.beginPath();
+                  gfx.arc(o.x, o.y, o.r + 3, 0, Math.PI * 2);
+                  gfx.fill();
+                  // Bright edge highlight (the "sonar return" glow)
                   gfx.strokeStyle = 'rgba(' + oColor + ',' + (oIntensity * 0.9) + ')';
                   gfx.lineWidth = 2;
-                  gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.stroke();
+                  gfx.beginPath();
+                  gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+                  gfx.stroke();
                 }
               });
             });
             pulsesRef.current = activePulses;
           }
 
-          // Minimap: sonar ring overlay
-          if (isMinimap && pulsesRef.current.length > 0) {
-            var nowMm = Date.now();
-            pulsesRef.current.forEach(function(pulse) {
-              var age = (nowMm - pulse.birth) / 1000;
-              var pulseR = age * SPEED_OF_SOUND * 0.5;
-              var alpha = Math.max(0, 1 - age * 1.5);
-              if (alpha <= 0) return;
-              gfx.strokeStyle = 'rgba(120,180,255,' + (alpha * 0.35) + ')';
-              gfx.lineWidth = 1.5;
-              gfx.beginPath(); gfx.arc(pulse.x, pulse.y, pulseR, 0, Math.PI * 2); gfx.stroke();
-            });
-          }
-
-          // Bump flash
-          if (player._bumpCooldown > 15 && !isMinimap) {
+          // Bump flash (red screen flash when bumping into walls)
+          if (player._bumpCooldown > 15) {
             gfx.fillStyle = 'rgba(239,68,68,' + ((player._bumpCooldown - 15) / 5 * 0.15) + ')';
             gfx.fillRect(0, 0, map.W, map.H);
           }
 
           gfx.restore();
 
-          // HUD (only for standalone 2D mode)
-          if (!isMinimap) {
-            gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(0, 0, W, 26);
-            gfx.font = 'bold 11px monospace'; gfx.fillStyle = '#94a3b8'; gfx.textAlign = 'left';
-            var modeName = viewMode === 'echo' ? 'ECHO VISION' : viewMode === 'audio' ? 'AUDIO ONLY \uD83C\uDFA7' : 'MAP VISIBLE';
-            gfx.fillText('Echo Navigator  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + bumps + '  |  Goals: ' + goalsFound + '  |  ' + modeName + '  |  ' + envType, 8, 17);
+          // HUD
+          gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(0, 0, W, 26);
+          gfx.font = 'bold 11px monospace'; gfx.fillStyle = '#94a3b8'; gfx.textAlign = 'left';
+          gfx.fillText('Echo Navigator  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + bumps + '  |  Goals: ' + goalsFound + '  |  ' + (echoVision ? 'ECHO VISION' : reveal ? 'MAP VISIBLE' : 'AUDIO ONLY \uD83C\uDFA7') + '  |  ' + envType, 8, 17);
+
+          // Proximity beeping — ping gets faster as you approach the goal
+          goalCheckTimer++;
+          if (goalCheckTimer % 10 === 0) { // Check every ~0.3s
+            map.objects.forEach(function(o) {
+              if (!o.isGoal || d.goalFoundThisRun) return;
+              var gdist = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
+              // Ping interval: 200px away = every 2s, 50px = every 0.3s, <30px = constant
+              if (gdist < 200) {
+                var interval = Math.max(8, Math.floor(gdist / 3)); // frames between pings
+                if (goalCheckTimer % interval === 0) {
+                  var pingFreq = 800 + (1 - Math.min(1, gdist / 200)) * 600; // 800Hz far, 1400Hz close
+                  try {
+                    var ac = audioRef.current && audioRef.current.ctx;
+                    if (ac) { var po = ac.createOscillator(); var pg = ac.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(0.04, ac.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.05); po.connect(pg); pg.connect(ac.destination); po.start(); po.stop(ac.currentTime + 0.05); }
+                  } catch(e) {}
+                  if (window._alloHaptic && gdist < 80) window._alloHaptic('echo');
+                }
+              }
+            });
           }
 
-          // Goal detection (only for 2D-only mode — 3D handles its own)
-          if (!isMinimap) {
-            goalCheckTimer++;
-            if (goalCheckTimer % 10 === 0) {
-              map.objects.forEach(function(o) {
-                if (!o.isGoal || d.goalFoundThisRun) return;
-                var gdist = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
-                if (gdist < 200) {
-                  var interval = Math.max(8, Math.floor(gdist / 3));
-                  if (goalCheckTimer % interval === 0) {
-                    var pingFreq = 800 + (1 - Math.min(1, gdist / 200)) * 600;
-                    try { var ac = audioRef.current && audioRef.current.ctx; if (ac) { var po = ac.createOscillator(); var pg = ac.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(0.04, ac.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.05); po.connect(pg); pg.connect(ac.destination); po.start(); po.stop(ac.currentTime + 0.05); } } catch(e) {}
-                    if (window._alloHaptic && gdist < 80) window._alloHaptic('echo');
-                  }
-                }
-              });
-            }
-            if (goalCheckTimer % 30 === 0) {
-              map.objects.forEach(function(o) {
-                if (!o.isGoal) return;
-                var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
-                if (gd < o.r + 12 && !d.goalFoundThisRun) {
-                  var baseXP = viewMode === 'audio' ? 30 : viewMode === 'echo' ? 20 : 10;
-                  var bumpPenalty = Math.min(baseXP - 5, bumps);
-                  var finalXP = Math.max(5, baseXP - bumpPenalty);
-                  var modeLabel = viewMode === 'audio' ? 'Audio-only' : viewMode === 'echo' ? 'Echo Vision' : 'Map revealed';
-                  updMulti({ goalFoundThisRun: true, goalsFound: goalsFound + 1, blindWins: viewMode === 'audio' ? blindWins + 1 : blindWins });
-                  if (addToast) addToast('\uD83C\uDFC6 Goal found! ' + (d.clicks || 0) + ' clicks, ' + bumps + ' bumps \u2192 ' + finalXP + ' XP (' + modeLabel + ')', 'success');
-                  if (window._alloHaptic) window._alloHaptic('achieve');
-                  if (awardXP) awardXP('echoTrainer', finalXP, modeLabel + ': ' + bumps + ' bumps');
-                  if (announceToSR) announceToSR('Goal found! ' + finalXP + ' XP earned. ' + bumps + ' wall bumps. ' + modeLabel + ' mode.');
-                }
-              });
-            }
+          // Goal proximity check (contact detection)
+          if (goalCheckTimer % 30 === 0) {
+            map.objects.forEach(function(o) {
+              if (!o.isGoal) return;
+              var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
+              if (gd < o.r + 12 && !d.goalFoundThisRun) {
+                updMulti({ goalFoundThisRun: true, goalsFound: goalsFound + 1, blindWins: (hasRevealed || echoVision) ? blindWins : blindWins + 1 });
+                // XP scoring: base 30 for audio-only, 20 for echo vision, 10 for map revealed
+                // Bump penalty: -1 XP per bump (min 5 XP)
+                var baseXP = (!hasRevealed && !echoVision) ? 30 : echoVision ? 20 : 10;
+                var bumpPenalty = Math.min(baseXP - 5, bumps);
+                var finalXP = Math.max(5, baseXP - bumpPenalty);
+                var modeLabel = (!hasRevealed && !echoVision) ? 'Audio-only' : echoVision ? 'Echo Vision' : 'Map revealed';
+                if (addToast) addToast('\uD83C\uDFC6 Goal found! ' + (d.clicks || 0) + ' clicks, ' + bumps + ' bumps \u2192 ' + finalXP + ' XP (' + modeLabel + ')', 'success');
+                if (window._alloHaptic) window._alloHaptic('achieve');
+                if (awardXP) awardXP('echoTrainer', finalXP, modeLabel + ': ' + bumps + ' bumps');
+                if (announceToSR) announceToSR('Goal found! ' + finalXP + ' XP earned. ' + bumps + ' wall bumps. ' + modeLabel + ' mode.');
+              }
+            });
           }
         }
         loop();
         return function() { running = false; cancelAnimationFrame(animRef.current); };
-      }, [seed, envType, viewMode]);
+      }, [seed, envType, reveal]);
 
       // ── RENDER ──
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' } },
@@ -955,8 +617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             style: { background: isDark ? '#1e293b' : '#f1f5f9', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), borderRadius: '8px', padding: '6px 12px', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }
           }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', ' STEM Lab'),
           h('div', { style: { fontSize: '18px', fontWeight: 900, color: isDark ? '#e2e8f0' : '#1e293b' } }, '\uD83C\uDFA7 Echo Navigator'),
-          h('div', { style: { fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginLeft: '8px' } }, has3D ? '3D Mode \u2022 Click viewport to engage mouse-look' : 'Navigate by sound alone'),
-          has3D && h('span', { style: { padding: '2px 8px', borderRadius: '6px', background: '#6366f1', color: '#fff', fontSize: '10px', fontWeight: 800 } }, '3D')
+          h('div', { style: { fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginLeft: '8px' } }, 'Navigate by sound alone')
         ),
 
         // Safety disclaimer (collapsible, always visible on first load)
@@ -1095,13 +756,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               'aria-pressed': active ? 'true' : 'false',
               onClick: function() {
                 var newSeed = Math.floor(Math.random() * 999999);
-                updMulti({ envType: env.id, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0 });
+                updMulti({ envType: env.id, seed: newSeed, reveal: false, hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, echoVision: echoVision });
                 mapRef.current = null;
                 playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 };
-                if (announceToSR) announceToSR('Environment: ' + env.name + '. ' + env.desc + (ENV_3D_READY[env.id] ? ' 3D mode.' : ' 2D mode.') + ' Press Space to click.');
+                if (announceToSR) announceToSR('Environment: ' + env.name + '. ' + env.desc + ' Press Space to click.');
               },
               style: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + (active ? '#6366f1' : (isDark ? '#334155' : '#e2e8f0')), background: active ? '#6366f1' : (isDark ? '#1e293b' : '#fff'), color: active ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, env.icon + ' ' + env.name + ' ' + '\u2B50'.repeat(env.complexity) + (ENV_3D_READY[env.id] ? ' [3D]' : ''));
+            }, env.icon + ' ' + env.name + ' ' + '\u2B50'.repeat(env.complexity));
           })
         ),
 
@@ -1110,93 +771,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('button', { onClick: emitClick, 'aria-label': 'Emit echolocation click',
             style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
           }, '\uD83D\uDD0A Click (Space)'),
-          // View mode cycle: echo → audio → reveal → echo
+          // Echo Vision toggle ("Toph mode")
           h('button', {
-            onClick: function() {
-              var next = viewMode === 'echo' ? 'audio' : viewMode === 'audio' ? 'reveal' : 'echo';
-              upd('viewMode', next);
-              if (next === 'reveal') upd('hasRevealed', true);
-              var labels = { echo: 'Echo Vision — darkness + sonar reveals', audio: 'Audio Only — pure darkness, no visuals', reveal: 'Reveal — full lighting (debug/teacher mode)' };
-              if (announceToSR) announceToSR(labels[next]);
-            },
-            'aria-label': 'Cycle view mode: ' + viewMode,
-            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (viewMode === 'echo' ? '#3b82f6' : viewMode === 'audio' ? '#475569' : '#ef4444'),
-              background: viewMode === 'echo' ? '#1e40af' : viewMode === 'audio' ? (isDark ? '#0f172a' : '#1e293b') : '#fef2f2',
-              color: viewMode === 'echo' ? '#93c5fd' : viewMode === 'audio' ? '#64748b' : '#ef4444',
-              fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-          }, viewMode === 'echo' ? '\uD83C\uDF0A Echo Vision' : viewMode === 'audio' ? '\uD83C\uDFA7 Audio Only' : '\uD83D\uDC41 Reveal'),
-          // Multi-bounce toggle
+            onClick: function() { upd('echoVision', !echoVision); if (announceToSR) announceToSR(echoVision ? 'Echo Vision off — audio only' : 'Echo Vision on — sonar pulses will illuminate surfaces'); },
+            'aria-label': echoVision ? 'Turn off echo vision' : 'Turn on echo vision — see sonar pulses illuminate surfaces',
+            'aria-pressed': echoVision ? 'true' : 'false',
+            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (echoVision ? '#3b82f6' : (isDark ? '#334155' : '#e2e8f0')), background: echoVision ? '#1e40af' : (isDark ? '#1e293b' : '#fff'), color: echoVision ? '#93c5fd' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, echoVision ? '\uD83C\uDF0A Echo Vision ON' : '\uD83C\uDF0A Echo Vision'),
+          // Multi-bounce toggle (advanced)
           h('button', {
             onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? 'Multi-bounce echoes off' : 'Multi-bounce echoes on — more realistic but harder'); },
             'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)',
             'aria-pressed': multiBounce ? 'true' : 'false',
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
+          h('button', { onClick: function() { upd('reveal', !reveal); if (!reveal) upd('hasRevealed', true); }, 'aria-label': reveal ? 'Hide map' : 'Reveal map',
+            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (reveal ? '#ef4444' : '#6366f1'), background: reveal ? '#fef2f2' : (isDark ? '#1e293b' : '#f5f3ff'), color: reveal ? '#ef4444' : '#6366f1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, reveal ? '\uD83D\uDE48 Hide' : '\uD83D\uDC41 Reveal'),
           h('button', { onClick: function() {
             var newSeed = Math.floor(Math.random() * 999999);
-            updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0 });
+            updMulti({ seed: newSeed, reveal: false, hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0 });
             mapRef.current = null; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 };
             if (announceToSR) announceToSR('New ' + envType + ' environment generated.');
           }, 'aria-label': 'Generate new random layout',
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, '\uD83C\uDFB2 New Layout'),
-          d.goalFoundThisRun && h('span', { style: { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + (viewMode === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
+          d.goalFoundThisRun && h('span', { style: { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + (!hasRevealed ? ' (Blind! \uD83C\uDFA7)' : ''))
         ),
 
-        // ── Tutorial overlay (simple_room only) ──
-        envType === 'simple_room' && tutStep < 4 && h('div', {
-          role: 'region', 'aria-live': 'polite',
-          style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #6366f1', borderRadius: '12px', padding: '14px 16px', marginBottom: '4px' }
-        },
-          h('div', { style: { fontSize: '13px', fontWeight: 800, color: '#6366f1', marginBottom: '6px' } },
-            '\uD83C\uDF93 Tutorial Step ' + (tutStep + 1) + ' of 4'),
-          h('p', { style: { fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 8px 0', lineHeight: 1.5 } },
-            tutStep === 0 ? 'The world is dark. You can\'t see anything. Press SPACE to emit a sonar click. Watch (or listen) as the echo bounces off the walls and reveals them briefly. Try it now!' :
-            tutStep === 1 ? 'Each surface lights up differently. Metal is bright white-blue, wood is warm brown, glass is faint cyan. The brighter the glow, the more sound it reflects. Click a few times and notice the differences.' :
-            tutStep === 2 ? 'Use WASD to walk forward/backward and turn. The goal is the golden sphere — find it using only sonar pulses. When you get close, you\'ll hear a faster beeping.' :
-            'A pedestrian is walking around. You\'ll hear footsteps and see a faint glow moving between pulses. Avoid bumping into them! Find the goal to complete the tutorial.'
-          ),
-          h('button', {
-            onClick: function() { upd('tutStep', Math.min(tutStep + 1, 3)); },
-            style: { padding: '6px 14px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-          }, tutStep < 3 ? 'Next Step \u2192' : 'Got it!')
-        ),
-
-        // ── 3D viewport + minimap ──
-        has3D ? h('div', { style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px' } },
-          // 3D mount point
-          h('div', {
-            ref: mountRef,
-            style: { width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden', background: '#000' },
-            tabIndex: 0,
-            onKeyDown: function(e) {
-              if (e.code === 'Space') { e.preventDefault(); emitClick(); }
-              keysRef.current[e.code] = true;
-            },
-            onKeyUp: function(e) { keysRef.current[e.code] = false; }
-          }),
-          // Minimap (corner overlay)
-          h('canvas', {
-            ref: canvasRef,
-            style: { position: 'absolute', bottom: '12px', right: '12px', width: '180px', height: '180px', borderRadius: '8px', border: '2px solid rgba(99,102,241,0.4)', background: 'rgba(8,8,16,0.85)', pointerEvents: 'none', zIndex: 10 }
-          }),
-          // HUD overlay
-          h('div', { style: { position: 'absolute', top: '8px', left: '12px', right: '12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, color: '#94a3b8', textShadow: '0 1px 4px #000', zIndex: 10, pointerEvents: 'none' } },
-            h('span', null, 'Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + bumps + '  |  Goals: ' + goalsFound),
-            h('span', null, viewMode === 'echo' ? 'ECHO VISION' : viewMode === 'audio' ? 'AUDIO ONLY' : 'REVEAL'),
-            h('span', null, envType.toUpperCase())
-          ),
-          // Crosshair (center of 3D viewport)
-          viewMode !== 'reveal' && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '24px', height: '24px', pointerEvents: 'none', zIndex: 10 } },
-            h('div', { style: { position: 'absolute', top: '50%', left: '0', right: '0', height: '2px', background: 'rgba(120,180,255,0.35)', transform: 'translateY(-50%)' } }),
-            h('div', { style: { position: 'absolute', left: '50%', top: '0', bottom: '0', width: '2px', background: 'rgba(120,180,255,0.35)', transform: 'translateX(-50%)' } })
-          )
-        ) :
-        // ── 2D fallback canvas (for envs without 3D) ──
+        // Canvas
         h('canvas', {
           ref: canvasRef,
           role: 'application',
-          'aria-label': 'Echo navigation area. WASD to move, arrows to turn, Space to click.',
+          'aria-label': 'Echo navigation area. WASD to move, arrows to turn, Space to click. ' + (reveal ? 'Map visible.' : 'Audio only — listen for echoes.'),
           tabIndex: 0,
           style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair', outline: 'none' },
           onKeyDown: function(e) {
@@ -1208,14 +815,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
 
         // Info footer
         h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px', color: isDark ? '#475569' : '#94a3b8' } },
-          h('span', null, '\uD83C\uDFAE WASD: Move' + (has3D ? ' | Q/E: Strafe | Mouse: Look' : '/Arrows: Turn')),
-          h('span', null, has3D ? 'Click viewport: Engage mouse-look | Click again: Sonar pulse' : 'Space: Click'),
+          h('span', null, '\uD83C\uDFAE WASD/Arrows: Move & Turn'),
+          h('span', null, 'Space: Click'),
           h('span', null, '\uD83C\uDFA7 Headphones required'),
           h('span', null, '\u2B50 Find the goal using echoes'),
-          has3D && agentsRef.current && agentsRef.current.length > 0 && h('span', { style: { color: '#f59e0b' } },
-            '\uD83D\uDEB6 ' + agentsRef.current.filter(function(a) { return a.kind === 'pedestrian'; }).length + ' pedestrians' +
-            ' \uD83D\uDE97 ' + agentsRef.current.filter(function(a) { return a.kind === 'car'; }).length + ' cars' +
-            (agentsRef.current.some(function(a) { return a.kind === 'bat'; }) ? ' \uD83E\uDD87 bats' : '')),
           h('span', { style: { color: '#6366f1' } }, 'HRTF spatial audio \u2022 ' + (d.clicks || 0) + ' clicks \u2022 Seed: ' + seed)
         ),
 
