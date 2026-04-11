@@ -727,8 +727,400 @@
     );
   }
 
-  // ── Register module ──
+  // ═══════════════════════════════════════════════════════════
+  // ── FLUENCY MAZE MODE — Navigate a maze by solving math facts ──
+  // Inspired by Aaron Pomeranz's dissertation research on fluency
+  // maze assessment (USM, 2024)
+  // ═══════════════════════════════════════════════════════════
+
+  var MAZE_COLS = 7;
+  var MAZE_ROWS = 7;
+  var CELL_SIZE = 52;
+
+  function generateMaze(rows, cols) {
+    // Simple recursive backtracker maze generator
+    var grid = [];
+    for (var r = 0; r < rows; r++) {
+      grid[r] = [];
+      for (var c = 0; c < cols; c++) {
+        grid[r][c] = { r: r, c: c, walls: { top: true, right: true, bottom: true, left: true }, visited: false };
+      }
+    }
+    var stack = [];
+    var current = grid[0][0];
+    current.visited = true;
+    function neighbors(cell) {
+      var ns = [];
+      if (cell.r > 0 && !grid[cell.r - 1][cell.c].visited) ns.push(grid[cell.r - 1][cell.c]);
+      if (cell.r < rows - 1 && !grid[cell.r + 1][cell.c].visited) ns.push(grid[cell.r + 1][cell.c]);
+      if (cell.c > 0 && !grid[cell.r][cell.c - 1].visited) ns.push(grid[cell.r][cell.c - 1]);
+      if (cell.c < cols - 1 && !grid[cell.r][cell.c + 1].visited) ns.push(grid[cell.r][cell.c + 1]);
+      return ns;
+    }
+    function removeWall(a, b) {
+      if (a.r === b.r) {
+        if (a.c < b.c) { a.walls.right = false; b.walls.left = false; }
+        else { a.walls.left = false; b.walls.right = false; }
+      } else {
+        if (a.r < b.r) { a.walls.bottom = false; b.walls.top = false; }
+        else { a.walls.top = false; b.walls.bottom = false; }
+      }
+    }
+    while (true) {
+      var ns = neighbors(current);
+      if (ns.length > 0) {
+        var next = ns[Math.floor(Math.random() * ns.length)];
+        stack.push(current);
+        removeWall(current, next);
+        next.visited = true;
+        current = next;
+      } else if (stack.length > 0) {
+        current = stack.pop();
+      } else { break; }
+    }
+    return grid;
+  }
+
+  function FluencyMazePanel(props) {
+    var React = props.React || window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useRef = React.useRef;
+    var useEffect = React.useEffect;
+    var gradeLevel = props.gradeLevel || '3';
+    var addToast = props.addToast;
+    var handleScoreUpdate = props.handleScoreUpdate;
+    var t = props.t || function(k) { return k; };
+
+    var _s = useState;
+    var mode = _s('setup')[0], setMode = _s[1]; // actually use individual calls
+    // Re-declare properly
+    var modeState = useState('setup');
+    var mode = modeState[0], setMode = modeState[1];
+    var opState = useState('mul');
+    var operation = opState[0], setOperation = opState[1];
+    var diffState = useState('single');
+    var difficulty = diffState[0], setDifficulty = diffState[1];
+    var chaseState = useState(false);
+    var chaseMode = chaseState[0], setChaseMode = chaseState[1];
+    var mazeState = useState(null);
+    var maze = mazeState[0], setMaze = mazeState[1];
+    var posState = useState({ r: 0, c: 0 });
+    var playerPos = posState[0], setPlayerPos = posState[1];
+    var problemState = useState(null);
+    var currentProblem = problemState[0], setCurrentProblem = problemState[1];
+    var inputState = useState('');
+    var userInput = inputState[0], setUserInput = inputState[1];
+    var scoreState = useState(0);
+    var score = scoreState[0], setScore = scoreState[1];
+    var correctState = useState(0);
+    var correct = correctState[0], setCorrect = correctState[1];
+    var wrongState = useState(0);
+    var wrong = wrongState[0], setWrong = wrongState[1];
+    var moveCountState = useState(0);
+    var moveCount = moveCountState[0], setMoveCount = moveCountState[1];
+    var timerState = useState(0);
+    var elapsed = timerState[0], setElapsed = timerState[1];
+    var monsterState = useState({ r: 0, c: 0 });
+    var monsterPos = monsterState[0], setMonsterPos = monsterState[1];
+    var gameOverState = useState(false);
+    var gameOver = gameOverState[0], setGameOver = gameOverState[1];
+    var wonState = useState(false);
+    var won = wonState[0], setWon = wonState[1];
+    var feedbackState = useState('');
+    var feedback = feedbackState[0], setFeedback = feedbackState[1];
+    var canvasRef = useRef(null);
+    var timerRef = useRef(null);
+    var monsterTimerRef = useRef(null);
+    var inputRef = useRef(null);
+
+    function makeProblem() {
+      var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
+      var maxN = difficulty === 'single' ? 12 : 20;
+      if (op === 'add') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * maxN) + 1; return { text: a + ' + ' + b, answer: a + b, op: op }; }
+      if (op === 'sub') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * a) + 1; return { text: a + ' − ' + b, answer: a - b, op: op }; }
+      if (op === 'mul') { a = Math.floor(Math.random() * 12) + 1; b = Math.floor(Math.random() * 12) + 1; return { text: a + ' × ' + b, answer: a * b, op: op }; }
+      if (op === 'div') { b = Math.floor(Math.random() * 11) + 2; var ans = Math.floor(Math.random() * 12) + 1; a = b * ans; return { text: a + ' ÷ ' + b, answer: ans, op: op }; }
+      return { text: '1 + 1', answer: 2, op: 'add' };
+    }
+
+    function startMaze() {
+      var newMaze = generateMaze(MAZE_ROWS, MAZE_COLS);
+      setMaze(newMaze);
+      setPlayerPos({ r: 0, c: 0 });
+      setMonsterPos({ r: 0, c: 0 });
+      setCurrentProblem(null);
+      setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
+      setGameOver(false); setWon(false); setFeedback('');
+      setMode('playing');
+      // Timer
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(function() { setElapsed(function(p) { return p + 1; }); }, 1000);
+      // Monster chase timer (moves every 4 seconds)
+      if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+      if (chaseMode) {
+        monsterTimerRef.current = setInterval(function() {
+          setMonsterPos(function(mp) {
+            // BFS toward player — simple chase AI
+            // Just move one step closer (Manhattan distance)
+            var pr = playerPos.r, pc = playerPos.c;
+            var mr = mp.r, mc = mp.c;
+            if (mr < pr) return { r: mr + 1, c: mc };
+            if (mr > pr) return { r: mr - 1, c: mc };
+            if (mc < pc) return { r: mr, c: mc + 1 };
+            if (mc > pc) return { r: mr, c: mc - 1 };
+            return mp;
+          });
+        }, 4000);
+      }
+    }
+
+    function tryMove(dir) {
+      if (gameOver || won) return;
+      var cell = maze[playerPos.r][playerPos.c];
+      var canMove = false;
+      var newR = playerPos.r, newC = playerPos.c;
+      if (dir === 'up' && !cell.walls.top) { newR--; canMove = true; }
+      if (dir === 'down' && !cell.walls.bottom) { newR++; canMove = true; }
+      if (dir === 'left' && !cell.walls.left) { newC--; canMove = true; }
+      if (dir === 'right' && !cell.walls.right) { newC++; canMove = true; }
+      if (!canMove) { setFeedback('wall'); setTimeout(function() { setFeedback(''); }, 300); return; }
+      // Show a problem to solve before moving
+      setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: makeProblem() });
+      setUserInput('');
+      setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
+    }
+
+    function submitAnswer() {
+      if (!currentProblem) return;
+      var ans = parseInt(userInput);
+      if (ans === currentProblem.problem.answer) {
+        // Correct — move to new cell
+        setPlayerPos({ r: currentProblem.targetR, c: currentProblem.targetC });
+        setCorrect(function(p) { return p + 1; });
+        setScore(function(p) { return p + 10; });
+        setMoveCount(function(p) { return p + 1; });
+        setFeedback('correct');
+        playTone(880, 0.05, 'sine', 0.06);
+        setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
+        // Check win
+        if (currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1) {
+          setWon(true); setMode('results');
+          if (timerRef.current) clearInterval(timerRef.current);
+          if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+          if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
+          if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60), 'Fluency Maze Complete', 'fluency-maze');
+        }
+      } else {
+        // Wrong — don't move, penalty
+        setWrong(function(p) { return p + 1; });
+        setScore(function(p) { return Math.max(0, p - 3); });
+        setFeedback('wrong');
+        playTone(220, 0.1, 'triangle', 0.04);
+      }
+      setCurrentProblem(null);
+      setTimeout(function() { setFeedback(''); }, 400);
+    }
+
+    // Check monster catch
+    useEffect(function() {
+      if (chaseMode && mode === 'playing' && monsterPos.r === playerPos.r && monsterPos.c === playerPos.c && moveCount > 0) {
+        setGameOver(true); setMode('results');
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+        if (addToast) addToast('\uD83D\uDC7E The monster caught you! Score: ' + score, 'error');
+      }
+    });
+
+    // Keyboard navigation
+    useEffect(function() {
+      function handleKey(e) {
+        if (mode !== 'playing') return;
+        if (currentProblem) {
+          if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
+          return;
+        }
+        if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
+        if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
+        if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
+        if (e.key === 'ArrowRight' || e.key === 'd') tryMove('right');
+      }
+      document.addEventListener('keydown', handleKey);
+      return function() { document.removeEventListener('keydown', handleKey); };
+    });
+
+    // Draw maze on canvas
+    useEffect(function() {
+      if (!maze || !canvasRef.current) return;
+      var cv = canvasRef.current;
+      var ctx = cv.getContext('2d');
+      var W = MAZE_COLS * CELL_SIZE;
+      var H = MAZE_ROWS * CELL_SIZE;
+      cv.width = W; cv.height = H;
+
+      // Background
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+
+      // Draw cells
+      for (var r = 0; r < MAZE_ROWS; r++) {
+        for (var c = 0; c < MAZE_COLS; c++) {
+          var cell = maze[r][c];
+          var x = c * CELL_SIZE, y = r * CELL_SIZE;
+          // Cell floor
+          if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
+          else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.2)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
+          // Walls
+          ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+          if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
+          if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
+          if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
+          if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
+        }
+      }
+
+      // Start label
+      ctx.fillStyle = '#22c55e'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('START', CELL_SIZE / 2, CELL_SIZE / 2 + 14);
+      // Exit label
+      ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('EXIT', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE + 14);
+      // Exit star
+      ctx.font = '18px sans-serif';
+      ctx.fillText('\u2B50', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE);
+
+      // Monster (chase mode)
+      if (chaseMode && mode === 'playing' && !gameOver) {
+        ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('\uD83D\uDC7E', (monsterPos.c + 0.5) * CELL_SIZE, (monsterPos.r + 0.5) * CELL_SIZE + 6);
+      }
+
+      // Player
+      ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('\uD83D\uDC31', (playerPos.c + 0.5) * CELL_SIZE, (playerPos.r + 0.5) * CELL_SIZE + 6);
+
+      // Feedback flash
+      if (feedback === 'correct') { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+      if (feedback === 'wrong') { ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+      if (feedback === 'wall') { ctx.fillStyle = 'rgba(148,163,184,0.15)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+    });
+
+    // Cleanup timers
+    useEffect(function() {
+      return function() {
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+      };
+    }, []);
+
+    // ── Render ──
+    if (mode === 'setup') {
+      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
+        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '4px' } }, 'Fluency Maze'),
+        h('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '16px' } }, 'Solve math problems to navigate through the maze. Reach the exit!'),
+        // Operation selector
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
+          ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
+            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
+            return h('button', { key: op, onClick: function() { setOperation(op); },
+              style: { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                background: operation === op ? '#7c3aed' : '#f1f5f9', color: operation === op ? '#fff' : '#475569',
+                border: operation === op ? '2px solid #7c3aed' : '2px solid #e2e8f0' }
+            }, labels[op]);
+          })
+        ),
+        // Difficulty
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
+          ['single', 'double'].map(function(d) {
+            return h('button', { key: d, onClick: function() { setDifficulty(d); },
+              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
+                border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
+            }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
+          })
+        ),
+        // Chase mode toggle
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#475569', cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); } }),
+          '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
+        ),
+        // Start button
+        h('button', { onClick: startMaze,
+          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff',
+            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }
+        }, '\u25B6\uFE0F Start Maze')
+      );
+    }
+
+    if (mode === 'results') {
+      var dcpm = elapsed > 0 ? Math.round(correct / (elapsed / 60)) : 0;
+      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
+        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
+          won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
+          h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Correct')),
+          h('div', { style: { background: '#fef2f2', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#ef4444' } }, String(wrong)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Wrong')),
+          h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#7c3aed' } }, String(dcpm)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Facts/Min')),
+          h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#f59e0b' } }, elapsed + 's'),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
+        ),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
+          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#f1f5f9', color: '#475569', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' } }, 'Settings')
+        )
+      );
+    }
+
+    // Playing mode
+    return h('div', { style: { maxWidth: 420, margin: '0 auto', position: 'relative' } },
+      // HUD
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px' } },
+        h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '\u2705 ' + correct),
+        h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '\u274C ' + wrong),
+        h('span', { style: { color: '#7c3aed', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
+        h('span', { style: { color: '#64748b' } }, '\u23F1 ' + elapsed + 's'),
+        chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!')
+      ),
+      // Canvas
+      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block', imageRendering: 'pixelated' } }),
+      // Problem overlay (when at junction)
+      currentProblem && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px 28px', textAlign: 'center', border: '2px solid #7c3aed', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 10 } },
+        h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#e2e8f0', marginBottom: '12px', fontFamily: 'monospace' } }, currentProblem.problem.text + ' = ?'),
+        h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
+          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); },
+          style: { width: '120px', padding: '8px 12px', fontSize: '24px', fontWeight: 800, textAlign: 'center', borderRadius: '10px', border: '2px solid #7c3aed', background: '#1e293b', color: '#fff', fontFamily: 'monospace', outline: 'none' },
+          inputMode: 'numeric', autoFocus: true
+        }),
+        h('div', { style: { marginTop: '8px' } },
+          h('button', { onClick: submitAnswer, style: { padding: '8px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\u2705 Submit')
+        )
+      ),
+      // Arrow buttons (mobile friendly)
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
+        h('div'),
+        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25B2'),
+        h('div'),
+        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25B6')
+      ),
+      // Instructions
+      h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 Solve each problem to advance')
+    );
+  }
+
+  // ── Register modules ──
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.MathFluency = MathFluencyPanel;
-  console.log('[CDN] MathFluency module registered');
+  window.AlloModules.FluencyMaze = FluencyMazePanel;
+  console.log('[CDN] MathFluency + FluencyMaze modules registered');
 })();
