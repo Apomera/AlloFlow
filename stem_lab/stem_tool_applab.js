@@ -129,6 +129,7 @@ window.StemLab = window.StemLab || {
         try {
           var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
           var gradeCtx = 'Grade level: ' + gradeLevel + (isElem ? ' (use simple language, large buttons, bright colors)' : '');
+          var pipelineLog = []; // Track what each agent did for "Behind the Scenes" panel
 
           // ═══ AGENT 1: ARCHITECT — plan the app structure ═══
           setGenStep('🏗️ Agent 1/4: Architecting...');
@@ -142,6 +143,7 @@ window.StemLab = window.StemLab || {
             + '5. Edge cases to handle\n\n'
             + 'Be specific and concise. Under 300 words.';
           var plan = await callGemini(planPrompt, false);
+          pipelineLog.push({ agent: 'Architect', icon: '\uD83C\uDFD7\uFE0F', result: (plan || '').substring(0, 200).replace(/\n/g, ' ') });
 
           // ═══ AGENT 2: BUILDER — generate code from the plan ═══
           setGenStep('🔨 Agent 2/4: Building...');
@@ -170,6 +172,7 @@ window.StemLab = window.StemLab || {
           if (!builtHtml || builtHtml.length < 100) {
             throw new Error('Builder agent produced empty output');
           }
+          pipelineLog.push({ agent: 'Builder', icon: '\uD83D\uDD28', result: builtHtml.length + ' chars of HTML generated' });
 
           // ═══ AGENT 3: REVIEWER — check for issues ═══
           setGenStep('🔍 Agent 3/4: Reviewing...');
@@ -192,35 +195,67 @@ window.StemLab = window.StemLab || {
           var issues = [];
           try { issues = JSON.parse(reviewResult); } catch(e) { issues = []; }
           if (!Array.isArray(issues)) issues = [];
+          pipelineLog.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'No issues found' : issues.length + ' issue(s): ' + issues.map(function(i2) { return i2.description; }).join('; ') });
 
-          // ═══ AGENT 4: FIXER — repair issues if any ═══
-          var finalHtml = builtHtml;
+          // ═══ CONDITIONAL REBUILD — if structural errors found, rebuild with feedback ═══
+          var structuralErrors = issues.filter(function(iss) { return iss.type === 'error'; });
+          var currentCode = builtHtml;
+          if (structuralErrors.length > 0) {
+            setGenStep('\uD83D\uDD04 Structural issues found — rebuilding with feedback...');
+            pipelineLog.push({ agent: 'Rebuild', icon: '\uD83D\uDD04', result: 'Rebuilding: ' + structuralErrors.length + ' structural error(s) detected' });
+            var rebuildPrompt = 'You are rebuilding an educational mini-app that had structural issues.\n\n'
+              + 'ORIGINAL REQUEST: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
+              + 'ARCHITECTURE PLAN:\n' + (plan || '').substring(0, 1500) + '\n\n'
+              + 'PREVIOUS ATTEMPT HAD THESE STRUCTURAL ISSUES:\n'
+              + structuralErrors.map(function(e2, i2) { return (i2+1) + '. ' + e2.description + ' → ' + (e2.fix || ''); }).join('\n') + '\n\n'
+              + 'Fix ALL structural issues. Generate a COMPLETE, working HTML document.\n'
+              + 'Return ONLY the HTML — no markdown, no explanation.';
+            var rebuilt = cleanHtmlResponse(await callGemini(rebuildPrompt, false));
+            if (rebuilt && rebuilt.length > 100) {
+              currentCode = rebuilt;
+              // Re-review the rebuilt code
+              setGenStep('\uD83D\uDD0D Re-reviewing rebuilt code...');
+              try {
+                var reReviewResult = await callGemini(reviewPrompt.replace(builtHtml.substring(0, 12000), rebuilt.substring(0, 12000)), true);
+                var reReview = (typeof reReviewResult === 'string' ? reReviewResult : JSON.stringify(reReviewResult)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                try { issues = JSON.parse(reReview); } catch(e3) { issues = []; }
+                if (!Array.isArray(issues)) issues = [];
+                pipelineLog.push({ agent: 'Re-Review', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'Rebuild passed review!' : issues.length + ' remaining issue(s)' });
+              } catch(e4) { issues = []; }
+            }
+          }
+
+          // ═══ AGENT 4: FIXER — repair remaining issues if any ═══
+          var finalHtml = currentCode;
           if (issues.length > 0) {
-            setGenStep('🔧 Agent 4/4: Fixing ' + issues.length + ' issue(s)...');
+            setGenStep('\uD83D\uDD27 Fixing ' + issues.length + ' issue(s)...');
             var issueList = issues.map(function(iss, i) {
-              return (i + 1) + '. [' + (iss.type || 'issue') + '] ' + (iss.description || '') + ' → Fix: ' + (iss.fix || '');
+              return (i + 1) + '. [' + (iss.type || 'issue') + '] ' + (iss.description || '') + ' \u2192 Fix: ' + (iss.fix || '');
             }).join('\n');
             var fixPrompt = 'Fix these issues in the HTML mini-app. Apply each fix precisely.\n\n'
               + 'ISSUES TO FIX:\n' + issueList + '\n\n'
-              + 'CURRENT CODE:\n```html\n' + builtHtml.substring(0, 15000) + '\n```\n\n'
+              + 'CURRENT CODE:\n```html\n' + currentCode.substring(0, 15000) + '\n```\n\n'
               + 'Return the COMPLETE fixed HTML document. No markdown, no explanation.';
             var fixedResult = cleanHtmlResponse(await callGemini(fixPrompt, false));
-            if (fixedResult && fixedResult.length > builtHtml.length * 0.5) {
+            if (fixedResult && fixedResult.length > currentCode.length * 0.5) {
               finalHtml = fixedResult;
             }
-            addToast && addToast('🔧 Fixed ' + issues.length + ' issue(s) found by code reviewer', 'info');
+            pipelineLog.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + issues.length + ' issue(s)' });
           } else {
-            setGenStep('✅ Review passed — no issues found!');
+            setGenStep('\u2705 Review passed!');
+            pipelineLog.push({ agent: 'Fixer', icon: '\u2705', result: 'Skipped — no issues to fix' });
           }
 
+          var totalAgents = 4 + (structuralErrors.length > 0 ? 2 : 0);
           setHtml(finalHtml);
           setEditHtml(finalHtml);
           setHistory(function(prev) { return prev.concat([finalHtml]); });
           setHistoryIdx(function(prev) { return prev + 1; });
           upd('appsGenerated', (d.appsGenerated || 0) + 1);
+          upd('lastPipelineLog', pipelineLog);
           if (awardXP) awardXP('appLab', 15);
-          if (announceToSR) announceToSR('App generated successfully with multi-agent pipeline!');
-          addToast && addToast('✅ App created! 4-agent pipeline: planned, built, reviewed' + (issues.length > 0 ? ', fixed ' + issues.length + ' issues' : ', passed review') + '.', 'success');
+          if (announceToSR) announceToSR('App generated successfully with ' + totalAgents + '-agent pipeline!');
+          addToast && addToast('\u2705 App created! ' + totalAgents + '-agent pipeline: ' + pipelineLog.map(function(p) { return p.agent; }).join(' \u2192 '), 'success');
         } catch(err) {
           addToast && addToast('Generation failed: ' + err.message, 'error');
         }
@@ -449,6 +484,50 @@ window.StemLab = window.StemLab || {
                   )
                 );
               })
+            )
+          )
+        ),
+
+        // ── Behind the Scenes: Agent Pipeline Visualizer ──
+        d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderRadius: '12px', border: '1px solid #4338ca', overflow: 'hidden' } },
+          h('summary', { style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' } },
+            '\uD83E\uDD16 Behind the Scenes — How AI Built This App'
+          ),
+          h('div', { style: { padding: '12px 14px', paddingTop: 0 } },
+            h('p', { style: { fontSize: '10px', color: '#a5b4fc', marginBottom: '10px', lineHeight: 1.6 } },
+              'This app was built by a team of AI agents working together \u2014 each specializing in a different aspect of software development. This is called "agentic AI" or "multi-agent orchestration." Each agent has a specific role and passes its work to the next agent in the pipeline.'
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              d.lastPipelineLog.map(function(step, si) {
+                var colors = { Architect: '#818cf8', Builder: '#34d399', Reviewer: '#fbbf24', Fixer: '#f87171', Rebuild: '#f97316', 'Re-Review': '#fbbf24' };
+                var descs = {
+                  Architect: 'Plans the app structure, features, and accessibility requirements before any code is written. Like a blueprint for a building.',
+                  Builder: 'Writes the actual HTML, CSS, and JavaScript code based on the Architect\'s plan. Creates the working app.',
+                  Reviewer: 'Reads the code with fresh eyes to find bugs, accessibility issues, and UX problems. Like a code review at a software company.',
+                  Fixer: 'Takes the Reviewer\'s feedback and applies targeted fixes. Only runs if the Reviewer found issues.',
+                  Rebuild: 'When the Reviewer finds fundamental structural problems, the Builder runs again with the feedback to create a better version.',
+                  'Re-Review': 'Checks the rebuilt code to make sure the structural issues were actually fixed.'
+                };
+                return h('div', { key: si, style: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '3px solid ' + (colors[step.agent] || '#818cf8') } },
+                  h('div', { style: { fontSize: '18px', flexShrink: 0 } }, step.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                      h('span', { style: { fontSize: '11px', fontWeight: 700, color: colors[step.agent] || '#c4b5fd' } }, 'Agent ' + (si + 1) + ': ' + step.agent),
+                      si < d.lastPipelineLog.length - 1 && h('span', { style: { fontSize: '9px', color: '#6366f1' } }, '\u2192')
+                    ),
+                    h('p', { style: { fontSize: '9px', color: '#94a3b8', margin: '2px 0 4px', lineHeight: 1.4 } }, descs[step.agent] || ''),
+                    h('p', { style: { fontSize: '10px', color: '#e2e8f0', background: 'rgba(0,0,0,0.2)', padding: '4px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, step.result)
+                  )
+                );
+              })
+            ),
+            h('div', { style: { marginTop: '10px', padding: '8px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
+              h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, '\uD83D\uDCA1 How does this relate to real software engineering?'),
+              h('p', { style: { fontSize: '9px', color: '#94a3b8', lineHeight: 1.5 } },
+                'Professional software teams follow a similar pattern: architects design systems, developers write code, QA engineers test for bugs, and developers fix issues found in review. '
+                + 'Large Language Models (LLMs) like Gemini can play each of these roles because they understand both natural language instructions and programming code. '
+                + 'By giving each AI agent a specific, focused task instead of asking one agent to do everything, the overall quality improves \u2014 just like how a team of specialists outperforms a single generalist.'
+              )
             )
           )
         ),
