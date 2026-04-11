@@ -908,6 +908,151 @@
         }, 2000); // Run every 2 seconds
       }
 
+      // ── Gamepad API Adapter — maps controller inputs to keyboard events ──
+      // Runs a polling loop when a gamepad is connected. Synthesizes KeyboardEvents
+      // so all existing tools get controller support automatically (no per-tool changes).
+      // Supports Xbox, PlayStation, and generic HID controllers.
+      // Button mapping follows the W3C Standard Gamepad layout:
+      //   Left stick: WASD movement | Right stick: Arrow keys (camera/turn)
+      //   A/Cross: Space (jump/click) | B/Circle: Escape (close dialog)
+      //   X/Square: KeyE (interact) | Y/Triangle: KeyM (measure)
+      //   LB: KeyQ (cycle shape) | RB: right-click (place block)
+      //   LT: Shift (sprint) | RT: left-click (break block)
+      //   D-pad: 1-4 block selection | Start: KeyF (fly) | Select: KeyG (grid)
+      if (!window._stemGamepadActive) {
+        window._stemGamepadActive = true;
+        var _gpPrevButtons = {};
+        var _gpConnected = false;
+        var _gpDeadzone = 0.2;
+
+        window.addEventListener('gamepadconnected', function(e) {
+          _gpConnected = true;
+          console.log('[Gamepad] Connected: ' + e.gamepad.id);
+          if (typeof addToast === 'function') addToast('\uD83C\uDFAE Controller connected: ' + e.gamepad.id.substring(0, 40), 'success');
+        });
+        window.addEventListener('gamepaddisconnected', function() {
+          _gpConnected = false;
+          console.log('[Gamepad] Disconnected');
+        });
+
+        // Synthesize a keyboard event the same way the browser would
+        function _gpKey(code, type) {
+          try {
+            var ev = new KeyboardEvent(type, { code: code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true });
+            document.dispatchEvent(ev);
+            // Also dispatch to the focused element (for canvas listeners)
+            if (document.activeElement && document.activeElement !== document.body) {
+              document.activeElement.dispatchEvent(new KeyboardEvent(type, { code: code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true }));
+            }
+          } catch(e) {}
+        }
+
+        // Synthesize mouse click for block place/break
+        function _gpClick(button) {
+          try {
+            var target = document.activeElement || document.querySelector('canvas');
+            if (target) {
+              var rect = target.getBoundingClientRect();
+              var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+              target.dispatchEvent(new MouseEvent('mousedown', { button: button, clientX: cx, clientY: cy, bubbles: true }));
+              setTimeout(function() {
+                target.dispatchEvent(new MouseEvent('mouseup', { button: button, clientX: cx, clientY: cy, bubbles: true }));
+              }, 50);
+            }
+          } catch(e) {}
+        }
+
+        // Button state tracker (press/release edge detection)
+        function _gpBtnPressed(idx, pressed) {
+          var wasPressed = !!_gpPrevButtons[idx];
+          _gpPrevButtons[idx] = pressed;
+          return pressed && !wasPressed; // true on rising edge only
+        }
+        function _gpBtnReleased(idx, pressed) {
+          var wasPressed = !!_gpPrevButtons[idx];
+          _gpPrevButtons[idx] = pressed;
+          return !pressed && wasPressed;
+        }
+
+        // Axis-to-key state tracking (hold behavior, not just press)
+        var _gpAxisKeys = {};
+        function _gpAxisToKey(axisVal, negKey, posKey, id) {
+          var negActive = axisVal < -_gpDeadzone;
+          var posActive = axisVal > _gpDeadzone;
+          var prevNeg = _gpAxisKeys[id + '_neg'];
+          var prevPos = _gpAxisKeys[id + '_pos'];
+          if (negActive && !prevNeg) _gpKey(negKey, 'keydown');
+          if (!negActive && prevNeg) _gpKey(negKey, 'keyup');
+          if (posActive && !prevPos) _gpKey(posKey, 'keydown');
+          if (!posActive && prevPos) _gpKey(posKey, 'keyup');
+          _gpAxisKeys[id + '_neg'] = negActive;
+          _gpAxisKeys[id + '_pos'] = posActive;
+        }
+
+        // Poll loop (requestAnimationFrame)
+        function _gpPoll() {
+          requestAnimationFrame(_gpPoll);
+          if (!_gpConnected) return;
+          var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+          var gp = null;
+          for (var gi = 0; gi < gamepads.length; gi++) { if (gamepads[gi]) { gp = gamepads[gi]; break; } }
+          if (!gp) return;
+
+          // Left stick → WASD
+          _gpAxisToKey(gp.axes[1], 'KeyW', 'KeyS', 'ls_y'); // Y-axis inverted: up = negative
+          _gpAxisToKey(gp.axes[0], 'KeyA', 'KeyD', 'ls_x');
+
+          // Right stick → Arrow keys (camera/turn)
+          if (gp.axes.length >= 4) {
+            _gpAxisToKey(gp.axes[3], 'ArrowUp', 'ArrowDown', 'rs_y');
+            _gpAxisToKey(gp.axes[2], 'ArrowLeft', 'ArrowRight', 'rs_x');
+          }
+
+          // Face buttons (Standard Gamepad mapping)
+          var btns = gp.buttons;
+          if (btns.length >= 4) {
+            // A/Cross (index 0) → Space
+            if (_gpBtnPressed(0, btns[0].pressed)) _gpKey('Space', 'keydown');
+            if (_gpBtnReleased(0, btns[0].pressed)) _gpKey('Space', 'keyup');
+            // B/Circle (1) → Escape
+            if (_gpBtnPressed(1, btns[1].pressed)) _gpKey('Escape', 'keydown');
+            if (_gpBtnReleased(1, btns[1].pressed)) _gpKey('Escape', 'keyup');
+            // X/Square (2) → KeyE (interact with NPC)
+            if (_gpBtnPressed(2, btns[2].pressed)) _gpKey('KeyE', 'keydown');
+            if (_gpBtnReleased(2, btns[2].pressed)) _gpKey('KeyE', 'keyup');
+            // Y/Triangle (3) → KeyM (measure)
+            if (_gpBtnPressed(3, btns[3].pressed)) _gpKey('KeyM', 'keydown');
+            if (_gpBtnReleased(3, btns[3].pressed)) _gpKey('KeyM', 'keyup');
+          }
+          if (btns.length >= 8) {
+            // LB (4) → KeyQ (cycle shape/tool)
+            if (_gpBtnPressed(4, btns[4].pressed)) _gpKey('KeyQ', 'keydown');
+            if (_gpBtnReleased(4, btns[4].pressed)) _gpKey('KeyQ', 'keyup');
+            // RB (5) → right-click (place block)
+            if (_gpBtnPressed(5, btns[5].pressed)) _gpClick(2);
+            // LT (6) → Shift (sprint)
+            if (btns[6].value > 0.3 && !_gpAxisKeys['lt']) { _gpKey('ShiftLeft', 'keydown'); _gpAxisKeys['lt'] = true; }
+            if (btns[6].value <= 0.3 && _gpAxisKeys['lt']) { _gpKey('ShiftLeft', 'keyup'); _gpAxisKeys['lt'] = false; }
+            // RT (7) → left-click (break block)
+            if (_gpBtnPressed(7, btns[7].pressed)) _gpClick(0);
+          }
+          if (btns.length >= 10) {
+            // Select/Back (8) → KeyG (grid toggle)
+            if (_gpBtnPressed(8, btns[8].pressed)) _gpKey('KeyG', 'keydown');
+            // Start (9) → KeyF (fly toggle)
+            if (_gpBtnPressed(9, btns[9].pressed)) _gpKey('KeyF', 'keydown');
+          }
+          // D-pad → Digit1-4 (block type selection)
+          if (btns.length >= 16) {
+            if (_gpBtnPressed(12, btns[12].pressed)) _gpKey('Digit1', 'keydown'); // Up
+            if (_gpBtnPressed(13, btns[13].pressed)) _gpKey('Digit2', 'keydown'); // Down
+            if (_gpBtnPressed(14, btns[14].pressed)) _gpKey('Digit3', 'keydown'); // Left
+            if (_gpBtnPressed(15, btns[15].pressed)) _gpKey('Digit4', 'keydown'); // Right
+          }
+        }
+        _gpPoll();
+      }
+
       // ── Canvas Narration: Dual-Channel (aria-live + TTS) with Smart Detection & Adaptive Verbosity ──
       // Dedupe + encounter maps MUST live on window so they persist across React renders
       // (otherwise init/debounce guards reset every render → infinite repeat narration).
@@ -1860,7 +2005,7 @@
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
         "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEM Lab: " + stemLabTool : "STEM Lab",
-        className: "fixed inset-0 z-[9999] flex items-stretch justify-center" + (_reduceMotion ? " reduce-motion" : ""),
+        className: "fixed inset-0 z-[9999] flex items-stretch justify-center stem-lab-modal" + (_reduceMotion ? " reduce-motion" : ""),
         style: {
           background: 'rgba(15,23,42,0.7)',
           backdropFilter: 'blur(6px)'
@@ -2026,6 +2171,39 @@
             React.createElement("span", { style: { color: _pal.textMuted } }, "Move between controls"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "?"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle this help panel")
+          ),
+          // Gamepad controller mapping
+          React.createElement("div", { style: { marginTop: 12, paddingTop: 10, borderTop: '1px solid ' + _pal.border } },
+            React.createElement("h4", { style: { margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: isContrast ? '#facc15' : '#4f46e5' } }, "\uD83C\uDFAE Controller Support (Xbox / PlayStation / Generic)"),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '3px 14px', fontSize: 11 } },
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "L Stick"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Move (WASD)"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "R Stick"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Look / Turn"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "A / \u2A2F"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Jump / Click / Confirm"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "B / \u25CB"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Close / Back"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "X / \u25A1"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Interact (NPC)"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Y / \u25B3"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Measure"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "LB"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Cycle tool/shape"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "RB"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Place block"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "LT"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Sprint"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "RT"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Break block"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "D-pad"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Select blocks 1-4"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Start"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle fly mode"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Select"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle grid")
+            ),
+            React.createElement("p", { style: { margin: '6px 0 0', fontSize: 10, color: _pal.textMuted, fontStyle: 'italic' } }, "Just connect your controller \u2014 it\u2019s auto-detected. Works with all 3D tools including Geometry World, Echo Navigator, SkySchool, Moon Mission, and Solar System.")
           )
         ),
         // ═══ XP Progress Overlay Panel ═══
@@ -2184,7 +2362,7 @@
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-500 uppercase"
+          className: "text-xs font-bold text-slate-600 uppercase"
         }, "Style:"), [{
           val: t('stem.solver.stepbystep'),
           label: t('stem.solver.stepbystep')
@@ -2209,7 +2387,7 @@
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-500"
+          className: "text-xs font-bold text-slate-600"
         }, "Quantity:"), /*#__PURE__*/React.createElement("input", {
           type: "range",
           min: "1",
@@ -2238,7 +2416,7 @@
         }), " ", stemLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Problems'), /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-2 pt-1"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-[10px] text-slate-500 font-bold uppercase"
+          className: "text-[10px] text-slate-600 font-bold uppercase"
         }, "Tools:"), [{
           // @tool volume
           id: 'volume',
@@ -2280,7 +2458,7 @@
         })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
           className: "text-lg font-bold text-slate-800"
         }, "\uD83D\uDCCB Assessment Builder"), /*#__PURE__*/React.createElement("p", {
-          className: "text-xs text-slate-500"
+          className: "text-xs text-slate-600"
         }, "Compose blocks of different problem types into a custom assessment")))), /*#__PURE__*/React.createElement("div", {
           className: "space-y-2"
         }, assessmentBlocks.map((block, idx) => /*#__PURE__*/React.createElement("div", {
@@ -2333,7 +2511,7 @@
         }, "\u2728 Custom"), /*#__PURE__*/React.createElement("option", {
           value: "manipulative"
         }, "\uD83E\uDDF1 Manipulative Response")), /*#__PURE__*/React.createElement("span", {
-          className: "text-xs text-slate-500"
+          className: "text-xs text-slate-600"
         }, "\xD7"), /*#__PURE__*/React.createElement("input", {
           type: "number",
           min: "1",
@@ -2498,7 +2676,7 @@
             className: "text-sm font-bold text-slate-700"
           }, "\uD83D\uDCF8 Tool Snapshots (", toolSnapshots.length, ")"), /*#__PURE__*/React.createElement("button", { "aria-label": "Clear all",
             onClick: () => setToolSnapshots([]),
-            className: "text-[10px] text-slate-500 hover:text-red-500 transition-colors"
+            className: "text-[10px] text-slate-600 hover:text-red-500 transition-colors"
           }, "\u21BA Clear all")), /*#__PURE__*/React.createElement("div", {
             className: "grid grid-cols-2 gap-2"
           }, toolSnapshots.map((snap, si) => /*#__PURE__*/React.createElement("div", {
@@ -2535,7 +2713,7 @@
           }, /*#__PURE__*/React.createElement(X, {
             size: 12
           }))), /*#__PURE__*/React.createElement("div", {
-            className: "text-[10px] text-slate-500 mt-1"
+            className: "text-[10px] text-slate-600 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
@@ -2875,6 +3053,11 @@
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
                 desc: 'Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports with real physics.',
                 color: 'sky', ready: true
+              },
+              {
+                id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
+                desc: 'Navigate virtual spaces using only spatial audio echoes — real HRTF binaural sound. Wear headphones!',
+                color: 'indigo', ready: true
               },
               {
                 id: 'atcTower', icon: '🗼', label: 'ATC Tower',
@@ -3661,7 +3844,7 @@
                   key: tool.id,
                   className: "col-span-2 mt-3 first:mt-0"
                 }, /*#__PURE__*/React.createElement("h3", {
-                  className: "text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
+                  className: "text-sm font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
                 }, tool.label));
               }
               var _ci = _cardIndex++;
@@ -3945,12 +4128,18 @@
             musicSynth: true,
             beehive: true,
             echolocation: true,
+            echoTrainer: true,
             oratory: true,
             singing: true,
             migration: true,
             appLab: true
           };
-          console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
+          // Throttle fallback log to once per tool (avoid flooding console on re-renders)
+          if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
+          if (!window._stemFallbackLogged[stemLabTool]) {
+            console.log('[StemLab Fallback] Rendering plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
+            window._stemFallbackLogged[stemLabTool] = true;
+          }
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
           // Show skeleton loader while plugin hasn't registered yet
@@ -3970,7 +4159,7 @@
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" })
               ),
               React.createElement("p", { className: "text-center text-xs text-slate-400", role: 'status', 'aria-live': 'polite' }, "\uD83D\uDD2C Loading " + stemLabTool + "..."),
-              React.createElement("p", { className: "text-center text-[10px] text-slate-500 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
+              React.createElement("p", { className: "text-center text-[10px] text-slate-600 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
             );
           }
 

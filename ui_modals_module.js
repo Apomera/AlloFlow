@@ -188,7 +188,7 @@ const StudentQuizOverlay = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-end"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider"
+    className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider"
   }, t('quiz.question_label')), /*#__PURE__*/React.createElement("span", {
     className: "text-3xl font-mono font-black text-white leading-none"
   }, currentQuestionIndex + 1, " ", /*#__PURE__*/React.createElement("span", {
@@ -234,7 +234,7 @@ const StudentQuizOverlay = React.memo(({
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"
+    className: "flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, bossStats.name || "Boss", " HP"), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -245,7 +245,7 @@ const StudentQuizOverlay = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider"
+    className: "flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, t('quiz.boss.class_hp')), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.classHP ?? 100), " / ", bossStats.classMaxHP || 100)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -374,7 +374,7 @@ const StudentQuizOverlay = React.memo(({
   }), showTranslated && currentQuestion.factCheck_en && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-500 italic whitespace-pre-wrap"
+    className: "text-xs text-slate-600 italic whitespace-pre-wrap"
   }, currentQuestion.factCheck_en)))))));
 });
 const TeacherGate = React.memo(({
@@ -555,7 +555,7 @@ const RoleSelectionModal = React.memo(({
   }, t('roles.independent')))), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2"
+    className: "text-[10px] text-slate-600 uppercase tracking-widest font-bold mb-2"
   }, t('roles.mic_setup')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.confirm'),
     onClick: handleMicCheck,
@@ -660,7 +660,7 @@ const StudentEntryModal = React.memo(({
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18
   })))), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-500 font-bold flex items-center justify-center gap-1 mb-6"
+    className: "text-xs text-slate-600 font-bold flex items-center justify-center gap-1 mb-6"
   }, /*#__PURE__*/React.createElement(ShieldCheck, {
     size: 12,
     className: "text-green-500"
@@ -685,7 +685,7 @@ const StudentEntryModal = React.memo(({
     size: 16
   }), " ", t('entry.load'))), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    className: "mt-4 text-sm text-slate-500 hover:text-slate-600 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded"
+    className: "mt-4 text-sm text-slate-600 hover:text-slate-600 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded"
   }, t('common.cancel'))));
 });
 const StudentWelcomeModal = React.memo(({

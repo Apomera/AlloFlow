@@ -128,13 +128,13 @@ const SpeedReaderOverlay = React.memo(({
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-lg"
   }, t('adventure.focus_reader')), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-500"
+    className: "text-xs text-slate-600"
   }, currentIndex + 1, " / ", words.length))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-500"
+    className: "text-xs font-bold text-slate-600"
   }, "COLOR"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1"
   }, colorOptions.map(c => /*#__PURE__*/React.createElement("button", {
@@ -148,7 +148,7 @@ const SpeedReaderOverlay = React.memo(({
   })))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-500"
+    className: "text-xs font-bold text-slate-600"
   }, "SPEED"), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.speed'),
     type: "range",
@@ -245,7 +245,7 @@ const ImmersiveToolbar = React.memo(({
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-4 overflow-x-auto no-scrollbar"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 shrink-0"
+    className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2 shrink-0"
   }, /*#__PURE__*/React.createElement(Settings2, {
     size: 14
   }), " ", t('immersive.title')), /*#__PURE__*/React.createElement("div", {
@@ -259,7 +259,7 @@ const ImmersiveToolbar = React.memo(({
   }, t('immersive.text_size')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] text-slate-500"
+    className: "text-[10px] text-slate-600"
   }, "A"), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.adjust_settings'),
     type: "range",
@@ -345,7 +345,7 @@ const ImmersiveToolbar = React.memo(({
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] text-slate-500"
+    className: "text-[10px] text-slate-600"
   }, "1s"), /*#__PURE__*/React.createElement("input", {
     type: "range",
     min: "1000",
@@ -357,13 +357,13 @@ const ImmersiveToolbar = React.memo(({
     title: `${(chunkReaderSpeed / 1000).toFixed(1)}s`,
     "aria-label": t('immersive.speed')
   }), /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] text-slate-500 tabular-nums"
+    className: "text-[10px] text-slate-600 tabular-nums"
   }, (chunkReaderSpeed / 1000).toFixed(1), "s")))), /*#__PURE__*/React.createElement("div", {
     className: "h-4 w-px bg-slate-300 shrink-0"
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 shrink-0"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-500"
+    className: "text-xs font-bold text-slate-600"
   }, t('immersive.grammar_label')), /*#__PURE__*/React.createElement(ToggleButton, {
     active: settings.showNouns,
     settingKey: "showNouns",
@@ -389,7 +389,7 @@ const ImmersiveToolbar = React.memo(({
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 shrink-0 relative"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-500"
+    className: "text-xs font-bold text-slate-600"
   }, t('immersive.colors') || 'Colors'), /*#__PURE__*/React.createElement("select", {
     "aria-label": t('immersive.color_preset') || 'Color preset',
     value: "",
@@ -452,7 +452,7 @@ const ImmersiveToolbar = React.memo(({
   }, "\uD83C\uDF38 Rose")), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1.5"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "text-[10px] text-slate-500"
+    className: "text-[10px] text-slate-600"
   }, t('immersive.bg') || 'Bg'), /*#__PURE__*/React.createElement("input", {
     type: "color",
     value: settings.bgColor || '#fdfbf7',
@@ -466,7 +466,7 @@ const ImmersiveToolbar = React.memo(({
     },
     "aria-label": t('immersive.bg_color') || 'Background color'
   }), /*#__PURE__*/React.createElement("label", {
-    className: "text-[10px] text-slate-500"
+    className: "text-[10px] text-slate-600"
   }, t('immersive.text') || 'Text'), /*#__PURE__*/React.createElement("input", {
     type: "color",
     value: settings.fontColor || '#1e293b',
