@@ -34956,12 +34956,14 @@ Return ONLY JSON:
                 {showSourceGen && (
                   <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3">
                       <div>
-                        <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.topic')}</label>
+                        <label htmlFor="allo-source-topic" className="block text-xs font-medium text-indigo-900 mb-1">{t('input.topic')}</label>
                         <input
+                          id="allo-source-topic"
                           type="text"
                           value={sourceTopic}
                           onChange={(e) => setSourceTopic(e.target.value)}
                           placeholder={t('wizard.topic_placeholder')}
+                          aria-label={t('input.topic')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                           onKeyDown={(e) => e.key === 'Enter' && handleGenerateSource()}
                           autoFocus
@@ -50733,12 +50735,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-[10px] text-slate-600 font-bold">Style Name</label>
-                                    <input id="custom-style-name" type="text" placeholder="My Style" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded" />
+                                    <label htmlFor="custom-style-name" className="text-[10px] text-slate-600 font-bold">Style Name</label>
+                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded" />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] text-slate-600 font-bold">Font</label>
-                                    <select id="custom-style-font" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded">
+                                    <label htmlFor="custom-style-font" className="text-[10px] text-slate-600 font-bold">Font</label>
+                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded">
                                       <option value="'Inter', system-ui, sans-serif">Inter (Clean)</option>
                                       <option value="'Georgia', serif">Georgia (Serif)</option>
                                       <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (A11y)</option>
@@ -50751,16 +50753,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <label className="text-[10px] text-slate-600 font-bold">Heading Color</label>
-                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <label htmlFor="custom-style-heading" className="text-[10px] text-slate-600 font-bold">Heading Color</label>
+                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label="Heading color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] text-slate-600 font-bold">Accent Color</label>
-                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <label htmlFor="custom-style-accent" className="text-[10px] text-slate-600 font-bold">Accent Color</label>
+                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label="Accent color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] text-slate-600 font-bold">Background</label>
-                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <label htmlFor="custom-style-bg" className="text-[10px] text-slate-600 font-bold">Background</label>
+                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label="Background color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                 </div>
                                 <button onClick={() => {
