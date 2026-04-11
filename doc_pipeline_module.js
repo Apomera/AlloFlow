@@ -632,7 +632,7 @@ VISUAL STYLING (inline CSS):
 
 Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
 
-    let accessibleHtml = await callGemini(batchTransformPrompt, true);
+    let accessibleHtml = await callGemini(batchTransformPrompt, false);
 
     if (!accessibleHtml || accessibleHtml.length < 100) {
       throw new Error('HTML generation failed');
@@ -648,6 +648,23 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       if (accessibleHtml.lastIndexOf('`' + '``') !== -1) {
         accessibleHtml = accessibleHtml.substring(0, accessibleHtml.lastIndexOf('`' + '``'));
       }
+    }
+
+    // Safety net: unwrap JSON-wrapped HTML (AI sometimes returns {"html":"..."} or [{"html":"..."}])
+    var trimmedCheck = accessibleHtml.trim();
+    if ((trimmedCheck.startsWith('{') || trimmedCheck.startsWith('[')) && !trimmedCheck.startsWith('<!') && !trimmedCheck.startsWith('<html')) {
+      try {
+        var parsed = JSON.parse(trimmedCheck);
+        var extracted = null;
+        if (Array.isArray(parsed) && parsed[0]) extracted = parsed[0].html || parsed[0].html_content || parsed[0].content || parsed[0].text;
+        else if (parsed.html) extracted = parsed.html;
+        else if (parsed.html_content) extracted = parsed.html_content;
+        else if (parsed.content) extracted = parsed.content;
+        if (extracted && extracted.length > 100) {
+          warnLog('[Pipeline] Unwrapped JSON-wrapped HTML (' + extracted.length + ' chars)');
+          accessibleHtml = extracted;
+        }
+      } catch(e) { /* not valid JSON, keep as-is */ }
     }
 
     log(`Generated ${accessibleHtml.length} chars HTML`);
@@ -1564,7 +1581,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         const violIns = axeIns.concat(aiIns).join('\n');
 
         try {
-          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML:\n${'\"\"\"'}\n${accessibleHtml.substring(0, 25000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, true);
+          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML:\n${'\"\"\"'}\n${accessibleHtml.substring(0, 25000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, false);
           // Strip markdown fencing if AI wrapped response
           if (fixed && fixed.includes('`' + '``')) {
             const fParts = fixed.split('`' + '``');
@@ -2659,7 +2676,7 @@ HTML TO FIX:
 ${currentHtml.substring(0, 30000)}${currentHtml.length > 30000 ? '\n[... document continues, ' + currentHtml.length + ' chars total — fix violations in the portion shown and propagate fixes to similar patterns throughout ...]' : ''}
 """
 
-Return ONLY the complete fixed HTML.`, true);
+Return ONLY the complete fixed HTML.`, false);
 
         if (fixedHtml && fixedHtml.length > currentHtml.length * 0.5) {
           currentHtml = fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') ? fixedHtml : currentHtml;
@@ -2695,7 +2712,7 @@ Return the COMPLETE HTML document.
 HTML:
 """
 ${currentHtml.substring(0, 20000)}
-"""`, true);
+"""`, false);
               if (targetedFix && targetedFix.length > currentHtml.length * 0.5 && (targetedFix.includes('<!DOCTYPE') || targetedFix.includes('<html'))) {
                 const targetedAxe = await runAxeAudit(targetedFix);
                 if (targetedAxe && targetedAxe.totalViolations < currentAxe.totalViolations) {
@@ -4007,7 +4024,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
 
           try {
-            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML:\n"""\n${accessibleHtml.substring(0, 25000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, true);
+            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML:\n"""\n${accessibleHtml.substring(0, 25000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, false);
             if (fixedHtml && fixedHtml.length > accessibleHtml.length * 0.5 && (fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') || fixedHtml.includes('<main'))) {
               accessibleHtml = fixedHtml;
             }
