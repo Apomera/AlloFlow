@@ -4269,11 +4269,22 @@
                 return el('div', { key: si, style: { width: 8, height: 8, borderRadius: '50%', background: si < tutorialStep ? '#22c55e' : si === tutorialStep ? '#a78bfa' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
               })
             ),
-            el('button', {
-              'aria-label': 'Skip tutorial and proceed to lesson',
-              onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
-              style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: '#94a3b8', fontSize: '10px', padding: '4px 12px', cursor: 'pointer', pointerEvents: 'auto' }
-            }, 'Skip tutorial')
+            el('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', pointerEvents: 'auto' } },
+              el('button', {
+                'aria-label': 'Skip tutorial and proceed to lesson',
+                onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
+                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: '#94a3b8', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
+              }, 'Skip all'),
+              el('button', {
+                'aria-label': 'Next tutorial step',
+                onClick: function() {
+                  var nextStep = tutorialStep + 1;
+                  if (nextStep >= 4) { upd({ tutorialStep: 4, tutorialDismissed: true }); }
+                  else { upd('tutorialStep', nextStep); }
+                },
+                style: { background: '#7c3aed', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '10px', padding: '4px 14px', cursor: 'pointer', fontWeight: 700 }
+              }, 'Next \u2192')
+            )
           )
         ),
         // Crosshair — interactive (changes color based on target)
