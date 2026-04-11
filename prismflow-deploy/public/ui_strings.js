@@ -8000,7 +8000,10 @@
                               "badge_educator_open": "🛠️ Educator",
                                 "switch_hint": "You can switch modes anytime from the menu",
                                   "learning_tools_title": "Learning Tools",
-                                    "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow"
+                                    "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow",
+    "mic_title": "Microphone Setup",
+    "mic_desc": "Some tools use your microphone for dictation, recording, and voice input.",
+    "mic_canvas_warning": "In this environment, enabling the microphone will briefly reload the app. It's best to do it now before you start working."
   },
   "learning_hub": {
     "title": "Learning Tools",
