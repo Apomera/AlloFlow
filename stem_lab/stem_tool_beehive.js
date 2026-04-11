@@ -34,6 +34,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 (function() {
   'use strict';
 
+  // ── Audio System (auto-injected) ──
+  var _beeAC = null;
+  function getBeeAC() { if (!_beeAC) { try { _beeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_beeAC && _beeAC.state === "suspended") { try { _beeAC.resume(); } catch(e) {} } return _beeAC; }
+  function beeTone(f,d,tp,v) { var ac = getBeeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxBeeBuzz() { beeTone(220,0.1,"sawtooth",0.04); }
+  function sfxBeeCollect() { beeTone(660,0.06,"sine",0.06); }
+  function sfxBeeWaggle() { beeTone(330,0.08,"triangle",0.05); }
+
+
   window.StemLab.registerTool('beehive', {
     icon: '\uD83D\uDC1D',
     label: 'Beehive Simulator',
@@ -554,8 +563,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var _flowers = React.useRef(null);
         var _tick = React.useRef(0);
         var _sized = React.useRef(false);
+        // Track if animation loop is already running to avoid teardown/rebuild on every render
+        var _loopRunning = React.useRef(false);
 
         React.useEffect(function() {
+          // Don't restart the loop if it's already running — just let it read fresh closures next frame
+          if (_loopRunning.current) return;
           var cv = _cvRef.current;
           if (!cv) return;
           var c = cv.getContext('2d');
@@ -842,11 +855,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             } catch(e) { console.error('[Beehive] draw error:', e); }
             _animId.current = requestAnimationFrame(frame);
           }
-          // Start
+          // Start animation loop (only if not already running)
+          _loopRunning.current = true;
           if (_animId.current) cancelAnimationFrame(_animId.current);
           frame();
 
-          return function() { if (_animId.current) cancelAnimationFrame(_animId.current); };
+          return function() {
+            _loopRunning.current = false;
+            if (_animId.current) cancelAnimationFrame(_animId.current);
+          };
         });
 
         // ── Render ──
