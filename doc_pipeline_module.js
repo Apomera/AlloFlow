@@ -698,24 +698,24 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     }
 
     // 3. Ensure <html> has valid lang attribute (BCP 47)
+    // Common AI mistakes: lang="English", lang="en_US", lang='en', lang="" (empty), or missing entirely
+    var _langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi', 'vietnamese': 'vi', 'thai': 'th', 'hebrew': 'he', 'haitian creole': 'ht', 'somali': 'so', 'turkish': 'tr', 'polish': 'pl', 'ukrainian': 'uk', 'swahili': 'sw' };
     if (!accessibleHtml.includes('lang=')) {
       accessibleHtml = accessibleHtml.replace(/<html/, '<html lang="en"'); aiFixCount++;
     } else {
-      // Validate existing lang value — fix common AI mistakes like "English", "en_US", empty string
-      const validLangPattern = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-      accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
-        const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+      // Match both single and double quotes, plus unquoted values
+      var validLangPattern = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+      accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang\s*=\s*["']?([^"'\s>]+)["']?/i, function(m, before, langVal) {
+        var trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
         if (!trimmed || !validLangPattern.test(trimmed)) {
-          // Map common invalid values to valid BCP 47 codes
-          const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi' };
-          const fixed = langMap[trimmed] || 'en';
+          var fixed = _langMap[trimmed] || 'en';
           aiFixCount++;
-          warnLog(`[Det Fix] Invalid lang="${langVal}" → lang="${fixed}"`);
-          return `<html${before}lang="${fixed}"`;
+          warnLog('[Det Fix] Invalid lang="' + langVal + '" \u2192 lang="' + fixed + '"');
+          return '<html' + before + 'lang="' + fixed + '"';
         }
         if (trimmed !== langVal) {
           aiFixCount++;
-          return `<html${before}lang="${trimmed}"`;
+          return '<html' + before + 'lang="' + trimmed + '"';
         }
         return m;
       });
@@ -1596,13 +1596,18 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           _roleFixCount++; return '';
         });
         if (_roleFixCount > 0) log(`  Deterministic: fixed ${_roleFixCount} invalid ARIA roles`);
-        // Fix invalid lang attribute
-        const _validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-        accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
-          const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-          if (!trimmed || !_validLangPat.test(trimmed)) {
-            log(`  Deterministic: fixed invalid lang="${langVal}" → "en"`);
-            return `<html${before}lang="en"`;
+        // Fix invalid lang attribute (match single/double/unquoted, map common invalid values)
+        var _validLangPat2 = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+        var _langMap2 = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi', 'vietnamese': 'vi', 'thai': 'th', 'hebrew': 'he', 'haitian creole': 'ht', 'somali': 'so' };
+        accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang\s*=\s*["']?([^"'\s>]+)["']?/i, function(m, before, langVal) {
+          var trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+          if (!trimmed || !_validLangPat2.test(trimmed)) {
+            var fixed = _langMap2[trimmed] || 'en';
+            log('  Deterministic: fixed invalid lang="' + langVal + '" \u2192 "' + fixed + '"');
+            return '<html' + before + 'lang="' + fixed + '"';
+          }
+          if (trimmed !== langVal) {
+            return '<html' + before + 'lang="' + trimmed + '"';
           }
           return m;
         });
