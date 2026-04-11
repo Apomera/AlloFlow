@@ -583,7 +583,10 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     // Check for user style seed (set via UI before remediation) — unified with STYLE_SEEDS
     const _styleSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
     const _styleSeed = STYLE_SEEDS[_styleSeedId];
-    const _styleInstructions = _styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '';
+    // Support user-created custom styles (saved via pipeline UI, stored on window.__pdfCustomStyle)
+    const _customStyle = (_styleSeedId === 'custom' && typeof window !== 'undefined' && window.__pdfCustomStyle) ? window.__pdfCustomStyle : null;
+    const _styleInstructions = _customStyle?.promptInstructions ? '\n' + _customStyle.promptInstructions :
+      (_styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '');
 
     const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
 
