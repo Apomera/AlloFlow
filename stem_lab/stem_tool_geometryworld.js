@@ -5,7 +5,7 @@
  * measure volume, answer NPC questions, and build structures in a 3D world.
  * Supports WebXR VR. Worlds defined in JSON — Gemini can generate them.
  *
- * Inspired by Aaron Pomeranz's doctoral dissertation on Minecraft Education
+ * Inspired by Aaron Pomeranz's doctoral dissertation on block-based 3D environments
  * for teaching geometric measurement of volume (USM, 2024).
  *
  * Registered tool ID: "geometryWorld"
@@ -533,9 +533,20 @@
         { type: 'fill', x1: 28, y1: 1, z1: 7, x2: 30, y2: 1, z2: 7, block: 'wood' },
       ],
       npcs: [
-        // Only one NPC — the garden keeper at the entrance, with no question
         { position: [0, 1, 3], name: 'Garden Keeper', color: 0x16a34a,
-          dialogue: 'Welcome to the Geometry Garden. There are no tests here. Walk the path. Look at each structure. Use M to measure anything that catches your eye. At the end, you\'ll find something hidden. Take your time.', question: null }
+          dialogue: 'Welcome to the Geometry Garden. No tests. No score. Walk the path. Measure anything. Notice patterns. Take your time.', question: null },
+        { position: [3, 2, 0], name: 'Station 1 Guide', color: 0x2563eb,
+          dialogue: 'This is a single unit cube \u2014 the building block of everything. Volume = 1 cubic unit. Press M to measure it!', question: null },
+        { position: [10, 2, 0], name: 'Station 2 Guide', color: 0x2563eb,
+          dialogue: 'A row of 5 blocks. This is 1-dimensional \u2014 just LENGTH. Press M: you\'ll see L=5, W=1, H=1. Volume = 5.', question: null },
+        { position: [18, 2, 0], name: 'Station 3 Guide', color: 0xf59e0b,
+          dialogue: 'Now a flat rectangle: 5\u00d73. This is 2-dimensional \u2014 LENGTH and WIDTH. Area = 15 square units. But volume? Measure it!', question: null },
+        { position: [26, 4, 0], name: 'Station 4 Guide', color: 0xf59e0b,
+          dialogue: 'A full 3D rectangular prism: 5\u00d73\u00d73. Three dimensions! Volume = L\u00d7W\u00d7H = 45. The jump from flat to solid is where volume lives.', question: null },
+        { position: [35, 1, 4], name: 'Convergence Guide', color: 0x7c3aed,
+          dialogue: 'Three shapes. All have volume = 24. A flat slab (12\u00d71\u00d72), a compact block (4\u00d73\u00d72), and a tall tower (2\u00d72\u00d76). Same volume \u2014 completely different shapes. Measure each one!', question: null },
+        { position: [48, 6, 5], name: 'Hidden Garden Sage', color: 0xdc2626,
+          dialogue: 'You found the hidden garden! This pyramid approximation uses layers of decreasing size. Each layer is a rectangular prism. The total volume is the sum of all layers. Real pyramids use calculus \u2014 but this is a start!', question: null }
       ]
     },
     compositeVolume: {
@@ -912,7 +923,7 @@
       h += '</div>';
     }
 
-    h += '<div class="tip">\uD83D\uDCA1 <b>Remember:</b> Every block in Minecraft is 1 unit cube. To find the volume of a rectangular prism, count the blocks OR multiply Length \u00d7 Width \u00d7 Height!</div>';
+    h += '<div class="tip">\uD83D\uDCA1 <b>Remember:</b> Every block in Geometry World is 1 unit cube. To find the volume of a rectangular prism, count the blocks OR multiply Length \u00d7 Width \u00d7 Height!</div>';
 
     h += '<div class="footer">AlloFlow Geometry World \u2022 Companion Worksheet \u2022 \u00a9 ' + new Date().getFullYear() + '</div>';
     h += '</body></html>';
@@ -979,7 +990,7 @@
   }
 
   // ── AI World Generation Prompts (multi-pass) ──
-  var AI_WORLD_PROMPT_BASE = 'You are a geometry lesson designer for a 3D block-based math world (like Minecraft Education). '
+  var AI_WORLD_PROMPT_BASE = 'You are a geometry lesson designer for a 3D block-based math world. '
     + 'Target grade level: {GRADE}. Topic: "{TOPIC}"\n\n'
     + 'Generate a JSON object with this EXACT structure:\n'
     + '{\n'
@@ -1395,7 +1406,7 @@
         engine.renderer.toneMappingExposure = 1.1;
         engine.renderer.outputColorSpace = THREE.SRGBColorSpace || engine.renderer.outputEncoding;
 
-        // Lighting — warm, balanced, Minecraft-style
+        // Lighting — warm, balanced, voxel-world style
         engine.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
         var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
         sun.position.set(20, 40, 20);
@@ -1999,6 +2010,15 @@
 
         document.addEventListener('keydown', function(ev) {
           switch (ev.code) {
+            case 'Escape':
+              // Close any open dialog/overlay and release pointer lock
+              if (showNpcDialog) { upd('showNpcDialog', false); break; }
+              if (showHelp) { upd('showHelp', false); break; }
+              if (showGrowthNudge) { upd('showGrowthNudge', false); break; }
+              if (showPeerWorlds) { upd('showPeerWorlds', false); break; }
+              if (showTeacherView) { upd('showTeacherView', false); break; }
+              if (creatorMode) { upd('creatorMode', false); break; }
+              break;
             case 'KeyW': engine.moveState.forward = true; break;
             case 'KeyS': engine.moveState.backward = true; break;
             case 'KeyA': engine.moveState.left = true; break;
@@ -2039,7 +2059,7 @@
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) { upd({ showNpcDialog: true, dialogNpcIdx: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
+              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -2100,6 +2120,7 @@
           if (hits.length > 0) {
             var hit = hits[0];
             if (hit.object.userData.isNPC) {
+              if (document.pointerLockElement) document.exitPointerLock();
               upd({ showNpcDialog: true, dialogNpcIdx: hit.object.userData.npcIndex });
               sfxNpcChime();
               return;
@@ -2303,19 +2324,37 @@
 
               var feetY = cam.y - EYE_HEIGHT;
 
-              // X axis collision
+              // X axis collision with auto-step (step up 1-block ledges automatically)
+              var AUTO_STEP_HEIGHT = 1.01; // can step up 1 block
               var newX = cam.x + engine.velocity.x * dt;
               var blocked = false;
               for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
                 if (isBlockAt(newX + PLAYER_RADIUS, feetY + cy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, feetY + cy, cam.z)) { blocked = true; break; }
               }
+              if (blocked && engine.onGround) {
+                // Auto-step: check if stepping up 1 block would clear the obstacle
+                var stepFeetY = feetY + AUTO_STEP_HEIGHT;
+                var canStep = true;
+                for (var scy = 0; scy < Math.ceil(PLAYER_HEIGHT); scy++) {
+                  if (isBlockAt(newX + PLAYER_RADIUS, stepFeetY + scy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, stepFeetY + scy, cam.z)) { canStep = false; break; }
+                }
+                if (canStep) { cam.x = newX; cam.y = stepFeetY + EYE_HEIGHT; blocked = false; }
+              }
               if (!blocked) cam.x = newX; else engine.velocity.x = 0;
 
-              // Z axis collision
+              // Z axis collision with auto-step
               var newZ = cam.z + engine.velocity.z * dt;
               blocked = false;
               for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
                 if (isBlockAt(cam.x, feetY + cy, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, feetY + cy, newZ - PLAYER_RADIUS)) { blocked = true; break; }
+              }
+              if (blocked && engine.onGround) {
+                var stepFeetZ = feetY + AUTO_STEP_HEIGHT;
+                var canStepZ = true;
+                for (var scz = 0; scz < Math.ceil(PLAYER_HEIGHT); scz++) {
+                  if (isBlockAt(cam.x, stepFeetZ + scz, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, stepFeetZ + scz, newZ - PLAYER_RADIUS)) { canStepZ = false; break; }
+                }
+                if (canStepZ) { cam.z = newZ; cam.y = stepFeetZ + EYE_HEIGHT; blocked = false; }
               }
               if (!blocked) cam.z = newZ; else engine.velocity.z = 0;
 
@@ -2951,17 +2990,79 @@
         });
       };
 
+      // ── Validate & sanitize AI-generated lesson JSON ──
+      function validateLesson(lesson) {
+        if (!lesson || typeof lesson !== 'object') return null;
+        // Ensure required fields
+        lesson.title = lesson.title || 'AI Lesson';
+        lesson.description = lesson.description || '';
+        lesson.spawnPoint = Array.isArray(lesson.spawnPoint) && lesson.spawnPoint.length >= 3 ? lesson.spawnPoint : [2, 3, 2];
+        lesson.objectives = Array.isArray(lesson.objectives) ? lesson.objectives : ['Explore the structures', 'Answer NPC questions'];
+        lesson.ground = lesson.ground || { xMin: -4, xMax: 24, zMin: -4, zMax: 24, y: 0, type: 'grass' };
+        if (!Array.isArray(lesson.structures)) lesson.structures = [];
+        if (!Array.isArray(lesson.npcs)) lesson.npcs = [];
+        // Clamp structure coordinates to valid range
+        var validBlocks = ['stone','grass','wood','diamond','gold','sand','glass','brick','ice','water','lava','torch'];
+        lesson.structures = lesson.structures.filter(function(s) {
+          if (!s || s.type !== 'fill') return false;
+          s.x1 = Math.max(-4, Math.min(30, Math.round(s.x1 || 0)));
+          s.y1 = Math.max(0, Math.min(20, Math.round(s.y1 || 0)));
+          s.z1 = Math.max(-4, Math.min(30, Math.round(s.z1 || 0)));
+          s.x2 = Math.max(s.x1, Math.min(30, Math.round(s.x2 || s.x1)));
+          s.y2 = Math.max(s.y1, Math.min(20, Math.round(s.y2 || s.y1)));
+          s.z2 = Math.max(s.z1, Math.min(30, Math.round(s.z2 || s.z1)));
+          if (validBlocks.indexOf(s.block) < 0) s.block = 'stone';
+          return true;
+        });
+        // Validate NPCs
+        lesson.npcs = lesson.npcs.filter(function(n) {
+          if (!n || !n.name) return false;
+          n.position = Array.isArray(n.position) && n.position.length >= 3 ? n.position.map(function(v) { return Math.max(-4, Math.min(30, Math.round(v || 0))); }) : [5, 2, 5];
+          n.color = typeof n.color === 'number' ? n.color : 8048861;
+          n.dialogue = n.dialogue || 'Hello!';
+          // Validate question structure
+          if (n.question) {
+            if (!n.question.text || !Array.isArray(n.question.choices) || n.question.choices.length < 2) {
+              n.question = null; // Drop malformed questions
+            } else {
+              // Ensure exactly 3 choices
+              while (n.question.choices.length < 3) n.question.choices.push('(other)');
+              if (n.question.choices.length > 5) n.question.choices = n.question.choices.slice(0, 5);
+              n.question.correct = Math.max(0, Math.min(n.question.choices.length - 1, Math.round(n.question.correct || 0)));
+              // Validate followUp if present
+              if (Array.isArray(n.question.followUp)) {
+                n.question.followUp = n.question.followUp.filter(function(fu) {
+                  return fu && fu.text && Array.isArray(fu.choices) && fu.choices.length >= 2;
+                }).map(function(fu) {
+                  while (fu.choices.length < 3) fu.choices.push('(other)');
+                  fu.correct = Math.max(0, Math.min(fu.choices.length - 1, Math.round(fu.correct || 0)));
+                  return fu;
+                });
+                if (n.question.followUp.length === 0) delete n.question.followUp;
+              }
+            }
+          }
+          return true;
+        });
+        var fixes = 0;
+        if (lesson.structures.length === 0) { lesson.structures.push({ type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' }); fixes++; }
+        if (lesson.npcs.length === 0) { lesson.npcs.push({ position: [4, 1, 4], name: 'Guide', color: 8048861, dialogue: 'Welcome! Explore the structures and use M to measure.', question: null }); fixes++; }
+        if (fixes > 0 && addToast) addToast('\u26A0\uFE0F Fixed ' + fixes + ' issue(s) in AI lesson', 'info');
+        return lesson;
+      }
+
       function finishGeneration(lesson) {
+        lesson = validateLesson(lesson);
         var eng = window[engineKey];
-        if (eng && lesson && lesson.structures) {
+        if (eng && lesson && lesson.structures.length > 0) {
           eng.loadLesson(lesson);
           saveToMyLessons(lesson);
           upd({ lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, activeLesson: 'ai_generated' });
-          if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (lesson.title || 'New World') + ' (saved to My Lessons)', 'success');
+          if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (lesson.title || 'New World') + ' (' + lesson.npcs.length + ' NPCs, ' + lesson.structures.length + ' structures, saved to My Lessons)', 'success');
           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'AI lesson generated');
         } else {
           upd({ aiGenerating: false, aiCurrentPass: 0 });
-          if (addToast) addToast('Generated lesson had no structures', 'error');
+          if (addToast) addToast('Generated lesson had no valid structures', 'error');
         }
       }
 
@@ -3055,7 +3156,7 @@
               style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
             }, '\uD83E\uDDF1 Build This!')
           ),
-          // Lesson selector
+          // Lesson selector (built-in + AI-generated)
           el('select', {
             'aria-label': 'Choose lesson',
             value: activeLesson,
@@ -3063,19 +3164,33 @@
               var lessonKey = ev.target.value;
               upd('activeLesson', lessonKey);
               var eng = window[engineKey];
-              if (eng && SAMPLE_LESSONS[lessonKey]) eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
+              if (eng && SAMPLE_LESSONS[lessonKey]) {
+                eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
+              } else if (lessonKey.indexOf('ai_') === 0) {
+                // Load from My Lessons library
+                var myL = getMyLessons();
+                var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
+                if (found && eng) { eng.loadLesson(found); upd({ lastGeneratedLesson: found, lessonEditorJson: JSON.stringify(found, null, 2) }); }
+              }
             },
             style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
-            el('option', { value: 'volumeExplorer' }, '\uD83D\uDCCF Volume Explorer'),
-            el('option', { value: 'areaSurface' }, '\uD83D\uDCD0 Area & Surface'),
-            el('option', { value: 'buildChallenge' }, '\uD83C\uDFD7\uFE0F Build Challenge'),
-            el('option', { value: 'realWorld' }, '\uD83D\uDCE6 Packing & Shipping'),
-            el('option', { value: 'geometryGarden' }, '\uD83C\uDF3F The Geometry Garden'),
-            el('option', { value: 'compositeVolume' }, '\uD83E\uDDE9 Composite Volume'),
-            el('option', { value: 'fractionVolume' }, '\u00BD Fractional Dimensions'),
-            el('option', { value: 'volumeEstimation' }, '\uD83C\uDFAF Volume Estimation'),
-            el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder')
+            el('optgroup', { label: 'Built-in Lessons' },
+              el('option', { value: 'volumeExplorer' }, '\uD83D\uDCCF Volume Explorer'),
+              el('option', { value: 'areaSurface' }, '\uD83D\uDCD0 Area & Surface'),
+              el('option', { value: 'buildChallenge' }, '\uD83C\uDFD7\uFE0F Build Challenge'),
+              el('option', { value: 'realWorld' }, '\uD83D\uDCE6 Packing & Shipping'),
+              el('option', { value: 'geometryGarden' }, '\uD83C\uDF3F The Geometry Garden'),
+              el('option', { value: 'compositeVolume' }, '\uD83E\uDDE9 Composite Volume'),
+              el('option', { value: 'fractionVolume' }, '\u00BD Fractional Dimensions'),
+              el('option', { value: 'volumeEstimation' }, '\uD83C\uDFAF Volume Estimation'),
+              el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder')
+            ),
+            getMyLessons().length > 0 && el('optgroup', { label: '\uD83E\uDD16 AI-Generated (' + getMyLessons().length + ')' },
+              getMyLessons().slice(0, 5).map(function(ml) {
+                return el('option', { key: ml._id, value: ml._id }, '\u2728 ' + (ml.title || 'Untitled').slice(0, 30));
+              })
+            )
           ),
           // Home language selector (multilingual NPC voices)
           el('select', {
@@ -3382,22 +3497,19 @@
               onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
               style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '80px' }
             }, aiGenerating ? '\u23F3 Pass ' + aiCurrentPass + '/' + aiPassCount : '\u2728 Generate'),
-            // Surprise Me
+            // Surprise Me (grade-aware topics)
             el('button', {
               onClick: function() {
-                var topics = [
-                  'volume of rectangular prisms with a treasure hunt theme',
-                  'surface area of cubes in a space station',
-                  'comparing volumes of different containers in a kitchen',
-                  'building houses with specific room dimensions for architecture',
-                  'packing gifts into boxes for a holiday party',
-                  'designing a garden with rectangular flower beds',
-                  'exploring how many unit cubes fit inside larger structures',
-                  'a museum where each room demonstrates a geometric concept',
-                  'building a zoo with enclosures of specific volumes',
-                  'designing shipping containers for different products'
-                ];
-                upd('aiPrompt', topics[Math.floor(Math.random() * topics.length)]);
+                var gradeTopics = {
+                  '3': ['counting unit cubes in a toy box', 'how many blocks fill a sandbox?', 'building a doghouse with blocks', 'comparing sizes of gift boxes', 'stacking blocks to make towers of different heights'],
+                  '4': ['volume of rectangular prisms with a treasure hunt', 'building animal habitats at a zoo', 'packing lunch boxes with different foods', 'designing bookshelves with specific dimensions', 'a candy factory where each box holds different amounts'],
+                  '5': ['comparing volumes of different shipping containers', 'designing rooms in a dream house', 'a museum where each room has a different volume', 'building an aquarium with compartments', 'packing a moving truck efficiently'],
+                  '6': ['surface area vs volume of gift-wrapping boxes', 'composite volume shapes in an obstacle course', 'designing a skate park with ramps and half-pipes', 'L-shaped rooms in an architect studio', 'maximizing storage in a warehouse'],
+                  '7': ['fractional dimensions in a bakery (half-loaves)', 'volume estimation challenge in a grocery store', 'composite volumes of buildings with additions', 'designing efficient packaging with minimal waste', 'comparing prisms with same volume but different shapes'],
+                  '8': ['optimizing surface area to volume ratio for heat loss', 'cross-sections of 3D shapes in an engineering lab', 'volume of composite structures in city planning', 'scaling models proportionally for a science fair', 'designing efficient containers using fractional dimensions']
+                };
+                var pool = gradeTopics[aiGradeLevel] || gradeTopics['5'];
+                upd('aiPrompt', pool[Math.floor(Math.random() * pool.length)]);
               },
               disabled: aiGenerating, title: 'Random topic',
               style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
