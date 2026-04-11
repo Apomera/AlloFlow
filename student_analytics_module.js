@@ -229,14 +229,14 @@
             h('span', { className: 'text-sm font-medium text-slate-500' },
               'Item ' + (currentIndex + 1) + ' of ' + totalItems)
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
+          h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
             // Score tally
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
+            h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
+              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
+              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
             ),
             // Timer
-            timer !== undefined && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            timer !== undefined && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
                 (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
               'aria-live': 'polite'
@@ -262,15 +262,15 @@
           })
         ),
         // Instruction
-        instruction && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        instruction && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           className: 'text-center py-2 text-xs text-slate-600 font-semibold uppercase tracking-wider bg-slate-50/50 shrink-0'
         }, instruction),
         // Main content area (probe-specific content)
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
+        h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
           children
         ),
         // Bottom scoring bar (for teacher-scored probes)
-        showScoreButtons && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        showScoreButtons && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
         },
           h('button', { "aria-label": "Correct",
@@ -1760,7 +1760,7 @@
         MAP: ['RIT Score', 'Percentile'],
         Other: ['Custom']
       };
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-indigo-200',
@@ -2044,7 +2044,7 @@
       const questions = SURVEY_QUESTIONS[showSurveyModal] || [];
       const typeLabel = showSurveyModal.charAt(0).toUpperCase() + showSurveyModal.slice(1);
       const allAnswered = questions.every(q => surveyAnswers[q.id] !== undefined);
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full border-2 border-purple-200 max-h-[85vh] overflow-y-auto',
@@ -2232,7 +2232,7 @@
     const renderResearchToolbar = () => {
       const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200 p-3'
       }, React.createElement('div', {
         className: 'flex items-center gap-2 mb-2'
@@ -2352,7 +2352,7 @@
     });
     const renderResearchSetupModal = () => {
       if (!showResearchSetup) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-emerald-200',
@@ -2446,7 +2446,7 @@
     };
     const renderAutoSurveyPrompt = () => {
       if (!showAutoSurveyPrompt) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-purple-200 text-center'
@@ -2491,7 +2491,7 @@
       const expectedSurveys = researchMode.surveyFrequency && researchMode.surveyFrequency !== '0' ? Math.floor(sessionCounter / parseInt(researchMode.surveyFrequency)) : 0;
       const studentSurveys = Object.entries(surveyResponses).filter(([k]) => k.startsWith('student_')).reduce((s, [, arr]) => s + arr.length, 0);
       const responseRate = expectedSurveys > 0 ? Math.round(studentSurveys / expectedSurveys * 100) : null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'mt-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl border-2 border-emerald-300 p-4'
       }, React.createElement('div', {
         className: 'flex items-center justify-between mb-3'
@@ -3521,7 +3521,7 @@
       if (addToast) addToast('\u{1F4CA} Your progress report has been downloaded!', 'success');
     };
     if (!isOpen) return null;
-    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
       className: "fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
@@ -4565,7 +4565,7 @@
           setNwfProbeActive(false);
         }
       };
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
         className: "text-xs text-slate-600 mb-2 font-semibold uppercase tracking-wider"
@@ -5546,7 +5546,7 @@
       }
     })), qdProbeTimer > 0 && qdProbeIndex < qdProbeProblems.length ? (() => {
       const problem = qdProbeProblems[qdProbeIndex];
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-slate-600 mb-4 font-medium"

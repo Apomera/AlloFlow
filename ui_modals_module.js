@@ -406,7 +406,7 @@ const TeacherGate = React.memo(({
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    className: "absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100",
+    "aria-label": "Close dialog", className: "absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100",
     "aria-label": t('common.cancel')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
@@ -512,7 +512,7 @@ const RoleSelectionModal = React.memo(({
   }, t('roles.subtitle')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('student'),
+    onClick: () => handleRoleClick('student'), 'aria-label': 'Select student mode',
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_student"
   }, /*#__PURE__*/React.createElement("div", {
@@ -522,7 +522,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700"
   }, t('roles.student'))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('teacher'),
+    onClick: () => handleRoleClick('teacher'), 'aria-label': 'Select teacher mode',
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_teacher"
   }, /*#__PURE__*/React.createElement("div", {
@@ -533,7 +533,7 @@ const RoleSelectionModal = React.memo(({
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
   }, t('roles.teacher'))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.like'),
-    onClick: () => handleRoleClick('parent'),
+    onClick: () => handleRoleClick('parent'), 'aria-label': 'Select parent mode',
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
   }, /*#__PURE__*/React.createElement("div", {
@@ -543,7 +543,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
   }, t('roles.parent'))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('independent'),
+    onClick: () => handleRoleClick('independent'), 'aria-label': 'Select independent study mode',
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"
   }, /*#__PURE__*/React.createElement("div", {
@@ -617,7 +617,7 @@ const StudentEntryModal = React.memo(({
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    className: "absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
+    "aria-label": "Close dialog", className: "absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
@@ -708,7 +708,7 @@ const StudentWelcomeModal = React.memo(({
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    className: "absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
+    "aria-label": "Close dialog", className: "absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
     "aria-label": t('welcome.close_aria')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
