@@ -1727,7 +1727,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("p", { className:"text-base font-black font-mono", style:{color:_piErrCol} }, '±' + _piErrV.toFixed(5)),
 
-                      React.createElement("p", { className:"text-[8px] italic mt-0.5", style:{color:_muted} }, '4 × ' + _piInV + ' / ' + _piTotV)
+                      React.createElement("p", { className:"text-[10px] italic mt-0.5", style:{color:_muted} }, '4 × ' + _piInV + ' / ' + _piTotV)
 
                     ),
 

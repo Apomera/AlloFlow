@@ -1288,7 +1288,7 @@
                       style: { background: el.color }
                     },
                       h('div', { className: 'text-center leading-tight' },
-                        h('div', { className: 'text-[8px] opacity-70' }, el.num),
+                        h('div', { className: 'text-[10px] opacity-70' }, el.num),
                         h('div', { className: 'text-base font-black' }, el.sym)
                       )
                     ),
@@ -1358,7 +1358,7 @@
                       h('div', { className: 'text-center mb-2' },
                         h('span', { className: 'text-2xl' }, mat.emoji),
                         h('div', { className: 'text-sm font-bold text-slate-800' }, mat.name),
-                        h('div', { className: 'text-xs font-mono text-slate-500' }, mat.formula)
+                        h('div', { className: 'text-xs font-mono text-slate-600' }, mat.formula)
                       ),
                       h('div', { className: 'space-y-1' },
                         mat.elements.map(function(el) {
@@ -1451,7 +1451,7 @@
                       className: 'w-12 h-14 rounded-lg flex flex-col items-center justify-center text-white shadow-sm',
                       style: { background: el.color }
                     },
-                      h('span', { className: 'text-[8px] opacity-70' }, el.num),
+                      h('span', { className: 'text-[10px] opacity-70' }, el.num),
                       h('span', { className: 'text-lg font-black leading-none' }, el.sym),
                       h('span', { className: 'text-[7px] opacity-80' }, el.mass + ' u')
                     ),
@@ -1474,7 +1474,7 @@
                   var percent = ((el.count * parseFloat(el.mass)) / parseFloat(sel.molarMass) * 100).toFixed(1);
                   return h('div', { key: el.sym, className: 'flex items-center gap-2 text-xs' },
                     h('span', { className: 'font-bold text-slate-700 w-16' }, el.count + ' \u00D7 ' + el.sym),
-                    h('span', { className: 'text-slate-500 w-20' }, el.count + ' \u00D7 ' + el.mass),
+                    h('span', { className: 'text-slate-600 w-20' }, el.count + ' \u00D7 ' + el.mass),
                     h('span', { className: 'font-bold text-slate-700 w-16' }, '= ' + contribution),
                     h('div', { className: 'flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden' },
                       h('div', {
@@ -2014,7 +2014,7 @@
                         }
                       }, h('span', { style: { fontSize: '24px' } }, obj.emoji)),
                       h('span', {
-                        className: 'text-[8px] font-bold mt-1 px-1.5 py-0.5 rounded-md',
+                        className: 'text-[10px] font-bold mt-1 px-1.5 py-0.5 rounded-md',
                         style: {
                           background: isFound ? 'rgba(34,197,94,0.18)' : (isTarget && !isFound ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.85)'),
                           color: isFound ? '#15803d' : '#475569',
@@ -2231,7 +2231,7 @@
                   return h('span', {
                     key: r.name,
                     className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' +
-                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-500 border border-slate-200')
+                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 border border-slate-200')
                   }, disc ? r.emoji + ' ' + r.name : '\uD83D\uDD12 ???');
                 })
               )
@@ -2585,7 +2585,7 @@
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : wasChosen && !isCorrect
                         ? 'bg-red-100 text-red-800 border-red-300'
-                        : 'bg-slate-50 text-slate-500 border-slate-200';
+                        : 'bg-slate-50 text-slate-600 border-slate-200';
 
                   return h('button', { 'aria-label': 'Select option',
                     key: opt,
@@ -2756,7 +2756,7 @@
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-500') },
                     b.label
                   ),
-                  earned && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')
+                  earned && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')
                 );
               })
             )

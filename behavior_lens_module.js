@@ -282,7 +282,7 @@
         if (!affirming) return clinicalTitle;
         return h('span', { className: 'bl-dual-label' },
             affirming,
-            h('span', { className: 'text-[9px] italic text-slate-500 ml-1.5 font-normal' },
+            h('span', { className: 'text-[10px] italic text-slate-500 ml-1.5 font-normal' },
                 `(${stripped || clinicalTitle})`)
         );
     };
@@ -1048,14 +1048,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 ),
                                                 // Phase badge
                                                 entries.some(e => e.phase) && h('td', { className: 'px-2 py-2.5 text-center' },
-                                                    entry.phase ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                                                    entry.phase ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[10px] px-2 py-0.5 rounded-full font-bold ${
                                                         entry.phase === 'baseline' ? 'bg-slate-100 text-slate-600 border border-slate-200' :
                                                         entry.phase === 'intervention' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                                         entry.phase === 'maintenance' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
                                                         entry.phase === 'return_to_baseline' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
                                                         'bg-slate-50 text-slate-500 border border-slate-200'
                                                     }` }, { baseline: 'A', intervention: 'B', maintenance: 'M', return_to_baseline: 'A\u2032' }[entry.phase] || entry.phase)
-                                                    : h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, '—')
+                                                    : h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, '—')
                                                 ),
                                                 // Notes indicator
                                                 h('td', { className: 'px-2 py-2.5 text-center' },
@@ -1602,7 +1602,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             : day.avgIntensity <= 3 ? '#fde047'
                                 : day.avgIntensity <= 4 ? '#fb923c' : '#f87171';
                         return h('div', { key: i, className: 'flex-1 flex flex-col items-center gap-0.5', style: { minWidth: 0 } },
-                            day.count > 0 && h('div', { className: 'text-[9px] font-bold text-slate-500' }, day.count),
+                            day.count > 0 && h('div', { className: 'text-[10px] font-bold text-slate-500' }, day.count),
                             h('div', {
                                 className: 'w-full rounded-t-sm transition-all',
                                 style: {
@@ -1613,26 +1613,26 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                 title: `${day.label}: ${day.count} entries, avg intensity ${day.avgIntensity.toFixed(1)}`
                             }),
                             (i % Math.ceil(stats.trendData.length / 7) === 0 || i === stats.trendData.length - 1) &&
-                            h('div', { className: 'text-[8px] text-slate-500 mt-1 truncate w-full text-center' }, day.label)
+                            h('div', { className: 'text-[10px] text-slate-500 mt-1 truncate w-full text-center' }, day.label)
                         );
                     })
                 ),
                 h('div', { className: 'flex items-center gap-3 mt-3 justify-center' },
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#86efac' } }),
-                        h('span', { className: 'text-[9px] text-slate-500' }, t('behavior_lens.low') || 'Low')
+                        h('span', { className: 'text-[10px] text-slate-500' }, t('behavior_lens.low') || 'Low')
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#fde047' } }),
-                        h('span', { className: 'text-[9px] text-slate-500' }, t('behavior_lens.med') || 'Med')
+                        h('span', { className: 'text-[10px] text-slate-500' }, t('behavior_lens.med') || 'Med')
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#fb923c' } }),
-                        h('span', { className: 'text-[9px] text-slate-500' }, t('behavior_lens.high') || 'High')
+                        h('span', { className: 'text-[10px] text-slate-500' }, t('behavior_lens.high') || 'High')
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#f87171' } }),
-                        h('span', { className: 'text-[9px] text-slate-500' }, t('behavior_lens.high_intensity_label') || 'High intensity')
+                        h('span', { className: 'text-[10px] text-slate-500' }, t('behavior_lens.high_intensity_label') || 'High intensity')
                     )
                 )
             ),
@@ -1676,11 +1676,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     })
                 ),
                 h('div', { className: 'flex justify-between mt-1' },
-                    h('span', { className: 'text-[8px] text-slate-500' }, '12am'),
-                    h('span', { className: 'text-[8px] text-slate-500' }, '6am'),
-                    h('span', { className: 'text-[8px] text-indigo-400 font-bold' }, '12pm'),
-                    h('span', { className: 'text-[8px] text-slate-500' }, '6pm'),
-                    h('span', { className: 'text-[8px] text-slate-500' }, '11pm')
+                    h('span', { className: 'text-[10px] text-slate-500' }, '12am'),
+                    h('span', { className: 'text-[10px] text-slate-500' }, '6am'),
+                    h('span', { className: 'text-[10px] text-indigo-400 font-bold' }, '12pm'),
+                    h('span', { className: 'text-[10px] text-slate-500' }, '6pm'),
+                    h('span', { className: 'text-[10px] text-slate-500' }, '11pm')
                 )
             ),
             // Top antecedents & consequences
@@ -5143,7 +5143,7 @@ Return ONLY valid JSON:
 
         const renderSheet = () => {
             if (method === 'frequency') {
-                return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
+                return h('table', { className: 'w-full text-xs border-collapse print:text-[10px]' },
                     h('caption', { className: 'sr-only' }, 'Latency Recording'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
                             h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
@@ -5167,7 +5167,7 @@ Return ONLY valid JSON:
                 );
             }
             if (method === 'duration') {
-                return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
+                return h('table', { className: 'w-full text-xs border-collapse print:text-[10px]' },
                     h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
                             h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
@@ -5212,7 +5212,7 @@ Return ONLY valid JSON:
                 );
             }
             // latency
-            return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
+            return h('table', { className: 'w-full text-xs border-collapse print:text-[10px]' },
                 h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
                         h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
@@ -5599,10 +5599,10 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
                                 background: day.data ? scoreBg(day.data.pct) : '#fff',
                             }
                         },
-                            h('span', { className: 'text-[9px] font-bold text-slate-500 uppercase' }, day.dayLabel),
+                            h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, day.dayLabel),
                             h('span', { className: 'text-sm font-black', style: { color: day.data ? scoreColor(day.data.pct) : '#cbd5e1' } }, day.dayNum),
-                            day.data ? h('span', { className: 'text-[9px] font-bold', style: { color: scoreColor(day.data.pct) } }, `${day.data.pct}%`)
-                                : h('span', { className: 'text-[9px] text-slate-500' }, '—')
+                            day.data ? h('span', { className: 'text-[10px] font-bold', style: { color: scoreColor(day.data.pct) } }, `${day.data.pct}%`)
+                                : h('span', { className: 'text-[10px] text-slate-500' }, '—')
                         )
                     )
                 )
@@ -6702,7 +6702,7 @@ Respond only with the student's words:`;
                             return h('div', { key: skill.key, className: 'text-center group relative' },
                                 h('div', { className: 'text-lg' }, skill.icon),
                                 h('div', { className: 'text-xs font-black text-slate-700 mt-0.5' }, score + '/10'),
-                                h('div', { className: 'text-[9px] text-slate-500' }, skill.label),
+                                h('div', { className: 'text-[10px] text-slate-500' }, skill.label),
                                 note && h('div', { className: 'absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 bg-slate-800 text-white text-[10px] rounded-lg shadow-lg z-10' }, note)
                             );
                         })
@@ -6809,7 +6809,7 @@ Respond only with the student's words:`;
                         h('div', { className: 'flex items-center gap-2' },
                             h('span', { className: 'text-xs font-black text-white' }, studentName || 'Student'),
                             h('span', {
-                                className: 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-' + (studentMood.color || 'slate') + '-400/30 text-white transition-colors duration-500'
+                                className: 'px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-' + (studentMood.color || 'slate') + '-400/30 text-white transition-colors duration-500'
                             }, studentMood.label || 'Neutral')
                         ),
                         studentAvatar && h('div', { className: 'text-[10px] text-white/70 mt-0.5 truncate' },
@@ -6820,14 +6820,14 @@ Respond only with the student's words:`;
                         )
                     ),
                     h('div', { className: 'w-16 flex flex-col items-center gap-0.5' },
-                        h('div', { className: 'text-[8px] text-white/60 font-bold uppercase' }, 'Intensity'),
+                        h('div', { className: 'text-[10px] text-white/60 font-bold uppercase' }, 'Intensity'),
                         h('div', { className: 'w-full h-1.5 bg-white/20 rounded-full overflow-hidden' },
                             h('div', {
                                 className: 'h-full bg-' + (studentMood.color || 'slate') + '-300 rounded-full transition-all duration-700',
                                 style: { width: (studentMood.intensity || 50) + '%' }
                             })
                         ),
-                        h('div', { className: 'text-[8px] text-white/50' }, (studentMood.intensity || 50) + '%')
+                        h('div', { className: 'text-[10px] text-white/50' }, (studentMood.intensity || 50) + '%')
                     )
                 )
             ),
@@ -7654,7 +7654,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: section.id, className: `rounded-xl border p-4 transition-all ${editingId === section.id ? 'border-cyan-400 bg-cyan-50/30 shadow-sm' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}` },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
                             h('h4', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1.5' },
-                                section.required && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black uppercase' }, t('behavior_lens.ui.required') || 'Required'),
+                                section.required && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black uppercase' }, t('behavior_lens.ui.required') || 'Required'),
                                 section.title
                             ),
                             editingId !== section.id &&
@@ -8187,8 +8187,8 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                                 h('h4', { className: 'text-sm font-bold text-slate-800 mb-1' }, sc.title),
                                 h('p', { className: 'text-[10px] text-slate-500 leading-relaxed' }, sc.desc),
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
-                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-500' }, `${sc.entries.length} ABC entries`),
-                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-500' }, `${sc.observations.length} observations`)
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-500' }, `${sc.entries.length} ABC entries`),
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-500' }, `${sc.observations.length} observations`)
                                 )
                             ),
                             selectedPrebuilt === sc.id && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 pt-3 border-t border-slate-100' },
@@ -8273,7 +8273,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         ),
                         h('div', null,
                             h('span', { className: 'text-xs font-bold text-slate-700' }, isComplex ? (t('behavior_lens.sandbox.complex_scenario') || '🧩 Complex Scenario') : (t('behavior_lens.sandbox.standard_scenario') || '📋 Standard Scenario')),
-                            h('p', { className: 'text-[9px] text-slate-500 mt-0.5' }, isComplex
+                            h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, isComplex
                                 ? (t('behavior_lens.sandbox.complex_desc') || 'Co-occurring behaviors, environmental shifts, trend patterns')
                                 : (t('behavior_lens.sandbox.standard_desc') || 'Single function, consistent setting, straightforward data')
                             )
@@ -8354,7 +8354,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                                 : 'bg-slate-50 border-2 border-transparent hover:border-slate-200'}`
                         },
                             h('div', { className: 'text-xs font-bold ' + (expectedPattern === p.id ? 'text-indigo-700' : 'text-slate-600') }, p.label),
-                            h('div', { className: 'text-[9px] ' + (expectedPattern === p.id ? 'text-indigo-500' : 'text-slate-500') }, p.desc)
+                            h('div', { className: 'text-[10px] ' + (expectedPattern === p.id ? 'text-indigo-500' : 'text-slate-500') }, p.desc)
                         ))
                     )
                 ),
@@ -8599,7 +8599,7 @@ Rules:
             // Category legend
             h('div', { className: 'flex flex-wrap gap-2' },
                 Object.entries(categories).map(([k, v]) =>
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: k, className: `text-[9px] px-2 py-1 rounded-full font-bold ${catColors[v.color]}` }, v.label)
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: k, className: `text-[10px] px-2 py-1 rounded-full font-bold ${catColors[v.color]}` }, v.label)
                 )
             ),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, `${filtered.length} terms`),
@@ -8617,7 +8617,7 @@ Rules:
                             className: 'w-full text-left p-4 flex items-center justify-between'
                         },
                             h('div', { className: 'flex items-center gap-3' },
-                                h('span', { className: `text-[9px] px-2 py-0.5 rounded-full font-bold ${catColors[cat.color]}` }, cat.label.split(' ')[0]),
+                                h('span', { className: `text-[10px] px-2 py-0.5 rounded-full font-bold ${catColors[cat.color]}` }, cat.label.split(' ')[0]),
                                 term.affirming
                                     ? h('div', null,
                                         h('span', { className: 'text-sm font-bold text-emerald-700' }, term.affirming),
@@ -8718,7 +8718,7 @@ Rules:
                             h('div', { className: 'w-full bg-slate-100 rounded-full h-1.5 overflow-hidden' },
                                 h('div', { className: `h-full rounded-full transition-all duration-500 ${dim.value >= 80 ? barColors.emerald : dim.value >= 50 ? barColors.amber : barColors.red}`, style: { width: `${dim.value}%` } })
                             ),
-                            dim.value < 100 && h('div', { className: 'text-[9px] text-slate-500 mt-0.5 italic' }, `💡 ${dim.tip}`)
+                            dim.value < 100 && h('div', { className: 'text-[10px] text-slate-500 mt-0.5 italic' }, `💡 ${dim.tip}`)
                         )
                     )
                 )
@@ -8770,7 +8770,7 @@ Rules:
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
                         h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
                     ),
-                    h('div', { className: 'text-[9px] text-white/50 mt-1 text-right' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
+                    h('div', { className: 'text-[10px] text-white/50 mt-1 text-right' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
                 )
             )
         );
@@ -8847,7 +8847,7 @@ Rules:
                             x: labelW + i * (cellSize + gap) + cellSize / 2,
                             y: 12,
                             textAnchor: 'middle',
-                            className: 'text-[9px] fill-slate-400 font-bold'
+                            className: 'text-[10px] fill-slate-400 font-bold'
                         }, name)
                     ),
                     // Cells
@@ -8893,7 +8893,7 @@ Rules:
                             key: 'wl-' + w,
                             x: 0,
                             y: 18 + w * (cellSize + gap) + cellSize / 2 + 4,
-                            className: 'text-[9px] fill-slate-400 font-bold'
+                            className: 'text-[10px] fill-slate-400 font-bold'
                         }, `W${w + 1}`)
                     )
                 ),
@@ -9960,7 +9960,7 @@ Keep it concise and encouraging. Use plain language.`;
                                 h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
                                     className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full flex items-center justify-end pr-2 transition-all duration-500',
                                     style: { width: `${(s.count / maxC) * 100}%` }
-                                }, h('span', { className: 'text-[9px] font-bold text-white' }, s.count))
+                                }, h('span', { className: 'text-[10px] font-bold text-white' }, s.count))
                             )
                         );
                     })
@@ -9973,8 +9973,8 @@ Keep it concise and encouraging. Use plain language.`;
                 h('div', { className: 'overflow-x-auto' },
                     h('table', { className: 'w-full' },
                         h('caption', { className: 'sr-only' }, '🔥 Day × Time Heatmap'), h('thead', null, h('tr', null,
-                            h('th', { scope: 'col', className: 'text-[9px] text-slate-500 p-1' }),
-                            ...timeLabels.map(t => h('th', { scope: 'col', key: t, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, t))
+                            h('th', { scope: 'col', className: 'text-[10px] text-slate-500 p-1' }),
+                            ...timeLabels.map(t => h('th', { scope: 'col', key: t, className: 'text-[10px] text-slate-500 font-bold p-1 text-center' }, t))
                         )),
                         h('tbody', null,
                             ...heatmapData.map((row, dayIdx) => {
@@ -9993,7 +9993,7 @@ Keep it concise and encouraging. Use plain language.`;
                         )
                     )
                 ),
-                h('div', { className: 'flex items-center gap-4 mt-3 text-[9px] text-slate-500' },
+                h('div', { className: 'flex items-center gap-4 mt-3 text-[10px] text-slate-500' },
                     h('span', null, t('behavior_lens.ui.low') || 'Low'), h('div', { className: 'w-4 h-3 bg-green-200 rounded' }),
                     h('div', { className: 'w-4 h-3 bg-amber-300 rounded' }),
                     h('div', { className: 'w-4 h-3 bg-red-400 rounded' }), h('span', null, t('behavior_lens.ui.high') || 'High')
@@ -10089,7 +10089,7 @@ Keep it concise and encouraging. Use plain language.`;
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors}` }, note.roleLabel),
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' },
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' },
                                         new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
                                         new Date(note.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                                     ),
@@ -10215,23 +10215,23 @@ Keep the language strengths-based and restorative. Use "your child" not the code
             h('div', { className: 'grid grid-cols-5 gap-2' },
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm' },
                     h('div', { className: 'text-xl font-black text-indigo-600' }, abcEntries.length),
-                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.abc_entries') || 'ABC Entries')
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.abc_entries') || 'ABC Entries')
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm' },
                     h('div', { className: 'text-xl font-black text-emerald-600' }, observationSessions.length),
-                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.observations') || 'Observations')
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.observations') || 'Observations')
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm' },
                     h('div', { className: 'text-xl font-black text-purple-600' }, aiAnalysis ? '✅' : '—'),
-                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.ai_analysis') || 'AI Analysis')
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.ai_analysis') || 'AI Analysis')
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `bg-white rounded-xl border p-3 text-center shadow-sm ${graphExport ? 'border-indigo-200' : 'border-slate-200'}` },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-xl font-black ${graphExport ? 'text-indigo-600' : 'text-slate-500'}` }, graphExport ? (graphExport.phaseAnalysis?.length || 0) : '—'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.graph_phases') || 'Graph Phases')
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.graph_phases') || 'Graph Phases')
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `bg-white rounded-xl border p-3 text-center shadow-sm ${effectSizeResults ? 'border-purple-200' : 'border-slate-200'}` },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-xl font-black ${effectSizeResults ? 'text-purple-600' : 'text-slate-500'}` }, effectSizeResults ? '✅' : '—'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.effect_sizes') || 'Effect Sizes')
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.effect_sizes') || 'Effect Sizes')
                 )
             ),
 
@@ -10506,7 +10506,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                         className: `w-14 h-14 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${selectedMood === m.id ? moodColors[m.color] + ' scale-110 shadow-md' : 'border-slate-100 hover:border-slate-200 hover:scale-105'}`
                     },
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, m.emoji),
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] font-bold text-slate-500' }, m.label)
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500' }, m.label)
                     ))
                 ),
                 selectedMood && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
@@ -10535,7 +10535,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                                 h('div', { className: `text-xs font-bold ${q.done ? 'text-green-700 line-through' : 'text-slate-700'}` }, q.title),
                                 h('div', { className: 'text-[10px] text-slate-500' }, q.desc)
                             ),
-                            h('span', { className: 'text-[9px] font-bold text-amber-500' }, q.reward)
+                            h('span', { className: 'text-[10px] font-bold text-amber-500' }, q.reward)
                         )
                     )
                 )
@@ -10549,7 +10549,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                             h('span', { className: 'text-2xl' }, b.icon),
                             h('div', null,
                                 h('div', { className: 'text-xs font-bold text-amber-800' }, b.title),
-                                h('div', { className: 'text-[9px] text-amber-600' }, b.desc)
+                                h('div', { className: 'text-[10px] text-amber-600' }, b.desc)
                             )
                         )
                     )
@@ -10567,7 +10567,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                                 h('span', { className: 'text-xs font-bold text-slate-700' }, m?.label || c.mood),
                                 c.reflection && h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, c.reflection)
                             ),
-                            h('span', { className: 'text-[9px] text-slate-500' }, new Date(c.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+                            h('span', { className: 'text-[10px] text-slate-500' }, new Date(c.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
                         );
                     })
                 )
@@ -10756,7 +10756,7 @@ Provide:
                             ),
                             h('button', { "aria-label": "Try this example",
                                 onClick: () => setInput(ex.deficit),
-                                className: 'text-[9px] text-teal-500 ml-5 hover:text-teal-700 font-bold'
+                                className: 'text-[10px] text-teal-500 ml-5 hover:text-teal-700 font-bold'
                             }, '→ Try this example')
                         )
                     )
@@ -10979,7 +10979,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
                                 h('div', { key: i, className: `p-4 rounded-xl border ${stepColors[g.color]}` },
                                     h('div', { className: 'flex items-center gap-2 mb-2' },
                                         h('div', { className: 'w-6 h-6 rounded-full bg-white flex items-center justify-center text-xs font-bold shadow-sm' }, i + 1),
-                                        h('span', { className: 'text-[9px] font-bold px-2 py-0.5 bg-white rounded-full shadow-sm' }, step.who)
+                                        h('span', { className: 'text-[10px] font-bold px-2 py-0.5 bg-white rounded-full shadow-sm' }, step.who)
                                     ),
                                     h('p', { className: 'text-sm font-black mb-1' }, `"${step.q}"`),
                                     h('p', { className: 'text-[10px] italic opacity-80 leading-relaxed' }, `💡 ${step.tip}`)
@@ -11131,13 +11131,13 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                             h('span', { className: 'text-2xl' }, cat.emoji),
                             h('div', null,
                                 h('h4', { className: `text-sm font-black ${c.text}` }, cat.label),
-                                h('p', { className: 'text-[9px] text-slate-500' }, cat.desc)
+                                h('p', { className: 'text-[10px] text-slate-500' }, cat.desc)
                             )
                         ),
                         h('div', { className: 'bg-white/70 rounded-lg p-3 mb-2' },
                             h('p', { className: 'text-xs text-slate-700 font-bold' }, s.action)
                         ),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-[9px]' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-[10px]' },
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `${c.badge} px-2 py-0.5 rounded-full font-bold` }, `⏱️ ${s.timeEstimate}`),
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 italic' }, s.developmentalNote?.slice(0, 80) + (s.developmentalNote?.length > 80 ? '...' : ''))
                         )
@@ -11155,7 +11155,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                             h('span', { className: 'text-2xl' }, cat?.emoji || '🔧'),
                             h('div', null,
                                 h('h3', { className: `text-sm font-black ${c.text}` }, cat?.label || 'Restitution Plan'),
-                                h('span', { className: `text-[9px] ${c.badge} px-2 py-0.5 rounded-full font-bold` }, `⏱️ ${selectedPlan.timeEstimate}`)
+                                h('span', { className: `text-[10px] ${c.badge} px-2 py-0.5 rounded-full font-bold` }, `⏱️ ${selectedPlan.timeEstimate}`)
                             )
                         ),
                         h('div', { className: 'bg-white/70 rounded-lg p-4 mb-3' },
@@ -11278,14 +11278,14 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     roles.map(r => h('button', { "aria-label": "Toggle new role",
                         key: r.id,
                         onClick: () => setNewRole(r.id),
-                        className: `px-2 py-1 rounded-full text-[9px] font-bold border transition-all ${newRole === r.id ? roleColors[r.color] : 'bg-white border-slate-100 text-slate-500'}`
+                        className: `px-2 py-1 rounded-full text-[10px] font-bold border transition-all ${newRole === r.id ? roleColors[r.color] : 'bg-white border-slate-100 text-slate-500'}`
                     }, r.label))
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                     strengths.map(s => h('button', { "aria-label": "Toggle new strength",
                         key: s.id,
                         onClick: () => setNewStrength(s.id),
-                        className: `px-3 py-1 rounded-full text-[9px] font-bold border transition-all ${newStrength === s.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-500'}`
+                        className: `px-3 py-1 rounded-full text-[10px] font-bold border transition-all ${newStrength === s.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-500'}`
                     }, `${s.label}`))
                 )
             ),
@@ -11322,7 +11322,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                         )
                     ),
                     // Legend
-                    h('div', { className: 'flex items-center gap-4 justify-center text-[9px] text-slate-500' },
+                    h('div', { className: 'flex items-center gap-4 justify-center text-[10px] text-slate-500' },
                         strengths.map(s =>
                             h('div', { key: s.id, className: 'flex items-center gap-1' },
                                 h('div', { className: `w-2 h-2 rounded-full ${strengthColors[s.id]}` }),
@@ -11440,7 +11440,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                         'aria-label': 'Target language for translation',
                         className: 'flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-300'
                     }),
-                    h('span', { className: 'text-[9px] text-slate-500 self-center' }, 'then tap translate on any entry below')
+                    h('span', { className: 'text-[10px] text-slate-500 self-center' }, 'then tap translate on any entry below')
                 )
             ),
             // Entries
@@ -11456,13 +11456,13 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors}` }, `${entry.categoryIcon} ${entry.categoryLabel}`),
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' },
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' },
                                         new Date(entry.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                     ),
                                     callGemini && translateLang && h('button', { "aria-label": "Translate",
                                         onClick: () => handleTranslate(entry.id),
                                         disabled: translating,
-                                        className: 'text-[9px] text-purple-500 font-bold hover:text-purple-700'
+                                        className: 'text-[10px] text-purple-500 font-bold hover:text-purple-700'
                                     }, translating ? '...' : `🌐 → ${translateLang}`),
                                     h('button', {
                                         onClick: () => setEntries(prev => prev.filter(e => e.id !== entry.id)),
@@ -11603,15 +11603,15 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                                     h('div', { className: 'flex items-center gap-2' },
                                         h('span', null, m.icon),
                                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700' }, c.who),
-                                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, m.label)
+                                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, m.label)
                                     ),
-                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' },
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' },
                                         new Date(c.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                     )
                                 ),
                                 h('p', { className: 'text-[10px] text-slate-600' }, c.topic),
                                 c.outcome && h('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, `→ ${c.outcome}`),
-                                c.followUp && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `flex items-center gap-1 mt-1 text-[9px] ${c.followUpDone ? 'text-green-600 line-through' : 'text-amber-600 font-bold'}` },
+                                c.followUp && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `flex items-center gap-1 mt-1 text-[10px] ${c.followUpDone ? 'text-green-600 line-through' : 'text-amber-600 font-bold'}` },
                                     h('span', null, c.followUpDone ? '✅' : '⏰'),
                                     h('span', null, c.followUp),
                                     !c.followUpDone && h('button', { "aria-label": "(mark done)",
@@ -11627,15 +11627,15 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             contacts.length > 0 && h('div', { className: 'grid grid-cols-3 gap-3' },
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
                     h('div', { className: 'text-xl font-black text-blue-600' }, contacts.length),
-                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.total_contacts') || 'Total Contacts')
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.total_contacts') || 'Total Contacts')
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
                     h('div', { className: 'text-xl font-black text-green-600' }, contacts.filter(c => c.followUpDone).length),
-                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.followups_done') || 'Follow-Ups Done')
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.followups_done') || 'Follow-Ups Done')
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
                     h('div', { className: 'text-xl font-black text-purple-600' }, [...new Set(contacts.map(c => c.method))].length),
-                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.ui.methods_used') || 'Methods Used')
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.ui.methods_used') || 'Methods Used')
                 )
             )
         );
@@ -11826,10 +11826,10 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     return h('button', { "aria-label": "Toggle selected quadrant", key: q.id, onClick: () => setSelectedQuadrant(q.id), className: `text-left p-4 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl mb-1' }, q.emoji),
                         h('h3', { className: `text-xs font-black ${c.text}` }, q.label),
-                        h('p', { className: 'text-[9px] text-slate-500 mt-0.5 mb-2' }, q.desc),
+                        h('p', { className: 'text-[10px] text-slate-500 mt-0.5 mb-2' }, q.desc),
                         count > 0
-                            ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[9px] font-bold px-2 py-0.5 rounded-full ${c.badge}` }, `${count} strategies`)
-                            : h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, 'Tap to add')
+                            ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[10px] font-bold px-2 py-0.5 rounded-full ${c.badge}` }, `${count} strategies`)
+                            : h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Tap to add')
                     );
                 })
             ),
@@ -11913,7 +11913,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl mb-1' }, t.icon),
                     h('h3', { className: 'text-xs font-black text-slate-800' }, t.title),
-                    h('p', { className: 'text-[9px] text-slate-500 mt-0.5' }, t.desc)
+                    h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, t.desc)
                 ))
             ),
             activeTool && h('button', { "aria-label": "Back to all tools",
@@ -12123,7 +12123,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     functions.map(f => h('button', { "aria-label": "Toggle form",
                         key: f.id,
                         onClick: () => setForm(prev => ({ ...prev, function: f.id })),
-                        className: `px-2.5 py-1 rounded-full text-[9px] font-bold border transition-all ${form.function === f.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-500'}`
+                        className: `px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all ${form.function === f.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-500'}`
                     }, f.label))
                 ),
                 h('input', {
@@ -12197,7 +12197,7 @@ JSON only, no markdown.`;
                         const prog = progressOptions.find(p => p.id === plan.progress) || progressOptions[0];
                         return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: plan.id, className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
-                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded-full text-slate-500' }, fn.label),
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 bg-slate-100 rounded-full text-slate-500' }, fn.label),
                                 h('button', {
                                     onClick: () => setPlans(prev => prev.filter(p => p.id !== plan.id)),
                                     'aria-label': 'Close', className: 'text-[10px] text-slate-500 hover:text-red-400'
@@ -12205,12 +12205,12 @@ JSON only, no markdown.`;
                             ),
                             h('div', { className: 'flex items-center gap-2 mb-2' },
                                 h('div', { className: 'flex-1 p-2.5 bg-red-50 rounded-lg border border-red-200' },
-                                    h('p', { className: 'text-[9px] text-red-500 font-bold' }, '❌ TARGET'),
+                                    h('p', { className: 'text-[10px] text-red-500 font-bold' }, '❌ TARGET'),
                                     h('p', { className: 'text-xs text-red-700 font-bold' }, plan.targetBehavior)
                                 ),
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '→'),
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 p-2.5 bg-green-50 rounded-lg border border-green-200' },
-                                    h('p', { className: 'text-[9px] text-green-500 font-bold' }, '✅ REPLACEMENT'),
+                                    h('p', { className: 'text-[10px] text-green-500 font-bold' }, '✅ REPLACEMENT'),
                                     h('p', { className: 'text-xs text-green-700 font-bold' }, plan.replacement)
                                 )
                             ),
@@ -12221,7 +12221,7 @@ JSON only, no markdown.`;
                                     h('button', { "aria-label": "Toggle plans",
                                         key: po.id,
                                         onClick: () => setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, progress: po.id } : p)),
-                                        className: `px-2 py-0.5 rounded-full text-[8px] font-bold transition-all ${plan.progress === po.id ? po.color : 'bg-white text-slate-500 border border-slate-100'}`
+                                        className: `px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${plan.progress === po.id ? po.color : 'bg-white text-slate-500 border border-slate-100'}`
                                     }, po.label)
                                 )
                             )
@@ -12376,9 +12376,9 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, fmtDate(seq.createdAt)),
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
-                                h('button', { "aria-label": "Worked", onClick: () => logAttempt(seq.id, 'success'), className: 'px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[9px] font-bold hover:bg-green-200' }, '✅ Worked'),
-                                h('button', { "aria-label": "Partial", onClick: () => logAttempt(seq.id, 'partial'), className: 'px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[9px] font-bold hover:bg-amber-200' }, '🔶 Partial'),
-                                h('button', { "aria-label": "Log Attempt", onClick: () => logAttempt(seq.id, 'failed'), className: 'px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[9px] font-bold hover:bg-red-200' }, '❌ Didn\'t work')
+                                h('button', { "aria-label": "Worked", onClick: () => logAttempt(seq.id, 'success'), className: 'px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-bold hover:bg-green-200' }, '✅ Worked'),
+                                h('button', { "aria-label": "Partial", onClick: () => logAttempt(seq.id, 'partial'), className: 'px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-bold hover:bg-amber-200' }, '🔶 Partial'),
+                                h('button', { "aria-label": "Log Attempt", onClick: () => logAttempt(seq.id, 'failed'), className: 'px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-bold hover:bg-red-200' }, '❌ Didn\'t work')
                             )
                         ),
                         h('div', { className: 'flex items-center gap-1 flex-wrap' },
@@ -12421,7 +12421,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                                 const oc = outcomeConfig[a.outcome] || outcomeConfig.failed;
                                 return h('div', { key: a.id, className: `flex items-center justify-between p-2 rounded-lg ${oc.color}` },
                                     h('span', { className: 'text-[10px] font-bold' }, `${oc.emoji} ${oc.label}`),
-                                    h('span', { className: 'text-[9px] text-slate-500' }, fmtDate(a.timestamp))
+                                    h('span', { className: 'text-[10px] text-slate-500' }, fmtDate(a.timestamp))
                                 );
                             })
                         )
@@ -12691,7 +12691,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                             h('div', { className: 'flex-1' },
                                 h('div', { className: 'flex items-center justify-between mb-1' },
                                     h('span', { className: 'text-[10px] font-bold text-slate-700' }, p.text),
-                                    h('span', { className: 'text-[9px] text-slate-500' }, `${p.count}× (${p.pct}%)`)
+                                    h('span', { className: 'text-[10px] text-slate-500' }, `${p.count}× (${p.pct}%)`)
                                 ),
                                 h('div', { className: 'w-full bg-slate-100 rounded-full h-1.5' },
                                     h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-gradient-to-r from-amber-400 to-red-500 h-1.5 rounded-full', style: { width: `${p.pct}%` } })
@@ -12774,7 +12774,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                 h('button', { "aria-label": "Toggle mods",
                                     key: so.id,
                                     onClick: () => setMods(prev => prev.map(m => m.id === mod.id ? { ...m, status: so.id } : m)),
-                                    className: `px-2 py-0.5 rounded-full text-[8px] font-bold transition-all ${mod.status === so.id ? so.color : 'bg-white text-slate-500 border border-slate-100'}`
+                                    className: `px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${mod.status === so.id ? so.color : 'bg-white text-slate-500 border border-slate-100'}`
                                 }, so.label)
                             )
                         )
@@ -13211,7 +13211,7 @@ Keep it encouraging and professional. Under 300 words.`;
                             const s = evaluations[p.id]?.score || 0;
                             return h('div', { key: p.id, className: 'text-center' },
                                 h('div', { className: `w-12 h-12 rounded-full flex items-center justify-center text-sm font-black mx-auto ${s >= 20 ? 'bg-green-100 text-green-700' : s >= 15 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}` }, s),
-                                h('p', { className: 'text-[9px] text-slate-500 mt-1' }, `Phase ${i + 1}`)
+                                h('p', { className: 'text-[10px] text-slate-500 mt-1' }, `Phase ${i + 1}`)
                             );
                         })
                     )
@@ -13371,7 +13371,7 @@ Keep it encouraging and professional. Under 300 words.`;
                     CASE_STUDY_PHASES.map((p, i) =>
                         h('div', { key: p.id, className: 'text-center' },
                             h('div', { className: 'text-2xl mb-1' }, p.icon),
-                            h('p', { className: 'text-[9px] font-bold text-indigo-700 leading-tight' }, p.label)
+                            h('p', { className: 'text-[10px] font-bold text-indigo-700 leading-tight' }, p.label)
                         )
                     )
                 ),
@@ -13414,7 +13414,7 @@ Keep it encouraging and professional. Under 300 words.`;
                                 h('span', { className: 'text-xs font-bold text-slate-800' }, tmpl.label)
                             ),
                             h('p', { className: 'text-[10px] text-slate-500 leading-relaxed' }, tmpl.scenario),
-                            tmpl.grade && h('p', { className: 'text-[9px] text-slate-500 mt-1' }, `${tmpl.grade} • ${tmpl.setting}`)
+                            tmpl.grade && h('p', { className: 'text-[10px] text-slate-500 mt-1' }, `${tmpl.grade} • ${tmpl.setting}`)
                         )
                     )
                 ),
@@ -14769,7 +14769,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                         h('div', { key: d.key, className: 'bg-slate-50 rounded-lg border border-slate-200 p-3' },
                             h('label', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1 mb-1' },
                                 h('span', null, d.icon), ' ', d.label,
-                                h('span', { className: 'ml-auto text-[9px] text-slate-500 font-normal' }, d.hint)
+                                h('span', { className: 'ml-auto text-[10px] text-slate-500 font-normal' }, d.hint)
                             ),
                             h('input', {
                                 type: 'text',
@@ -14839,7 +14839,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                         h('div', { key: d.id, className: 'bg-slate-50 rounded-lg p-3 border border-slate-100' },
                             h('div', { className: 'flex items-center justify-between' },
                                 h('span', { className: 'text-xs font-bold text-slate-700' }, d.studentName + ' \u2014 ' + (d.rawDescription || '').slice(0, 40)),
-                                h('span', { className: 'text-[9px] text-slate-500' }, new Date(d.date).toLocaleDateString())
+                                h('span', { className: 'text-[10px] text-slate-500' }, new Date(d.date).toLocaleDateString())
                             ),
                             h('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, (d.formalDefinition || '').slice(0, 100) + '...')
                         )
@@ -15241,7 +15241,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ),
                 scores.length > 0 && h('div', { className: 'text-right' },
                     h('div', { className: `text-sm font-black ${overall.avg >= 4 ? 'text-green-600' : overall.avg >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `${overall.avg.toFixed(1)} / 5`),
-                    h('div', { className: 'text-[9px] text-slate-500' }, 'MI Quality')
+                    h('div', { className: 'text-[10px] text-slate-500' }, 'MI Quality')
                 )
             ),
             // OARS tracker
@@ -15249,7 +15249,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ...Object.entries(oarsLabels).map(([key, label]) =>
                     h('div', { key, className: `bg-${oarsColors[key]}-50 rounded-lg border border-${oarsColors[key]}-200 p-2 text-center` },
                         h('div', { className: `text-lg font-black text-${oarsColors[key]}-600` }, overall.oarsCounts[key]),
-                        h('div', { className: 'text-[8px] font-bold text-slate-500 uppercase' }, label)
+                        h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, label)
                     )
                 )
             ),
@@ -15258,7 +15258,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ...conversation.map((msg, i) =>
                     h('div', { key: i, className: `flex ${msg.role === 'counselor' ? 'justify-end' : 'justify-start'}` },
                         h('div', { className: `max-w-[80%] px-3 py-2 rounded-xl text-xs ${msg.role === 'counselor' ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-800'}` },
-                            h('div', { className: `text-[9px] font-bold mb-0.5 ${msg.role === 'counselor' ? 'text-teal-200' : 'text-slate-500'}` }, msg.role === 'counselor' ? 'You (Counselor)' : selectedScenario.student),
+                            h('div', { className: `text-[10px] font-bold mb-0.5 ${msg.role === 'counselor' ? 'text-teal-200' : 'text-slate-500'}` }, msg.role === 'counselor' ? 'You (Counselor)' : selectedScenario.student),
                             msg.text
                         )
                     )
@@ -15267,7 +15267,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 scores.length > 0 && !sessionDone && h('div', { className: 'bg-purple-50 rounded-lg border border-purple-200 p-2 mt-2' },
                     h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: `text-xs font-bold ${scores[scores.length - 1].quality >= 4 ? 'text-green-600' : scores[scores.length - 1].quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `MI: ${scores[scores.length - 1].quality}/5`),
-                        scores[scores.length - 1].skills.length > 0 && h('span', { className: 'text-[9px] text-purple-600 font-medium' }, `Skills: ${scores[scores.length - 1].skills.join(', ')}`),
+                        scores[scores.length - 1].skills.length > 0 && h('span', { className: 'text-[10px] text-purple-600 font-medium' }, `Skills: ${scores[scores.length - 1].skills.join(', ')}`),
                     ),
                     h('p', { className: 'text-[10px] text-purple-700 mt-1' }, scores[scores.length - 1].tip)
                 ),
@@ -15294,15 +15294,15 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                     h('div', null,
                         h('div', { className: 'text-lg font-black text-teal-700' }, scores.length),
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold' }, 'TURNS')
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'TURNS')
                     ),
                     h('div', null,
                         h('div', { className: `text-lg font-black ${overall.avg >= 4 ? 'text-green-600' : overall.avg >= 3 ? 'text-amber-600' : 'text-red-500'}` }, overall.avg.toFixed(1)),
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold' }, 'AVG MI QUALITY')
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'AVG MI QUALITY')
                     ),
                     h('div', null,
                         h('div', { className: 'text-lg font-black text-indigo-600' }, Object.values(overall.oarsCounts).reduce((a, b) => a + b, 0)),
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold' }, 'TOTAL SKILLS')
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'TOTAL SKILLS')
                     )
                 ),
                 // Turn by turn
@@ -15312,7 +15312,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 bg-white rounded px-2 py-1 flex items-center gap-2' },
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `font-bold ${s.quality >= 4 ? 'text-green-600' : s.quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `${s.quality}/5`),
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, s.skills.length > 0 ? s.skills.join(' ') : '—'),
-                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-[9px] flex-1 text-right' }, s.tip)
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-[10px] flex-1 text-right' }, s.tip)
                         )
                     ))
                 ),
@@ -15416,35 +15416,35 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
                     h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                         h('div', null,
-                            h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase' }, 'Problem Behavior'),
+                            h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Problem Behavior'),
                             h('div', { className: 'text-xs text-red-600 font-medium' }, b.problem)
                         ),
                         h('div', null,
-                            h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase' }, 'Replacement'),
+                            h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Replacement'),
                             h('div', { className: 'text-xs text-green-600 font-medium' }, b.replacement)
                         )
                     ),
                     b.strategy && h('div', { className: 'mb-3' },
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase' }, 'Teaching Strategy'),
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Teaching Strategy'),
                         h('div', { className: 'text-xs text-slate-600' }, b.strategy)
                     ),
                     // Stats row
                     h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
                         h('div', { className: 'bg-slate-50 rounded-lg p-2 text-center' },
                             h('div', { className: 'text-lg font-black text-slate-700' }, st.total),
-                            h('div', { className: 'text-[8px] text-slate-500 font-bold uppercase' }, 'Total Trials')
+                            h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Total Trials')
                         ),
                         h('div', { className: 'bg-green-50 rounded-lg p-2 text-center' },
                             h('div', { className: 'text-lg font-black text-green-600' }, `${st.pctInd}%`),
-                            h('div', { className: 'text-[8px] text-slate-500 font-bold uppercase' }, 'Independent')
+                            h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Independent')
                         ),
                         h('div', { className: 'bg-amber-50 rounded-lg p-2 text-center' },
                             h('div', { className: 'text-lg font-black text-amber-600' }, st.pp),
-                            h('div', { className: 'text-[8px] text-slate-500 font-bold uppercase' }, 'Partial')
+                            h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Partial')
                         ),
                         h('div', { className: 'bg-red-50 rounded-lg p-2 text-center' },
                             h('div', { className: 'text-lg font-black text-red-500' }, st.fp),
-                            h('div', { className: 'text-[8px] text-slate-500 font-bold uppercase' }, 'Full Prompt')
+                            h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, 'Full Prompt')
                         )
                     ),
                     // Trend indicator
@@ -15453,7 +15453,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     // Daily bar chart
                     dates.length > 0 && h('div', { className: 'mb-3' },
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase mb-1' }, 'Daily Breakdown'),
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase mb-1' }, 'Daily Breakdown'),
                         h('div', { className: 'space-y-1' },
                             ...dates.slice(-7).map(d => {
                                 const day = byDate[d];
@@ -15469,7 +15469,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 );
                             })
                         ),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 mt-1 text-[9px] text-slate-500' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 mt-1 text-[10px] text-slate-500' },
                             h('span', null, '🟥 Full Prompt'),
                             h('span', null, '🟨 Partial'),
                             h('span', null, '🟩 Independent')
@@ -16209,7 +16209,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 tier.data.map((d, di) =>
                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: di, className: 'px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-mono text-slate-600 flex items-center gap-1' },
                                         `S${d.session}: ${d.value}`,
-                                        h('button', { onClick: () => removeMbTierPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-400 hover:text-red-600 text-[8px] ml-0.5' }, '✕')
+                                        h('button', { onClick: () => removeMbTierPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-400 hover:text-red-600 text-[10px] ml-0.5' }, '✕')
                                     )
                                 )
                             )
@@ -16335,7 +16335,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 cond.data.map((d, di) =>
                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: di, className: 'px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-mono text-slate-600 flex items-center gap-1' },
                                         `S${d.session}: ${d.value}`,
-                                        h('button', { onClick: () => removeAtPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-400 hover:text-red-600 text-[8px] ml-0.5' }, '✕')
+                                        h('button', { onClick: () => removeAtPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-400 hover:text-red-600 text-[10px] ml-0.5' }, '✕')
                                     )
                                 )
                             )
@@ -16905,7 +16905,7 @@ Keep under 200 words. Use bullet points.`);
                             ),
                             h('p', { className: 'text-[10px] text-slate-500 leading-relaxed' }, d.desc),
                             d.phases.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 mt-2' },
-                                d.phases.map(p => h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: p, className: 'text-[9px] px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded font-medium' }, p))
+                                d.phases.map(p => h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: p, className: 'text-[10px] px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded font-medium' }, p))
                             )
                         )
                     )
@@ -16994,7 +16994,7 @@ Keep under 200 words. Use bullet points.`);
                                 h('span', null, c.icon),
                                 h('span', { className: 'text-[10px] font-bold text-emerald-800' }, c.label)
                             ),
-                            h('p', { className: 'text-[9px] text-emerald-600' }, c.desc)
+                            h('p', { className: 'text-[10px] text-emerald-600' }, c.desc)
                         )
                     )
                 )
@@ -17226,7 +17226,7 @@ Keep under 250 words. Use clear sections.`);
                                 h('span', { className: 'text-lg' }, f.icon),
                                 h('div', null,
                                     h('span', { className: 'text-xs font-bold text-slate-700' }, f.label),
-                                    h('p', { className: 'text-[9px] text-slate-500' }, f.desc)
+                                    h('p', { className: 'text-[10px] text-slate-500' }, f.desc)
                                 )
                             )
                         )
@@ -18384,12 +18384,12 @@ Keep it under 150 words.`);
                                 })
                             )
                         ),
-                        h('div', { className: 'text-[9px] text-slate-500 ml-auto' }, 'Total: ' + (intervalCount * intervalDuration) + ' min')
+                        h('div', { className: 'text-[10px] text-slate-500 ml-auto' }, 'Total: ' + (intervalCount * intervalDuration) + ' min')
                     ),
                     // Structured interval rows
                     !bulkMode && h('div', { className: 'space-y-1' },
                         // Header row
-                        h('div', { className: 'grid gap-2 items-center text-[9px] font-bold text-slate-500 uppercase tracking-wide pb-1 border-b border-slate-100', style: { gridTemplateColumns: '36px 60px 1fr 64px 64px' } },
+                        h('div', { className: 'grid gap-2 items-center text-[10px] font-bold text-slate-500 uppercase tracking-wide pb-1 border-b border-slate-100', style: { gridTemplateColumns: '36px 60px 1fr 64px 64px' } },
                             h('div', null, '#'),
                             h('div', null, 'Time'),
                             h('div', null, 'Label'),
@@ -18401,7 +18401,7 @@ Keep it under 150 words.`);
                             intervalData.slice(0, intervalCount).map(function(row, idx) {
                                 return h('div', { key: idx, className: 'grid gap-2 items-center py-1 rounded-lg hover:bg-slate-50 transition-all', style: { gridTemplateColumns: '36px 60px 1fr 64px 64px' } },
                                     h('div', { className: 'text-xs font-black text-slate-500 text-center' }, idx + 1),
-                                    h('div', { className: 'text-[9px] text-indigo-500 font-medium' }, ioaTimeLabel(idx)),
+                                    h('div', { className: 'text-[10px] text-indigo-500 font-medium' }, ioaTimeLabel(idx)),
                                     h('input', { type: 'text', value: row.label, onChange: function(e) { updateIntervalField(idx, 'label', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' label', placeholder: 'e.g. Math time', className: 'w-full border border-slate-100 rounded px-2 py-1 text-[10px] focus:ring-1 focus:ring-indigo-300 outline-none bg-transparent' }),
                                     h('input', { type: 'text', value: row.obs1, onChange: function(e) { updateIntervalField(idx, 'obs1', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' observer 1', placeholder: '0', className: 'w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' }),
                                     h('input', { type: 'text', value: row.obs2, onChange: function(e) { updateIntervalField(idx, 'obs2', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' observer 2', placeholder: '0', className: 'w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' })
@@ -18446,7 +18446,7 @@ Keep it under 150 words.`);
                         h('div', { className: 'flex items-center gap-2 mb-2' },
                             h('span', { className: 'text-sm' }, '👤'),
                             h('span', { className: 'text-xs font-bold text-slate-700' }, 'Subject Identification'),
-                            h('span', { className: 'text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, 'RECOMMENDED')
+                            h('span', { className: 'text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, 'RECOMMENDED')
                         ),
                         h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Describe the subject so the AI can distinguish them from others in the recording. Include clothing, seating position, or physical characteristics. The student name (if entered on the main form) helps with audio recognition when someone addresses the subject by name.'),
                         h('textarea', { value: subjectDescription, onChange: function(e) { setSubjectDescription(e.target.value); }, 'aria-label': 'Subject description', placeholder: 'e.g., Student wearing blue hoodie, seated at front-left desk, brown hair in ponytail. Only person at that table.', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none resize-none' })
@@ -18472,7 +18472,7 @@ Keep it under 150 words.`);
                                 );
                             })
                         ),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-sky-500 italic mt-1' }, 'Following these guidelines significantly improves AI coding reliability. The AI works best with stable, well-lit recordings where the subject is consistently visible and identifiable.')
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-sky-500 italic mt-1' }, 'Following these guidelines significantly improves AI coding reliability. The AI works best with stable, well-lit recordings where the subject is consistently visible and identifiable.')
                     )
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
@@ -18524,7 +18524,7 @@ Keep it under 150 words.`);
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '4'),
                         h('h3', { className: 'text-sm font-black text-slate-800' }, 'Enter Your Coding Data'),
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, 'OPTIONAL')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, 'OPTIONAL')
                     ),
                     h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Enter your observation codes to compare against AI. Leave blank for AI-only reliability testing (researchers can skip this to measure AI consistency across passes).'),
                     h('textarea', { value: practitionerCoding, onChange: function(e) { setPractitionerCoding(e.target.value); }, 'aria-label': 'Your observation coding', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0  (leave blank for AI-only mode)', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
@@ -18584,7 +18584,7 @@ Keep it under 150 words.`);
                             h('div', { className: 'w-20 text-slate-500 font-mono text-[10px]' }, ioaFmtTime(iv.start_sec) + '-' + ioaFmtTime(iv.end_sec)),
                             h('div', { className: 'w-8 text-center font-black text-lg ' + (iv.code > 0 ? 'text-red-600' : 'text-slate-400') }, iv.code > 0 ? iv.code : '—'),
                             h('div', { className: 'flex-1 text-slate-600 truncate' }, iv.observation || ''),
-                            iv.uncertain && h('div', { className: 'px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-bold' }, '⚠ Uncertain'),
+                            iv.uncertain && h('div', { className: 'px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold' }, '⚠ Uncertain'),
                             h('div', { className: 'w-12 text-right text-slate-500 text-[10px]' }, (iv.confidence || 0) + '%')
                         );
                     })
@@ -18615,7 +18615,7 @@ Keep it under 150 words.`);
                                     h('span', { className: 'text-slate-500 mx-1' }, '|'),
                                     h('span', { className: 'text-slate-500 italic' }, d.aiNote || '')
                                 ),
-                                h('div', { className: 'ml-auto text-[9px] text-slate-500' }, d.aiConfidence + '% conf')
+                                h('div', { className: 'ml-auto text-[10px] text-slate-500' }, d.aiConfidence + '% conf')
                             );
                         })
                     )
@@ -18652,17 +18652,17 @@ Keep it under 150 words.`);
                     // Practitioner × AI-1
                     ioaComparison && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
                         h('div', { className: 'text-2xl font-black ' + (parseFloat(ioaComparison.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, ioaComparison.agreementPct + '%'),
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase mt-1' }, 'You × AI Pass 1')
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase mt-1' }, 'You × AI Pass 1')
                     ),
                     // Practitioner × AI-2
                     ioaComparison2 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
                         h('div', { className: 'text-2xl font-black ' + (parseFloat(ioaComparison2.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, ioaComparison2.agreementPct + '%'),
-                        h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase mt-1' }, 'You × AI Pass 2')
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase mt-1' }, 'You × AI Pass 2')
                     ),
                     // AI-1 × AI-2
                     h('div', { className: 'bg-white rounded-xl border border-violet-200 p-3 text-center' },
                         h('div', { className: 'text-2xl font-black ' + (parseFloat(aiVsAiComparison.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, aiVsAiComparison.agreementPct + '%'),
-                        h('div', { className: 'text-[9px] text-violet-600 font-bold uppercase mt-1' }, 'AI-1 × AI-2 Reliability')
+                        h('div', { className: 'text-[10px] text-violet-600 font-bold uppercase mt-1' }, 'AI-1 × AI-2 Reliability')
                     )
                 ),
                 h('div', { className: 'text-[10px] text-slate-500 bg-slate-50 rounded-lg p-3' },
@@ -18712,7 +18712,7 @@ Keep it under 150 words.`);
                             return h('button', { "aria-label": "Set Ia Role", key: r.id, onClick: function() { setIaRole(r.id); }, className: 'p-3 rounded-xl border-2 text-center transition-all ' + (iaRole === r.id ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
                                 h('div', { className: 'text-xl mb-1' }, r.icon),
                                 h('div', { className: 'text-xs font-bold text-slate-800' }, r.label),
-                                h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, r.desc)
+                                h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, r.desc)
                             );
                         })
                     ),
@@ -18745,13 +18745,13 @@ Keep it under 150 words.`);
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black' }, '3'),
                         h('h3', { className: 'text-sm font-black text-slate-800' }, 'Reinforcement Schedule'),
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, 'OPTIONAL')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, 'OPTIONAL')
                     ),
                     h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'If the child is on a specific reinforcement schedule, enter it here so the AI can evaluate adherence.'),
                     h('input', { value: iaReinfSchedule, onChange: function(e) { setIaReinfSchedule(e.target.value); }, 'aria-label': 'Reinforcement schedule', placeholder: 'e.g., FR3 (fixed-ratio 3), VR5, DRO 2min, FI 30s, token economy every 5 correct', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-400 outline-none font-mono' }),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 mt-2' },
                         ['FR3', 'VR5', 'FI 30s', 'VI 2min', 'DRO 2min', 'DRA', 'DRI', 'Token economy'].map(function(ex) {
-                            return h('button', { "aria-label": "Set Ia Reinf Schedule", key: ex, onClick: function() { setIaReinfSchedule(ex); }, className: 'px-2 py-1 rounded-lg text-[9px] font-bold transition-all ' + (iaReinfSchedule === ex ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, ex);
+                            return h('button', { "aria-label": "Set Ia Reinf Schedule", key: ex, onClick: function() { setIaReinfSchedule(ex); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (iaReinfSchedule === ex ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, ex);
                         })
                     )
                 ),
@@ -18788,15 +18788,15 @@ Keep it under 150 words.`);
                     h('div', { className: 'grid grid-cols-3 gap-3' },
                         h('div', { className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 text-center' },
                             h('div', { className: 'text-2xl font-black text-blue-700' }, iaResults.overall_quality ? iaResults.overall_quality.charAt(0).toUpperCase() + iaResults.overall_quality.slice(1) : '—'),
-                            h('div', { className: 'text-[9px] text-blue-500 font-bold uppercase mt-1' }, 'Overall Quality')
+                            h('div', { className: 'text-[10px] text-blue-500 font-bold uppercase mt-1' }, 'Overall Quality')
                         ),
                         iaResults.schedule_adherence && h('div', { className: 'bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4 text-center' },
                             h('div', { className: 'text-2xl font-black ' + (iaResults.schedule_adherence.percentage >= 80 ? 'text-emerald-600' : iaResults.schedule_adherence.percentage >= 60 ? 'text-amber-600' : 'text-red-600') }, iaResults.schedule_adherence.percentage + '%'),
-                            h('div', { className: 'text-[9px] text-emerald-500 font-bold uppercase mt-1' }, 'Schedule Adherence')
+                            h('div', { className: 'text-[10px] text-emerald-500 font-bold uppercase mt-1' }, 'Schedule Adherence')
                         ),
                         h('div', { className: 'bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-4 text-center' },
                             h('div', { className: 'text-2xl font-black text-violet-700' }, (iaResults.intervals || []).length),
-                            h('div', { className: 'text-[9px] text-violet-500 font-bold uppercase mt-1' }, 'Intervals Analyzed')
+                            h('div', { className: 'text-[10px] text-violet-500 font-bold uppercase mt-1' }, 'Intervals Analyzed')
                         )
                     ),
                     // Summaries
@@ -18818,7 +18818,7 @@ Keep it under 150 words.`);
                             var sevText = obs.severity === 'significant' ? 'text-red-700' : obs.severity === 'moderate' ? 'text-amber-700' : 'text-yellow-700';
                             return h('div', { key: i, className: 'rounded-xl border-2 p-3 ' + sevColor },
                                 h('div', { className: 'flex items-center gap-2 mb-1' },
-                                    h('span', { className: 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase ' + sevText + ' bg-white/80' }, obs.severity),
+                                    h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-black uppercase ' + sevText + ' bg-white/80' }, obs.severity),
                                     h('span', { className: 'text-xs font-bold text-slate-700' }, obs.type.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); })),
                                     obs.timestamp && h('span', { className: 'text-[10px] text-slate-500 font-mono' }, '@ ' + obs.timestamp)
                                 ),
@@ -18848,7 +18848,7 @@ Keep it under 150 words.`);
                         h('div', { className: 'space-y-2' },
                             iaResults.coaching_tips.map(function(tip, i) {
                                 return h('div', { key: i, className: 'flex items-start gap-2 p-2 bg-white rounded-lg border border-sky-100 text-[11px]' },
-                                    h('div', { className: 'w-5 h-5 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-[9px] font-black flex-shrink-0 mt-0.5' }, i + 1),
+                                    h('div', { className: 'w-5 h-5 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5' }, i + 1),
                                     h('span', { className: 'text-slate-700' }, tip)
                                 );
                             })
@@ -18862,8 +18862,8 @@ Keep it under 150 words.`);
                                 return h('div', { key: idx, className: 'p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-1' },
                                     h('div', { className: 'flex items-center gap-2 text-[10px]' },
                                         h('span', { className: 'font-mono font-bold text-slate-500' }, ioaFmtTime(iv.start_sec) + '–' + ioaFmtTime(iv.end_sec)),
-                                        iv.child_engagement && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[8px] font-bold ' + (iv.child_engagement === 'high' ? 'bg-emerald-100 text-emerald-700' : iv.child_engagement === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }, iv.child_engagement.toUpperCase()),
-                                        iv.reinforcement_delivered && h('span', { className: 'px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[8px] font-bold' }, 'SR+')
+                                        iv.child_engagement && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (iv.child_engagement === 'high' ? 'bg-emerald-100 text-emerald-700' : iv.child_engagement === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }, iv.child_engagement.toUpperCase()),
+                                        iv.reinforcement_delivered && h('span', { className: 'px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold' }, 'SR+')
                                     ),
                                     h('div', { className: 'grid grid-cols-2 gap-2 text-[10px]' },
                                         h('div', null,
@@ -18875,7 +18875,7 @@ Keep it under 150 words.`);
                                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, iv.adult_response || '—')
                                         )
                                     ),
-                                    (iv.prompt_level || iv.response_latency_sec) && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 text-[9px] text-slate-500' },
+                                    (iv.prompt_level || iv.response_latency_sec) && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 text-[10px] text-slate-500' },
                                         iv.prompt_level && h('span', null, 'Prompt: ' + iv.prompt_level),
                                         iv.response_latency_sec !== undefined && h('span', null, 'Latency: ' + iv.response_latency_sec + 's'),
                                         iv.schedule_adherent !== undefined && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: iv.schedule_adherent ? 'text-emerald-500' : 'text-red-500' }, iv.schedule_adherent ? '✓ On schedule' : '✗ Off schedule')
@@ -19034,7 +19034,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                         CHAINING.map(c => h('button', { "aria-label": "Toggle chaining method", key: c.id, onClick: () => setChainingMethod(c.id), className: `flex-1 p-2 rounded-lg border-2 text-left ${chainingMethod === c.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                             h('span', { className: 'text-[10px] font-bold text-slate-700 block' }, c.name),
-                            h('span', { className: 'text-[9px] text-slate-500' }, c.desc)
+                            h('span', { className: 'text-[10px] text-slate-500' }, c.desc)
                         ))
                     )
                 ),
@@ -19073,7 +19073,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 ),
                 // Prompt level legend
                 h('div', { className: 'flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100' },
-                    PROMPT_LEVELS.map(p => h('span', { key: p.id, className: 'text-[9px] text-slate-500' }, `${p.icon} ${p.id}=${p.label}`))
+                    PROMPT_LEVELS.map(p => h('span', { key: p.id, className: 'text-[10px] text-slate-500' }, `${p.icon} ${p.id}=${p.label}`))
                 )
             ),
             // Summary bar
@@ -19402,7 +19402,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                         METHODS.map(m => h('button', { "aria-label": "Toggle method", key: m.id, onClick: () => setMethod(m.id), className: `flex-1 p-3 rounded-xl border-2 text-left ${method === m.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' }, h('span', null, m.icon), h('span', { className: 'text-xs font-bold text-slate-700' }, m.name)),
-                            h('p', { className: 'text-[9px] text-slate-500' }, m.desc)
+                            h('p', { className: 'text-[10px] text-slate-500' }, m.desc)
                         ))
                     )
                 ),
@@ -19535,18 +19535,18 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('table', { className: 'w-full border-collapse' },
                         h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', null,
-                                h('th', { scope: 'col', className: 'text-[9px] text-slate-500 font-bold p-1 text-left' }, (t('behavior_lens.raw.time') || 'Time')),
-                                ...DAY_LABELS.slice(0, days).map(d => h('th', { scope: 'col', key: d, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, d))
+                                h('th', { scope: 'col', className: 'text-[10px] text-slate-500 font-bold p-1 text-left' }, (t('behavior_lens.raw.time') || 'Time')),
+                                ...DAY_LABELS.slice(0, days).map(d => h('th', { scope: 'col', key: d, className: 'text-[10px] text-slate-500 font-bold p-1 text-center' }, d))
                             )
                         ),
                         h('tbody', null,
                             TIME_SLOTS.map(slot =>
                                 h('tr', { key: slot.id },
-                                    h('td', { className: 'text-[9px] text-slate-500 font-medium p-1 whitespace-nowrap' }, slot.label),
+                                    h('td', { className: 'text-[10px] text-slate-500 font-medium p-1 whitespace-nowrap' }, slot.label),
                                     ...Array.from({ length: days }, (_, di) => {
                                         const val = grid[`${di}_${slot.hour}`] || 0;
                                         return h('td', { key: di, className: 'p-0.5' },
-                                            h('button', { "aria-label": "Toggle Cell", onClick: () => toggleCell(di, slot.hour), className: `w-full h-6 rounded ${getCellColor(val)} border border-slate-200 text-[9px] font-bold transition-colors` }, val > 0 ? val : '')
+                                            h('button', { "aria-label": "Toggle Cell", onClick: () => toggleCell(di, slot.hour), className: `w-full h-6 rounded ${getCellColor(val)} border border-slate-200 text-[10px] font-bold transition-colors` }, val > 0 ? val : '')
                                         );
                                     })
                                 )
@@ -19554,7 +19554,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         )
                     )
                 ),
-                h('div', { className: 'flex gap-3 mt-2 text-[9px] text-slate-500' },
+                h('div', { className: 'flex gap-3 mt-2 text-[10px] text-slate-500' },
                     h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-white border border-slate-200 rounded' }), t('behavior_lens.ui.no_occurrence') || 'No occurrence'),
                     h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-amber-200 rounded' }), t('behavior_lens.ui.some') || 'Some'),
                     h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-red-400 rounded' }), t('behavior_lens.ui.high') || 'High')
@@ -19689,10 +19689,10 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 Results (${trials.length} trials)`),
                 // Stats cards
                 h('div', { className: 'grid grid-cols-4 gap-2' },
-                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-indigo-600' }, t('behavior_lens.ui.mean') || 'Mean'), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
-                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-purple-600' }, t('behavior_lens.ui.median') || 'Median'), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
-                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-emerald-600' }, t('behavior_lens.ui.range') || 'Range'), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
-                    h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-amber-600' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
+                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[10px] text-indigo-600' }, t('behavior_lens.ui.mean') || 'Mean'), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
+                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[10px] text-purple-600' }, t('behavior_lens.ui.median') || 'Median'), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
+                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[10px] text-emerald-600' }, t('behavior_lens.ui.range') || 'Range'), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
+                    h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[10px] text-amber-600' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
                 ),
                 // SVG Trial Graph
                 h('svg', { ref: svgRef, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '230px', fontFamily: 'Arial, sans-serif' } },
@@ -19913,17 +19913,17 @@ Keep the language professional but accessible.`;
                     h('div', { className: 'bg-blue-50 rounded-xl p-4 text-center border border-blue-200' },
                         h('p', { className: 'text-[10px] text-blue-600 font-bold' }, 'PRE'),
                         h('p', { className: 'text-2xl font-black text-blue-700' }, `${pre.pct}%`),
-                        h('p', { className: 'text-[9px] text-blue-500' }, new Date(pre.date).toLocaleDateString())
+                        h('p', { className: 'text-[10px] text-blue-500' }, new Date(pre.date).toLocaleDateString())
                     ),
                     h('div', { className: `rounded-xl p-4 text-center border ${delta > 0 ? 'bg-green-50 border-green-200' : delta < 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}` },
                         h('p', { className: 'text-[10px] text-slate-600 font-bold' }, 'CHANGE'),
                         h('p', { className: `text-2xl font-black ${delta > 0 ? 'text-green-700' : delta < 0 ? 'text-red-700' : 'text-slate-700'}` }, `${delta > 0 ? '+' : ''}${delta}%`),
-                        h('p', { className: 'text-[9px] text-slate-500' }, delta > 10 ? 'Meaningful improvement' : delta > 0 ? 'Slight improvement' : delta < -10 ? 'Notable decline' : 'Minimal change')
+                        h('p', { className: 'text-[10px] text-slate-500' }, delta > 10 ? 'Meaningful improvement' : delta > 0 ? 'Slight improvement' : delta < -10 ? 'Notable decline' : 'Minimal change')
                     ),
                     h('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-200' },
                         h('p', { className: 'text-[10px] text-purple-600 font-bold' }, 'POST'),
                         h('p', { className: 'text-2xl font-black text-purple-700' }, `${post.pct}%`),
-                        h('p', { className: 'text-[9px] text-purple-500' }, new Date(post.date).toLocaleDateString())
+                        h('p', { className: 'text-[10px] text-purple-500' }, new Date(post.date).toLocaleDateString())
                     )
                 ),
                 // Item-level delta bars
@@ -19936,8 +19936,8 @@ Keep the language professional but accessible.`;
                             if (preVal === undefined || postVal === undefined) return null;
                             const d = postVal - preVal;
                             return h('div', { key: i, className: 'flex items-center gap-2' },
-                                h('span', { className: 'w-6 text-[9px] text-slate-500 text-right' }, `${i + 1}.`),
-                                h('div', { className: 'flex-1 text-[9px] text-slate-600 truncate', title: item }, item),
+                                h('span', { className: 'w-6 text-[10px] text-slate-500 text-right' }, `${i + 1}.`),
+                                h('div', { className: 'flex-1 text-[10px] text-slate-600 truncate', title: item }, item),
                                 h('span', { className: `text-[10px] font-bold ${d > 0 ? 'text-green-600' : d < 0 ? 'text-red-600' : 'text-slate-500'}` }, d > 0 ? `+${d}` : d < 0 ? `${d}` : '=')
                             );
                         })
@@ -19956,11 +19956,11 @@ Keep the language professional but accessible.`;
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                 Object.entries(MEASURES).map(([id, m]) => h('button', { "aria-label": "Toggle measure", key: id, onClick: () => { setMeasure(id); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-left ${measure === id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 block' }, m.name),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, m.desc)
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, m.desc)
                 )),
                 h('button', { "aria-label": "Toggle measure", onClick: () => { setMeasure('custom'); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-left ${isCustom ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}` },
                     h('span', { className: 'text-xs font-bold text-slate-700 block' }, '✏️ Custom Survey'),
-                    h('span', { className: 'text-[9px] text-slate-500' }, 'Build your own')
+                    h('span', { className: 'text-[10px] text-slate-500' }, 'Build your own')
                 )
             ),
             // Custom survey builder
@@ -19980,7 +19980,7 @@ Keep the language professional but accessible.`;
                     customItems.map((ci, i) =>
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2 bg-slate-50 rounded-lg p-2' },
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 flex-1' }, `${i + 1}. ${ci.text}`),
-                            h('label', { className: 'flex items-center gap-1 text-[9px] text-slate-500 cursor-pointer' },
+                            h('label', { className: 'flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer' },
                                 h('input', { type: 'checkbox', checked: ci.reverse, onChange: () => setCustomItems(prev => prev.map((c, j) => j === i ? { ...c, reverse: !c.reverse } : c)), className: 'accent-purple-600' }), 'Reverse'
                             ),
                             h('button', { onClick: () => setCustomItems(prev => prev.filter((_, j) => j !== i)), title: 'Close', 'aria-label': 'Close', className: 'text-red-400 hover:text-red-600 text-xs font-bold' }, '×')
@@ -20001,7 +20001,7 @@ Keep the language professional but accessible.`;
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'space-y-1' },
                         h('p', { className: 'text-xs text-slate-700' }, `${i + 1}. ${item}${current.reverseItems?.includes(i) ? ' ®' : ''}`),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
-                            current.scale.map((s, si) => h('button', { "aria-label": "Toggle responses", key: si, onClick: () => setResponses(prev => ({ ...prev, [i]: si })), className: `flex-1 py-1 rounded text-[8px] font-medium border ${responses[i] === si ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}` }, s))
+                            current.scale.map((s, si) => h('button', { "aria-label": "Toggle responses", key: si, onClick: () => setResponses(prev => ({ ...prev, [i]: si })), className: `flex-1 py-1 rounded text-[10px] font-medium border ${responses[i] === si ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}` }, s))
                         )
                     )
                 ),
@@ -20182,9 +20182,9 @@ Keep the language professional but accessible.`;
                     ),
                     // Sparkline
                     skill.probes.length >= 2 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 flex items-center gap-3' },
-                        h('span', { className: 'text-[9px] text-slate-500 font-medium' }, 'Trend:'),
+                        h('span', { className: 'text-[10px] text-slate-500 font-medium' }, 'Trend:'),
                         renderSparkline(skill.probes),
-                        h('span', { className: 'text-[9px] text-slate-500' }, `(last ${Math.min(12, skill.probes.length)} probes, green line = 80% mastery)`)
+                        h('span', { className: 'text-[10px] text-slate-500' }, `(last ${Math.min(12, skill.probes.length)} probes, green line = 80% mastery)`)
                     )
                 ),
                 // Schedule & next probe date
@@ -20192,7 +20192,7 @@ Keep the language professional but accessible.`;
                     h('div', { className: 'flex items-center justify-between' },
                         h('div', null,
                             h('p', { className: `text-[10px] font-bold ${od.isOverdue ? 'text-red-700' : 'text-blue-700'}` }, od.isOverdue ? `⚠ Probe overdue by ${od.overdueDays} days` : `Next probe due: ${od.nextDue}`),
-                            h('p', { className: 'text-[9px] text-slate-500 mt-0.5' }, `Schedule: probe every ${SCHEDULE_DAYS[skill.schedule]} days | Last probed ${od.daysSince} days ago`)
+                            h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, `Schedule: probe every ${SCHEDULE_DAYS[skill.schedule]} days | Last probed ${od.daysSince} days ago`)
                         ),
                         h('select', { value: skill.schedule, onChange: (e) => setSkills(prev => prev.map(s => s.id === skill.id ? { ...s, schedule: e.target.value } : s)), 'aria-label': 'Probe schedule for this skill', className: 'text-[10px] border border-slate-200 rounded px-2 py-1 bg-white' },
                             Object.keys(SCHEDULE_DAYS).map(k => h('option', { key: k, value: k }, k.charAt(0).toUpperCase() + k.slice(1)))
@@ -20201,12 +20201,12 @@ Keep the language professional but accessible.`;
                 ),
                 // BACB recommended schedule tiers
                 h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-100 p-3' },
-                    h('p', { className: 'text-[9px] font-bold text-indigo-700 mb-2' }, '📋 BACB-Aligned Recommended Probe Schedule'),
+                    h('p', { className: 'text-[10px] font-bold text-indigo-700 mb-2' }, '📋 BACB-Aligned Recommended Probe Schedule'),
                     h('div', { className: 'flex gap-1 flex-wrap' },
                         BACB_TIERS.map((tier, i) => {
                             const active = daysSinceMastery >= (BACB_TIERS[i - 1]?.days || 0) && daysSinceMastery < tier.days;
                             const past = daysSinceMastery >= tier.days;
-                            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `px-2 py-1 rounded-lg text-[9px] border ${active ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-bold ring-2 ring-indigo-300' : past ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-slate-200 text-slate-500'}` },
+                            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `px-2 py-1 rounded-lg text-[10px] border ${active ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-bold ring-2 ring-indigo-300' : past ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-slate-200 text-slate-500'}` },
                                 h('span', null, `${tier.label}`),
                                 active && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1' }, '← current')
                             );
@@ -20223,7 +20223,7 @@ Keep the language professional but accessible.`;
                     ),
                     skill.probes.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-3' },
                         skill.probes.slice(-15).map((p, i) =>
-                            h('span', { key: i, className: `px-1.5 py-0.5 rounded text-[9px] font-bold ${p.pct >= 80 ? 'bg-green-100 text-green-700' : p.pct >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`, title: new Date(p.date).toLocaleDateString() }, `${p.pct}%`)
+                            h('span', { key: i, className: `px-1.5 py-0.5 rounded text-[10px] font-bold ${p.pct >= 80 ? 'bg-green-100 text-green-700' : p.pct >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`, title: new Date(p.date).toLocaleDateString() }, `${p.pct}%`)
                         )
                     )
                 ),
@@ -20278,7 +20278,7 @@ Keep the language professional but accessible.`;
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('div', { className: 'flex items-center gap-2' },
                                         h('h3', { className: 'text-sm font-bold text-slate-800 truncate' }, s.name),
-                                        od.isOverdue && h('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-bold whitespace-nowrap' }, `⚠ ${od.overdueDays}d overdue`)
+                                        od.isOverdue && h('span', { className: 'text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-bold whitespace-nowrap' }, `⚠ ${od.overdueDays}d overdue`)
                                     ),
                                     h('p', { className: 'text-[10px] text-slate-500' }, `Mastered: ${s.masteryDate} | ${s.probes.length} probes | ${s.schedule}`)
                                 ),
@@ -20585,17 +20585,17 @@ Keep the language professional but accessible.`;
                 heatmapMatrix.rows.length > 0 ? h('table', { className: 'w-full text-center border-collapse' },
                     h('caption', { className: 'sr-only' }, '🗺️ P(Behavior | Antecedent) — All Pairs'), h('thead', null,
                         h('tr', null,
-                            h('th', { scope: 'col', className: 'text-[9px] font-bold text-slate-500 p-2 text-left border-b border-slate-200' }, 'Antecedent ↓ / Behavior →'),
-                            ...heatmapMatrix.cols.map(b => h('th', { scope: 'col', key: b, className: 'text-[9px] font-bold text-slate-600 p-2 border-b border-slate-200 max-w-[80px] truncate' }, b))
+                            h('th', { scope: 'col', className: 'text-[10px] font-bold text-slate-500 p-2 text-left border-b border-slate-200' }, 'Antecedent ↓ / Behavior →'),
+                            ...heatmapMatrix.cols.map(b => h('th', { scope: 'col', key: b, className: 'text-[10px] font-bold text-slate-600 p-2 border-b border-slate-200 max-w-[80px] truncate' }, b))
                         )
                     ),
                     h('tbody', null,
                         heatmapMatrix.rows.map(a =>
                             h('tr', { key: a },
-                                h('td', { className: 'text-[9px] font-medium text-slate-700 p-2 text-left border-b border-slate-100 max-w-[100px] truncate' }, a),
+                                h('td', { className: 'text-[10px] font-medium text-slate-700 p-2 text-left border-b border-slate-100 max-w-[100px] truncate' }, a),
                                 ...heatmapMatrix.cols.map(b => {
                                     const cell = heatmapMatrix.cells[`${a}__${b}`];
-                                    if (!cell) return h('td', { key: b, className: 'p-2 border-b border-slate-100 bg-slate-50' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, '—'));
+                                    if (!cell) return h('td', { key: b, className: 'p-2 border-b border-slate-100 bg-slate-50' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, '—'));
                                     const clr = heatColor(cell.prob);
                                     return h('td', { key: b, className: `p-2 border-b border-slate-100 ${clr.bg} cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all`, onClick: () => { setSelectedAntecedent(a); setSelectedBehavior(b); setViewMode('focused'); }, title: `${cell.n}/${cell.total} entries` },
                                         h('span', { className: `text-[11px] font-black ${clr.text}` }, `${(cell.prob * 100).toFixed(0)}%`)
@@ -20606,11 +20606,11 @@ Keep the language professional but accessible.`;
                     )
                 ) : h('p', { className: 'text-xs text-slate-500 text-center py-4' }, 'Not enough unique antecedents/behaviors for matrix.'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 flex gap-2 items-center justify-center flex-wrap' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, 'Legend:'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Legend:'),
                     [['bg-green-50', '0–24%'], ['bg-amber-50', '25–49%'], ['bg-orange-100', '50–74%'], ['bg-red-200', '75–100%']].map(([bg, lbl]) =>
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: lbl, className: `${bg} px-2 py-0.5 rounded text-[9px] font-medium text-slate-600` }, lbl)
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: lbl, className: `${bg} px-2 py-0.5 rounded text-[10px] font-medium text-slate-600` }, lbl)
                     ),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500 ml-2' }, '(click cell for focused analysis)')
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 ml-2' }, '(click cell for focused analysis)')
                 )
             ) : viewMode === 'consequence' ?
             // ── Consequence Analysis P(C|B) ──
@@ -20663,51 +20663,51 @@ Keep the language professional but accessible.`;
                     h('div', { className: 'grid grid-cols-3 gap-3' },
                         h('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-200' },
                             h('p', { className: 'text-[10px] text-purple-600 font-medium' }, 'P(B|A)'),
-                            h('p', { className: 'text-[9px] text-purple-400 mb-1' }, 'Foreground'),
+                            h('p', { className: 'text-[10px] text-purple-400 mb-1' }, 'Foreground'),
                             h('p', { className: 'text-2xl font-black text-purple-700' }, `${(analysis.pBgivA * 100).toFixed(0)}%`),
-                            h('p', { className: 'text-[9px] text-purple-500' }, `${analysis.behavGivenAnt}/${analysis.withAntN}`)
+                            h('p', { className: 'text-[10px] text-purple-500' }, `${analysis.behavGivenAnt}/${analysis.withAntN}`)
                         ),
                         h('div', { className: 'bg-slate-50 rounded-xl p-4 text-center border border-slate-200' },
                             h('p', { className: 'text-[10px] text-slate-600 font-medium' }, 'P(B|¬A)'),
-                            h('p', { className: 'text-[9px] text-slate-500 mb-1' }, 'Background'),
+                            h('p', { className: 'text-[10px] text-slate-500 mb-1' }, 'Background'),
                             h('p', { className: 'text-2xl font-black text-slate-700' }, `${(analysis.pBgivNoA * 100).toFixed(0)}%`),
-                            h('p', { className: 'text-[9px] text-slate-500' }, `${analysis.behavGivenNoAnt}/${analysis.withoutAntN}`)
+                            h('p', { className: 'text-[10px] text-slate-500' }, `${analysis.behavGivenNoAnt}/${analysis.withoutAntN}`)
                         ),
                         h('div', { className: `rounded-xl p-4 text-center border ${analysis.riskRatio > 1.5 ? 'bg-red-50 border-red-200' : analysis.riskRatio > 1 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}` },
                             h('p', { className: 'text-[10px] text-slate-600 font-medium' }, 'Risk Ratio'),
-                            h('p', { className: 'text-[9px] text-slate-500 mb-1' }, 'P(B|A)/P(B|¬A)'),
+                            h('p', { className: 'text-[10px] text-slate-500 mb-1' }, 'P(B|A)/P(B|¬A)'),
                             h('p', { className: `text-2xl font-black ${analysis.riskRatio > 1.5 ? 'text-red-700' : 'text-slate-700'}` }, analysis.riskRatio === Infinity ? '∞' : `${analysis.riskRatio.toFixed(2)}x`)
                         )
                     ),
                     // 2×2 Contingency Table
                     h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
                         h('h3', { className: 'text-xs font-bold text-slate-700 mb-3 flex items-center gap-2' }, '📊 2×2 Contingency Table',
-                            h('span', { className: `text-[9px] px-2 py-0.5 rounded-full font-bold ${Math.abs(analysis.phi) >= 0.3 ? 'bg-red-100 text-red-700' : Math.abs(analysis.phi) >= 0.1 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}` }, `φ = ${analysis.phi.toFixed(3)}`)
+                            h('span', { className: `text-[10px] px-2 py-0.5 rounded-full font-bold ${Math.abs(analysis.phi) >= 0.3 ? 'bg-red-100 text-red-700' : Math.abs(analysis.phi) >= 0.1 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}` }, `φ = ${analysis.phi.toFixed(3)}`)
                         ),
                         h('table', { className: 'w-full text-center border-collapse' },
                             h('caption', { className: 'sr-only' }, '📊 2×2 Contingency Table'), h('thead', null,
                                 h('tr', null,
-                                    h('th', { scope: 'col', className: 'p-2 text-[9px] text-slate-500 border border-slate-200' }),
-                                    h('th', { scope: 'col', className: 'p-2 text-[9px] font-bold text-indigo-700 border border-slate-200 bg-indigo-50' }, `B: "${selectedBehavior}"`),
-                                    h('th', { scope: 'col', className: 'p-2 text-[9px] font-bold text-slate-600 border border-slate-200 bg-slate-50' }, 'No B'),
-                                    h('th', { scope: 'col', className: 'p-2 text-[9px] font-bold text-slate-500 border border-slate-200' }, 'Total')
+                                    h('th', { scope: 'col', className: 'p-2 text-[10px] text-slate-500 border border-slate-200' }),
+                                    h('th', { scope: 'col', className: 'p-2 text-[10px] font-bold text-indigo-700 border border-slate-200 bg-indigo-50' }, `B: "${selectedBehavior}"`),
+                                    h('th', { scope: 'col', className: 'p-2 text-[10px] font-bold text-slate-600 border border-slate-200 bg-slate-50' }, 'No B'),
+                                    h('th', { scope: 'col', className: 'p-2 text-[10px] font-bold text-slate-500 border border-slate-200' }, 'Total')
                                 )
                             ),
                             h('tbody', null,
                                 h('tr', null,
-                                    h('td', { className: 'p-2 text-[9px] font-bold text-purple-700 border border-slate-200 bg-purple-50 text-left' }, `A: "${selectedAntecedent}"`),
+                                    h('td', { className: 'p-2 text-[10px] font-bold text-purple-700 border border-slate-200 bg-purple-50 text-left' }, `A: "${selectedAntecedent}"`),
                                     h('td', { className: `p-3 border border-slate-200 font-black text-lg ${analysis.ct.a > 0 ? 'bg-red-50 text-red-700' : 'text-slate-400'}` }, analysis.ct.a),
                                     h('td', { className: 'p-3 border border-slate-200 text-slate-600 font-bold text-lg' }, analysis.ct.b),
                                     h('td', { className: 'p-2 border border-slate-200 text-[10px] font-bold text-slate-500 bg-slate-50' }, analysis.withAntN)
                                 ),
                                 h('tr', null,
-                                    h('td', { className: 'p-2 text-[9px] font-bold text-slate-600 border border-slate-200 bg-slate-50 text-left' }, 'No A'),
+                                    h('td', { className: 'p-2 text-[10px] font-bold text-slate-600 border border-slate-200 bg-slate-50 text-left' }, 'No A'),
                                     h('td', { className: 'p-3 border border-slate-200 text-slate-600 font-bold text-lg' }, analysis.ct.c),
                                     h('td', { className: `p-3 border border-slate-200 font-black text-lg ${analysis.ct.d > 0 ? 'bg-green-50 text-green-700' : 'text-slate-400'}` }, analysis.ct.d),
                                     h('td', { className: 'p-2 border border-slate-200 text-[10px] font-bold text-slate-500 bg-slate-50' }, analysis.withoutAntN)
                                 ),
                                 h('tr', null,
-                                    h('td', { className: 'p-2 text-[9px] font-bold text-slate-500 border border-slate-200' }, 'Total'),
+                                    h('td', { className: 'p-2 text-[10px] font-bold text-slate-500 border border-slate-200' }, 'Total'),
                                     h('td', { className: 'p-2 border border-slate-200 text-[10px] font-bold text-slate-500 bg-slate-50' }, analysis.ct.a + analysis.ct.c),
                                     h('td', { className: 'p-2 border border-slate-200 text-[10px] font-bold text-slate-500 bg-slate-50' }, analysis.ct.b + analysis.ct.d),
                                     h('td', { className: 'p-2 border border-slate-200 text-[10px] font-black text-slate-700 bg-indigo-50' }, abcEntries.length)
@@ -20726,11 +20726,11 @@ Keep the language professional but accessible.`;
                                     : `"${selectedBehavior}" does not appear functionally related to "${selectedAntecedent}". Consider other antecedents.`
                         ),
                         h('div', { className: 'bg-white/60 rounded-lg p-3 space-y-1' },
-                            h('p', { className: 'text-[9px] font-bold text-slate-600' }, '📏 Interpretation Guide'),
-                            h('p', { className: 'text-[9px] text-slate-500' }, '• Risk Ratio > 2.0: Strong functional relationship'),
-                            h('p', { className: 'text-[9px] text-slate-500' }, '• Risk Ratio 1.5–2.0: Moderate relationship, more data recommended'),
-                            h('p', { className: 'text-[9px] text-slate-500' }, '• Risk Ratio < 1.5: Weak/no relationship'),
-                            h('p', { className: 'text-[9px] text-slate-500' }, '• φ ≥ 0.3: Medium-large effect size | φ ≥ 0.1: Small effect')
+                            h('p', { className: 'text-[10px] font-bold text-slate-600' }, '📏 Interpretation Guide'),
+                            h('p', { className: 'text-[10px] text-slate-500' }, '• Risk Ratio > 2.0: Strong functional relationship'),
+                            h('p', { className: 'text-[10px] text-slate-500' }, '• Risk Ratio 1.5–2.0: Moderate relationship, more data recommended'),
+                            h('p', { className: 'text-[10px] text-slate-500' }, '• Risk Ratio < 1.5: Weak/no relationship'),
+                            h('p', { className: 'text-[10px] text-slate-500' }, '• φ ≥ 0.3: Medium-large effect size | φ ≥ 0.1: Small effect')
                         )
                     )
                 )
@@ -21775,7 +21775,7 @@ Keep the language professional but accessible.`;
     const ComparisonDashboard = ({ comparisonWorkspaces, setComparisonWorkspaces, compareFileInputRef, handleLoadComparisonFiles, callGemini, t, addToast, switchToStudent }) => {
         // Sparkline: renders a tiny inline SVG from session counts
         const Sparkline = ({ sessions }) => {
-            if (!sessions || sessions.length < 2) return h('span', { className: 'text-[9px] text-slate-500' }, '—');
+            if (!sessions || sessions.length < 2) return h('span', { className: 'text-[10px] text-slate-500' }, '—');
             const vals = sessions.slice(-10).map(s => (s.abcCount || s.count || 0));
             const max = Math.max(...vals, 1);
             const w = 60, ht = 18, pad = 1;
@@ -21922,11 +21922,11 @@ Keep the language professional but accessible.`;
                                     const pct = Math.round((count / maxBehaviorCount) * 100);
                                     const colors = ['#8b5cf6', '#ec4899', '#06b6d4', '#f59e0b', '#22c55e', '#ef4444', '#6366f1', '#14b8a6'];
                                     return h('div', { key: i, className: 'flex items-center gap-2' },
-                                        h('div', { className: 'w-16 text-[9px] text-slate-500 truncate text-right' }, w.student),
+                                        h('div', { className: 'w-16 text-[10px] text-slate-500 truncate text-right' }, w.student),
                                         h('div', { className: 'flex-1 h-3 bg-slate-100 rounded-full overflow-hidden' },
                                             h('div', { className: 'h-full rounded-full transition-all', style: { width: pct + '%', backgroundColor: colors[i % colors.length] } })
                                         ),
-                                        h('span', { className: 'text-[9px] font-bold text-slate-500 w-6 text-right' }, count || '')
+                                        h('span', { className: 'text-[10px] font-bold text-slate-500 w-6 text-right' }, count || '')
                                     );
                                 })
                             )
@@ -21943,7 +21943,7 @@ Keep the language professional but accessible.`;
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'rounded-xl p-3 text-center border', style: { backgroundColor: intensityColor(w.avgIntensity) + '15', borderColor: intensityColor(w.avgIntensity) + '40' } },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-700 truncate' }, w.student),
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-black mt-1', style: { color: intensityColor(w.avgIntensity) } }, w.avgIntensity),
-                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500 mt-0.5' }, w.abcCount + ' entries')
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 mt-0.5' }, w.abcCount + ' entries')
                         )
                     )
                 )
@@ -25624,11 +25624,11 @@ Analyze this data and return ONLY valid JSON:
                             h('div', { className: 'mt-4 pt-4 border-t border-indigo-100' },
                                 h('div', { className: 'flex items-center gap-1.5 mb-2' },
                                     h('span', { className: 'text-[10px]' }, '⚙️'),
-                                    h('span', { className: 'text-[9px] font-black text-indigo-400 uppercase tracking-wider' }, 'Sandbox Config')
+                                    h('span', { className: 'text-[10px] font-black text-indigo-400 uppercase tracking-wider' }, 'Sandbox Config')
                                 ),
                                 h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
                                     h('div', null,
-                                        h('label', { className: 'text-[9px] font-bold text-indigo-400 block mb-0.5' }, '📅 Period'),
+                                        h('label', { className: 'text-[10px] font-bold text-indigo-400 block mb-0.5' }, '📅 Period'),
                                         h('select', {
                                             value: sandboxDays,
                                             onChange: e => setSandboxDays(parseInt(e.target.value)),
@@ -25637,7 +25637,7 @@ Analyze this data and return ONLY valid JSON:
                                         }, sandboxDayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
                                     ),
                                     h('div', null,
-                                        h('label', { className: 'text-[9px] font-bold text-indigo-400 block mb-0.5' }, '📝 Entries'),
+                                        h('label', { className: 'text-[10px] font-bold text-indigo-400 block mb-0.5' }, '📝 Entries'),
                                         h('select', {
                                             value: sandboxEntries,
                                             onChange: e => setSandboxEntries(parseInt(e.target.value)),
@@ -25665,7 +25665,7 @@ Analyze this data and return ONLY valid JSON:
                         ),
                         h('button', { "aria-label": "Toggle student roster",
                             onClick: () => { setStudentRoster([]); if (addToast) addToast(t('behavior_lens.toast.roster_cleared') || 'Roster cleared', 'info'); },
-                            className: 'text-[9px] text-slate-500 hover:text-red-400 transition-colors'
+                            className: 'text-[10px] text-slate-500 hover:text-red-400 transition-colors'
                         }, (t('behavior_lens.raw.clear') || 'Clear'))
                     ),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
@@ -25676,11 +25676,11 @@ Analyze this data and return ONLY valid JSON:
                                 className: 'group flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
                                     'bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200 text-violet-700 hover:border-violet-400 hover:shadow-sm hover:shadow-violet-100'
                             },
-                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-4 h-4 rounded-full bg-violet-700 text-white flex items-center justify-center text-[8px] font-black shrink-0' }, (r.name || '?')[0].toUpperCase()),
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-4 h-4 rounded-full bg-violet-700 text-white flex items-center justify-center text-[10px] font-black shrink-0' }, (r.name || '?')[0].toUpperCase()),
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'truncate max-w-[80px]' }, r.name),
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                                     onClick: (e) => { e.stopPropagation(); setStudentRoster(prev => prev.filter(x => x.name !== r.name)); },
-                                    'aria-label': 'Close', className: 'ml-0.5 text-violet-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-[9px]'
+                                    'aria-label': 'Close', className: 'ml-0.5 text-violet-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-[10px]'
                                 }, '✕')
                             )
                         )
@@ -26034,21 +26034,21 @@ Analyze this data and return ONLY valid JSON:
                             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-indigo-600' }, abcEntries.length),
-                                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.hub.abc_entries') || 'ABC Entries')
+                                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.hub.abc_entries') || 'ABC Entries')
                                 ),
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-emerald-600' }, observationSessions.length),
-                                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.hub.observations') || 'Observations')
+                                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.hub.observations') || 'Observations')
                                 ),
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-amber-600' }, sessionNotes.length),
-                                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.hub.notes') || 'Notes')
+                                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.hub.notes') || 'Notes')
                                 ),
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-purple-600' },
                                         abcEntries.length > 0 ? (abcEntries.reduce((s, e) => s + (e.intensity || 3), 0) / abcEntries.length).toFixed(1) : '—'
                                     ),
-                                    h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.hub.avg_intensity') || 'Avg Intensity')
+                                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.hub.avg_intensity') || 'Avg Intensity')
                                 )
                             )
                         ),

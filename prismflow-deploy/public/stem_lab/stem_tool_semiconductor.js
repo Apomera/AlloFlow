@@ -323,7 +323,7 @@ window.StemLab = window.StemLab || {
 
       function sliderRow(label, value, min, max, step, onChange, unit) {
         return h('div', { className: 'flex items-center gap-2 mt-1' },
-          h('span', { className: 'text-xs text-slate-500 w-20 shrink-0' }, label),
+          h('span', { className: 'text-xs text-slate-600 w-20 shrink-0' }, label),
           h('input', {
             type: 'range', 'aria-label': 'value', min: min, max: max, step: step, value: value,
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
@@ -344,7 +344,7 @@ window.StemLab = window.StemLab || {
 
       function statBadge(label, value, color) {
         return h('div', { className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
-          h('span', { className: 'text-[10px] text-slate-500 uppercase tracking-wider' }, label),
+          h('span', { className: 'text-[10px] text-slate-600 uppercase tracking-wider' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
       }
@@ -1240,7 +1240,7 @@ window.StemLab = window.StemLab || {
           !showCMOS && sliderRow('Drain V', Vd, 0, 10, 0.5, function(v) { upd('drainVoltage', v); }, ' V'),
           // Current bar
           h('div', { className: 'mt-2 flex items-center gap-2' },
-            h('span', { className: 'text-xs text-slate-500 w-20' }, showCMOS ? 'Output' : 'Current'),
+            h('span', { className: 'text-xs text-slate-600 w-20' }, showCMOS ? 'Output' : 'Current'),
             h('div', { className: 'flex-1 h-3 bg-slate-800 rounded-full overflow-hidden' },
               h('div', { className: 'h-full rounded-full transition-all duration-300 ' + (showCMOS ? (cmosOut ? 'bg-emerald-500' : 'bg-red-500') : isOn ? 'bg-emerald-500' : 'bg-slate-700'),
                 style: { width: (showCMOS ? (cmosOut ? 100 : 0) : currentPct) + '%' }
@@ -1373,8 +1373,8 @@ window.StemLab = window.StemLab || {
           truthTableGrid = h('div', { className: 'mt-2 rounded-lg bg-slate-800/60 border border-slate-700 p-2 overflow-x-auto' },
             h('table', { className: 'w-full text-xs' },
               h('caption', { className: 'sr-only' }, 'Data table: A, B, Q'), h('thead', null, h('tr', null,
-                h('th', { scope: 'col', className: 'text-left text-slate-500 px-2 py-1' }, 'A'),
-                gate.inputs === 2 && h('th', { scope: 'col', className: 'text-left text-slate-500 px-2 py-1' }, 'B'),
+                h('th', { scope: 'col', className: 'text-left text-slate-600 px-2 py-1' }, 'A'),
+                gate.inputs === 2 && h('th', { scope: 'col', className: 'text-left text-slate-600 px-2 py-1' }, 'B'),
                 h('th', { scope: 'col', className: 'text-left text-cyan-400 px-2 py-1' }, 'Q')
               )),
               h('tbody', null, rows.map(function(r, ri) {
@@ -1419,7 +1419,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex items-center gap-3 mt-2' },
-            h('span', { className: 'text-xs text-slate-500' }, h('span', { className: 'font-bold text-slate-300' }, 'Truth: '), gate.truth),
+            h('span', { className: 'text-xs text-slate-600' }, h('span', { className: 'font-bold text-slate-300' }, 'Truth: '), gate.truth),
             pill(d.showTruthGrid ? 'Hide Table' : 'Full Table', d.showTruthGrid, function() { upd('showTruthGrid', !d.showTruthGrid); })
           ),
           truthTableGrid,
@@ -1666,7 +1666,7 @@ window.StemLab = window.StemLab || {
         }
 
         return h('div', null,
-          h('div', { className: 'text-xs text-slate-500 mb-2' }, 'Build a circuit from components. Add parts, then simulate!'),
+          h('div', { className: 'text-xs text-slate-600 mb-2' }, 'Build a circuit from components. Add parts, then simulate!'),
           // Palette
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             COMP_PALETTE.map(function(comp) {
@@ -1690,10 +1690,10 @@ window.StemLab = window.StemLab || {
                     var compInfo = COMP_PALETTE.find(function(p) { return p.type === comp.type; }) || {};
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, compInfo.icon || '?'),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, comp.value),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
-                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[8px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
+                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[10px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
                         'aria-label': 'Remove ' + comp.label
                       }, '\u2715'),
                       ci < components.length - 1 ? null : null
@@ -1703,7 +1703,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'self-center text-slate-600' }, '\u2014'),
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600' },
                     h('span', { className: 'text-lg' }, '\u23DA'),
-                    h('span', { className: 'text-[10px] text-slate-500' }, 'GND')
+                    h('span', { className: 'text-[10px] text-slate-600' }, 'GND')
                   )
                 )
           ),
@@ -1928,7 +1928,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-sm font-bold text-white' }, currentStage.name)
             ),
             h('p', { className: 'text-xs text-slate-300 mb-2' }, currentStage.desc),
-            h('p', { className: 'text-xs text-slate-500 leading-relaxed' }, currentStage.detail)
+            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, currentStage.detail)
           ),
           // Process parameters (6-8+)
           (gradeBand === '6-8' || gradeBand === '9-12') && (stage === 2 || stage === 5) && h('div', { className: 'mt-2' },
@@ -2649,7 +2649,7 @@ window.StemLab = window.StemLab || {
           ),
           // Transition energies
           transitions.length > 0 && h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-800/60 border border-slate-700' },
-            h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wider mb-1' }, 'Optical Transitions'),
+            h('div', { className: 'text-[10px] text-slate-600 uppercase tracking-wider mb-1' }, 'Optical Transitions'),
             h('div', { className: 'flex flex-wrap gap-2' },
               transitions.filter(function(tr) { return tr.dE > 0; }).slice(0, 4).map(function(tr) {
                 return h('div', { key: tr.from + '-' + tr.to, className: 'text-xs text-slate-300' },
@@ -3211,7 +3211,7 @@ window.StemLab = window.StemLab || {
             ),
             // Tier progress bar
             h('div', { className: 'w-48 mx-auto mb-4' },
-              h('div', { className: 'text-[10px] text-slate-500 mb-1' }, 'Progress to next rank'),
+              h('div', { className: 'text-[10px] text-slate-600 mb-1' }, 'Progress to next rank'),
               h('div', { className: 'h-2 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
@@ -3321,7 +3321,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'text-center py-6' },
             h('div', { className: 'text-4xl mb-2' }, '\u2694\uFE0F'),
             h('div', { className: 'text-lg font-bold text-white mb-1' }, 'Chip Defense'),
-            h('div', { className: 'text-sm text-slate-400 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
+            h('div', { className: 'text-sm text-slate-500 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
             h('div', { className: 'flex justify-center gap-3 mb-4' },
               statBadge('Best Score', String(d.battleScore || 0)),
               statBadge('Rounds', String(BATTLE_ROUNDS.length))
@@ -3362,15 +3362,15 @@ window.StemLab = window.StemLab || {
           // HP bars
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[10px] text-slate-500 mb-0.5' }, '\uD83D\uDEE1\uFE0F Your Chip'),
+              h('div', { className: 'text-[10px] text-slate-600 mb-0.5' }, '\uD83D\uDEE1\uFE0F Your Chip'),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-emerald-500 rounded-full transition-all', style: { width: (playerHP / 5 * 100) + '%' } })
               ),
               h('div', { className: 'text-[10px] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
             ),
-            h('div', { className: 'text-sm font-bold text-slate-400' }, 'VS'),
+            h('div', { className: 'text-sm font-bold text-slate-600' }, 'VS'),
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[10px] text-slate-500 mb-0.5 text-right' }, currentRound.enemy),
+              h('div', { className: 'text-[10px] text-slate-600 mb-0.5 text-right' }, currentRound.enemy),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-red-500 rounded-full transition-all', style: { width: (enemyHP / 5 * 100) + '%' } })
               ),
@@ -3378,7 +3378,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Round info
-          h('div', { className: 'text-xs text-slate-400 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
+          h('div', { className: 'text-xs text-slate-500 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
           // Enemy card
           h('div', { className: 'p-4 rounded-xl bg-red-900/20 border border-red-800 mb-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg mb-1' }, currentRound.enemy),
@@ -3579,7 +3579,7 @@ window.StemLab = window.StemLab || {
 
       var backBtn = h('button', Object.assign({
         onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
-        className: 'flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors mb-2'
+        className: 'flex items-center gap-1 text-xs text-slate-500 hover:text-white transition-colors mb-2'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
         h(ArrowLeft, { size: 14 }), ' Back to STEM Lab'
       );
@@ -3655,7 +3655,7 @@ window.StemLab = window.StemLab || {
       }, '\uD83D\uDCF8 Snapshot');
 
       // Show loading placeholder while state initializes (hooks already called above)
-      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Semiconductor Lab\u2026');
+      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading Semiconductor Lab\u2026');
 
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': 'Semiconductor Lab' },
         backBtn,

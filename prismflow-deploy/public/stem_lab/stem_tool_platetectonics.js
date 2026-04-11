@@ -1288,7 +1288,7 @@ var d = labToolData.plateTectonics || {};
 
                       React.createElement("div", { className: "text-xs font-black", style: { color: d2.color } }, d2.label + " (" + d2.range + ")"),
 
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, d2.desc)
+                      React.createElement("div", { className: "text-[10px] text-slate-600" }, d2.desc)
 
                     );
 
@@ -1316,7 +1316,7 @@ var d = labToolData.plateTectonics || {};
 
                       React.createElement("div", { className: "text-xs font-black", style: { color: w2.color } }, w2.name),
 
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, w2.desc)
+                      React.createElement("div", { className: "text-[10px] text-slate-600" }, w2.desc)
 
                     );
 
@@ -1411,7 +1411,7 @@ var d = labToolData.plateTectonics || {};
                     },
                       React.createElement('div', { className: 'text-lg' }, era.icon || '\uD83C\uDF0D'),
                       React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-500') }, era.name),
-                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, era.mya)
+                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, era.mya)
                     );
                   })
                 ),
@@ -1433,7 +1433,7 @@ var d = labToolData.plateTectonics || {};
                   // Detailed description
                   React.createElement('p', { className: 'text-xs text-slate-600 leading-relaxed' }, ERAS[timelineEra].desc || ''),
 
-                  React.createElement('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, '\uD83D\uDCA1 Switch to Simulation tab to see plate positions, or use Time-Lapse to animate through all eras.')
+                  React.createElement('p', { className: 'text-[10px] text-slate-600 mt-1 italic' }, '\uD83D\uDCA1 Switch to Simulation tab to see plate positions, or use Time-Lapse to animate through all eras.')
                 )
 
               )

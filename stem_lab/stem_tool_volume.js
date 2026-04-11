@@ -563,7 +563,7 @@ window.StemLab = window.StemLab || {
               upd({ paintSurfaceArea: !paintSurfaceArea });
               if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true });
             },
-            className: 'px-3 py-1 ml-2 rounded-lg text-xs font-bold transition-all border ' + (paintSurfaceArea ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-inner' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'),
+            className: 'px-3 py-1 ml-2 rounded-lg text-xs font-bold transition-all border ' + (paintSurfaceArea ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-inner' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'),
             title: 'Toggle paint (P)'
           }, paintSurfaceArea ? '\uD83E\uDDFC Wash Paint' : '\uD83C\uDFA8 Paint Surface'),
           // Zoom

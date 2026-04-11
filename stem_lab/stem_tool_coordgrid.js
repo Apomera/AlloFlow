@@ -433,12 +433,12 @@ window.StemLab = window.StemLab || {
         return h(React.Fragment, { key: 'ln' + li },
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '6,3', opacity: 0.8 }),
           h('line', { x1: toSvg(ln.to.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
-          ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[8px] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
+          ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[10px] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.from.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
-          ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[8px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
+          ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[10px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
           h('rect', { x: midX - 24, y: midY - 10, width: 48, height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
           h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '11px', fontWeight: 'bold' } }, 'm=' + ln.slope.display),
-          h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[8px] fill-indigo-400 font-mono' }, eq)
+          h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[10px] fill-indigo-400 font-mono' }, eq)
         );
       });
 
@@ -470,7 +470,7 @@ window.StemLab = window.StemLab || {
               h('circle', { cx: toSvg(p1.x, 'x'), cy: toSvg(p1.y, 'y'), r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(p2.x, 'x'), cy: toSvg(p2.y, 'y'), r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(mid.x, 'x'), cy: toSvg(mid.y, 'y'), r: 3, fill: '#a855f7', stroke: '#fff', strokeWidth: 1 }),
-              h('text', { x: toSvg(mid.x, 'x'), y: toSvg(mid.y, 'y') - 8, textAnchor: 'middle', className: 'text-[8px] fill-purple-500 font-bold' }, 'M(' + mid.x + ',' + mid.y + ')')
+              h('text', { x: toSvg(mid.x, 'x'), y: toSvg(mid.y, 'y') - 8, textAnchor: 'middle', className: 'text-[10px] fill-purple-500 font-bold' }, 'M(' + mid.x + ',' + mid.y + ')')
             );
           })()
         : null;

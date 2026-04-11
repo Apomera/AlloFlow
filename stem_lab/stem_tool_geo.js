@@ -1551,7 +1551,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'text-center py-2 bg-slate-900 text-white text-xs' }, '\uD83C\uDF10 Drag to rotate \u2022 Scroll to zoom \u2022 Click countries for info'),
 
-              !window._GlobeGLConstructor ? React.createElement('div', { className: 'text-center py-16 text-slate-500' },
+              !window._GlobeGLConstructor ? React.createElement('div', { className: 'text-center py-16 text-slate-600' },
 
                 React.createElement('div', { className: 'text-4xl mb-3 animate-spin' }, '\uD83C\uDF10'),
 
@@ -1750,7 +1750,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'font-bold text-sm text-teal-800' }, geoDistA.name),
                     React.createElement('div', { className: 'text-[10px] text-teal-600' }, geoDistA.capital)
                   ),
-                  React.createElement('div', { className: 'text-2xl text-slate-500' }, '\u2194\uFE0F'),
+                  React.createElement('div', { className: 'text-2xl text-slate-600' }, '\u2194\uFE0F'),
                   React.createElement('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
                     React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
                     React.createElement('div', { className: 'font-bold text-sm text-cyan-800' }, geoDistB.name),
@@ -1789,7 +1789,7 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'text-center text-xs text-slate-600' },
                   '\uD83C\uDFAF Distance challenges nailed: ' + geoDistCorrect
                 )
-              ) : React.createElement('div', { className: 'text-center py-8 text-slate-500' }, 'Loading...')
+              ) : React.createElement('div', { className: 'text-center py-8 text-slate-600' }, 'Loading...')
             ),
 
             // ── Badge shelf ──

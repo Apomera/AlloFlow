@@ -487,13 +487,13 @@ window.StemLab = window.StemLab || {
             },
             className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors',
             'aria-label': 'Back to tools'
-          }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+          }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
           h('h3', { className: 'text-lg font-bold text-pink-800' }, '\uD83D\uDD22 Multiplication Table'),
           h('div', { role: 'tablist', 'aria-expanded': String(multTableHidden), role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 ml-2' },
             h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': 'Toggle hidden mode (H)',
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
-                (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
+                (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: 'Toggle hidden mode (H)'
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
@@ -522,7 +522,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', { 'aria-label': 'Ext Upd',
               onClick: function() { extUpd({ showBadges: false }); },
-              className: 'text-xs text-slate-500 hover:text-slate-600'
+              className: 'text-xs text-slate-600 hover:text-slate-600'
             }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
@@ -547,7 +547,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
             h('button', { 'aria-label': 'Ext Upd',
               onClick: function() { extUpd({ showAI: false }); },
-              className: 'text-xs text-slate-500 hover:text-slate-600'
+              className: 'text-xs text-slate-600 hover:text-slate-600'
             }, '\u2715')
           ),
           _ext.aiLoading
@@ -575,7 +575,7 @@ window.StemLab = window.StemLab || {
                     : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
                     : dm.id === 'hard' ? 'bg-red-700 text-white shadow-sm'
                     : 'bg-purple-500 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200')
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200')
             }, dm.label + ' (' + dm.range + ')');
           })
         ),
@@ -770,7 +770,7 @@ window.StemLab = window.StemLab || {
           }, multTableFeedback.msg),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-center gap-2 mt-1' },
-            h('p', { className: 'text-[10px] text-slate-500 animate-pulse' }, 'Next question coming...'),
+            h('p', { className: 'text-[10px] text-slate-600 animate-pulse' }, 'Next question coming...'),
             h('button', { 'aria-label': 'Skip Next',
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
@@ -783,7 +783,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[10px] text-slate-500 text-center space-x-3' },
+        h('div', { className: 'text-[10px] text-slate-600 text-center space-x-3' },
           h('span', null, 'Q Quiz'),
           h('span', null, 'S Speed'),
           h('span', null, 'H Hidden'),
@@ -792,7 +792,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Legend ──
-        h('div', { className: 'text-[10px] text-slate-500 text-center' },
+        h('div', { className: 'text-[10px] text-slate-600 text-center' },
           h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), ' Perfect squares',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), ' Hover cross',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1' }), ' Selected',

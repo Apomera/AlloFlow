@@ -709,7 +709,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         },
         className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, !isIndependentMode && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] text-slate-500 uppercase ml-auto" }, std.framework)),
+      /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, !isIndependentMode && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 uppercase ml-auto" }, std.framework)),
       /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 leading-snug line-clamp-2 group-hover:text-indigo-900" }, std.description)
     ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement(
       "input",

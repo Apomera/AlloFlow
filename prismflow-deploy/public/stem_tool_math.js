@@ -1751,7 +1751,7 @@ window.StemLab = window.StemLab || {
 
                         } }, coin.label),
 
-                        React.createElement("span", { className: "text-[9px] font-bold text-amber-700" }, coin.name)
+                        React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, coin.name)
 
                       );
 
@@ -2127,7 +2127,7 @@ window.StemLab = window.StemLab || {
 
                         React.createElement("p", { className: "text-amber-400 font-black text-xl leading-none" }, crScore),
 
-                        crBest > 0 && React.createElement("p", { className: "text-[9px] text-emerald-400 font-bold" }, "Best Round: " + crBest)
+                        crBest > 0 && React.createElement("p", { className: "text-[10px] text-emerald-400 font-bold" }, "Best Round: " + crBest)
 
                       )
 
@@ -2189,7 +2189,7 @@ window.StemLab = window.StemLab || {
 
                           React.createElement("p", { className: "font-bold text-xs flex justify-center items-center gap-1" }, React.createElement("span", null, "\u26A1"), React.createElement("span", null, "ALLOFOOD MKT"), React.createElement("span", null, "\u26A1")),
 
-                          React.createElement("p", { className: "text-[9px]" }, "SYSTEM OFFLINE")
+                          React.createElement("p", { className: "text-[10px]" }, "SYSTEM OFFLINE")
 
                         ),
 
@@ -2257,11 +2257,11 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("div", { className: "flex gap-2 my-2 text-xs w-full justify-center" },
 
-                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[9px] uppercase font-bold" }, "Accuracy"), React.createElement("p", { className: "text-emerald-400 font-black text-lg leading-tight" }, "+" + crFb.accuracy)),
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[10px] uppercase font-bold" }, "Accuracy"), React.createElement("p", { className: "text-emerald-400 font-black text-lg leading-tight" }, "+" + crFb.accuracy)),
 
-                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[9px] uppercase font-bold" }, "Speed"), React.createElement("p", { className: "text-sky-400 font-black text-lg leading-tight" }, "+" + crFb.speed)),
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[10px] uppercase font-bold" }, "Speed"), React.createElement("p", { className: "text-sky-400 font-black text-lg leading-tight" }, "+" + crFb.speed)),
 
-                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-amber-900/50 shadow-inner w-20" }, React.createElement("p", { className: "text-amber-500/70 text-[9px] uppercase font-bold" }, "Total"), React.createElement("p", { className: "text-amber-400 font-black text-lg leading-tight" }, "+" + crFb.score))
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-amber-900/50 shadow-inner w-20" }, React.createElement("p", { className: "text-amber-500/70 text-[10px] uppercase font-bold" }, "Total"), React.createElement("p", { className: "text-amber-400 font-black text-lg leading-tight" }, "+" + crFb.score))
 
                       ),
 
@@ -2545,11 +2545,11 @@ window.StemLab = window.StemLab || {
 
                               React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(item.price)),
 
-                              isWeighed && React.createElement("span", { className: "text-[9px] text-orange-500 font-bold" }, "/" + item.pricePer)
+                              isWeighed && React.createElement("span", { className: "text-[10px] text-orange-500 font-bold" }, "/" + item.pricePer)
 
                             ),
 
-                            React.createElement("span", { className: "text-[9px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
+                            React.createElement("span", { className: "text-[10px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
 
                           ),
 
@@ -2811,7 +2811,7 @@ window.StemLab = window.StemLab || {
 
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-violet-100" },
 
-                          d.wpProblem.category && React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-100 text-violet-600 mb-2" }, d.wpProblem.category.toUpperCase()),
+                          d.wpProblem.category && React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-600 mb-2" }, d.wpProblem.category.toUpperCase()),
 
                           React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, d.wpProblem.problem)
 
@@ -3281,7 +3281,7 @@ window.StemLab = window.StemLab || {
 
                         React.createElement("p", { className: "text-xs font-black", style: { color: cat.color } }, fmt(budgetIncome * cat.pct / 100)),
 
-                        React.createElement("p", { className: "text-[9px] text-slate-400" }, cat.pct + '%')
+                        React.createElement("p", { className: "text-[10px] text-slate-400" }, cat.pct + '%')
 
                       );
 
@@ -3851,7 +3851,7 @@ window.StemLab = window.StemLab || {
 
                           return React.createElement("div", { key: di,
 
-                            className: "inline-flex items-center justify-center rounded-full font-black text-white text-[9px] shadow-md" + (isNew ? ' animate-bounce' : ''),
+                            className: "inline-flex items-center justify-center rounded-full font-black text-white text-[10px] shadow-md" + (isNew ? ' animate-bounce' : ''),
 
                             style: { width: coin.size * 0.7 + 'px', height: coin.size * 0.7 + 'px', backgroundColor: coin.color, fontSize: '9px', lineHeight: '1' }
 
@@ -3945,7 +3945,7 @@ window.StemLab = window.StemLab || {
 
                           }, coin.label),
 
-                          React.createElement("span", { className: "text-[9px] font-bold text-slate-500" }, fmt(coin.val))
+                          React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, fmt(coin.val))
 
                         );
 
@@ -4371,7 +4371,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("p", { className: "text-xl font-black text-red-500" }, cur.symbol + Math.round(loanTotalInterest).toLocaleString()),
 
-                      React.createElement("p", { className: "text-[9px] text-red-400" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
+                      React.createElement("p", { className: "text-[10px] text-red-400" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
 
                     ),
 
@@ -4393,9 +4393,9 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex" },
 
-                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full flex items-center justify-center text-[9px] text-white font-bold" }, "Principal"),
+                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full flex items-center justify-center text-[10px] text-white font-bold" }, "Principal"),
 
-                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full flex items-center justify-center text-[9px] text-white font-bold" }, "Interest")
+                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full flex items-center justify-center text-[10px] text-white font-bold" }, "Interest")
 
                     )
 
@@ -4555,7 +4555,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + (Math.round(sgDailyNeeded * 100) / 100).toFixed(2)),
 
-                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "\u2248 skip a coffee")
+                      React.createElement("p", { className: "text-[10px] text-slate-400" }, "\u2248 skip a coffee")
 
                     ),
 
@@ -4685,7 +4685,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("p", { className: "text-[10px] text-emerald-600" }, "\uD83C\uDF1F ", React.createElement("strong", null, "Financial literacy"), " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!"),
 
-                React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Exchange rates are approximate and for educational purposes only.")
+                React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, "Exchange rates are approximate and for educational purposes only.")
 
               )
 
@@ -5106,7 +5106,7 @@ const gridW = 400,
 
                 textAnchor: 'middle',
 
-                className: 'text-[9px] fill-slate-400'
+                className: 'text-[10px] fill-slate-400'
 
               }, v) : null, v !== 0 && v % 2 === 0 ? React.createElement('text', {
 
@@ -5116,7 +5116,7 @@ const gridW = 400,
 
                 textAnchor: 'end',
 
-                className: 'text-[9px] fill-slate-400'
+                className: 'text-[10px] fill-slate-400'
 
               }, v) : null);
 
@@ -5636,7 +5636,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                 textAnchor: 'middle',
 
-                className: 'text-[9px] fill-purple-400 font-mono'
+                className: 'text-[10px] fill-purple-400 font-mono'
 
               }, a + '°') : null);
 
@@ -7282,7 +7282,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                 React.createElement("p", { className: "text-[10px] text-violet-600" }, "\uD83E\uDDED ", React.createElement("strong", null, "Euclidean Geometry"), " \u2014 drag points to explore how angles and lengths change. Watch the theorem panel to discover geometric relationships!"),
 
-                React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Place points \u2022 Draw segments \u2022 Drag to explore \u2022 Discover theorems")
+                React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, "Place points \u2022 Draw segments \u2022 Drag to explore \u2022 Discover theorems")
 
               ),
 
@@ -8300,7 +8300,7 @@ const d = labToolData.calculus;
 
                   React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                    React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, mode === 'trapezoid' ? 'Trapezoidal' : mode === 'simpson' ? "Simpson's" : "Riemann (" + mode + ")"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-red-500" }, mode === 'trapezoid' ? 'Trapezoidal' : mode === 'simpson' ? "Simpson's" : "Riemann (" + mode + ")"),
 
                     React.createElement("p", { className: "text-sm font-bold text-red-800" }, area.toFixed(4))
 
@@ -8308,7 +8308,7 @@ const d = labToolData.calculus;
 
                   React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                    React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Exact (\u222B)"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-red-500" }, "Exact (\u222B)"),
 
                     React.createElement("p", { className: "text-sm font-bold text-red-800" }, exact.toFixed(4))
 
@@ -8316,7 +8316,7 @@ const d = labToolData.calculus;
 
                   React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                    React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Error"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-red-500" }, "Error"),
 
                     React.createElement("p", { className: "text-sm font-bold " + (err < 0.01 ? 'text-emerald-600' : err < 0.1 ? 'text-yellow-600' : 'text-red-600') }, err.toFixed(6))
 
@@ -8344,7 +8344,7 @@ const d = labToolData.calculus;
 
               React.createElement("div", { className: "col-span-2 bg-slate-50 rounded-xl border p-2" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDCC9 Error vs n"),
+                React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDCC9 Error vs n"),
 
                 React.createElement("svg", { viewBox: "0 0 " + CW + " 60", className: "w-full" },
 
@@ -8872,7 +8872,7 @@ const d = labToolData.calculus;
 
                 cq && cq.answered && cMode === 'method' && cq.errors && React.createElement("div", { className: "mt-2 bg-slate-50 rounded-lg p-2 border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase mb-1" }, "Error Comparison (n=" + cq.n + ")"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-1" }, "Error Comparison (n=" + cq.n + ")"),
 
                   React.createElement("div", { className: "grid grid-cols-5 gap-1 text-center" },
 
@@ -8880,7 +8880,7 @@ const d = labToolData.calculus;
 
                       var isBest = m === cq.answer;
 
-                      return React.createElement("div", { key: m, className: "px-1 py-1 rounded text-[9px] font-bold " + (isBest ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-white text-slate-500 border') },
+                      return React.createElement("div", { key: m, className: "px-1 py-1 rounded text-[10px] font-bold " + (isBest ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-white text-slate-500 border') },
 
                         React.createElement("div", null, m === 'simpson' ? "Simp" : m.charAt(0).toUpperCase() + m.slice(1, 4)),
 
@@ -10350,7 +10350,7 @@ const d = labToolData.probability;
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Total Trials"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "Total Trials"),
 
                   React.createElement("p", { className: "text-lg font-black text-violet-800" }, d.trials)
 
@@ -10358,7 +10358,7 @@ const d = labToolData.probability;
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Max Deviation"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "Max Deviation"),
 
                   React.createElement("p", { className: "text-lg font-black text-violet-800" }, (function () {
 
@@ -10382,7 +10382,7 @@ const d = labToolData.probability;
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "\u03C7\u00B2 Statistic"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "\u03C7\u00B2 Statistic"),
 
                   React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiSq.toFixed(2))
 
@@ -10390,7 +10390,7 @@ const d = labToolData.probability;
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Fairness (\u03B1=0.05)"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "Fairness (\u03B1=0.05)"),
 
                   React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiPass ? '\u2705 Fair' : '\u274C Biased')
 
@@ -10444,7 +10444,7 @@ const d = labToolData.probability;
 
                 React.createElement("div", { className: "flex-1" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, "\uD83C\uDFAF Theoretical"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, "\uD83C\uDFAF Theoretical"),
 
                   React.createElement("div", { className: "space-y-1.5" },
 
@@ -10456,7 +10456,7 @@ const d = labToolData.probability;
 
                         React.createElement("div", { style: { width: 10, height: 10, borderRadius: '50%', background: barColors[k] || '#8b5cf6', flexShrink: 0 } }),
 
-                        React.createElement("span", { className: "text-[9px] font-bold w-12 truncate", style: { color: _text } }, k),
+                        React.createElement("span", { className: "text-[10px] font-bold w-12 truncate", style: { color: _text } }, k),
 
                         React.createElement("div", { className: "flex-1 rounded-full overflow-hidden", style: { height: '10px', background: isDark || isContrast ? 'rgba(255,255,255,0.08)' : '#f1f5f9' } },
 
@@ -10464,7 +10464,7 @@ const d = labToolData.probability;
 
                         ),
 
-                        React.createElement("span", { className: "text-[9px] font-mono w-10 text-right", style: { color: _muted } }, expPct.toFixed(1) + '%')
+                        React.createElement("span", { className: "text-[10px] font-mono w-10 text-right", style: { color: _muted } }, expPct.toFixed(1) + '%')
 
                       );
 
@@ -10482,7 +10482,7 @@ const d = labToolData.probability;
 
                 React.createElement("div", { className: "flex-1" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " draws)"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " draws)"),
 
                   React.createElement("div", { className: "space-y-1.5" },
 
@@ -10498,7 +10498,7 @@ const d = labToolData.probability;
 
                         React.createElement("div", { style: { width: 10, height: 10, borderRadius: '50%', background: barColors[k] || '#8b5cf6', flexShrink: 0 } }),
 
-                        React.createElement("span", { className: "text-[9px] font-bold w-12 truncate", style: { color: _text } }, k),
+                        React.createElement("span", { className: "text-[10px] font-bold w-12 truncate", style: { color: _text } }, k),
 
                         React.createElement("div", { className: "flex-1 rounded-full overflow-hidden", style: { height: '10px', background: isDark || isContrast ? 'rgba(255,255,255,0.08)' : '#f1f5f9' } },
 
@@ -10506,7 +10506,7 @@ const d = labToolData.probability;
 
                         ),
 
-                        React.createElement("span", { className: "text-[9px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#16a34a') : Math.abs(diff) < 8 ? '#f59e0b' : '#ef4444' } }, obsPct.toFixed(1) + '%')
+                        React.createElement("span", { className: "text-[10px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#16a34a') : Math.abs(diff) < 8 ? '#f59e0b' : '#ef4444' } }, obsPct.toFixed(1) + '%')
 
                       );
 
@@ -10550,7 +10550,7 @@ const d = labToolData.probability;
 
                       React.createElement("span", { className: "text-[10px] font-mono text-slate-900" }, count),
 
-                      React.createElement("span", { className: "text-[9px] text-slate-500" }, "(" + pct.toFixed(1) + "%)")
+                      React.createElement("span", { className: "text-[10px] text-slate-500" }, "(" + pct.toFixed(1) + "%)")
 
                     );
 

@@ -139,7 +139,7 @@ window.StemLab = window.StemLab || {
           h('line', { key: 'tk' + a, x1: cx + (r - 8) * Math.cos(-ar), y1: cy + (r - 8) * Math.sin(-ar), x2: cx + (r + 2) * Math.cos(-ar), y2: cy + (r + 2) * Math.sin(-ar), stroke: '#a78bfa', strokeWidth: a % 90 === 0 ? 2 : 1 })
         ];
         if (a % 30 === 0) {
-          els.push(h('text', { key: 'tl' + a, x: cx + (r + 14) * Math.cos(-ar), y: cy + (r + 14) * Math.sin(-ar) + 3, textAnchor: 'middle', className: 'text-[9px] fill-purple-400 font-mono' }, a + '\u00B0'));
+          els.push(h('text', { key: 'tl' + a, x: cx + (r + 14) * Math.cos(-ar), y: cy + (r + 14) * Math.sin(-ar) + 3, textAnchor: 'middle', className: 'text-[10px] fill-purple-400 font-mono' }, a + '\u00B0'));
         }
         return h(React.Fragment, { key: 'tg' + a }, els);
       });
@@ -218,12 +218,12 @@ window.StemLab = window.StemLab || {
           complementary != null && h('div', { className: 'flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center' },
             h('div', { className: 'text-[10px] font-bold text-blue-500 uppercase' }, 'Complementary'),
             h('div', { className: 'text-sm font-bold text-blue-700' }, complementary + '\u00B0'),
-            h('div', { className: 'text-[9px] text-blue-400' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
+            h('div', { className: 'text-[10px] text-blue-400' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
           ),
           supplementary != null && h('div', { className: 'flex-1 bg-teal-50 rounded-lg p-2 border border-teal-100 text-center' },
             h('div', { className: 'text-[10px] font-bold text-teal-500 uppercase' }, 'Supplementary'),
             h('div', { className: 'text-sm font-bold text-teal-700' }, supplementary + '\u00B0'),
-            h('div', { className: 'text-[9px] text-teal-400' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
+            h('div', { className: 'text-[10px] text-teal-400' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
           )
         ),
 

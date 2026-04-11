@@ -677,13 +677,13 @@ window.StemLab = window.StemLab || {
               // Badge toggle
               h('button', { 'aria-label': 'Badges',
                 onClick: function() { upd('showBadges', !showBadges); },
-                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showBadges ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-amber-50')
+                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showBadges ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-amber-50')
               }, '\uD83C\uDFC5 Badges'),
 
               // AI toggle
               h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { upd('showAI', !showAI); },
-                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showAI ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-blue-50')
+                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showAI ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-blue-50')
               }, '\uD83E\uDD16 AI Tutor'),
 
               // Mode buttons
@@ -1077,7 +1077,7 @@ window.StemLab = window.StemLab || {
 
                   return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
                     h('span', { className: 'font-bold text-yellow-700 w-16' }, typeIcon + (i + 1)),
-                    h('span', { className: 'text-slate-500 w-20' }, rDisplay),
+                    h('span', { className: 'text-slate-600 w-20' }, rDisplay),
 
                     comp.type === 'ammeter'
                       ? h('span', { className: 'text-blue-600 w-40 font-mono font-bold' }, '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')

@@ -796,7 +796,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                                     {!isIndependentMode && (
                                                                         <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
                                                                     )}
-                                                                    <span className="text-[9px] text-slate-500 uppercase ml-auto">{std.framework}</span>
+                                                                    <span className="text-[10px] text-slate-500 uppercase ml-auto">{std.framework}</span>
                                                                 </div>
                                                                 <p className="text-[10px] text-slate-600 leading-snug line-clamp-2 group-hover:text-indigo-900">
                                                                     {std.description}

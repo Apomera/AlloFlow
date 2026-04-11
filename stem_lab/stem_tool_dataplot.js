@@ -829,7 +829,7 @@ window.StemLab = window.StemLab || {
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -1131,7 +1131,7 @@ window.StemLab = window.StemLab || {
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-600 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
             ),
-            n > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-500' },
+            n > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-600' },
               visiblePoints.map(function(p, i) { return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); } }, '(' + p.x + ',' + p.y + ')'); })
             )
           ),
@@ -1186,7 +1186,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         activeTab === 'stats' && h('div', { className: 'space-y-3' },
           n === 0
-            ? h('div', { className: 'text-center text-sm text-slate-400 py-8' }, 'Add data points to see statistics')
+            ? h('div', { className: 'text-center text-sm text-slate-600 py-8' }, 'Add data points to see statistics')
             : h('div', { className: 'space-y-3' },
 
               // Summary stats grid (expanded)
@@ -1239,7 +1239,7 @@ window.StemLab = window.StemLab || {
                     return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
                       best && h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '\u2B50 Best'),
                       h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
-                      h('span', { className: 'text-[10px] font-mono text-slate-500 flex-1' }, reg.eq),
+                      h('span', { className: 'text-[10px] font-mono text-slate-600 flex-1' }, reg.eq),
                       h('span', { className: 'text-xs font-bold ' + (Math.abs(reg.r2) > 0.8 ? 'text-emerald-600' : 'text-yellow-600') }, 'R\u00B2=' + reg.r2.toFixed(4))
                     );
                   })
@@ -1287,7 +1287,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'text-[10px] text-cyan-500' }, 'z = (value \u2212 mean) / std dev = (value \u2212 ' + meanY.toFixed(2) + ') / ' + stdDev.toFixed(2)),
                     // Mini visual
                     h('div', { className: 'flex items-center gap-1 mt-1' },
-                      h('span', { className: 'text-[11px] text-slate-500' }, '-3\u03C3'),
+                      h('span', { className: 'text-[11px] text-slate-600' }, '-3\u03C3'),
                       h('div', { className: 'flex-1 h-4 bg-slate-100 rounded-full relative overflow-hidden' },
                         h('div', { style: { position: 'absolute', left: '2.3%', width: '13.5%', height: '100%', backgroundColor: '#fee2e2' } }),
                         h('div', { style: { position: 'absolute', left: '15.8%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
@@ -1300,7 +1300,7 @@ window.StemLab = window.StemLab || {
                           return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'absolute', left: pct2 + '%', top: 0, width: '3px', height: '100%', backgroundColor: '#0d9488', borderRadius: '2px' } });
                         })()
                       ),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, '+3\u03C3')
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, '+3\u03C3')
                     )
                   )
               ),
@@ -1390,7 +1390,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Next', onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
           ),
 
-          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-400 py-4' }, 'Select a quiz type and click "Start Quiz"!')
+          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-4' }, 'Select a quiz type and click "Start Quiz"!')
         ),
 
         // ══════════════════════════════════════════════════════════

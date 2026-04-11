@@ -126,7 +126,7 @@ window.StemLab = window.StemLab || {
                 isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-400' }, 'Loading...');
+            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading...');
           }
 const d = labToolData.physics;
 

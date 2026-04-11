@@ -738,7 +738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 !locked && (function() {
                   var stats = (d.destStats || {})[dest.id];
                   if (!stats) return null;
-                  return h('div', { className: 'flex gap-2 mt-1 text-[10px] text-slate-400', 'aria-label': 'Stats: ' + stats.wins + ' wins, best ' + stats.bestPct + '%, ' + stats.totalScience + ' science' },
+                  return h('div', { className: 'flex gap-2 mt-1 text-[10px] text-slate-500', 'aria-label': 'Stats: ' + stats.wins + ' wins, best ' + stats.bestPct + '%, ' + stats.totalScience + ' science' },
                     stats.wins > 0 && h('span', null, '\u2705 ' + stats.wins + 'x'),
                     stats.bestPct > 0 && h('span', null, '\u2B50 ' + stats.bestPct + '%'),
                     stats.totalScience > 0 && h('span', null, '\uD83D\uDD2C ' + stats.totalScience)
@@ -768,7 +768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', { className: 'text-xl' }, tech.emoji),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold ' + (owned ? 'text-green-300' : 'text-white') }, tech.name + (owned ? ' \u2705' : '')),
-                  h('p', { className: 'text-[9px] text-slate-400' }, tech.desc)
+                  h('p', { className: 'text-[10px] text-slate-600' }, tech.desc)
                 ),
                 !owned && h('button', {
                   disabled: !canBuy,
@@ -778,7 +778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (addToast) addToast('\u26A1 ' + tech.name + ' unlocked!', 'success');
                     addXP(15);
                   },
-                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
                 }, tech.cost + ' \uD83D\uDD2C')
               );
             })
@@ -841,7 +841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', { className: 'flex flex-wrap gap-1' },
                 destination.hazards.map(function(hz) {
-                  return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[9px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
+                  return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[10px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
                 })
               ),
               // Crew roster
@@ -853,8 +853,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                       h('span', { className: 'text-lg' }, c.emoji),
                       h('div', null,
                         h('p', { className: 'text-[10px] font-bold text-white' }, c.name),
-                        h('p', { className: 'text-[9px] text-slate-400' }, c.role),
-                        h('p', { className: 'text-[8px] text-indigo-300 italic' }, '"' + c.quote + '"')
+                        h('p', { className: 'text-[10px] text-slate-600' }, c.role),
+                        h('p', { className: 'text-[10px] text-indigo-300 italic' }, '"' + c.quote + '"')
                       )
                     );
                   })

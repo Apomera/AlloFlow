@@ -1693,7 +1693,7 @@ window.StemLab = window.StemLab || {
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
-                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[8px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
+                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[10px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
                         'aria-label': 'Remove ' + comp.label
                       }, '\u2715'),
                       ci < components.length - 1 ? null : null
@@ -3321,7 +3321,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'text-center py-6' },
             h('div', { className: 'text-4xl mb-2' }, '\u2694\uFE0F'),
             h('div', { className: 'text-lg font-bold text-white mb-1' }, 'Chip Defense'),
-            h('div', { className: 'text-sm text-slate-400 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
+            h('div', { className: 'text-sm text-slate-500 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
             h('div', { className: 'flex justify-center gap-3 mb-4' },
               statBadge('Best Score', String(d.battleScore || 0)),
               statBadge('Rounds', String(BATTLE_ROUNDS.length))
@@ -3368,7 +3368,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'text-[10px] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
             ),
-            h('div', { className: 'text-sm font-bold text-slate-400' }, 'VS'),
+            h('div', { className: 'text-sm font-bold text-slate-600' }, 'VS'),
             h('div', { className: 'flex-1' },
               h('div', { className: 'text-[10px] text-slate-600 mb-0.5 text-right' }, currentRound.enemy),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
@@ -3378,7 +3378,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Round info
-          h('div', { className: 'text-xs text-slate-400 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
+          h('div', { className: 'text-xs text-slate-500 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
           // Enemy card
           h('div', { className: 'p-4 rounded-xl bg-red-900/20 border border-red-800 mb-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg mb-1' }, currentRound.enemy),
@@ -3579,7 +3579,7 @@ window.StemLab = window.StemLab || {
 
       var backBtn = h('button', Object.assign({
         onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
-        className: 'flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors mb-2'
+        className: 'flex items-center gap-1 text-xs text-slate-500 hover:text-white transition-colors mb-2'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
         h(ArrowLeft, { size: 14 }), ' Back to STEM Lab'
       );
@@ -3655,7 +3655,7 @@ window.StemLab = window.StemLab || {
       }, '\uD83D\uDCF8 Snapshot');
 
       // Show loading placeholder while state initializes (hooks already called above)
-      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Semiconductor Lab\u2026');
+      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading Semiconductor Lab\u2026');
 
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': 'Semiconductor Lab' },
         backBtn,

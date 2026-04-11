@@ -3039,7 +3039,7 @@
                 className: "ml-auto text-[10px] text-emerald-500 hover:text-emerald-700 font-bold"
               }, "\u2715 Exit Station"),
               // Quest count badge
-              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
+              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
                 "\uD83C\uDFC6 " + (_activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length) + "/" + _activeStation.quests.length + " quests"
               ) : null
             ) : null,
@@ -3111,9 +3111,9 @@
                         React.createElement("span", { className: "text-[11px] font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
                           (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
                         ),
-                        !disp.done && React.createElement("span", { className: "text-[9px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
+                        !disp.done && React.createElement("span", { className: "text-[10px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
                       ),
-                      React.createElement("span", { className: "text-[9px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
+                      React.createElement("span", { className: "text-[10px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
                     ),
                     // Live timer for timeSpent quests
                     quest.type === 'timeSpent' && !disp.done && (function() {
@@ -3123,10 +3123,10 @@
                       var sec = Math.floor((ms % 60000) / 1000);
                       var isActive = stemLabTool === quest.toolId;
                       return React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 mb-0.5" },
-                        React.createElement("span", { className: "text-[9px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
+                        React.createElement("span", { className: "text-[10px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
                           (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
                         ),
-                        isActive && React.createElement("span", { className: "text-[9px] text-green-500 animate-pulse" }, 'timing...')
+                        isActive && React.createElement("span", { className: "text-[10px] text-green-500 animate-pulse" }, 'timing...')
                       );
                     })(),
                     // Progress bar
@@ -3186,7 +3186,7 @@
                               });
                             }
                           },
-                          className: "text-[9px] text-green-700 hover:text-green-900 underline font-bold"
+                          className: "text-[10px] text-green-700 hover:text-green-900 underline font-bold"
                         }, "\uD83D\uDCCB Copy Report"),
                         React.createElement("button", {
                           'aria-label': 'Reset all quest progress for this station',
@@ -3198,7 +3198,7 @@
                             });
                             if (addToast) addToast('\uD83D\uDD04 Quest progress reset for ' + _activeStation.name, 'info');
                           },
-                          className: "text-[9px] text-green-600 hover:text-green-800 underline"
+                          className: "text-[10px] text-green-600 hover:text-green-800 underline"
                         }, "\uD83D\uDD04 Reset & Try Again")
                       )
                     ) : null,
@@ -3207,7 +3207,7 @@
                       React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden flex-1" },
                         React.createElement("div", { className: "h-full bg-amber-400 rounded-full transition-all", style: { width: Math.round(completedCount / _activeStation.quests.length * 100) + '%' } })
                       ),
-                      React.createElement("span", { className: "text-[9px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
+                      React.createElement("span", { className: "text-[10px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
                     ) : null
                   );
                 })()
@@ -3281,7 +3281,7 @@
               _questPickerOpen && React.createElement("div", { className: "p-3 bg-amber-50/50 space-y-3" },
                 // Quick preset templates + auto-suggest
                 _stationQuests.length === 0 && React.createElement("div", { className: "space-y-1.5" },
-                  React.createElement("p", { className: "text-[9px] text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
+                  React.createElement("p", { className: "text-[10px] text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
                   // Auto-suggest button
                   (function() {
                     var selectedTools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
@@ -3351,8 +3351,8 @@
                         className: "bg-white rounded-lg p-2 border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-center"
                       },
                         React.createElement("div", { className: "text-lg" }, preset.icon),
-                        React.createElement("div", { className: "text-[9px] font-bold text-amber-800" }, preset.name),
-                        React.createElement("div", { className: "text-[9px] text-amber-600" }, preset.desc)
+                        React.createElement("div", { className: "text-[10px] font-bold text-amber-800" }, preset.name),
+                        React.createElement("div", { className: "text-[10px] text-amber-600" }, preset.desc)
                       );
                     })
                   )
@@ -3384,7 +3384,7 @@
                   });
                   if (allHooks.length === 0) return null;
                   return React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-purple-200 space-y-1.5" },
-                    React.createElement("p", { className: "text-[9px] text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
+                    React.createElement("p", { className: "text-[10px] text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1 max-h-[200px] overflow-y-auto" },
                       allHooks.map(function(ah, ahi) {
                         var toolLabel = (_allStemTools.find(function(t3) { return t3.id === ah.toolId; }) || {}).label || ah.toolId;
@@ -3405,7 +3405,7 @@
                           React.createElement("span", { className: "text-sm shrink-0" }, ah.hook.icon || '\uD83C\uDFC6'),
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "font-bold text-purple-800 truncate" }, ah.hook.label),
-                            React.createElement("div", { className: "text-[9px] text-purple-500" }, toolLabel)
+                            React.createElement("div", { className: "text-[10px] text-purple-500" }, toolLabel)
                           ),
                           React.createElement("span", { className: "text-purple-400 text-xs shrink-0" }, "+")
                         );
@@ -3415,7 +3415,7 @@
                 })(),
                 // Add quest form (universal types)
                 React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-amber-200 space-y-2" },
-                  React.createElement("p", { className: "text-[9px] text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
+                  React.createElement("p", { className: "text-[10px] text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
                   // Type selector
                   React.createElement("div", { className: "grid grid-cols-5 gap-1" },
                     QUEST_TYPES.map(function(qt) {
@@ -3424,7 +3424,7 @@
                         key: qt.id,
                         'aria-label': 'Quest type: ' + qt.label,
                         onClick: function() { upd('_questBuilderType', qt.id); },
-                        className: "px-1.5 py-1.5 rounded-lg text-[9px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
+                        className: "px-1.5 py-1.5 rounded-lg text-[10px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
                       },
                         React.createElement("div", { className: "text-sm" }, qt.icon),
                         React.createElement("div", null, qt.label)
@@ -3433,7 +3433,7 @@
                   ),
                   // Tool selector (for non-freeResponse types)
                   (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && React.createElement("div", null,
-                    React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, "For which tool?"),
+                    React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "For which tool?"),
                     React.createElement("select", {
                       value: d._questBuilderTool || '',
                       onChange: function(e) { upd('_questBuilderTool', e.target.value); },
@@ -3454,7 +3454,7 @@
                       var qtDef = QUEST_TYPES.find(function(qt2) { return qt2.id === qType; }) || QUEST_TYPES[0];
                       if (qType === 'freeResponse') {
                         return React.createElement("div", null,
-                          React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, "Prompt for student"),
+                          React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "Prompt for student"),
                           React.createElement("input", {
                             type: "text",
                             value: d._questBuilderPrompt || '',
@@ -3465,7 +3465,7 @@
                         );
                       }
                       return React.createElement("div", null,
-                        React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, qtDef.paramLabel),
+                        React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, qtDef.paramLabel),
                         React.createElement("input", {
                           type: "number",
                           value: d._questBuilderParam || qtDef.defaultVal,
@@ -3474,13 +3474,13 @@
                           'aria-label': qtDef.paramLabel + ' for quest',
                           className: "w-20 px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
                         }),
-                        React.createElement("span", { className: "text-[9px] text-slate-400 ml-1.5" }, qtDef.unit)
+                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit)
                       );
                     })()
                   ),
                   // Preview + Add button
                   React.createElement("div", { className: "flex items-center justify-between" },
-                    React.createElement("span", { className: "text-[9px] text-slate-400 italic" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 italic" },
                       "\u201C" + _questAutoLabel(
                         d._questBuilderType || 'xpThreshold',
                         d._questBuilderTool || null,

@@ -813,7 +813,7 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'text-blue-600' }, num1 + '/' + den1),
             h('span', { className: 'mx-3 text-orange-500' }, opSymbols[opMode]),
             h('span', { className: 'text-red-600' }, num2 + '/' + den2),
-            h('span', { className: 'mx-3 text-slate-500' }, '='),
+            h('span', { className: 'mx-3 text-slate-600' }, '='),
             h('span', { className: 'text-emerald-600' }, opSimplified[0] + '/' + opSimplified[1])
           ),
           // Mixed number result
@@ -1324,7 +1324,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Challenge type counter
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/7 types')
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/7 types')
         ),
         !challenge
           ? h('button', { 'aria-label': 'Generate Challenge',

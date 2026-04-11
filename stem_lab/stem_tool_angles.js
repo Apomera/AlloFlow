@@ -671,7 +671,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-lg', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
                   h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
-                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
+                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -710,7 +710,7 @@ window.StemLab = window.StemLab || {
               h('line', { x1: cx, y1: cy, x2: rayEndX, y2: rayEndY, stroke: '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }),
               // Bisector ray (dashed)
               showBisector && h('line', { x1: cx, y1: cy, x2: bisEndX, y2: bisEndY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,3', strokeLinecap: 'round' }),
-              showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[8px] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
+              showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[10px] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
               // Second ray
               showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: '#06b6d4', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
               showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: 12, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2 }),

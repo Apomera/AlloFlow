@@ -3635,7 +3635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
                   (isActive
                     ? (isDark ? 'bg-violet-600 text-white shadow-sm' : 'bg-white text-violet-700 shadow-sm')
-                    : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });

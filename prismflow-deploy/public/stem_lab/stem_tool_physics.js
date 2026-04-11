@@ -126,7 +126,7 @@ window.StemLab = window.StemLab || {
                 isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-400' }, 'Loading...');
+            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading...');
           }
 const d = labToolData.physics;
 
@@ -1706,7 +1706,7 @@ const d = labToolData.physics;
 
             // ── XP & Stats Bar ──
             React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDE80 Launches: " + (d.launchCount || 0)),
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\uD83D\uDE80 Launches: " + (d.launchCount || 0)),
               React.createElement("span", { className: "text-[10px] font-bold text-amber-500" }, "\uD83C\uDFAF Targets: " + (d.targetsHit || 0)),
               d.quizStreak > 0 && React.createElement("span", { className: "text-[10px] font-bold text-orange-500" }, "\uD83D\uDD25 Streak: " + d.quizStreak)
             ),
@@ -1864,7 +1864,7 @@ const d = labToolData.physics;
                   React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "\u{1F4DD} Calculation Helper"),
                   (function() {
                     var ans = getTargetAnswer();
-                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-500" }, "No active target");
+                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-600" }, "No active target");
                     return React.createElement("div", { className: "space-y-1" },
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Equation: ", React.createElement("b", { className: "font-mono text-blue-700" }, ans.equation)),
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Substitution: ", React.createElement("span", { className: "font-mono text-emerald-700" }, ans.steps)),
@@ -1874,7 +1874,7 @@ const d = labToolData.physics;
                 ),
 
                 // Attempt counter
-                React.createElement("p", { className: "text-[10px] text-slate-500 text-right" }, "Attempts: " + (d.targetAttempts || 0))
+                React.createElement("p", { className: "text-[10px] text-slate-600 text-right" }, "Attempts: " + (d.targetAttempts || 0))
               )
             ),
 
@@ -1902,7 +1902,7 @@ const d = labToolData.physics;
                       (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-300')
                   },
                     React.createElement("p", { className: "text-xs font-bold " + (completed ? 'text-emerald-700' : 'text-violet-700') }, completed ? '\u2705 ' + ch.label : ch.label),
-                    React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, ch.desc),
+                    React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, ch.desc),
                     React.createElement("p", { className: "text-[11px] font-bold text-amber-500 mt-1" }, '+' + ch.reward + ' XP')
                   );
                 })

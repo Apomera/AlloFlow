@@ -1387,7 +1387,7 @@ const d = labToolData.artStudio || {};
                 ].map(function(tool) {
                   return React.createElement("div", { key: tool.name, className: "bg-white rounded-lg p-2 border border-slate-100 text-center shadow-sm hover:shadow-md transition-shadow cursor-default" },
                     React.createElement("div", { className: "text-lg" }, tool.icon),
-                    React.createElement("div", { className: "text-[9px] font-bold text-slate-700 mt-0.5" }, tool.name),
+                    React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mt-0.5" }, tool.name),
                     React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5 leading-tight" }, tool.desc)
                   );
                 })
@@ -4026,7 +4026,7 @@ const d = labToolData.artStudio || {};
 
                             ),
 
-                            React.createElement("span", { className: "text-[11px] text-slate-500 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
+                            React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
 
                             stops.length > 2 && React.createElement("button", { "aria-label": "Artstudio action", onClick: function () {
 
@@ -5234,7 +5234,7 @@ const d = labToolData.artStudio || {};
 
                               var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs);
 
-                            }, className: "absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-700 text-white text-[8px] font-bold flex items-center justify-center hover:bg-red-600", style: { lineHeight: '1' } }, "\u00D7")
+                            }, className: "absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-700 text-white text-[10px] font-bold flex items-center justify-center hover:bg-red-600", style: { lineHeight: '1' } }, "\u00D7")
 
                           );
 

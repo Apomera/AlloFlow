@@ -915,7 +915,7 @@ var d = (labToolData.probability) || {};
 
               ),
 
-              React.createElement("p", { className: "text-xs text-slate-500 mt-2 italic" }, activeSport.desc + ' \u2014 P(' + activeSport.outcomes[0] + ') = ' + (activeSport.probs[0] * 100).toFixed(0) + '%')
+              React.createElement("p", { className: "text-xs text-slate-600 mt-2 italic" }, activeSport.desc + ' \u2014 P(' + activeSport.outcomes[0] + ') = ' + (activeSport.probs[0] * 100).toFixed(0) + '%')
 
             ),
 
@@ -1019,7 +1019,7 @@ var d = (labToolData.probability) || {};
 
                   ),
 
-                  customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) > 100 && React.createElement("p", { className: "text-[10px] text-slate-500 text-center mt-1" }, "(showing first 100 of " + customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + " marbles)"),
+                  customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) > 100 && React.createElement("p", { className: "text-[10px] text-slate-600 text-center mt-1" }, "(showing first 100 of " + customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + " marbles)"),
 
                   React.createElement("p", { className: "text-xs text-center font-bold text-amber-700 mt-2" }, "\uD83C\uDFB1 " + customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + " marbles in bag")
 
@@ -1236,7 +1236,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("p", { className: "text-3xl font-black text-violet-700 mb-1" }, d.lastResult != null ? String(d.lastResult) : '?'),
 
-                React.createElement("p", { className: "text-xs text-slate-500" }, d.lastResult != null ? 'Last result' : 'Click to start!')
+                React.createElement("p", { className: "text-xs text-slate-600" }, d.lastResult != null ? 'Last result' : 'Click to start!')
 
               )
 
@@ -1727,7 +1727,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("p", { className:"text-base font-black font-mono", style:{color:_piErrCol} }, '±' + _piErrV.toFixed(5)),
 
-                      React.createElement("p", { className:"text-[8px] italic mt-0.5", style:{color:_muted} }, '4 × ' + _piInV + ' / ' + _piTotV)
+                      React.createElement("p", { className:"text-[10px] italic mt-0.5", style:{color:_muted} }, '4 × ' + _piInV + ' / ' + _piTotV)
 
                     ),
 

@@ -507,7 +507,7 @@ window.StemLab = window.StemLab || {
         return h('button', { 'aria-label': 'Select option',
           onClick: function() { if (label.indexOf('\u2192') > 0 && label.indexOf('10') === 0) doRegroup(from, to); else doUngroup(from, to); },
           disabled: !enabled,
-          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-500 cursor-not-allowed'),
+          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-600 cursor-not-allowed'),
           style: enabled ? { background: 'linear-gradient(90deg, ' + colorFrom + ', ' + colorTo + ')' } : {}
         }, label);
       };
@@ -563,7 +563,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
                   h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
-                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
+                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -878,7 +878,7 @@ window.StemLab = window.StemLab || {
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-3 gap-4 text-center' },
               h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-green-700 uppercase mb-1' }, 'C Scale'), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2))),
-              h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\u00D7'), h('div', { className: 'text-2xl font-bold text-slate-400' }, '\u00D7')),
+              h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\u00D7'), h('div', { className: 'text-2xl font-bold text-slate-600' }, '\u00D7')),
               h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, 'D Scale'), h('div', { className: 'text-2xl font-bold font-mono text-amber-800' }, dVal.toFixed(2)))
             ),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mt-3 pt-3 border-t border-amber-200' },
@@ -965,7 +965,7 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          !pvQuiz && h('div', { className: 'text-center text-sm text-slate-400 py-8' }, 'Click "Start Quiz" to test your place value skills!'),
+          !pvQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-8' }, 'Click "Start Quiz" to test your place value skills!'),
 
           // Quiz categories info
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
@@ -997,7 +997,7 @@ window.StemLab = window.StemLab || {
       // Default fallback
       return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
         headerEl,
-        h('p', { className: 'text-sm text-slate-400 text-center' }, 'Select a tool above to get started.')
+        h('p', { className: 'text-sm text-slate-500 text-center' }, 'Select a tool above to get started.')
       );
     }
   });

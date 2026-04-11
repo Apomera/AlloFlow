@@ -3434,7 +3434,7 @@ var d = labToolData.brainAtlas || {};
 
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
 
-                React.createElement("p", { className: "text-xs text-slate-500" }, currentView.desc)
+                React.createElement("p", { className: "text-xs text-slate-600" }, currentView.desc)
 
               )
 
@@ -3486,7 +3486,7 @@ var d = labToolData.brainAtlas || {};
 
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
 
-              React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
+              React.createElement("span", { className: "text-[10px] text-slate-600 font-bold" }, filtered.length + ' regions')
 
             ),
 
@@ -3677,7 +3677,7 @@ var d = labToolData.brainAtlas || {};
 
                     React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
 
-                    React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                    React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-600" }, "Function: "), quizQ.fn),
 
                     quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
 
@@ -4029,7 +4029,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Function"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "Function"),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
@@ -4037,7 +4037,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.brodmann && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Brodmann Areas"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "Brodmann Areas"),
 
                         React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
 
@@ -4045,7 +4045,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.blood && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Blood Supply"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "Blood Supply"),
 
                         React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
 
@@ -4061,7 +4061,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.synthesis && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
 
@@ -4069,7 +4069,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.receptors && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
 
@@ -4077,7 +4077,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.pathways && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
 
@@ -4115,7 +4115,7 @@ var d = labToolData.brainAtlas || {};
 
                   React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
 
-                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-500 italic py-4 text-center" }, "No regions match your search."),
+                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-600 italic py-4 text-center" }, "No regions match your search."),
 
                     filtered.map(function (r) {
 
@@ -4133,7 +4133,7 @@ var d = labToolData.brainAtlas || {};
 
                         React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
 
-                        React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
 
                       );
 

@@ -1206,7 +1206,7 @@ const d = labToolData.rocks || {};
 
             mode === 'landscape' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-500 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
 
               React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
 
@@ -1360,7 +1360,7 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-[10px] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
 
                       React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-0.5" }, prop.value));
 
@@ -1372,7 +1372,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-3" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Mohs Hardness Scale"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-600 mb-1" }, "Mohs Hardness Scale"),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -1396,7 +1396,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[10px] text-slate-600 mt-0.5" },
 
                     React.createElement("span", null, "1 (Talc)"),
 
@@ -1985,7 +1985,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
 
-                React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-1" }, "Formula: " + selMineral.formula),
+                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, "Formula: " + selMineral.formula),
 
                 // Cross-section canvas
 
@@ -2017,7 +2017,7 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-[10px] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
 
                       React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
 
@@ -2053,7 +2053,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-1" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Mohs Position"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-600 mb-1" }, "Mohs Position"),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -2077,7 +2077,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[10px] text-slate-600 mt-0.5" },
 
                     React.createElement("span", null, "1 (Talc)"),
 
@@ -3059,7 +3059,7 @@ const d = labToolData.rockCycle;
 
             ),
 
-            React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Click a rock type on the diagram to explore. Watch particles flow through the cycle!"),
+            React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Click a rock type on the diagram to explore. Watch particles flow through the cycle!"),
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
@@ -3095,7 +3095,7 @@ const d = labToolData.rockCycle;
 
                   React.createElement("h4", { className: "text-lg font-black", style: { color: sel.color } }, sel.label + " Rocks"),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-500" }, sel.examples)
+                  React.createElement("p", { className: "text-[10px] text-slate-600" }, sel.examples)
 
                 )
 
@@ -3107,7 +3107,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Hardness"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Hardness"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.hardness)
 
@@ -3115,7 +3115,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Crystals"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Crystals"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.crystals)
 
@@ -3123,7 +3123,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Real Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Real Uses"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.uses)
 
@@ -3141,7 +3141,7 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
 
               React.createElement("div", { className: "grid grid-cols-3 gap-2" },
 
@@ -3159,7 +3159,7 @@ const d = labToolData.rockCycle;
 
                     React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-700' : 'text-slate-600') }, proc.emoji + " " + proc.label),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-500" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
+                    React.createElement("p", { className: "text-[10px] text-slate-600" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
 
                   );
 

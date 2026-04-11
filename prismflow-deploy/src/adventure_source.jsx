@@ -419,7 +419,7 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
         <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0"></div>
         <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
       </div>
-      <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase mt-1.5 px-1">
+      <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mt-1.5 px-1">
         <span className="text-red-400">{leftLabel} (0%)</span>
         <span className="text-green-400">{rightLabel} (100%)</span>
       </div>
@@ -595,7 +595,7 @@ const InventoryGrid = React.memo(({ inventory, onSelect }) => {
               <div className="w-2 h-2 bg-black/90 rotate-45 -mb-1 border-t border-l border-white/20"></div>
               <div className="bg-black/90 text-white text-[10px] px-2 py-1 rounded shadow-lg font-bold border border-white/20 text-center">
                 {item.name}
-                {item.effectType && <div className="font-normal opacity-80 text-[9px] mt-0.5 border-t border-white/10 pt-0.5">{item.description}</div>}
+                {item.effectType && <div className="font-normal opacity-80 text-[10px] mt-0.5 border-t border-white/10 pt-0.5">{item.description}</div>}
               </div>
             </div>
           </div>

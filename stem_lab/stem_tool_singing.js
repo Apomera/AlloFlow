@@ -4451,7 +4451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
                   (isActive
                     ? (isDark ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-700 shadow-sm')
-                    : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });

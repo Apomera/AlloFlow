@@ -1687,7 +1687,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 // Milestone labels
 
-                React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
+                React.createElement("div", { className: "flex justify-between mt-2 text-[10px] text-violet-400" },
 
                   [
 
@@ -2652,9 +2652,9 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
-                          React.createElement("p", { className: "text-[11px] text-slate-500 leading-tight" }, s.desc)
+                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-tight" }, s.desc)
                         ),
-                        React.createElement("span", { className: "text-[8px] text-slate-600 flex-shrink-0" },
+                        React.createElement("span", { className: "text-[10px] text-slate-600 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
                           s.id === 'protostar' ? "~100K yr" :
                           s.id === 'main_sequence' ? (lifecycleMass < 0.8 ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :

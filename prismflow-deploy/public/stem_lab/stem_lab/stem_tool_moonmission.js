@@ -570,7 +570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('span', null, opt.icon),
                   h('span', { className: 'text-xs font-bold text-white' }, opt.label)
                 ),
-                diffSettings.showEffects && opt.effects && h('div', { className: 'flex flex-wrap gap-2 text-[9px] mt-1' },
+                diffSettings.showEffects && opt.effects && h('div', { className: 'flex flex-wrap gap-2 text-[10px] mt-1' },
                   Object.keys(opt.effects).map(function(k) {
                     var v = opt.effects[k];
                     return h('span', { key: k, className: v > 0 ? 'text-green-400' : 'text-red-400' },
@@ -582,7 +582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('details', { className: 'mt-3' },
-            h('summary', { className: 'text-[9px] text-slate-500 cursor-pointer hover:text-slate-400 transition-colors' }, '\uD83D\uDCDA What really happened?'),
+            h('summary', { className: 'text-[10px] text-slate-500 cursor-pointer hover:text-slate-400 transition-colors' }, '\uD83D\uDCDA What really happened?'),
             h('p', { className: 'text-[10px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
           )
         ),
@@ -616,7 +616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('span', { className: 'text-xl' }, '\uD83E\uDDE0'),
             h('div', null,
               h('h5', { className: 'text-sm font-bold text-indigo-300' }, 'Space Knowledge Check'),
-              h('p', { className: 'text-[9px] text-slate-500' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
+              h('p', { className: 'text-[10px] text-slate-500' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
             )
           ),
           h('p', { className: 'text-xs text-white font-bold mb-3' }, QUIZ_BANK[quizIdx].q),
@@ -681,7 +681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               });
             })
           ),
-          h('div', { className: 'flex justify-between text-[9px] text-slate-400' },
+          h('div', { className: 'flex justify-between text-[10px] text-slate-400' },
             h('span', null, 'Launch'),
             h('span', null, 'Phase ' + (phase + 1) + '/10'),
             h('span', null, 'Splashdown')
@@ -719,8 +719,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border border-white/10 text-center' },
                     h('div', { className: 'text-lg mb-0.5' }, i === 0 ? '\uD83E\uDDD1\u200D\uD83D\uDE80' : i === 1 ? '\uD83D\uDC68\u200D\uD83D\uDE80' : '\uD83D\uDC69\u200D\uD83D\uDE80'),
                     h('p', { className: 'text-[10px] font-bold text-indigo-300' }, crew.role),
-                    h('p', { className: 'text-[9px] text-slate-400' }, crew.name),
-                    h('p', { className: 'text-[9px] text-slate-400 mt-1' }, crew.tasks)
+                    h('p', { className: 'text-[10px] text-slate-400' }, crew.name),
+                    h('p', { className: 'text-[10px] text-slate-400 mt-1' }, crew.tasks)
                   );
                 })
               )
@@ -743,7 +743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   },
                     h('div', { className: 'text-lg' }, diff.icon),
                     h('p', { className: 'text-[10px] font-bold ' + (isSelected ? 'text-indigo-300' : 'text-slate-300') }, diff.label),
-                    h('p', { className: 'text-[9px] text-slate-400' }, diff.desc)
+                    h('p', { className: 'text-[10px] text-slate-400' }, diff.desc)
                   );
                 })
               )
@@ -1054,7 +1054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
                   h('p', { className: 'text-xs text-slate-400' }, '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust'),
-                  h('p', { className: 'text-[9px] text-slate-500' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
+                  h('p', { className: 'text-[10px] text-slate-500' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
                 ),
                 h('button', {
                   'aria-label': 'Proceed to Earth orbit phase after successful launch',
@@ -1090,7 +1090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['Coast Time', '~3 days']
                 ].map(function(item) {
                   return h('div', { key: item[0], className: 'bg-white/5 rounded p-1.5 text-center' },
-                    h('p', { className: 'text-[9px] text-slate-400' }, item[0]),
+                    h('p', { className: 'text-[10px] text-slate-400' }, item[0]),
                     h('p', { className: 'text-[11px] font-bold text-sky-300' }, item[1])
                   );
                 })
@@ -1216,11 +1216,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   'The spacecraft rotates slowly ("BBQ roll") to evenly distribute solar heating.',
                   'Even a 1\u00B0 trajectory error would miss the Moon by thousands of kilometers.'
                 ].map(function(fact, i) {
-                  return h('p', { key: i, className: 'text-[9px] text-slate-400' }, '\u2022 ' + fact);
+                  return h('p', { key: i, className: 'text-[10px] text-slate-400' }, '\u2022 ' + fact);
                 })
               ),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20 mb-2' },
-                h('p', { className: 'text-[9px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+                h('p', { className: 'text-[10px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
               )
             )
           ),
@@ -1316,7 +1316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['\uD83D\uDEF0 CM "Columbia"', 'CMP orbiting solo']
                 ].map(function(item) {
                   return h('div', { key: item[0], className: 'bg-slate-800 rounded p-1.5' },
-                    h('p', { className: 'text-[9px] text-slate-400' }, item[0]),
+                    h('p', { className: 'text-[10px] text-slate-400' }, item[0]),
                     h('p', { className: 'text-[10px] font-bold text-slate-200' }, item[1])
                   );
                 })
@@ -1346,17 +1346,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
                 h('p', { className: 'text-[10px] font-bold text-sky-300' }, 'W / \u2191'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'Fire engines (thrust UP)')
+                h('p', { className: 'text-[10px] text-slate-400' }, 'Fire engines (thrust UP)')
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2194\uFE0F'),
                 h('p', { className: 'text-[10px] font-bold text-sky-300' }, 'A/D or \u2190/\u2192'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'Lateral movement')
+                h('p', { className: 'text-[10px] text-slate-400' }, 'Lateral movement')
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDFAF'),
                 h('p', { className: 'text-[10px] font-bold text-amber-300' }, 'Goal'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'V < 3 m/s, H < 5 m/s')
+                h('p', { className: 'text-[10px] text-slate-400' }, 'V < 3 m/s, H < 5 m/s')
               )
             ),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-sm mx-auto' },
@@ -2199,7 +2199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center' },
               h('div', null,
                 h('p', { className: 'text-xs text-white font-bold' }, '\uD83D\uDC68\u200D\uD83D\uDE80 Moonwalk EVA'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!')
+                h('p', { className: 'text-[10px] text-slate-400' }, 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!')
               ),
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
@@ -2232,7 +2232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
                     h('p', { className: 'text-[10px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
                     (d.lunarSamples || []).map(function(s, i) {
-                      return h('p', { key: i, className: 'text-[9px] text-slate-400 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
+                      return h('p', { key: i, className: 'text-[10px] text-slate-400 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
                     })
                   )
                 ) :
@@ -2468,7 +2468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-3 border-t border-orange-900/30' },
               h('p', { className: 'text-[10px] text-slate-400 mb-2' }, 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.'),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20' },
-                h('p', { className: 'text-[9px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+                h('p', { className: 'text-[10px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
               )
             )
           ),
@@ -2516,16 +2516,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   return h('div', { key: s[2], className: 'bg-white/5 rounded-lg p-1.5 text-center' },
                     h('div', { className: 'text-sm' }, s[0]),
                     h('p', { className: 'text-[10px] font-bold text-white' }, s[1]),
-                    h('p', { className: 'text-[9px] text-slate-400' }, s[2])
+                    h('p', { className: 'text-[10px] text-slate-400' }, s[2])
                   );
                 })
               ),
               // Badges earned
-              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
+              h('p', { className: 'text-[10px] text-slate-500 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 BADGES.map(function(b) {
                   var earned = !!(d.earnedBadges || {})[b.id];
-                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[9px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
+                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[10px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
                     h('span', null, earned ? b.icon : '\uD83D\uDD12'),
                     h('span', null, b.name)
                   );
@@ -2533,7 +2533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ),
               // Sample gallery
               (d.lunarSamples || []).length > 0 && h('div', { className: 'mt-2' },
-                h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
+                h('p', { className: 'text-[10px] text-slate-500 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   (d.lunarSamples || []).map(function(s, i) {
                     return h('div', { key: i, className: 'bg-white/10 rounded-lg p-2 border border-white/10' },
@@ -2541,40 +2541,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         h('span', { className: 'text-lg' }, s.icon),
                         h('div', null,
                           h('p', { className: 'text-[10px] font-bold text-white' }, s.name),
-                          h('p', { className: 'text-[9px] text-indigo-300' }, s.type)
+                          h('p', { className: 'text-[10px] text-indigo-300' }, s.type)
                         )
                       ),
-                      h('p', { className: 'text-[9px] text-slate-400 leading-relaxed' }, s.fact)
+                      h('p', { className: 'text-[10px] text-slate-400 leading-relaxed' }, s.fact)
                     );
                   })
                 ),
                 // Collection completeness
                 (d.lunarSamples || []).length >= LUNAR_SAMPLES_DATA.length && h('div', { className: 'mt-2 bg-amber-500/10 rounded-lg p-2 border border-amber-500/20 text-center' },
                   h('p', { className: 'text-[10px] font-bold text-amber-300' }, '\uD83C\uDFC6 COMPLETE COLLECTION! All ' + LUNAR_SAMPLES_DATA.length + ' samples recovered.'),
-                  h('p', { className: 'text-[9px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
+                  h('p', { className: 'text-[10px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
                 )
               )
             ),
             // ── Decision Analysis (from Mission Events) ──
             (d.decisionLog || []).length > 0 && h('div', { className: 'mt-3 bg-white/5 rounded-xl p-3 border border-white/10' },
-              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+              h('p', { className: 'text-[10px] text-slate-500 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
               (d.decisionLog || []).map(function(dec, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                   h('div', { className: 'flex justify-between items-center mb-1' },
                     h('span', { className: 'text-[10px] font-bold text-white' }, dec.title),
-                    h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full ' +
+                    h('span', { className: 'text-[10px] px-2 py-0.5 rounded-full ' +
                       (dec.quality === 'optimal' ? 'bg-green-500/20 text-green-300' :
                        dec.quality === 'adequate' ? 'bg-yellow-500/20 text-yellow-300' :
                        'bg-red-500/20 text-red-300')
                     }, dec.quality.toUpperCase())
                   ),
-                  h('p', { className: 'text-[9px] text-slate-400' }, 'Your choice: "' + dec.chosen + '"'),
-                  dec.quality !== 'optimal' && h('p', { className: 'text-[9px] text-indigo-300 mt-1' },
+                  h('p', { className: 'text-[10px] text-slate-400' }, 'Your choice: "' + dec.chosen + '"'),
+                  dec.quality !== 'optimal' && h('p', { className: 'text-[10px] text-indigo-300 mt-1' },
                     '\uD83D\uDCA1 Better option: "' + dec.optimal + '"'
                   ),
                   h('details', { className: 'mt-1' },
                     h('summary', { className: 'text-[8px] text-slate-500 cursor-pointer' }, 'Historical context'),
-                    h('p', { className: 'text-[9px] text-slate-400 mt-1 pl-2' }, dec.historical)
+                    h('p', { className: 'text-[10px] text-slate-400 mt-1 pl-2' }, dec.historical)
                   )
                 );
               }),
@@ -2587,7 +2587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 return h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mt-2 text-center' },
                   h('p', { className: 'text-xs font-bold ' + (pct >= 80 ? 'text-green-300' : pct >= 50 ? 'text-yellow-300' : 'text-orange-300') },
                     'Decision Score: ' + optCount + '/' + total + ' optimal (' + pct + '%)'),
-                  h('p', { className: 'text-[9px] text-slate-400 mt-0.5' },
+                  h('p', { className: 'text-[10px] text-slate-400 mt-0.5' },
                     pct >= 80 ? 'Outstanding problem-solving! You think like a real mission commander.' :
                     pct >= 50 ? 'Solid decisions. Review the notes above to learn what real astronauts did.' :
                     'Room for improvement \u2014 but every astronaut learns from experience. Try again!')
@@ -2616,10 +2616,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // Mission Log (collapsible)
         missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-200' },
-          h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
+          h('p', { className: 'text-[10px] text-slate-500 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
           h('div', { className: 'space-y-0.5 max-h-32 overflow-y-auto' },
             missionLog.slice(-8).reverse().map(function(entry, i) {
-              return h('div', { key: i, className: 'flex justify-between text-[9px]' },
+              return h('div', { key: i, className: 'flex justify-between text-[10px]' },
                 h('span', { className: 'text-slate-600' }, entry.text),
                 h('span', { className: 'text-slate-400 font-mono' }, entry.time)
               );

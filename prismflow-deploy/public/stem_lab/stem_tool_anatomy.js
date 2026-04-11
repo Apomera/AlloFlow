@@ -4097,10 +4097,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
           // Header
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
             h('div', null,
               h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDEC0 Human Anatomy Explorer'),
-              h('p', { className: 'text-xs text-slate-500' }, sys.desc)
+              h('p', { className: 'text-xs text-slate-600' }, sys.desc)
             ),
             h('button', { 'aria-label': 'Snapshot',
               onClick: takeSnapshot,
@@ -4155,9 +4155,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // ── AI Tutor Tab ──
           activeTab === 'aiTutor' ? h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-4 space-y-3' },
             h('h4', { className: 'font-bold text-violet-800 text-sm mb-2' }, '\uD83E\uDD16 AI Anatomy Tutor'),
-            h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Currently studying: ' + sys.icon + ' ' + sys.name + (sel ? ' > ' + sel.name : '')),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Currently studying: ' + sys.icon + ' ' + sys.name + (sel ? ' > ' + sel.name : '')),
             h('div', { className: 'space-y-2 max-h-[340px] overflow-y-auto mb-3' },
-              aiMessages.length === 0 && h('p', { className: 'text-xs text-slate-500 italic text-center py-4' }, 'Ask a question about anatomy to get started!'),
+              aiMessages.length === 0 && h('p', { className: 'text-xs text-slate-600 italic text-center py-4' }, 'Ask a question about anatomy to get started!'),
               aiMessages.map(function(msg, idx) {
                 return h('div', { key: idx, className: 'rounded-lg px-3 py-2 text-xs leading-relaxed ' + (msg.role === 'user' ? 'bg-violet-50 text-violet-800 ml-8' : 'bg-slate-50 text-slate-700 mr-8') },
                   h('span', { className: 'font-bold' }, msg.role === 'user' ? 'You: ' : 'AI: '),
@@ -4230,7 +4230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all'
                 }, '\uD83C\uDFC6 Complete Tour!')
               )
-            ) : h('p', { className: 'text-xs text-slate-500 italic' }, 'No tour available for this system.')
+            ) : h('p', { className: 'text-xs text-slate-600 italic' }, 'No tour available for this system.')
           ) : null,
 
           // ── Spotter Test Tab ──
@@ -4242,7 +4242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 spotterBestTime < 999 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
               )
             ),
-            h('p', { className: 'text-xs text-slate-500 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
+            h('p', { className: 'text-xs text-slate-600 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
             !spotterActive ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-4' },
               h('button', { 'aria-label': 'Start Spotter Test',
                 onClick: function() {
@@ -4255,7 +4255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 },
                 className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm'
               }, '\uD83C\uDFAF Start Spotter Test'),
-              spotterTotal > 0 ? h('p', { className: 'text-[10px] text-slate-500 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
+              spotterTotal > 0 ? h('p', { className: 'text-[10px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
             ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
                 h('p', { className: 'text-sm font-bold text-amber-900 mb-1' }, 'What structure is marked on the figure?'),
@@ -4307,7 +4307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 }, 'Next Structure \u2192'),
                 h('button', { 'aria-label': 'End Test',
                   onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
-                  className: 'w-full py-1.5 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-all'
+                  className: 'w-full py-1.5 rounded-lg text-[10px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all'
                 }, 'End Test')
               ) : null
             )
@@ -4319,7 +4319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('h4', { className: 'font-bold text-rose-800 text-sm' }, '\uD83D\uDEE4 Physiological Pathways'),
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
             ),
-            h('p', { className: 'text-xs text-slate-500 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
+            h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
             !activePathwayId ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
               PATHWAYS.map(function(pw) {
                 var isDone = pathwaysCompleted[pw.id];
@@ -4333,7 +4333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('span', { className: 'text-xs font-black', style: { color: pw.color } }, pw.title),
                     isDone ? h('span', { className: 'ml-auto text-[10px] text-emerald-500 font-bold' }, '\u2713') : null
                   ),
-                  h('p', { className: 'text-[10px] text-slate-500 leading-relaxed' }, pw.desc)
+                  h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, pw.desc)
                 );
               })
             ) : (function() {
@@ -4347,7 +4347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
                   h('button', { 'aria-label': 'Back',
                     onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0 }); },
-                    className: 'ml-auto text-[10px] font-bold text-slate-500 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
+                    className: 'ml-auto text-[10px] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
                   }, '\u2190 Back')
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
@@ -4419,7 +4419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-base' }, conn.icon),
                     h('span', { className: 'text-xs font-black text-sky-800' }, conn.title),
-                    h('span', { className: 'ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500' },
+                    h('span', { className: 'ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600' },
                       SYSTEMS[conn.systems[0]].icon + ' + ' + SYSTEMS[conn.systems[1]].icon
                     ),
                     isViewed ? h('span', { className: 'text-[10px] text-emerald-500 font-bold' }, '\u2713') : null
@@ -4439,7 +4439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('h4', { className: 'font-bold text-teal-800 text-sm' }, '\uD83C\uDCCF Anatomy Flashcards'),
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
             ),
-            h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
             flashcardPool.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
               // Flashcard
               h('button', { 'aria-label': 'STRUCTURE NAME',
@@ -4448,10 +4448,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
               },
                 !flashcardFlipped ? h('div', null,
-                  h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-3' }, 'STRUCTURE NAME'),
+                  h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-3' }, 'STRUCTURE NAME'),
                   h('h3', { className: 'text-xl font-black text-slate-800 mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
                   PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
-                  h('p', { className: 'text-[10px] text-slate-500 mt-4' }, 'Tap to reveal function \u2192')
+                  h('p', { className: 'text-[10px] text-slate-600 mt-4' }, 'Tap to reveal function \u2192')
                 ) : h('div', null,
                   h('p', { className: 'text-[10px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
@@ -4481,7 +4481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-700 transition-all'
                 }, 'Next \u2192')
               )
-            ) : h('p', { className: 'text-xs text-slate-500 italic' }, 'No flashcards available for this complexity level.')
+            ) : h('p', { className: 'text-xs text-slate-600 italic' }, 'No flashcards available for this complexity level.')
           ) : null,
 
           // ── Explore Tab ──
@@ -4552,7 +4552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Progress tracker
             h('div', { className: 'mb-3 flex items-center gap-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
               ),
@@ -4561,7 +4561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Layer toggle bar
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
               LAYER_DEFS.map(function(ld) {
                 var isOn = layers[ld.id] || ld.id === autoLayerId;
                 return h('button', { 'aria-label': 'Toggle layer',
@@ -4574,14 +4574,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   },
                   title: (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
                   className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' +
-                    (isOn ? 'text-white shadow-sm border-transparent' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
+                    (isOn ? 'text-white shadow-sm border-transparent' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
                   style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
                 }, ld.icon + ' ' + ld.name);
               }),
               h('button', { 'aria-label': 'Reset',
                 onClick: function() { upd('visibleLayers', { skin: true }); },
                 title: 'Reset all layers to default (skin only)',
-                className: 'ml-auto px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200'
+                className: 'ml-auto px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200'
               }, '\u21BA Reset')
             ),
 
@@ -4592,7 +4592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   return h('button', { 'aria-label': 'Select option',
                     key: v,
                     onClick: function() { upd('view', v); upd('selectedStructure', null); playSound('viewSwitch'); },
-                    className: 'px-3 py-1 text-xs font-bold transition-all ' + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
+                    className: 'px-3 py-1 text-xs font-bold transition-all ' + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
                   }, v.charAt(0).toUpperCase() + v.slice(1));
                 })
               ),
@@ -4614,24 +4614,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   return h('button', { 'aria-label': 'Change complexity',
                     key: lv.v, title: lv.tip + ' level',
                     onClick: function() { upd('complexity', lv.v); upd('selectedStructure', null); },
-                    className: 'px-2 py-1 text-[10px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
+                    className: 'px-2 py-1 text-[10px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
                   }, lv.label);
                 })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, filtered.length + ' structures'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 font-bold' }, filtered.length + ' structures'),
               h('button', { 'aria-label': 'Regions',
                 onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
                 title: 'Toggle body region labels',
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
               }, '\uD83C\uDFF7 Regions'),
               h('button', { 'aria-label': 'X-ray',
                 onClick: function() { upd('_xrayMode', !xrayMode); },
                 title: 'Toggle X-ray radiograph mode',
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
               }, '\u2622 X-ray'),
               // Skin tone selector (representation & inclusion)
               h('div', { className: 'flex items-center gap-1 ml-1', title: 'Skin tone (representation)' },
-                h('span', { className: 'text-[8px] text-slate-400 font-bold' }, '\uD83C\uDFA8'),
+                h('span', { className: 'text-[10px] text-slate-500 font-bold' }, '\uD83C\uDFA8'),
                 SKIN_TONES.map(function(tone) {
                   return h('button', {
                     key: tone.id,
@@ -4673,7 +4673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('h4', { className: 'font-bold text-green-800 text-sm' }, '\uD83E\uDDEA Anatomy Quiz'),
                       h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2B50 ' + (d.quizScore || 0) + '/' + Math.min((d.quizIdx || 0) + 1, quizPool.length))
                     ),
-                    h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 mb-1' },
+                    h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 mb-1' },
                       quizType === 0 ? 'Function \u2192 Structure' :
                       quizType === 1 ? 'True or False' :
                       quizType === 2 ? 'System ID' : 'Clinical Challenge'
@@ -4724,14 +4724,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     ),
                     d.quizFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'rounded-lg p-3 text-xs leading-relaxed space-y-1.5 ' + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
                       h('p', { className: 'font-black ' + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizQ.name),
-                      h('p', { className: 'text-slate-700' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-slate-500' }, 'Function: '), quizQ.fn.substring(0, 150)),
+                      h('p', { className: 'text-slate-700' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-slate-600' }, 'Function: '), quizQ.fn.substring(0, 150)),
                       quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-rose-500' }, '\u26A0 Clinical: '), quizQ.clinical.substring(0, 120))
                     ),
                     d.quizFeedback && h('button', { 'aria-label': 'Next Question',
                       onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
                       className: 'w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700 transition-all'
                     }, 'Next Question \u2192')
-                  ) : h('p', { className: 'text-sm text-slate-500 italic' }, 'No quiz questions available.')
+                  ) : h('p', { className: 'text-sm text-slate-600 italic' }, 'No quiz questions available.')
                 ) : (
                   sel ? (
                     // Detail panel
@@ -4751,21 +4751,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
                             className: 'p-1 rounded text-[10px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
                           }, '\u2696'),
-                          h('button', { 'aria-label': 'Function', onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
+                          h('button', { 'aria-label': 'Function', onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
                         )
                       ),
                       h('div', { className: 'space-y-2.5' },
                         h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
+                          h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
                           h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
                         ),
                         sel.origin && h('div', { className: 'grid grid-cols-2 gap-2' },
                           h('div', null,
-                            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Origin'),
+                            h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Origin'),
                             h('p', { className: 'text-xs text-slate-600' }, sel.origin)
                           ),
                           h('div', null,
-                            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Insertion'),
+                            h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Insertion'),
                             h('p', { className: 'text-xs text-slate-600' }, sel.insertion)
                           )
                         ),
@@ -4774,8 +4774,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
                         ),
                         sel.detail && h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Detail'),
-                          h('p', { className: 'text-xs text-slate-500 leading-relaxed' }, sel.detail)
+                          h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Detail'),
+                          h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, sel.detail)
                         ),
                         // Brain Waves Section
                         sel.brainWaves && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
@@ -4788,7 +4788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                                   h('span', { className: 'text-xs font-black', style: { color: w.color } }, w.type),
                                   h('span', { className: 'ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full', style: { background: w.color + '18', color: w.color } }, w.freq)
                                 ),
-                                h('p', { className: 'text-[10px] font-bold text-slate-500 mb-0.5' }, 'State: ', h('span', { className: 'text-slate-700' }, w.state)),
+                                h('p', { className: 'text-[10px] font-bold text-slate-600 mb-0.5' }, 'State: ', h('span', { className: 'text-slate-700' }, w.state)),
                                 h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, w.characteristics),
                                 h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', w.clinical)
                               );
@@ -4807,8 +4807,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                                   h('span', { className: 'ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, s.pct + ' of night')
                                 ),
                                 h('div', { className: 'flex gap-3 mb-1' },
-                                  h('span', { className: 'text-[10px] text-slate-500' }, '\u23F1 ', h('span', { className: 'font-bold' }, s.duration)),
-                                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, '\uD83C\uDF0A ', h('span', { className: 'font-bold' }, s.waves))
+                                  h('span', { className: 'text-[10px] text-slate-600' }, '\u23F1 ', h('span', { className: 'font-bold' }, s.duration)),
+                                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, '\uD83C\uDF0A ', h('span', { className: 'font-bold' }, s.waves))
                                 ),
                                 h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, s.desc),
                                 h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', s.clinical)
@@ -4823,7 +4823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
                           h('button', { 'aria-label': 'Clear',
                             onClick: function() { upd('_compareStructure', null); },
-                            className: 'text-[10px] font-bold text-slate-500 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
+                            className: 'text-[10px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
                           }, '\u2715 Clear')
                         ),
                         h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
@@ -4841,22 +4841,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           ),
                           h('tbody', null,
                             h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'System'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'System'),
                               h('td', { className: 'py-1 text-slate-600' }, sys.name),
                               h('td', { className: 'py-1 text-slate-600' }, sys.name)
                             ),
                             h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'View'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'View'),
                               h('td', { className: 'py-1 text-slate-600' }, sel.v === 'b' ? 'Both' : sel.v === 'a' ? 'Anterior' : 'Posterior'),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.v === 'b' ? 'Both' : compareSel.v === 'a' ? 'Anterior' : 'Posterior')
                             ),
                             sel.origin && compareSel.origin ? h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'Origin'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'Origin'),
                               h('td', { className: 'py-1 text-slate-600' }, sel.origin),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.origin)
                             ) : null,
                             sel.insertion && compareSel.insertion ? h('tr', null,
-                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'Insertion'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'Insertion'),
                               h('td', { className: 'py-1 text-slate-600' }, sel.insertion),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.insertion)
                             ) : null
@@ -4867,7 +4867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ) : (
                     // Structure list
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1 max-h-[460px] overflow-y-auto pr-1' },
-                      filtered.length === 0 && h('p', { className: 'text-xs text-slate-500 italic py-4 text-center' }, 'No structures match your search.'),
+                      filtered.length === 0 && h('p', { className: 'text-xs text-slate-600 italic py-4 text-center' }, 'No structures match your search.'),
                       filtered.map(function(st) {
                         return h('button', { 'aria-label': 'Change selected structure',
                           key: st.id,
@@ -4877,7 +4877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                         },
                           h('div', { className: 'font-bold text-slate-800' }, st.name),
-                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
                         );
                       })
                     )
@@ -4930,7 +4930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Badge section
             h('div', { className: 'mt-4 bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
+              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 BADGE_DEFS.map(function(bd) {
                   var earned = badges[bd.id];
@@ -4951,32 +4951,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // Structures Viewed
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-indigo-700' }, String(Object.keys(structuresViewed).length)),
-                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Structures')
+                  h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Structures')
                 ),
                 // Systems Explored
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-emerald-600' }, String(Object.keys(systemsExplored).length) + '/10'),
-                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Systems')
+                  h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Systems')
                 ),
                 // Quiz Score
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-amber-600' }, String(totalCorrect)),
-                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Quiz Correct')
+                  h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Quiz Correct')
                 ),
                 // Spotter Score
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-rose-600' }, String(spotterScore)),
-                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Spotter IDs')
+                  h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Spotter IDs')
                 ),
                 // Pathways Completed
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-teal-600' }, String(Object.keys(pathwaysCompleted).length)),
-                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Pathways')
+                  h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Pathways')
                 ),
                 // Comparisons
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-purple-600' }, String(comparisons)),
-                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Comparisons')
+                  h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Comparisons')
                 )
               ),
               // Secondary stats row
@@ -5009,7 +5009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               // Progress bar
               h('div', { className: 'mt-2' },
                 h('div', { className: 'flex justify-between mb-1' },
-                  h('span', { className: 'text-[11px] text-slate-500 font-semibold' }, 'System Progress'),
+                  h('span', { className: 'text-[11px] text-slate-600 font-semibold' }, 'System Progress'),
                   h('span', { className: 'text-[11px] font-bold text-indigo-600' }, progressPct + '%')
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-1.5' },

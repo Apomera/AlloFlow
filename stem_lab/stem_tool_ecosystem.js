@@ -2211,7 +2211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         ),
 
         // ── Grade intro ──
-        h('p', { className: 'text-xs text-slate-600 dark:text-slate-400 italic' }, getGradeIntro(gradeBand)),
+        h('p', { className: 'text-xs text-slate-600 dark:text-slate-500 italic' }, getGradeIntro(gradeBand)),
 
 
         // ── Biome Selector ──
@@ -2357,13 +2357,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 },
                   h('span', null, eventIcons[ev.name] || '\u26A1'),
                   h('span', { className: 'font-semibold' }, ev.name),
-                  h('span', { className: 'ml-auto text-slate-500' }, timeLabel)
+                  h('span', { className: 'ml-auto text-slate-600' }, timeLabel)
                 );
               })
             ),
             h('div', { className: 'flex items-center gap-2 mt-1 pt-1 border-t border-slate-200 dark:border-slate-600' },
-              h('span', { className: 'text-[11px] text-slate-500' }, 'Total events: ' + eventHistory.length),
-              h('span', { className: 'text-[11px] text-slate-500 ml-auto' },
+              h('span', { className: 'text-[11px] text-slate-600' }, 'Total events: ' + eventHistory.length),
+              h('span', { className: 'text-[11px] text-slate-600 ml-auto' },
                 'Unique: ' + Object.keys(eventsTriggered).length + '/5'
               )
             )
@@ -2736,7 +2736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     h('span', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-200') }, ch.name),
                     done && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-green-500 font-bold ml-auto' }, '\u2714')
                   ),
-                  h('p', { className: 'text-[11px] text-slate-500 dark:text-slate-400 mb-1' }, ch.desc),
+                  h('p', { className: 'text-[11px] text-slate-500 dark:text-slate-500 mb-1' }, ch.desc),
                   h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
                     done ? '\u2714 Completed!' : '\u2B50 +' + ch.reward + ' RP')
                 );
@@ -2913,15 +2913,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var vegNow = lastPop && lastPop.vegHealth !== undefined ? Math.round(lastPop.vegHealth * 100) : 50;
               return [
                 h('div', { key: 'sbp', className: 'bg-green-50 dark:bg-green-900/20 rounded p-1.5' },
-                  h('div', { className: 'text-[11px] text-slate-500' }, '\uD83D\uDC07 Prey'),
+                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDC07 Prey'),
                   h('div', { className: 'text-sm font-bold text-green-600' }, preyNow)
                 ),
                 h('div', { key: 'sbd', className: 'bg-red-50 dark:bg-red-900/20 rounded p-1.5' },
-                  h('div', { className: 'text-[11px] text-slate-500' }, '\uD83E\uDD8A Predators'),
+                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83E\uDD8A Predators'),
                   h('div', { className: 'text-sm font-bold text-red-600' }, predNow)
                 ),
                 h('div', { key: 'sbv', className: 'bg-emerald-50 dark:bg-emerald-900/20 rounded p-1.5' },
-                  h('div', { className: 'text-[11px] text-slate-500' }, '\uD83C\uDF3F Vegetation'),
+                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83C\uDF3F Vegetation'),
                   h('div', { className: 'text-sm font-bold text-emerald-600' }, vegNow + '%')
                 )
               ];
@@ -2937,7 +2937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('li', null, 'Erase: Click near an entity to remove it'),
               h('li', null, 'Move: Click and drag an entity to reposition it')
             ),
-            h('p', { className: 'text-[10px] italic text-slate-500' }, 'Tip: Pause the simulation first for precise placement!')
+            h('p', { className: 'text-[10px] italic text-slate-600' }, 'Tip: Pause the simulation first for precise placement!')
           ),
 
           // ── Sandbox experiment suggestions ──
@@ -3052,8 +3052,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-lg', style: { filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 h('div', null,
                   h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-500') }, b.label),
-                  h('p', { className: 'text-[11px] text-slate-500' }, b.desc),
-                  earned && h('span', { className: 'text-[8px] text-emerald-500 font-bold' }, '\u2714 EARNED')
+                  h('p', { className: 'text-[11px] text-slate-600' }, b.desc),
+                  earned && h('span', { className: 'text-[10px] text-emerald-500 font-bold' }, '\u2714 EARNED')
                 )
               );
             })

@@ -1824,7 +1824,7 @@ const d = labToolData.solarSystem;
 
                     return React.createElement("div", { key: item[1], className: "bg-white rounded-xl p-2.5 text-center border border-slate-200 hover:border-indigo-200 transition-colors" },
 
-                      React.createElement("p", { className: "text-[9px] text-slate-400 font-bold uppercase tracking-wider" }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, item[0] + ' ' + item[1]),
 
                       React.createElement("p", { className: "text-xs font-bold text-slate-800 mt-0.5" }, item[2])
 
@@ -1839,7 +1839,7 @@ const d = labToolData.solarSystem;
                   // Gravity bar
                   React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
                     React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                      React.createElement("span", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "\u2696\uFE0F Gravity vs Earth"),
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "\u2696\uFE0F Gravity vs Earth"),
                       React.createElement("span", { className: "text-[10px] font-bold text-indigo-600" }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
                     ),
                     React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
@@ -1849,7 +1849,7 @@ const d = labToolData.solarSystem;
                   // Size bar
                   React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
                     React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                      React.createElement("span", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "\uD83D\uDCCF Radius vs Earth"),
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "\uD83D\uDCCF Radius vs Earth"),
                       React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
                     React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
@@ -3165,9 +3165,9 @@ const d = labToolData.solarSystem;
                             React.createElement("div", { className: "flex-1 min-w-0" },
                               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                                 React.createElement("span", { className: "text-xs font-bold text-white" }, moon.name),
-                                React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium" }, moon.type)
+                                React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium" }, moon.type)
                               ),
-                              React.createElement("div", { className: "flex gap-3 mt-1 text-[9px] text-slate-400" },
+                              React.createElement("div", { className: "flex gap-3 mt-1 text-[10px] text-slate-400" },
                                 React.createElement("span", null, "\u2300 " + moon.diameter),
                                 React.createElement("span", null, "\u21C4 " + moon.dist + " from " + sel.name)
                               ),
@@ -3200,10 +3200,10 @@ const d = labToolData.solarSystem;
                             React.createElement("div", { className: "bg-white/5 rounded-lg p-2 border border-white/10 hover:border-white/20 transition-all", style: { borderLeftColor: layer.color, borderLeftWidth: '3px' } },
                               React.createElement("div", { className: "flex items-center justify-between mb-1" },
                                 React.createElement("span", { className: "text-xs font-bold", style: { color: layer.color } }, layer.name),
-                                React.createElement("span", { className: "text-[9px] text-slate-500 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
+                                React.createElement("span", { className: "text-[10px] text-slate-500 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
                               ),
                               React.createElement("p", { className: "text-[10px] text-slate-300 mb-1" }, layer.desc),
-                              React.createElement("div", { className: "flex gap-3 text-[9px] text-slate-400" },
+                              React.createElement("div", { className: "flex gap-3 text-[10px] text-slate-400" },
                                 React.createElement("span", null, "\uD83C\uDF21 " + layer.temp),
                                 React.createElement("span", null, "\uD83D\uDCA8 " + layer.pressure)
                               )
@@ -3250,7 +3250,7 @@ const d = labToolData.solarSystem;
                         })
                       )
                     ),
-                    ESCAPE_VEL[sel.name] && React.createElement("p", { className: "text-[9px] text-slate-500 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.name] + " km/s" + (sel.name !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
+                    ESCAPE_VEL[sel.name] && React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.name] + " km/s" + (sel.name !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
                   )
                 ),
 
@@ -3260,16 +3260,16 @@ const d = labToolData.solarSystem;
                   React.createElement("div", { className: "bg-white/5 rounded-lg p-3 border border-white/10" },
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                       React.createElement("div", { className: "bg-yellow-500/10 rounded-lg p-2 text-center border border-yellow-500/20" },
-                        React.createElement("p", { className: "text-[9px] text-yellow-400/70" }, "\u2600\uFE0F Sun Size"),
+                        React.createElement("p", { className: "text-[10px] text-yellow-400/70" }, "\u2600\uFE0F Sun Size"),
                         React.createElement("p", { className: "text-xs font-bold text-yellow-300" }, SKY_VIEWS[sel.name].sunSize)
                       ),
                       React.createElement("div", { className: "bg-blue-500/10 rounded-lg p-2 text-center border border-blue-500/20" },
-                        React.createElement("p", { className: "text-[9px] text-blue-400/70" }, "\uD83D\uDC41 Visible"),
+                        React.createElement("p", { className: "text-[10px] text-blue-400/70" }, "\uD83D\uDC41 Visible"),
                         React.createElement("p", { className: "text-[10px] font-bold text-blue-300" }, SKY_VIEWS[sel.name].visible.length + " object" + (SKY_VIEWS[sel.name].visible.length !== 1 ? 's' : ''))
                       )
                     ),
                     React.createElement("div", { className: "mb-2" },
-                      React.createElement("p", { className: "text-[9px] text-slate-400 font-bold mb-1" }, "VISIBLE OBJECTS:"),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold mb-1" }, "VISIBLE OBJECTS:"),
                       SKY_VIEWS[sel.name].visible.map(function(obj, oi) {
                         return React.createElement("div", { key: oi, className: "flex items-center gap-1.5 py-0.5" },
                           React.createElement("span", { className: "text-[10px]" }, "\u2B50"),
@@ -3287,7 +3287,7 @@ const d = labToolData.solarSystem;
                   React.createElement("div", { className: "space-y-2" },
                     // Atmosphere composition
                     React.createElement("div", { className: "bg-white/5 rounded-lg p-2.5 border border-white/10" },
-                      React.createElement("p", { className: "text-[9px] text-slate-400 font-bold mb-1.5" }, "\uD83C\uDF2C\uFE0F ATMOSPHERE"),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold mb-1.5" }, "\uD83C\uDF2C\uFE0F ATMOSPHERE"),
                       React.createElement("p", { className: "text-[10px] text-slate-300 leading-relaxed" }, sel.atmosphere || 'No significant atmosphere'),
                       // Visual gas bars
                       (function() {
@@ -3304,7 +3304,7 @@ const d = labToolData.solarSystem;
                         return React.createElement("div", { className: "mt-2 space-y-1" },
                           gases.map(function(g) {
                             return React.createElement("div", { key: g[0], className: "flex items-center gap-2" },
-                              React.createElement("span", { className: "text-[9px] text-slate-400 w-8 text-right font-mono" }, g[0]),
+                              React.createElement("span", { className: "text-[10px] text-slate-400 w-8 text-right font-mono" }, g[0]),
                               React.createElement("div", { className: "flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden" },
                                 React.createElement("div", { className: "h-full rounded-full", style: { width: Math.max(2, g[1]) + '%', backgroundColor: g[2] } })
                               ),
@@ -3316,13 +3316,13 @@ const d = labToolData.solarSystem;
                     ),
                     // Surface composition
                     React.createElement("div", { className: "bg-white/5 rounded-lg p-2.5 border border-white/10" },
-                      React.createElement("p", { className: "text-[9px] text-slate-400 font-bold mb-1.5" }, "\uD83E\uDEA8 SURFACE"),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold mb-1.5" }, "\uD83E\uDEA8 SURFACE"),
                       React.createElement("p", { className: "text-[10px] text-slate-300 leading-relaxed" }, sel.surface || 'Surface data unavailable'),
                       sel.surfaceDesc && React.createElement("p", { className: "text-[10px] text-sky-300 mt-1" }, "\uD83D\uDCA1 " + sel.surfaceDesc)
                     ),
                     // Key facts
                     EXTRA_FACTS[sel.name] && React.createElement("div", { className: "bg-white/5 rounded-lg p-2.5 border border-white/10" },
-                      React.createElement("p", { className: "text-[9px] text-slate-400 font-bold mb-1.5" }, "\u2728 KEY FACTS"),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold mb-1.5" }, "\u2728 KEY FACTS"),
                       EXTRA_FACTS[sel.name].slice(0, 4).map(function(fact, fi) {
                         return React.createElement("p", { key: fi, className: "text-[10px] text-slate-300 py-0.5" }, "\u2022 " + fact);
                       })
@@ -3758,15 +3758,15 @@ const d = labToolData.solarSystem;
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#fff' : '#cbd5e1' } }, layer.name),
-                          React.createElement("span", { className: "text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10", style: { color: '#94a3b8' } },
+                          React.createElement("span", { className: "text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10", style: { color: '#94a3b8' } },
                             (layer.alt >= 0 ? '+' : '') + layer.alt + ' km'
                           )
                         ),
                         React.createElement("p", { className: "text-[10px] mt-0.5", style: { color: isActive ? '#e2e8f0' : '#64748b' } }, layer.desc)
                       ),
                       React.createElement("div", { className: "text-right flex-shrink-0" },
-                        React.createElement("div", { className: "text-[9px] font-bold", style: { color: '#f59e0b' } }, layer.temp),
-                        React.createElement("div", { className: "text-[9px]", style: { color: '#60a5fa' } }, layer.pressure)
+                        React.createElement("div", { className: "text-[10px] font-bold", style: { color: '#f59e0b' } }, layer.temp),
+                        React.createElement("div", { className: "text-[10px]", style: { color: '#60a5fa' } }, layer.pressure)
                       )
                     );
                   })
@@ -8634,7 +8634,7 @@ const d = labToolData.solarSystem;
                     React.createElement("p", { className: "text-xs font-bold text-emerald-800 mb-1" }, "\uD83D\uDCA1 " + POE_PROMPTS[sel.name].concept.toUpperCase()),
                     React.createElement("p", { className: "text-xs text-emerald-700 leading-relaxed" }, POE_PROMPTS[sel.name].reveal),
                     VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 bg-white rounded-lg p-2 border border-emerald-100" },
-                      React.createElement("span", { className: "text-[9px] font-black text-emerald-600" }, "\uD83D\uDCD6 VOCABULARY: "),
+                      React.createElement("span", { className: "text-[10px] font-black text-emerald-600" }, "\uD83D\uDCD6 VOCABULARY: "),
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, POE_PROMPTS[sel.name].concept),
                       React.createElement("span", { className: "text-[10px] text-slate-500" }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.name].concept].def))
                   ),
@@ -8699,13 +8699,13 @@ const d = labToolData.solarSystem;
 
                       d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak"),
 
-                      React.createElement("span", { className: "ml-auto text-[9px] text-slate-400" }, (d.quizAsked || []).length + '/' + QUIZ_BANK.length + ' asked')
+                      React.createElement("span", { className: "ml-auto text-[10px] text-slate-400" }, (d.quizAsked || []).length + '/' + QUIZ_BANK.length + ' asked')
 
                     ),
 
                     d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200" },
 
-                      d.quiz.concept && React.createElement("div", { className: "text-[9px] font-bold text-indigo-400 mb-1 tracking-wider" }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
+                      d.quiz.concept && React.createElement("div", { className: "text-[10px] font-bold text-indigo-400 mb-1 tracking-wider" }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
 
                       React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, d.quiz.q),
 
@@ -8745,7 +8745,7 @@ const d = labToolData.solarSystem;
                         React.createElement("p", { className: "text-xs font-bold text-emerald-600 mt-2" }, "\u2705 The answer is " + d.quiz.a + ": " + d.quiz.tip),
                         // Link to vocabulary if concept matches
                         d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 bg-white rounded p-2 border border-slate-100" },
-                          React.createElement("span", { className: "text-[9px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
+                          React.createElement("span", { className: "text-[10px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
                           React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, d.quiz.concept + ': '),
                           React.createElement("span", { className: "text-[10px] text-slate-500" }, VOCAB[d.quiz.concept].def))
                       ),
@@ -9565,7 +9565,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-black text-slate-600" }, "\uD83D\uDDFA\uFE0F Learning Path"),
-                  d.learningPath && React.createElement("span", { className: "text-[9px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold" }, d.learningPath)
+                  d.learningPath && React.createElement("span", { className: "text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold" }, d.learningPath)
                 ),
                 React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                   Object.keys(LEARNING_PATHS).map(function(k) {
@@ -9576,7 +9576,7 @@ const d = labToolData.solarSystem;
                     },
                       React.createElement("div", { className: "text-sm mb-0.5" }, lp.icon),
                       React.createElement("div", { className: "text-[10px] font-bold " + (active ? 'text-indigo-700' : 'text-slate-700') }, lp.name),
-                      React.createElement("div", { className: "text-[9px] text-slate-400" }, lp.desc)
+                      React.createElement("div", { className: "text-[10px] text-slate-400" }, lp.desc)
                     );
                   })
                 ),
@@ -9595,7 +9595,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-black text-slate-600" }, "\uD83D\uDCD3 Field Journal"),
-                  React.createElement("span", { className: "text-[9px] text-slate-400" }, journalEntries.length + ' entries')
+                  React.createElement("span", { className: "text-[10px] text-slate-400" }, journalEntries.length + ' entries')
                 ),
                 React.createElement("button", {
                   onClick: function() { upd('showJournal', !d.showJournal); },
@@ -9606,19 +9606,19 @@ const d = labToolData.solarSystem;
                   sel && React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200 space-y-2" },
                     React.createElement("div", { className: "text-[10px] font-bold text-amber-800" }, "\uD83D\uDCDD New Entry: " + sel.name),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "What I predicted:"),
+                      React.createElement("label", { className: "text-[10px] font-bold text-amber-600 block mb-0.5" }, "What I predicted:"),
                       React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "What I observed:"),
+                      React.createElement("label", { className: "text-[10px] font-bold text-amber-600 block mb-0.5" }, "What I observed:"),
                       React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: "I noticed that...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "What surprised me:"),
+                      React.createElement("label", { className: "text-[10px] font-bold text-amber-600 block mb-0.5" }, "What surprised me:"),
                       React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: "I was surprised that...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "One question I still have:"),
+                      React.createElement("label", { className: "text-[10px] font-bold text-amber-600 block mb-0.5" }, "One question I still have:"),
                       React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: "I wonder...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("button", {
@@ -9635,7 +9635,7 @@ const d = labToolData.solarSystem;
                   ),
                   // Previous entries
                   journalEntries.length > 0 && React.createElement("div", { className: "space-y-1" },
-                    React.createElement("div", { className: "text-[9px] font-bold text-slate-400 mt-2" }, "Previous Entries:"),
+                    React.createElement("div", { className: "text-[10px] font-bold text-slate-400 mt-2" }, "Previous Entries:"),
                     journalEntries.slice().reverse().slice(0, 5).map(function(entry, ei) {
                       return React.createElement("div", { key: ei, className: "bg-white rounded-lg p-2 border border-slate-100 text-[10px]" },
                         React.createElement("div", { className: "flex justify-between items-center mb-1" },
@@ -9671,7 +9671,7 @@ const d = labToolData.solarSystem;
                 d.showVocab && d.vocabSelected && VOCAB[d.vocabSelected] && React.createElement("div", { className: "mt-2 bg-indigo-50 rounded-lg p-3 border border-indigo-200" },
                   React.createElement("div", { className: "text-xs font-bold text-indigo-800 mb-1" }, d.vocabSelected),
                   React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" }, VOCAB[d.vocabSelected].def),
-                  React.createElement("div", { className: "text-[9px] text-slate-400 mt-1" }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
+                  React.createElement("div", { className: "text-[10px] text-slate-400 mt-1" }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
                 )
               ),
 
@@ -9688,7 +9688,7 @@ const d = labToolData.solarSystem;
                     return React.createElement("div", { key: asn.id, className: "rounded-lg border p-3 transition-all " + (active ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200') },
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
                         React.createElement("span", { className: "text-[10px] font-bold " + (active ? 'text-blue-700' : 'text-slate-700') }, asn.name),
-                        React.createElement("span", { className: "text-[9px] text-slate-400" }, "Grades " + asn.gradeRange)
+                        React.createElement("span", { className: "text-[10px] text-slate-400" }, "Grades " + asn.gradeRange)
                       ),
                       React.createElement("div", { className: "space-y-1" },
                         asn.tasks.map(function(task, ti) {
@@ -9722,7 +9722,7 @@ const d = labToolData.solarSystem;
                     onClick: exportProgressCSV,
                     className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-all"
                   }, "\uD83D\uDCCA Export Progress (CSV)"),
-                  React.createElement("span", { className: "text-[9px] text-slate-400" }, "For teacher review")
+                  React.createElement("span", { className: "text-[10px] text-slate-400" }, "For teacher review")
                 ),
                 // Quick stats summary
                 React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1" },

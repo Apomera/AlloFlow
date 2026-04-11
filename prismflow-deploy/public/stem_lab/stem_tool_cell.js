@@ -3331,7 +3331,7 @@ var d = labToolData.cell;
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
 
-              React.createElement("span", { className: "text-xs text-slate-500 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
@@ -3505,7 +3505,7 @@ var d = labToolData.cell;
 
                           ),
 
-                          React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5" }, "Move your organism to interact with the environment")
+                          React.createElement("p", { className: "text-[10px] text-slate-600 mt-0.5" }, "Move your organism to interact with the environment")
 
                         )
 
@@ -3689,7 +3689,7 @@ var d = labToolData.cell;
 
                   return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[10px] py-0.5" },
 
-                    React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-500 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
+                    React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-600 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
 
                     React.createElement("span", { className: discovered ? "text-slate-700 font-semibold" : "text-slate-600" }, fact)
 
@@ -3703,7 +3703,7 @@ var d = labToolData.cell;
 
               selDef.anatomy && React.createElement("div", { className: "mt-2 border-t border-slate-100 pt-2" },
 
-                React.createElement("p", { className: "text-[10px] font-black text-slate-500 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
+                React.createElement("p", { className: "text-[10px] font-black text-slate-600 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 

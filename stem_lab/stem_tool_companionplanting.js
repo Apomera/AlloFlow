@@ -3489,9 +3489,9 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
                     h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, '🧪 The NPK Cycle'),
                     h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
-                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[9px] text-blue-300' }, 'Nitrogen'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives leaf growth')),
-                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[9px] text-orange-300' }, 'Phosphorus'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives roots & fruit')),
-                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[9px] text-purple-300' }, 'Potassium'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives health & water'))),
+                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[10px] text-blue-300' }, 'Nitrogen'), h('div', { className: 'text-[10px] text-slate-600' }, 'Drives leaf growth')),
+                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[10px] text-orange-300' }, 'Phosphorus'), h('div', { className: 'text-[10px] text-slate-600' }, 'Drives roots & fruit')),
+                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[10px] text-purple-300' }, 'Potassium'), h('div', { className: 'text-[10px] text-slate-600' }, 'Drives health & water'))),
                     h('p', null, plant.nEffect < 0
                       ? '⬇️ ' + plant.label + ' is a heavy feeder — it consumes nitrogen faster than the soil replaces it. Without legume neighbors or compost, nitrogen depletes over time.'
                       : plant.nEffect > 0
@@ -3560,7 +3560,7 @@ var d = (labToolData.companionPlanting) || {};
                         // Net carbon
                         h('div', { className: 'text-center text-[10px] font-bold ' + (netCarbon > 0 ? 'text-green-400' : 'text-red-400') },
                           'Net carbon: ' + (netCarbon > 0 ? '+' + netCarbon + '% → Growth!' : netCarbon + '% → Using stored energy')),
-                        h('p', { className: 'text-[9px] text-slate-400 mt-1' },
+                        h('p', { className: 'text-[10px] text-slate-500 mt-1' },
                           cgSeason === 3 ? '❄️ Winter: minimal sunlight. Plant relies on stored sugars. Photosynthesis nearly stopped.'
                           : cgSeason === 1 ? '☀️ Summer: peak sunlight drives maximum photosynthesis. Watch water — transpiration is high.'
                           : cgSeason === 0 ? '🌱 Spring: increasing daylight ramps up photosynthesis. Growth accelerating.'
@@ -3572,7 +3572,7 @@ var d = (labToolData.companionPlanting) || {};
                             h('span', { className: 'text-blue-300 font-mono' }, transpRate + '%')),
                           h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
                             h('div', { style: { width: transpRate + '%' }, className: 'h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all' }))),
-                        h('p', { className: 'text-[9px] text-slate-400' }, 'Water evaporates from leaf stomata, pulling more water up from roots (transpiration stream). ' + (transpRate > 60 ? 'High transpiration — soil drying quickly!' : 'Moderate transpiration — soil moisture is stable.')));
+                        h('p', { className: 'text-[10px] text-slate-600' }, 'Water evaporates from leaf stomata, pulling more water up from roots (transpiration stream). ' + (transpRate > 60 ? 'High transpiration — soil drying quickly!' : 'Moderate transpiration — soil moisture is stable.')));
                     })()))),
 
               // ── FUNGAL NETWORK VIEW ──
@@ -3584,11 +3584,11 @@ var d = (labToolData.companionPlanting) || {};
                     h('p', null, 'Beneath your garden, an invisible internet of fungal threads (hyphae) connects 90% of plant species. These mycorrhizal fungi form symbiotic partnerships with roots:'),
                     h('div', { className: 'my-2 bg-purple-800/30 rounded-lg p-2 text-center' },
                       h('div', { className: 'flex items-center justify-center gap-3' },
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[9px] text-purple-300' }, 'Plant')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[10px] text-purple-300' }, 'Plant')),
                         h('div', { className: 'text-purple-400 text-sm' }, '← sugars (C₆H₁₂O₆)'),
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[9px] text-purple-300' }, 'Fungus')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[10px] text-purple-300' }, 'Fungus')),
                         h('div', { className: 'text-purple-400 text-sm' }, 'phosphorus (PO₄³⁻) →'),
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[9px] text-purple-300' }, 'Plant')))),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[10px] text-purple-300' }, 'Plant')))),
                     h('p', null, 'The fungus extends the plant\'s root system by 100-1000×, accessing water and phosphorus the roots can\'t reach. In return, the plant shares 10-30% of its photosynthesized sugars. Both benefit — neither survives as well alone.')),
                   h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
                     h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, '📡 Chemical Signaling'),
@@ -3718,18 +3718,18 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-2xl' }, '📋'),
                     h('div', { className: 'font-black text-sm' }, prevSeason + ' Season Report Card'),
-                    h('div', { className: 'text-[10px] text-slate-400' }, 'Day ' + cgDay + ' · Score: ' + cgScore + ' pts · Harvested: ' + cgTotalHarvested)),
+                    h('div', { className: 'text-[10px] text-slate-600' }, 'Day ' + cgDay + ' · Score: ' + cgScore + ' pts · Harvested: ' + cgTotalHarvested)),
                   h('div', { className: 'grid grid-cols-2 gap-2' },
                     grades.map(function(g, i) {
                       return h('div', { key: i, className: 'bg-slate-700/50 rounded-lg p-2 flex items-center gap-2' },
                         h('div', { className: 'text-xl font-black ' + (gradeColors[g.mark] || 'text-slate-400') }, g.mark),
                         h('div', null,
                           h('div', { className: 'text-[10px] font-bold text-slate-300' }, g.area),
-                          h('div', { className: 'text-[9px] text-slate-400' }, g.note)));
+                          h('div', { className: 'text-[10px] text-slate-600' }, g.note)));
                     })),
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-3xl font-black ' + (gradeColors[overallGrade] || '') }, overallGrade),
-                    h('div', { className: 'text-[10px] text-slate-400' }, 'Overall Season Grade')),
+                    h('div', { className: 'text-[10px] text-slate-600' }, 'Overall Season Grade')),
                   h('div', { className: 'text-[10px] text-amber-200/70 text-center italic' },
                     overallGrade === 'A' ? '🌟 Outstanding garden stewardship! Your ecosystem is thriving.' :
                     overallGrade === 'B' ? '🌿 Good progress! Focus on diversity and soil health to reach the next level.' :
@@ -4293,7 +4293,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'space-y-0.5' },
                       friends.slice(0, 8).map(function(g, i) {
                         var aP = CG_PLANTS[g.comp.a]; var bP = CG_PLANTS[g.comp.b];
-                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[9px] px-2 py-0.5 rounded ' + (g.active ? 'bg-emerald-50' : 'bg-slate-50') },
+                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded ' + (g.active ? 'bg-emerald-50' : 'bg-slate-50') },
                           h('span', null, (aP ? aP.emoji : '') + ' + ' + (bP ? bP.emoji : '')),
                           h('span', { className: 'font-bold text-emerald-600' }, '+' + g.comp.bonus + '%'),
                           h('span', { className: 'text-slate-600 truncate' }, g.comp.desc),
@@ -4304,7 +4304,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'space-y-0.5' },
                       enemies.slice(0, 6).map(function(g, i) {
                         var aP = CG_PLANTS[g.comp.a]; var bP = CG_PLANTS[g.comp.b];
-                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[9px] px-2 py-0.5 rounded ' + (g.active ? 'bg-red-50' : 'bg-slate-50') },
+                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded ' + (g.active ? 'bg-red-50' : 'bg-slate-50') },
                           h('span', null, (aP ? aP.emoji : '') + ' ✕ ' + (bP ? bP.emoji : '')),
                           h('span', { className: 'font-bold text-red-500' }, g.comp.bonus + '%'),
                           h('span', { className: 'text-slate-600 truncate' }, g.comp.desc),
@@ -4330,7 +4330,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('div', { className: 'flex items-center gap-1.5' },
                         h('span', null, ch.emoji),
                         h('span', { className: 'text-[10px] font-bold ' + (completed ? 'text-emerald-700' : 'text-slate-800') }, ch.title),
-                        completed && h('span', { className: 'text-[9px]' }, '✅')),
+                        completed && h('span', { className: 'text-[10px]' }, '✅')),
                       h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, ch.difficulty + ' · ' + ch.ngss));
                   }))),
 
@@ -4354,7 +4354,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'text-xs font-bold text-indigo-800' }, '🎯 ' + ch.title + (isComplete ? ' — ✅ COMPLETE!' : '')),
                       h('div', { className: 'text-[10px] text-indigo-600' }, ch.goal)),
-                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-400 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
+                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-500 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
                   !isComplete && h('div', { className: 'text-[10px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-1' }, '💡 Hint: ' + ch.hint));
               })(),
 
@@ -4384,7 +4384,7 @@ var d = (labToolData.companionPlanting) || {};
                       { label: 'K', val: cgPotassium, color: '#8b5cf6', tip: 'Potassium' }
                     ].map(function(r) {
                       return h('div', { key: r.label, className: 'flex items-center gap-1.5', title: r.tip + ': ' + Math.round(r.val) + '/100' },
-                        h('span', { className: 'text-[9px] font-bold w-3', style: { color: r.color } }, r.label),
+                        h('span', { className: 'text-[10px] font-bold w-3', style: { color: r.color } }, r.label),
                         h('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
                           h('div', { style: { width: Math.round(r.val) + '%', backgroundColor: r.val < 15 ? '#ef4444' : r.color }, className: 'h-full rounded-full transition-all' })
                         ),
@@ -4392,14 +4392,14 @@ var d = (labToolData.companionPlanting) || {};
                       );
                     })
                   ),
-                  h('div', { className: 'flex justify-between mt-1.5 text-[9px]' },
+                  h('div', { className: 'flex justify-between mt-1.5 text-[10px]' },
                     h('span', { className: 'text-amber-600', title: 'Soil pH (ideal 6.0-7.0 for most crops)' }, 'pH: ' + cgPH),
                     h('span', { className: 'text-amber-600', title: 'Organic matter % (higher = better water retention)' }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
                   ),
                   // Soil actions
                   h('div', { className: 'flex gap-1 mt-1.5' },
-                    h('button', { onClick: cgAddLime, title: 'Add lime to raise pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[8px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, '\u2B06 Lime'),
-                    h('button', { onClick: cgAddSulfur, title: 'Add sulfur to lower pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[8px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u2B07 Sulfur')
+                    h('button', { onClick: cgAddLime, title: 'Add lime to raise pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[10px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, '\u2B06 Lime'),
+                    h('button', { onClick: cgAddSulfur, title: 'Add sulfur to lower pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[10px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u2B07 Sulfur')
                   )
                 ),
                 // Economics + Pest Panel
@@ -4412,7 +4412,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('span', null, 'Spent: $' + cgExpenses.toFixed(2)),
                       h('span', null, 'Earned: $' + cgRevenue.toFixed(2))
                     ),
-                    (cgRevenue - cgExpenses) !== 0 && h('div', { className: 'text-[9px] font-bold mt-0.5 ' + ((cgRevenue - cgExpenses) >= 0 ? 'text-green-500' : 'text-red-500') },
+                    (cgRevenue - cgExpenses) !== 0 && h('div', { className: 'text-[10px] font-bold mt-0.5 ' + ((cgRevenue - cgExpenses) >= 0 ? 'text-green-500' : 'text-red-500') },
                       (cgRevenue - cgExpenses) >= 0 ? '\u2B06 Profit: $' + (cgRevenue - cgExpenses).toFixed(2) : '\u2B07 Loss: $' + Math.abs(cgRevenue - cgExpenses).toFixed(2))
                   ),
                   // Pest ecosystem
@@ -4424,10 +4424,10 @@ var d = (labToolData.companionPlanting) || {};
                     ),
                     // IPM action buttons
                     h('div', { className: 'grid grid-cols-2 gap-1 mt-1.5' },
-                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: 'Release ladybugs ($1.50)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, '\uD83D\uDC1E Ladybugs'),
-                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: 'Neem spray ($1.00)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, '\uD83C\uDF3F Neem'),
-                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: 'Hand-pick pests (free)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u270B Pick'),
-                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: 'Row covers ($2.00)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, '\uD83E\uDDF5 Covers')
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: 'Release ladybugs ($1.50)', className: 'px-1 py-1 text-[10px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, '\uD83D\uDC1E Ladybugs'),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: 'Neem spray ($1.00)', className: 'px-1 py-1 text-[10px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, '\uD83C\uDF3F Neem'),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: 'Hand-pick pests (free)', className: 'px-1 py-1 text-[10px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u270B Pick'),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: 'Row covers ($2.00)', className: 'px-1 py-1 text-[10px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, '\uD83E\uDDF5 Covers')
                     )
                   )
                 )
@@ -4448,7 +4448,7 @@ var d = (labToolData.companionPlanting) || {};
               cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { className: 'text-[10px] font-bold text-emerald-700' }, '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor'),
-                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[9px] text-slate-400 hover:text-slate-600' }, '\u2715')
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[10px] text-slate-500 hover:text-slate-600' }, '\u2715')
                 ),
                 h('p', { className: 'text-[10px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
               ),
@@ -4476,7 +4476,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('div', { className: 'flex items-center gap-2 mb-1' },
                         h('span', null, ref.emoji || '📝'),
                         h('span', { className: 'text-[10px] font-bold text-violet-800' }, ref.title || entry.id),
-                        h('span', { className: 'text-[9px] text-slate-400 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
+                        h('span', { className: 'text-[10px] text-slate-600 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, entry.response));
                   })))
             );
@@ -4978,7 +4978,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         onCooldown
 
-                          ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
+                          ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
 
                           : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
 
@@ -5527,11 +5527,11 @@ var d = (labToolData.companionPlanting) || {};
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-2" },
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[8px] font-bold text-green-600 mb-0.5" }, '\u2705 Pros'),
+                        React.createElement("div", { className: "text-[10px] font-bold text-green-600 mb-0.5" }, '\u2705 Pros'),
                         sys.pros.map(function(p, pi) { return React.createElement("div", { key: pi, className: "text-[10px] text-slate-600" }, '\u2022 ' + p); })
                       ),
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[8px] font-bold text-red-500 mb-0.5" }, '\u26A0 Cons'),
+                        React.createElement("div", { className: "text-[10px] font-bold text-red-500 mb-0.5" }, '\u26A0 Cons'),
                         sys.cons.map(function(c, ci) { return React.createElement("div", { key: ci, className: "text-[10px] text-slate-600" }, '\u2022 ' + c); })
                       )
                     )
@@ -5588,7 +5588,7 @@ var d = (labToolData.companionPlanting) || {};
                     );
                   })
                 ),
-                React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-[8px]" },
+                React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-[10px]" },
                   React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-green-500" }), ' Homegrown'),
                   React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }), ' Grocery Store'),
                   React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-red-500" }), ' Imported')
@@ -5621,7 +5621,7 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("div", { className: "flex-1 h-3 rounded-full bg-slate-100 overflow-hidden" },
                         React.createElement("div", { className: "h-full rounded-full transition-all", style: { width: pct + '%', background: crop.color } })
                       ),
-                      React.createElement("span", { className: "text-[8px] font-bold w-20 text-right", style: { color: crop.color } }, crop.gallons.toLocaleString() + ' gal/' + crop.unit.split(' ')[1])
+                      React.createElement("span", { className: "text-[10px] font-bold w-20 text-right", style: { color: crop.color } }, crop.gallons.toLocaleString() + ' gal/' + crop.unit.split(' ')[1])
                     );
                   })
                 ),
@@ -5649,7 +5649,7 @@ var d = (labToolData.companionPlanting) || {};
                     className: "cursor-pointer rounded-xl p-2 border transition-all text-center " + (isActive ? 'bg-violet-100 border-violet-400 col-span-3' : 'bg-white border-violet-100 hover:border-violet-300')
                   },
                     React.createElement("div", { className: "text-lg" }, p.icon),
-                    React.createElement("div", { className: "text-[8px] font-black text-violet-700" }, '#' + p.num + ' ' + p.name),
+                    React.createElement("div", { className: "text-[10px] font-black text-violet-700" }, '#' + p.num + ' ' + p.name),
                     isActive && React.createElement("div", { className: "text-left mt-1.5" },
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, p.desc),
                       React.createElement("div", { className: "text-[11px] text-emerald-600 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
@@ -5842,7 +5842,7 @@ var d = (labToolData.companionPlanting) || {};
                   return React.createElement("div", { className: "rounded-xl p-2.5 border bg-white text-center", style: { borderColor: step.color + '40' } },
                     React.createElement("div", { className: "text-[10px] font-bold", style: { color: step.color } }, 'Step ' + step.step + ': ' + step.name),
                     React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, step.desc),
-                    step.step === 2 && React.createElement("div", { className: "text-[8px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
+                    step.step === 2 && React.createElement("div", { className: "text-[10px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
                   );
                 })()
               )
@@ -5911,7 +5911,7 @@ var d = (labToolData.companionPlanting) || {};
                     isActive && React.createElement("div", { className: "mt-1.5 pl-7 space-y-1" },
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
                         season.plants.map(function(p, pi) {
-                          return React.createElement("span", { key: pi, className: "px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-emerald-100 text-emerald-700" }, p);
+                          return React.createElement("span", { key: pi, className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700" }, p);
                         })
                       ),
                       React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83D\uDEE0\uFE0F Tasks: " + season.tasks),
@@ -5939,7 +5939,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "relative h-6 rounded-full overflow-hidden mb-1", style: { background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e, #3b82f6, #8b5cf6)' } },
                   React.createElement("div", { className: "absolute inset-0 flex items-center justify-between px-2" },
                     [4, 5, 6, 7, 8].map(function(ph) {
-                      return React.createElement("span", { key: ph, className: "text-[8px] font-bold text-white drop-shadow" }, ph);
+                      return React.createElement("span", { key: ph, className: "text-[10px] font-bold text-white drop-shadow" }, ph);
                     })
                   )
                 ),
@@ -5956,7 +5956,7 @@ var d = (labToolData.companionPlanting) || {};
                     var width = ((plant.ph[1] - plant.ph[0]) / range) * 100;
                     return React.createElement("div", { key: pi, className: "flex items-center gap-1" },
                       React.createElement("span", { className: "w-5 text-center text-sm" }, plant.icon),
-                      React.createElement("span", { className: "w-16 text-[8px] font-bold text-slate-600 truncate" }, plant.name),
+                      React.createElement("span", { className: "w-16 text-[10px] font-bold text-slate-600 truncate" }, plant.name),
                       React.createElement("div", { className: "flex-1 relative h-3 bg-slate-100 rounded-full" },
                         React.createElement("div", {
                           className: "absolute h-full rounded-full",
@@ -6006,7 +6006,7 @@ var d = (labToolData.companionPlanting) || {};
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, pair.plant1 + ' + ' + pair.plant2)
                       ),
                       React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5" }, pair.benefit),
-                      isActive && React.createElement("div", { className: "mt-1 text-[8px] text-indigo-600 bg-indigo-50 rounded p-1 border border-indigo-100" },
+                      isActive && React.createElement("div", { className: "mt-1 text-[10px] text-indigo-600 bg-indigo-50 rounded p-1 border border-indigo-100" },
                         "\uD83D\uDD2C " + pair.science
                       )
                     );
@@ -6072,10 +6072,10 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "text-[10px] font-black", style: { color: soil.color } }, soil.name),
                     React.createElement("div", { className: "text-[10px] text-slate-600" }, soil.texture),
                     isActive && React.createElement("div", { className: "text-left mt-1.5 space-y-0.5" },
-                      React.createElement("div", { className: "text-[8px] text-blue-600" }, "\uD83D\uDCA7 Drainage: " + soil.drainage),
-                      React.createElement("div", { className: "text-[8px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + soil.nutrients),
-                      React.createElement("div", { className: "text-[8px] text-amber-600" }, "\u2B50 Best for: " + soil.bestFor),
-                      React.createElement("div", { className: "text-[8px] text-violet-600" }, "\uD83D\uDD27 Improve: " + soil.improve)
+                      React.createElement("div", { className: "text-[10px] text-blue-600" }, "\uD83D\uDCA7 Drainage: " + soil.drainage),
+                      React.createElement("div", { className: "text-[10px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + soil.nutrients),
+                      React.createElement("div", { className: "text-[10px] text-amber-600" }, "\u2B50 Best for: " + soil.bestFor),
+                      React.createElement("div", { className: "text-[10px] text-violet-600" }, "\uD83D\uDD27 Improve: " + soil.improve)
                     )
                   );
                 })
@@ -6135,8 +6135,8 @@ var d = (labToolData.companionPlanting) || {};
                           React.createElement("span", { className: "text-lg" }, bug.icon),
                           React.createElement("span", { className: "text-[10px] font-bold", style: { color: bug.color } }, bug.name)
                         ),
-                        React.createElement("div", { className: "text-[8px] text-slate-600" }, bug.role),
-                        React.createElement("div", { className: "text-[8px] text-emerald-600 mt-0.5" }, "\uD83C\uDF3C Attract with: " + bug.attract)
+                        React.createElement("div", { className: "text-[10px] text-slate-600" }, bug.role),
+                        React.createElement("div", { className: "text-[10px] text-emerald-600 mt-0.5" }, "\uD83C\uDF3C Attract with: " + bug.attract)
                       );
                     })
                   )

@@ -3689,7 +3689,7 @@ var d = labToolData.cell;
 
                   return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[10px] py-0.5" },
 
-                    React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-500 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
+                    React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-600 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
 
                     React.createElement("span", { className: discovered ? "text-slate-700 font-semibold" : "text-slate-600" }, fact)
 
@@ -3703,7 +3703,7 @@ var d = labToolData.cell;
 
               selDef.anatomy && React.createElement("div", { className: "mt-2 border-t border-slate-100 pt-2" },
 
-                React.createElement("p", { className: "text-[10px] font-black text-slate-500 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
+                React.createElement("p", { className: "text-[10px] font-black text-slate-600 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 
@@ -3860,8 +3860,8 @@ var d = labToolData.cell;
                   return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-200 opacity-50") },
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-500") }, b.label),
-                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-500") }, b.desc)
+                      React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),
+                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-600") }, b.desc)
                     )
                   );
                 })

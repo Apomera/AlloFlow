@@ -1235,7 +1235,7 @@
             React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: change >= 0 ? '#16a34a' : '#dc2626' } }, (change >= 0 ? '+' : '') + Math.round(change * 10) / 10), React.createElement("div", { className: "text-[10px] text-slate-600" }, "Change")),
             React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-indigo-600" }, '+' + (Math.round(weeklyGrowth * 10) / 10) + '/wk'), React.createElement("div", { className: "text-[10px] text-slate-600" }, "Growth Rate"))
           ),
-          React.createElement("div", { className: "flex justify-between text-[9px] text-slate-400" },
+          React.createElement("div", { className: "flex justify-between text-[10px] text-slate-500" },
             React.createElement("span", null, items.length + " probes over " + Math.round(weeks) + " weeks"),
             React.createElement("span", null, "Expected: +" + expectedRate + "/wk")
           ),
@@ -2527,7 +2527,7 @@
       }, icon), React.createElement('div', {
         className: 'text-lg font-black'
       }, value), React.createElement('div', {
-        className: 'text-[9px] opacity-70'
+        className: 'text-[10px] opacity-70'
       }, label)))), React.createElement('div', {
         className: 'grid grid-cols-3 gap-2 mb-3'
       }, ...[[surveyCount, 'Survey Responses', 'bg-purple-100 text-purple-700'], [totalProbes, 'Probe Results', 'bg-indigo-100 text-indigo-700'], [cbmCount, 'External CBM Scores', 'bg-teal-100 text-teal-700']].map(([val, label, cls]) => React.createElement('div', {
@@ -2536,7 +2536,7 @@
       }, React.createElement('div', {
         className: 'text-lg font-black'
       }, val), React.createElement('div', {
-        className: 'text-[9px] opacity-70'
+        className: 'text-[10px] opacity-70'
       }, label)))), React.createElement('div', {
         className: 'grid grid-cols-2 gap-2'
       }, responseRate !== null ? React.createElement('div', {

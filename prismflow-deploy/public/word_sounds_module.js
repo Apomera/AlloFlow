@@ -24,8 +24,79 @@
       '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
       '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
       '.fixed.inset-0 .text-slate-500 { color: #475569 !important; }',
+      '/* Word Sounds celebration animations */',
+      '@keyframes ws-confetti-fall { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(120px) rotate(720deg); opacity: 0; } }',
+      '@keyframes ws-star-burst { 0% { transform: scale(0) rotate(0deg); opacity: 1; } 50% { transform: scale(1.5) rotate(180deg); opacity: 1; } 100% { transform: scale(0) rotate(360deg); opacity: 0; } }',
+      '@keyframes ws-bounce-in { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }',
+      '@keyframes ws-glow-pulse { 0%, 100% { box-shadow: 0 0 8px rgba(74,222,128,0.3); } 50% { box-shadow: 0 0 24px rgba(74,222,128,0.6); } }',
+      '@keyframes ws-streak-fire { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }',
+      '@keyframes ws-float-up { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-40px) scale(1.5); opacity: 0; } }',
+      '@keyframes ws-shake-correct { 0%, 100% { transform: rotate(0deg); } 15% { transform: rotate(-8deg); } 30% { transform: rotate(8deg); } 45% { transform: rotate(-5deg); } 60% { transform: rotate(5deg); } 75% { transform: rotate(-2deg); } }',
+      '.ws-confetti { position: absolute; width: 8px; height: 8px; border-radius: 2px; animation: ws-confetti-fall 1.5s ease-out forwards; pointer-events: none; z-index: 100; }',
+      '.ws-star { position: absolute; font-size: 20px; animation: ws-star-burst 0.8s ease-out forwards; pointer-events: none; z-index: 100; }',
+      '.ws-bounce { animation: ws-bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
+      '.ws-glow { animation: ws-glow-pulse 1.5s ease-in-out 2; }',
+      '.ws-streak-bg { background: linear-gradient(90deg, #f59e0b, #ef4444, #f59e0b, #ef4444); background-size: 200% 100%; animation: ws-streak-fire 1s linear infinite; }',
+      '.ws-float-xp { animation: ws-float-up 1.2s ease-out forwards; pointer-events: none; position: absolute; z-index: 100; font-weight: 900; color: #fbbf24; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }',
+      '.ws-correct-shake { animation: ws-shake-correct 0.5s ease-out; }',
     ].join('\n');
     document.head.appendChild(wsA11yStyle);
+  }
+
+  // ── Celebration Effects — confetti, stars, XP float for K-2 engagement ──
+  function wsSpawnConfetti(count) {
+    try {
+      var container = document.querySelector('.fixed.inset-0') || document.body;
+      var colors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
+      for (var i = 0; i < (count || 12); i++) {
+        (function(delay) {
+          setTimeout(function() {
+            var el = document.createElement('div');
+            el.className = 'ws-confetti';
+            el.style.left = (10 + Math.random() * 80) + '%';
+            el.style.top = '30%';
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            el.style.width = (6 + Math.random() * 6) + 'px';
+            el.style.height = (6 + Math.random() * 6) + 'px';
+            el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            container.appendChild(el);
+            setTimeout(function() { try { el.remove(); } catch(e) {} }, 1600);
+          }, delay);
+        })(i * 40);
+      }
+    } catch(e) {}
+  }
+  function wsSpawnStars(count) {
+    try {
+      var container = document.querySelector('.fixed.inset-0') || document.body;
+      var emojis = ['\u2B50', '\uD83C\uDF1F', '\u2728', '\uD83D\uDCAB'];
+      for (var i = 0; i < (count || 5); i++) {
+        (function(delay) {
+          setTimeout(function() {
+            var el = document.createElement('div');
+            el.className = 'ws-star';
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = (20 + Math.random() * 60) + '%';
+            el.style.top = (20 + Math.random() * 40) + '%';
+            container.appendChild(el);
+            setTimeout(function() { try { el.remove(); } catch(e) {} }, 900);
+          }, delay);
+        })(i * 100);
+      }
+    } catch(e) {}
+  }
+  function wsSpawnXPFloat(text, x, y) {
+    try {
+      var container = document.querySelector('.fixed.inset-0') || document.body;
+      var el = document.createElement('div');
+      el.className = 'ws-float-xp';
+      el.textContent = text;
+      el.style.left = (x || 50) + '%';
+      el.style.top = (y || 40) + '%';
+      el.style.fontSize = '18px';
+      container.appendChild(el);
+      setTimeout(function() { try { el.remove(); } catch(e) {} }, 1300);
+    } catch(e) {}
   }
 
   // WCAG 2.4.3: Focus management for modal dialogs
@@ -8250,6 +8321,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             if (isCorrect) {
               setIsCelebrating(true);
               playSynthesizedSound("correct", newStreak);
+              // Visual celebrations — scale with streak!
+              wsSpawnConfetti(newStreak >= 5 ? 20 : newStreak >= 3 ? 15 : 8);
+              if (newStreak >= 3) wsSpawnStars(newStreak >= 5 ? 7 : 4);
+              wsSpawnXPFloat(newStreak >= 5 ? '🔥 +' + (5 + newStreak) + ' XP!' : newStreak >= 3 ? '⭐ +' + (5 + newStreak) + ' XP!' : '+5 XP', 50, 35);
+              if (window._alloHaptic) window._alloHaptic(newStreak >= 5 ? 'achieve' : 'correct');
               setTimeout(() => {
                 if (isMountedRef.current) setIsCelebrating(false);
               }, 2500);
@@ -13076,7 +13152,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                   "div",
                   {
-                    className: `flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border ${wordSoundsScore.streak > 4 ? "bg-amber-500/20 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.5)]" : "bg-white/20 border-transparent"}`,
+                    className: `flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border ${wordSoundsScore.streak > 9 ? "ws-streak-bg border-red-400 text-white shadow-[0_0_20px_rgba(239,68,68,0.6)]" : wordSoundsScore.streak > 4 ? "bg-amber-500/20 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.5)]" : "bg-white/20 border-transparent"}`,
                   },
                   wordSoundsScore.streak > 4
                     ? /*#__PURE__*/ React.createElement(
@@ -16713,7 +16789,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                   React.createElement(
                     "div",
-                    { className: "text-[9px] opacity-70" },
+                    { className: "text-[10px] opacity-70" },
                     label,
                   ),
                 ),
@@ -16744,7 +16820,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                   React.createElement(
                     "div",
-                    { className: "text-[9px] opacity-70" },
+                    { className: "text-[10px] opacity-70" },
                     label,
                   ),
                 ),

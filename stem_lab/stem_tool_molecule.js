@@ -861,7 +861,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("span", { className: "text-sm font-black" }, sym),
 
-                    React.createElement("span", { className: "text-[8px] opacity-70" }, el?.n || '')
+                    React.createElement("span", { className: "text-[10px] opacity-70" }, el?.n || '')
 
                   );
 
@@ -1878,7 +1878,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       if (!el) return React.createElement("div", { key: ri + '-' + ci });
 
-                      return React.createElement("button", { "aria-label": "Select element: " + el.name + " (" + el.s + ")", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[8px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
+                      return React.createElement("button", { "aria-label": "Select element: " + el.name + " (" + el.s + ")", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[10px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
 
                         React.createElement("span", { className: "font-black text-[10px] leading-none" }, el.s),
 
@@ -2197,7 +2197,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 relative" },
                 React.createElement("button", { "aria-label": "Dismiss Tutorial",
                   onClick: dismissTutorial,
-                  className: "absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 text-sm font-bold"
+                  className: "absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 text-sm font-bold"
                 }, "✕"),
 
                 React.createElement("p", { className: "text-2xl mb-1" }, ["🔬", "⚗️", "🧱", "🗂️", "🔥"][tutorialStep]),

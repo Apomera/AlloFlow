@@ -4419,7 +4419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-base' }, conn.icon),
                     h('span', { className: 'text-xs font-black text-sky-800' }, conn.title),
-                    h('span', { className: 'ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500' },
+                    h('span', { className: 'ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600' },
                       SYSTEMS[conn.systems[0]].icon + ' + ' + SYSTEMS[conn.systems[1]].icon
                     ),
                     isViewed ? h('span', { className: 'text-[10px] text-emerald-500 font-bold' }, '\u2713') : null
@@ -4574,7 +4574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   },
                   title: (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
                   className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' +
-                    (isOn ? 'text-white shadow-sm border-transparent' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
+                    (isOn ? 'text-white shadow-sm border-transparent' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
                   style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
                 }, ld.icon + ' ' + ld.name);
               }),
@@ -4622,16 +4622,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('button', { 'aria-label': 'Regions',
                 onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
                 title: 'Toggle body region labels',
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
               }, '\uD83C\uDFF7 Regions'),
               h('button', { 'aria-label': 'X-ray',
                 onClick: function() { upd('_xrayMode', !xrayMode); },
                 title: 'Toggle X-ray radiograph mode',
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
               }, '\u2622 X-ray'),
               // Skin tone selector (representation & inclusion)
               h('div', { className: 'flex items-center gap-1 ml-1', title: 'Skin tone (representation)' },
-                h('span', { className: 'text-[8px] text-slate-400 font-bold' }, '\uD83C\uDFA8'),
+                h('span', { className: 'text-[10px] text-slate-500 font-bold' }, '\uD83C\uDFA8'),
                 SKIN_TONES.map(function(tone) {
                   return h('button', {
                     key: tone.id,

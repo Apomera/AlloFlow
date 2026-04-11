@@ -1019,7 +1019,7 @@ window.StemLab = window.StemLab || {
               h("div", { className: "flex gap-1 flex-wrap" },
                 h("button", { onClick: function() { updMulti({ dnaSequence: randomDNA(21), mRNA: '', protein: [], animStep: 0 }); announceToSR('Random sequence'); }, className: "px-2 py-1 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100" }, "\uD83C\uDFB2 Random"),
                 PRESETS.map(function(p) {
-                  return h("button", { key: p.name, onClick: function() { updMulti({ dnaSequence: p.seq, mRNA: '', protein: [], animStep: 0 }); addToast('\uD83E\uDDEC ' + p.name + ': ' + p.desc, 'success'); announceToSR('Loaded ' + p.name); checkBadge('firstStrand'); }, className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100", title: p.desc }, p.name);
+                  return h("button", { key: p.name, onClick: function() { updMulti({ dnaSequence: p.seq, mRNA: '', protein: [], animStep: 0 }); addToast('\uD83E\uDDEC ' + p.name + ': ' + p.desc, 'success'); announceToSR('Loaded ' + p.name); checkBadge('firstStrand'); }, className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100", title: p.desc }, p.name);
                 })
               )
             ),
@@ -1075,7 +1075,7 @@ window.StemLab = window.StemLab || {
                 '\uD83E\uDDEC Replication initiates at origins (OriC in prokaryotes). Helicase unwinds; SSB proteins stabilize. Primase lays RNA primers. Pol III extends 5\u2032\u21923\u2032 (leading = continuous, lagging = Okazaki fragments). Pol I replaces primers; ligase seals nicks. Proofreading by 3\u2032\u21925\u2032 exonuclease achieves ~10\u207B\u2079 error rate.'
               )
             ),
-            h("div", { className: "flex gap-3 flex-wrap text-[11px] text-slate-500 pt-2 border-t border-slate-100" },
+            h("div", { className: "flex gap-3 flex-wrap text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-violet-500" }), 'Helicase'),
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-emerald-500" }), 'DNA Pol III'),
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-sky-400" }), 'Leading (continuous)'),
@@ -1095,7 +1095,7 @@ window.StemLab = window.StemLab || {
             h("button", { onClick: function() { if (animPlaying) upd('animPlaying', false); else { if (animStep >= dnaSeq.length) updMulti({ animStep: 0, mRNA: '', animPlaying: true }); else upd('animPlaying', true); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (animPlaying ? "bg-amber-700 text-white" : "bg-violet-600 text-white hover:bg-violet-700") }, animPlaying ? "\u23F8 Pause" : "\u25B6 Transcribe"),
             h("button", { onClick: function() { updMulti({ animStep: 0, mRNA: '', animPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, "\u21BA Reset"),
             h("div", { className: "flex items-center gap-2 ml-auto" }, h("span", { className: "text-xs text-slate-600" }, "Speed:"),
-              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[10px] font-bold rounded-lg " + (speed === s ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500") }, s + "x"); })
+              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[10px] font-bold rounded-lg " + (speed === s ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600") }, s + "x"); })
             )
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" },
@@ -1117,7 +1117,7 @@ window.StemLab = window.StemLab || {
               (fullMRNA.match(/.{1,3}/g) || []).map(function(codon, idx) {
                 var isActive = idx === transStep && transPlaying;
                 var isPast = idx < transStep;
-                return h("span", { key: idx, className: "inline-block px-1 py-0.5 mx-0.5 rounded text-xs font-bold " + (isActive ? "bg-violet-600 text-white scale-110" : isPast ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-500"), title: codon + ' \u2192 ' + (CODON_TABLE[codon] || '?') }, codon);
+                return h("span", { key: idx, className: "inline-block px-1 py-0.5 mx-0.5 rounded text-xs font-bold " + (isActive ? "bg-violet-600 text-white scale-110" : isPast ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"), title: codon + ' \u2192 ' + (CODON_TABLE[codon] || '?') }, codon);
               })
             ),
             h("div", { className: "flex flex-wrap gap-1 items-center", role: "list" },
@@ -1332,7 +1332,7 @@ window.StemLab = window.StemLab || {
                 fullProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa, abbr: '?', type: '?' };
                   return h("div", { key: idx, className: "flex flex-col items-center gap-0.5 p-1.5 rounded-lg min-w-[44px] hover:scale-105 transition-transform cursor-default", title: pr.full + ' (' + p.codon + ') - ' + pr.type },
                     h("span", { className: "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-sm", style: { background: pr.color } }, pr.abbr),
-                    h("span", { className: "text-[8px] font-bold text-slate-600" }, p.aa),
+                    h("span", { className: "text-[10px] font-bold text-slate-600" }, p.aa),
                     h("span", { className: "text-[7px] text-slate-600 font-mono" }, p.codon),
                     idx < fullProtein.length - 1 && p.aa !== 'Stop' ? h("span", { className: "text-[10px] text-slate-600" }, '\u2500') : null
                   );
@@ -1342,22 +1342,22 @@ window.StemLab = window.StemLab || {
                 h("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-100" },
                   h("p", { className: "text-[11px] font-bold text-amber-700 uppercase" }, 'Nonpolar (Hydrophobic)'),
                   h("p", { className: "text-sm font-black text-amber-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'nonpolar'; }).length),
-                  h("p", { className: "text-[8px] text-amber-500" }, 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly')
+                  h("p", { className: "text-[10px] text-amber-500" }, 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly')
                 ),
                 h("div", { className: "bg-blue-50 rounded-lg p-2 border border-blue-100" },
                   h("p", { className: "text-[11px] font-bold text-blue-700 uppercase" }, 'Polar (Hydrophilic)'),
                   h("p", { className: "text-sm font-black text-blue-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'polar'; }).length),
-                  h("p", { className: "text-[8px] text-blue-500" }, 'Ser, Thr, Cys, Tyr, Asn, Gln')
+                  h("p", { className: "text-[10px] text-blue-500" }, 'Ser, Thr, Cys, Tyr, Asn, Gln')
                 ),
                 h("div", { className: "bg-red-50 rounded-lg p-2 border border-red-100" },
                   h("p", { className: "text-[11px] font-bold text-red-700 uppercase" }, 'Positively Charged'),
                   h("p", { className: "text-sm font-black text-red-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'positive'; }).length),
-                  h("p", { className: "text-[8px] text-red-500" }, 'Arg, Lys, His')
+                  h("p", { className: "text-[10px] text-red-500" }, 'Arg, Lys, His')
                 ),
                 h("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-100" },
                   h("p", { className: "text-[11px] font-bold text-purple-700 uppercase" }, 'Negatively Charged'),
                   h("p", { className: "text-sm font-black text-purple-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'negative'; }).length),
-                  h("p", { className: "text-[8px] text-purple-500" }, 'Asp, Glu')
+                  h("p", { className: "text-[10px] text-purple-500" }, 'Asp, Glu')
                 )
               ),
               h("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-200 mt-1" },
@@ -1389,7 +1389,7 @@ window.StemLab = window.StemLab || {
                 return h("div", { key: dis.name, className: "p-2 bg-slate-50 rounded-lg" },
                   h("div", { className: "flex items-center gap-2" },
                     h("span", { className: "text-xs font-bold text-slate-700" }, dis.name),
-                    h("span", { className: "px-1.5 py-0.5 bg-rose-100 text-rose-600 text-[8px] font-bold rounded-full" }, dis.type)
+                    h("span", { className: "px-1.5 py-0.5 bg-rose-100 text-rose-600 text-[10px] font-bold rounded-full" }, dis.type)
                   ),
                   h("p", { className: "text-[10px] text-slate-600 mt-0.5" }, 'Gene: ' + dis.gene + ' | Mutation: ' + dis.mutation),
                   h("p", { className: "text-[10px] text-slate-600 mt-0.5" }, dis.effect)
@@ -1561,7 +1561,7 @@ window.StemLab = window.StemLab || {
                 }, disabled: d.aiChallengeLoading, className: "px-5 py-2.5 text-sm font-bold transition-all rounded-xl shadow-lg " + (d.aiChallengeLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:shadow-xl') }, d.aiChallengeLoading ? '\u23F3 Generating...' : '\u2728 AI Challenge')
               )
             ) : h("div", { className: "space-y-3" },
-              challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+              challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
               h("p", { className: "text-sm font-medium text-slate-700" }, challengeQ.question),
               h("input", { type: "text", value: challengeAnswer, onChange: function(e) { upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkChallenge(); }, placeholder: "Type your answer...", className: "w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-violet-400 outline-none", 'aria-label': 'Answer' }),
               h("div", { className: "flex gap-2 flex-wrap" },
@@ -1652,7 +1652,7 @@ window.StemLab = window.StemLab || {
                 var q = getCurrentBattleQ();
                 if (!q) return null;
                 return h("div", { className: "space-y-3" },
-                  battleUseAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+                  battleUseAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
                   h("p", { className: "text-sm font-medium text-slate-700" }, q.q),
                   h("input", { type: "text", value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: "Type your answer...", className: "w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none", 'aria-label': 'Battle answer' }),
                   h("div", { className: "flex gap-2" },

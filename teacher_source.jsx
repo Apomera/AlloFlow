@@ -232,7 +232,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                           <span key={name} className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
                             {name}
                             {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                              <span className="text-[9px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                              <span className="text-[10px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
@@ -345,7 +345,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                   <span key={name} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-full text-xs font-medium border border-amber-200">
                     {name}
                     {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                      <span className="text-[9px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                      <span className="text-[10px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
                         {rosterKey.progressHistory[name].length}s
                       </span>
                     )}
@@ -417,7 +417,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
                 x={x + barWidth / 2}
                 y={height - 5}
                 textAnchor="middle"
-                className="fill-slate-400 text-[9px] uppercase tracking-wider font-medium"
+                className="fill-slate-400 text-[10px] uppercase tracking-wider font-medium"
               >
                 {d.label.length > 5 ? d.label.substring(0, 4) + '.' : d.label}
               </text>
@@ -2281,7 +2281,7 @@ const LearnerProgressView = React.memo(({
                                     <span className="text-lg">🔥</span>
                                     <div>
                                         <div className="text-sm font-black text-orange-600">{wordSoundsScore.streak} Streak</div>
-                                        <div className="text-[9px] text-orange-400 font-bold uppercase">{t('learner.current_run')}</div>
+                                        <div className="text-[10px] text-orange-400 font-bold uppercase">{t('learner.current_run')}</div>
                                     </div>
                                 </div>
                             )}
@@ -2302,7 +2302,7 @@ const LearnerProgressView = React.memo(({
                                         <span className="text-lg">📅</span>
                                         <div>
                                             <div className="text-sm font-black text-red-600">{dayStreak} Days</div>
-                                            <div className="text-[9px] text-red-400 font-bold uppercase">{t('learner.daily_streak')}</div>
+                                            <div className="text-[10px] text-red-400 font-bold uppercase">{t('learner.daily_streak')}</div>
                                         </div>
                                     </div>
                                 ) : null;
@@ -2446,7 +2446,7 @@ const LearnerProgressView = React.memo(({
                                             {locked.slice(0, 4).map(m => (
                                                 <div key={m.name} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-center opacity-50" title={m.desc}>
                                                     <div className="text-sm grayscale">{m.icon}</div>
-                                                    <div className="text-[9px] font-bold text-slate-500">{m.name}</div>
+                                                    <div className="text-[10px] font-bold text-slate-500">{m.name}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -3791,9 +3791,9 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                         const h = Math.max(4, (p.wcpm / maxWcpm) * chartH);
                                                         const color = p.wcpm >= 100 ? '#059669' : p.wcpm >= 60 ? '#d97706' : '#dc2626';
                                                         return React.createElement('div', { key: i, className: 'flex flex-col items-center', style: { width: barW + 'px' } },
-                                                            React.createElement('div', { className: 'text-[9px] font-bold mb-1', style: { color } }, p.wcpm),
+                                                            React.createElement('div', { className: 'text-[10px] font-bold mb-1', style: { color } }, p.wcpm),
                                                             React.createElement('div', { style: { width: (barW - 4) + 'px', height: h + 'px', background: color, borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' } }),
-                                                            React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1 text-center', style: { width: barW + 'px' } }, 
+                                                            React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1 text-center', style: { width: barW + 'px' } }, 
                                                                 p.date ? new Date(p.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : '')
                                                         );
                                                     })

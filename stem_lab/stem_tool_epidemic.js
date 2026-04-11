@@ -1489,7 +1489,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'relative h-6 bg-slate-200 rounded-full overflow-hidden' },
               h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, vaccRate) + '%', background: vaccRate >= herdThresh && herdThresh > 0 ? '#22c55e' : '#3b82f6' } }),
               herdThresh > 0 && herdThresh < 100 && h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-red-500', style: { left: herdThresh + '%' } }),
-              herdThresh > 0 && h('div', { className: 'absolute -top-5 text-[8px] font-bold text-red-600', style: { left: Math.min(90, herdThresh) + '%' } }, 'Threshold: ' + herdThresh.toFixed(0) + '%')
+              herdThresh > 0 && h('div', { className: 'absolute -top-5 text-[10px] font-bold text-red-600', style: { left: Math.min(90, herdThresh) + '%' } }, 'Threshold: ' + herdThresh.toFixed(0) + '%')
             ),
             h('div', { className: 'flex justify-between text-[10px] text-slate-600 mt-1' },
               h('span', null, '0% Vaccinated'),
@@ -1687,11 +1687,11 @@ window.StemLab = window.StemLab || {
                 }, '+ Add Zone'),
                 mapQuarantineZones.length > 0 && h('button', { 'aria-label': 'Clear',
                   onClick: function() { upd('mapQuarantineZones', []); },
-                  className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-500 rounded-lg'
+                  className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, 'Clear')
               )
             ),
-            mapQuarantineZones.length > 0 && h('p', { className: 'text-[8px] text-amber-600 italic' }, 'Quarantine zones reduce transmission by 80% and speed recovery by 50% within the zone.'),
+            mapQuarantineZones.length > 0 && h('p', { className: 'text-[10px] text-amber-600 italic' }, 'Quarantine zones reduce transmission by 80% and speed recovery by 50% within the zone.'),
             // Hospital capacity bar
             h('div', null,
               h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFE5 Hospital Capacity'),
@@ -1701,7 +1701,7 @@ window.StemLab = window.StemLab || {
                 return h('div', null,
                   h('div', { className: 'relative h-5 bg-slate-200 rounded-full overflow-hidden' },
                     h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, hospPct) + '%', background: exceeded ? '#ef4444' : hospPct > 70 ? '#f59e0b' : '#22c55e' } }),
-                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-[8px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
+                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-[10px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
                       hospPct.toFixed(0) + '% used (' + hospitalBeds + '% beds)')
                   ),
                   exceeded && h('p', { className: 'text-[11px] font-bold text-red-600 mt-0.5' }, '\u26A0\uFE0F HOSPITALS OVERWHELMED \u2014 mortality increases!')
@@ -1908,7 +1908,7 @@ window.StemLab = window.StemLab || {
                           { label: 'Transmission', value: p.transmission, color: '#6366f1' }
                         ].map(function(s) {
                           return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
-                            h('p', { className: 'text-[8px] font-bold text-slate-600 uppercase' }, s.label),
+                            h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, s.label),
                             h('p', { className: 'text-[10px] font-bold', style: { color: s.color } }, s.value)
                           );
                         })
@@ -1981,7 +1981,7 @@ window.StemLab = window.StemLab || {
                   { label: 'Symptoms', value: scenarioData.symptoms || 'Varies', color: '#ef4444' }
                 ].map(function(s) {
                   return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
-                    h('p', { className: 'text-[8px] font-bold text-slate-600 uppercase' }, s.label),
+                    h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, s.label),
                     h('p', { className: 'text-[10px] font-bold', style: { color: s.color } }, s.value)
                   );
                 })
@@ -2048,7 +2048,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { 'aria-label': 'Change chal answer',
                   key: t,
                   onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null }); },
-                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-500 border border-slate-200')
+                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-200')
                 }, labels[t]);
               })
             ),
@@ -2063,7 +2063,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-purple-600 font-bold' }, 'AI generating question...')
             ) : h('div', { className: 'space-y-3' },
               activeChalQ && h('div', null,
-                d.chalUseAI != null && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full mr-2' }, '\uD83E\uDDE0 AI'),
+                d.chalUseAI != null && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full mr-2' }, '\uD83E\uDDE0 AI'),
                 h('p', { className: 'text-sm font-medium text-slate-700 mt-1' }, activeChalQ.q)
               ),
               h('input', {
@@ -2144,7 +2144,7 @@ window.StemLab = window.StemLab || {
                 var q = getCurrentBattleQ();
                 if (!q) return null;
                 return h('div', { className: 'space-y-3' },
-                  battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
+                  battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },

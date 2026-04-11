@@ -731,18 +731,58 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       return `<a${attrs}>${href ? href[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`;
     });
 
-    // 7. Ensure skip-to-content link exists
+    // 7. Ensure skip-to-content link exists (visible on focus, high contrast)
     if (!accessibleHtml.includes('Skip to') && !accessibleHtml.includes('skip-nav')) {
       accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => {
         aiFixCount++;
-        return m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>';
+        return m + '\n<a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;background:#1e293b;color:#ffffff;padding:8px 16px;font-size:14px;font-weight:bold;text-decoration:none;border-radius:0 0 8px 0;border:2px solid #fbbf24">Skip to main content</a>';
       });
+      // Add CSS to make skip link visible on focus with WCAG AA contrast
+      if (accessibleHtml.includes('</head>')) {
+        accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration:underline!important}</style>\n</head>');
+        aiFixCount++;
+      }
     }
 
     // 8. Ensure main landmark exists
     if (!accessibleHtml.includes('<main')) {
       accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => { aiFixCount++; return m + '\n<main id="main-content" role="main">'; });
       accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
+    }
+
+    // 8b. Ensure nav landmark exists (wrap any table of contents or link lists)
+    if (!accessibleHtml.includes('<nav') && !accessibleHtml.includes('role="navigation"')) {
+      // Look for a TOC-like structure (heading + list of links at the top)
+      var tocMatch = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)/i);
+      if (tocMatch) {
+        var tocIdx = accessibleHtml.indexOf(tocMatch[0]);
+        if (tocIdx >= 0) {
+          accessibleHtml = accessibleHtml.substring(0, tocIdx) + '<nav role="navigation" aria-label="Table of Contents">' + accessibleHtml.substring(tocIdx);
+          // Find the closing </ul> or </ol> after the TOC
+          var listTag = tocMatch[3];
+          var closingTag = '</' + listTag + '>';
+          var closeIdx = accessibleHtml.indexOf(closingTag, tocIdx + tocMatch[0].length);
+          if (closeIdx >= 0) {
+            accessibleHtml = accessibleHtml.substring(0, closeIdx + closingTag.length) + '</nav>' + accessibleHtml.substring(closeIdx + closingTag.length);
+            aiFixCount++;
+          }
+        }
+      }
+    }
+
+    // 8c. Ensure footer landmark exists (wrap any footer-like content at the end)
+    if (!accessibleHtml.includes('<footer') && !accessibleHtml.includes('role="contentinfo"')) {
+      // Look for common footer patterns (copyright, date, attribution near end of body)
+      var footerPatterns = [/(<p[^>]*>.*?(?:copyright|©|\u00a9|generated|created|source:|author:).*?<\/p>)\s*<\/main>/i,
+                           /(<div[^>]*>.*?(?:copyright|©|\u00a9|AlloFlow|generated on).*?<\/div>)\s*<\/main>/i];
+      for (var fpi = 0; fpi < footerPatterns.length; fpi++) {
+        var footerMatch = accessibleHtml.match(footerPatterns[fpi]);
+        if (footerMatch) {
+          accessibleHtml = accessibleHtml.replace(footerMatch[0], '</main>\n<footer role="contentinfo">' + footerMatch[1] + '</footer>');
+          aiFixCount++;
+          break;
+        }
+      }
     }
 
     // 9. Fix heading level skips (h1→h3 becomes h1→h2)
@@ -2430,37 +2470,144 @@ HTML section ${chunkNum}/${chunks.length}:
         .join('\n');
 
       try {
-        const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
+        // ── Chunked remediation: split large documents into sections, fix each, reassemble ──
+        // This prevents truncation from Gemini's output token limit (~8K tokens).
+        const MAX_CHUNK = 12000; // chars per chunk (leaves room for prompt + output)
 
-VIOLATIONS DETECTED BY AXE-CORE (automated WCAG 2.1 AA checker):
+        if (currentHtml.length <= MAX_CHUNK) {
+          // Small document: single-pass fix
+          const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
+
+VIOLATIONS TO FIX:
 ${violationInstructions}
-
-COMMON FIXES:
-- color-contrast: Use darker text (e.g., #1e293b on white) for 4.5:1+ ratio
-- image-alt: Add descriptive alt="" to <img> elements
-- html-has-lang: Add lang="en" to <html>
-- document-title: Add non-empty <title>
-- heading-order: Fix h1→h2→h3 hierarchy, no skipped levels
-- link-name: Add text or aria-label to <a> elements
-- label: Add <label> or aria-label to inputs/selects
-- list: Ensure <li> inside <ul>/<ol>
-- th scope: Add scope="col" or scope="row" to <th>
 
 RULES:
 - Fix ONLY the listed violations. Do not restructure working content.
-- Preserve ALL content — do not remove or shorten anything.
-- Return the COMPLETE HTML document (<!DOCTYPE html> to </html>).
+- Preserve ALL content word-for-word. Do not remove, shorten, or summarize ANY text.
+- Return the COMPLETE HTML document from <!DOCTYPE html> to </html>.
+- Do NOT truncate. Every word from the original must appear in your output.
 
 HTML TO FIX:
 """
-${currentHtml.substring(0, 30000)}${currentHtml.length > 30000 ? '\n[... document continues, ' + currentHtml.length + ' chars total — fix violations in the portion shown and propagate fixes to similar patterns throughout ...]' : ''}
+${currentHtml}
 """
 
 Return ONLY the complete fixed HTML.`, true);
 
-        if (fixedHtml && fixedHtml.length > currentHtml.length * 0.5) {
-          currentHtml = fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') ? fixedHtml : currentHtml;
+          if (fixedHtml && fixedHtml.length > currentHtml.length * 0.5) {
+            currentHtml = fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') ? fixedHtml : currentHtml;
+          }
+        } else {
+          // ── Large document: chunked remediation ──
+          // Strategy: extract <head>, split <body> content into chunks at block-level
+          // boundaries (</section>, </div>, </p>, </table>), fix each chunk, reassemble.
+          setPdfFixStep(`Large document (${Math.round(currentHtml.length / 1000)}KB) — chunking into sections for complete remediation...`);
+
+          // Extract head and body
+          const headMatch = currentHtml.match(/<head[\s>][\s\S]*?<\/head>/i);
+          const headSection = headMatch ? headMatch[0] : '';
+          const bodyMatch = currentHtml.match(/<body[\s\S]*?>([\s\S]*)<\/body>/i);
+          const bodyContent = bodyMatch ? bodyMatch[1] : currentHtml;
+
+          // Split body at major block boundaries
+          const splitPoints = [];
+          const blockEnds = ['</section>', '</article>', '</div>', '</table>', '</ul>', '</ol>', '</blockquote>'];
+          let searchFrom = 0;
+          while (searchFrom < bodyContent.length) {
+            let bestSplit = -1;
+            let bestTag = '';
+            // Find the next block-level closing tag after MAX_CHUNK chars
+            if (searchFrom + MAX_CHUNK >= bodyContent.length) {
+              splitPoints.push(bodyContent.length);
+              break;
+            }
+            // Look for a split point near the MAX_CHUNK boundary
+            for (let si = 0; si < blockEnds.length; si++) {
+              const idx = bodyContent.indexOf(blockEnds[si], searchFrom + MAX_CHUNK * 0.7);
+              if (idx !== -1 && idx < searchFrom + MAX_CHUNK * 1.3 && (bestSplit === -1 || idx < bestSplit)) {
+                bestSplit = idx + blockEnds[si].length;
+                bestTag = blockEnds[si];
+              }
+            }
+            if (bestSplit === -1) {
+              // No good split point found — split at MAX_CHUNK chars at nearest '>'
+              let fallback = searchFrom + MAX_CHUNK;
+              const nextClose = bodyContent.indexOf('>', fallback);
+              if (nextClose !== -1 && nextClose - fallback < 500) fallback = nextClose + 1;
+              splitPoints.push(fallback);
+              searchFrom = fallback;
+            } else {
+              splitPoints.push(bestSplit);
+              searchFrom = bestSplit;
+            }
+          }
+
+          // Create chunks
+          const bodyChunks = [];
+          let prevEnd = 0;
+          for (let spi = 0; spi < splitPoints.length; spi++) {
+            bodyChunks.push(bodyContent.substring(prevEnd, splitPoints[spi]));
+            prevEnd = splitPoints[spi];
+          }
+
+          // Fix each chunk individually (sequential to avoid rate limits)
+          const fixedChunks = [];
+          for (let chi = 0; chi < bodyChunks.length; chi++) {
+            const chunk = bodyChunks[chi];
+            setPdfFixStep(`Fixing section ${chi + 1}/${bodyChunks.length} (${Math.round(chunk.length / 1000)}KB)...`);
+
+            try {
+              const fixedChunk = await callGemini(`You are an accessibility remediation expert. Fix accessibility violations in this HTML SECTION.
+
+VIOLATIONS TO FIX (apply relevant ones to this section):
+${violationInstructions}
+
+RULES:
+- This is section ${chi + 1} of ${bodyChunks.length} of a larger document.
+- Fix ONLY accessibility issues. Do not restructure content.
+- PRESERVE EVERY WORD of the original text. Do not remove, shorten, or summarize anything.
+- Return ONLY the fixed HTML fragment (not a full document — just the section content).
+- Do NOT add <!DOCTYPE>, <html>, <head>, or <body> tags — just return the fixed content.
+
+HTML SECTION ${chi + 1}/${bodyChunks.length}:
+"""
+${chunk}
+"""
+
+Return the fixed section content only.`, true);
+
+              if (fixedChunk && fixedChunk.trim().length > chunk.length * 0.4) {
+                // Clean AI artifacts
+                let cleaned = fixedChunk
+                  .replace(/^```html?\s*/i, '').replace(/```\s*$/i, '')
+                  .replace(/^<!DOCTYPE[^>]*>\s*/i, '').replace(/<\/?html[^>]*>\s*/gi, '')
+                  .replace(/<\/?head[^>]*>[\s\S]*?<\/head>\s*/gi, '').replace(/<\/?body[^>]*>\s*/gi, '')
+                  .trim();
+                fixedChunks.push(cleaned);
+              } else {
+                fixedChunks.push(chunk); // Keep original if AI returned garbage
+              }
+            } catch (chunkErr) {
+              warnLog(`[AutoFix] Chunk ${chi + 1} failed:`, chunkErr?.message);
+              fixedChunks.push(chunk); // Keep original on error
+            }
+          }
+
+          // Reassemble the complete document
+          const preamble = currentHtml.match(/^[\s\S]*?<body[^>]*>/i);
+          const postamble = '</body></html>';
+          const reassembled = (preamble ? preamble[0] : '<!DOCTYPE html><html lang="en"><head>' + headSection + '</head><body>') +
+            '\n' + fixedChunks.join('\n') + '\n' + postamble;
+
+          if (reassembled.length > currentHtml.length * 0.7) {
+            currentHtml = reassembled;
+          }
         }
+
+        // ── Fix literal \n in output (AI sometimes returns escaped newlines) ──
+        currentHtml = currentHtml.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+        // Remove JSON wrapper artifacts
+        currentHtml = currentHtml.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '').replace(/\\"/g, '"');
       } catch (fixErr) {
         warnLog(`[Auto-fix] Pass ${passCount} failed:`, fixErr);
         break;
@@ -3407,12 +3554,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           return `<a${attrs}>${href ? href[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`;
         });
 
-        // 7. Ensure skip-to-content link exists
+        // 7. Ensure skip-to-content link exists (visible on focus, high contrast)
         if (!accessibleHtml.includes('Skip to') && !accessibleHtml.includes('skip-nav')) {
           accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (match) => {
             aiFixCount++;
-            return match + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>';
+            return match + '\n<a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;background:#1e293b;color:#ffffff;padding:8px 16px;font-size:14px;font-weight:bold;text-decoration:none;border-radius:0 0 8px 0;border:2px solid #fbbf24">Skip to main content</a>';
           });
+          // Inject focus-visible CSS for skip link
+          if (accessibleHtml.includes('</head>')) {
+            accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration:underline!important}</style>\n</head>');
+            aiFixCount++;
+          }
         }
 
         // 8. Ensure main landmark exists
@@ -3422,6 +3574,33 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             return match + '\n<main id="main-content" role="main">';
           });
           accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
+        }
+
+        // 8b. Ensure nav landmark (wrap TOC-like structures)
+        if (!accessibleHtml.includes('<nav') && !accessibleHtml.includes('role="navigation"')) {
+          var tocMatch2 = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)/i);
+          if (tocMatch2) {
+            var tocIdx2 = accessibleHtml.indexOf(tocMatch2[0]);
+            if (tocIdx2 >= 0) {
+              accessibleHtml = accessibleHtml.substring(0, tocIdx2) + '<nav role="navigation" aria-label="Table of Contents">' + accessibleHtml.substring(tocIdx2);
+              var listTag2 = tocMatch2[3];
+              var closeTag2 = '</' + listTag2 + '>';
+              var closeIdx2 = accessibleHtml.indexOf(closeTag2, tocIdx2 + tocMatch2[0].length);
+              if (closeIdx2 >= 0) {
+                accessibleHtml = accessibleHtml.substring(0, closeIdx2 + closeTag2.length) + '</nav>' + accessibleHtml.substring(closeIdx2 + closeTag2.length);
+                aiFixCount++;
+              }
+            }
+          }
+        }
+
+        // 8c. Ensure footer landmark (wrap copyright/attribution)
+        if (!accessibleHtml.includes('<footer') && !accessibleHtml.includes('role="contentinfo"')) {
+          var footerPat2 = [/(<p[^>]*>.*?(?:copyright|©|\u00a9|generated|created|source:|author:).*?<\/p>)\s*<\/main>/i];
+          for (var fp2 = 0; fp2 < footerPat2.length; fp2++) {
+            var fm2 = accessibleHtml.match(footerPat2[fp2]);
+            if (fm2) { accessibleHtml = accessibleHtml.replace(fm2[0], '</main>\n<footer role="contentinfo">' + fm2[1] + '</footer>'); aiFixCount++; break; }
+          }
         }
 
         // 9. Fix heading level skips (h1->h3 becomes h1->h2)
@@ -4188,7 +4367,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // ── Document Generation (parseMarkdownToHTML, generateResourceHTML, etc.) ──
   const parseMarkdownToHTML = (text) => {
       if (!text) return '';
-      let processedText = text.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
+      // Fix literal \n characters that sometimes come from AI responses or JSON parsing
+      let processedText = text.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
+      // Strip JSON wrapper artifacts (e.g., ["\n\n...\n"] from malformed responses)
+      if (processedText.startsWith('["') || processedText.startsWith('[ "')) {
+        processedText = processedText.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
+      }
+      processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
       const lines = processedText.split('\n');

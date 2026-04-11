@@ -751,7 +751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', { className: 'text-xl' }, tech.emoji),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold ' + (owned ? 'text-green-300' : 'text-white') }, tech.name + (owned ? ' \u2705' : '')),
-                  h('p', { className: 'text-[9px] text-slate-400' }, tech.desc)
+                  h('p', { className: 'text-[10px] text-slate-400' }, tech.desc)
                 ),
                 !owned && h('button', {
                   disabled: !canBuy,
@@ -824,19 +824,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', { className: 'flex flex-wrap gap-1' },
                 destination.hazards.map(function(hz) {
-                  return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[9px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
+                  return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[10px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
                 })
               ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
-                h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+                h('p', { className: 'text-[10px] text-slate-500 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   crew.map(function(c) {
                     return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
                       h('span', { className: 'text-lg' }, c.emoji),
                       h('div', null,
                         h('p', { className: 'text-[10px] font-bold text-white' }, c.name),
-                        h('p', { className: 'text-[9px] text-slate-400' }, c.role),
+                        h('p', { className: 'text-[10px] text-slate-400' }, c.role),
                         h('p', { className: 'text-[8px] text-indigo-300 italic' }, '"' + c.quote + '"')
                       )
                     );

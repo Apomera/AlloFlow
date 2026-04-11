@@ -635,7 +635,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/3 modes')
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/3 modes')
           ),
 
           !challenge

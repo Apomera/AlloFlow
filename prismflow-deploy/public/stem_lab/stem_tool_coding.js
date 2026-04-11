@@ -1731,7 +1731,7 @@
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
                 React.createElement("button", { "aria-label": "Close templates panel",
                   onClick: function () { upd('showTemplates', false); },
-                  className: "text-slate-400 hover:text-white text-lg px-2"
+                  className: "text-slate-500 hover:text-white text-lg px-2"
                 }, "×")
               ),
               React.createElement("div", {
@@ -1746,7 +1746,7 @@
                   },
                     React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
                     React.createElement("span", { className: "text-xs font-bold text-white text-center" }, tmpl.name),
-                    React.createElement("span", { className: "text-[10px] text-slate-400 text-center leading-tight" }, tmpl.desc),
+                    React.createElement("span", { className: "text-[10px] text-slate-500 text-center leading-tight" }, tmpl.desc),
                     React.createElement("span", { className: "text-[11px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
                   );
                 })
@@ -1969,7 +1969,7 @@
             playgroundMode === 'robot' && React.createElement("div", { className: "col-span-2 grid gap-4", style: { gridTemplateColumns: "200px 1fr 260px" } },
               // Robot Toolbox
               React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
                     return React.createElement("button", { "aria-label": "Add robot command: " + rb.label,
@@ -1986,7 +1986,7 @@
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" },
+                  React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" },
                     "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!"
                   )
                 )
@@ -2075,12 +2075,12 @@
                 // Robot Program
                 React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                    React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
+                    React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
                       React.createElement("button", { "aria-label": "Clear",
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
-                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-500 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
                       React.createElement("button", { "aria-label": "Reset robot grid",
                         onClick: function() {
@@ -2090,7 +2090,7 @@
                             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
                           }
                         },
-                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-500 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
                       React.createElement("button", { "aria-label": "Handle Robot Run",
                         onClick: handleRobotRun,
@@ -2101,7 +2101,7 @@
                     )
                   ),
                   robotBlocks.length === 0 ?
-                    React.createElement("p", { className: "text-[10px] text-slate-500 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
+                    React.createElement("p", { className: "text-[10px] text-slate-600 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
                     React.createElement("div", { className: "space-y-1" },
                       robotBlocks.map(function(b, bi) {
                         var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
@@ -2142,7 +2142,7 @@
                                 })
                               ),
                               (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
-                                React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mt-1" }, "ELSE:"),
+                                React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-1" }, "ELSE:"),
                                 (b.elseChildren || []).map(function(child, ci) {
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                   return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
@@ -2172,7 +2172,7 @@
               ),
               // Right sidebar — Robot Challenges
               React.createElement("div", { className: "bg-slate-800/60 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '600px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
                 React.createElement("div", { className: "space-y-1.5" },
                   ROBOT_CHALLENGES.map(function(ch, ci) {
                     var done = robotCompleted.indexOf(ch.id) >= 0;
@@ -2202,7 +2202,7 @@
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
                   React.createElement("div", { className: "flex items-center justify-between text-[10px]" },
-                    React.createElement("span", { className: "text-slate-400 font-bold" }, "Progress"),
+                    React.createElement("span", { className: "text-slate-500 font-bold" }, "Progress"),
                     React.createElement("span", { className: "text-emerald-400 font-bold" }, robotCompleted.length + "/" + ROBOT_CHALLENGES.length)
                   ),
                   React.createElement("div", { className: "w-full h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden" },
@@ -2369,14 +2369,14 @@
                         // IF branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
                           React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
-                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-600 italic py-1" }, "No blocks yet"),
                           (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
                           renderQuickAdd(idx, false)
                         ),
                         // ELSE branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider" }, "✖ Else"),
-                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "✖ Else"),
+                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-600 italic py-1" }, "No blocks yet"),
                           (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
                           renderQuickAdd(idx, true)
                         )
@@ -2389,14 +2389,32 @@
               // Code editor (text mode)
               codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                 React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
-                React.createElement("textarea", {
-                  'aria-label': 'Code editor',
-                  value: textCode,
-                  onChange: function (e) { handleTextChange(e.target.value); },
-                  placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})\n\nsetVar('size', 50)\nchangeVar('size', 10)\n\nif(x > 250, function() {\n  left(45)\n}, function() {\n  right(45)\n})",
-                  className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
-                  spellCheck: false
-                }),
+                React.createElement("div", { style: { display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid #334155' } },
+                  // Line numbers
+                  React.createElement("div", {
+                    'aria-hidden': 'true',
+                    style: { background: '#0f172a', color: '#475569', fontFamily: 'monospace', fontSize: '11px', padding: '12px 8px 12px 6px', textAlign: 'right', lineHeight: '1.5', userSelect: 'none', borderRight: '1px solid #1e293b', minWidth: '28px' }
+                  }, (textCode || '').split('\n').map(function(_, i) { return React.createElement('div', { key: i }, i + 1); })),
+                  React.createElement("textarea", {
+                    'aria-label': 'Code editor',
+                    value: textCode,
+                    onChange: function (e) { handleTextChange(e.target.value); },
+                    placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
+                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', outline: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
+                    spellCheck: false,
+                    onKeyDown: function(e) {
+                      // Tab inserts 2 spaces instead of changing focus
+                      if (e.key === 'Tab') {
+                        e.preventDefault();
+                        var start = e.target.selectionStart;
+                        var end = e.target.selectionEnd;
+                        var val = e.target.value;
+                        handleTextChange(val.substring(0, start) + '  ' + val.substring(end));
+                        setTimeout(function() { e.target.selectionStart = e.target.selectionEnd = start + 2; }, 0);
+                      }
+                    }
+                  })
+                ),
                 React.createElement("p", { className: "text-slate-500 text-[10px] mt-1" },
                   "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
                 )
@@ -2496,7 +2514,7 @@
                 ),
                 // Camera Elevation
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-600 flex justify-between" },
                     React.createElement("span", null, "Elevation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotX) + "\u00b0")
                   ),
@@ -2510,7 +2528,7 @@
                 ),
                 // Camera Azimuth
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-600 flex justify-between" },
                     React.createElement("span", null, "Rotation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotZ) + "\u00b0")
                   ),
@@ -2524,7 +2542,7 @@
                 ),
                 // Zoom
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-600 flex justify-between" },
                     React.createElement("span", null, "Zoom"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, (cameraZoom * 100).toFixed(0) + "%")
                   ),
@@ -2568,7 +2586,7 @@
               ),
               // ── Animation Timeline ──
               timelineFrames.length > 0 && React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/40" },
-                React.createElement("h4", { className: "text-xs font-bold text-slate-400 mb-2 flex items-center gap-1" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-500 mb-2 flex items-center gap-1" },
                   React.createElement("span", null, "⏱️"), " Timeline (" + timelineFrames.length + " frames)"
                 ),
                 React.createElement("input", {
@@ -2581,7 +2599,7 @@
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
-                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-500 mt-1" },
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-1" },
                   React.createElement("span", null, "Frame 0"),
                   React.createElement("span", { className: "text-indigo-400 font-bold" }, timelinePos >= 0 ? "Frame " + timelinePos : "—"),
                   React.createElement("span", null, "Frame " + (timelineFrames.length - 1))
@@ -2611,7 +2629,7 @@
                 React.createElement("button", { "aria-label": "Toggle high contrast mode",
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " +
-                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-400 hover:text-white")
+                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-500 hover:text-white")
                 }, highContrastMode ? "◐ Standard Mode" : "◑ High Contrast")
               ),
               // ── AI Assistant Panel ──
@@ -2622,7 +2640,7 @@
                   ),
                   React.createElement("button", { "aria-label": "Close AI assistant panel",
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
-                    className: "text-slate-400 hover:text-white text-sm px-1"
+                    className: "text-slate-500 hover:text-white text-sm px-1"
                   }, "×")
                 ),
                 aiLoading ?
@@ -2660,7 +2678,7 @@
                 ),
                 // User-defined variables
                 d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "User Variables"),
                   React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
                     Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
                       return React.createElement("div", { key: vk, className: "text-[10px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },

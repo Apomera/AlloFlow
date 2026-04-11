@@ -980,16 +980,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
           h('div', { className: 'flex-1' },
             h('h2', { className: 'text-xl font-black text-slate-800' }, '✍️ WriteCraft'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Your writing IS your superpower')
+            h('p', { className: 'text-xs text-slate-600' }, 'Your writing IS your superpower')
           ),
           writingPower > 0 && h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-center' },
               h('div', { className: 'text-lg font-black', style: { color: getQualityTier(writingPower).color } }, writingPower),
-              h('div', { className: 'text-[8px] text-slate-400 font-bold' }, 'POWER')
+              h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'POWER')
             ),
             h('div', { className: 'text-center' },
               h('div', { className: 'text-lg font-black text-amber-600' }, totalXP),
-              h('div', { className: 'text-[8px] text-slate-400 font-bold' }, 'XP')
+              h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'XP')
             ),
             h('div', { className: 'text-center' },
               h('select', {
@@ -1002,7 +1002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   return h('option', { key: g, value: g }, g);
                 })
               ),
-              h('div', { className: 'text-[8px] text-slate-400 font-bold' }, 'GRADE')
+              h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'GRADE')
             )
           )
         ),
@@ -1011,7 +1011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
         !selectedWorld && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-4' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, 'Choose Your World'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Each world is a living story. Your writing determines what happens.')
+            h('p', { className: 'text-sm text-slate-600' }, 'Each world is a living story. Your writing determines what happens.')
           ),
 
           // Character creation
@@ -1061,7 +1061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                         return h('option', { key: g, value: g }, g);
                       })
                     ),
-                    ctxGradeLevel && !playerGradeLevel && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] text-violet-500 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
+                    ctxGradeLevel && !playerGradeLevel && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-violet-500 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
                   )
                 ),
                 h('div', null,
@@ -1091,7 +1091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               },
                 h('div', { className: 'text-3xl mb-2' }, w.emoji),
                 h('div', { className: 'font-bold text-slate-800' }, w.name),
-                h('p', { className: 'text-xs text-slate-500 mt-1 leading-relaxed' }, w.desc),
+                h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, w.desc),
                 h('div', { className: 'text-[10px] text-violet-500 font-bold mt-2' }, w.rooms.length + ' locations to explore')
               );
             })
@@ -1109,15 +1109,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               // Character portrait overlay
               characterPortrait && h('div', { className: 'absolute bottom-2 left-2' },
                 h('img', { src: characterPortrait, alt: (characterName || 'Character') + ' portrait', className: 'w-14 h-14 rounded-full object-cover border-2 border-violet-400 shadow-lg' }),
-                h('div', { className: 'text-[8px] text-white font-bold text-center mt-0.5 bg-black/50 rounded px-1' }, characterName || 'You')
+                h('div', { className: 'text-[10px] text-white font-bold text-center mt-0.5 bg-black/50 rounded px-1' }, characterName || 'You')
               ),
               // Harmony meter overlay (visible when interacting with NPCs)
               harmonyScore > 0 && h('div', { className: 'absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1' },
-                h('div', { className: 'text-[8px] font-bold text-indigo-300 uppercase tracking-wider' }, '✨ Harmony'),
+                h('div', { className: 'text-[10px] font-bold text-indigo-300 uppercase tracking-wider' }, '✨ Harmony'),
                 h('div', { className: 'w-20 h-1.5 bg-slate-600 rounded-full overflow-hidden mt-0.5' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all duration-500', style: { width: harmonyScore + '%' } })
                 ),
-                h('div', { className: 'text-[8px] text-white font-bold text-center mt-0.5' }, harmonyScore + '%')
+                h('div', { className: 'text-[10px] text-white font-bold text-center mt-0.5' }, harmonyScore + '%')
               )
             ),
             h('div', { className: 'p-4' },
@@ -1132,7 +1132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
           // World map (connected rooms)
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2' }, '🗺️ Connected Locations'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2' }, '🗺️ Connected Locations'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
               room.connections.map(function(connId) {
                 var connRoom = world.rooms.find(function(r) { return r.id === connId; });
@@ -1157,14 +1157,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('span', { className: 'text-lg' }, npc.emoji),
                   h('div', { className: 'text-left flex-1' },
                     h('div', { className: 'font-bold text-slate-800' }, npc.name),
-                    h('div', { className: 'text-[11px] text-slate-500' }, npc.role),
-                    npc.conflictType && npc.conflictType !== 'none' && h('span', { className: 'text-[8px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.conflictType),
+                    h('div', { className: 'text-[11px] text-slate-600' }, npc.role),
+                    npc.conflictType && npc.conflictType !== 'none' && h('span', { className: 'text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.conflictType),
                     // Mini rapport bar
                     npcRapport[npc.name] !== undefined && h('div', { className: 'mt-1 w-full' },
                       h('div', { className: 'w-full h-1 bg-slate-200 rounded-full overflow-hidden' },
                         h('div', { className: 'h-full rounded-full transition-all ' + (npcRapport[npc.name] >= 70 ? 'bg-green-400' : npcRapport[npc.name] >= 40 ? 'bg-amber-400' : 'bg-blue-400'), style: { width: npcRapport[npc.name] + '%' } })
                       ),
-                      h('div', { className: 'text-[7px] text-slate-400 mt-0.5' }, '💛 ' + npcRapport[npc.name] + '%')
+                      h('div', { className: 'text-[7px] text-slate-500 mt-0.5' }, '💛 ' + npcRapport[npc.name] + '%')
                     )
                   )
                 );
@@ -1179,7 +1179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-sm font-black text-slate-800' }, activeNPC.name),
                 h('div', { className: 'text-[10px] text-cyan-600 font-medium' }, activeNPC.role),
-                activeNPC.selTheme && h('span', { className: 'text-[8px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold' }, activeNPC.selTheme)
+                activeNPC.selTheme && h('span', { className: 'text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold' }, activeNPC.selTheme)
               )
             ),
 
@@ -1202,7 +1202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     style: { width: rapport + '%' }
                   })
                 ),
-                h('div', { className: 'text-[8px] text-slate-400 mt-0.5' },
+                h('div', { className: 'text-[10px] text-slate-500 mt-0.5' },
                   rapport < 20 ? '🔒 Guarded — build trust through empathy' :
                   rapport < 40 ? '🌱 Opening up — keep showing understanding' :
                   rapport < 70 ? '💬 Trusting — deeper conversations unlocked' :
@@ -1227,7 +1227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-200 mb-2' },
               h('p', { className: 'text-sm text-slate-800 italic leading-relaxed' }, '"' + activeNPC.openingLine + '"')
             ),
-            h('div', { className: 'text-[10px] text-slate-500 mb-1' },
+            h('div', { className: 'text-[10px] text-slate-600 mb-1' },
               h('strong', null, 'Situation: '), activeNPC.currentSituation
             ),
             actionResult && actionResult.npcResponse && h('div', { className: 'bg-cyan-50 rounded-xl p-3 border border-cyan-200 mt-2' },
@@ -1291,7 +1291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     h('div', { className: 'flex items-center gap-1' },
                       h('span', null, item.emoji),
                       h('span', null, item.name),
-                      h('span', { className: 'text-[8px] px-1 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + item.power)
+                      h('span', { className: 'text-[10px] px-1 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + item.power)
                     ),
                     // Durability bar
                     h('div', { className: 'w-full mt-0.5 flex items-center gap-1' },
@@ -1316,7 +1316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       ((item.durability || 0) <= 1 ? ' — about to break!' : '') +
                       ((item.maxDurability || 0) === 1 ? ' (single-use)' : '')
                     ),
-                    h('div', { className: 'text-slate-400 mt-0.5' }, 'Crafted at: ' + item.craftedAt)
+                    h('div', { className: 'text-slate-500 mt-0.5' }, 'Crafted at: ' + item.craftedAt)
                   )
                 );
               })
@@ -1337,11 +1337,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-xs font-bold text-emerald-700' }, s.name),
-                        h('span', { className: 'text-[8px] font-bold px-1.5 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + ' ' + tier.label)
+                        h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + ' ' + tier.label)
                       ),
                       h('p', { className: 'text-[10px] text-emerald-600 italic leading-relaxed' }, s.desc),
                       s.bonus && h('div', { className: 'text-[11px] text-violet-600 font-medium mt-0.5' }, '✨ ' + s.bonus),
-                      h('div', { className: 'text-[8px] text-slate-400 mt-0.5' }, 'Built by ' + s.builtBy)
+                      h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, 'Built by ' + s.builtBy)
                     )
                   );
                 })
@@ -1359,7 +1359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 )
               )
             ),
-            h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Describe your action with vivid detail. The better you write, the more powerful the outcome. Use sensory language, precise vocabulary, and creativity!'),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Describe your action with vivid detail. The better you write, the more powerful the outcome. Use sensory language, precise vocabulary, and creativity!'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2 mb-2' },
               h('button', { 'aria-label': 'Act', onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
               h('button', { 'aria-label': 'Explore', onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
@@ -1371,11 +1371,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             d.actionMode === 'craft' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-2 ml-1' },
               h('button', { 'aria-label': 'Craft Item', onClick: function() { upd('craftSubMode', 'item'); },
                 className: 'px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
-                  (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300')
+                  (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
               }, '🔨 Craft Item' + (craftedThisTurn ? ' ✓' : '')),
               h('button', { 'aria-label': 'Build Structure', onClick: function() { upd('craftSubMode', 'structure'); },
                 className: 'px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
-                  (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300') +
+                  (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
               }, '🏗️ Build Structure' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : '')),
               structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-400 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
@@ -1392,7 +1392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-xs font-bold text-red-700' }, 'Round ' + (activeBattle.rounds + 1)),
-                  h('div', { className: 'text-[10px] text-slate-500' }, 'Power: ' + activeBattle.power)
+                  h('div', { className: 'text-[10px] text-slate-600' }, 'Power: ' + activeBattle.power)
                 )
               ),
               // HP bar
@@ -1447,9 +1447,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
                   (hwPenmanshipOn || hwTeacherPenmanship
                     ? 'bg-violet-100 border-violet-300 text-violet-700'
-                    : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
+                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
               }, '✏️ Penmanship Tips ', hwPenmanshipOn || hwTeacherPenmanship ? 'ON' : 'OFF'),
-              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[8px] text-violet-500 font-medium' }, '(teacher enabled)')
+              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[10px] text-violet-500 font-medium' }, '(teacher enabled)')
             ),
 
             // ── Penmanship Feedback Card ──
@@ -1465,8 +1465,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 [['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(function(pair) {
                   var val = hwResult.penmanship[pair[0]] || 0;
                   return h('div', { key: pair[0], className: 'flex-1 text-center' },
-                    h('div', { className: 'text-sm font-black ' + (val >= 18 ? 'text-green-600' : val >= 12 ? 'text-amber-600' : 'text-slate-500') }, val, h('span', { className: 'text-[8px] opacity-60' }, '/25')),
-                    h('div', { className: 'text-[8px] text-slate-400 font-bold uppercase' }, pair[1])
+                    h('div', { className: 'text-sm font-black ' + (val >= 18 ? 'text-green-600' : val >= 12 ? 'text-amber-600' : 'text-slate-500') }, val, h('span', { className: 'text-[10px] opacity-60' }, '/25')),
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, pair[1])
                   );
                 })
               ),
@@ -1475,14 +1475,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               hwResult.penmanship.tips && h('p', { className: 'text-xs text-violet-600 font-medium' }, '💡 ' + hwResult.penmanship.tips),
               h('button', {
                 onClick: function() { upd('hwResult', null); },
-                className: 'text-[9px] text-slate-400 hover:text-slate-600 font-bold mt-1',
+                className: 'text-[10px] text-slate-500 hover:text-slate-600 font-bold mt-1',
                 'aria-label': 'Dismiss penmanship feedback'
               }, 'Dismiss')
             ),
 
             pasteDetected && h('div', { className: 'text-[10px] text-red-600 font-bold mt-1' }, '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.'),
             h('div', { className: 'flex items-center justify-between mt-2' },
-              h('span', { className: 'text-[10px] text-slate-400' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
+              h('span', { className: 'text-[10px] text-slate-600' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
               h('button', { 'aria-label': 'Worldbuilder action',
                 onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
                 disabled: actionText.trim().length < 5 || actionLoading,
@@ -1519,7 +1519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 Object.entries(actionResult.breakdown).map(function(entry) {
                   return h('div', { key: entry[0], className: 'text-center' },
                     h('div', { className: 'text-sm font-black text-slate-700' }, entry[1], '/20'),
-                    h('div', { className: 'text-[8px] text-slate-400 uppercase font-bold' }, entry[0])
+                    h('div', { className: 'text-[10px] text-slate-600 uppercase font-bold' }, entry[0])
                   );
                 })
               ),
@@ -1580,37 +1580,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // Stats
           h('div', { className: 'grid grid-cols-4 gap-2' },
             h('div', { className: 'bg-violet-50 rounded-xl border border-violet-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-violet-600' }, roomsVisited.length), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Explored')
+              h('div', { className: 'text-lg font-black text-violet-600' }, roomsVisited.length), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Explored')
             ),
             h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-amber-600' }, actionLog.length), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Actions')
+              h('div', { className: 'text-lg font-black text-amber-600' }, actionLog.length), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Actions')
             ),
             h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-red-600' }, d.battlesWon || 0), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Battles Won')
+              h('div', { className: 'text-lg font-black text-red-600' }, d.battlesWon || 0), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Battles Won')
             ),
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-emerald-600' }, legendaryActions), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Legendary')
+              h('div', { className: 'text-lg font-black text-emerald-600' }, legendaryActions), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Legendary')
             ),
             h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-cyan-600' }, conflictsResolved), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Resolved')
+              h('div', { className: 'text-lg font-black text-cyan-600' }, conflictsResolved), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Resolved')
             ),
             h('div', { className: 'bg-blue-50 rounded-xl border border-blue-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-blue-600' }, vocabTermsUsed.length), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Vocab')
+              h('div', { className: 'text-lg font-black text-blue-600' }, vocabTermsUsed.length), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Vocab')
             ),
             h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-teal-600' }, selSkillsUsed.length), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'SEL Skills')
+              h('div', { className: 'text-lg font-black text-teal-600' }, selSkillsUsed.length), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'SEL Skills')
             ),
             h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-purple-600' }, completedQuests), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Quests')
+              h('div', { className: 'text-lg font-black text-purple-600' }, completedQuests), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Quests')
             ),
             h('div', { className: 'bg-orange-50 rounded-xl border border-orange-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-orange-600' }, inventory.length), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Items')
+              h('div', { className: 'text-lg font-black text-orange-600' }, inventory.length), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Items')
             ),
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-emerald-600' }, structures.length), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Structures')
+              h('div', { className: 'text-lg font-black text-emerald-600' }, structures.length), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Structures')
             ),
             harmonyScore > 0 && h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-indigo-600' }, harmonyScore), h('div', { className: 'text-[8px] text-slate-500 font-bold' }, 'Harmony')
+              h('div', { className: 'text-lg font-black text-indigo-600' }, harmonyScore), h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Harmony')
             )
           ),
 
@@ -1630,9 +1630,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
                     (hwTeacherPenmanship
                       ? 'bg-violet-100 border-violet-300 text-violet-700'
-                      : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300')
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-300')
                 }, '✏️ Penmanship Feedback: ' + (hwTeacherPenmanship ? 'ON' : 'OFF')),
-                h('span', { className: 'text-[10px] text-slate-500' }, hwTeacherPenmanship ? 'Students will see handwriting feedback when they snap photos' : 'Enable to give students penmanship tips on handwritten submissions')
+                h('span', { className: 'text-[10px] text-slate-600' }, hwTeacherPenmanship ? 'Students will see handwriting feedback when they snap photos' : 'Enable to give students penmanship tips on handwritten submissions')
               ),
 
               // Scenario templates
@@ -1693,16 +1693,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 min-w-0' },
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-slate-800' }, npc.name),
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 ml-1' }, '(' + npc.role + ')'),
-                      npc.selTheme && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1 text-[8px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
+                      npc.selTheme && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1 text-[10px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
                     ),
-                    h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-500 hover:text-red-500 text-[10px]', 'aria-label': 'Remove ' + npc.name }, '✕')
+                    h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-600 hover:text-red-500 text-[10px]', 'aria-label': 'Remove ' + npc.name }, '✕')
                   );
                 })
               )
             )
           ),
 
-          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[10px] text-slate-400 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
+          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[10px] text-slate-500 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
         )
       );
     }

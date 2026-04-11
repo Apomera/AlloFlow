@@ -206,8 +206,8 @@ window.StemLab = window.StemLab || {
         );
         if (v !== 0 && v % 2 === 0) {
           gridElements.push(
-            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[9px] fill-slate-400' }, v),
-            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[9px] fill-slate-400' }, v)
+            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[10px] fill-slate-400' }, v),
+            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[10px] fill-slate-400' }, v)
           );
         }
       }
@@ -253,10 +253,10 @@ window.StemLab = window.StemLab || {
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: '#f59e0b', strokeWidth: 2.5 }),
               // Rise line (vertical)
               h('line', { x1: toSvg(p2.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '4,2', opacity: 0.7 }),
-              h('text', { x: toSvg(p2.x, 'x') + 12, y: rMidY + 3, className: 'text-[9px] fill-red-500 font-bold' }, 'rise'),
+              h('text', { x: toSvg(p2.x, 'x') + 12, y: rMidY + 3, className: 'text-[10px] fill-red-500 font-bold' }, 'rise'),
               // Run line (horizontal)
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p1.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '4,2', opacity: 0.7 }),
-              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', className: 'text-[9px] fill-blue-500 font-bold' }, 'run'),
+              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', className: 'text-[10px] fill-blue-500 font-bold' }, 'run'),
               // Points
               h('circle', { cx: toSvg(p1.x, 'x'), cy: toSvg(p1.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(p2.x, 'x'), cy: toSvg(p2.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 })
@@ -396,7 +396,7 @@ window.StemLab = window.StemLab || {
               return h('div', { key: li, className: 'flex items-center gap-2 text-[10px] bg-white rounded px-2 py-1 border' },
                 h('span', { className: 'font-bold text-indigo-600' }, '(' + ln.from.x + ',' + ln.from.y + ') \u2192 (' + ln.to.x + ',' + ln.to.y + ')'),
                 h('span', { className: 'font-bold text-indigo-800' }, 'm=' + ln.slope.display),
-                h('span', { className: 'ml-auto text-[9px] font-mono text-indigo-400' }, eq)
+                h('span', { className: 'ml-auto text-[10px] font-mono text-indigo-400' }, eq)
               );
             })
           ),

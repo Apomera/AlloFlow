@@ -1332,14 +1332,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var quiz = geoQuizRef.current;
         if (!quiz.active) return;
 
+        // Fade-in effect
+        if (!quiz._showTime) quiz._showTime = Date.now();
+        var fadeAge = (Date.now() - quiz._showTime) / 400; // 400ms fade
+        var fadeAlpha = Math.min(1, fadeAge);
+        gfx.save();
+        gfx.globalAlpha = fadeAlpha;
+
         var cardW = Math.min(W - 40, 420);
         var cardH = 130;
         var cardX = (W - cardW) / 2;
-        var cardY = 100;
+        var cardY = 80 + (1 - fadeAlpha) * 15; // Slide down as it fades in
 
-        gfx.fillStyle = 'rgba(0,0,0,0.9)';
-        gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, cardH, 12); gfx.fill();
-        gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.stroke();
+        gfx.fillStyle = 'rgba(0,0,0,0.92)';
+        if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, cardH, 14); gfx.fill(); }
+        else { gfx.fillRect(cardX, cardY, cardW, cardH); }
+        // Gradient header bar
+        var quizHdrGrad = gfx.createLinearGradient(cardX, cardY, cardX + cardW, cardY);
+        quizHdrGrad.addColorStop(0, 'rgba(180,130,30,0.4)');
+        quizHdrGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        gfx.fillStyle = quizHdrGrad;
+        if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, 22, [14, 14, 0, 0]); gfx.fill(); }
+        gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1.5;
+        if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cardX, cardY, cardW, cardH, 14); gfx.stroke(); }
 
         gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'left';
         gfx.fillText('🌍 GEOGRAPHY QUIZ  (Score: ' + quiz.score + '/' + quiz.total + ')', cardX + 12, cardY + 16);
@@ -1372,6 +1387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press 1, 2, 3, or 4 to answer', cardX + cardW / 2, cardY + cardH - 8);
         }
+        gfx.restore(); // Restore from fade-in globalAlpha
       };
 
       // ── Day/Night Cycle (based on longitude = time zone) ──
@@ -2653,7 +2669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var quiz = geoQuizRef.current;
           if (keys['q']) {
             keys['q'] = false;
-            if (quiz.active && quiz.showResult) { quiz.active = false; } // dismiss after result
+            if (quiz.active && quiz.showResult) { quiz.active = false; quiz._showTime = null; } // dismiss after result
             else if (!quiz.active) { triggerGeoQuiz(flightRef.current); }
           }
           // Quiz answer keys (1-4)
@@ -3499,10 +3515,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ),
               h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '6px' } },
-                [['Max Speed', Math.round(currentAC.maxSpeed * 0.59) + ' kts'], ['Ceiling', (currentAC.ceiling / 1000).toFixed(0) + 'K ft'], ['Range', currentAC.range + ' nm'], ['Weight', (currentAC.weight / 1000).toFixed(1) + 'K lbs']].map(function(stat) {
-                  return h('div', { key: stat[0], style: { background: '#1e293b', borderRadius: '4px', padding: '4px', textAlign: 'center' } },
-                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa' } }, stat[1]),
-                    h('div', { style: { fontSize: '8px', color: '#64748b' } }, stat[0])
+                [['Max Speed', Math.round(currentAC.maxSpeed * 0.59) + ' kts', Math.min(100, currentAC.maxSpeed * 0.59 / 5), '#60a5fa'],
+                 ['Ceiling', (currentAC.ceiling / 1000).toFixed(0) + 'K ft', Math.min(100, currentAC.ceiling / 500), '#a78bfa'],
+                 ['Range', currentAC.range + ' nm', Math.min(100, currentAC.range / 30), '#4ade80'],
+                 ['Weight', (currentAC.weight / 1000).toFixed(1) + 'K lbs', Math.min(100, currentAC.weight / 7000 * 100), '#f59e0b']
+                ].map(function(stat) {
+                  return h('div', { key: stat[0], style: { background: '#1e293b', borderRadius: '6px', padding: '6px', textAlign: 'center' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: stat[3] } }, stat[1]),
+                    h('div', { style: { width: '100%', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', marginTop: '3px', overflow: 'hidden' } },
+                      h('div', { style: { width: stat[2] + '%', height: '100%', background: stat[3], borderRadius: '2px', transition: 'width 0.5s ease' } })
+                    ),
+                    h('div', { style: { fontSize: '8px', color: '#64748b', marginTop: '2px' } }, stat[0])
                   );
                 })
               ),
@@ -3516,13 +3539,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, 'Or choose a departure airport'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               WAYPOINTS.map(function(wp) {
+                var visited = visitedAirports.indexOf(wp.id) >= 0;
+                // Region flag emojis
+                var regionFlags = { 'New England': '\uD83C\uDDFA\uD83C\uDDF8', 'Northeast': '\uD83C\uDDFA\uD83C\uDDF8', 'Midwest': '\uD83C\uDDFA\uD83C\uDDF8', 'Mountain West': '\uD83C\uDDFA\uD83C\uDDF8', 'West Coast': '\uD83C\uDDFA\uD83C\uDDF8', 'Europe': '\uD83C\uDDEA\uD83C\uDDFA', 'Asia': '\uD83C\uDF0F', 'Africa': '\uD83C\uDF0D', 'Oceania': '\uD83C\uDF0F', 'South America': '\uD83C\uDF0E' };
+                var flag = regionFlags[wp.region] || '\uD83C\uDF10';
+                var isHub = ['kjfk', 'kord', 'egll', 'rjtt'].indexOf(wp.id) >= 0;
                 return h('button', { key: wp.id, onClick: function() { startFlying(wp.id); },
-                  style: { padding: '8px', borderRadius: '8px', border: '1px solid #334155', background: visitedAirports.indexOf(wp.id) >= 0 ? '#1e3a5f' : '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }
-                }, h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                    h('span', { style: { color: '#60a5fa' } }, wp.code),
-                    visitedAirports.indexOf(wp.id) >= 0 ? h('span', { style: { color: '#4ade80', fontSize: '10px' } }, '✓ Visited') : null
+                  'aria-label': wp.name + ', ' + wp.region + (visited ? ', visited' : ''),
+                  style: { padding: '8px 10px', borderRadius: '10px', border: '1px solid ' + (visited ? '#1e40af' : '#334155'), background: visited ? 'linear-gradient(135deg, #1e3a5f, #1e293b)' : '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', position: 'relative', overflow: 'hidden' }
+                },
+                  // Flag + code + hub badge row
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
+                    h('span', { style: { fontSize: '12px' } }, flag),
+                    h('span', { style: { color: '#60a5fa', fontWeight: 800, fontSize: '12px' } }, wp.code),
+                    isHub && h('span', { style: { fontSize: '7px', fontWeight: 800, color: '#fbbf24', background: '#78350f', padding: '1px 4px', borderRadius: '3px', letterSpacing: '0.5px' } }, 'HUB'),
+                    visited && h('span', { style: { marginLeft: 'auto', color: '#4ade80', fontSize: '10px' } }, '\u2713')
                   ),
-                  h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, wp.region + ' · ' + wp.alt.toLocaleString() + ' ft')
+                  // Name
+                  h('div', { style: { fontSize: '10px', color: '#e2e8f0', fontWeight: 600 } }, wp.name),
+                  // Region + altitude
+                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '1px' } }, wp.region + ' \u2022 ' + wp.alt.toLocaleString() + ' ft elevation')
                 );
               })
             )

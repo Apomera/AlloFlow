@@ -466,7 +466,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick range presets
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: pr.join('-'),
@@ -533,12 +533,12 @@ window.StemLab = window.StemLab || {
                         return h('button', { 'aria-label': 'Sfx Click',
                           key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                           className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                         }, d);
                       })
                     )
                   ),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/6 types')
                 ),
 
                 !challenge
@@ -618,7 +618,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick skip presets
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: s,
@@ -730,11 +730,11 @@ window.StemLab = window.StemLab || {
             // Header
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
-                h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+                h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
               h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
+                bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Best: ' + bestStreak),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
               )
             ),
@@ -770,7 +770,7 @@ window.StemLab = window.StemLab || {
             renderAITutor(),
 
             // Keyboard hints
-            h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
+            h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
               '\u2328\uFE0F 1-3: tabs | N: new challenge | ?: AI tutor'
             )
           );

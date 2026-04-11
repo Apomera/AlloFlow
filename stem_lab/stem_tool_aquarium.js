@@ -5714,7 +5714,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     onClick: closeAnatomy,
 
-                    className: "ml-auto px-3 py-1 text-xs font-bold text-slate-400 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
+                    className: "ml-auto px-3 py-1 text-xs font-bold text-slate-600 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
 
                   }, "\u2715 Close")
 
@@ -6555,9 +6555,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("div", { className: "flex justify-between mt-0.5" },
 
-                              React.createElement("span", { className: "text-[8px] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
+                              React.createElement("span", { className: "text-[10px] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
 
-                              React.createElement("span", { className: "text-[8px] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
+                              React.createElement("span", { className: "text-[10px] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
 
                             )
 
@@ -6567,11 +6567,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
 
-                            React.createElement("span", { className: "text-[8px] rounded px-1 " + (popOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
+                            React.createElement("span", { className: "text-[10px] rounded px-1 " + (popOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
 
-                            React.createElement("span", { className: "text-[8px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
+                            React.createElement("span", { className: "text-[10px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
 
-                            React.createElement("span", { className: "text-[8px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+                            React.createElement("span", { className: "text-[10px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
 
                           )
 
@@ -7309,7 +7309,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
 
                     }, "\uD83C\uDF7D\uFE0F Flake"),
 
@@ -7319,7 +7319,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-200/60")
 
                     }, "\uD83E\uDD90 Live")
 
@@ -7341,7 +7341,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: medicateFish,
 
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-200/60 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 border-slate-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-200/60 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-200/60")
 
                     }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
 
@@ -7349,7 +7349,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: cleanGlass,
 
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-200/60" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 border-slate-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-200/60" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-200/60")
 
                     }, "\uD83E\uDDF9 Clean" + (algaeLevel > 15 ? " (" + Math.round(algaeLevel) + "%)" : ""))
 
@@ -7671,7 +7671,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       ),
 
-                      entry.xp > 0 ? React.createElement("span", { className: "text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
+                      entry.xp > 0 ? React.createElement("span", { className: "text-[10px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
 
                     );
 
@@ -8169,7 +8169,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: function () { upd('selectedSpecies', null); },
 
-                      className: "text-slate-400 hover:text-slate-600 text-lg"
+                      className: "text-slate-500 hover:text-slate-600 text-lg"
 
                     }, "\u2715")
 
@@ -8233,7 +8233,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: answered,
 
-                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-500") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
+                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-600") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
 
                     }, opt);
 

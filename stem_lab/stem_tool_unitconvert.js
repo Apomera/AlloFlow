@@ -485,7 +485,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               // Formula row
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-slate-50 rounded-lg p-2 text-center' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-mono text-slate-500' }, '\uD83D\uDCCA ' + getFormula())
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-mono text-slate-600' }, '\uD83D\uDCCA ' + getFormula())
               ),
 
               // Save / Pin / AI buttons
@@ -845,13 +845,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     addToast('Could not generate problem. Try again.', 'error');
                   });
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-700')
+                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-700')
               }, d.loadingWP ? '\u23F3 Generating...' : '\u2728 Generate')
             ),
 
             d.loadingWP && h('div', { className: 'text-center py-12' },
               h('div', { className: 'inline-block w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full', style: { animation: 'spin 1s linear infinite' } }),
-              h('p', { className: 'text-sm text-slate-400 mt-3' }, 'Crafting your word problem...')
+              h('p', { className: 'text-sm text-slate-500 mt-3' }, 'Crafting your word problem...')
             ),
 
             !d.wordProblem && !d.loadingWP && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },

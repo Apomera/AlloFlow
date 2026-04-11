@@ -630,11 +630,11 @@
             streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak),
             h('button', { 'aria-label': 'AI',
               onClick: function() { upd('_showBadges', !d._showBadges); },
-              className: 'ml-auto px-2 py-1 text-[10px] font-bold rounded-lg border ' + (d._showBadges ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-500 border-slate-200')
+              className: 'ml-auto px-2 py-1 text-[10px] font-bold rounded-lg border ' + (d._showBadges ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200')
             }, '\uD83C\uDFC5 ' + ext.badges.length + '/' + Object.keys(CHEM_BADGES).length),
             h('button', { 'aria-label': 'AI',
               onClick: function() { upd('_showAI', !d._showAI); },
-              className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (d._showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-500 border-slate-200')
+              className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (d._showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200')
             }, '\uD83E\uDD16 AI')
           ),
 
@@ -752,7 +752,7 @@
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-2 mb-3 flex-wrap' },
                 h('button', { 'aria-label': 'Check', onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, '\u2696\uFE0F Check'),
                 h('button', { 'aria-label': 'Hints', onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, '\uD83D\uDCA1 Hints'),
-                h('button', { 'aria-label': 'Reset', onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-200' }, '\uD83D\uDD04 Reset'),
+                h('button', { 'aria-label': 'Reset', onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200' }, '\uD83D\uDD04 Reset'),
                 h('button', { 'aria-label': 'Random', onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-200' }, '\uD83C\uDFB2 Random')
               ),
               showHints && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 text-left' },
@@ -788,7 +788,7 @@
                     h('span', { className: 'text-2xl' }, rt.icon),
                     h('div', { className: 'flex-1' },
                       h('p', { className: 'text-sm font-bold text-slate-700' }, rt.label),
-                      h('p', { className: 'text-[10px] font-mono text-slate-500' }, rt.pattern)
+                      h('p', { className: 'text-[10px] font-mono text-slate-600' }, rt.pattern)
                     ),
                     h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
@@ -831,7 +831,7 @@
                         if (d._classifyFb) return;
                         upd('_classifyFb', rt.id);
                         if (rt.id === classifyQ.type) { chemSound('correct'); addToast('\u2705 ' + rt.label + '!', 'success'); } else { chemSound('wrong'); }
-                      }, className: 'px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all ' + (isCorrect ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isWrong ? 'bg-red-100 text-red-700 border-red-300' : fb ? 'bg-slate-50 text-slate-500 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300') }, rt.icon + ' ' + rt.label);
+                      }, className: 'px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all ' + (isCorrect ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isWrong ? 'bg-red-100 text-red-700 border-red-300' : fb ? 'bg-slate-50 text-slate-600 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300') }, rt.icon + ' ' + rt.label);
                     })
                   ),
                   d._classifyFb && h('button', { 'aria-label': 'Next', onClick: function() {
@@ -885,9 +885,9 @@
                     var elMass = ELEMENTS[el] ? ELEMENTS[el].m * elems[el] : 0;
                     var pct = mass > 0 ? (elMass / mass * 100).toFixed(1) : 0;
                     return h('div', { key: el, className: 'flex items-center gap-1.5 bg-slate-50 rounded-lg px-2 py-1 border' },
-                      h('div', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-black', style: { backgroundColor: ATOM_COLORS[el] || '#64748b' } }, el),
+                      h('div', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black', style: { backgroundColor: ATOM_COLORS[el] || '#64748b' } }, el),
                       h('span', { className: 'text-[10px] font-bold text-slate-600' }, el + ' \u00D7' + elems[el]),
-                      h('span', { className: 'text-[11px] text-slate-500' }, pct + '%')
+                      h('span', { className: 'text-[11px] text-slate-600' }, pct + '%')
                     );
                   })
                 ),
@@ -967,15 +967,15 @@
               // Info cards
               h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[8px] font-bold text-indigo-500' }, 'SHAPE'),
+                  h('p', { className: 'text-[10px] font-bold text-indigo-500' }, 'SHAPE'),
                   h('p', { className: 'text-[10px] font-bold text-indigo-700' }, currentMol.shape)
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[8px] font-bold text-indigo-500' }, 'BOND ANGLE'),
+                  h('p', { className: 'text-[10px] font-bold text-indigo-500' }, 'BOND ANGLE'),
                   h('p', { className: 'text-[10px] font-bold text-indigo-700' }, currentMol.angle)
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[8px] font-bold text-indigo-500' }, 'POLARITY'),
+                  h('p', { className: 'text-[10px] font-bold text-indigo-500' }, 'POLARITY'),
                   h('p', { className: 'text-[10px] font-bold text-indigo-700' }, currentMol.polarity)
                 )
               ),
@@ -1053,7 +1053,7 @@
                           chemSound('wrong');
                           upd('_emergFeedback', '\u274C ' + em.explain);
                         }
-                      }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (showResult ? (opt.correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isChosen ? 'bg-red-100 text-red-700 border-red-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300') }, opt.text);
+                      }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (showResult ? (opt.correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isChosen ? 'bg-red-100 text-red-700 border-red-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300') }, opt.text);
                     })
                   ),
                   emergFeedback && h('p', { className: 'mt-2 text-xs font-bold ' + (emergFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, emergFeedback)
@@ -1115,7 +1115,7 @@
                       if (chalIdx + 1 < chalQuestions.length) { updMulti({ _chalIdx: chalIdx + 1, _chalFeedback: null }); }
                       else { updMulti({ _chalFeedback: '\uD83C\uDFC6 Complete! ' + ns + '/' + chalQuestions.length }); }
                     }, 2000);
-                  }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-300 hover:bg-lime-50') }, opt);
+                  }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-300 hover:bg-lime-50') }, opt);
                 })
               ),
               chalFeedback && h('p', { className: 'mt-2 text-[10px] font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback)
@@ -1172,7 +1172,7 @@
                         else if (nHP <= 0) { chemSound('damage'); updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null }); }
                         else { updMulti({ _battleRound: battleRound + 1, _battleFeedback: null }); }
                       }, 1500);
-                    }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50') }, opt);
+                    }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50') }, opt);
                   })
                 ),
                 battleFeedback && h('p', { className: 'mt-2 text-xs font-bold text-center ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback)

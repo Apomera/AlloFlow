@@ -695,11 +695,11 @@ window.StemLab = window.StemLab || {
 
         // ── Range controls ──
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-center gap-2 mt-2' },
-          h('button', { 'aria-label': '-5', onClick: function() { shiftRange(-5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Shift range left' }, '\u25C0 -5'),
-          h('button', { 'aria-label': 'Zoom', onClick: function() { zoomRange(1.5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Zoom out' }, '\u2212 Zoom'),
+          h('button', { 'aria-label': '-5', onClick: function() { shiftRange(-5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Shift range left' }, '\u25C0 -5'),
+          h('button', { 'aria-label': 'Zoom', onClick: function() { zoomRange(1.5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Zoom out' }, '\u2212 Zoom'),
           h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 font-mono' }, '[' + range.min + ', ' + range.max + ']'),
-          h('button', { 'aria-label': '+ Zoom', onClick: function() { zoomRange(0.67); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Zoom in' }, '+ Zoom'),
-          h('button', { 'aria-label': '+5', onClick: function() { shiftRange(5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Shift range right' }, '+5 \u25B6'),
+          h('button', { 'aria-label': '+ Zoom', onClick: function() { zoomRange(0.67); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Zoom in' }, '+ Zoom'),
+          h('button', { 'aria-label': '+5', onClick: function() { shiftRange(5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Shift range right' }, '+5 \u25B6'),
           h('button', { 'aria-label': 'Reset range', onClick: function() { upd('range', { min: -10, max: 10 }); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-fuchsia-50 text-fuchsia-500 rounded hover:bg-fuchsia-100 transition-all', title: 'Reset range' }, '\u21BA')
         ),
 

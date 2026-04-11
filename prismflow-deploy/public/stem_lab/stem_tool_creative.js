@@ -3945,7 +3945,7 @@ const d = labToolData.artStudio || {};
 
                             ),
 
-                            React.createElement("span", { className: "text-[9px] text-slate-400 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
+                            React.createElement("span", { className: "text-[10px] text-slate-400 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
 
                             stops.length > 2 && React.createElement("button", { onClick: function () {
 
@@ -4017,7 +4017,7 @@ const d = labToolData.artStudio || {};
 
                         navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); });
 
-                      }, className: "px-2 py-0.5 rounded text-[9px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600" }, "\uD83D\uDCCB Copy")
+                      }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600" }, "\uD83D\uDCCB Copy")
 
                     ),
 
@@ -4405,7 +4405,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-indigo-700" }, "\u2728 AI Stereogram Creator"),
 
-                        d.stereoAiGen && React.createElement("span", { className: "text-[9px] text-indigo-500 animate-pulse font-bold" }, "Generating " + d.stereoAiGen + "...")
+                        d.stereoAiGen && React.createElement("span", { className: "text-[10px] text-indigo-500 animate-pulse font-bold" }, "Generating " + d.stereoAiGen + "...")
 
                       ),
 
@@ -5935,7 +5935,7 @@ const d = labToolData.artStudio || {};
 
                       ),
 
-                      React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
+                      React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
 
                     ),
 
@@ -6027,13 +6027,13 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("div", { key: cat.cat, className: "mb-2" },
 
-                          React.createElement("p", { className: "text-[9px] font-bold text-slate-500 mb-0.5" }, cat.emoji + ' ' + cat.cat),
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-0.5" }, cat.emoji + ' ' + cat.cat),
 
                           React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
                             cat.items.map(function (pr) {
 
-                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[9px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
+                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
 
                             })
 
@@ -6053,13 +6053,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("h4", { className: "text-[10px] font-bold text-purple-700 mb-2" }, '\uD83E\uDDEC Rule Editor (B/S Notation)'),
 
-                    React.createElement("p", { className: "text-[9px] text-slate-500 mb-2" }, 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.'),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.'),
 
                     React.createElement("div", { className: "flex gap-2 mb-2" },
 
                       React.createElement("div", { className: "flex-1" },
 
-                        React.createElement("label", { className: "text-[9px] font-bold text-purple-600 block" }, 'Birth (B)'),
+                        React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, 'Birth (B)'),
 
                         React.createElement("input", { type: "text", value: d.lifeRuleB || '3', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '3' })
 
@@ -6067,7 +6067,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex-1" },
 
-                        React.createElement("label", { className: "text-[9px] font-bold text-purple-600 block" }, 'Survival (S)'),
+                        React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, 'Survival (S)'),
 
                         React.createElement("input", { type: "text", value: d.lifeRuleS || '23', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '23' })
 
@@ -6077,7 +6077,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[9px] font-bold text-purple-500 mr-1" }, 'Try:'),
+                      React.createElement("span", { className: "text-[10px] font-bold text-purple-500 mr-1" }, 'Try:'),
 
                       [
 
@@ -6093,13 +6093,13 @@ const d = labToolData.artStudio || {};
 
                       ].map(function (rp) {
 
-                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[9px] font-bold bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
+                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
 
                       })
 
                     ),
 
-                    React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
+                    React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
 
                   ),
 
@@ -6139,7 +6139,7 @@ const d = labToolData.artStudio || {};
 
                           if (!isActive) { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }
 
-                        }, className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (isActive ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
+                        }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (isActive ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
 
                       })
 
@@ -6149,9 +6149,9 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("p", { className: "text-[10px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
 
-                      React.createElement("p", { className: "text-[9px] text-slate-500" }, 'Draw your pattern, then press \u25B6 Run to test!'),
+                      React.createElement("p", { className: "text-[10px] text-slate-500" }, 'Draw your pattern, then press \u25B6 Run to test!'),
 
-                      (d.lifeChallenge === 'methuselah' || d.lifeChallenge === 'maxpop') && React.createElement("p", { className: "text-[9px] font-bold " + ((d.lifePop || 0) > 5 ? 'text-red-500' : 'text-green-600') }, 'Cells placed: ' + (d.lifePop || 0) + '/5')
+                      (d.lifeChallenge === 'methuselah' || d.lifeChallenge === 'maxpop') && React.createElement("p", { className: "text-[10px] font-bold " + ((d.lifePop || 0) > 5 ? 'text-red-500' : 'text-green-600') }, 'Cells placed: ' + (d.lifePop || 0) + '/5')
 
                     ),
 
@@ -7065,7 +7065,7 @@ const d = labToolData.artStudio || {};
 
                   }),
 
-                  React.createElement("p", { className: "text-[9px] text-center text-slate-400" }, '\uD83D\uDCC8 Population over time')
+                  React.createElement("p", { className: "text-[10px] text-center text-slate-400" }, '\uD83D\uDCC8 Population over time')
 
                 )
 
@@ -8209,7 +8209,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 return React.createElement("div", { key: i, className: "p-2 rounded-xl text-center", style: { background: _card, border: '1px solid ' + _border } },
 
-                  React.createElement("div", { className: "text-[9px] font-bold uppercase", style: { color: _muted } }, stat.label),
+                  React.createElement("div", { className: "text-[10px] font-bold uppercase", style: { color: _muted } }, stat.label),
 
                   React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: _accent } }, stat.val)
 

@@ -1396,7 +1396,7 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }
 
-                    }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white')
+                    }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-700 hover:bg-white')
 
                   }, m.icon + ' ' + m.label);
 
@@ -1547,7 +1547,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
 
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
+                React.createElement("span", { className: "text-[11px] font-bold text-slate-600 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
 
                 React.createElement("input", {
 
@@ -1571,7 +1571,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-500 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
+                React.createElement("span", { className: "text-[10px] text-slate-600 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
 
               ),
 
@@ -1687,7 +1687,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 // Milestone labels
 
-                React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
+                React.createElement("div", { className: "flex justify-between mt-2 text-[10px] text-violet-400" },
 
                   [
 
@@ -1811,7 +1811,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
 
-                      React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
+                      React.createElement("div", { className: "font-bold text-slate-600" }, item.label),
 
                       React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
 
@@ -2505,7 +2505,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Adjust mass to explore how different stars live and die")
+                    React.createElement("p", { className: "text-[10px] text-slate-600" }, "Adjust mass to explore how different stars live and die")
 
                   ),
 
@@ -2579,7 +2579,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ),
 
-                  React.createElement("span", { className: "text-[11px] text-slate-500 italic" },
+                  React.createElement("span", { className: "text-[11px] text-slate-600 italic" },
 
                     lifecycleMass < 0.5 ? "Too small for hydrogen fusion" :
 
@@ -2652,9 +2652,9 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
-                          React.createElement("p", { className: "text-[11px] text-slate-500 leading-tight" }, s.desc)
+                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-tight" }, s.desc)
                         ),
-                        React.createElement("span", { className: "text-[8px] text-slate-600 flex-shrink-0" },
+                        React.createElement("span", { className: "text-[10px] text-slate-600 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
                           s.id === 'protostar' ? "~100K yr" :
                           s.id === 'main_sequence' ? (lifecycleMass < 0.8 ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
@@ -2727,7 +2727,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       React.createElement("p", { className: "text-xs font-black", style: { color: st.color } }, st.id),
 
-                      React.createElement("p", { className: "text-[8px] text-slate-500 leading-tight" }, st.temp + "K"),
+                      React.createElement("p", { className: "text-[10px] text-slate-600 leading-tight" }, st.temp + "K"),
 
                       isMatch ? React.createElement("div", { className: "mt-1 w-1.5 h-1.5 rounded-full bg-indigo-500 mx-auto animate-pulse" }) : null
 
@@ -2765,7 +2765,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         return React.createElement("div", { key: item.l, className: "bg-white rounded-lg p-1.5 text-center border border-slate-100" },
 
-                          React.createElement("div", { className: "text-slate-500 font-bold" }, item.l),
+                          React.createElement("div", { className: "text-slate-600 font-bold" }, item.l),
 
                           React.createElement("div", { className: "font-bold", style: { color: st.color } }, item.v)
 
@@ -2835,7 +2835,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-200", style: { width: '40px', height: '40px' } }),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500 mt-1 font-bold" }, "Sun (1 M\u2609)")
+                    React.createElement("span", { className: "text-[11px] text-slate-600 mt-1 font-bold" }, "Sun (1 M\u2609)")
 
                   ),
 
@@ -2871,13 +2871,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                     }),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500 mt-1 font-bold" }, lifecycleMass + " M\u2609")
+                    React.createElement("span", { className: "text-[11px] text-slate-600 mt-1 font-bold" }, lifecycleMass + " M\u2609")
 
                   )
 
                 ),
 
-                React.createElement("p", { className: "text-center text-[10px] text-slate-500 italic mt-2" },
+                React.createElement("p", { className: "text-center text-[10px] text-slate-600 italic mt-2" },
 
                   "Main-sequence radius scales roughly as M" + "\u2070\u00B7\u2078" + ". " +
 

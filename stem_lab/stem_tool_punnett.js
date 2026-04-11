@@ -988,12 +988,12 @@ window.StemLab = window.StemLab || {
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full' }, 'GENETICS v3'),
               h('button', {
                 onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
-                className: 'ml-auto px-2 py-1 text-[10px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-500 border-slate-200'),
+                className: 'ml-auto px-2 py-1 text-[10px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'),
                 'aria-label': 'Toggle badges'
               }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGES.length),
               h('button', {
                 onClick: function() { upd('_showAI', !showAI); },
-                className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-500 border-slate-200'),
+                className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200'),
                 'aria-label': 'Toggle AI tutor'
               }, '\uD83E\uDD16 AI')
             ),
@@ -1098,7 +1098,7 @@ window.StemLab = window.StemLab || {
                           ['A', 'a', 'B', 'b', 'C', 'c', 'R', 'r', 'T', 't', 'H', 'h', 'i'].map(function(a) { return h('option', { key: a, value: a }, a); })
                         );
                       }),
-                      isSexLinked && key === 'parent2' && h('span', { className: 'px-3 py-2 bg-slate-200 rounded-lg font-bold text-lg text-slate-500' }, 'Y')
+                      isSexLinked && key === 'parent2' && h('span', { className: 'px-3 py-2 bg-slate-200 rounded-lg font-bold text-lg text-slate-600' }, 'Y')
                     )
                   );
                 })
@@ -1124,7 +1124,7 @@ window.StemLab = window.StemLab || {
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
                         return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-200 relative ' + pc.bg },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
-                          h('span', { className: 'block text-[8px] ' + pc.sub }, cellLabel),
+                          h('span', { className: 'block text-[10px] ' + pc.sub }, cellLabel),
                           cellEmoji && h('span', { className: 'text-[10px] absolute top-0.5 right-0.5' }, cellEmoji)
                         );
                       })
@@ -1235,7 +1235,7 @@ window.StemLab = window.StemLab || {
                     return h('div', { key: i, className: 'text-center p-2 rounded-lg border-2 transition-all ' + pc.bg + ' ' + pc.border, style: { minWidth: '60px' } },
                       h('span', { className: 'text-2xl block mb-1' }, emoji),
                       h('span', { className: 'text-[10px] font-bold block ' + pc.text }, g),
-                      h('span', { className: 'text-[8px] block ' + pc.sub }, label)
+                      h('span', { className: 'text-[10px] block ' + pc.sub }, label)
                     );
                   })
                 )
@@ -1283,7 +1283,7 @@ window.StemLab = window.StemLab || {
                     className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' +
                       (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300')
                   }, isDihybrid ? '\uD83E\uDDEC Dihybrid ON (4\u00D74)' : '\uD83E\uDDEC Dihybrid Cross (4\u00D74)'),
-                  isDihybrid && h('span', { className: 'text-[11px] text-slate-500' }, 'Two genes, 16 offspring combinations')
+                  isDihybrid && h('span', { className: 'text-[11px] text-slate-600' }, 'Two genes, 16 offspring combinations')
                 ),
 
                 isDihybrid && h('div', null,
@@ -1421,7 +1421,7 @@ window.StemLab = window.StemLab || {
                       ].map(function(cat) {
                         return h('div', { key: cat.key, className: 'bg-' + cat.color + '-50 rounded-lg p-2 text-center border border-' + cat.color + '-200' },
                           h('p', { className: 'text-lg font-bold text-' + cat.color + '-700' }, diPhenoCounts[cat.key] + '/16'),
-                          h('p', { className: 'text-[8px] font-bold text-' + cat.color + '-600' }, diPhenoLabel(cat.key)),
+                          h('p', { className: 'text-[10px] font-bold text-' + cat.color + '-600' }, diPhenoLabel(cat.key)),
                           h('p', { className: 'text-[10px] text-slate-600' }, (diPhenoCounts[cat.key] / 16 * 100).toFixed(1) + '%')
                         );
                       })
@@ -1505,11 +1505,11 @@ window.StemLab = window.StemLab || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-3' },
                 h('button', { 'aria-label': 'Change _ped show geno',
                   onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
-                  className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200')
+                  className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
                 h('button', { 'aria-label': 'Toggle pedigree solve mode',
                   onClick: function() { updMulti({ _pedSolveMode: !pedSolveMode, _pedSolveAnswer: '', _pedSolveFeedback: null, _pedShowGeno: pedSolveMode }); },
-                  className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-slate-50 text-slate-500 border-slate-200')
+                  className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedSolveMode ? '\uD83E\uDDE9 Solve Mode ON' : '\uD83E\uDDE9 Solve Mode')
               ),
 
@@ -1715,9 +1715,9 @@ window.StemLab = window.StemLab || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
                   h('button', { 'aria-label': 'Random genetic drift (stronger in small populations)',
                     onClick: function() { upd('popDrift', !popDrift); },
-                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-500 border-slate-200')
+                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, 'Random genetic drift (stronger in small populations)')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Random genetic drift (stronger in small populations)')
                 ),
 
                 // Run / Reset buttons
@@ -1746,17 +1746,17 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 text-center border border-emerald-200' },
                   h('p', { className: 'text-[11px] font-bold text-emerald-600' }, 'AA (p\u00B2)'),
                   h('p', { className: 'text-lg font-bold text-emerald-700' }, (popFreqA * popFreqA * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[8px] text-emerald-500' }, 'Homozygous Dom')
+                  h('p', { className: 'text-[10px] text-emerald-500' }, 'Homozygous Dom')
                 ),
                 h('div', { className: 'bg-sky-50 rounded-xl p-2 text-center border border-sky-200' },
                   h('p', { className: 'text-[11px] font-bold text-sky-600' }, 'Aa (2pq)'),
                   h('p', { className: 'text-lg font-bold text-sky-700' }, (2 * popFreqA * (1 - popFreqA) * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[8px] text-sky-500' }, 'Heterozygous')
+                  h('p', { className: 'text-[10px] text-sky-500' }, 'Heterozygous')
                 ),
                 h('div', { className: 'bg-amber-50 rounded-xl p-2 text-center border border-amber-200' },
                   h('p', { className: 'text-[11px] font-bold text-amber-600' }, 'aa (q\u00B2)'),
                   h('p', { className: 'text-lg font-bold text-amber-700' }, ((1 - popFreqA) * (1 - popFreqA) * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[8px] text-amber-500' }, 'Homozygous Rec')
+                  h('p', { className: 'text-[10px] text-amber-500' }, 'Homozygous Rec')
                 )
               ),
 
@@ -1780,7 +1780,7 @@ window.StemLab = window.StemLab || {
                     return dots;
                   })()
                 ),
-                h('div', { className: 'flex justify-center gap-4 mt-1 text-[8px] font-bold' },
+                h('div', { className: 'flex justify-center gap-4 mt-1 text-[10px] font-bold' },
                   h('span', { className: 'text-emerald-600' }, '\u25CF AA'),
                   h('span', { className: 'text-sky-500' }, '\u25CF Aa'),
                   h('span', { className: 'text-amber-500' }, '\u25CF aa')
@@ -1884,13 +1884,13 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-xl' }, t.icon),
                       h('span', { className: 'text-xs font-bold text-slate-700' }, t.name)
                     ),
-                    h('span', { className: 'px-1.5 py-0.5 text-[8px] font-bold rounded-full bg-' + mc + '-100 text-' + mc + '-700' },
+                    h('span', { className: 'px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-' + mc + '-100 text-' + mc + '-700' },
                       t.mode === 'complete' ? 'Dominant' : t.mode === 'recessive' ? 'Recessive' : t.mode === 'codominant' ? 'Codominant' : t.mode === 'incomplete' ? 'Incomplete' : t.mode === 'x_linked' ? 'X-Linked' : 'Polygenic'
                     ),
                     isSelected && h('div', { className: 'mt-2 pt-2 border-t border-' + mc + '-200' },
                       h('p', { className: 'text-[10px] text-slate-600 mb-1' }, t.desc),
-                      h('p', { className: 'text-[11px] text-slate-500' }, '\uD83D\uDFE2 Dominant: ' + t.dom + ' | \uD83D\uDFE1 Recessive: ' + t.rec),
-                      h('p', { className: 'text-[11px] text-slate-500' }, '\uD83D\uDCCA Frequency: ' + t.freq)
+                      h('p', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDFE2 Dominant: ' + t.dom + ' | \uD83D\uDFE1 Recessive: ' + t.rec),
+                      h('p', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDCCA Frequency: ' + t.freq)
                     )
                   );
                 })
@@ -1923,16 +1923,16 @@ window.StemLab = window.StemLab || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaShowSteps', !dnaShowSteps); },
-                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-white text-slate-500 border-slate-200')
+                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-white text-slate-600 border-slate-200')
                   }, dnaShowSteps ? '\uD83D\uDC41 Hide Steps' : '\uD83D\uDC41 Show Steps'),
                   // Quick presets
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaSeq', 'ATGAAAGCTTTTCGATGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-500 border border-slate-200 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-fuchsia-300'
                   }, '\uD83E\uDDEA Sample 1'),
                   h('button', { 'aria-label': 'Sample 2',
                     onClick: function() { upd('_dnaSeq', 'ATGTGCCCGAACGTTTACTGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-500 border border-slate-200 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-fuchsia-300'
                   }, '\uD83E\uDDEA Sample 2'),
                   h('button', { 'aria-label': 'Translate',
                     onClick: function() {
@@ -1990,7 +1990,7 @@ window.StemLab = window.StemLab || {
                           title: AMINO_FULL[aa] || aa
                         },
                           h('span', { className: 'text-xs font-bold block', style: { color: AMINO_COLORS[cat] || '#94a3b8' } }, aa),
-                          h('span', { className: 'text-[7px] text-slate-500 block' }, codons[i]),
+                          h('span', { className: 'text-[7px] text-slate-600 block' }, codons[i]),
                           i < aminos.length - 1 && aa !== 'Stop' ? h('span', { className: 'text-[10px] text-slate-600' }, '\u2192') : null
                         );
                       })
@@ -2010,7 +2010,7 @@ window.StemLab = window.StemLab || {
                         { cat: 'start', label: 'Start codon (Met)' },
                         { cat: 'stop', label: 'Stop codon' }
                       ].map(function(c) {
-                        return h('span', { key: c.cat, className: 'text-[8px] font-bold', style: { color: AMINO_COLORS[c.cat] } }, '\u25CF ' + c.label);
+                        return h('span', { key: c.cat, className: 'text-[10px] font-bold', style: { color: AMINO_COLORS[c.cat] } }, '\u25CF ' + c.label);
                       })
                     )
                   ),
@@ -2084,7 +2084,7 @@ window.StemLab = window.StemLab || {
                               var changed = origAA !== mutAA;
                               items.push(h('div', {
                                 key: ai,
-                                className: 'text-center px-1 py-0.5 rounded text-[8px] font-bold min-w-[32px] border ' +
+                                className: 'text-center px-1 py-0.5 rounded text-[10px] font-bold min-w-[32px] border ' +
                                   (changed ? 'bg-red-100 border-red-300 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-500')
                               },
                                 h('span', { className: 'block' }, origAA),
@@ -2095,16 +2095,16 @@ window.StemLab = window.StemLab || {
                             return items;
                           })()
                         ),
-                        (mutType === 'insertion' || mutType === 'deletion') && h('p', { className: 'text-[8px] text-red-500 mt-1 italic' },
+                        (mutType === 'insertion' || mutType === 'deletion') && h('p', { className: 'text-[10px] text-red-500 mt-1 italic' },
                           '\uD83D\uDCA1 ' + (mutType === 'insertion' ? 'Insertion' : 'Deletion') + ' shifts the reading frame \u2014 all downstream codons change! This is called a frameshift mutation.'
                         ),
-                        mutType === 'point' && changes === 0 && h('p', { className: 'text-[8px] text-emerald-500 mt-1 italic' },
+                        mutType === 'point' && changes === 0 && h('p', { className: 'text-[10px] text-emerald-500 mt-1 italic' },
                           '\uD83D\uDCA1 This is a silent (synonymous) mutation. The codon changed, but it still codes for the same amino acid due to redundancy in the genetic code.'
                         ),
-                        mutType === 'point' && changes === 1 && mutAminos[mutAminos.length - 1] === 'Stop' && origAminos[origAminos.length - 1] !== 'Stop' && h('p', { className: 'text-[8px] text-red-500 mt-1 italic' },
+                        mutType === 'point' && changes === 1 && mutAminos[mutAminos.length - 1] === 'Stop' && origAminos[origAminos.length - 1] !== 'Stop' && h('p', { className: 'text-[10px] text-red-500 mt-1 italic' },
                           '\uD83D\uDCA1 This is a nonsense mutation \u2014 it created a premature stop codon, producing a shorter (truncated) protein!'
                         ),
-                        mutType === 'point' && changes === 1 && !(mutAminos[mutAminos.length - 1] === 'Stop' && origAminos[origAminos.length - 1] !== 'Stop') && h('p', { className: 'text-[8px] text-orange-500 mt-1 italic' },
+                        mutType === 'point' && changes === 1 && !(mutAminos[mutAminos.length - 1] === 'Stop' && origAminos[origAminos.length - 1] !== 'Stop') && h('p', { className: 'text-[10px] text-orange-500 mt-1 italic' },
                           '\uD83D\uDCA1 This is a missense mutation \u2014 one amino acid changed. The effect depends on whether the new amino acid has similar properties.'
                         )
                       );
@@ -2182,7 +2182,7 @@ window.StemLab = window.StemLab || {
                         }, 1500);
                       },
                       className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300 hover:bg-violet-50')
+                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300 hover:bg-violet-50')
                     }, opt);
                   })
                 ),
@@ -2283,7 +2283,7 @@ window.StemLab = window.StemLab || {
                           }, 1500);
                         },
                         className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50')
+                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50')
                       }, opt);
                     })
                   ),

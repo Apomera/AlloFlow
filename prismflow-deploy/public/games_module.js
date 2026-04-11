@@ -2054,7 +2054,7 @@ var CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGam
           "aria-selected": isSelected,
           "aria-label": `Row ${r + 1} Column ${c + 1} ${cell.number ? "Clue " + cell.number : ""} ${userChar ? "Value " + userChar : "Empty"}`
         },
-        cell.number && /* @__PURE__ */ React.createElement("span", { className: "absolute top-0.5 left-0.5 text-[8px] sm:text-[10px] leading-none text-slate-500 font-normal" }, cell.number),
+        cell.number && /* @__PURE__ */ React.createElement("span", { className: "absolute top-0.5 left-0.5 text-[10px] sm:text-[10px] leading-none text-slate-500 font-normal" }, cell.number),
         userChar
       );
     }))

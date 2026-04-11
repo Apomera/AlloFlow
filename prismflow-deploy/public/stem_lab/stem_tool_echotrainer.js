@@ -451,6 +451,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             });
           }
 
+          // Player trail (breadcrumbs showing where you've walked)
+          if (!player._trail) player._trail = [];
+          if (player._trail.length === 0 || Math.abs(player.x - player._trail[player._trail.length - 1].x) > 5 || Math.abs(player.y - player._trail[player._trail.length - 1].y) > 5) {
+            player._trail.push({ x: player.x, y: player.y });
+            if (player._trail.length > 200) player._trail.shift();
+          }
+          for (var ti = 0; ti < player._trail.length; ti++) {
+            var trailAlpha = (ti / player._trail.length) * 0.15;
+            gfx.fillStyle = 'rgba(99,102,241,' + trailAlpha + ')';
+            gfx.beginPath(); gfx.arc(player._trail[ti].x, player._trail[ti].y, 2, 0, Math.PI * 2); gfx.fill();
+          }
+
+          // Compass rose (top-right of map area)
+          gfx.save();
+          gfx.translate(map.W - 30, 40);
+          gfx.strokeStyle = 'rgba(148,163,184,0.3)'; gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(0, -16); gfx.lineTo(0, 16); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(-16, 0); gfx.lineTo(16, 0); gfx.stroke();
+          gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 8px sans-serif'; gfx.textAlign = 'center';
+          gfx.fillText('N', 0, -19);
+          gfx.fillStyle = 'rgba(148,163,184,0.3)'; gfx.fillText('S', 0, 24); gfx.fillText('E', 20, 3); gfx.fillText('W', -20, 3);
+          gfx.restore();
+
           // Player (always visible)
           gfx.fillStyle = '#6366f1';
           gfx.beginPath(); gfx.arc(player.x, player.y, 8, 0, Math.PI * 2); gfx.fill();
@@ -630,6 +653,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, 'Accessibility awareness: '), 'Experience what it\u2019s like to navigate without sight. Builds empathy and understanding of sensory diversity.'),
             h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, 'STEM learning: '), 'Teaches acoustics (speed of sound, reflection coefficients, material absorption), spatial reasoning, and the physics of echolocation used by bats and dolphins.'),
             h('p', { style: { margin: 0, fontStyle: 'italic' } }, '\uD83D\uDC1D Daniel Kish, who is blind, navigates by bicycle using tongue clicks. He has taught echolocation to thousands of people worldwide through World Access for the Blind.')
+          )
+        ),
+
+        // ── How Echolocation Works — animated SVG diagram ──
+        h('details', {
+          open: !(d.goalsFound > 0), // Open by default for new users, collapsed for experienced
+          style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' }
+        },
+          h('summary', {
+            style: { padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }
+          }, '\uD83D\uDCDA How Echolocation Works'),
+          h('div', { style: { padding: '12px 14px', background: isDark ? '#0f172a' : '#fff' } },
+            // Animated SVG showing click → bounce → return
+            h('svg', { viewBox: '0 0 500 160', width: '100%', height: 'auto', style: { maxHeight: '140px' }, 'aria-label': 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance' },
+              // Background
+              h('rect', { x: 0, y: 0, width: 500, height: 160, fill: isDark ? '#0f172a' : '#f8fafc', rx: 8 }),
+              // Person (left side)
+              h('circle', { cx: 60, cy: 80, r: 18, fill: '#6366f1', opacity: 0.9 }),
+              h('text', { x: 60, y: 85, textAnchor: 'middle', fontSize: '16', fill: '#fff' }, '\uD83C\uDFA7'),
+              h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '9', fill: isDark ? '#94a3b8' : '#64748b', fontWeight: 700 }, 'You'),
+              // Wall (right side)
+              h('rect', { x: 410, y: 20, width: 12, height: 120, fill: '#475569', rx: 3 }),
+              h('text', { x: 416, y: 155, textAnchor: 'middle', fontSize: '9', fill: isDark ? '#94a3b8' : '#64748b', fontWeight: 700 }, 'Wall'),
+              // Outgoing click wave (animated)
+              h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.7 },
+                h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', repeatCount: 'indefinite' }),
+                h('animate', { attributeName: 'opacity', from: '0.7', to: '0', dur: '2s', repeatCount: 'indefinite' })
+              ),
+              h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 },
+                h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' }),
+                h('animate', { attributeName: 'opacity', from: '0.5', to: '0', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' })
+              ),
+              // Reflected echo (bouncing back, delayed)
+              h('circle', { cx: 410, cy: 70, r: 0, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0 },
+                h('animate', { attributeName: 'r', from: '0', to: '180', dur: '2s', begin: '1s', repeatCount: 'indefinite' }),
+                h('animate', { attributeName: 'opacity', values: '0;0.6;0', dur: '2s', begin: '1s', repeatCount: 'indefinite' })
+              ),
+              // Arrow: outgoing click
+              h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
+              h('text', { x: 145, y: 62, textAnchor: 'middle', fontSize: '8', fill: '#a78bfa', fontWeight: 600 }, 'Click \u2192'),
+              // Arrow: returning echo
+              h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
+              h('text', { x: 335, y: 106, textAnchor: 'middle', fontSize: '8', fill: '#4ade80', fontWeight: 600 }, '\u2190 Echo'),
+              // Time delay label
+              h('rect', { x: 190, y: 125, width: 120, height: 24, rx: 6, fill: isDark ? '#1e293b' : '#f0f9ff', stroke: isDark ? '#334155' : '#bae6fd' }),
+              h('text', { x: 250, y: 141, textAnchor: 'middle', fontSize: '9', fill: isDark ? '#7dd3fc' : '#0369a1', fontWeight: 700 }, 'Delay = Distance \u00d7 2 \u00f7 343 m/s'),
+              // Arrow markers (defined in defs)
+              h('defs', null,
+                h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' },
+                  h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })
+                ),
+                h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' },
+                  h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })
+                )
+              )
+            ),
+            // Key concepts in a grid
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px', fontSize: '10px' } },
+              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f5f3ff', border: '1px solid ' + (isDark ? '#334155' : '#e9d5ff'), textAlign: 'center' } },
+                h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83D\uDD0A'),
+                h('div', { style: { fontWeight: 700, color: '#7c3aed' } }, 'Click'),
+                h('div', { style: { color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, 'Press Space to emit a tongue click sound')
+              ),
+              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#ecfdf5', border: '1px solid ' + (isDark ? '#334155' : '#bbf7d0'), textAlign: 'center' } },
+                h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83C\uDFA7'),
+                h('div', { style: { fontWeight: 700, color: '#22c55e' } }, 'Listen'),
+                h('div', { style: { color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, 'Echoes return from different directions via headphones')
+              ),
+              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#eff6ff', border: '1px solid ' + (isDark ? '#334155' : '#bfdbfe'), textAlign: 'center' } },
+                h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83E\uDDE0'),
+                h('div', { style: { fontWeight: 700, color: '#3b82f6' } }, 'Navigate'),
+                h('div', { style: { color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, 'Build a mental map from echo timing + direction')
+              )
+            ),
+            // Material comparison
+            h('div', { style: { marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
+              [
+                { name: 'Rock', color: '#64748b', desc: 'Bright echo', ref: '85%' },
+                { name: 'Metal', color: '#94a3b8', desc: 'Sharp ring', ref: '95%' },
+                { name: 'Wood', color: '#92400e', desc: 'Muffled', ref: '50%' },
+                { name: 'Glass', color: '#7dd3fc', desc: 'Faint', ref: '30%' },
+                { name: 'Goal \u2B50', color: '#fbbf24', desc: 'Bright!', ref: '90%' }
+              ].map(function(mat) {
+                return h('div', { key: mat.name, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f8fafc', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), fontSize: '9px' } },
+                  h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: mat.color } }),
+                  h('span', { style: { fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, mat.name),
+                  h('span', { style: { color: isDark ? '#64748b' : '#94a3b8' } }, mat.desc)
+                );
+              })
+            )
           )
         ),
 

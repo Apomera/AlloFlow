@@ -493,7 +493,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': 'Toggle hidden mode (H)',
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
-                (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
+                (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: 'Toggle hidden mode (H)'
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
@@ -745,7 +745,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter' && multTableAnswer && !inputDisabled) checkMult(); },
               className: 'w-20 px-3 py-2 text-center text-lg font-bold border-2 rounded-lg outline-none transition-all ' +
                 (inputDisabled
-                  ? 'border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed'
+                  ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
                   : 'border-pink-300 focus:border-pink-500'),
               placeholder: '?',
               autoFocus: true,

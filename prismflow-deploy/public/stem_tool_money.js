@@ -888,7 +888,7 @@ window.StemLab = window.StemLab || {
                           boxShadow: '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4)',
                           cursor: 'pointer', transition: 'all 0.15s'
                         } }, coin.label),
-                        React.createElement("span", { className: "text-[9px] font-bold text-amber-700" }, coin.name)
+                        React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, coin.name)
                       );
                     })
                   ),
@@ -1076,7 +1076,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("div", { className: "text-right" },
                         React.createElement("p", { className: "text-[10px] text-zinc-400 font-bold uppercase" }, "Session Score"),
                         React.createElement("p", { className: "text-amber-400 font-black text-xl leading-none" }, crScore),
-                        crBest > 0 && React.createElement("p", { className: "text-[9px] text-emerald-400 font-bold" }, "Best Round: " + crBest)
+                        crBest > 0 && React.createElement("p", { className: "text-[10px] text-emerald-400 font-bold" }, "Best Round: " + crBest)
                       )
                     ),
                     
@@ -1107,7 +1107,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "absolute top-0 left-0 w-full h-2 bg-zinc-800", style: { maskImage: 'radial-gradient(circle at 4px 0px, transparent 4px, black 4.5px)', maskSize: '8px 8px', maskRepeat: 'repeat-x' } }),
                         React.createElement("div", { className: "text-center pb-2 border-b-2 border-dashed border-zinc-400 mb-2 mt-1 opacity-80" },
                           React.createElement("p", { className: "font-bold text-xs flex justify-center items-center gap-1" }, React.createElement("span", null, "\u26A1"), React.createElement("span", null, "ALLOFOOD MKT"), React.createElement("span", null, "\u26A1")),
-                          React.createElement("p", { className: "text-[9px]" }, "SYSTEM OFFLINE")
+                          React.createElement("p", { className: "text-[10px]" }, "SYSTEM OFFLINE")
                         ),
                         
                         crCustomer.items.map(function(it, i) {
@@ -1141,9 +1141,9 @@ window.StemLab = window.StemLab || {
                     // Input / Feedback Area
                     crFb ? React.createElement("div", { className: "animate-in slide-in-from-bottom flex flex-col items-center mt-2" },
                       React.createElement("div", { className: "flex gap-2 my-2 text-xs w-full justify-center" },
-                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[9px] uppercase font-bold" }, "Accuracy"), React.createElement("p", { className: "text-emerald-400 font-black text-lg leading-tight" }, "+" + crFb.accuracy)),
-                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[9px] uppercase font-bold" }, "Speed"), React.createElement("p", { className: "text-sky-400 font-black text-lg leading-tight" }, "+" + crFb.speed)),
-                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-amber-900/50 shadow-inner w-20" }, React.createElement("p", { className: "text-amber-500/70 text-[9px] uppercase font-bold" }, "Total"), React.createElement("p", { className: "text-amber-400 font-black text-lg leading-tight" }, "+" + crFb.score))
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[10px] uppercase font-bold" }, "Accuracy"), React.createElement("p", { className: "text-emerald-400 font-black text-lg leading-tight" }, "+" + crFb.accuracy)),
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[10px] uppercase font-bold" }, "Speed"), React.createElement("p", { className: "text-sky-400 font-black text-lg leading-tight" }, "+" + crFb.speed)),
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-amber-900/50 shadow-inner w-20" }, React.createElement("p", { className: "text-amber-500/70 text-[10px] uppercase font-bold" }, "Total"), React.createElement("p", { className: "text-amber-400 font-black text-lg leading-tight" }, "+" + crFb.score))
                       ),
                       React.createElement("button", { onClick: genCashierRound, className: "w-full py-4 bg-amber-500 text-zinc-900 font-black rounded-xl hover:bg-amber-400 hover:scale-105 transition-all text-sm shadow-[0_0_15px_rgba(251,191,36,0.3)] mt-2" }, "Next Customer \u2192")
                     ) :
@@ -1285,9 +1285,9 @@ window.StemLab = window.StemLab || {
                             React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
                             React.createElement("div", { className: "flex items-baseline gap-1" },
                               React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(item.price)),
-                              isWeighed && React.createElement("span", { className: "text-[9px] text-orange-500 font-bold" }, "/" + item.pricePer)
+                              isWeighed && React.createElement("span", { className: "text-[10px] text-orange-500 font-bold" }, "/" + item.pricePer)
                             ),
-                            React.createElement("span", { className: "text-[9px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
+                            React.createElement("span", { className: "text-[10px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
                           ),
                           // Weight entry popup for per-lb items
                           isAdding && React.createElement("div", { className: "absolute z-20 left-0 right-0 -bottom-2 translate-y-full bg-white rounded-xl p-3 shadow-xl border-2 border-orange-300 space-y-2" },
@@ -1418,7 +1418,7 @@ window.StemLab = window.StemLab || {
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-violet-100" },
-                          d.wpProblem.category && React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-100 text-violet-600 mb-2" }, d.wpProblem.category.toUpperCase()),
+                          d.wpProblem.category && React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-600 mb-2" }, d.wpProblem.category.toUpperCase()),
                           React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, d.wpProblem.problem)
                         ),
                         d.wpProblem.hint && React.createElement("button", { onClick: function () { upd('wpShowHint', !d.wpShowHint); },
@@ -1653,7 +1653,7 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { key: ci, className: "text-center p-2 rounded-lg", style: { background: cat.color + '15' } },
                         React.createElement("p", { className: "text-lg" }, cat.name.split(' ')[0]),
                         React.createElement("p", { className: "text-xs font-black", style: { color: cat.color } }, fmt(budgetIncome * cat.pct / 100)),
-                        React.createElement("p", { className: "text-[9px] text-slate-400" }, cat.pct + '%')
+                        React.createElement("p", { className: "text-[10px] text-slate-400" }, cat.pct + '%')
                       );
                     })
                   ),
@@ -1938,7 +1938,7 @@ window.StemLab = window.StemLab || {
                           var coin = COIN_DENOMS.find(function (c) { return c.val === val; }) || COIN_DENOMS[0];
                           var isNew = di === cdDropped.length - 1 && d.cdAnimDrop;
                           return React.createElement("div", { key: di,
-                            className: "inline-flex items-center justify-center rounded-full font-black text-white text-[9px] shadow-md" + (isNew ? ' animate-bounce' : ''),
+                            className: "inline-flex items-center justify-center rounded-full font-black text-white text-[10px] shadow-md" + (isNew ? ' animate-bounce' : ''),
                             style: { width: coin.size * 0.7 + 'px', height: coin.size * 0.7 + 'px', backgroundColor: coin.color, fontSize: '9px', lineHeight: '1' }
                           }, coin.label);
                         })
@@ -1985,7 +1985,7 @@ window.StemLab = window.StemLab || {
                             className: "flex items-center justify-center rounded-full font-black text-white text-[10px]",
                             style: { width: coin.size + 'px', height: coin.size + 'px', backgroundColor: coin.color }
                           }, coin.label),
-                          React.createElement("span", { className: "text-[9px] font-bold text-slate-500" }, fmt(coin.val))
+                          React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, fmt(coin.val))
                         );
                       })
                     ),
@@ -2198,7 +2198,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-red-200" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Total Interest"),
                       React.createElement("p", { className: "text-xl font-black text-red-500" }, cur.symbol + Math.round(loanTotalInterest).toLocaleString()),
-                      React.createElement("p", { className: "text-[9px] text-red-400" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
+                      React.createElement("p", { className: "text-[10px] text-red-400" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-slate-100" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Total Paid"),
@@ -2209,8 +2209,8 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "mb-4" },
                     React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "What you're really paying:"),
                     React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex" },
-                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full flex items-center justify-center text-[9px] text-white font-bold" }, "Principal"),
-                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full flex items-center justify-center text-[9px] text-white font-bold" }, "Interest")
+                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full flex items-center justify-center text-[10px] text-white font-bold" }, "Principal"),
+                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full flex items-center justify-center text-[10px] text-white font-bold" }, "Interest")
                     )
                   ),
                   // Amortization highlights
@@ -2290,7 +2290,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Per Day"),
                       React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + (Math.round(sgDailyNeeded * 100) / 100).toFixed(2)),
-                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "\u2248 skip a coffee")
+                      React.createElement("p", { className: "text-[10px] text-slate-400" }, "\u2248 skip a coffee")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border-2 border-emerald-300" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Per Week"),
@@ -2355,7 +2355,7 @@ window.StemLab = window.StemLab || {
               // ── Educational Footer ──
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200 text-center" },
                 React.createElement("p", { className: "text-[10px] text-emerald-600" }, "\uD83C\uDF1F ", React.createElement("strong", null, "Financial literacy"), " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!"),
-                React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Exchange rates are approximate and for educational purposes only.")
+                React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, "Exchange rates are approximate and for educational purposes only.")
               )
             );
           

@@ -3043,7 +3043,7 @@ var d = labToolData || {};
 
                     className: "px-2.5 py-1 font-bold transition-all " +
 
-                      (blSpeed === sp ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
+                      (blSpeed === sp ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700')
 
                   }, sp + '\u00D7');
 
@@ -3161,7 +3161,7 @@ var d = labToolData || {};
 
                   React.createElement("p", { className: "text-lg font-extrabold text-amber-400" }, '' + blReinforcements),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Reinforcements")
+                  React.createElement("p", { className: "text-[10px] text-slate-500" }, "Reinforcements")
 
                 ),
 
@@ -3169,7 +3169,7 @@ var d = labToolData || {};
 
                   React.createElement("p", { className: "text-lg font-extrabold text-indigo-400" }, '' + blTick),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Ticks to Complete")
+                  React.createElement("p", { className: "text-[10px] text-slate-500" }, "Ticks to Complete")
 
                 ),
 
@@ -3179,7 +3179,7 @@ var d = labToolData || {};
 
                     blTick > 0 ? (blLevelScore / blTick * 60).toFixed(1) : '0.0'),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Resp Rate / min")
+                  React.createElement("p", { className: "text-[10px] text-slate-500" }, "Resp Rate / min")
 
                 ),
 
@@ -3189,7 +3189,7 @@ var d = labToolData || {};
 
                     (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1)),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Avg Latency (ticks)")
+                  React.createElement("p", { className: "text-[10px] text-slate-500" }, "Avg Latency (ticks)")
 
                 )
 
@@ -3495,7 +3495,7 @@ var d = labToolData || {};
 
                       ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]"
 
-                      : "bg-slate-700 text-slate-500 cursor-not-allowed"),
+                      : "bg-slate-700 text-slate-600 cursor-not-allowed"),
 
                   style: pulseStyle
 
@@ -3591,7 +3591,7 @@ var d = labToolData || {};
 
                           isCurrent ? 'bg-amber-600/40 text-amber-200 border border-amber-500/40 ring-2 ring-amber-400/50 animate-pulse' :
 
-                            'bg-slate-800/60 text-slate-500 border border-slate-700/40')
+                            'bg-slate-800/60 text-slate-600 border border-slate-700/40')
 
                     }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
 
@@ -3661,7 +3661,7 @@ var d = labToolData || {};
 
               React.createElement("div", { className: "flex items-center justify-between" },
 
-                React.createElement("p", { className: "text-xs text-slate-400" },
+                React.createElement("p", { className: "text-xs text-slate-500" },
 
                   '\u2705 DRO Successes: ' + blDroSuccesses + (currentLevel.goal > 0 ? '/' + currentLevel.goal : '')),
 
@@ -3939,7 +3939,7 @@ var d = labToolData || {};
 
                   className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
 
-                    (blCcPhase !== 'pairing' ? "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                    (blCcPhase !== 'pairing' ? "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-600 cursor-not-allowed")
 
                 }, "\uD83D\uDD14 Ring Bell" + (blCcPhase === 'baseline' ? ' (Baseline)' : blCcPhase === 'test' ? ' (Test CR)' : blCcPhase === 'extinction' ? ' (Extinction)' : '')),
 
@@ -4011,7 +4011,7 @@ var d = labToolData || {};
 
                   className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
 
-                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]" : "bg-slate-700 text-slate-600 cursor-not-allowed")
 
                 }, "\uD83D\uDD14+\uD83C\uDF55 Pair (" + blPairCount + "/5)")
 
@@ -4121,7 +4121,7 @@ var d = labToolData || {};
 
                     ),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500 w-8 text-right font-mono" }, Math.round(w.weight))
+                    React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right font-mono" }, Math.round(w.weight))
 
                   );
 
@@ -4209,7 +4209,7 @@ var d = labToolData || {};
 
                   return React.createElement("div", { key: idx, className: "flex gap-2 text-xs py-1 border-b border-slate-700/30" },
 
-                    React.createElement("span", { className: "text-slate-500 w-8 font-mono" }, '#' + entry.tick),
+                    React.createElement("span", { className: "text-slate-600 w-8 font-mono" }, '#' + entry.tick),
 
                     React.createElement("span", { className: "text-blue-300 w-24 truncate", title: 'Antecedent: ' + entry.a }, "A: " + entry.a),
 
@@ -4265,7 +4265,7 @@ var d = labToolData || {};
                 }, d.blShowFunctions ? 'Hide' : 'Learn \u2192')
               ),
               d.blShowFunctions && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "Every behavior serves a function. Understanding WHY a behavior occurs is the key to changing it. These are the 4 functions identified by functional behavior assessment (FBA):"),
+                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "Every behavior serves a function. Understanding WHY a behavior occurs is the key to changing it. These are the 4 functions identified by functional behavior assessment (FBA):"),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                   FOUR_FUNCTIONS.map(function(ff, ffi) {
                     var isActive = d.blFuncIdx === ffi;
@@ -4277,7 +4277,7 @@ var d = labToolData || {};
                       React.createElement("div", { className: "text-center mb-1" },
                         React.createElement("div", { className: "text-2xl" }, ff.icon),
                         React.createElement("div", { className: "text-[11px] font-black text-white" }, ff.name),
-                        React.createElement("div", { className: "text-[8px] font-mono", style: { color: ff.color } }, ff.abbrev)
+                        React.createElement("div", { className: "text-[10px] font-mono", style: { color: ff.color } }, ff.abbrev)
                       ),
                       isActive && React.createElement("div", { className: "mt-2 space-y-1.5" },
                         React.createElement("div", { className: "text-[11px] text-slate-300" }, ff.desc),
@@ -4309,9 +4309,9 @@ var d = labToolData || {};
                       React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-sm" }, fb.icon),
                         React.createElement("span", { className: "text-[11px] font-bold text-white" }, fb.name),
-                        React.createElement("span", { className: "ml-auto text-[8px] text-amber-400 font-mono" }, fb.year)
+                        React.createElement("span", { className: "ml-auto text-[10px] text-amber-400 font-mono" }, fb.year)
                       ),
-                      React.createElement("div", { className: "text-[8px] px-1.5 py-0.5 rounded-full bg-amber-900/40 text-amber-300 inline-block mb-1" }, fb.field),
+                      React.createElement("div", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-amber-900/40 text-amber-300 inline-block mb-1" }, fb.field),
                       React.createElement("div", { className: "text-[11px] text-slate-400" }, fb.contribution)
                     )
                   );
@@ -4331,7 +4331,7 @@ var d = labToolData || {};
                 }, d.blShowApps ? 'Hide' : 'Explore \u2192')
               ),
               d.blShowApps && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "ABA isn't just for the lab \u2014 its principles are used everywhere you look:"),
+                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "ABA isn't just for the lab \u2014 its principles are used everywhere you look:"),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
                   ABA_APPLICATIONS.map(function(app, appi) {
                     return React.createElement("div", { key: appi, className: "bg-slate-700/50 rounded-lg p-2 border border-slate-600" },
@@ -4339,7 +4339,7 @@ var d = labToolData || {};
                         React.createElement("div", { className: "text-lg" }, app.icon),
                         React.createElement("div", { className: "text-[10px] font-bold text-white" }, app.name)
                       ),
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, app.desc),
+                      React.createElement("div", { className: "text-[10px] text-slate-500" }, app.desc),
                       React.createElement("div", { className: "text-[7px] text-green-400 mt-1 font-medium" }, "\uD83D\uDCCD " + app.setting)
                     );
                   })
@@ -4359,7 +4359,7 @@ var d = labToolData || {};
                 }, d.blShowMeasure ? 'Hide' : 'Learn \u2192')
               ),
               d.blShowMeasure && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "How do behavior analysts measure behavior objectively? The measurement method depends on what aspect of the behavior is most important:"),
+                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "How do behavior analysts measure behavior objectively? The measurement method depends on what aspect of the behavior is most important:"),
                 React.createElement("div", { className: "space-y-1.5" },
                   MEASUREMENT_METHODS.map(function(mm, mmi) {
                     var isActive = d.blMeasureIdx === mmi;
@@ -4375,7 +4375,7 @@ var d = labToolData || {};
                       isActive && React.createElement("div", { className: "mt-1.5 space-y-1" },
                         React.createElement("div", { className: "text-[11px] text-cyan-300 font-medium" }, mm.def),
                         React.createElement("div", { className: "text-[11px] text-slate-400" }, "\uD83D\uDCDD Example: " + mm.example),
-                        React.createElement("div", { className: "text-[8px] text-amber-400" }, "\u2753 When to use: " + mm.when)
+                        React.createElement("div", { className: "text-[10px] text-amber-400" }, "\u2753 When to use: " + mm.when)
                       )
                     );
                   })
@@ -4395,13 +4395,13 @@ var d = labToolData || {};
                 }, d.blShowEthics ? 'Hide' : 'View \u2192')
               ),
               d.blShowEthics && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "With great power comes great responsibility. ABA practitioners follow strict ethical guidelines from the BACB (Behavior Analyst Certification Board):"),
+                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "With great power comes great responsibility. ABA practitioners follow strict ethical guidelines from the BACB (Behavior Analyst Certification Board):"),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
                   ABA_ETHICS.map(function(eth, ethi) {
                     return React.createElement("div", { key: ethi, className: "bg-slate-700/50 rounded-lg p-2 border border-purple-700/30 text-center" },
                       React.createElement("div", { className: "text-lg mb-0.5" }, eth.icon),
                       React.createElement("div", { className: "text-[10px] font-bold text-white" }, eth.name),
-                      React.createElement("div", { className: "text-[8px] text-slate-400 mt-0.5" }, eth.desc)
+                      React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, eth.desc)
                     );
                   })
                 )
@@ -4421,7 +4421,7 @@ var d = labToolData || {};
                 }, blSchedCanvas ? 'Hide' : 'Compare Schedules \u2192')
               ),
               blSchedCanvas && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "Watch how different reinforcement schedules produce distinct response patterns. FR creates post-reinforcement pauses, VR produces high steady rates, FI shows scalloping, VI shows low steady rates."),
+                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "Watch how different reinforcement schedules produce distinct response patterns. FR creates post-reinforcement pauses, VR produces high steady rates, FI shows scalloping, VI shows low steady rates."),
                 // Canvas for animated cumulative records
                 React.createElement("canvas", {
                   id: "bl-sched-compare-canvas",
@@ -4536,10 +4536,10 @@ var d = labToolData || {};
                       React.createElement("div", { className: "flex items-center gap-1 mb-1" },
                         React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: sch.color } }),
                         React.createElement("span", { className: "text-[10px] font-black text-white" }, sch.name),
-                        React.createElement("span", { className: "text-[8px] font-mono", style: { color: sch.color } }, '(' + sch.abbrev + ')')
+                        React.createElement("span", { className: "text-[10px] font-mono", style: { color: sch.color } }, '(' + sch.abbrev + ')')
                       ),
                       React.createElement("div", { className: "text-[11px] text-slate-400" }, sch.desc),
-                      React.createElement("div", { className: "text-[8px] text-amber-400 mt-1 italic" }, '\uD83D\uDCA1 ' + sch.example)
+                      React.createElement("div", { className: "text-[10px] text-amber-400 mt-1 italic" }, '\uD83D\uDCA1 ' + sch.example)
                     );
                   })
                 )
@@ -4551,7 +4551,7 @@ var d = labToolData || {};
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
               React.createElement("p", { className: "text-[10px] text-slate-600 font-bold mb-2 uppercase tracking-wider" }, "\u2696\uFE0F Reinforcement \u0026 Punishment Matrix"),
-              React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "The 4 quadrants of operant conditioning. Click each cell to learn more:"),
+              React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "The 4 quadrants of operant conditioning. Click each cell to learn more:"),
               // Column headers
               React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1" },
                 React.createElement("div", null),
@@ -4570,7 +4570,7 @@ var d = labToolData || {};
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, m.icon),
                     React.createElement("div", { className: "text-[10px] font-black", style: { color: m.color } }, m.abbrev),
-                    React.createElement("div", { className: "text-[8px] text-slate-400" }, m.name)
+                    React.createElement("div", { className: "text-[10px] text-slate-500" }, m.name)
                   );
                 })
               ),
@@ -4586,7 +4586,7 @@ var d = labToolData || {};
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, m.icon),
                     React.createElement("div", { className: "text-[10px] font-black", style: { color: m.color } }, m.abbrev),
-                    React.createElement("div", { className: "text-[8px] text-slate-400" }, m.name)
+                    React.createElement("div", { className: "text-[10px] text-slate-500" }, m.name)
                   );
                 })
               ),
@@ -4600,7 +4600,7 @@ var d = labToolData || {};
                 },
                   React.createElement("div", { className: "text-[11px] font-black mb-1", style: { color: sel.color } }, sel.icon + ' ' + sel.name + ' (' + sel.abbrev + ')'),
                   React.createElement("div", { className: "text-[11px] text-slate-300 mb-1" }, sel.formal),
-                  React.createElement("div", { className: "text-[11px] text-slate-400 mb-2" },
+                  React.createElement("div", { className: "text-[11px] text-slate-500 mb-2" },
                     React.createElement("span", { className: "font-bold text-emerald-400" }, sel.action),
                     ' a stimulus to ',
                     React.createElement("span", { className: "font-bold text-blue-400" }, sel.effect),
@@ -4621,7 +4621,7 @@ var d = labToolData || {};
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(16,185,129,0.2)' }, glass)
             },
               React.createElement("p", { className: "text-[10px] text-slate-600 font-bold mb-1 uppercase tracking-wider" }, "\uD83C\uDFAE Token Economy Builder"),
-              React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "Design a classroom token economy! Award tokens for positive behaviors, then let students exchange them for rewards. This is a real ABA strategy used in schools worldwide."),
+              React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "Design a classroom token economy! Award tokens for positive behaviors, then let students exchange them for rewards. This is a real ABA strategy used in schools worldwide."),
               // Token balance
               React.createElement("div", { className: "flex items-center justify-center gap-3 mb-3 py-2 bg-gradient-to-r from-amber-900/30 to-emerald-900/30 rounded-xl border border-amber-700/30" },
                 React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99'),
@@ -4650,7 +4650,7 @@ var d = labToolData || {};
                       React.createElement("span", { className: "text-lg" }, item.icon),
                       React.createElement("div", null,
                         React.createElement("div", { className: "text-[11px] font-bold text-slate-300" }, item.name),
-                        React.createElement("div", { className: "text-[8px] text-emerald-400 font-mono" }, '+' + item.tokens + ' tokens')
+                        React.createElement("div", { className: "text-[10px] text-emerald-400 font-mono" }, '+' + item.tokens + ' tokens')
                       )
                     );
                   })
@@ -4681,7 +4681,7 @@ var d = labToolData || {};
                       React.createElement("span", { className: "text-lg" }, rew.icon),
                       React.createElement("div", null,
                         React.createElement("div", { className: "text-[11px] font-bold text-slate-300" }, rew.name),
-                        React.createElement("div", { className: "text-[8px] font-mono " + (canAfford ? 'text-amber-400' : 'text-slate-600') }, rew.cost + ' tokens')
+                        React.createElement("div", { className: "text-[10px] font-mono " + (canAfford ? 'text-amber-400' : 'text-slate-600') }, rew.cost + ' tokens')
                       )
                     );
                   })
@@ -4689,10 +4689,10 @@ var d = labToolData || {};
               ),
               // Transaction log
               blTokenLog.length > 0 && React.createElement("div", { className: "mt-2" },
-                React.createElement("div", { className: "text-[8px] text-slate-600 uppercase tracking-wider mb-0.5" }, 'Recent Activity'),
+                React.createElement("div", { className: "text-[10px] text-slate-600 uppercase tracking-wider mb-0.5" }, 'Recent Activity'),
                 React.createElement("div", { className: "max-h-24 overflow-y-auto space-y-0.5" },
                   blTokenLog.slice(0, 8).map(function(entry, ei) {
-                    return React.createElement("div", { key: ei, className: "flex items-center justify-between text-[8px] px-1.5 py-0.5 rounded " + (entry.type === 'earn' ? 'bg-emerald-900/10' : 'bg-amber-900/10') },
+                    return React.createElement("div", { key: ei, className: "flex items-center justify-between text-[10px] px-1.5 py-0.5 rounded " + (entry.type === 'earn' ? 'bg-emerald-900/10' : 'bg-amber-900/10') },
                       React.createElement("span", null, entry.icon + ' ' + entry.name),
                       React.createElement("span", { className: entry.type === 'earn' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold' },
                         (entry.type === 'earn' ? '+' : '-') + entry.tokens
@@ -4718,7 +4718,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "rounded-xl overflow-hidden border border-slate-700/30" },
                   // Header row
                   React.createElement("div", { className: "grid grid-cols-3 bg-slate-800/60" },
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-slate-400 uppercase" }, 'Aspect'),
+                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-slate-600 uppercase" }, 'Aspect'),
                     React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-amber-400 uppercase text-center border-l border-slate-700/30" }, '\uD83D\uDC2D Operant'),
                     React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-violet-400 uppercase text-center border-l border-slate-700/30" }, '\uD83D\uDC36 Classical')
                   ),
@@ -4746,7 +4746,7 @@ var d = labToolData || {};
                 }, blShowBipPlanner ? 'Hide' : 'Build a BIP \u2192')
               ),
               blShowBipPlanner && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-3" }, "Walk through the steps of creating a real Behavior Intervention Plan \u2014 the document ABA professionals use to address challenging behavior."),
+                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-3" }, "Walk through the steps of creating a real Behavior Intervention Plan \u2014 the document ABA professionals use to address challenging behavior."),
                 // Step indicators
                 React.createElement("div", { className: "flex gap-1 justify-center mb-3" },
                   ['Target', 'Antecedent', 'Function', 'Replace', 'Strategy', 'Summary'].map(function(step, si) {
@@ -4817,7 +4817,7 @@ var d = labToolData || {};
                           { label: 'Intervention Strategy', value: blBipData.strategy, color: 'text-violet-300' }
                         ].map(function(item, ii) {
                           return React.createElement("div", { key: ii },
-                            React.createElement("div", { className: "text-[8px] font-bold uppercase tracking-wider " + item.color }, item.label),
+                            React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider " + item.color }, item.label),
                             React.createElement("div", { className: "text-[10px] text-slate-300" }, item.value)
                           );
                         })
@@ -5008,7 +5008,7 @@ var d = labToolData || {};
                 React.createElement("p", { className: "text-[10px] text-slate-600 font-bold uppercase tracking-wider" }, "\uD83D\uDCD6 ABA Glossary (" + ABA_GLOSSARY.length + " terms)"),
                 React.createElement("button", { "aria-label": "Change bl show glossary",
                   onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
-                  className: "text-[10px] text-slate-400 hover:text-slate-300"
+                  className: "text-[10px] text-slate-500 hover:text-slate-300"
                 }, d.blShowGlossary ? 'Hide' : 'Browse \u2192')
               ),
               d.blShowGlossary && React.createElement("div", null,
@@ -5020,7 +5020,7 @@ var d = labToolData || {};
                       className: "cursor-pointer rounded-lg p-1.5 border transition-all " + (isActive ? 'bg-slate-700 border-amber-500/50' : 'bg-slate-700/20 border-slate-700 hover:border-slate-500')
                     },
                       React.createElement("div", { className: "text-[10px] font-bold " + (isActive ? 'text-amber-300' : 'text-slate-300') }, gl.term),
-                      isActive && React.createElement("div", { className: "text-[11px] text-slate-400 mt-0.5" }, gl.def)
+                      isActive && React.createElement("div", { className: "text-[11px] text-slate-500 mt-0.5" }, gl.def)
                     );
                   })
                 )

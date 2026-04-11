@@ -719,8 +719,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             cq&&cq.answered&&cMode==='method'&&cq.errors&&h('div',{className:'mt-2 bg-slate-50 rounded-lg p-2 border'},
               h('p',{className:'text-[11px] font-bold text-slate-600 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
               h('div',{className:'grid grid-cols-5 gap-1 text-center'},['left','right','midpoint','trapezoid','simpson'].map(function(m){
-                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-500 border')},
-                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[8px]'},cq.errors[m].toFixed(4)));
+                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-600 border')},
+                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[10px]'},cq.errors[m].toFixed(4)));
               }))
             )
           ),
