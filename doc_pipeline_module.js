@@ -595,7 +595,7 @@ ${batchIssueList}
 
 TEXT CONTENT TO TRANSFORM:
 ${'\"\"\"'}
-${extractedText.substring(0, 30000)}
+${extractedText.substring(0, 50000)}
 ${'\"\"\"'}
 
 Create a COMPLETE, polished HTML document following ALL of these requirements:
@@ -671,6 +671,44 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     }
 
     log(`Generated ${accessibleHtml.length} chars HTML`);
+
+    // ── Content verification: check for significant content loss ──
+    // Deterministic word count comparison — no API calls needed.
+    // If the output has significantly fewer words than the input, warn the user.
+    var inputWordCount = extractedText.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+    var outputText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/&[^;]+;/g, ' ');
+    var outputWordCount = outputText.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+    var contentRetention = inputWordCount > 0 ? Math.round(outputWordCount / inputWordCount * 100) : 100;
+    log(`Content verification: input ${inputWordCount} words → output ${outputWordCount} words (${contentRetention}% retained)`);
+    if (contentRetention < 70 && inputWordCount > 200) {
+      warnLog(`[Content Loss] Only ${contentRetention}% of content retained! Input: ${inputWordCount} words, Output: ${outputWordCount} words.`);
+      if (addToast) addToast(`⚠️ Content verification: ${contentRetention}% retained (${inputWordCount} → ${outputWordCount} words). Some content may have been lost during transformation.`, 'warning');
+      // If severe loss and the input was truncated, try to recover by appending the missing tail
+      if (extractedText.length > 50000 && contentRetention < 50) {
+        log('Attempting to recover truncated content...');
+        var tail = extractedText.substring(50000).trim();
+        if (tail.length > 200) {
+          // Convert the tail to simple paragraphs and append before </main>
+          var tailParagraphs = tail.split(/\n{2,}/).filter(function(p) { return p.trim().length > 10; });
+          var tailHtml = tailParagraphs.map(function(p) {
+            return '<p style="margin:0.6em 0;line-height:1.7">' + p.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>';
+          }).join('\n');
+          if (tailHtml.length > 100) {
+            var insertBefore = accessibleHtml.lastIndexOf('</main>');
+            if (insertBefore < 0) insertBefore = accessibleHtml.lastIndexOf('</body>');
+            if (insertBefore > 0) {
+              accessibleHtml = accessibleHtml.substring(0, insertBefore) +
+                '\n<!-- Content recovery: appended truncated tail -->\n' +
+                '<section aria-label="Additional content">\n' + tailHtml + '\n</section>\n' +
+                accessibleHtml.substring(insertBefore);
+              outputWordCount = accessibleHtml.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+              log(`Content recovery: appended ${tailParagraphs.length} paragraphs. Now ${outputWordCount} words.`);
+              if (addToast) addToast('📄 Recovered ' + tailParagraphs.length + ' additional paragraphs from truncated content.', 'info');
+            }
+          }
+        }
+      }
+    }
 
     // ── Phase 3b: Deterministic a11y fixes (full set — mirroring single-file pipeline) ──
     let aiFixCount = 0;
@@ -3339,11 +3377,12 @@ ${currentHtml.substring(0, 20000)}
             if (idMatch) { block.id = idMatch[1]; block.text = block.text.replace(idMatch[0], '').trim(); }
           }
           const id = block.id ? ` id="${block.id}"` : '';
+          const alignStyle = block.align === 'center' ? 'text-align:center;' : block.align === 'right' ? 'text-align:right;' : '';
           switch (block.type) {
-            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${block.text}</h1>`;
-            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${block.text}</h2>`;
-            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${block.text}</h3>`;
-            case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${block.text}</p>`;
+            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em;${alignStyle}">${block.text}</h1>`;
+            case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${alignStyle}${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${block.text}</h2>`;
+            case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em;${alignStyle}">${block.text}</h3>`;
+            case 'p': return `<p style="margin:0.6em 0;line-height:1.7;${alignStyle}">${block.text}</p>`;
             case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${sanitizeField(i)}</li>`).join('')}</ul>`;
             case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${sanitizeField(i)}</li>`).join('')}</ol>`;
             case 'table': {
@@ -3363,9 +3402,9 @@ ${currentHtml.substring(0, 20000)}
               return `<figure data-img-placeholder="true" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
             }
             case 'link': return `<a href="${block.url || '#'}" style="color:${docStyle.accentColor}">${block.text}</a>`;
-            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
+            case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic;${alignStyle}">${block.text}</blockquote>`;
             case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
-            case 'banner': return `<div style="background:${docStyle.headerBg};color:${docStyle.headerText};padding:24px 28px;border-radius:12px;margin-bottom:24px"><div style="font-size:1.5em;font-weight:bold">${block.title || ''}</div>${block.subtitle ? '<div style="font-size:0.9em;opacity:0.85;margin-top:4px">' + block.subtitle + '</div>' : ''}</div>`;
+            case 'banner': return `<div style="background:${docStyle.headerBg};color:${docStyle.headerText};padding:24px 28px;border-radius:12px;margin-bottom:24px;${alignStyle || 'text-align:center;'}"><div style="font-size:1.5em;font-weight:bold">${block.title || ''}</div>${block.subtitle ? '<div style="font-size:0.9em;opacity:0.85;margin-top:4px">' + block.subtitle + '</div>' : ''}</div>`;
             case 'rawhtml': return block.html || '';
             default: return `<div style="margin:0.6em 0">${block.text || ''}</div>`;
           }
@@ -3383,22 +3422,23 @@ ${currentHtml.substring(0, 20000)}
 
 Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
-BLOCK TYPES:
+BLOCK TYPES (all blocks support optional "align":"center" or "align":"right" — use when the original has centered or right-aligned content):
 - {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — the document's main title
-- {"type":"h1","text":"Title","id":"slug-id"} — ONE per document only (WCAG 2.4.2: page titled)
+- {"type":"h1","text":"Title","id":"slug-id","align":"center"} — ONE per document only. Add "align":"center" if the original title is centered.
 - {"type":"h2","text":"Section Title","id":"slug-id"} — major sections. Headings MUST NOT skip levels (no h1→h3)
 - {"type":"h3","text":"Subsection Title","id":"slug-id"} — subsections under h2
-- {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
-- {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
-- {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
-- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
-- {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
+- {"type":"p","text":"Full paragraph text...","align":"center"} — add "align" if original text is centered or right-aligned
+- {"type":"ul","items":["item 1","item 2"]} — unordered lists
+- {"type":"ol","items":["step 1","step 2"]} — ordered lists
+- {"type":"table","caption":"Descriptive caption","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
+- {"type":"image","description":"2-3 sentences","alt":"concise alt under 125 chars","align":"center"} — preserve original image alignment
 - {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
-- {"type":"hr"} — for section breaks between major content areas
+- {"type":"hr"} — for section breaks
 
 ACCESSIBILITY RULES (WCAG 2.1 AA):
 - Include EVERY piece of content from the document. Do NOT summarize or omit.
 - Preserve the LOGICAL reading order (which may differ from visual layout).
+- PRESERVE ALIGNMENT: If text, headings, or images are centered or right-aligned in the original, add "align":"center" or "align":"right" to that block. Left-aligned content doesn't need an align property.
   For multi-column layouts: determine the intended reading sequence, don't just read left-to-right across columns.
 - Heading hierarchy MUST be sequential: h1 → h2 → h3. Never skip a level.
   If the PDF uses bold text as a heading, identify it as such and assign the correct level.
