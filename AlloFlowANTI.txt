@@ -4170,6 +4170,9 @@ const useTranslation = (targetLanguage, apiKey) => {
         }
         return [...prev, { ...e.detail, status: 'complete' }];
       });
+      // Flash auto-save indicator
+      setChunkSaveFlash(true);
+      setTimeout(() => setChunkSaveFlash(false), 2000);
     };
     const onChunkRefixed = (e) => {
       setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c));
@@ -12915,6 +12918,7 @@ Return only the corrected version of this exact text:`;
   const [liveChunkExpanded, setLiveChunkExpanded] = useState({}); // { [index]: bool } for diff expansion
   const [liveChunkRejected, setLiveChunkRejected] = useState({}); // { [index]: bool } for user-rejected chunks
   const [chunkResumePrompt, setChunkResumePrompt] = useState(null); // { completedChunks, totalChunks, savedAt }
+  const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
@@ -51542,6 +51546,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden">
                               <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(liveChunkStream.filter(c => c.status === 'complete').length / liveChunkStream.length) * 100}%` : '0%' }}></div>
                             </div>
+                            {chunkSaveFlash && <div className="text-[10px] text-emerald-600 font-bold text-center animate-in fade-in duration-200">💾 Progress auto-saved</div>}
                             <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';

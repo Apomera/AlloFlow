@@ -33,16 +33,69 @@ var createDocPipeline = function(deps) {
     });
   };
 
-  // Wrap callGemini/callGeminiVision at the binding layer so ALL calls get automatic protection.
-  // Every existing callGemini(...) in the pipeline now has 60s timeout + 1 retry (45s).
-  // Every existing callGeminiVision(...) has 90s timeout + 1 retry (60s).
+  // ── Pipeline telemetry logger ──
+  // Structured logging with timestamps, durations, and API call tracking.
+  // All output prefixed with [DocPipe] for easy filtering in DevTools.
+  var _pipelineStats = { apiCalls: 0, visionCalls: 0, totalApiMs: 0, retries: 0, startTime: 0, stepTimes: {} };
+  var _pipeLog = function(tag, msg, data) {
+    var elapsed = _pipelineStats.startTime ? '+' + ((performance.now() - _pipelineStats.startTime) / 1000).toFixed(1) + 's' : '';
+    var prefix = '[DocPipe][' + tag + '] ' + elapsed + ' — ';
+    if (data) {
+      try { console.groupCollapsed(prefix + msg); console.log(data); console.groupEnd(); } catch(e) { warnLog(prefix + msg, data); }
+    } else {
+      warnLog(prefix + msg);
+    }
+  };
+  var _pipeStepStart = function(step) {
+    _pipelineStats.stepTimes[step] = performance.now();
+    _pipeLog('Step ' + step, 'Starting...');
+  };
+  var _pipeStepEnd = function(step, detail) {
+    var dur = _pipelineStats.stepTimes[step] ? ((performance.now() - _pipelineStats.stepTimes[step]) / 1000).toFixed(1) + 's' : '?';
+    _pipeLog('Step ' + step, 'Complete (' + dur + ')' + (detail ? ' — ' + detail : ''));
+  };
+
+  // Wrap callGemini/callGeminiVision at the binding layer:
+  // - Automatic timeout + 1 retry (callGemini: 60s/45s, callGeminiVision: 90s/60s)
+  // - Auto-logging: every API call logs entry (prompt size) and exit (response size, duration)
   var _rawCallGemini = deps.callGemini;
   var _rawCallGeminiVision = deps.callGeminiVision;
   var callGemini = _rawCallGemini ? function() {
-    var args = arguments; return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 60000, 45000, 'callGemini');
+    var args = arguments;
+    var promptLen = args[0] ? String(args[0]).length : 0;
+    var callNum = ++_pipelineStats.apiCalls;
+    _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
+    var t0 = performance.now();
+    return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 60000, 45000, 'callGemini').then(function(result) {
+      var dur = Math.round(performance.now() - t0);
+      var respLen = result ? String(result).length : 0;
+      _pipelineStats.totalApiMs += dur;
+      _pipeLog('API←', 'callGemini #' + callNum + ' done (' + dur + 'ms, ' + Math.round(respLen / 1000) + 'KB response)');
+      return result;
+    }).catch(function(err) {
+      var dur = Math.round(performance.now() - t0);
+      _pipelineStats.retries++;
+      _pipeLog('API✗', 'callGemini #' + callNum + ' FAILED after ' + dur + 'ms: ' + (err && err.message || err));
+      throw err;
+    });
   } : null;
   var callGeminiVision = _rawCallGeminiVision ? function() {
-    var args = arguments; return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 90000, 60000, 'callGeminiVision');
+    var args = arguments;
+    var callNum = ++_pipelineStats.visionCalls;
+    _pipeLog('Vision→', 'callGeminiVision #' + callNum);
+    var t0 = performance.now();
+    return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 90000, 60000, 'callGeminiVision').then(function(result) {
+      var dur = Math.round(performance.now() - t0);
+      var respLen = result ? String(result).length : 0;
+      _pipelineStats.totalApiMs += dur;
+      _pipeLog('Vision←', 'callGeminiVision #' + callNum + ' done (' + dur + 'ms, ' + Math.round(respLen / 1000) + 'KB response)');
+      return result;
+    }).catch(function(err) {
+      var dur = Math.round(performance.now() - t0);
+      _pipelineStats.retries++;
+      _pipeLog('Vision✗', 'callGeminiVision #' + callNum + ' FAILED after ' + dur + 'ms: ' + (err && err.message || err));
+      throw err;
+    });
   } : null;
   var callImagen = deps.callImagen;
   var addToast = deps.addToast;
@@ -4318,6 +4371,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _onProgress = batchOverrides?.onProgress || null;
     const _startTime = Date.now();
 
+    // Reset pipeline telemetry for this run
+    _pipelineStats.apiCalls = 0; _pipelineStats.visionCalls = 0; _pipelineStats.totalApiMs = 0; _pipelineStats.retries = 0;
+    _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
+    _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
     if (!_base64) { addToast('Cannot fix: PDF data not found in memory. Please re-upload the PDF.', 'error'); return null; }
@@ -4355,6 +4412,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         .slice(0, 25).join('\n');
 
       // ── Step 1: Extract ALL text content from PDF (chunked for long docs) ──
+      _pipeStepStart(1);
       updateProgress(1, 'Reading document content...');
       let extractedText = '';
       // Reset ground-truth state for this run
@@ -4667,7 +4725,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         warnLog('[PDF Fix] Image extraction failed (non-blocking):', imgErr);
       }
 
+      _pipeStepEnd(1, extractedText.length + ' chars extracted');
       // ── Step 2: Transform to accessible HTML via JSON data pipeline ──
+      _pipeStepStart(2);
       // Strategy: AI extracts structured JSON (content + style metadata), then
       // deterministic code renders it into guaranteed-valid styled HTML.
       updateProgress(2, 'Analyzing document structure...');
@@ -5323,7 +5383,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch(gramErr) { warnLog('[PDF Fix] Grammar check failed (non-blocking):', gramErr); }
 
+      _pipeStepEnd(2, accessibleHtml.length + ' chars HTML generated');
       // ── Step 3a: Baseline axe-core on raw HTML (before any fixes) for consistent "before" score ──
+      _pipeStepStart(3);
       updateProgress(3, 'Running baseline axe-core audit...');
       const beforeAxeResult = await runAxeAudit(accessibleHtml);
       const beforeAxeScore = beforeAxeResult ? beforeAxeResult.score : null;
@@ -5551,8 +5613,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         if (reAxe) axeResults = reAxe;
       }
 
-      // ── Step 5: Self-correcting AI fix loop with regression guard ──
+      _pipeStepEnd(3, 'axe: ' + (axeResults ? axeResults.totalViolations : '?') + ' violations, AI: ' + (verification ? verification.score : '?') + '/100');
+      // ── Step 4: Self-correcting AI fix loop with regression guard ──
       // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
+      _pipeStepStart(4);
       let autoFixPasses = 0;
       const maxFixPasses = pdfAutoFixPasses;
       let bestHtml = accessibleHtml;
@@ -5808,6 +5872,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         remainingIssues: verification ? (verification.issues || []).length : null,
         elapsed: Math.round((Date.now() - _startTime) / 1000),
       };
+
+      _pipeStepEnd(4, autoFixPasses + ' fix passes, score: ' + (verification ? verification.score : '?') + '/100');
+      _pipeLog('Done', 'Pipeline complete', {
+        totalElapsed: Math.round((Date.now() - _startTime) / 1000) + 's',
+        apiCalls: _pipelineStats.apiCalls,
+        visionCalls: _pipelineStats.visionCalls,
+        totalApiTime: Math.round(_pipelineStats.totalApiMs / 1000) + 's',
+        retries: _pipelineStats.retries,
+        fixPasses: autoFixPasses,
+        beforeScore: beforeScore,
+        afterScore: verification ? verification.score : null,
+        axeViolations: axeResults ? axeResults.totalViolations : null,
+        htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
+      });
 
       // Batch mode: return result without touching React state
       if (_isBatch) return _result;
