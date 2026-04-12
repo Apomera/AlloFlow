@@ -213,7 +213,7 @@
         bgInput:  isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
         border:   isContrast ? '#ffff00' : isDark ? '#334155' : '#e2e8f0',
         text:     isContrast ? '#ffff00' : isDark ? '#f1f5f9' : '#0f172a',
-        textMuted:isContrast ? '#ffff00' : isDark ? '#94a3b8' : '#64748b',
+        textMuted:isContrast ? '#ffff00' : isDark ? '#cbd5e1' : '#64748b',
         headerBg: isContrast ? '#000000' : isDark ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
         headerText: isContrast ? '#ffff00' : '#f1f5f9',
         btnBg:    isContrast ? '#000000' : isDark ? '#334155' : '#e2e8f0',

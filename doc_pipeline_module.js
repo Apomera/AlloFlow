@@ -940,10 +940,54 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       } catch(e) {}
     }
 
+    // ── Boring-palette detection: if the source document has minimal color variation,
+    // give the AI creative freedom to apply smart beautification instead of replicating boring styling ──
+    const _isBoringPalette = (() => {
+      try {
+        const hexToGray = (hex) => {
+          if (!hex || typeof hex !== 'string') return -1;
+          const h = hex.replace('#', '');
+          if (h.length < 6) return -1;
+          const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+          return 0.299 * r + 0.587 * g + 0.114 * b; // perceived brightness
+        };
+        const colors = [batchDocStyle.headingColor, batchDocStyle.accentColor, batchDocStyle.headerBg, batchDocStyle.tableBg].filter(Boolean);
+        if (colors.length === 0) return true;
+        const grays = colors.map(hexToGray).filter(v => v >= 0);
+        if (grays.length === 0) return true;
+        // Check if all text colors are very dark (< 80 brightness) or very light (> 220 brightness)
+        const allDarkOrLight = grays.every(g => g < 80 || g > 220);
+        // Check if there's very low color variation (all grays within 60 units of each other)
+        const maxGray = Math.max(...grays), minGray = Math.min(...grays);
+        const lowVariation = (maxGray - minGray) < 60;
+        // Also check the background — if it's pure white or near-white with dark text, that's boring
+        const bgGray = hexToGray(batchDocStyle.bgColor);
+        const isBoring = allDarkOrLight && lowVariation && bgGray > 240;
+        if (isBoring) warnLog('[Style] Source document has a boring palette (grayscale/minimal color) — enabling smart beautification');
+        return isBoring;
+      } catch(e) { return false; }
+    })();
+
     // Check for user style seed (set via UI before remediation) — unified with STYLE_SEEDS
     const _styleSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
     const _styleSeed = STYLE_SEEDS[_styleSeedId];
-    const _styleInstructions = _styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '';
+    // If the source is boring and user hasn't explicitly chosen a style, inject smart beautification instructions
+    const _boringBeautify = _isBoringPalette && (!_styleSeedId || _styleSeedId === 'matchOriginal')
+      ? '\nSTYLE ENHANCEMENT: The source document uses minimal/plain styling (mostly black text on white background). Do NOT replicate the boring appearance. Instead, apply smart professional beautification:\n' +
+        '- Use a harmonious color scheme: navy (#1e3a5f) for headings, blue (#2563eb) for accents, subtle warm gray (#f8fafc) for callout/highlight blocks\n' +
+        '- Add visual hierarchy: colored left-border accent blocks for key sections, subtle background shading for important callouts or definitions\n' +
+        '- Use professional spacing: generous padding between sections, clear visual separation between content areas\n' +
+        '- Add subtle design touches: rounded corners on callout blocks, thin colored top-border on the main heading, soft box-shadows on card-like sections\n' +
+        '- Keep it professional and readable — enhance, don\'t overwhelm. The goal is a document people want to read.\n'
+      : '';
+    const _styleInstructions = (_styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '') + _boringBeautify;
+
+    // If boring palette detected and no explicit style chosen, override the extracted colors
+    // so the VISUAL STYLING section of the prompt gives the AI professional defaults instead of black-on-white
+    if (_boringBeautify) {
+      batchDocStyle = { ...batchDocStyle, headingColor: '#1e3a5f', accentColor: '#2563eb', headerBg: '#1e3a5f', headerText: '#ffffff', tableBg: '#f1f5f9', tableBorder: '#cbd5e1' };
+      warnLog('[Style] Overrode boring palette with professional defaults for transform prompt');
+    }
 
     // Deterministic prescan of the source — feed structured hints into the prompt
     const _sourceHints = scanSourceHints(extractedText);
@@ -4377,6 +4421,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   const ctx2d = canvas.getContext('2d');
                   await page.render({ canvasContext: ctx2d, viewport }).promise;
 
+                  // Store full-page canvas for user re-cropping later
+                  if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
+                  window.__pdfPageCanvases[pg] = canvas.toDataURL('image/png');
+
                   if (imageOps.length > 0) {
                     // Find image positions from the transform matrices in the operator list
                     const imagePositions = [];
@@ -4412,6 +4460,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                           crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
                           const dataUrl = crop.toDataURL('image/png');
                           extractedImages[img.idx].generatedSrc = dataUrl;
+                          extractedImages[img.idx].cropData = { page: pg, x: Math.round(pos.x), y: Math.round(pos.y), w: Math.round(pos.w), h: Math.round(pos.h), canvasW: canvas.width, canvasH: canvas.height };
                           warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(pos.w)}x${Math.round(pos.h)} at (${Math.round(pos.x)},${Math.round(pos.y)})`);
                         } catch(cropErr) { warnLog(`[PDF Fix] Image crop failed:`, cropErr); }
                       }
@@ -4866,18 +4915,23 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             const purpose = imgInfo ? (imgInfo.educationalPurpose || '') : '';
             const hasSrc = imgInfo && imgInfo.generatedSrc;
             const isRegenerated = imgInfo && imgInfo.isRegenerated;
+            const hasCropData = imgInfo && imgInfo.cropData;
+            const cropJson = hasCropData ? JSON.stringify(imgInfo.cropData).replace(/"/g, '&quot;') : '';
             // If we have a regenerated image, show it; otherwise show placeholder with upload
-            return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}" style="position:relative;margin:1em 0">
+            return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData ? ` data-crop="${cropJson}"` : ''} style="position:relative;margin:1em 0">
 <div id="${imgId}-container" style="${hasSrc ? '' : 'background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;'}text-align:center;min-height:${hasSrc ? '0' : '120px'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
 ${hasSrc
   ? `<img src="${imgInfo.generatedSrc}" alt="${desc.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
   : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
 <span style="font-size:12px;color:#64748b;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
 <span style="font-size:11px;color:#94a3b8">${desc.substring(0, 100)}${desc.length > 100 ? '...' : ''}</span>`}
-<label style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:${hasSrc ? '#64748b' : '#2563eb'};color:white;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;margin-top:4px">
+<div style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
+<label style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:${hasSrc ? '#64748b' : '#2563eb'};color:white;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer">
 ${hasSrc ? (isRegenerated ? '🔄 Replace (AI generated)' : '🔄 Replace') : '📷 Upload image'}
-<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');c.style.background='none';c.style.border='none';c.innerHTML='<img src=&quot;'+e.target.result+'&quot; alt=&quot;${desc.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}&quot; style=&quot;max-width:100%;border-radius:8px&quot;><br><label style=&quot;font-size:10px;color:#64748b;cursor:pointer;margin-top:4px&quot;>🔄 Replace<input type=&quot;file&quot; accept=&quot;image/*&quot; style=&quot;display:none&quot; onchange=&quot;arguments[0].target.parentElement.parentElement.parentElement.querySelector(\\'input[type=file]\\').onchange.call(this,arguments[0])&quot;></label>';};r.readAsDataURL(f);})(this)">
+<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');var img=c.querySelector('img');if(img){img.src=e.target.result;}else{c.style.background='none';c.style.border='none';var ni=document.createElement('img');ni.src=e.target.result;ni.alt='${desc.replace(/"/g, '').replace(/'/g, '')}';ni.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.insertBefore(ni,c.firstChild);}};r.readAsDataURL(f);})(this)">
 </label>
+${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:#8b5cf6;color:white;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer" aria-label="Adjust crop for this image">✂ Adjust Crop</button>` : ''}
+</div>
 </div>
 <figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.5em">${desc}${purpose ? '<br><em style="font-size:0.8em;color:#94a3b8">Purpose: ' + purpose + '</em>' : ''}</figcaption>
 </figure>`;
@@ -4916,8 +4970,129 @@ hr { border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
 .sr-only:focus { position: static; width: auto; height: auto; padding: 0.5rem 1rem; margin: 0; overflow: visible; clip: auto; background: #2563eb; color: white; border-radius: 0.25rem; z-index: 1000; }
 .extraction-note { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
 figure[data-img-idx] { break-inside: avoid; }
-@media print { body { padding: 0.5in; } .sr-only { display: none; } label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } }
+@media print { body { padding: 0.5in; } .sr-only { display: none; } label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } button[onclick*="pdfCropImage"] { display: none !important; } }
 </style>
+<script>
+// Image crop adjustment UI — opens a modal with the full PDF page, user drags a selection, re-crops
+window.__pdfCropImage = function(imgId) {
+  var figure = document.getElementById(imgId + '-figure');
+  if (!figure) return;
+  var cropStr = figure.getAttribute('data-crop');
+  if (!cropStr) { alert('No crop data available for this image.'); return; }
+  var crop;
+  try { crop = JSON.parse(cropStr); } catch(e) { alert('Invalid crop data.'); return; }
+  var pageSrc = window.__pdfPageCanvases && window.__pdfPageCanvases[crop.page];
+  if (!pageSrc) { alert('Full page image not available. Re-run remediation to enable cropping.'); return; }
+
+  // Create modal overlay
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.7);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-label', 'Adjust image crop');
+
+  var header = document.createElement('div');
+  header.style.cssText = 'color:white;font-size:14px;font-weight:bold;margin-bottom:8px;text-align:center';
+  header.textContent = 'Drag to select crop region, then click Apply';
+  overlay.appendChild(header);
+
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:relative;max-width:90vw;max-height:70vh;overflow:auto;background:#222;border-radius:8px;border:2px solid #555';
+  overlay.appendChild(wrapper);
+
+  var pageImg = document.createElement('img');
+  pageImg.src = pageSrc;
+  pageImg.style.cssText = 'display:block;max-width:100%;user-select:none;-webkit-user-drag:none';
+  pageImg.draggable = false;
+  wrapper.appendChild(pageImg);
+
+  // Selection box
+  var sel = document.createElement('div');
+  sel.style.cssText = 'position:absolute;border:2px dashed #2563eb;background:rgba(37,99,235,0.15);pointer-events:none;display:none';
+  wrapper.appendChild(sel);
+
+  // Position the selection to match current crop (scaled to displayed image)
+  pageImg.onload = function() {
+    var scaleX = pageImg.clientWidth / crop.canvasW;
+    var scaleY = pageImg.clientHeight / crop.canvasH;
+    sel.style.left = (crop.x * scaleX) + 'px';
+    sel.style.top = (crop.y * scaleY) + 'px';
+    sel.style.width = (crop.w * scaleX) + 'px';
+    sel.style.height = (crop.h * scaleY) + 'px';
+    sel.style.display = 'block';
+  };
+
+  // Drag to create new selection
+  var dragging = false, startX = 0, startY = 0;
+  wrapper.onmousedown = function(e) {
+    if (e.target === pageImg || e.target === wrapper) {
+      var rect = pageImg.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+      dragging = true;
+      sel.style.left = startX + 'px'; sel.style.top = startY + 'px';
+      sel.style.width = '0'; sel.style.height = '0';
+      sel.style.display = 'block';
+      e.preventDefault();
+    }
+  };
+  wrapper.onmousemove = function(e) {
+    if (!dragging) return;
+    var rect = pageImg.getBoundingClientRect();
+    var cx = Math.max(0, Math.min(e.clientX - rect.left, pageImg.clientWidth));
+    var cy = Math.max(0, Math.min(e.clientY - rect.top, pageImg.clientHeight));
+    sel.style.left = Math.min(startX, cx) + 'px';
+    sel.style.top = Math.min(startY, cy) + 'px';
+    sel.style.width = Math.abs(cx - startX) + 'px';
+    sel.style.height = Math.abs(cy - startY) + 'px';
+  };
+  wrapper.onmouseup = function() { dragging = false; };
+
+  // Buttons
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:10px';
+
+  var applyBtn = document.createElement('button');
+  applyBtn.textContent = 'Apply Crop';
+  applyBtn.style.cssText = 'padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer';
+  applyBtn.onclick = function() {
+    var scaleX = crop.canvasW / pageImg.clientWidth;
+    var scaleY = crop.canvasH / pageImg.clientHeight;
+    var sx = parseInt(sel.style.left) * scaleX;
+    var sy = parseInt(sel.style.top) * scaleY;
+    var sw = parseInt(sel.style.width) * scaleX;
+    var sh = parseInt(sel.style.height) * scaleY;
+    if (sw < 10 || sh < 10) { alert('Selection too small. Drag a larger area.'); return; }
+    // Re-crop from stored full-page canvas
+    var tmpImg = new Image();
+    tmpImg.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = Math.round(sw); c.height = Math.round(sh);
+      c.getContext('2d').drawImage(tmpImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, c.width, c.height);
+      var dataUrl = c.toDataURL('image/png');
+      var container = document.getElementById(imgId + '-container');
+      var img = container && container.querySelector('img');
+      if (img) { img.src = dataUrl; }
+      // Update crop data on figure for potential re-crop
+      figure.setAttribute('data-crop', JSON.stringify({ page: crop.page, x: Math.round(sx), y: Math.round(sy), w: Math.round(sw), h: Math.round(sh), canvasW: crop.canvasW, canvasH: crop.canvasH }));
+      document.body.removeChild(overlay);
+    };
+    tmpImg.src = pageSrc;
+  };
+  btnRow.appendChild(applyBtn);
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.cssText = 'padding:8px 20px;background:#64748b;color:white;border:none;border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer';
+  cancelBtn.onclick = function() { document.body.removeChild(overlay); };
+  btnRow.appendChild(cancelBtn);
+
+  overlay.appendChild(btnRow);
+  document.body.appendChild(overlay);
+  // Focus trap
+  applyBtn.focus();
+  overlay.onkeydown = function(e) { if (e.key === 'Escape') { document.body.removeChild(overlay); } };
+};
+</script>
 </head>
 <body>
 <a href="#main-content" class="sr-only">Skip to main content</a>

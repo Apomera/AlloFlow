@@ -409,7 +409,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🎭'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Social Skills Lab'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '450px', margin: '0 auto' } },
+            h('p', { style: { color: '#9ca3af', fontSize: '14px', maxWidth: '450px', margin: '0 auto' } },
               'Practice real social situations. Choose how you\'d respond in scenarios, or have a real conversation with an AI peer.')
           ),
           // Badges
