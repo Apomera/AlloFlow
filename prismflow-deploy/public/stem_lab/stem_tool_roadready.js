@@ -783,9 +783,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 9f: EMERGENCY VEHICLES
   // ─────────────────────────────────────────────────────────
 
+  var _lastEmergencyCheck = 0;
   function maybeSpawnEmergency(scenario, time) {
-    if (time < 12) return null; // give player time to settle
-    if (Math.random() > 0.001) return null; // ~once per 15 min avg
+    if (time < 30) return null; // give player 30 seconds to settle
+    // Only check once per second (not every frame)
+    if (time - _lastEmergencyCheck < 1) return null;
+    _lastEmergencyCheck = time;
+    // 0.5% chance per second = roughly once every 3-4 minutes
+    // In a typical 5 min drive, you'll see 0-1 emergency vehicles
+    if (Math.random() > 0.005) return null;
     var types = [
       { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
       { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
@@ -844,10 +850,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // ─────────────────────────────────────────────────────────
   // Maine driver's ed without moose physics is incomplete.
 
-  function maybeSpawnWildlife(scenario) {
-    // Random chance per second; only on rural/snow/fog/night
-    if (['rural', 'snow', 'fog', 'night'].indexOf(scenario.id) === -1) return null;
-    if (Math.random() > 0.003) return null; // ~once per ~5 minutes
+  var _lastWildlifeCheck = 0;
+  function maybeSpawnWildlife(scenario, time) {
+    // Only on rural/snow/fog/night/dawn
+    if (['rural', 'snow', 'fog', 'night', 'dawn'].indexOf(scenario.id) === -1) return null;
+    // Check once per second
+    if (time - _lastWildlifeCheck < 1) return null;
+    _lastWildlifeCheck = time;
+    // 1% per second = ~once per 100 seconds (~1.5 min)
+    // Dawn/dusk has higher chance (peak animal activity)
+    var chance = scenario.id === 'dawn' ? 0.025 : 0.01;
+    if (Math.random() > chance) return null;
     var types = scenario.id === 'snow' || scenario.id === 'rural'
       ? [{ kind: 'moose', icon: '🫎', mass: 'massive', warn: 'MOOSE!' },
          { kind: 'deer', icon: '🦌', mass: 'medium', warn: 'DEER!' }]
@@ -1711,6 +1724,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var netForce = thrust - (Fd + Fr + brakeForce) * resistSign;
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
+          // Engine braking / coast deceleration (lift off gas = gradual slow)
+          if (gear === 'D' && throttleInput === 0 && brakeInput === 0 && car.speed > 0.5) {
+            car.speed *= (1 - dt * 0.3); // gentle coast deceleration
+          }
+          if (gear === 'R' && throttleInput === 0 && brakeInput === 0 && car.speed < -0.5) {
+            car.speed *= (1 - dt * 0.4); // reverse coasts to stop faster
+          }
           // Clamp: in D, no going below 0; in R, no going above 0
           if (gear === 'D' && car.speed < 0) car.speed = 0;
           if (gear === 'R' && car.speed > 0) car.speed = 0;
@@ -1872,7 +1892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var car = carRef.current;
           // Maybe spawn
           if (!w) {
-            var spawn = maybeSpawnWildlife(currentScenario);
+            var spawn = maybeSpawnWildlife(currentScenario, timeRef.current);
             if (spawn) {
               // Spawn ahead of the player on the road, crossing across
               var ahead = 12;
@@ -1917,13 +1937,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         };
 
+        var _nextDrillSpawn = 20;
         var updateEmergency = function(dt) {
           var em = emergencyRef.current;
           var car = carRef.current;
           if (!em) {
-            // In drill mode, force-spawn every ~25 seconds
             var spawn = null;
-            if (d.emergencyDrillMode && timeRef.current > 8 && Math.random() < 0.04) {
+            // Drill mode: timer-based, every 20-35 seconds
+            if (d.emergencyDrillMode && timeRef.current > _nextDrillSpawn) {
+              _nextDrillSpawn = timeRef.current + 20 + Math.random() * 15;
               var drillTypes = [
                 { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
                 { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 },
@@ -1931,6 +1953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ];
               spawn = drillTypes[Math.floor(Math.random() * drillTypes.length)];
             }
+            // Normal mode: rare, checked once per second
             if (!spawn) spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
             if (spawn) {
               emergencyRef.current = {
@@ -3365,6 +3388,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Camera follows car
           var camMode = cameraModeRef.current;
+          // Speed-dependent FOV (faster = wider, like real peripheral vision)
+          var baseFOV = 65;
+          var speedFOV = baseFOV + Math.min(15, Math.abs(car.speed) * 0.8);
+          s3.camera.fov = speedFOV;
+          s3.camera.updateProjectionMatrix();
+
           if (camMode === 'cockpit') {
             // Camera bob from road vibration (subtle, speed-dependent)
             var bobAmp = Math.min(0.03, car.speed * 0.002);
@@ -3423,6 +3452,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Brake lights
           s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
+
+          // Reverse lights (white glow when in reverse)
+          if (s3.playerCarGroup && s3.playerCarGroup.children) {
+            s3.playerCarGroup.children.forEach(function(child) {
+              if (child.material && child.material.color && child.material.color.getHex() === 0xffffee) {
+                child.material.opacity = scn.time === 'night' ? 0.9 : 0.3;
+              }
+            });
+          }
+
+          // High beam toggle — adjust SpotLight range + intensity
+          if (s3.headlightL && s3.headlightR) {
+            var highBeams = d.highBeams;
+            var hlDist = highBeams ? 50 : 25;
+            var hlAngle = highBeams ? Math.PI / 5 : Math.PI / 6;
+            var hlInt = highBeams ? 2.5 : 1.5;
+            s3.headlightL.distance = hlDist;
+            s3.headlightL.angle = hlAngle;
+            s3.headlightL.intensity = hlInt;
+            s3.headlightR.distance = hlDist;
+            s3.headlightR.angle = hlAngle;
+            s3.headlightR.intensity = hlInt;
+          }
 
           // 3D Dashboard updates
           if (s3.dashboardGroup) {
@@ -3582,6 +3634,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
             m.rotation.y = -t.heading + Math.PI / 2;
+            // Brake light brightness based on whether vehicle is slowing
+            if (m.children) {
+              m.children.forEach(function(child) {
+                if (child.material && child.material.color) {
+                  var hex = child.material.color.getHex();
+                  if (hex === 0xff2222 || hex === 0xff0000) {
+                    child.material.opacity = t.speed < t._prevSpeed ? 0.9 : 0.3;
+                    child.material.transparent = true;
+                  }
+                }
+              });
+            }
+            t._prevSpeed = t.speed;
           });
 
           // Update pedestrians

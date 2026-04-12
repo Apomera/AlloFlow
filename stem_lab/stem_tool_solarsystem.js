@@ -794,11 +794,11 @@ const d = labToolData.solarSystem;
 
           var sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
 
-          // Track planet visits (moved here from above to avoid temporal dead zone)
+          // Track planet visits — deferred to avoid setState-during-render
           if (sel && planetsVisited.indexOf(sel.name) === -1) {
             var newVisited = planetsVisited.concat([sel.name]);
-            upd('planetsVisited', newVisited);
             planetsVisited = newVisited;
+            setTimeout(function() { upd('planetsVisited', newVisited); }, 0);
           }
           setTimeout(checkChallenges, 100);
 
@@ -1818,6 +1818,29 @@ const d = labToolData.solarSystem;
   function setTab(i) { upd("orr_tab", i); }
 
   /* ====================================================================
+   *  HOISTED HOOKS — must always run regardless of active tab
+   *  (React requires hooks to be called in identical order every render)
+   * ==================================================================== */
+  // Orrery Tab hooks
+  var orrTimeRef = React.useRef(simTime);
+  var orrHoverRef = React.useRef(null);
+  React.useEffect(function() { orrTimeRef.current = simTime; }, [simTime]);
+  React.useEffect(function() {
+    if (paused) return;
+    var iv = setInterval(function() {
+      orrTimeRef.current += speed / 30;
+      upd("orr_time", orrTimeRef.current);
+    }, 33);
+    return function() { clearInterval(iv); };
+  }, [paused, speed]);
+
+  // Kepler I Tab hooks
+  var k1AnimRef = React.useRef(0);
+
+  // Kepler II Tab hooks
+  var k2AnimRef = React.useRef(0);
+
+  /* ====================================================================
    *  4. TAB HEADER
    * ==================================================================== */
   var tabHeader = h("div", {
@@ -1837,7 +1860,17 @@ const d = labToolData.solarSystem;
     React.useEffect(function() {
       var cv = ref.current;
       if (!cv) return;
+      // High-DPI scaling for crisp rendering on Retina/HiDPI displays
+      var dpr = window.devicePixelRatio || 1;
+      if (!cv._dprScaled) {
+        cv.width = props.width * dpr;
+        cv.height = props.height * dpr;
+        cv.style.width = props.width + "px";
+        cv.style.height = props.height + "px";
+        cv._dprScaled = true;
+      }
       var ctx = cv.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       var running = true;
 
       // Pointer state for pan/zoom
@@ -1931,19 +1964,9 @@ const d = labToolData.solarSystem;
     };
     var baseScale = zoomScales[zoomMode] || 12;
 
-    var timeRef = React.useRef(simTime);
-    var hoverRef = React.useRef(null);
-    React.useEffect(function() { timeRef.current = simTime; }, [simTime]);
-
-    // Time stepping
-    React.useEffect(function() {
-      if (paused) return;
-      var iv = setInterval(function() {
-        timeRef.current += speed / 30;
-        upd("orr_time", timeRef.current);
-      }, 33);
-      return function() { clearInterval(iv); };
-    }, [paused, speed]);
+    // Hooks hoisted to top of orrery IIFE — use orrTimeRef/orrHoverRef
+    var timeRef = orrTimeRef;
+    var hoverRef = orrHoverRef;
 
     var bodyInfoCard = null;
     if (selBody) {
@@ -2008,30 +2031,91 @@ const d = labToolData.solarSystem;
       },
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
+
+        // ── Deep space background with subtle gradient ──
+        if (isDark) {
+          var bgGrad = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, W * 0.7);
+          bgGrad.addColorStop(0, "#0d1117");
+          bgGrad.addColorStop(0.5, "#090c14");
+          bgGrad.addColorStop(1, "#050709");
+          ctx.fillStyle = bgGrad;
+        } else {
+          var bgGradL = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, W * 0.7);
+          bgGradL.addColorStop(0, "#f0f0ff");
+          bgGradL.addColorStop(1, "#dde0f0");
+          ctx.fillStyle = bgGradL;
+        }
         ctx.fillRect(0, 0, W, H);
+
+        // ── Starfield (cached on canvas) ──
+        if (!cv._stars) {
+          cv._stars = [];
+          for (var si = 0; si < 200; si++) {
+            cv._stars.push({
+              x: Math.random() * W,
+              y: Math.random() * H,
+              r: Math.random() * 1.2 + 0.3,
+              b: Math.random() * 0.5 + 0.3,
+              twinkleSpeed: Math.random() * 0.003 + 0.001
+            });
+          }
+        }
+        if (isDark) {
+          for (var si2 = 0; si2 < cv._stars.length; si2++) {
+            var star = cv._stars[si2];
+            var twinkle = star.b + Math.sin((timestamp || 0) * star.twinkleSpeed + si2) * 0.15;
+            ctx.globalAlpha = clamp(twinkle, 0.1, 0.8);
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.r, 0, TAU);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
 
         var t = timeRef.current;
 
         // Export live state for challenges
         cv._liveState = { time: t, bodies: {} };
 
-        // Sun
+        // ── Sun with radial glow ──
+        var sunR = Math.max(4, st.scale * 0.025);
+        // Outer corona glow
+        var coronaGrad = ctx.createRadialGradient(st.cx, st.cy, sunR * 0.5, st.cx, st.cy, sunR * 8);
+        coronaGrad.addColorStop(0, "rgba(255, 220, 50, 0.25)");
+        coronaGrad.addColorStop(0.3, "rgba(255, 180, 20, 0.08)");
+        coronaGrad.addColorStop(1, "rgba(255, 150, 0, 0)");
         ctx.beginPath();
-        ctx.arc(st.cx, st.cy, Math.max(3, st.scale * 0.02), 0, TAU);
-        ctx.fillStyle = "#ffdd44";
+        ctx.arc(st.cx, st.cy, sunR * 8, 0, TAU);
+        ctx.fillStyle = coronaGrad;
+        ctx.fill();
+        // Inner glow
+        var sunGrad = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, sunR * 2.5);
+        sunGrad.addColorStop(0, "#ffffff");
+        sunGrad.addColorStop(0.3, "#ffee66");
+        sunGrad.addColorStop(0.7, "#ffcc22");
+        sunGrad.addColorStop(1, "rgba(255, 170, 0, 0)");
+        ctx.beginPath();
+        ctx.arc(st.cx, st.cy, sunR * 2.5, 0, TAU);
+        ctx.fillStyle = sunGrad;
+        ctx.fill();
+        // Solid core
+        ctx.beginPath();
+        ctx.arc(st.cx, st.cy, sunR, 0, TAU);
+        ctx.fillStyle = "#ffee88";
         ctx.fill();
 
         // Draw orbits and bodies
         for (var i = 0; i < OB.length; i++) {
           var b = OB[i];
-          // Draw ellipse orbit path
-          var c_dist = b.a * b.e; // center-to-focus
+          // Draw ellipse orbit path with subtle gradient
+          var c_dist = b.a * b.e;
           var bSemi = b.a * Math.sqrt(1 - b.e * b.e);
 
           ctx.beginPath();
-          ctx.strokeStyle = b.color + "55";
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = isDark ? (b.color + "40") : (b.color + "55");
+          ctx.lineWidth = (b.type === "planet") ? 1.2 : 0.8;
+          ctx.setLineDash(b.type === "comet" ? [4, 4] : []);
           ctx.ellipse(
             st.cx - c_dist * st.scale,
             st.cy,
@@ -2040,6 +2124,7 @@ const d = labToolData.solarSystem;
             0, 0, TAU
           );
           ctx.stroke();
+          ctx.setLineDash([]);
 
           // Body position
           var M = (TAU * t / b.T) % TAU;
@@ -2056,23 +2141,72 @@ const d = labToolData.solarSystem;
             nu: pos.nu
           };
 
-          // Draw body dot
+          // ── Trail behind body (short arc of recent path) ──
+          if (b.type === "planet" || b.type === "comet") {
+            var trailSteps = b.type === "comet" ? 40 : 24;
+            var trailDt = b.T * 0.002;
+            ctx.beginPath();
+            for (var ti = 0; ti < trailSteps; ti++) {
+              var tt = t - ti * trailDt;
+              var tM = (TAU * tt / b.T) % TAU;
+              var tPos = orbitalPos(b.a, b.e, tM);
+              var tsx = st.cx + tPos.x * st.scale;
+              var tsy = st.cy - tPos.y * st.scale;
+              if (ti === 0) ctx.moveTo(tsx, tsy);
+              else ctx.lineTo(tsx, tsy);
+            }
+            ctx.strokeStyle = b.color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.4;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+
+          // ── Planet dot with glow ──
           var dotR = b.type === "comet" ? 3 : (b.type === "dwarf" ? 4 : clamp(Math.log(b.R + 1) * 1.2, 4, 10));
+
+          // Glow halo
+          var glowGrad = ctx.createRadialGradient(sx, sy, dotR * 0.5, sx, sy, dotR * 3);
+          glowGrad.addColorStop(0, b.color + "60");
+          glowGrad.addColorStop(1, b.color + "00");
+          ctx.beginPath();
+          ctx.arc(sx, sy, dotR * 3, 0, TAU);
+          ctx.fillStyle = glowGrad;
+          ctx.fill();
+
+          // Solid planet body with subtle gradient
+          var bodyGrad = ctx.createRadialGradient(sx - dotR * 0.3, sy - dotR * 0.3, 0, sx, sy, dotR);
+          bodyGrad.addColorStop(0, "#ffffff");
+          bodyGrad.addColorStop(0.3, b.color);
+          bodyGrad.addColorStop(1, b.color);
           ctx.beginPath();
           ctx.arc(sx, sy, dotR, 0, TAU);
-          ctx.fillStyle = b.color;
+          ctx.fillStyle = bodyGrad;
           ctx.fill();
+
+          // Highlight ring for selected body
+          if (selBody === b.id) {
+            ctx.beginPath();
+            ctx.arc(sx, sy, dotR + 4, 0, TAU);
+            ctx.strokeStyle = "#60a5fa";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
 
           // Label (only if scale allows)
           if (st.scale > 2 || (b.type === "planet" && st.scale > 0.8)) {
-            ctx.fillStyle = fg;
-            ctx.font = "11px sans-serif";
-            ctx.fillText(b.name, sx + dotR + 3, sy + 4);
+            ctx.font = (selBody === b.id) ? "bold 12px sans-serif" : "11px sans-serif";
+            ctx.fillStyle = isDark ? "#e2e8f0" : "#334155";
+            // Text shadow for readability
+            if (isDark) {
+              ctx.shadowColor = "rgba(0,0,0,0.7)";
+              ctx.shadowBlur = 3;
+            }
+            ctx.fillText(b.name, sx + dotR + 4, sy + 4);
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
           }
         }
-
-        // Hover/tooltip — tooltip built from last known hover set by mousemove
-        // (simplified: labels serve as hoverable info)
       }
     });
 
@@ -2120,7 +2254,8 @@ const d = labToolData.solarSystem;
       { label: "Halley (0.967)", e: 0.967 }
     ];
 
-    var animRef = React.useRef(0);
+    // Hook hoisted — use k1AnimRef
+    var animRef = k1AnimRef;
 
     var cvPanel = h(CanvasPanel, {
       key: "k1-cv",
@@ -2154,6 +2289,14 @@ const d = labToolData.solarSystem;
         var f2x = cx - c_px;
         var f2y = cy;
 
+        // Sun glow at F1
+        var f1Glow = ctx.createRadialGradient(f1x, f1y, 3, f1x, f1y, 24);
+        f1Glow.addColorStop(0, "rgba(255,220,50,0.35)");
+        f1Glow.addColorStop(1, "rgba(255,180,20,0)");
+        ctx.beginPath();
+        ctx.arc(f1x, f1y, 24, 0, TAU);
+        ctx.fillStyle = f1Glow;
+        ctx.fill();
         ctx.beginPath();
         ctx.arc(f1x, f1y, 8, 0, TAU);
         ctx.fillStyle = "#ffdd44";
@@ -2177,6 +2320,14 @@ const d = labToolData.solarSystem;
         var px = f1x + r * Math.cos(nu);
         var py = f1y - r * Math.sin(nu);
 
+        // Planet glow
+        var pGlow = ctx.createRadialGradient(px, py, 3, px, py, 16);
+        pGlow.addColorStop(0, "rgba(74,144,217,0.4)");
+        pGlow.addColorStop(1, "rgba(74,144,217,0)");
+        ctx.beginPath();
+        ctx.arc(px, py, 16, 0, TAU);
+        ctx.fillStyle = pGlow;
+        ctx.fill();
         ctx.beginPath();
         ctx.arc(px, py, 7, 0, TAU);
         ctx.fillStyle = "#4a90d9";
@@ -2269,7 +2420,8 @@ const d = labToolData.solarSystem;
     var W = 700, H = 550;
     var ecc = k2_ecc;
     var nSectors = k2_sectors;
-    var animRef = React.useRef(0);
+    // Hook hoisted — use k2AnimRef
+    var animRef = k2AnimRef;
 
     var sectorColors = [
       "#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db",
