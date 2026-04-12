@@ -1425,7 +1425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           };
       }, [tab]);
 
-      // Initialize Three.js cave — hoisted to top level to obey Rules of Hooks
+      function renderCave3dTab() {
         var threeReady = window.THREE;
 
         return h('div', { className: 'space-y-3' },
