@@ -1659,17 +1659,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         } catch (e) { /* audio unavailable */ }
         // Start position: on the road, right lane, heading north, away from intersections
-        // Start position: on the road, right lane, heading north, away from intersections
-        var startY = Math.floor(MAP_SIZE * 0.85); // near the bottom of the map
+        // Start position: right lane, heading north, away from intersections
+        var startY = Math.floor(MAP_SIZE * 0.85);
         var startCenterX = Math.floor(MAP_SIZE / 2);
-        // For curved roads, find the actual road center at the start Y
+        // For curved roads, find the actual CENTERLINE (cell type 3) at the start Y
         if (mapRef.current && mapRef.current[startY]) {
-          for (var findX = startCenterX - 8; findX <= startCenterX + 8; findX++) {
-            if (mapRef.current[startY][findX] === 0 || mapRef.current[startY][findX] === 3) {
-              startCenterX = findX; break;
+          // First try to find the centerline marker
+          var foundCenter = false;
+          for (var findX = startCenterX - 10; findX <= startCenterX + 10; findX++) {
+            if (findX >= 0 && findX < MAP_SIZE && mapRef.current[startY][findX] === 3) {
+              startCenterX = findX; foundCenter = true; break;
             }
           }
+          // Fallback: find the middle of the road surface
+          if (!foundCenter) {
+            var roadLeft = -1, roadRight = -1;
+            for (var sx = 0; sx < MAP_SIZE; sx++) {
+              if (mapRef.current[startY][sx] === 0 || mapRef.current[startY][sx] === 3) {
+                if (roadLeft === -1) roadLeft = sx;
+                roadRight = sx;
+              }
+            }
+            if (roadLeft !== -1) startCenterX = Math.floor((roadLeft + roadRight) / 2);
+          }
         }
+        // Place car in RIGHT lane (US: drive on the right, heading north = -PI/2)
+        // +1.5 = right lane (positive X from center)
         carRef.current = { x: startCenterX + 1.5, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0 };
         gearRef.current = 'P'; // start in Park
@@ -1849,7 +1864,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 tip = '💡 You\'re ' + Math.round(absSpd - currentScenario.speedLimit) + ' mph over the limit. Braking distance grows with v².';
               } else if (gearRef.current === 'P' && timeRef.current > 5 && absSpd < 1) {
                 tip = '💡 Press W to start driving (auto-shifts to Drive), or F for Drive, G for Reverse.';
-              } else if (Math.abs(carRef.current.steering) > 0.3 && blinkerRef.current === 0 && absSpd > 10) {
+              } else if (Math.abs(carRef.current.steering) > 0.55 && blinkerRef.current === 0 && absSpd > 15) {
+                // Only trigger for deliberate sharp steering, not gentle curve following
                 tip = '💡 Signal before turning or changing lanes. Press E (left) or V (right).';
               }
               if (tip) {
@@ -2026,9 +2042,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 car.y = newY;
               }
             }
-            // Wrap Y to loop the road (simple circular track)
-            if (car.y < 2) car.y = MAP_SIZE - 3;
-            if (car.y > MAP_SIZE - 2) car.y = 2;
+            // Wrap Y to loop the road — track wrap count for seamless 3D rendering
+            if (car.y < 2) { car.y += MAP_SIZE - 5; if (!car._wrapCount) car._wrapCount = 0; car._wrapCount--; }
+            if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; if (!car._wrapCount) car._wrapCount = 0; car._wrapCount++; }
           }
           // Update stats
           var deltaDist = car.speed * dt;
@@ -2042,13 +2058,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.mpgSamples++;
             statsRef.current.fuelUsed += (deltaDist / 1609) / Math.max(1, mpg);
           }
-          // Jackrabbit detection
-          if (accel > 3.5 && lastStateRef.current.accel <= 3.5) {
+          // Jackrabbit detection (with startup grace)
+          if (accel > 3.5 && lastStateRef.current.accel <= 3.5 && timeRef.current > 5) {
             statsRef.current.jackrabbits++;
             statsRef.current.efficiencyScore -= 3;
           }
-          // Hard brake detection
-          if (brakeInput > 0 && accel < -5 && lastStateRef.current.accel >= -5) {
+          // Hard brake detection (with startup grace)
+          if (brakeInput > 0 && accel < -5 && lastStateRef.current.accel >= -5 && timeRef.current > 5) {
             statsRef.current.hardBrakes++;
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
@@ -2327,8 +2343,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Are we abeam? (alongside)
             var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
             if (Math.abs(forwardDot) > 1.5) return;
-            // Lateral distance in world units; 1 world unit ≈ 10 ft
-            var latUnits = Math.abs(dx); // since road is vertical
+            // Lateral distance: perpendicular distance from car to cyclist
+            // Use cross product for true perpendicular distance (works on curved roads)
+            var carDirX = Math.cos(car.heading);
+            var carDirY = Math.sin(car.heading);
+            var latUnits = Math.abs(dx * carDirY - dy * carDirX); // perpendicular component
             var latFt = latUnits * 10;
             if (latFt < 3 && !cy._flaggedClose) {
               cy._flaggedClose = true;
