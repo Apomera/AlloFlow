@@ -673,7 +673,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         acc += vehicleTypes[vi].weight;
         if (roll < acc) { vType = vehicleTypes[vi]; break; }
       }
-      var direction = Math.random() < 0.5 ? 1 : -1;
+      // Ensure mix of same-direction and oncoming (at least 30% each way)
+      var direction = i < count * 0.35 ? 1 : i < count * 0.7 ? -1 : (Math.random() < 0.5 ? 1 : -1);
       var color = vType.colors[Math.floor(Math.random() * vType.colors.length)];
       traffic.push({
         x: centerX + (direction === 1 ? -1.5 : 1.5),
@@ -1733,6 +1734,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             checkSignalCompliance();
             checkCyclistPassing();
             checkCollisions();
+            // Contextual driving tips (gentle coaching, not penalties)
+            if (!statsRef.current._lastTip) statsRef.current._lastTip = 0;
+            if (timeRef.current - statsRef.current._lastTip > 20) {
+              var tip = null;
+              var absSpd = Math.abs(carRef.current.speed) * MS_TO_MPH;
+              if (absSpd > currentScenario.speedLimit + 10 && absSpd > 15) {
+                tip = '💡 You\'re ' + Math.round(absSpd - currentScenario.speedLimit) + ' mph over the limit. Braking distance grows with v².';
+              } else if (gearRef.current === 'P' && timeRef.current > 5 && absSpd < 1) {
+                tip = '💡 Press W to start driving (auto-shifts to Drive), or F for Drive, G for Reverse.';
+              } else if (Math.abs(carRef.current.steering) > 0.3 && blinkerRef.current === 0 && absSpd > 10) {
+                tip = '💡 Signal before turning or changing lanes. Press E (left) or V (right).';
+              }
+              if (tip) {
+                statsRef.current._lastTip = timeRef.current;
+                eventToastRef.current = { msg: tip, until: timeRef.current + 4 };
+              }
+            }
           }
           render();
           animRef.current = requestAnimationFrame(step);
@@ -1951,6 +1969,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             else if (slowFor === 1) targetSpeed = scn.speedLimit * 0.4 * MPH_TO_MS;
             else targetSpeed = (scn.speedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
             t.speed += (targetSpeed - t.speed) * Math.min(1, dt * 2);
+            // Turn signal on AI vehicles — blink when slowing for a signal
+            t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
             // Move
             t.y += Math.sin(t.heading) * t.speed * dt / 5;
             t.x += Math.cos(t.heading) * t.speed * dt / 5;
@@ -3728,12 +3748,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
             m.rotation.y = -t.heading + Math.PI / 2;
-            // Wheel spin on traffic vehicles
+            // Wheel spin + blinker on traffic vehicles
             if (m.children) {
               var tWheelAngle = timeRef.current * Math.abs(t.speed) * 2;
+              var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
               m.children.forEach(function(child) {
                 if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
                   child.rotation.y = tWheelAngle;
+                }
+                // Headlight meshes double as blinker indicators (orange glow)
+                if (child.material && child.material.color) {
+                  var cHex = child.material.color.getHex();
+                  if (cHex === 0xffffee) {
+                    // Left headlight = left blinker, right = right blinker
+                    if (tBlinkOn && ((t.blinker === -1 && child.position.z > 0) || (t.blinker === 1 && child.position.z < 0))) {
+                      child.material.color.setHex(0xf59e0b); // orange blinker
+                      child.material.opacity = 0.9;
+                    } else {
+                      child.material.color.setHex(0xffffee);
+                      child.material.opacity = scn.time === 'night' ? 0.9 : 0.2;
+                    }
+                  }
                 }
               });
             }
@@ -4524,6 +4559,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', null, '• Headlights: ', h('b', null, 'ON when wipers on'))
             )
           ),
+          // ── Progress Dashboard (compact summary) ──
+          h('div', { style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fff' } }, '📊 Your Progress'),
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, (d.totalDrives || 0) + ' drives · ' + Object.keys(scenariosDriven).length + '/14 scenarios')
+            ),
+            // Progress bars
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' } },
+              // Scenarios explored
+              (function() {
+                var pct = Math.round(Object.keys(scenariosDriven).length / 14 * 100);
+                return h('div', { style: { textAlign: 'center' } },
+                  h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
+                    h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%' } })
+                  ),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee' } }, pct + '%'),
+                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Scenarios')
+                );
+              })(),
+              // Achievements
+              (function() {
+                var pct = Math.round(Object.keys(earnedBadges).length / ACHIEVEMENTS.length * 100);
+                return h('div', { style: { textAlign: 'center' } },
+                  h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
+                    h('div', { style: { height: '100%', background: '#fbbf24', borderRadius: '2px', width: pct + '%' } })
+                  ),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fbbf24' } }, pct + '%'),
+                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Badges')
+                );
+              })(),
+              // Permit readiness (based on last permit score)
+              (function() {
+                var lastPermit = d.permit;
+                var pct = lastPermit && lastPermit.done ? Math.round(lastPermit.score / 20 * 100) : 0;
+                return h('div', { style: { textAlign: 'center' } },
+                  h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
+                    h('div', { style: { height: '100%', background: pct >= 80 ? '#4ade80' : '#f59e0b', borderRadius: '2px', width: pct + '%' } })
+                  ),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: pct >= 80 ? '#4ade80' : '#f59e0b' } }, pct ? pct + '%' : '—'),
+                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Permit')
+                );
+              })(),
+              // Best safety score
+              (function() {
+                var best = drivingStats ? drivingStats.safetyScore : 0;
+                return h('div', { style: { textAlign: 'center' } },
+                  h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
+                    h('div', { style: { height: '100%', background: best >= 80 ? '#4ade80' : '#f59e0b', borderRadius: '2px', width: best + '%' } })
+                  ),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: best >= 80 ? '#4ade80' : '#f59e0b' } }, best || '—'),
+                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Safety')
+                );
+              })()
+            )
+          ),
           // Achievements strip
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
@@ -4708,7 +4798,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '6px 10px', borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW')
           ),
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: '#cbd5e1', fontSize: '10px', zIndex: 10 } },
-            'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Camera · L Beams · Q Horn · SPACE Pause'
+            'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · Q Horn · SPACE Pause'
+          ),
+          // ── Touch controls for mobile/tablet ──
+          h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 15 },
+            className: 'touch-controls' },
+            // Throttle (big green button)
+            h('button', {
+              onTouchStart: function(e) { e.preventDefault(); keysRef.current['w'] = true; },
+              onTouchEnd: function(e) { e.preventDefault(); keysRef.current['w'] = false; },
+              onMouseDown: function() { keysRef.current['w'] = true; },
+              onMouseUp: function() { keysRef.current['w'] = false; },
+              style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #4ade80', background: 'rgba(34,197,94,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
+            }, '▲'),
+            h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center' } },
+              // Steer left
+              h('button', {
+                onTouchStart: function(e) { e.preventDefault(); keysRef.current['a'] = true; },
+                onTouchEnd: function(e) { e.preventDefault(); keysRef.current['a'] = false; },
+                onMouseDown: function() { keysRef.current['a'] = true; },
+                onMouseUp: function() { keysRef.current['a'] = false; },
+                style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
+              }, '◄'),
+              // Steer right
+              h('button', {
+                onTouchStart: function(e) { e.preventDefault(); keysRef.current['d'] = true; },
+                onTouchEnd: function(e) { e.preventDefault(); keysRef.current['d'] = false; },
+                onMouseDown: function() { keysRef.current['d'] = true; },
+                onMouseUp: function() { keysRef.current['d'] = false; },
+                style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
+              }, '►')
+            ),
+            // Brake (big red button)
+            h('button', {
+              onTouchStart: function(e) { e.preventDefault(); keysRef.current['s'] = true; },
+              onTouchEnd: function(e) { e.preventDefault(); keysRef.current['s'] = false; },
+              onMouseDown: function() { keysRef.current['s'] = true; },
+              onMouseUp: function() { keysRef.current['s'] = false; },
+              style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #ef4444', background: 'rgba(239,68,68,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
+            }, '▼')
+          ),
+          // Left side touch: gear + signals
+          h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 15 },
+            className: 'touch-controls' },
+            h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
+              style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '⚙ ' + (gearRef.current || 'D')),
+            h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; },
+              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '◄ Signal'),
+            h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; },
+              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, 'Signal ►')
           ),
           // Free Explore live condition toolbar
           d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 10, minWidth: '160px' } },
