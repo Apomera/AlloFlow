@@ -82,6 +82,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      // tryAward: achievement hook (no-op until achievement system is wired in the hub)
+      var tryAward = ctx.tryAward || function() {};
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
