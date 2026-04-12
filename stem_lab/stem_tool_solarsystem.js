@@ -1607,6 +1607,24 @@ const d = labToolData.solarSystem;
 
 
 
+          // ═══ HOISTED ORRERY HOOKS — must run unconditionally every render ═══
+          // (React requires hooks to execute in the same order regardless of state)
+          var _orrTimeRef = React.useRef(d.orr_time || 0);
+          var _orrHoverRef = React.useRef(null);
+          var _k1AnimRef = React.useRef(0);
+          var _k2AnimRef = React.useRef(0);
+          var _orrSpeed = d.orr_speed || 1;
+          var _orrPaused = d.orr_paused || false;
+          React.useEffect(function() { _orrTimeRef.current = d.orr_time || 0; }, [d.orr_time]);
+          React.useEffect(function() {
+            if (_orrPaused) return;
+            var iv = setInterval(function() {
+              _orrTimeRef.current += _orrSpeed / 30;
+              upd("orr_time", _orrTimeRef.current);
+            }, 33);
+            return function() { clearInterval(iv); };
+          }, [_orrPaused, _orrSpeed]);
+
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
@@ -1818,27 +1836,12 @@ const d = labToolData.solarSystem;
   function setTab(i) { upd("orr_tab", i); }
 
   /* ====================================================================
-   *  HOISTED HOOKS — must always run regardless of active tab
-   *  (React requires hooks to be called in identical order every render)
+   *  HOOKS — aliased from pre-hoisted refs (declared before orrery ternary)
    * ==================================================================== */
-  // Orrery Tab hooks
-  var orrTimeRef = React.useRef(simTime);
-  var orrHoverRef = React.useRef(null);
-  React.useEffect(function() { orrTimeRef.current = simTime; }, [simTime]);
-  React.useEffect(function() {
-    if (paused) return;
-    var iv = setInterval(function() {
-      orrTimeRef.current += speed / 30;
-      upd("orr_time", orrTimeRef.current);
-    }, 33);
-    return function() { clearInterval(iv); };
-  }, [paused, speed]);
-
-  // Kepler I Tab hooks
-  var k1AnimRef = React.useRef(0);
-
-  // Kepler II Tab hooks
-  var k2AnimRef = React.useRef(0);
+  var orrTimeRef = _orrTimeRef;
+  var orrHoverRef = _orrHoverRef;
+  var k1AnimRef = _k1AnimRef;
+  var k2AnimRef = _k2AnimRef;
 
   /* ====================================================================
    *  4. TAB HEADER
