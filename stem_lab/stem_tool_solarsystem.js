@@ -1852,9 +1852,16 @@ const d = labToolData.solarSystem;
    *  4. TAB HEADER
    * ==================================================================== */
   var tabHeader = h("div", {
-    style: { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }
+    style: { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" },
+    role: "tablist",
+    onKeyDown: function(ev) {
+      if (ev.key === "ArrowRight" || ev.key === "ArrowDown") { ev.preventDefault(); setTab(Math.min(stab + 1, TAB_NAMES.length - 1)); }
+      if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") { ev.preventDefault(); setTab(Math.max(stab - 1, 0)); }
+      if (ev.key === "Home") { ev.preventDefault(); setTab(0); }
+      if (ev.key === "End") { ev.preventDefault(); setTab(TAB_NAMES.length - 1); }
+    }
   }, TAB_NAMES.map(function(nm, i) {
-    return btn(nm, stab === i, function() { setTab(i); }, { key: "tab" + i });
+    return btn(nm, stab === i, function() { setTab(i); }, { key: "tab" + i, role: "tab", "aria-selected": stab === i, tabIndex: stab === i ? 0 : -1 });
   }));
 
   /* ====================================================================
@@ -1899,6 +1906,8 @@ const d = labToolData.solarSystem;
       }
       raf.current = requestAnimationFrame(draw);
 
+      // Inertia state for smooth pan
+      if (!st._inertiaInit) { st.vx = 0; st.vy = 0; st._inertiaInit = true; }
       function onWheel(ev) {
         ev.preventDefault();
         var f = ev.deltaY < 0 ? 1.1 : 0.9;
@@ -1906,17 +1915,32 @@ const d = labToolData.solarSystem;
       }
       function onDown(ev) {
         st.dragging = true;
+        st.vx = 0; st.vy = 0;
         st.lastX = ev.clientX;
         st.lastY = ev.clientY;
       }
       function onMove(ev) {
         if (!st.dragging) return;
-        st.cx += ev.clientX - st.lastX;
-        st.cy += ev.clientY - st.lastY;
+        var dx = ev.clientX - st.lastX;
+        var dy = ev.clientY - st.lastY;
+        st.cx += dx; st.cy += dy;
+        st.vx = dx * 0.5; st.vy = dy * 0.5;
         st.lastX = ev.clientX;
         st.lastY = ev.clientY;
       }
-      function onUp() { st.dragging = false; }
+      function onUp() {
+        st.dragging = false;
+        // Apply inertia via rAF
+        function inertiaStep() {
+          if (st.dragging) return;
+          if (Math.abs(st.vx) > 0.2 || Math.abs(st.vy) > 0.2) {
+            st.cx += st.vx; st.cy += st.vy;
+            st.vx *= 0.92; st.vy *= 0.92;
+            requestAnimationFrame(inertiaStep);
+          }
+        }
+        requestAnimationFrame(inertiaStep);
+      }
 
       if (props.panZoom) {
         cv.addEventListener("wheel", onWheel, { passive: false });
@@ -2116,6 +2140,10 @@ const d = labToolData.solarSystem;
         // Draw orbits and bodies
         for (var i = 0; i < OB.length; i++) {
           var b = OB[i];
+          // Filter check
+          if (b.type === "comet" && !showComets) continue;
+          if (b.type === "dwarf" && !showDwarfs) continue;
+
           // Draw ellipse orbit path with subtle gradient
           var c_dist = b.a * b.e;
           var bSemi = b.a * Math.sqrt(1 - b.e * b.e);
@@ -2170,6 +2198,28 @@ const d = labToolData.solarSystem;
             ctx.globalAlpha = 1;
           }
 
+          // ── Comet tail (points away from Sun) ──
+          if (b.type === "comet" && pos.r < 5) {
+            var tailLen = clamp((3 / pos.r) * 30, 10, 80) * (st.scale / 12);
+            var tailAngle = Math.atan2(-pos.y, pos.x); // away from Sun
+            var tx1 = sx + Math.cos(tailAngle) * tailLen;
+            var ty1 = sy - Math.sin(tailAngle) * tailLen;
+            // Ion tail (blue, straight)
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx1, ty1);
+            ctx.strokeStyle = "#88ccff"; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5; ctx.stroke();
+            // Dust tail (yellow-white, curved slightly)
+            var tx2 = sx + Math.cos(tailAngle + 0.15) * tailLen * 0.8;
+            var ty2 = sy - Math.sin(tailAngle + 0.15) * tailLen * 0.8;
+            ctx.beginPath(); ctx.moveTo(sx, sy);
+            ctx.quadraticCurveTo(sx + Math.cos(tailAngle + 0.08) * tailLen * 0.5, sy - Math.sin(tailAngle + 0.08) * tailLen * 0.5, tx2, ty2);
+            ctx.strokeStyle = "#ffffcc"; ctx.lineWidth = 2; ctx.stroke();
+            ctx.globalAlpha = 1;
+            // Coma glow
+            var comaGrad = ctx.createRadialGradient(sx, sy, 1, sx, sy, 8);
+            comaGrad.addColorStop(0, "rgba(200,240,255,0.6)"); comaGrad.addColorStop(1, "rgba(200,240,255,0)");
+            ctx.beginPath(); ctx.arc(sx, sy, 8, 0, TAU); ctx.fillStyle = comaGrad; ctx.fill();
+          }
+
           // ── Planet dot with glow ──
           var dotR = b.type === "comet" ? 3 : (b.type === "dwarf" ? 4 : clamp(Math.log(b.R + 1) * 1.2, 4, 10));
 
@@ -2192,6 +2242,23 @@ const d = labToolData.solarSystem;
           ctx.fillStyle = bodyGrad;
           ctx.fill();
 
+          // ── Saturn rings ──
+          if (b.id === "saturn") {
+            ctx.beginPath();
+            ctx.ellipse(sx, sy, dotR * 2.2, dotR * 0.6, -0.3, 0, TAU);
+            ctx.strokeStyle = "#e0c068aa"; ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(sx, sy, dotR * 1.7, dotR * 0.45, -0.3, 0, TAU);
+            ctx.strokeStyle = "#d4aa5088"; ctx.lineWidth = 1.5; ctx.stroke();
+          }
+
+          // ── Uranus ring (faint) ──
+          if (b.id === "uranus") {
+            ctx.beginPath();
+            ctx.ellipse(sx, sy, dotR * 1.6, dotR * 1.4, 1.2, 0, TAU);
+            ctx.strokeStyle = "#73c2d044"; ctx.lineWidth = 1; ctx.stroke();
+          }
+
           // Highlight ring for selected body
           if (selBody === b.id) {
             ctx.beginPath();
@@ -2201,8 +2268,17 @@ const d = labToolData.solarSystem;
             ctx.stroke();
           }
 
-          // Label (only if scale allows)
-          if (st.scale > 2 || (b.type === "planet" && st.scale > 0.8)) {
+          // Inclination indicator (tiny tilt line for high-i bodies)
+          if (b.i > 5 && st.scale > 3) {
+            var iLen = clamp(b.i * 0.4, 3, 12);
+            ctx.beginPath();
+            ctx.moveTo(sx, sy - dotR - 2);
+            ctx.lineTo(sx + iLen * Math.sin(b.i * DEG), sy - dotR - 2 - iLen * Math.cos(b.i * DEG));
+            ctx.strokeStyle = mutedFg + "88"; ctx.lineWidth = 1; ctx.stroke();
+          }
+
+          // Label (only if scale allows and labels enabled)
+          if (showLabels && (st.scale > 2 || (b.type === "planet" && st.scale > 0.8))) {
             ctx.font = (selBody === b.id) ? "bold 12px sans-serif" : "11px sans-serif";
             ctx.fillStyle = isDark ? "#e2e8f0" : "#334155";
             // Text shadow for readability
@@ -2238,8 +2314,19 @@ const d = labToolData.solarSystem;
       btn("Outer", zoomMode === "outer", function() { upd("orr_zoom", "outer"); })
     );
 
+    // ── Body filter toggles ──
+    var filterRow = h("div", {
+      style: { display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", marginBottom: "6px" }
+    },
+      h("span", { style: { fontSize: "11px", color: mutedFg, marginRight: "2px" } }, "Show:"),
+      btn(showComets ? "\u2604 Comets" : "\u2604 Comets", showComets, function() { upd("orr_showComets", !showComets); }),
+      btn(showDwarfs ? "\u26b3 Dwarfs" : "\u26b3 Dwarfs", showDwarfs, function() { upd("orr_showDwarfs", !showDwarfs); }),
+      btn(showLabels ? "Aa Labels" : "Aa Labels", showLabels, function() { upd("orr_showLabels", !showLabels); })
+    );
+
     return h("div", { className: "space-y-3" },
       controls,
+      filterRow,
       cvPanel,
       bodyInfoCard
     );
@@ -2425,7 +2512,7 @@ const d = labToolData.solarSystem;
    *  7. KEPLER II — EQUAL AREAS TAB
    * ==================================================================== */
   function buildKeplerIITab() {
-    var W = 700, H = 550;
+    var W = 700, H = 620;
     var ecc = k2_ecc;
     var nSectors = k2_sectors;
     // Hook hoisted — use k2AnimRef
@@ -2543,51 +2630,118 @@ const d = labToolData.solarSystem;
           ctx.fill();
         }
 
-        // Speed vs position mini-graph at bottom
-        var gx = 40;
-        var gy = H - 90;
-        var gw = W - 80;
-        var gh = 60;
-        ctx.strokeStyle = border;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(gx, gy, gw, gh);
-        ctx.fillStyle = fg;
-        ctx.font = "11px sans-serif";
-        ctx.fillText("Speed vs. Orbit Position", gx, gy - 5);
-        ctx.fillText("Perihelion", gx, gy + gh + 14);
-        ctx.fillText("Aphelion", gx + gw - 50, gy + gh + 14);
+        // ── Speed magnitude label on velocity vector ──
+        if (vmag > 0) {
+          var vRealNorm = Math.sqrt(2 / (r_now / a_px) - 1);
+          ctx.fillStyle = "#e74c3c";
+          ctx.font = "bold 11px sans-serif";
+          ctx.fillText("v = " + vRealNorm.toFixed(2) + "x", px + vdx / vmag * vLen + 8, py + vdy / vmag * vLen - 4);
+        }
 
-        // Plot speed curve
+        // ── Radial line (r vector from Sun to planet) ──
+        ctx.beginPath();
+        ctx.moveTo(f1x, f1y);
+        ctx.lineTo(px, py);
+        ctx.strokeStyle = "#27ae6066";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // ── Speed + Angular Momentum mini-graphs at bottom ──
+        var gx = 40;
+        var gy = H - 130;
+        var gw = (W - 100) / 2;
+        var gh = 55;
+
+        // Speed vs position graph
+        ctx.strokeStyle = border; ctx.lineWidth = 1;
+        ctx.strokeRect(gx, gy, gw, gh);
+        ctx.fillStyle = fg; ctx.font = "11px sans-serif";
+        ctx.fillText("Speed vs. Position", gx, gy - 5);
+        ctx.font = "9px sans-serif"; ctx.fillStyle = mutedFg;
+        ctx.fillText("Peri", gx, gy + gh + 12);
+        ctx.fillText("Aph", gx + gw - 20, gy + gh + 12);
+
         ctx.beginPath();
         var pts = 100;
         for (var j = 0; j <= pts; j++) {
           var nu_p = -PI + TAU * j / pts;
           var r_p = 1 * (1 - e * e) / (1 + e * Math.cos(nu_p));
-          var v_p = Math.sqrt(2 / r_p - 1 / 1); // vis-viva normalized
+          var v_p = Math.sqrt(2 / r_p - 1 / 1);
           var xx = gx + (j / pts) * gw;
           var yy = gy + gh - (v_p / 2.5) * gh;
-          if (j === 0) ctx.moveTo(xx, yy);
-          else ctx.lineTo(xx, yy);
+          if (j === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
         }
-        ctx.strokeStyle = "#e74c3c";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 2; ctx.stroke();
 
-        // Current position marker on graph
+        // Current marker on speed graph
         var nuNorm = ((nu_now + PI) % TAU) / TAU;
         var rCur = 1 * (1 - e * e) / (1 + e * Math.cos(nu_now));
         var vCur = Math.sqrt(2 / rCur - 1);
         var mx = gx + nuNorm * gw;
         var my = gy + gh - (vCur / 2.5) * gh;
+        ctx.beginPath(); ctx.arc(mx, my, 5, 0, TAU); ctx.fillStyle = "#4a90d9"; ctx.fill();
+
+        // ── Angular Momentum graph (r × v⊥ = constant) ──
+        var gx2 = gx + gw + 30;
+        ctx.strokeStyle = border; ctx.lineWidth = 1;
+        ctx.strokeRect(gx2, gy, gw, gh);
+        ctx.fillStyle = fg; ctx.font = "11px sans-serif";
+        ctx.fillText("r \u00d7 v (angular momentum)", gx2, gy - 5);
+        ctx.font = "9px sans-serif"; ctx.fillStyle = mutedFg;
+        ctx.fillText("Peri", gx2, gy + gh + 12);
+        ctx.fillText("Aph", gx2 + gw - 20, gy + gh + 12);
+
+        // r (green) and v (red) curves + L = const (blue dashed)
+        // Normalize: at peri r_min, v_max, L = r*v
+        var L_const = 1 * (1 - e * e); // normalized L²/(GM a)
         ctx.beginPath();
-        ctx.arc(mx, my, 5, 0, TAU);
-        ctx.fillStyle = "#4a90d9";
-        ctx.fill();
+        for (var j2 = 0; j2 <= pts; j2++) {
+          var nu_p2 = -PI + TAU * j2 / pts;
+          var r_p2 = 1 * (1 - e * e) / (1 + e * Math.cos(nu_p2));
+          var xx2 = gx2 + (j2 / pts) * gw;
+          var yy2 = gy + gh - (r_p2 / 2.5) * gh;
+          if (j2 === 0) ctx.moveTo(xx2, yy2); else ctx.lineTo(xx2, yy2);
+        }
+        ctx.strokeStyle = "#27ae60"; ctx.lineWidth = 1.5; ctx.stroke();
+
+        ctx.beginPath();
+        for (var j3 = 0; j3 <= pts; j3++) {
+          var nu_p3 = -PI + TAU * j3 / pts;
+          var r_p3 = 1 * (1 - e * e) / (1 + e * Math.cos(nu_p3));
+          var v_p3 = Math.sqrt(2 / r_p3 - 1);
+          var xx3 = gx2 + (j3 / pts) * gw;
+          var yy3 = gy + gh - (v_p3 / 2.5) * gh;
+          if (j3 === 0) ctx.moveTo(xx3, yy3); else ctx.lineTo(xx3, yy3);
+        }
+        ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 1.5; ctx.stroke();
+
+        // L = const line
+        var Lval = Math.sqrt(L_const);
+        ctx.beginPath();
+        ctx.moveTo(gx2, gy + gh - (Lval / 2.5) * gh);
+        ctx.lineTo(gx2 + gw, gy + gh - (Lval / 2.5) * gh);
+        ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2; ctx.setLineDash([5, 3]); ctx.stroke(); ctx.setLineDash([]);
+
+        // Legend
+        ctx.font = "9px sans-serif";
+        ctx.fillStyle = "#27ae60"; ctx.fillText("r", gx2 + gw + 4, gy + 12);
+        ctx.fillStyle = "#e74c3c"; ctx.fillText("v", gx2 + gw + 4, gy + 24);
+        ctx.fillStyle = "#3b82f6"; ctx.fillText("L", gx2 + gw + 4, gy + 36);
+
+        // Current marker on L graph
+        var mx2 = gx2 + nuNorm * gw;
+        var rCur2 = 1 * (1 - e * e) / (1 + e * Math.cos(nu_now));
+        var my2 = gy + gh - (rCur2 / 2.5) * gh;
+        ctx.beginPath(); ctx.arc(mx2, my2, 4, 0, TAU); ctx.fillStyle = "#4a90d9"; ctx.fill();
 
         // Equation
         ctx.fillStyle = fg;
-        ctx.font = "14px serif";
+        ctx.font = "13px serif";
         ctx.fillText("Kepler II:  A line from the Sun to a planet sweeps equal areas in equal times.", 20, H - 10);
+        ctx.font = "11px serif"; ctx.fillStyle = mutedFg;
+        ctx.fillText("L = r \u00d7 v\u22a5 = constant  (conservation of angular momentum)", 20, H + 4);
       }
     });
 
@@ -2631,6 +2785,21 @@ const d = labToolData.solarSystem;
       width: W,
       height: H,
       panZoom: false,
+      onClick: function(mx, my) {
+        // Hit-test data points for tooltip
+        var margin = 60, pw = W - 2 * margin, ph = H - 2 * margin;
+        var xMin = -0.6, xMax = 2.1, yMin = -0.8, yMax = 3.0;
+        for (var i = 0; i < OB.length; i++) {
+          var b = OB[i];
+          var sx = margin + (Math.log10(b.a) - xMin) / (xMax - xMin) * pw;
+          var sy = margin + ph - (Math.log10(b.T) - yMin) / (yMax - yMin) * ph;
+          if ((mx - sx) * (mx - sx) + (my - sy) * (my - sy) < 100) {
+            upd("orr_k3hover", b.id === (d.orr_k3hover || null) ? null : b.id);
+            return;
+          }
+        }
+        upd("orr_k3hover", null);
+      },
       draw: function(ctx) {
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
@@ -2739,6 +2908,42 @@ const d = labToolData.solarSystem;
         ctx.fillStyle = fg;
         ctx.font = "14px serif";
         ctx.fillText("Kepler III: T\u00b2 = a\u00b3  (log-log plot should be a straight line with slope 3/2)", margin, margin - 10);
+
+        // ── Hover tooltip ──
+        var hoverBody = d.orr_k3hover ? OB.filter(function(bb) { return bb.id === d.orr_k3hover; })[0] : null;
+        if (hoverBody) {
+          var hsx = toSx(Math.log10(hoverBody.a));
+          var hsy = toSy(Math.log10(hoverBody.T));
+          // Highlight ring
+          ctx.beginPath(); ctx.arc(hsx, hsy, 10, 0, TAU);
+          ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
+          // Tooltip box
+          var T2h = hoverBody.T * hoverBody.T;
+          var a3h = hoverBody.a * hoverBody.a * hoverBody.a;
+          var ratioH = T2h / a3h;
+          var tooltipLines = [
+            hoverBody.emoji + " " + hoverBody.name,
+            "a = " + fmt(hoverBody.a, 3) + " AU",
+            "T = " + fmt(hoverBody.T, 2) + " yr",
+            "T\u00b2/a\u00b3 = " + fmt(ratioH, 4)
+          ];
+          var tw = 140, th = tooltipLines.length * 16 + 12;
+          var tx = hsx + 14, ty = hsy - th / 2;
+          if (tx + tw > W) tx = hsx - tw - 14;
+          if (ty < 5) ty = 5;
+          ctx.fillStyle = isDark ? "rgba(30,30,50,0.92)" : "rgba(255,255,255,0.95)";
+          ctx.strokeStyle = accent;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(tx, ty, tw, th, 6) : ctx.rect(tx, ty, tw, th);
+          ctx.fill(); ctx.stroke();
+          ctx.fillStyle = fg; ctx.font = "bold 11px sans-serif";
+          ctx.fillText(tooltipLines[0], tx + 8, ty + 16);
+          ctx.font = "11px sans-serif";
+          for (var tli = 1; tli < tooltipLines.length; tli++) {
+            ctx.fillText(tooltipLines[tli], tx + 8, ty + 16 + tli * 16);
+          }
+        }
       }
     });
 
@@ -3470,6 +3675,11 @@ const d = labToolData.solarSystem;
           }, "\ud83d\udca1 Reveal Hint (" + (prob.hints.length - hintCount) + " left)") : h("span", { style: { fontSize: "12px", color: mutedFg } }, "All hints revealed")
         ) : null,
 
+        // Tolerance hint
+        !answered ? h("div", { key: "tol-hint", style: { fontSize: "11px", color: mutedFg, marginBottom: "6px", padding: "4px 8px", background: isDark ? "#1a2a3a" : "#f0f4ff", borderRadius: "4px", border: "1px solid " + border } },
+          "\uD83C\uDFAF Precision needed: within \u00b1" + prob.tol + " " + prob.unit
+        ) : null,
+
         !answered ? h("div", { key: "ainput", style: { display: "flex", gap: "8px", alignItems: "center" } },
           h("input", {
             type: "number",
@@ -3479,6 +3689,18 @@ const d = labToolData.solarSystem;
               var newA = Object.assign({}, ch_ans);
               newA[idx] = ev.target.value;
               upd("orr_cha", newA);
+            },
+            onKeyDown: function(ev) {
+              if (ev.key === "Enter") {
+                var userVal = parseFloat(ch_ans[idx]);
+                if (isNaN(userVal)) { if (addToast) addToast("Enter a number."); return; }
+                if (Math.abs(userVal - prob.answer) <= prob.tol) {
+                  var newC = Object.assign({}, ch_correct); newC[idx] = true; upd("orr_chc", newC);
+                  if (awardStemXP) awardStemXP(10); if (addToast) addToast("\u2705 Correct! +10 XP");
+                } else {
+                  if (addToast) addToast("\u274c Not quite. Try again or reveal a hint.");
+                }
+              }
             },
             placeholder: "Your answer",
             style: { width: "140px", padding: "8px", borderRadius: "6px", border: "1px solid " + border, background: bg, color: fg, fontSize: "14px" }
@@ -3495,7 +3717,9 @@ const d = labToolData.solarSystem;
                 if (awardStemXP) awardStemXP(10);
                 if (addToast) addToast("\u2705 Correct! +10 XP");
               } else {
-                if (addToast) addToast("\u274c Not quite. Try again or reveal a hint.");
+                var diff = Math.abs(userVal - prob.answer);
+                var hint = diff < prob.tol * 3 ? "Very close!" : diff < prob.tol * 10 ? "Getting warm." : "Check your formula.";
+                if (addToast) addToast("\u274c " + hint + " Try again or reveal a hint.");
               }
             },
             style: { padding: "8px 20px", borderRadius: "6px", border: "none", background: "#27ae60", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px" }
@@ -3566,6 +3790,41 @@ const d = labToolData.solarSystem;
         q: "Comets follow the same gravitational laws as planets.",
         answer: true,
         explain: "Comets obey Kepler's laws and Newton's gravity just like planets. They simply have much higher eccentricities, producing elongated elliptical (or sometimes parabolic/hyperbolic) paths."
+      },
+      {
+        q: "Gravity gets weaker with distance, so the outer planets barely feel the Sun's pull.",
+        answer: false,
+        explain: "While gravity does decrease with distance (1/r\u00b2), it never reaches zero. The outer planets are massive enough that even at 30+ AU, the Sun's gravity keeps them in stable orbits for billions of years."
+      },
+      {
+        q: "An astronaut in orbit is weightless because there is no gravity.",
+        answer: false,
+        explain: "Astronauts in orbit experience microgravity, not zero gravity. They are in constant free-fall toward Earth, but their horizontal velocity keeps them falling 'around' the planet rather than into it. Gravity at the ISS altitude is about 90% of surface gravity."
+      },
+      {
+        q: "To go to a planet closer to the Sun, a spacecraft must speed up.",
+        answer: false,
+        explain: "Counter-intuitively, to move to a lower orbit you must slow down (\u0394v opposite to velocity). This drops you into a transfer orbit with a lower perihelion. You then brake again at the destination. This is why Hohmann transfers to inner planets require retrograde burns."
+      },
+      {
+        q: "The asteroid belt between Mars and Jupiter is extremely dense and dangerous to fly through.",
+        answer: false,
+        explain: "Despite how it looks in movies, the asteroid belt is mostly empty space. The total mass of all asteroids combined is less than 4% of the Moon's mass, and they are spread across a vast volume. Spacecraft routinely pass through it without incident."
+      },
+      {
+        q: "All planets orbit in roughly the same plane.",
+        answer: true,
+        explain: "The eight major planets orbit within about 7\u00b0 of the ecliptic plane, a remnant of the protoplanetary disk from which they formed. Dwarf planets and comets can have much higher inclinations (Pluto: 17\u00b0, Eris: 44\u00b0)."
+      },
+      {
+        q: "A planet's orbital speed is constant throughout its orbit.",
+        answer: false,
+        explain: "By Kepler's Second Law, a planet moves faster at perihelion and slower at aphelion. The equal-areas rule means the speed continuously changes unless the orbit is perfectly circular (eccentricity = 0)."
+      },
+      {
+        q: "If the Sun suddenly disappeared, Earth would fly off in a straight line.",
+        answer: true,
+        explain: "With no gravitational force, Newton's first law says an object in motion stays in motion in a straight line. Earth would continue moving tangent to its orbit at about 29.8 km/s. (In reality, general relativity says gravitational changes propagate at the speed of light, so there'd be an 8-minute delay.)"
       }
     ];
 

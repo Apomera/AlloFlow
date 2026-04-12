@@ -1660,10 +1660,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (!canvas) return;
         var lastT = performance.now();
 
+        // ── Gamepad API support ──
+        var pollGamepad = function() {
+          var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+          for (var gi = 0; gi < gamepads.length; gi++) {
+            var gp = gamepads[gi];
+            if (!gp) continue;
+            // Standard gamepad mapping:
+            // Left stick X = steering (-1 left, +1 right)
+            // Right trigger (axis 5 or button 7) = throttle
+            // Left trigger (axis 4 or button 6) = brake
+            // A button (0) = horn, B button (1) = camera, X (2) = blinker left, Y (3) = blinker right
+            // D-pad up (12) = gear up (D), D-pad down (13) = gear down (R), D-pad left (14) = blinker L, D-pad right (15) = blinker R
+            // Start (9) = pause, LB (4) = low beams, RB (5) = high beams
+            var axes = gp.axes;
+            var buttons = gp.buttons;
+            var k = keysRef.current;
+            // Steering from left stick X (axis 0) — analog!
+            if (Math.abs(axes[0]) > 0.1) {
+              k._gpSteer = axes[0]; // -1 to 1 analog value
+            } else {
+              k._gpSteer = 0;
+            }
+            // Throttle from right trigger
+            var rtVal = buttons[7] ? buttons[7].value : 0;
+            if (axes.length > 5 && axes[5] > 0) rtVal = Math.max(rtVal, (axes[5] + 1) / 2);
+            k._gpThrottle = rtVal;
+            // Brake from left trigger
+            var ltVal = buttons[6] ? buttons[6].value : 0;
+            if (axes.length > 4 && axes[4] > 0) ltVal = Math.max(ltVal, (axes[4] + 1) / 2);
+            k._gpBrake = ltVal;
+            // Buttons (edge-triggered)
+            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; /* horn */ try { var ac = audioRef.current.ctx; if (ac) { var h2 = ac.createOscillator(); var hg = ac.createGain(); h2.type = 'square'; h2.frequency.value = 440; hg.gain.value = 0.08; h2.connect(hg); hg.connect(ac.destination); h2.start(); hg.gain.setTargetAtTime(0, ac.currentTime + 0.25, 0.05); h2.stop(ac.currentTime + 0.3); } } catch(e2){} }
+            else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
+            if (buttons[1] && buttons[1].pressed && !k._gpB) { k._gpB = true; var modes = ['cockpit','chase','overhead','rearview']; cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current)+1)%modes.length]; }
+            else if (!buttons[1] || !buttons[1].pressed) k._gpB = false;
+            if (buttons[2] && buttons[2].pressed && !k._gpX) { k._gpX = true; blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; }
+            else if (!buttons[2] || !buttons[2].pressed) k._gpX = false;
+            if (buttons[3] && buttons[3].pressed && !k._gpY) { k._gpY = true; blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; }
+            else if (!buttons[3] || !buttons[3].pressed) k._gpY = false;
+            if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; pausedRef.current = !pausedRef.current; }
+            else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
+            // D-pad gear shifting
+            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (carRef.current.speed < 2) gearRef.current = 'D'; }
+            else if (!buttons[12] || !buttons[12].pressed) k._gpUp = false;
+            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (carRef.current.speed < 2) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
+            else if (!buttons[13] || !buttons[13].pressed) k._gpDown = false;
+            // Headlight toggle with shoulder buttons
+            if (buttons[4] && buttons[4].pressed && !k._gpLB) { k._gpLB = true; upd('highBeams', false); }
+            else if (!buttons[4] || !buttons[4].pressed) k._gpLB = false;
+            if (buttons[5] && buttons[5].pressed && !k._gpRB) { k._gpRB = true; upd('highBeams', true); }
+            else if (!buttons[5] || !buttons[5].pressed) k._gpRB = false;
+            break; // use first connected gamepad
+          }
+        };
+
         var step = function(now) {
           if (!drivingRef.current) return;
           var dt = Math.min(0.1, (now - lastT) / 1000);
           lastT = now;
+          pollGamepad();
           if (!pausedRef.current) {
             timeRef.current += dt;
             updateSignals(signalsRef.current, dt);
@@ -1688,11 +1744,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var veh = currentVehicle;
           var scn = currentScenario;
           var gear = gearRef.current;
+          // Gamepad analog values (0-1 for triggers, -1 to 1 for steer)
+          var gpThrottle = k._gpThrottle || 0;
+          var gpBrake = k._gpBrake || 0;
+          var gpSteer = k._gpSteer || 0;
           // Auto-shift to D on first throttle if in P
-          if (gear === 'P' && (k['w'] || k['arrowup'])) gearRef.current = gear = 'D';
-          // Throttle / brake input — depends on gear
-          var throttleInput = (k['w'] || k['arrowup']) ? 1 : 0;
-          var brakeInput = (k['s'] || k['arrowdown']) ? 1 : 0;
+          if (gear === 'P' && ((k['w'] || k['arrowup']) || gpThrottle > 0.1)) gearRef.current = gear = 'D';
+          // Blend keyboard (binary 0/1) with gamepad (analog 0-1)
+          var throttleInput = Math.max((k['w'] || k['arrowup']) ? 1 : 0, gpThrottle);
+          var brakeInput = Math.max((k['s'] || k['arrowdown']) ? 1 : 0, gpBrake);
           var steerLeft = (k['a'] || k['arrowleft']) ? 1 : 0;
           var steerRight = (k['d'] || k['arrowright']) ? 1 : 0;
           // In Park: no movement at all
@@ -1702,9 +1762,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           car.throttle = throttleInput;
           car.brake = brakeInput;
           car.gear = gear;
-          // Steering with smoothing
-          var steerTarget = (steerRight - steerLeft) * 0.6;
-          car.steering += (steerTarget - car.steering) * dt * 5;
+          // Steering with smoothing — blend keyboard + gamepad analog
+          var kbSteer = (steerRight - steerLeft) * 0.6;
+          var steerTarget = Math.abs(gpSteer) > 0.1 ? gpSteer * 0.7 : kbSteer;
+          // Speed-dependent steering sensitivity (heavy at speed, light at slow)
+          var steerRate = 5 + Math.min(8, Math.abs(car.speed) * 0.3);
+          car.steering += (steerTarget - car.steering) * dt * steerRate;
           // Forces
           var mu = frictionCoef(scn.weather);
           var crr = rollingCoef(scn.weather, true);
@@ -1736,6 +1799,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (gear === 'R' && car.speed > 0) car.speed = 0;
           // Max reverse speed ~15 mph
           if (gear === 'R' && car.speed < -15 * MPH_TO_MS) car.speed = -15 * MPH_TO_MS;
+          // Weight transfer (affects car pitch — visible in 3D)
+          car._pitchTarget = accel * 0.003; // nose dips on brake, lifts on accel
+          car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
+          car._rollTarget = -car.steering * Math.abs(car.speed) * 0.003; // body rolls in turns
+          car._roll = (car._roll || 0) + (car._rollTarget - (car._roll || 0)) * dt * 4;
+
           // Friction circle: lateral grip needed vs available.
           // If you brake HARD while turning, you exceed the grip budget and skid.
           var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.08;
@@ -1769,12 +1838,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (cellY >= 0 && cellY < MAP_SIZE && cellX >= 0 && cellX < MAP_SIZE) {
               var cell = mapRef.current[cellY][cellX];
               if (cell === 1 || cell === 5 || cell === 6) {
-                if (car.speed > 5) {
+                var impactMph = Math.abs(car.speed) * MS_TO_MPH;
+                if (impactMph > 5) {
                   statsRef.current.crashes++;
-                  statsRef.current.safetyScore -= 30;
-                  addToast('💥 Crash! Safety score -30');
+                  var dmg = impactMph > 30 ? 40 : impactMph > 15 ? 25 : 15;
+                  statsRef.current.safetyScore -= dmg;
+                  addToast('💥 Crash at ' + Math.round(impactMph) + ' mph! -' + dmg + ' safety');
+                  if (impactMph > 30) {
+                    eventToastRef.current = { msg: '💥 HIGH SPEED IMPACT — airbags deployed. In real life: serious injury risk.', until: timeRef.current + 5 };
+                  }
                 }
-                car.speed *= 0.3;
+                // Bounce-back: reverse direction slightly and push away from wall
+                car.speed *= -0.2;
+                // Push car back to previous valid position
+                car.x = car.x - moveX * 1.5;
+                car.y = car.y - moveY * 1.5;
               } else {
                 car.x = newX;
                 car.y = newY;
@@ -2248,9 +2326,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   statsRef.current.safetyScore -= 10;
                   addToast('💥 Fender bender. -10 safety');
                 }
-                // Physics: both vehicles affected
-                car.speed *= 0.3;
-                t.speed *= 0.5;
+                // Physics: elastic-ish collision — both bounce
+                var avgSpeed = (car.speed + t.speed) / 2;
+                car.speed = avgSpeed * -0.3; // bounce back
+                t.speed = avgSpeed * 0.5;
+                // Push apart to prevent stuck-inside-each-other
+                var pushAngle = Math.atan2(car.y - t.y, car.x - t.x);
+                car.x += Math.cos(pushAngle) * 0.5;
+                car.y += Math.sin(pushAngle) * 0.5;
               }
             }
           });
@@ -3385,6 +3468,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Position player car
           s3.playerCarGroup.position.set(carWorldX, 0, carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading + Math.PI / 2;
+          // Weight transfer: body pitch (brake/accel) and roll (turns)
+          s3.playerCarGroup.rotation.x = car._pitch || 0;
+          s3.playerCarGroup.rotation.z = car._roll || 0;
+          // Wheel rotation animation (spin proportional to speed)
+          var wheelSpinAngle = timeRef.current * Math.abs(car.speed) * 2;
+          s3.playerCarGroup.children.forEach(function(child) {
+            // Wheels are CylinderGeometry with rotation.x = PI/2
+            if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
+              child.rotation.y = wheelSpinAngle;
+            }
+          });
 
           // Camera follows car
           var camMode = cameraModeRef.current;
@@ -3634,6 +3728,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
             m.rotation.y = -t.heading + Math.PI / 2;
+            // Wheel spin on traffic vehicles
+            if (m.children) {
+              var tWheelAngle = timeRef.current * Math.abs(t.speed) * 2;
+              m.children.forEach(function(child) {
+                if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
+                  child.rotation.y = tWheelAngle;
+                }
+              });
+            }
             // Brake light brightness based on whether vehicle is slowing
             if (m.children) {
               m.children.forEach(function(child) {
@@ -4201,6 +4304,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillRect(W / 2 - 40, 2, 80, 18);
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
           gfx.fillText(nearestDir + '  ' + Math.round(headingDeg) + '°', W / 2, 15);
+
+          // Gamepad indicator
+          var gpConnected = navigator.getGamepads && navigator.getGamepads().length > 0 && navigator.getGamepads()[0];
+          if (gpConnected) {
+            gfx.fillStyle = '#4ade80'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
+            gfx.fillText('🎮 Gamepad', W - 10, 70);
+          }
 
           // Distance to next signal (if approaching)
           if (nearestSig && nearestSigDist < 10) {
