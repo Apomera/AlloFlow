@@ -4853,6 +4853,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Know Your Car'),
               h('div', { style: { fontSize: '10px', color: '#f0abfc', marginTop: '2px' } }, 'Every part explained — engine to tires')
             ),
+            h('button', { onClick: function() { upd('view', 'speedCompare'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🏎️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Speed Comparison'),
+              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, 'Side-by-side stopping distance at 2 speeds')
+            ),
+            h('button', { onClick: function() { upd('view', 'blindSpotGuide'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '👁️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Blind Spots & Mirrors'),
+              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, 'Where you can\'t see — and how to fix it')
+            ),
+            h('button', { onClick: function() { upd('view', 'weatherCompare'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🌦️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Weather Impact Chart'),
+              h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, 'How conditions change everything')
+            ),
             h('button', { onClick: function() { upd('view', 'roadTrip'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #34d399', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🗺️'),
@@ -6758,6 +6776,254 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, 'F_roll = Crr × m × g = 0.012 × ' + fdVeh.mass + ' × 9.81 = ', h('b', null, Math.round(Fr) + ' N')),
             h('div', null, 'Net = Thrust - Drag - Roll = ' + Math.round(thrust) + ' - ' + Math.round(Fd) + ' - ' + Math.round(Fr) + ' = ', h('b', { style: { color: netF > 0 ? '#4ade80' : '#ef4444' } }, Math.round(netF) + ' N')),
             h('div', null, 'a = F/m = ' + Math.round(netF) + '/' + fdVeh.mass + ' = ', h('b', null, accel.toFixed(2) + ' m/s²'))
+          )
+        );
+      }
+
+      // ── SPEED COMPARISON VISUALIZER ──
+      if (view === 'speedCompare') {
+        var sc1 = d.scSpeed1 || 30;
+        var sc2 = d.scSpeed2 || 60;
+        var scWeather = d.scWeather || 'dry';
+        var scFw = scWeather === 'dry' ? 'clear' : scWeather;
+        var sd1 = stoppingDistance(sc1, scFw, 1.5);
+        var sd2 = stoppingDistance(sc2, scFw, 1.5);
+        var maxDist = Math.max(sd1.total_ft, sd2.total_ft, 100);
+
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🏎️'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Speed Comparison'),
+            h('div', { style: { fontSize: '11px', color: '#fbcfe8' } }, 'See WHY "just a little faster" is so dangerous. Side-by-side stopping distances.')
+          ),
+          // Speed sliders
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #4ade80' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#4ade80' } }, 'SPEED A'),
+              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc1, onChange: function(e) { upd('scSpeed1', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#4ade80' } }),
+              h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#4ade80', textAlign: 'center' } }, sc1 + ' mph')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #ef4444' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#ef4444' } }, 'SPEED B'),
+              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc2, onChange: function(e) { upd('scSpeed2', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#ef4444' } }),
+              h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#ef4444', textAlign: 'center' } }, sc2 + ' mph')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#94a3b8' } }, 'SURFACE'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px' } },
+                [['dry','☀️ Dry'],['rain','🌧 Rain'],['snow','❄ Snow'],['ice','🧊 Ice']].map(function(w) {
+                  return h('button', { key: w[0], onClick: function() { upd('scWeather', w[0]); },
+                    style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (scWeather === w[0] ? '#60a5fa' : '#334155'), background: scWeather === w[0] ? '#1e3a5f' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px' } }, w[1]);
+                })
+              )
+            )
+          ),
+          // Side-by-side comparison bars
+          h('div', { style: { background: '#020617', borderRadius: '12px', padding: '16px', border: '1px solid #1e293b', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginBottom: '10px' } }, 'STOPPING DISTANCE (reaction + braking)'),
+            // Speed A bar
+            h('div', { style: { marginBottom: '12px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' } },
+                h('span', { style: { color: '#4ade80', fontWeight: 700 } }, sc1 + ' mph'),
+                h('span', { style: { color: '#4ade80' } }, Math.round(sd1.total_ft) + ' ft')
+              ),
+              h('div', { style: { height: '20px', background: '#0f172a', borderRadius: '4px', overflow: 'hidden' } },
+                h('div', { style: { display: 'flex', height: '100%' } },
+                  h('div', { style: { width: (sd1.reaction_ft / maxDist * 100) + '%', background: '#fbbf24', transition: 'width 0.3s' } }),
+                  h('div', { style: { width: (sd1.braking_ft / maxDist * 100) + '%', background: '#4ade80', transition: 'width 0.3s' } })
+                )
+              )
+            ),
+            // Speed B bar
+            h('div', { style: { marginBottom: '12px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' } },
+                h('span', { style: { color: '#ef4444', fontWeight: 700 } }, sc2 + ' mph'),
+                h('span', { style: { color: '#ef4444' } }, Math.round(sd2.total_ft) + ' ft')
+              ),
+              h('div', { style: { height: '20px', background: '#0f172a', borderRadius: '4px', overflow: 'hidden' } },
+                h('div', { style: { display: 'flex', height: '100%' } },
+                  h('div', { style: { width: (sd2.reaction_ft / maxDist * 100) + '%', background: '#fbbf24', transition: 'width 0.3s' } }),
+                  h('div', { style: { width: (sd2.braking_ft / maxDist * 100) + '%', background: '#ef4444', transition: 'width 0.3s' } })
+                )
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: '12px', fontSize: '9px', color: '#64748b' } },
+              h('span', null, '█ Reaction distance'), h('span', null, '█ Braking distance')
+            )
+          ),
+          // Insight
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#f472b6', marginBottom: '4px' } }, '🔬 The Math'),
+            h('div', null, '• Speed B is ', h('b', null, (sc2 / sc1).toFixed(1) + '×'), ' faster than Speed A'),
+            h('div', null, '• But stopping distance is ', h('b', { style: { color: '#ef4444' } }, (sd2.total_ft / sd1.total_ft).toFixed(1) + '×'), ' longer (because v²)'),
+            h('div', null, '• At ' + sc2 + ' mph on ' + scWeather + ': car is STILL GOING ', h('b', null, sc2 + ' mph'), ' for the first ', h('b', null, Math.round(sd2.reaction_ft) + ' ft'), ' (reaction time)'),
+            h('div', null, '• That reaction distance alone is ', h('b', null, Math.round(sd2.reaction_ft / 10) + ' car lengths')),
+            sd2.total_ft > 300 ? h('div', { style: { color: '#ef4444', fontWeight: 700, marginTop: '4px' } }, '⚠️ That is longer than a football field (300 ft)!') : null
+          )
+        );
+      }
+
+      // ── BLIND SPOTS & MIRRORS GUIDE ──
+      if (view === 'blindSpotGuide') {
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '👁️'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Blind Spots & Mirror Setup'),
+            h('div', { style: { fontSize: '11px', color: '#fde68a' } }, 'Where vehicles hide — and the mirror technique that eliminates 80% of blind spots.')
+          ),
+          // Top-down diagram of blind spots
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '10px' } },
+            h('canvas', {
+              ref: function(c) {
+                if (!c) return;
+                var g = c.getContext('2d');
+                var W = c.width = c.offsetWidth || 600;
+                var H = c.height = 300;
+                g.fillStyle = '#020617'; g.fillRect(0, 0, W, H);
+                var cx = W / 2, cy = H / 2;
+                // Road
+                g.fillStyle = '#1e293b'; g.fillRect(cx - 60, 0, 120, H);
+                // Lane lines
+                g.strokeStyle = '#fbbf24'; g.lineWidth = 1; g.setLineDash([8, 8]);
+                g.beginPath(); g.moveTo(cx - 20, 0); g.lineTo(cx - 20, H); g.stroke();
+                g.beginPath(); g.moveTo(cx + 20, 0); g.lineTo(cx + 20, H); g.stroke();
+                g.setLineDash([]);
+                // Your car
+                g.fillStyle = '#22d3ee'; g.fillRect(cx - 12, cy - 20, 24, 40);
+                g.fillStyle = '#0c4a6e'; g.fillRect(cx - 8, cy - 16, 16, 10); // windshield
+                g.fillStyle = '#fff'; g.font = 'bold 8px system-ui'; g.textAlign = 'center';
+                g.fillText('YOU', cx, cy + 4);
+                // Visible zones (green arcs)
+                g.fillStyle = 'rgba(74,222,128,0.12)';
+                g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 120, -Math.PI / 2 - 0.5, -Math.PI / 2 + 0.5); g.fill(); // forward
+                // Mirror zones (blue)
+                g.fillStyle = 'rgba(96,165,250,0.1)';
+                g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 100, Math.PI / 2 - 0.6, Math.PI / 2 + 0.6); g.fill(); // rearview
+                g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 80, Math.PI * 0.6, Math.PI * 0.85); g.fill(); // left mirror
+                g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 80, Math.PI * 0.15, Math.PI * 0.4); g.fill(); // right mirror
+                // BLIND SPOTS (red zones!)
+                g.fillStyle = 'rgba(239,68,68,0.2)';
+                g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 90, Math.PI * 0.4, Math.PI * 0.6); g.fill(); // rear-left
+                g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 90, Math.PI * 0.85, Math.PI * 1.05); g.fill(); // rear-right... wait this is left
+                // Labels
+                g.fillStyle = '#4ade80'; g.font = 'bold 10px system-ui';
+                g.fillText('FORWARD VISION', cx, cy - 130);
+                g.fillStyle = '#60a5fa';
+                g.fillText('Rearview Mirror', cx, cy + 90);
+                g.fillText('L Mirror', cx - 70, cy + 40);
+                g.fillText('R Mirror', cx + 70, cy + 40);
+                g.fillStyle = '#ef4444'; g.font = 'bold 11px system-ui';
+                g.fillText('BLIND SPOT', cx - 80, cy - 10);
+                g.fillText('BLIND SPOT', cx + 80, cy - 10);
+                // Danger cars hiding in blind spots
+                g.fillStyle = '#ef4444';
+                g.fillRect(cx - 50, cy - 15, 16, 28);
+                g.fillRect(cx + 35, cy - 15, 16, 28);
+                g.fillStyle = '#fff'; g.font = '7px system-ui';
+                g.fillText('!', cx - 42, cy + 4);
+                g.fillText('!', cx + 43, cy + 4);
+              },
+              style: { width: '100%', height: '300px', display: 'block', borderRadius: '6px' }
+            })
+          ),
+          // Mirror setup technique
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '10px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '8px' } }, '🪞 BGE Mirror Setting (eliminates most blind spots)'),
+            [
+              { step: '1. Rearview mirror', desc: 'Adjust to frame the entire rear window. You should see the road behind you centered in the mirror.' },
+              { step: '2. Left side mirror', desc: 'Lean your head to the left window. Adjust the left mirror until you can JUST see the edge of your car. Sit back — now the mirror shows your blind spot, not the side of your car.' },
+              { step: '3. Right side mirror', desc: 'Lean to the center. Adjust the right mirror the same way. When you sit normally, BOTH side mirrors show your blind spots.' },
+              { step: '4. The result', desc: 'A car behind you appears in the rearview mirror first. As it moves to pass, it enters the side mirror BEFORE it leaves the rearview. As it leaves the side mirror, it enters your peripheral vision. No gap = no blind spot.' }
+            ].map(function(s, i) {
+              return h('div', { key: i, style: { paddingLeft: '10px', borderLeft: '2px solid #fbbf24', marginBottom: '6px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } },
+                h('b', { style: { color: '#fbbf24' } }, s.step + ': '), s.desc
+              );
+            })
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#ef4444', marginBottom: '4px' } }, '⚠️ Even with perfect mirrors:'),
+            '• ALWAYS do a shoulder check (head turn) before changing lanes or merging.',
+            h('br'), '• The "Dutch reach" when opening your door checks for cyclists in your blind spot.',
+            h('br'), '• Motorcycles and bicycles can hide in blind spots that even cars cannot.',
+            h('br'), '• At highway speed, a car in your blind spot for 2 seconds has traveled 176 feet.'
+          )
+        );
+      }
+
+      // ── WEATHER IMPACT COMPARISON ──
+      if (view === 'weatherCompare') {
+        var wcSpeed = d.wcSpeed || 55;
+        var weatherTypes = [
+          { id: 'dry', label: '☀️ Dry', mu: 0.72, vis: '500+ ft', following: 3, color: '#4ade80' },
+          { id: 'rain', label: '🌧️ Rain', mu: 0.42, vis: '300 ft', following: 4, color: '#60a5fa' },
+          { id: 'snow', label: '❄️ Snow', mu: 0.22, vis: '150 ft', following: 6, color: '#94a3b8' },
+          { id: 'ice', label: '🧊 Ice', mu: 0.10, vis: '200 ft', following: 8, color: '#e2e8f0' }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #38bdf8', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🌦️'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Weather Impact Chart'),
+            h('div', { style: { fontSize: '11px', color: '#bae6fd' } }, 'Same car, same speed, VERY different outcomes.')
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155', marginBottom: '12px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#38bdf8', marginBottom: '4px' } }, 'SPEED'),
+            h('input', { type: 'range', min: 25, max: 75, step: 5, value: wcSpeed, onChange: function(e) { upd('wcSpeed', parseInt(e.target.value)); }, style: { width: '60%', accentColor: '#38bdf8' } }),
+            h('div', { style: { fontSize: '18px', fontWeight: 900 } }, wcSpeed + ' mph')
+          ),
+          // Comparison table
+          h('div', { style: { overflowX: 'auto' } },
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
+              h('thead', null,
+                h('tr', { style: { background: '#1e293b', fontSize: '10px', fontWeight: 700, color: '#94a3b8' } },
+                  ['Condition', 'μ (friction)', 'Stop Dist', 'vs Dry', 'Following', 'Visibility'].map(function(col, i) {
+                    return h('th', { key: i, style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid #334155' } }, col);
+                  })
+                )
+              ),
+              h('tbody', null,
+                weatherTypes.map(function(w) {
+                  var fwc = w.id === 'dry' ? 'clear' : w.id;
+                  var sd = stoppingDistance(wcSpeed, fwc, 1.5);
+                  var drySD = stoppingDistance(wcSpeed, 'clear', 1.5);
+                  var ratio = sd.total_ft / drySD.total_ft;
+                  return h('tr', { key: w.id, style: { borderBottom: '1px solid #1e293b' } },
+                    h('td', { style: { padding: '8px', fontWeight: 700, color: w.color } }, w.label),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, w.mu),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: w.color } }, Math.round(sd.total_ft) + ' ft'),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: ratio > 2 ? '#ef4444' : ratio > 1.3 ? '#f59e0b' : '#4ade80' } }, ratio.toFixed(1) + '×'),
+                    h('td', { style: { padding: '8px' } }, w.following + ' sec'),
+                    h('td', { style: { padding: '8px', color: '#64748b' } }, w.vis)
+                  );
+                })
+              )
+            )
+          ),
+          // Visual bar comparison
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginTop: '10px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#38bdf8', marginBottom: '8px' } }, 'Stopping Distance at ' + wcSpeed + ' mph'),
+            weatherTypes.map(function(w) {
+              var fwc = w.id === 'dry' ? 'clear' : w.id;
+              var sd = stoppingDistance(wcSpeed, fwc, 1.5);
+              var maxAll = stoppingDistance(wcSpeed, 'ice', 1.5).total_ft;
+              return h('div', { key: w.id, style: { marginBottom: '8px' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '2px' } },
+                  h('span', { style: { color: w.color } }, w.label),
+                  h('span', { style: { color: w.color, fontWeight: 700 } }, Math.round(sd.total_ft) + ' ft')
+                ),
+                h('div', { style: { height: '12px', background: '#0f172a', borderRadius: '3px' } },
+                  h('div', { style: { height: '100%', background: w.color, borderRadius: '3px', width: (sd.total_ft / maxAll * 100) + '%', transition: 'width 0.3s' } })
+                )
+              );
+            })
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginTop: '10px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: '4px' } }, '💡 Key Takeaway'),
+            'On ice at ' + wcSpeed + ' mph, your stopping distance is ', h('b', { style: { color: '#ef4444' } }, (stoppingDistance(wcSpeed, 'ice', 1.5).total_ft / stoppingDistance(wcSpeed, 'clear', 1.5).total_ft).toFixed(1) + '× longer'),
+            ' than on dry pavement. That is the difference between stopping safely and a collision. ',
+            h('b', null, 'The physics is non-negotiable — the only variable you control is speed.')
           )
         );
       }
