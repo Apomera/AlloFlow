@@ -3092,7 +3092,13 @@ const d = labToolData.solarSystem;
     return h("div", { className: "space-y-3" },
       cvPanel,
       card([
-        h("strong", { key: "vh" }, "Verification Table \u2014 T\u00b2/a\u00b3 should \u2248 1.00 for solar orbits"),
+        h("div", { key: "vh", style: {
+          fontWeight: 700, fontSize: "14px", color: fg, paddingBottom: "8px", marginBottom: "8px",
+          borderBottom: "2px solid " + accent, display: "flex", alignItems: "center", gap: "8px"
+        } },
+          h("span", { style: { fontSize: "16px" } }, "\uD83D\uDCCA"),
+          "Verification Table \u2014 T\u00b2/a\u00b3 should \u2248 1.00 for solar orbits"
+        ),
         verTable
       ], { marginTop: "8px" })
     );
@@ -3167,8 +3173,9 @@ const d = labToolData.solarSystem;
         ),
         h("button", {
           key: "reset-btn",
+          className: "orr-btn",
           onClick: function() { updMulti({ orr_wse: undefined, orr_wsa: undefined }); },
-          style: { padding: "4px 12px", borderRadius: "4px", border: "1px solid " + border, background: "transparent", color: fg, cursor: "pointer", fontSize: "12px", marginBottom: "6px" }
+          style: { padding: "6px 14px", borderRadius: "8px", border: "1px solid " + border, background: isDark ? "#2a2a3e" : "#f0f4f8", color: fg, cursor: "pointer", fontSize: "12px", fontWeight: 600, marginBottom: "6px", boxShadow: shadowSm }
         }, "\u21ba Reset to real values")
       ], { marginBottom: "10px" }),
 
