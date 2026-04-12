@@ -50397,7 +50397,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
 
                     {/* HTML Input */}
                     <div>
-                      <label className="text-[10px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">HTML Source</label>
+                      <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">HTML Source</label>
                       <textarea id="web-audit-html" rows={8} placeholder="Paste HTML source code here, or use Fetch above..."
                         className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
                         aria-label="HTML source code to audit" />
@@ -50484,7 +50484,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                         🔧 Audit & Remediate
                       </button>
                     </div>
-                    <p className="text-[10px] text-slate-600 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
+                    <p className="text-[11px] text-slate-600 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
                   </div>
                 ) : pdfBatchMode ? (
                   /* ═══ BATCH MODE UI ═══ */
@@ -50545,7 +50545,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             <div key={item.id} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${item.status === 'done' ? 'bg-green-50' : item.status === 'failed' ? 'bg-red-50' : item.status === 'processing' ? 'bg-indigo-50 animate-pulse' : 'bg-slate-50'}`}>
                               <span>{item.status === 'done' ? '\u2705' : item.status === 'failed' ? '\u274c' : item.status === 'processing' ? '\u23f3' : '\u23f8\ufe0f'}</span>
                               <span className="flex-1 truncate font-medium">{item.fileName}</span>
-                              <span className="text-slate-400">{(item.fileSize / (1024*1024)).toFixed(1)}MB</span>
+                              <span className="text-slate-600">{(item.fileSize / (1024*1024)).toFixed(1)}MB</span>
                               {item.result && <span className={`font-bold ${(item.result.afterScore || 0) >= 90 ? 'text-green-600' : (item.result.afterScore || 0) >= 70 ? 'text-amber-600' : 'text-red-600'}`}>{item.result.beforeScore}{'\u2192'}{item.result.afterScore}</span>}
                               {item.error && <span className="text-red-500 truncate max-w-[100px]" title={item.error}>{'\u274c'}</span>}
                               {!pdfBatchProcessing && item.status === 'pending' && <button onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-300 hover:text-red-400">{'\u2715'}</button>}
@@ -50562,10 +50562,10 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                           <span className="animate-spin">{'\u23f3'}</span>
                           <span className="text-sm font-bold text-indigo-700">Processing {pdfBatchCurrentIndex + 1}/{pdfBatchQueue.length}</span>
                         </div>
-                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2" role="progressbar" aria-label="Batch remediation progress" aria-valuenow={pdfBatchCurrentIndex + 1} aria-valuemin={0} aria-valuemax={pdfBatchQueue.length}>
                           <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{width: `${((pdfBatchCurrentIndex + 1) / pdfBatchQueue.length * 100)}%`}}></div>
                         </div>
-                        <p className="text-xs text-indigo-600">{pdfBatchStep}</p>
+                        <p className="text-xs text-indigo-600" role="status" aria-live="polite">{pdfBatchStep}</p>
                       </div>
                     )}
 
@@ -50574,9 +50574,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       <div className="mb-4 p-4 bg-green-50 rounded-xl border border-green-200">
                         <h4 className="text-sm font-black text-green-800 mb-2">{'\u2705'} Batch Complete</h4>
                         <div className="grid grid-cols-3 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[10px] text-slate-600">Succeeded</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[10px] text-slate-600">Avg Improvement</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[10px] text-slate-600">Scored 90+</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">Succeeded</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[11px] text-slate-600">Avg Improvement</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[11px] text-slate-600">Scored 90+</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
                           <p>{'\ud83d\udcc8'} Average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter}</p>
@@ -50745,63 +50745,63 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-4">Choose how to process this PDF:</p>
 
                 <details className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
+                  <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
                   <div className="mt-2 space-y-2">
                     <div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Audit Passes: {pdfAuditorCount}</span>
-                        <span className="text-slate-400">{pdfAuditorCount <= 2 ? 'Fast' : pdfAuditorCount <= 5 ? 'Balanced' : pdfAuditorCount <= 7 ? 'Thorough' : 'Research-grade'}</span>
+                        <span className="text-slate-600">{pdfAuditorCount <= 2 ? 'Fast' : pdfAuditorCount <= 5 ? 'Balanced' : pdfAuditorCount <= 7 ? 'Thorough' : 'Research-grade'}</span>
                       </div>
                       <input type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label="Number of audit passes" />
-                      <div className="flex justify-between text-[10px] text-slate-500"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
                     </div>
                     <div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Target Score: {pdfTargetScore}</span>
-                        <span className="text-slate-400">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
+                        <span className="text-slate-600">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
                       <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label="Target accessibility score" />
-                      <div className="flex justify-between text-[10px] text-slate-500"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
                     </div>
                     <div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Max Fix Passes: {pdfAutoFixPasses}</span>
-                        <span className="text-slate-400">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
+                        <span className="text-slate-600">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
                       </div>
                       <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
-                      <div className="flex justify-between text-[10px] text-slate-500"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
                     <div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
-                        <span className="text-slate-400">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
+                        <span className="text-slate-600">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
                       </div>
                       <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label="Polish pass count" />
-                      <div className="flex justify-between text-[10px] text-slate-500"><span>0</span><span>2 (default)</span><span>3</span></div>
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
                     </div>
                   </div>
                 </details>
                 {/* Style & Branding for remediation output */}
                 <details className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden mb-3">
-                  <summary className="px-3 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
+                  <summary className="px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
                     ✨ Output Style & Branding (optional)
                   </summary>
                   <div className="px-3 pb-3 pt-1 space-y-3">
                     {/* Branding source */}
                     <div>
-                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Brand Colors</div>
-                      <p className="text-[10px] text-slate-600 mb-1">Where do the colors come from?</p>
+                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">Brand Colors</div>
+                      <p className="text-[11px] text-slate-600 mb-1">Where do the colors come from?</p>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200">
-                          <div className="text-[10px] font-bold text-slate-700">🎨 Match Original</div>
-                          <div className="text-[10px] text-slate-500">Extract colors from this PDF</div>
+                          <div className="text-[11px] font-bold text-slate-700">🎨 Match Original</div>
+                          <div className="text-[11px] text-slate-600">Extract colors from this PDF</div>
                         </button>
                         <label data-brand-mode="upload"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer">
-                          <div className="text-[10px] font-bold text-slate-700">📎 Upload Brand Guide</div>
-                          <div className="text-[10px] text-slate-500">Use a different doc/logo</div>
+                          <div className="text-[11px] font-bold text-slate-700">📎 Upload Brand Guide</div>
+                          <div className="text-[11px] text-slate-600">Use a different doc/logo</div>
                           <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
                             addToast('🎨 Extracting brand colors...', 'info');
@@ -50830,15 +50830,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="none"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
-                          <div className="text-[10px] font-bold text-slate-700">⬜ No Branding</div>
-                          <div className="text-[10px] text-slate-500">Use default palette</div>
+                          <div className="text-[11px] font-bold text-slate-700">⬜ No Branding</div>
+                          <div className="text-[11px] text-slate-600">Use default palette</div>
                         </button>
                       </div>
                     </div>
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
-                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Style Seed</div>
-                      <p className="text-[10px] text-slate-600 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
+                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">Style Seed</div>
+                      <p className="text-[11px] text-slate-600 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
                       <div className="flex flex-wrap gap-1">
                         {[
                           { id: 'professional', label: '💼 Professional', desc: 'Clean, corporate' },
@@ -50855,8 +50855,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button key={s.id} onClick={() => { window.__pdfStyleSeed = s.id; window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                             data-style-pref={s.id}
                             className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
-                            <div className="text-[10px] font-bold text-slate-700">{s.label}</div>
-                            <div className="text-[10px] text-slate-500">{s.desc}</div>
+                            <div className="text-[11px] font-bold text-slate-700">{s.label}</div>
+                            <div className="text-[11px] text-slate-600">{s.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -50869,7 +50869,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <>
                             {savedKeys.length > 0 && (
                               <div className="mt-2">
-                                <div className="text-[10px] text-slate-600 font-bold mb-1">Your Custom Styles</div>
+                                <div className="text-[11px] text-slate-600 font-bold mb-1">Your Custom Styles</div>
                                 <div className="flex flex-wrap gap-1">
                                   {savedKeys.map(k => {
                                     var s = saved[k];
@@ -50883,14 +50883,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           addToast && addToast('Custom style "' + s.name + '" applied!', 'success');
                                         }}
                                           className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
-                                          <div className="text-[10px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
-                                          <div className="text-[10px] text-slate-500">{s.font || 'Custom'}</div>
+                                          <div className="text-[11px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
+                                          <div className="text-[11px] text-slate-600">{s.font || 'Custom'}</div>
                                         </button>
                                         <button onClick={() => {
                                           var updated = {...saved}; delete updated[k];
                                           try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
                                           addToast && addToast('Deleted "' + s.name + '"', 'info');
-                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50">✕</button>
+                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50">✕</button>
                                       </div>
                                     );
                                   })}
@@ -50898,16 +50898,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </div>
                             )}
                             <details className="mt-2">
-                              <summary className="text-[10px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700">+ Create Custom Style</summary>
+                              <summary className="text-[11px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700">+ Create Custom Style</summary>
                               <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label htmlFor="custom-style-name" className="text-[10px] text-slate-600 font-bold">Style Name</label>
-                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded" />
+                                    <label htmlFor="custom-style-name" className="text-[11px] text-slate-600 font-bold">Style Name</label>
+                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[11px] border border-slate-300 rounded" />
                                   </div>
                                   <div>
-                                    <label htmlFor="custom-style-font" className="text-[10px] text-slate-600 font-bold">Font</label>
-                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded">
+                                    <label htmlFor="custom-style-font" className="text-[11px] text-slate-600 font-bold">Font</label>
+                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[11px] border border-slate-300 rounded">
                                       <option value="'Inter', system-ui, sans-serif">Inter (Clean)</option>
                                       <option value="'Georgia', serif">Georgia (Serif)</option>
                                       <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (A11y)</option>
@@ -50920,15 +50920,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <label htmlFor="custom-style-heading" className="text-[10px] text-slate-600 font-bold">Heading Color</label>
+                                    <label htmlFor="custom-style-heading" className="text-[11px] text-slate-600 font-bold">Heading Color</label>
                                     <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label="Heading color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label htmlFor="custom-style-accent" className="text-[10px] text-slate-600 font-bold">Accent Color</label>
+                                    <label htmlFor="custom-style-accent" className="text-[11px] text-slate-600 font-bold">Accent Color</label>
                                     <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label="Accent color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label htmlFor="custom-style-bg" className="text-[10px] text-slate-600 font-bold">Background</label>
+                                    <label htmlFor="custom-style-bg" className="text-[11px] text-slate-600 font-bold">Background</label>
                                     <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label="Background color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
                                   </div>
                                 </div>
@@ -50952,7 +50952,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   window.__pdfStyleSeed = 'custom';
                                   window.__pdfCustomStyle = style;
                                   addToast && addToast('🎨 Custom style "' + name + '" saved & applied!', 'success');
-                                }} className="w-full py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 transition-colors">
+                                }} className="w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors">
                                   Save & Apply Style
                                 </button>
                               </div>
@@ -50971,9 +50971,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-600 text-center mt-2">"Audit & Remediate" analyzes accessibility, fixes issues, and verifies with axe-core. "Text Extraction" extracts raw text for content generation.</p>
+                <p className="text-[11px] text-slate-600 text-center mt-2">"Audit & Remediate" analyzes accessibility, fixes issues, and verifies with axe-core. "Text Extraction" extracts raw text for content generation.</p>
                 {pdfAuditResult?.pageCount > 0 && (
-                  <p className="text-[10px] text-slate-600 text-center mt-1 font-medium">
+                  <p className="text-[11px] text-slate-600 text-center mt-1 font-medium">
                     ⏱ Estimated time: {pdfAuditResult.pageCount <= 5 ? '1-3 minutes' : pdfAuditResult.pageCount <= 20 ? '3-8 minutes' : pdfAuditResult.pageCount <= 50 ? '8-15 minutes' : '15-30+ minutes'} for {pdfAuditResult.pageCount} page{pdfAuditResult.pageCount !== 1 ? 's' : ''} — longer documents take proportionally more time
                   </p>
                 )}
@@ -51038,8 +51038,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-slate-800">Knowbility</span>
-                        <span className="text-[7px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Accessibility Partner</span>
-                        <span className="text-[7px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
+                        <span className="text-[9px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Accessibility Partner</span>
+                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
                       </div>
                       <p className="text-[11px] text-slate-600 leading-relaxed mt-1.5">
                         <strong className="text-slate-700">Creating an inclusive digital world for people with disabilities</strong> — Knowbility is
@@ -51050,51 +51050,51 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                   {/* ── Why Accessibility Matters ── */}
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2" style={{ animation: 'fadeInUp 0.7s ease-out 5s both' }}>
-                    <div className="text-[10px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
-                    <p className="text-[10px] text-slate-700 leading-relaxed">
+                    <div className="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
+                    <p className="text-[11px] text-slate-700 leading-relaxed">
                       <strong className="text-amber-900">The Americans with Disabilities Act (ADA) Title II</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>WCAG 2.1 Level AA</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>April 2026 to April 2027</strong> depending on population size.
                     </p>
-                    <p className="text-[10px] text-slate-600 leading-relaxed">
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
                       But compliance is just the baseline. Accessible documents benefit <strong>everyone</strong> — not just the 1 in 4 Americans living with a disability:
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[10px] font-black text-emerald-700">🌍 Broader Reach</div>
-                        <div className="text-[10px] text-slate-600 leading-snug">Accessible content works on any device, any bandwidth, any assistive technology — reaching more users</div>
+                        <div className="text-[11px] font-black text-emerald-700">🌍 Broader Reach</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">Accessible content works on any device, any bandwidth, any assistive technology — reaching more users</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[10px] font-black text-blue-700">🔍 Better SEO & Findability</div>
-                        <div className="text-[10px] text-slate-600 leading-snug">Structured headings, alt text, and semantic HTML improve search ranking and content discovery</div>
+                        <div className="text-[11px] font-black text-blue-700">🔍 Better SEO & Findability</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">Structured headings, alt text, and semantic HTML improve search ranking and content discovery</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[10px] font-black text-violet-700">🧠 Cognitive Clarity</div>
-                        <div className="text-[10px] text-slate-600 leading-snug">Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts</div>
+                        <div className="text-[11px] font-black text-violet-700">🧠 Cognitive Clarity</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[10px] font-black text-rose-700">⚡ Future-Proofing</div>
-                        <div className="text-[10px] text-slate-600 leading-snug">WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies</div>
+                        <div className="text-[11px] font-black text-rose-700">⚡ Future-Proofing</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies</div>
                       </div>
                     </div>
-                    <p className="text-[10px] text-amber-700 italic leading-relaxed">WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.</p>
+                    <p className="text-[11px] text-amber-700 italic leading-relaxed">WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.</p>
                   </div>
 
                   {/* Services Grid */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">🔍 Auditing & Testing</div>
-                      <div className="text-[10px] text-slate-600 leading-snug">Expert WCAG audits and document remediation by certified professionals</div>
+                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">🔍 Auditing & Testing</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">Expert WCAG audits and document remediation by certified professionals</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">♿ AccessWorks</div>
-                      <div className="text-[10px] text-slate-600 leading-snug">Real-world usability testing by people who use assistive technology daily</div>
+                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">♿ AccessWorks</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">Real-world usability testing by people who use assistive technology daily</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">📄 Document Remediation</div>
-                      <div className="text-[10px] text-slate-600 leading-snug">Specialist team for PDF and MS Office docs — full usability with assistive technology</div>
+                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">📄 Document Remediation</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">Specialist team for PDF and MS Office docs — full usability with assistive technology</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">🎓 Training & AccessU</div>
-                      <div className="text-[10px] text-slate-600 leading-snug">Annual conference and on-demand courses — beginner to advanced accessibility skills</div>
+                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">🎓 Training & AccessU</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">Annual conference and on-demand courses — beginner to advanced accessibility skills</div>
                     </div>
                   </div>
 
@@ -51102,20 +51102,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="bg-white/70 rounded-lg border border-indigo-100 p-2.5">
                     <div className="flex gap-4 justify-center text-center">
                       <div>
-                        <div className="text-[10px] font-bold text-slate-600 uppercase">Web</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase">Web</div>
                         <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-slate-600 uppercase">Email</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase">Email</div>
                         <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-slate-600 uppercase">Phone</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase">Phone</div>
                         <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
                       </div>
                     </div>
                     <div className="mt-2 pt-2 border-t border-indigo-100 text-center">
-                      <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[10px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
+                      <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
                         Request a Project Inquiry →
                       </a>
                     </div>
@@ -51123,7 +51123,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                   <div className="flex items-center gap-2">
                     <div className="flex-1 border-t border-indigo-100"></div>
-                    <span className="text-[7px] text-indigo-400 font-medium uppercase tracking-wider">W3C/WAI · IAAP-Certified · Clinton White House Recognized · FCC Innovation Award</span>
+                    <span className="text-[9px] text-indigo-600 font-medium uppercase tracking-wider">W3C/WAI · IAAP-Certified · Clinton White House Recognized · FCC Innovation Award</span>
                     <div className="flex-1 border-t border-indigo-100"></div>
                   </div>
                 </div>
@@ -51152,9 +51152,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <h3 className="text-lg font-bold" id="pdf-audit-title">PDF Accessibility Score {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
                   {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">Triangulated from {pdfAuditResult.auditorCount || pdfAuditResult.scores.length} independent AI audits (scores: {pdfAuditResult.scores.join(', ')}) · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
                   {pdfAuditResult._scoreIsBlended ? (
-                    <p className="text-[10px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Blended: {pdfAuditResult.score} (50/50)</p>
+                    <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Blended: {pdfAuditResult.score} (50/50)</p>
                   ) : (
-                    <p className="text-[10px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (50/50 blend)</p>
+                    <p className="text-[11px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (50/50 blend)</p>
                   )}
                   {pdfAuditResult.scoreRange > 25 && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold">Note: Score variance is high (range: {pdfAuditResult.scoreRange}) — this is normal for documents with low accessibility scores</p>}
                   <p className="text-sm opacity-90 mt-1">{pdfAuditResult.summary}</p>
@@ -51163,41 +51163,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-5 space-y-4" aria-labelledby="pdf-audit-title">
                   {/* Document info */}
                   <div className="flex gap-2 flex-wrap" role="list" aria-label="Document properties">
-                    {pdfAuditResult.hasSearchableText !== undefined && <span role="listitem" className={`px-2 py-1 rounded-full text-[10px] font-bold ${pdfAuditResult.hasSearchableText ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{pdfAuditResult.hasSearchableText ? '✓ Searchable Text' : '✗ No Text Layer'}</span>}
-                    {pdfAuditResult.hasImages && <span role="listitem" className="px-2 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">Contains Images</span>}
-                    {pdfAuditResult.hasTables && <span role="listitem" className="px-2 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">Contains Tables</span>}
-                    {pdfAuditResult.hasForms && <span role="listitem" className="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Contains Forms</span>}
-                    {pdfAuditResult.pageCount && <span role="listitem" className="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">{pdfAuditResult.pageCount} pages</span>}
+                    {pdfAuditResult.hasSearchableText !== undefined && <span role="listitem" className={`px-2 py-1 rounded-full text-[11px] font-bold ${pdfAuditResult.hasSearchableText ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{pdfAuditResult.hasSearchableText ? '✓ Searchable Text' : '✗ No Text Layer'}</span>}
+                    {pdfAuditResult.hasImages && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">Contains Images</span>}
+                    {pdfAuditResult.hasTables && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700">Contains Tables</span>}
+                    {pdfAuditResult.hasForms && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">Contains Forms</span>}
+                    {pdfAuditResult.pageCount && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">{pdfAuditResult.pageCount} pages</span>}
                   </div>
 
                   {/* Reliability Statistics */}
                   {pdfAuditResult.scores?.length > 1 && (
                     <details className="bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden">
-                      <summary className="px-3 py-2 text-[10px] font-bold text-indigo-700 uppercase tracking-widest cursor-pointer hover:bg-indigo-100 transition-colors">
+                      <summary className="px-3 py-2 text-[11px] font-bold text-indigo-700 uppercase tracking-widest cursor-pointer hover:bg-indigo-100 transition-colors">
                         📊 Reliability Metrics ({pdfAuditResult.reliability || 'N/A'} agreement)
                       </summary>
                       <div className="px-3 pb-3 space-y-2">
                         <div className="grid grid-cols-2 gap-2 mt-1">
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.ci95?.[0]}–{pdfAuditResult.ci95?.[1]}</div>
-                            <div className="text-[10px] text-slate-600 font-bold uppercase">95% Confidence Interval</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase">95% Confidence Interval</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.scoreSD}</div>
-                            <div className="text-[10px] text-slate-600 font-bold uppercase">Standard Deviation</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase">Standard Deviation</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
-                            <div className="text-[10px] text-slate-600 font-bold uppercase">Agreement Score</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase">Agreement Score</div>
                           </div>
                           {pdfAuditResult.cronbachAlpha !== null && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                               <div className={`text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? 'text-green-700' : 'text-amber-700'}`}>{pdfAuditResult.cronbachAlpha}</div>
-                              <div className="text-[10px] text-slate-600 font-bold uppercase">Cronbach's α</div>
+                              <div className="text-[11px] text-slate-600 font-bold uppercase">Cronbach's α</div>
                             </div>
                           )}
                         </div>
-                        <div className="text-[10px] text-indigo-600 space-y-0.5">
+                        <div className="text-[11px] text-indigo-600 space-y-0.5">
                           <div>SEM: ±{pdfAuditResult.scoreSEM} | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
                           <div>{pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
@@ -51226,17 +51226,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
                     return (
                   <details className="bg-slate-50 rounded-lg border border-slate-300 overflow-hidden" open>
-                    <summary className="px-3 py-2 text-[10px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
+                    <summary className="px-3 py-2 text-[11px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
                       Score Breakdown
                     </summary>
-                    <div className="px-3 pb-3 text-[10px] text-slate-700 space-y-2 mt-1">
+                    <div className="px-3 pb-3 text-[11px] text-slate-700 space-y-2 mt-1">
                       {/* Overview */}
                       <div className="bg-white rounded-lg border border-slate-300 p-2.5 space-y-1">
                         <div className="flex justify-between"><span>Total checks performed</span><span className="font-bold">{totalChecks}</span></div>
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
-                          <div className="text-[10px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
+                          <div className="text-[11px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
                         )}
                       </div>
                       {/* Two-engine scores side by side */}
@@ -51244,15 +51244,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {/* AI Rubric */}
                         <div className="bg-purple-100 rounded-lg border-2 border-purple-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
-                            <span className="font-black text-purple-900 text-sm">{aiScore}<span className="text-[10px] font-bold text-purple-500">/100</span></span>
-                            <span className="text-[10px] font-black text-purple-600 uppercase">AI Rubric</span>
+                            <span className="font-black text-purple-900 text-sm">{aiScore}<span className="text-[11px] font-bold text-purple-500">/100</span></span>
+                            <span className="text-[11px] font-black text-purple-600 uppercase">AI Rubric</span>
                           </div>
-                          <div className="text-[10px] text-purple-800 space-y-0.5">
+                          <div className="text-[11px] text-purple-800 space-y-0.5">
                             <div>Starts at 100, deducts per issue type</div>
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
                             {passBenefit > 0 && <div className="text-green-700 font-bold">{passCount} passes recovered +{passBenefit} pts</div>}
                           </div>
-                          <details className="mt-1 text-[10px]">
+                          <details className="mt-1 text-[11px]">
                             <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">How AI scores</summary>
                             <div className="mt-1 space-y-0.5 text-purple-700">
                               <div>Critical: -15 each (lang, title, alt, landmark, contrast)</div>
@@ -51266,14 +51266,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {isBlended && axeAudit && (
                         <div className="bg-blue-100 rounded-lg border-2 border-blue-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
-                            <span className="font-black text-blue-900 text-sm">{axeScore}<span className="text-[10px] font-bold text-blue-500">/100</span></span>
-                            <span className="text-[10px] font-black text-blue-600 uppercase">axe-core</span>
+                            <span className="font-black text-blue-900 text-sm">{axeScore}<span className="text-[11px] font-bold text-blue-500">/100</span></span>
+                            <span className="text-[11px] font-black text-blue-600 uppercase">axe-core</span>
                           </div>
-                          <div className="text-[10px] text-blue-800 space-y-0.5">
+                          <div className="text-[11px] text-blue-800 space-y-0.5">
                             <div>Deque automated WCAG 2.1 AA checker</div>
                             <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
                           </div>
-                          <details className="mt-1 text-[10px]">
+                          <details className="mt-1 text-[11px]">
                             <summary className="cursor-pointer text-blue-500 hover:text-blue-800 font-bold">How axe-core scores</summary>
                             <div className="mt-1 space-y-0.5 text-blue-700">
                               <div>100 - (critical x15) - (serious x10) - (moderate x5) - (minor x2)</div>
@@ -51291,18 +51291,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {isBlended && (
                         <div className="bg-white rounded-lg border-2 border-slate-300 p-2.5 text-center">
                           <div className="text-sm">
-                            <span className="text-slate-400">(</span>
+                            <span className="text-slate-600">(</span>
                             <span className="text-purple-800 font-black">{aiScore}</span>
-                            <span className="text-slate-400 mx-1">+</span>
+                            <span className="text-slate-600 mx-1">+</span>
                             <span className="text-blue-800 font-black">{axeScore}</span>
-                            <span className="text-slate-400">)</span>
-                            <span className="text-slate-400 mx-1">/</span>
+                            <span className="text-slate-600">)</span>
+                            <span className="text-slate-600 mx-1">/</span>
                             <span className="text-slate-600 font-bold">2</span>
-                            <span className="text-slate-400 mx-2">=</span>
+                            <span className="text-slate-600 mx-2">=</span>
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
-                            <span className="text-slate-400 text-xs">/100</span>
+                            <span className="text-slate-600 text-xs">/100</span>
                           </div>
-                          <div className="text-[10px] text-slate-600 mt-0.5">Average of both engines (equal weight)</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">Average of both engines (equal weight)</div>
                         </div>
                       )}
                     </div>
@@ -51374,7 +51374,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     return (
                     <section aria-label={`${pc} accessibility checks passed`}>
                       <h4 className="text-xs font-bold text-green-600 uppercase tracking-widest mb-2">
-                        Passed Checks ({pc}){saved > 0 && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold normal-case">+{saved} points recovered</span>}
+                        Passed Checks ({pc}){saved > 0 && <span className="ml-2 text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold normal-case">+{saved} points recovered</span>}
                       </h4>
                       <ul className="list-none space-y-1">
                       {pdfAuditResult.passes.map((pass, i) => (
@@ -51520,7 +51520,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label="Fix and verify progress" aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
                           <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : pdfFixStep.includes('Auto-fix') ? '96%' : '5%' }}></div>
                         </div>
-                        <div className="text-[10px] text-slate-600 mt-0.5 text-center">{pdfFixStep}</div>
+                        <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
 
                         {/* ── Why Accessibility Matters — educational content during wait ── */}
                         <div className="mt-4 bg-gradient-to-br from-sky-50 via-blue-50/40 to-indigo-50/30 border border-sky-200/60 rounded-2xl p-5 space-y-3" style={{ animation: 'fadeInUp 0.9s ease-out 1.5s both' }}>
@@ -51542,24 +51542,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Benefits grid */}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🎓 Equitable Education</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Accessible materials support Universal Design for Learning (UDL) — benefiting <em>all</em> learners regardless of ability, language, or learning style</div>
+                              <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🎓 Equitable Education</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Accessible materials support Universal Design for Learning (UDL) — benefiting <em>all</em> learners regardless of ability, language, or learning style</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better UX for Everyone</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Clear headings, logical structure, and sufficient contrast make documents easier to read for <em>all</em> users — including on mobile and in bright sunlight</div>
+                              <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better UX for Everyone</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Clear headings, logical structure, and sufficient contrast make documents easier to read for <em>all</em> users — including on mobile and in bright sunlight</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🔍 Improved SEO & Findability</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach</div>
+                              <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🔍 Improved SEO & Findability</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">💡 Innovation Driver</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions</div>
+                              <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">💡 Innovation Driver</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions</div>
                             </div>
                           </div>
 
-                          <p className="text-[10px] text-slate-600 text-center leading-relaxed italic">
+                          <p className="text-[11px] text-slate-600 text-center leading-relaxed italic">
                             Accessibility is the digital expression of equity. When we design for the margins, we create better experiences for the center.
                           </p>
                         </div>
@@ -51573,7 +51573,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h4 className="text-sm font-bold text-slate-800">ADA Title II & WCAG 2.1 AA</h4>
-                                <span className="text-[7px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">Deadline: April 24, 2026</span>
+                                <span className="text-[9px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">Deadline: April 24, 2026</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 The U.S. Department of Justice finalized a rule under <strong className="text-slate-700">Title II of the Americans with Disabilities Act (ADA)</strong> requiring
@@ -51586,32 +51586,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Timeline and scope */}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📅 Compliance Deadlines</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">
+                              <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📅 Compliance Deadlines</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">
                                 <strong className="text-rose-700">April 24, 2026</strong> — entities serving 50,000+ people<br/>
                                 <strong className="text-amber-700">April 26, 2027</strong> — entities serving fewer than 50,000 and special districts
                               </div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📋 What's Covered</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities</div>
+                              <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📋 What's Covered</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🏛️ Who Must Comply</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services</div>
+                              <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🏛️ Who Must Comply</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🎯 Why It Matters</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation</div>
+                              <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🎯 Why It Matters</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation</div>
                             </div>
                           </div>
 
                           <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5 text-center">
-                            <p className="text-[10px] text-slate-600 leading-snug">
+                            <p className="text-[11px] text-slate-600 leading-snug">
                               <strong className="text-amber-800">The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule.</strong>{' '}
                               This remediation pipeline helps ensure your documents meet the technical requirements set by the DOJ.
                             </p>
-                            <a href="https://www.ada.gov/resources/web-guidance/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-amber-700 hover:text-amber-900 underline decoration-amber-300">
+                            <a href="https://www.ada.gov/resources/web-guidance/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-bold text-amber-700 hover:text-amber-900 underline decoration-amber-300">
                               Read the official guidance on ADA.gov →
                             </a>
                           </div>
@@ -51626,8 +51626,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-bold text-slate-800">Knowbility</span>
-                                <span className="text-[7px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Accessibility Partner</span>
-                                <span className="text-[7px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
+                                <span className="text-[9px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Accessibility Partner</span>
+                                <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 <strong className="text-slate-700">Mission: Create an inclusive digital world for people with disabilities.</strong>{' '}
@@ -51640,20 +51640,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Services grid */}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🔍 Testing & Auditing</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents</div>
+                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🔍 Testing & Auditing</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">📄 Document Remediation</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology</div>
+                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">📄 Document Remediation</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">♿ AccessWorks</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Real-world usability testing by people with disabilities who use assistive technology daily</div>
+                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">♿ AccessWorks</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Real-world usability testing by people with disabilities who use assistive technology daily</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🎓 Training & AccessU</div>
-                              <div className="text-[10px] text-slate-600 leading-snug">Annual conference and on-demand courses — from beginner to advanced accessibility skills</div>
+                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🎓 Training & AccessU</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">Annual conference and on-demand courses — from beginner to advanced accessibility skills</div>
                             </div>
                           </div>
 
@@ -51661,20 +51661,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="bg-white/80 rounded-lg border border-indigo-100 p-3">
                             <div className="grid grid-cols-3 gap-2 text-center">
                               <div>
-                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Web</div>
+                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Web</div>
                                 <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
                               </div>
                               <div>
-                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Email</div>
+                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Email</div>
                                 <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
                               </div>
                               <div>
-                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Phone</div>
+                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Phone</div>
                                 <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
                               </div>
                             </div>
                             <div className="mt-2 pt-2 border-t border-indigo-100 text-center">
-                              <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[10px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
+                              <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
                                 Request a Project Inquiry →
                               </a>
                             </div>
@@ -51682,11 +51682,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                           <div className="flex items-center gap-2">
                             <div className="flex-1 border-t border-indigo-100"></div>
-                            <span className="text-[7px] text-indigo-400 font-medium uppercase tracking-wider">W3C/WAI · IAAP-Certified · Clinton White House Recognized · FCC Innovation Award</span>
+                            <span className="text-[9px] text-indigo-600 font-medium uppercase tracking-wider">W3C/WAI · IAAP-Certified · Clinton White House Recognized · FCC Innovation Award</span>
                             <div className="flex-1 border-t border-indigo-100"></div>
                           </div>
 
-                          <p className="text-[10px] text-slate-600 text-center leading-relaxed italic">
+                          <p className="text-[11px] text-slate-600 text-center leading-relaxed italic">
                             While AlloFlow handles automated fixes, Knowbility's team ensures documents are
                             fully usable by people with disabilities — not just technically compliant. Serving
                             corporations, government agencies, educational institutions, and nonprofits since 1999.
@@ -51744,7 +51744,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       Text Extract
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
+                  <p className="text-[11px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
 
                   {/* ── Live Chunk Review Panel ── */}
                   {/* Shows each chunk's fix as it happens in real time, with Accept/Reject/Re-fix per chunk */}
@@ -51755,10 +51755,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span className="text-xl" aria-hidden="true">🔬</span>
                           <div>
                             <h4 className="text-sm font-bold text-indigo-800">Live Remediation Review</h4>
-                            <div className="text-[10px] text-indigo-500">Watch each section get fixed in real time — reject or re-fix anything that looks wrong</div>
+                            <div className="text-xs text-indigo-700">Watch each section get fixed in real time — reject or re-fix anything that looks wrong</div>
                           </div>
                         </div>
-                        <div className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+                        <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
                           {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
                         </div>
                       </div>
@@ -51782,13 +51782,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           return (
                             <div key={chunk.index} className={`border-2 rounded-xl transition-all duration-300 ${isRejected ? 'bg-slate-50 border-slate-300 opacity-60' : isWorking ? 'bg-indigo-50 border-indigo-200' : scoreBg}`}>
                               <div className="flex items-center gap-2 p-2">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0 ${isWorking ? 'bg-indigo-500 animate-pulse' : scoreDot}`}>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${isWorking ? 'bg-indigo-500 animate-pulse' : scoreDot}`}>
                                   {isWorking ? <span className="animate-spin" aria-hidden="true">⏳</span> : chunk.index + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
-                                    <span className="text-[10px] text-slate-400">{chunk.sizeKB || '?'}KB</span>
+                                    <span className="text-[11px] text-slate-600">{chunk.sizeKB || '?'}KB</span>
                                     {isWorking && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">Fixing...</span>}
                                     {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title="Deterministic regex fixes">{chunk.deterministicFixCount} det</span>}
                                     {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title="AI-diagnosed micro-tool fixes">{chunk.surgicalFixCount} surg</span>}
@@ -51811,7 +51811,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <div className="flex items-center gap-1 px-2 pb-2 flex-wrap">
                                   <button
                                     onClick={() => setLiveChunkExpanded(prev => ({ ...prev, [chunk.index]: !prev[chunk.index] }))}
-                                    className="text-[10px] bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-200 transition-colors focus:ring-2 focus:ring-slate-400"
+                                    className="text-[11px] bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-200 transition-colors focus:ring-2 focus:ring-slate-400"
                                     aria-expanded={isExpanded}
                                     aria-label={`${isExpanded ? 'Hide' : 'View'} diff for section ${chunk.index + 1}`}
                                   >
@@ -51843,7 +51843,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         } catch(e) { addToast(`Re-fix failed: ${e?.message}`, 'error'); }
                                         finally { setPdfFixLoading(false); setPdfFixStep(''); }
                                       }}
-                                      className="text-[10px] bg-indigo-600 text-white px-2 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-indigo-400"
+                                      className="text-[11px] bg-indigo-600 text-white px-2 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-indigo-400"
                                       aria-label={`Re-fix section ${chunk.index + 1}`}
                                     >
                                       🔄 Re-fix
@@ -51864,7 +51864,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           }
                                         } catch(e) { addToast(`Revert failed: ${e?.message}`, 'error'); }
                                       }}
-                                      className="text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold hover:bg-red-200 transition-colors focus:ring-2 focus:ring-red-400"
+                                      className="text-[11px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold hover:bg-red-200 transition-colors focus:ring-2 focus:ring-red-400"
                                       aria-label={`Reject fix for section ${chunk.index + 1}, revert to original`}
                                     >
                                       ✕ Reject
@@ -51889,7 +51889,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           }
                                         } catch(e) { /* non-blocking */ }
                                       }}
-                                      className="text-[10px] bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-300 transition-colors"
+                                      className="text-[11px] bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-300 transition-colors"
                                       aria-label={`Restore fixed section ${chunk.index + 1}`}
                                     >
                                       ↶ Restore
@@ -52252,7 +52252,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="mt-2 bg-white rounded-lg border border-amber-200 p-3 flex items-center gap-3">
                                 <div className="shrink-0 text-center">
                                   <div className="text-lg font-black text-amber-800">K</div>
-                                  <div className="text-[7px] text-amber-600 font-bold">EST. 1999</div>
+                                  <div className="text-[9px] text-amber-600 font-bold">EST. 1999</div>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="text-xs font-bold text-slate-800">Knowbility</div>
@@ -55496,39 +55496,57 @@ Return ONLY the plain language summary in ${lang}.`, false);
       )}
         {/* ── Export Preview & Customization Modal ── */}
         {showExportPreview && (
-          <div className="fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label="Document Builder">
+          <div className="fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label="Document Builder"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}
+            onKeyDown={(e) => { if (e.key === 'Escape') setShowExportPreview(false); }}
+            ref={(el) => {
+              if (!el) return;
+              // Focus trap: on mount, focus the first focusable element; trap Tab within modal
+              const focusables = el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+              if (focusables.length > 0 && !el.contains(document.activeElement)) focusables[0].focus();
+              el.__focusTrap = el.__focusTrap || ((ev) => {
+                if (ev.key !== 'Tab') return;
+                const fl = el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (fl.length === 0) return;
+                const first = fl[0], last = fl[fl.length - 1];
+                if (ev.shiftKey) { if (document.activeElement === first) { ev.preventDefault(); last.focus(); } }
+                else { if (document.activeElement === last) { ev.preventDefault(); first.focus(); } }
+              });
+              el.removeEventListener('keydown', el.__focusTrap);
+              el.addEventListener('keydown', el.__focusTrap);
+            }}>
             <div className="bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden">
               {/* Left Panel — Settings */}
               <div className="w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3">
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
+                    <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" aria-label="Close document builder"><X size={16} /></button>
                   </div>
                 </div>
 
                 {/* ── SECTION: Quick Start ── */}
-                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Presets */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Presets</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Presets</div>
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => (
                       <button key={key} onClick={() => applyExportPreset(preset)}
-                        className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
+                        className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
                         title={`Apply "${preset.name}" preset`}
                       >{preset.emoji} {preset.name}</button>
                     ))}
                     {Object.entries(exportPresets).map(([key, preset]) => (
                       <div key={key} className="flex items-center gap-0.5">
                         <button onClick={() => applyExportPreset(preset)}
-                          className="px-2 py-1 bg-white border border-violet-200 rounded-l-lg text-[10px] font-bold text-violet-600 hover:bg-violet-50 transition-all"
+                          className="px-2 py-1 bg-white border border-violet-200 rounded-l-lg text-[11px] font-bold text-violet-600 hover:bg-violet-50 transition-all"
                           title={`Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
                         <button onClick={() => deleteExportPreset(key)}
-                          className="px-1 py-1 bg-white border border-violet-200 border-l-0 rounded-r-lg text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                          className="px-1 py-1 bg-white border border-violet-200 border-l-0 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
                           title={`Delete "${preset.name}" preset`}
                         ><X size={10} /></button>
                       </div>
@@ -55537,14 +55555,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <button onClick={() => {
                     const name = prompt('Preset name:');
                     if (name && name.trim()) saveExportPreset(name.trim());
-                  }} className="mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[10px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+                  }} className="mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
                     + Save Current as Preset
                   </button>
                 </div>
 
                 {/* Export Mode */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
                   <div className="flex gap-1">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
                       <button key={m} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
@@ -55553,15 +55571,15 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
 
                 {/* ── SECTION: Appearance ── */}
-                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Style */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Style</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Style</div>
                   <div className="grid grid-cols-2 gap-1">
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
                       <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
-                        className={`text-[10px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                        className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
                       >{s.emoji} {s.name}</button>
                     ))}
                   </div>
@@ -55569,19 +55587,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Font */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Typography</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Typography</div>
                   <label className="flex items-center gap-2 text-xs text-slate-700 mb-2 cursor-pointer">
                     <input type="checkbox" checked={exportConfig.useAppFont} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, useAppFont: e.target.checked }))} className="rounded" />
                     Use app font ({FONT_OPTIONS.find(f => f.id === selectedFont)?.label || 'Default'})
                   </label>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-600 shrink-0">Size:</span>
+                    <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
                       className="flex-1 accent-indigo-600" aria-label="Font size" />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-slate-600 shrink-0">Margins:</span>
+                    <span className="text-[11px] text-slate-600 shrink-0">Margins:</span>
                     <div className="flex gap-1 flex-1">
                       {[
                         { label: 'Narrow', val: '0.5in' },
@@ -55597,7 +55615,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             ms.textContent = `@media print { @page { margin: ${m.val}; } } body { padding-left: ${m.val}; padding-right: ${m.val}; }`;
                           }
                         }}
-                          className="flex-1 text-[10px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                          className="flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                           title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
                       ))}
                     </div>
@@ -55607,8 +55625,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {/* Word count + goal */}
                 <div className="bg-slate-50 rounded-lg border border-slate-200 p-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-bold text-slate-600 uppercase">Word Count</span>
-                    <span className="text-[10px] font-mono text-slate-600" aria-live="polite">
+                    <span className="text-[11px] font-bold text-slate-600 uppercase">Word Count</span>
+                    <span className="text-[11px] font-mono text-slate-600" aria-live="polite">
                       {(() => {
                         const iframe = exportPreviewRef.current;
                         const text = iframe?.contentDocument?.body?.textContent || '';
@@ -55617,9 +55635,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-[10px] text-slate-500 shrink-0" htmlFor="word-goal-input">Goal:</label>
+                    <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
-                      className="flex-1 text-[10px] border border-slate-200 rounded px-2 py-1 bg-white"
+                      className="flex-1 text-[11px] border border-slate-200 rounded px-2 py-1 bg-white"
                       aria-label="Target word count goal"
                       onChange={(e) => {
                         const goal = parseInt(e.target.value);
@@ -55639,17 +55657,17 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label="Word count progress">
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
-                  <div id="word-goal-label" className="text-[10px] text-slate-600 mt-0.5"></div>
-                  <div className="text-[10px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
+                  <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
+                  <div className="text-[11px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
                 {/* ── SECTION: Content ── */}
-                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Resource Toggles */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <div className="text-[10px] font-bold text-slate-600 uppercase">Include Resources</div>
+                    <div className="text-[11px] font-bold text-slate-600 uppercase">Include Resources</div>
                     {(() => {
                       const resourceKeys = ['includeAnalysis','includeSimplified','includeGlossary','includeQuiz','includeOutline','includeFaq','includeSentenceFrames','includeImage','includeMath','includeDbq','includeLessonPlan','includeUdlAdvice','includeBrainstorm'];
                       const allOn = resourceKeys.every(k => exportConfig[k]);
@@ -55658,7 +55676,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const update = {};
                           resourceKeys.forEach(k => { update[k] = !allOn; });
                           setExportConfigAndRefresh(p => ({ ...p, ...update }));
-                        }} className="text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors">
+                        }} className="text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors">
                           {allOn ? 'Deselect All' : 'Select All'}
                         </button>
                       );
@@ -55685,7 +55703,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ['includeBrainstorm', '💡 Brainstorm', 'brainstorm'],
                       ].filter(([,, type]) => history.some(h => h && h.type === type));
                       if (available.length === 0) return (
-                        <p className="text-[10px] text-slate-600 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
+                        <p className="text-[11px] text-slate-600 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
                       );
                       return available.map(([key, label]) => {
                         const isTeacherOnly = teacherOnlyDefault.has(key);
@@ -55695,7 +55713,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         return (
                           <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
                             <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[10px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
                           </label>
                         );
                       });
@@ -55709,19 +55727,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   if (skipped.length === 0) return null;
                   return (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
-                      <p className="text-[10px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
-                      <p className="text-[10px] text-amber-600">{skipped.join(', ')}</p>
-                      <p className="text-[10px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                      <p className="text-[11px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
+                      <p className="text-[11px] text-amber-600">{skipped.join(', ')}</p>
+                      <p className="text-[11px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
                     </div>
                   );
                 })()}
 
                 {/* ── SECTION: Export ── */}
-                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Additional Options */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">Options</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Options</div>
                   <div className="space-y-1">
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.includeTeacherKey} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeTeacherKey: e.target.checked }))} className="rounded" />
@@ -55736,7 +55754,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                 {/* Audio Embedding */}
                 <div className={exportPreviewMode !== 'html' ? 'opacity-50' : ''}>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">🔊 Audio</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">🔊 Audio</div>
                   <div className="space-y-1">
                     <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' ? 'cursor-pointer hover:bg-white' : 'cursor-not-allowed'}`}>
                       <input type="checkbox" checked={exportConfig.includeAudioSource} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeAudioSource: e.target.checked }))} className="rounded" disabled={exportPreviewMode !== 'html'} />
@@ -55747,16 +55765,16 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       Read-aloud: Leveled text
                     </label>
                     {exportPreviewMode !== 'html' ? (
-                      <p className="text-[10px] text-amber-500 font-medium px-1">Switch to HTML format to enable audio embedding</p>
+                      <p className="text-[11px] text-amber-500 font-medium px-1">Switch to HTML format to enable audio embedding</p>
                     ) : (
-                      <p className="text-[10px] text-slate-600 italic px-1">Audio embeds as inline players in HTML exports.</p>
+                      <p className="text-[11px] text-slate-600 italic px-1">Audio embeds as inline players in HTML exports.</p>
                     )}
                   </div>
                 </div>
 
                 {/* AI Custom Style */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">✨ AI Style Studio</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">✨ AI Style Studio</div>
                   {/* Quick restyle presets */}
                   <div className="flex flex-wrap gap-1 mb-1.5">
                     {[
@@ -55769,7 +55787,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ].map(preset => (
                       <button key={preset.label} onClick={() => { setExportStylePrompt(preset.prompt); setTimeout(() => generateCustomExportStyle(), 50); }}
                         disabled={isGeneratingStyle}
-                        className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
+                        className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
                       >{preset.label}</button>
                     ))}
                   </div>
@@ -55777,22 +55795,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <input type="text" value={exportStylePrompt} onChange={(e) => setExportStylePrompt(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter' && exportStylePrompt.trim()) generateCustomExportStyle(); }}
                       placeholder="Describe a style or click a preset above..."
-                      className="flex-1 text-[10px] p-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="flex-1 text-[11px] p-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                       aria-label="Custom export style description" />
                     <button onClick={generateCustomExportStyle}
                       disabled={!exportStylePrompt.trim() || isGeneratingStyle}
-                      className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-bold hover:bg-indigo-200 disabled:opacity-40"
+                      className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
                     >{isGeneratingStyle ? '...' : '✨'}</button>
                   </div>
                   {customExportCSS && <div className="flex items-center gap-2 mt-1">
-                    <div className="text-[10px] text-green-600 font-medium">✓ Custom style active</div>
-                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[10px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
+                    <div className="text-[11px] text-green-600 font-medium">✓ Custom style active</div>
+                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
 
                 {/* ── Accessibility Audit ── */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-600 uppercase mb-1.5">♿ Accessibility Audit</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">♿ Accessibility Audit</div>
                   <button
                     onClick={async () => {
                       setExportAuditLoading(true); setExportAuditResult(null);
@@ -55824,30 +55842,30 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <div className="mt-2 space-y-2">
                       <div className={`text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? 'bg-green-50 border border-green-200' : exportAuditResult.score >= 60 ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
                         <div className={`text-2xl font-black ${exportAuditResult.score >= 80 ? 'text-green-700' : exportAuditResult.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{exportAuditResult.score}/100</div>
-                        <div className="text-[10px] font-bold text-slate-600 uppercase">WCAG 2.1 AA Score</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase">WCAG 2.1 AA Score</div>
                       </div>
                       <p className="text-[11px] text-slate-600">{exportAuditResult.summary}</p>
                       {exportAuditResult.issues?.length > 0 && (
                         <div>
-                          <div className="text-[10px] font-bold text-red-600 uppercase mb-1">Issues ({exportAuditResult.issues.length})</div>
+                          <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Issues ({exportAuditResult.issues.length})</div>
                           {exportAuditResult.issues.slice(0, 5).map((issue, i) => (
-                            <div key={i} className="text-[10px] text-slate-600 mb-1 flex items-start gap-1">
+                            <div key={i} className="text-[11px] text-slate-600 mb-1 flex items-start gap-1">
                               <span className="text-red-400 shrink-0">●</span>
                               <span>{typeof issue === 'string' ? issue : issue.issue}{issue.wcag ? ` (${issue.wcag})` : ''}</span>
                             </div>
                           ))}
-                          {exportAuditResult.issues.length > 5 && <div className="text-[10px] text-slate-600 italic">+{exportAuditResult.issues.length - 5} more</div>}
+                          {exportAuditResult.issues.length > 5 && <div className="text-[11px] text-slate-600 italic">+{exportAuditResult.issues.length - 5} more</div>}
                         </div>
                       )}
                       {exportAuditResult.passes?.length > 0 && (
                         <div>
-                          <div className="text-[10px] font-bold text-green-600 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
+                          <div className="text-[11px] font-bold text-green-600 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
                           {exportAuditResult.passes.slice(0, 3).map((pass, i) => (
-                            <div key={i} className="text-[10px] text-green-700 mb-0.5 flex items-start gap-1"><span className="text-green-500">✓</span> {pass}</div>
+                            <div key={i} className="text-[11px] text-green-700 mb-0.5 flex items-start gap-1"><span className="text-green-500">✓</span> {pass}</div>
                           ))}
                         </div>
                       )}
-                      <p className="text-[10px] text-indigo-500 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
+                      <p className="text-[11px] text-indigo-500 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
                     </div>
                   )}
                 </div>
@@ -55859,8 +55877,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0">
                   <div className="flex items-center gap-3">
                     <h3 className="text-sm font-bold text-slate-700">Live Preview</h3>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <span className="text-[10px] text-indigo-500 font-medium">Click text to edit directly</span>
+                    <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
+                    <span className="text-[11px] text-indigo-500 font-medium">Click text to edit directly</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Editing toolbar */}

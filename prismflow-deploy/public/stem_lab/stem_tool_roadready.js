@@ -1301,7 +1301,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var currentScenario = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
 
       // ── Refs for the active driving sim ──
-      var canvasRef = useRef(null);
+      var canvasRef = useRef(null);  // 2D HUD overlay canvas
+      var canvas3dRef = useRef(null); // Three.js WebGL canvas
+      var threeRef = useRef(null); // { scene, camera, renderer, objects... }
       var animRef = useRef(null);
       var keysRef = useRef({});
       var carRef = useRef({ x: 32, y: 50, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 });
@@ -1493,7 +1495,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (view !== 'driving') return;
         var canvas = canvasRef.current;
         if (!canvas) return;
-        var gfx = canvas.getContext('2d');
         var lastT = performance.now();
 
         var step = function(now) {
@@ -1969,644 +1970,962 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         };
 
-        // ── RAYCASTER RENDER ──
-        var castRay = function(px, py, angle, maxDist) {
+        // ══════════════════════════════════════════════
+        // THREE.JS 3D SCENE INITIALIZATION + RENDER
+        // ══════════════════════════════════════════════
+
+        var threeReady = false;
+        var scn3d = null; // { scene, camera, renderer, objects }
+
+        function initThreeScene() {
+          var T = window.THREE;
+          if (!T) return null;
+          var cnv = canvas3dRef.current;
+          if (!cnv) return null;
+          var W = cnv.clientWidth || 800;
+          var H = cnv.clientHeight || 500;
+
+          var scene = new T.Scene();
+          var isNight = currentScenario.time === 'night';
+          var isFog = currentScenario.weather === 'fog';
+          var isSnow = currentScenario.weather === 'snow';
+          var isRain = currentScenario.weather === 'rain';
+          scene.background = new T.Color(isNight ? '#0a0f1e' : isFog ? '#94a3b8' : isSnow ? '#cbd5e1' : isRain ? '#475569' : '#87ceeb');
+          if (isFog) { scene.fog = new T.Fog(0x94a3b8, 5, 40); }
+          else if (isSnow) { scene.fog = new T.Fog(0xcbd5e1, 10, 60); }
+          else if (isRain) { scene.fog = new T.Fog(0x475569, 8, 50); }
+          else { scene.fog = new T.Fog(scene.background.getHex(), 30, 120); }
+
+          var camera = new T.PerspectiveCamera(65, W / H, 0.1, 200);
+          var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true });
+          renderer.setSize(W, H);
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = T.PCFSoftShadowMap;
+
+          // ── Lighting ──
+          var ambient = new T.AmbientLight(isNight ? 0x1a1a3a : 0xffffff, isNight ? 0.15 : 0.5);
+          scene.add(ambient);
+          var sun = new T.DirectionalLight(isNight ? 0x4466aa : 0xfff5e0, isNight ? 0.3 : 0.9);
+          sun.position.set(20, 30, 10);
+          sun.castShadow = true;
+          sun.shadow.mapSize.set(1024, 1024);
+          sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
+          sun.shadow.camera.left = -40; sun.shadow.camera.right = 40;
+          sun.shadow.camera.top = 40; sun.shadow.camera.bottom = -40;
+          scene.add(sun);
+
+          // ── Ground plane (road + grass) ──
           var map = mapRef.current;
-          if (!map) return { dist: maxDist, hit: 2 };
-          var sin = Math.sin(angle), cos = Math.cos(angle);
-          for (var t = 0; t < maxDist; t += 0.05) {
-            var x = px + cos * t;
-            var y = py + sin * t;
-            var mx = Math.floor(x);
-            var my = Math.floor(y);
-            if (mx < 0 || mx >= MAP_SIZE || my < 0 || my >= MAP_SIZE) return { dist: t, hit: 1 };
-            var c = map[my][mx];
-            if (c === 1 || c === 5 || c === 6) return { dist: t, hit: c };
-          }
-          return { dist: maxDist, hit: 0 };
-        };
+          var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2);
+          var grassColor = isSnow ? 0xd0d8e0 : 0x2d6a1e;
+          var groundMat = new T.MeshLambertMaterial({ color: grassColor });
+          var ground = new T.Mesh(groundGeo, groundMat);
+          ground.rotation.x = -Math.PI / 2;
+          ground.receiveShadow = true;
+          scene.add(ground);
 
-        var render = function() {
-          var W = canvas.width = canvas.offsetWidth;
-          var H = canvas.height = canvas.offsetHeight;
-          var scn = currentScenario;
-
-          // ── Sky + ground gradient by time/weather ──
-          var isNight = scn.time === 'night';
-          var isFog = scn.weather === 'fog';
-          var isSnow = scn.weather === 'snow';
-          var isRain = scn.weather === 'rain';
-          var skyTop, skyBot, groundTop, groundBot;
-          if (isNight) { skyTop = '#0a0f1e'; skyBot = '#1e293b'; groundTop = '#0a0a14'; groundBot = '#000'; }
-          else if (isFog) { skyTop = '#94a3b8'; skyBot = '#cbd5e1'; groundTop = '#94a3b8'; groundBot = '#64748b'; }
-          else if (isSnow) { skyTop = '#cbd5e1'; skyBot = '#e2e8f0'; groundTop = '#f1f5f9'; groundBot = '#e2e8f0'; }
-          else if (isRain) { skyTop = '#475569'; skyBot = '#64748b'; groundTop = '#334155'; groundBot = '#1e293b'; }
-          else { skyTop = '#60a5fa'; skyBot = '#bae6fd'; groundTop = '#334155'; groundBot = '#1e293b'; }
-
-          var skyGrad = gfx.createLinearGradient(0, 0, 0, H / 2);
-          skyGrad.addColorStop(0, skyTop); skyGrad.addColorStop(1, skyBot);
-          gfx.fillStyle = skyGrad; gfx.fillRect(0, 0, W, H / 2);
-          var groundGrad = gfx.createLinearGradient(0, H / 2, 0, H);
-          groundGrad.addColorStop(0, groundTop); groundGrad.addColorStop(1, groundBot);
-          gfx.fillStyle = groundGrad; gfx.fillRect(0, H / 2, W, H / 2);
-
-          // ── Enhanced sky details ──
-          if (isNight) {
-            // Stars
-            gfx.fillStyle = 'rgba(255,255,255,0.8)';
-            for (var si = 0; si < 80; si++) {
-              var starX = (si * 137 + 41) % W;
-              var starY = (si * 97 + 23) % (H * 0.45);
-              var twinkle = 0.4 + Math.sin(si * 3.7 + timeRef.current * 1.5) * 0.4;
-              gfx.globalAlpha = twinkle;
-              var starSize = si % 7 === 0 ? 2 : 1;
-              gfx.fillRect(starX, starY, starSize, starSize);
-            }
-            gfx.globalAlpha = 1;
-            // Moon
-            gfx.fillStyle = '#e2e8f0';
-            gfx.beginPath(); gfx.arc(W * 0.8, H * 0.12, 18, 0, Math.PI * 2); gfx.fill();
-            gfx.fillStyle = skyTop;
-            gfx.beginPath(); gfx.arc(W * 0.8 + 6, H * 0.12 - 3, 15, 0, Math.PI * 2); gfx.fill();
-          } else if (!isFog && !isRain) {
-            // Sun
-            var sunX = W * 0.75;
-            var sunY = H * 0.1;
-            gfx.fillStyle = 'rgba(253,224,71,0.3)';
-            gfx.beginPath(); gfx.arc(sunX, sunY, 30, 0, Math.PI * 2); gfx.fill();
-            gfx.fillStyle = '#fde047';
-            gfx.beginPath(); gfx.arc(sunX, sunY, 14, 0, Math.PI * 2); gfx.fill();
-            // Clouds (procedural puffs)
-            gfx.fillStyle = isSnow ? 'rgba(203,213,225,0.6)' : 'rgba(255,255,255,0.4)';
-            for (var ci = 0; ci < 5; ci++) {
-              var cloudX = ((ci * 173 + 50 + timeRef.current * 2) % (W + 100)) - 50;
-              var cloudY = 20 + (ci * 37) % 60;
-              var cloudW = 60 + (ci * 23) % 40;
-              gfx.beginPath();
-              gfx.arc(cloudX, cloudY, cloudW * 0.2, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath();
-              gfx.arc(cloudX + cloudW * 0.2, cloudY - 5, cloudW * 0.25, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath();
-              gfx.arc(cloudX + cloudW * 0.45, cloudY, cloudW * 0.2, 0, Math.PI * 2); gfx.fill();
-            }
-          } else if (isRain) {
-            // Dark storm clouds
-            gfx.fillStyle = 'rgba(30,41,59,0.5)';
-            for (var ri = 0; ri < 4; ri++) {
-              var rcX = ((ri * 211 + 30) % W);
-              gfx.beginPath(); gfx.arc(rcX, 30 + ri * 15, 50, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath(); gfx.arc(rcX + 40, 25 + ri * 15, 40, 0, Math.PI * 2); gfx.fill();
-            }
-          }
-
-          if (cameraModeRef.current === 'overhead') {
-            renderOverhead(W, H);
-          } else {
-            renderRaycaster(W, H);
-          }
-
-          // Weather overlay
-          if (isRain) drawRain(W, H);
-          if (isSnow) drawSnow(W, H);
-          if (isFog) { gfx.fillStyle = 'rgba(203,213,225,0.5)'; gfx.fillRect(0, 0, W, H); }
-          if (isNight) {
-            // Darken everything, then carve out headlight cones with a radial gradient.
-            gfx.fillStyle = 'rgba(0,0,0,0.82)'; gfx.fillRect(0, 0, W, H);
-            var cx = W / 2, cy = H / 2 + 30;
-            var headRange = d.highBeams ? Math.min(W, H) * 0.8 : Math.min(W, H) * 0.5;
-            var grad = gfx.createRadialGradient(cx, cy, 0, cx, cy, headRange);
-            grad.addColorStop(0, 'rgba(255,247,200,0.55)');
-            grad.addColorStop(0.4, 'rgba(255,247,200,0.3)');
-            grad.addColorStop(0.8, 'rgba(255,247,200,0.05)');
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
-            gfx.globalCompositeOperation = 'lighter';
-            gfx.fillStyle = grad;
-            gfx.beginPath();
-            gfx.moveTo(cx, cy);
-            gfx.arc(cx, cy, headRange, Math.PI + 0.3, 2 * Math.PI - 0.3, false);
-            gfx.closePath(); gfx.fill();
-            gfx.globalCompositeOperation = 'source-over';
-          }
-          // Skid screen shake + overlay
-          if (skidRef.current.active) {
-            gfx.save();
-            var shake = skidRef.current.intensity * 4;
-            gfx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
-            gfx.fillStyle = 'rgba(239,68,68,0.12)';
-            gfx.fillRect(0, 0, W, H);
-            gfx.restore();
-            gfx.fillStyle = 'rgba(239,68,68,0.9)';
-            gfx.font = 'bold 18px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⚠️ SKID — ease off & steer gently', W / 2, 160);
-          }
-
-          // ── Dashboard cockpit frame ──
-          if (cameraModeRef.current === 'cockpit') {
-            // Windshield pillars (A-pillars)
-            gfx.fillStyle = '#1e293b';
-            // Left pillar
-            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(40, 0); gfx.lineTo(25, H); gfx.lineTo(0, H); gfx.fill();
-            // Right pillar
-            gfx.beginPath(); gfx.moveTo(W, 0); gfx.lineTo(W - 40, 0); gfx.lineTo(W - 25, H); gfx.lineTo(W, H); gfx.fill();
-            // Dashboard top edge (hood line)
-            var dashY = H - 95;
-            gfx.fillStyle = '#0f172a';
-            gfx.fillRect(0, dashY, W, 5);
-            // Steering wheel (centered arc)
-            var swX = W / 2, swY = H - 40, swR = 55;
-            gfx.strokeStyle = '#475569'; gfx.lineWidth = 8;
-            gfx.beginPath(); gfx.arc(swX, swY + 30, swR, Math.PI + 0.4, 2 * Math.PI - 0.4); gfx.stroke();
-            // Steering column
-            gfx.fillStyle = '#334155';
-            gfx.fillRect(swX - 6, swY + 20, 12, 40);
-            // Wheel turns with steering input
-            var steerAngle = carRef.current.steering * 0.8;
-            gfx.save(); gfx.translate(swX, swY + 30); gfx.rotate(steerAngle);
-            gfx.strokeStyle = '#64748b'; gfx.lineWidth = 6; gfx.lineCap = 'round';
-            gfx.beginPath(); gfx.arc(0, 0, swR - 4, Math.PI + 0.5, 2 * Math.PI - 0.5); gfx.stroke();
-            // Spokes
-            gfx.strokeStyle = '#475569'; gfx.lineWidth = 4;
-            gfx.beginPath(); gfx.moveTo(-swR + 12, -5); gfx.lineTo(swR - 12, -5); gfx.stroke();
-            gfx.beginPath(); gfx.moveTo(0, -swR + 12); gfx.lineTo(0, 8); gfx.stroke();
-            gfx.restore();
-            // Side mirrors (small trapezoids at pillar edges)
-            gfx.fillStyle = '#334155';
-            gfx.fillRect(8, H * 0.35, 28, 18);
-            gfx.fillRect(W - 36, H * 0.35, 28, 18);
-            gfx.fillStyle = '#60a5fa';
-            gfx.fillRect(10, H * 0.35 + 2, 24, 14);
-            gfx.fillRect(W - 34, H * 0.35 + 2, 24, 14);
-          }
-
-          // HUD
-          if (showHUDRef.current) drawHUD(W, H);
-
-          // Pause overlay
-          if (pausedRef.current) {
-            gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, H);
-            gfx.fillStyle = '#fff'; gfx.font = 'bold 32px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⏸ PAUSED', W / 2, H / 2);
-            gfx.font = '14px system-ui';
-            gfx.fillText('Press SPACE to resume', W / 2, H / 2 + 30);
-          }
-        };
-
-        var renderRaycaster = function(W, H) {
-          var car = carRef.current;
-          var fov = Math.PI / 3;
-          var numRays = Math.min(220, Math.floor(W / 3));
-          var rayStep = fov / numRays;
-          var colW = W / numRays;
-          var maxDist = isFog ? 4 : isSnow ? 8 : 22;
-          var hFactor = H * 0.65;
-
-          // ── Textured road ground plane (before walls) ──
-          drawGroundPlane(W, H, maxDist);
-
-          // ── Walls via raycasting ──
-          for (var i = 0; i < numRays; i++) {
-            var rayAngle = car.heading - fov / 2 + i * rayStep;
-            var r = castRay(car.x, car.y, rayAngle, maxDist);
-            if (r.dist >= maxDist) continue;
-            var corrected = r.dist * Math.cos(rayAngle - car.heading);
-            var wallH = hFactor / corrected;
-            var y0 = H / 2 - wallH / 2;
-            var shade = Math.max(0.15, 1 - corrected / maxDist);
-            var color;
-            if (r.hit === 1) {
-              // Buildings — vary color by position for variety
-              var bHash = (Math.floor(r.dist * 7) * 31) % 5;
-              var br = [180,160,140,170,150][bHash];
-              var bg = [140,130,120,100,140][bHash];
-              var bb = [100,110,90,80,120][bHash];
-              color = 'rgba(' + Math.round(br*shade) + ',' + Math.round(bg*shade) + ',' + Math.round(bb*shade) + ',1)';
-              // Window details on buildings (dark rectangles)
-              gfx.fillStyle = color;
-              gfx.fillRect(i * colW, y0, colW + 1, wallH);
-              if (wallH > 30 && colW > 2) {
-                gfx.fillStyle = 'rgba(0,0,0,' + (shade * 0.4) + ')';
-                var winH = wallH * 0.15;
-                var winY1 = y0 + wallH * 0.25;
-                var winY2 = y0 + wallH * 0.55;
-                gfx.fillRect(i * colW + 1, winY1, colW - 2, winH);
-                gfx.fillRect(i * colW + 1, winY2, colW - 2, winH);
-                // Night: lit windows glow
-                if (isNight && Math.random() < 0.6) {
-                  gfx.fillStyle = 'rgba(255,230,150,' + (shade * 0.35) + ')';
-                  gfx.fillRect(i * colW + 1, winY1 + 1, colW - 2, winH - 2);
-                }
-              }
-            } else if (r.hit === 5) {
-              // Trees — trunk + foliage shading
-              gfx.fillStyle = 'rgba(' + Math.round(60*shade) + ',' + Math.round(35*shade) + ',' + Math.round(15*shade) + ',1)';
-              gfx.fillRect(i * colW, y0 + wallH * 0.5, colW + 1, wallH * 0.5); // trunk
-              var leafR = Math.round(25 + 30 * shade);
-              var leafG = Math.round(80 + 60 * shade);
-              var leafB = Math.round(20 + 25 * shade);
-              if (isSnow) { leafR = Math.round(200 * shade); leafG = Math.round(210 * shade); leafB = Math.round(220 * shade); }
-              gfx.fillStyle = 'rgba(' + leafR + ',' + leafG + ',' + leafB + ',1)';
-              gfx.fillRect(i * colW, y0, colW + 1, wallH * 0.6);
-            } else {
-              gfx.fillStyle = 'rgba(' + Math.round(120*shade) + ',' + Math.round(120*shade) + ',' + Math.round(140*shade) + ',1)';
-              gfx.fillRect(i * colW, y0, colW + 1, wallH);
-            }
-          }
-
-          // Draw road markings over the ground plane
-          drawRoadMarkings(W, H, maxDist);
-          // Draw traffic and peds as billboards
-          drawBillboards(W, H, maxDist);
-        };
-
-        // ── Textured ground plane: road surface, shoulders, grass ──
-        var drawGroundPlane = function(W, H, maxDist) {
-          var car = carRef.current;
-          var horizonY = H / 2;
-          var map = mapRef.current;
-          var fov = Math.PI / 3;
-          var halfFovTan = Math.tan(fov / 2);
-
-          for (var sy = Math.floor(horizonY) + 1; sy < H; sy += 2) {
-            var rowDist = (H * 0.35) / (sy - horizonY);
-            if (rowDist > maxDist) continue;
-            var shade = Math.max(0.15, 1 - rowDist / maxDist);
-            // Sample a few points across the row to determine surface type
-            for (var sx = 0; sx < W; sx += 4) {
-              var screenFrac = (sx / W) * 2 - 1;
-              var worldAngle = car.heading + Math.atan(screenFrac * halfFovTan);
-              var wx = car.x + Math.cos(worldAngle) * rowDist;
-              var wy = car.y + Math.sin(worldAngle) * rowDist;
-              var mx = Math.floor(wx);
-              var my = Math.floor(wy);
-              var cellType = 2;
-              if (map && mx >= 0 && mx < MAP_SIZE && my >= 0 && my < MAP_SIZE) cellType = map[my][mx];
-              var r, g, b;
-              if (cellType === 0) {
-                // Road surface — dark asphalt with subtle texture
-                var texNoise = ((mx * 37 + my * 73) % 10) / 50;
-                r = Math.round((50 + texNoise * 15) * shade);
-                g = Math.round((55 + texNoise * 12) * shade);
-                b = Math.round((65 + texNoise * 10) * shade);
-                if (isSnow) { r = Math.round((140 + texNoise * 20) * shade); g = Math.round((145 + texNoise * 18) * shade); b = Math.round((155 + texNoise * 15) * shade); }
-                if (isRain) { r += 8; g += 8; b += 12; } // wet sheen
-              } else if (cellType === 3) {
-                // Centerline — yellow dashes
-                var dashPhase = Math.floor((my * 2.5 + mx * 0.1) % 4);
-                if (dashPhase < 2) { r = Math.round(250 * shade); g = Math.round(204 * shade); b = Math.round(21 * shade); }
-                else { r = Math.round(50 * shade); g = Math.round(55 * shade); b = Math.round(65 * shade); }
-              } else if (cellType === 4) {
-                // Sidewalk
-                r = Math.round(160 * shade); g = Math.round(155 * shade); b = Math.round(145 * shade);
-              } else {
-                // Grass / shoulder
-                var grassVar = ((mx * 53 + my * 97) % 20) / 60;
-                r = Math.round((30 + grassVar * 20) * shade);
-                g = Math.round((75 + grassVar * 35) * shade);
-                b = Math.round((25 + grassVar * 15) * shade);
-                if (isSnow) { r = Math.round((210 + grassVar * 20) * shade); g = Math.round((215 + grassVar * 18) * shade); b = Math.round((225 + grassVar * 12) * shade); }
-              }
-              gfx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-              gfx.fillRect(sx, sy, 5, 3);
-            }
-          }
-        };
-
-        // ── Road markings: edge lines, crosswalks, turn arrows ──
-        var drawRoadMarkings = function(W, H, maxDist) {
-          var car = carRef.current;
-          gfx.save();
-          var horizonY = H / 2;
-          var fov = Math.PI / 3;
-          var halfFovTan = Math.tan(fov / 2);
+          // ── Road surface ──
           var centerX = Math.floor(MAP_SIZE / 2);
+          var roadGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
+          var roadColor = isSnow ? 0x8899a6 : 0x333842;
+          var roadMat = new T.MeshLambertMaterial({ color: roadColor });
+          var road = new T.Mesh(roadGeo, roadMat);
+          road.rotation.x = -Math.PI / 2;
+          road.position.set(centerX - MAP_SIZE / 2, 0.01, 0);
+          road.receiveShadow = true;
+          scene.add(road);
 
-          for (var step = 0; step < 24; step++) {
-            var z = 0.5 + step * 0.8;
-            if (z > maxDist) break;
-            var screenY = horizonY + (H * 0.35) / z;
-            if (screenY >= H || screenY <= horizonY) continue;
-            var alpha = Math.max(0.1, 1 - z / maxDist);
-            var roadHalfW = 3.5; // world units
-            // Project left and right road edges
-            var leftWorldX = centerX - roadHalfW;
-            var rightWorldX = centerX + roadHalfW;
-            // Simplified: assume road is north-south centered
-            var relLeftX = leftWorldX - car.x;
-            var relRightX = rightWorldX - car.x;
-            var leftScreenX = W / 2 + (relLeftX / (z * halfFovTan * 2)) * W;
-            var rightScreenX = W / 2 + (relRightX / (z * halfFovTan * 2)) * W;
+          // ── Center line dashes ──
+          var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+          for (var di = -MAP_SIZE; di < MAP_SIZE; di += 3) {
+            var dashGeo = new T.PlaneGeometry(0.15, 1.5);
+            var dash = new T.Mesh(dashGeo, dashMat);
+            dash.rotation.x = -Math.PI / 2;
+            dash.position.set(centerX - MAP_SIZE / 2, 0.02, di);
+            scene.add(dash);
+          }
 
-            // White edge lines (solid)
-            gfx.fillStyle = 'rgba(255,255,255,' + alpha * 0.7 + ')';
-            gfx.fillRect(leftScreenX - 1, screenY - 1, 3, 3);
-            gfx.fillRect(rightScreenX - 1, screenY - 1, 3, 3);
+          // ── Edge lines (white solid) ──
+          var edgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
+          [-3.3, 3.3].forEach(function(offset) {
+            var edgeGeo = new T.PlaneGeometry(0.12, MAP_SIZE * 2);
+            var edge = new T.Mesh(edgeGeo, edgeMat);
+            edge.rotation.x = -Math.PI / 2;
+            edge.position.set(centerX - MAP_SIZE / 2 + offset, 0.02, 0);
+            scene.add(edge);
+          });
 
-            // Yellow center dashes
-            var dashPhase = Math.floor(z * 2 + timeRef.current * car.speed * 0.3) % 4;
-            if (dashPhase < 2) {
-              var centerScreenX = W / 2 + ((centerX - car.x) / (z * halfFovTan * 2)) * W;
-              gfx.fillStyle = 'rgba(250,204,21,' + alpha * 0.9 + ')';
-              var dashW = Math.max(2, 8 / z);
-              gfx.fillRect(centerScreenX - dashW / 2, screenY - 1, dashW, 3);
-            }
+          // ── Sidewalks (concrete strips between road and grass) ──
+          var sidewalkMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc0c8d0 : 0xb0a890 });
+          [-4.5, 4.5].forEach(function(offset) {
+            var swGeo = new T.PlaneGeometry(1.5, MAP_SIZE * 2);
+            var sw = new T.Mesh(swGeo, sidewalkMat);
+            sw.rotation.x = -Math.PI / 2;
+            sw.position.set(centerX - MAP_SIZE / 2 + offset, 0.015, 0);
+            sw.receiveShadow = true;
+            scene.add(sw);
+          });
 
-            // Crosswalk zebra at signals
-            signalsRef.current.forEach(function(sig) {
-              var sigDist = sig.y - car.y;
-              if (Math.abs(sigDist * 0.2 - z) < 0.4 && Math.abs(sig.x - car.x) < 5) {
-                gfx.fillStyle = 'rgba(255,255,255,' + alpha * 0.5 + ')';
-                for (var stripe = -3; stripe <= 3; stripe++) {
-                  var sx = W / 2 + ((sig.x + stripe * 0.6 - car.x) / (z * halfFovTan * 2)) * W;
-                  gfx.fillRect(sx - 1, screenY - 2, 3, 5);
-                }
+          // ── Curbs (raised edges between road and sidewalk) ──
+          var curbMat = new T.MeshLambertMaterial({ color: 0x888888 });
+          [-3.5, 3.5].forEach(function(offset) {
+            var cGeo = new T.BoxGeometry(0.15, 0.12, MAP_SIZE * 2);
+            var curb = new T.Mesh(cGeo, curbMat);
+            curb.position.set(centerX - MAP_SIZE / 2 + offset, 0.06, 0);
+            scene.add(curb);
+          });
+
+          // ── Street lamps (poles with point lights — key for night immersion) ──
+          var lampMeshes = [];
+          var lampPostMat = new T.MeshLambertMaterial({ color: 0x444444 });
+          var lampBulbMat = new T.MeshBasicMaterial({ color: isNight ? 0xfff0cc : 0x999999 });
+          for (var li = -MAP_SIZE; li < MAP_SIZE; li += 8) {
+            [-5.5, 5.5].forEach(function(xOff) {
+              // Pole
+              var lpGeo = new T.CylinderGeometry(0.04, 0.06, 3.5, 6);
+              var lp = new T.Mesh(lpGeo, lampPostMat);
+              lp.position.set(centerX - MAP_SIZE / 2 + xOff, 1.75, li);
+              lp.castShadow = true;
+              scene.add(lp);
+              // Arm
+              var armGeo = new T.BoxGeometry(0.8, 0.04, 0.04);
+              var arm = new T.Mesh(armGeo, lampPostMat);
+              arm.position.set(centerX - MAP_SIZE / 2 + xOff + (xOff < 0 ? 0.4 : -0.4), 3.4, li);
+              scene.add(arm);
+              // Bulb / fixture
+              var bGeo = new T.SphereGeometry(0.1, 8, 8);
+              var bulb = new T.Mesh(bGeo, lampBulbMat);
+              var bulbX = centerX - MAP_SIZE / 2 + xOff + (xOff < 0 ? 0.75 : -0.75);
+              bulb.position.set(bulbX, 3.35, li);
+              scene.add(bulb);
+              // Point light at night
+              if (isNight) {
+                var pl = new T.PointLight(0xfff0cc, 0.8, 12, 2);
+                pl.position.set(bulbX, 3.3, li);
+                scene.add(pl);
               }
+              lampMeshes.push({ pole: lp, bulb: bulb });
             });
           }
-          gfx.restore();
-        };
 
-        var drawBillboards = function(W, H, maxDist) {
-          var car = carRef.current;
-          var all = [];
-          trafficRef.current.forEach(function(t) { all.push({ x: t.x, y: t.y, color: t.color, type: 'car', size: t.type === 'truck' ? 1.5 : 1 }); });
-          pedsRef.current.forEach(function(p) { all.push({ x: p.x, y: p.y, color: p.color, type: 'ped', size: 0.4 }); });
-          signalsRef.current.forEach(function(s) {
-            var col = s.type === 'stop' ? '#ef4444' : (s.state === 'green' ? '#22c55e' : s.state === 'yellow' ? '#fbbf24' : '#ef4444');
-            all.push({ x: s.x, y: s.y, color: col, type: s.type === 'stop' ? 'stopSign' : 'signal', size: 0.9 });
+          // ── Crosswalk zebra stripes at signal locations ──
+          var crosswalkMat = new T.MeshBasicMaterial({ color: 0xffffff });
+          signalsRef.current.forEach(function(sig) {
+            for (var cs = -3; cs <= 3; cs++) {
+              var csGeo = new T.PlaneGeometry(0.3, 0.8);
+              var csMesh = new T.Mesh(csGeo, crosswalkMat);
+              csMesh.rotation.x = -Math.PI / 2;
+              csMesh.position.set(centerX - MAP_SIZE / 2 + cs * 0.8, 0.025, sig.y - MAP_SIZE / 2 - 1.5);
+              scene.add(csMesh);
+            }
           });
-          cyclistsRef.current.forEach(function(cy) {
-            all.push({ x: cy.x, y: cy.y, color: cy.type === 'motorcycle' ? '#0f172a' : '#fbbf24', type: cy.type, size: cy.type === 'motorcycle' ? 0.7 : 0.55 });
-          });
-          if (wildlifeRef.current) {
-            var w = wildlifeRef.current;
-            all.push({ x: w.x, y: w.y, color: '#fff', type: 'wildlife', icon: w.icon, size: w.mass === 'massive' ? 1.8 : w.mass === 'medium' ? 1.2 : 0.6 });
+
+          // ── Roadside props: mailboxes, hydrants (residential/suburban) ──
+          if (currentScenario.id === 'residential' || currentScenario.id === 'suburban' || currentScenario.id === 'school_zone') {
+            var hydrantMat = new T.MeshLambertMaterial({ color: 0xef4444 });
+            var mailboxMat = new T.MeshLambertMaterial({ color: 0x3b82f6 });
+            var mailboxPostMat2 = new T.MeshLambertMaterial({ color: 0x666666 });
+            for (var pi = 6; pi < MAP_SIZE; pi += 12) {
+              // Fire hydrant (right side)
+              var hyGeo = new T.CylinderGeometry(0.12, 0.14, 0.5, 8);
+              var hy = new T.Mesh(hyGeo, hydrantMat);
+              hy.position.set(centerX - MAP_SIZE / 2 + 4.2, 0.25, pi - MAP_SIZE / 2);
+              hy.castShadow = true;
+              scene.add(hy);
+              // Cap
+              var hcGeo = new T.SphereGeometry(0.13, 8, 8);
+              var hc = new T.Mesh(hcGeo, hydrantMat);
+              hc.position.set(centerX - MAP_SIZE / 2 + 4.2, 0.55, pi - MAP_SIZE / 2);
+              scene.add(hc);
+              // Mailbox (left side, offset)
+              var mbPostGeo = new T.CylinderGeometry(0.04, 0.04, 1.0, 6);
+              var mbPost = new T.Mesh(mbPostGeo, mailboxPostMat2);
+              mbPost.position.set(centerX - MAP_SIZE / 2 - 4.5, 0.5, pi + 3 - MAP_SIZE / 2);
+              scene.add(mbPost);
+              var mbBoxGeo = new T.BoxGeometry(0.35, 0.25, 0.2);
+              var mbBox = new T.Mesh(mbBoxGeo, mailboxMat);
+              mbBox.position.set(centerX - MAP_SIZE / 2 - 4.5, 1.05, pi + 3 - MAP_SIZE / 2);
+              mbBox.castShadow = true;
+              scene.add(mbBox);
+            }
           }
+
+          // ── Telephone poles + power lines (residential/suburban) ──
+          if (currentScenario.id === 'residential' || currentScenario.id === 'suburban' || currentScenario.id === 'school_zone' || currentScenario.id === 'night') {
+            var telPoleMat = new T.MeshLambertMaterial({ color: 0x6b5b4b });
+            var wireMat = new T.MeshBasicMaterial({ color: 0x333333 });
+            for (var tpi = -MAP_SIZE + 4; tpi < MAP_SIZE; tpi += 10) {
+              // Pole on right side
+              var tpGeo = new T.CylinderGeometry(0.06, 0.08, 5, 6);
+              var tp = new T.Mesh(tpGeo, telPoleMat);
+              tp.position.set(centerX - MAP_SIZE / 2 + 6.5, 2.5, tpi);
+              tp.castShadow = true;
+              scene.add(tp);
+              // Cross arm
+              var caGeo = new T.BoxGeometry(0.04, 0.04, 1.2);
+              var ca = new T.Mesh(caGeo, telPoleMat);
+              ca.position.set(centerX - MAP_SIZE / 2 + 6.5, 4.8, tpi);
+              scene.add(ca);
+              // Wires (thin cylinders between poles)
+              if (tpi > -MAP_SIZE + 4) {
+                [-0.5, 0, 0.5].forEach(function(wOff) {
+                  var wireGeo = new T.CylinderGeometry(0.01, 0.01, 10.1, 4);
+                  var wire = new T.Mesh(wireGeo, wireMat);
+                  wire.position.set(centerX - MAP_SIZE / 2 + 6.5, 4.75, tpi - 5);
+                  wire.rotation.x = Math.PI / 2;
+                  wire.position.z += wOff * 0.1; // slight offset per wire
+                  scene.add(wire);
+                });
+              }
+            }
+          }
+
+          // ── Road shoulder gravel strips ──
+          var shoulderMat = new T.MeshLambertMaterial({ color: isSnow ? 0xb0b8c0 : 0x706050 });
+          [-3.7, 3.7].forEach(function(offset) {
+            var shGeo = new T.PlaneGeometry(0.6, MAP_SIZE * 2);
+            var sh = new T.Mesh(shGeo, shoulderMat);
+            sh.rotation.x = -Math.PI / 2;
+            sh.position.set(centerX - MAP_SIZE / 2 + offset, 0.012, 0);
+            sh.receiveShadow = true;
+            scene.add(sh);
+          });
+
+          // ── Exhaust particles (subtle smoke from player car) ──
+          var exhaustParticles = null;
+          if (currentVehicle.type !== 'electric') {
+            var exCount = 40;
+            var exGeo = new T.BufferGeometry();
+            var exPositions = new Float32Array(exCount * 3);
+            var exSizes = new Float32Array(exCount);
+            for (var exi = 0; exi < exCount; exi++) {
+              exPositions[exi * 3] = 0;
+              exPositions[exi * 3 + 1] = -999; // hidden initially
+              exPositions[exi * 3 + 2] = 0;
+              exSizes[exi] = 0.08 + Math.random() * 0.08;
+            }
+            exGeo.setAttribute('position', new T.BufferAttribute(exPositions, 3));
+            var exMat = new T.PointsMaterial({ color: 0x888888, size: 0.12, transparent: true, opacity: 0.3 });
+            exhaustParticles = new T.Points(exGeo, exMat);
+            scene.add(exhaustParticles);
+          }
+
+          // ── Sky: hemisphere light for more natural ambient ──
+          var hemiLight = new T.HemisphereLight(
+            isNight ? 0x0a0f2e : isFog ? 0x94a3b8 : 0x87ceeb,
+            isSnow ? 0xd0d8e0 : 0x2d5a1e,
+            isNight ? 0.1 : 0.35
+          );
+          scene.add(hemiLight);
+
+          // ── Stars at night (small sprite points in sky dome) ──
+          if (isNight) {
+            var starCount = 200;
+            var starGeo = new T.BufferGeometry();
+            var starPos = new Float32Array(starCount * 3);
+            for (var sti = 0; sti < starCount; sti++) {
+              var theta = Math.random() * Math.PI * 2;
+              var phi = Math.random() * Math.PI * 0.4 + 0.1;
+              var radius = 80;
+              starPos[sti * 3] = Math.cos(theta) * Math.sin(phi) * radius;
+              starPos[sti * 3 + 1] = Math.cos(phi) * radius;
+              starPos[sti * 3 + 2] = Math.sin(theta) * Math.sin(phi) * radius;
+            }
+            starGeo.setAttribute('position', new T.BufferAttribute(starPos, 3));
+            var starMat = new T.PointsMaterial({ color: 0xffffff, size: 0.4, transparent: true, opacity: 0.8 });
+            var stars = new T.Points(starGeo, starMat);
+            scene.add(stars);
+            // Moon
+            var moonGeo = new T.SphereGeometry(2, 16, 16);
+            var moonMat = new T.MeshBasicMaterial({ color: 0xe2e8f0 });
+            var moon = new T.Mesh(moonGeo, moonMat);
+            moon.position.set(40, 50, -30);
+            scene.add(moon);
+          }
+
+          // ── Sun sphere (daytime, clear/snow) ──
+          if (!isNight && !isFog && !isRain) {
+            var sunGeo = new T.SphereGeometry(3, 16, 16);
+            var sunMat = new T.MeshBasicMaterial({ color: 0xfde047 });
+            var sunSphere = new T.Mesh(sunGeo, sunMat);
+            sunSphere.position.set(30, 40, 15);
+            scene.add(sunSphere);
+            // Sun glow
+            var glowGeo = new T.SphereGeometry(5, 16, 16);
+            var glowMat = new T.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.15 });
+            var sunGlow = new T.Mesh(glowGeo, glowMat);
+            sunGlow.position.copy(sunSphere.position);
+            scene.add(sunGlow);
+          }
+
+          // ── Road surface detail: darker patches for wear + manhole covers ──
+          var patchMat = new T.MeshLambertMaterial({ color: isSnow ? 0x7a8490 : 0x282c32 });
+          for (var rpi = 0; rpi < 15; rpi++) {
+            var rpx = centerX - MAP_SIZE / 2 + (Math.random() - 0.5) * 5;
+            var rpz = (Math.random() - 0.5) * MAP_SIZE * 1.5;
+            var rpGeo = new T.PlaneGeometry(0.6 + Math.random() * 0.8, 0.4 + Math.random() * 0.6);
+            var rpMesh = new T.Mesh(rpGeo, patchMat);
+            rpMesh.rotation.x = -Math.PI / 2;
+            rpMesh.rotation.z = Math.random() * Math.PI;
+            rpMesh.position.set(rpx, 0.013, rpz);
+            scene.add(rpMesh);
+          }
+          // Manhole covers
+          var manholeMat = new T.MeshLambertMaterial({ color: 0x3a3a3a });
+          for (var mhi = 0; mhi < 4; mhi++) {
+            var mhGeo = new T.CylinderGeometry(0.25, 0.25, 0.02, 12);
+            var mh = new T.Mesh(mhGeo, manholeMat);
+            mh.position.set(centerX - MAP_SIZE / 2 + (mhi % 2 === 0 ? -1.5 : 1.5), 0.02, -MAP_SIZE / 2 + 12 + mhi * 16);
+            scene.add(mh);
+          }
+
+          // ── Buildings from map (with rooftops + driveways) ──
+          var buildingMeshes = [];
+          var buildColors = [0xb08c64, 0xa09078, 0x8c7a62, 0x9e8878, 0xc0a888];
+          var roofColors = [0x7c3a1a, 0x5a3a2a, 0x444444, 0x6a4a3a, 0x8b5a3a];
+          var drivewayMat = new T.MeshLambertMaterial({ color: isSnow ? 0x909aa4 : 0x4a4a4a });
+          if (map) {
+            for (var by = 0; by < MAP_SIZE; by++) {
+              for (var bx = 0; bx < MAP_SIZE; bx++) {
+                if (map[by][bx] === 1) {
+                  var bH = 3 + ((bx * 37 + by * 73) % 5);
+                  var bGeo = new T.BoxGeometry(1, bH, 1);
+                  var bCol = buildColors[(bx * 31 + by * 17) % buildColors.length];
+                  var bMat = new T.MeshLambertMaterial({ color: bCol });
+                  var bMesh = new T.Mesh(bGeo, bMat);
+                  bMesh.position.set(bx - MAP_SIZE / 2, bH / 2, by - MAP_SIZE / 2);
+                  bMesh.castShadow = true; bMesh.receiveShadow = true;
+                  scene.add(bMesh);
+                  buildingMeshes.push(bMesh);
+                  // Windows
+                  if (bH > 3) {
+                    var winGeo = new T.PlaneGeometry(0.7, 0.5);
+                    var winMat = new T.MeshBasicMaterial({ color: isNight ? 0xffeebb : 0x1a2030, transparent: true, opacity: isNight ? 0.7 : 0.6 });
+                    for (var wf = 0; wf < 4; wf++) {
+                      for (var wy = 1.5; wy < bH - 1; wy += 2) {
+                        var win = new T.Mesh(winGeo, winMat);
+                        var wAngle = wf * Math.PI / 2;
+                        win.position.set(
+                          bx - MAP_SIZE / 2 + Math.cos(wAngle) * 0.51,
+                          wy,
+                          by - MAP_SIZE / 2 + Math.sin(wAngle) * 0.51
+                        );
+                        win.rotation.y = wAngle;
+                        scene.add(win);
+                      }
+                    }
+                  }
+                  // Rooftop (slightly wider overhang)
+                  var roofCol = roofColors[(bx * 13 + by * 29) % roofColors.length];
+                  var roofBGeo = new T.BoxGeometry(1.12, 0.12, 1.12);
+                  var roofBMat = new T.MeshLambertMaterial({ color: roofCol });
+                  var roofB = new T.Mesh(roofBGeo, roofBMat);
+                  roofB.position.set(bx - MAP_SIZE / 2, bH + 0.06, by - MAP_SIZE / 2);
+                  scene.add(roofB);
+                  // Pitched roof on shorter buildings (houses)
+                  if ((bx + by) % 3 === 0 && bH < 6) {
+                    var pitchGeo = new T.ConeGeometry(0.78, 1.2, 4);
+                    var pitchMesh = new T.Mesh(pitchGeo, roofBMat);
+                    pitchMesh.position.set(bx - MAP_SIZE / 2, bH + 0.72, by - MAP_SIZE / 2);
+                    pitchMesh.rotation.y = Math.PI / 4;
+                    pitchMesh.castShadow = true;
+                    scene.add(pitchMesh);
+                  }
+                  // Driveway connecting building to road
+                  var distToRoad = Math.abs(bx - centerX);
+                  if (distToRoad < 8 && distToRoad > 4 && (bx + by) % 4 === 0) {
+                    var dwLen = distToRoad - 3.8;
+                    var dwDir = bx < centerX ? 1 : -1;
+                    var dwGeo = new T.PlaneGeometry(dwLen, 0.8);
+                    var dw = new T.Mesh(dwGeo, drivewayMat);
+                    dw.rotation.x = -Math.PI / 2;
+                    dw.position.set(bx - MAP_SIZE / 2 + dwDir * dwLen / 2, 0.013, by - MAP_SIZE / 2);
+                    dw.receiveShadow = true;
+                    scene.add(dw);
+                  }
+                }
+              }
+            }
+          }
+
+          // ── Trees from map ──
+          if (map) {
+            var treeTrunkMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
+            var treeLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc8d0d8 : 0x2a7e2a });
+            for (var ty = 0; ty < MAP_SIZE; ty++) {
+              for (var tx = 0; tx < MAP_SIZE; tx++) {
+                if (map[ty][tx] === 5) {
+                  var tH = 2 + ((tx * 47 + ty * 83) % 3);
+                  // Trunk
+                  var trunkGeo = new T.CylinderGeometry(0.12, 0.18, tH * 0.5, 6);
+                  var trunk = new T.Mesh(trunkGeo, treeTrunkMat);
+                  trunk.position.set(tx - MAP_SIZE / 2, tH * 0.25, ty - MAP_SIZE / 2);
+                  trunk.castShadow = true;
+                  scene.add(trunk);
+                  // Foliage (cone for pines)
+                  var leafGeo = new T.ConeGeometry(0.8 + ((tx + ty) % 3) * 0.2, tH * 0.7, 6);
+                  var leaf = new T.Mesh(leafGeo, treeLeafMat);
+                  leaf.position.set(tx - MAP_SIZE / 2, tH * 0.5 + tH * 0.35, ty - MAP_SIZE / 2);
+                  leaf.castShadow = true;
+                  scene.add(leaf);
+                }
+              }
+            }
+          }
+
+          // ── Traffic light + stop sign meshes (static, will update material color) ──
+          var signalObjs = [];
+          signalsRef.current.forEach(function(s) {
+            if (s.type === 'stop') {
+              var poleMat = new T.MeshLambertMaterial({ color: 0x666666 });
+              var poleGeo = new T.CylinderGeometry(0.05, 0.05, 2.5, 6);
+              var pole = new T.Mesh(poleGeo, poleMat);
+              pole.position.set(s.x - MAP_SIZE / 2 + 0.8, 1.25, s.y - MAP_SIZE / 2);
+              scene.add(pole);
+              var signMat = new T.MeshBasicMaterial({ color: 0xdc2626 });
+              var signGeo = new T.CylinderGeometry(0.4, 0.4, 0.05, 8);
+              var signMesh = new T.Mesh(signGeo, signMat);
+              signMesh.position.set(s.x - MAP_SIZE / 2 + 0.8, 2.4, s.y - MAP_SIZE / 2);
+              scene.add(signMesh);
+              signalObjs.push({ ref: s, mesh: signMesh, type: 'stop' });
+            } else {
+              var sPoleMat = new T.MeshLambertMaterial({ color: 0x333333 });
+              var sPoleGeo = new T.CylinderGeometry(0.06, 0.06, 3.5, 6);
+              var sPole = new T.Mesh(sPoleGeo, sPoleMat);
+              sPole.position.set(s.x - MAP_SIZE / 2 + 1, 1.75, s.y - MAP_SIZE / 2);
+              scene.add(sPole);
+              var boxMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
+              var boxGeo = new T.BoxGeometry(0.35, 0.9, 0.2);
+              var box = new T.Mesh(boxGeo, boxMat);
+              box.position.set(s.x - MAP_SIZE / 2 + 1, 3.2, s.y - MAP_SIZE / 2);
+              scene.add(box);
+              // Three lamp meshes
+              var lampColors = [0xef4444, 0xfbbf24, 0x22c55e];
+              var lamps = [];
+              lampColors.forEach(function(lc, li) {
+                var lampMat = new T.MeshBasicMaterial({ color: 0x111111 });
+                var lampGeo = new T.SphereGeometry(0.08, 8, 8);
+                var lamp = new T.Mesh(lampGeo, lampMat);
+                lamp.position.set(s.x - MAP_SIZE / 2 + 1, 3.5 - li * 0.28, s.y - MAP_SIZE / 2 + 0.11);
+                scene.add(lamp);
+                lamps.push({ mesh: lamp, onColor: lc });
+              });
+              signalObjs.push({ ref: s, lamps: lamps, type: 'light' });
+            }
+          });
+
+          // ── Dynamic object groups (updated each frame) ──
+          var trafficGroup = new T.Group(); scene.add(trafficGroup);
+          var pedGroup = new T.Group(); scene.add(pedGroup);
+          var cyclistGroup = new T.Group(); scene.add(cyclistGroup);
+          var wildlifeGroup = new T.Group(); scene.add(wildlifeGroup);
+          var emergencyGroup = new T.Group(); scene.add(emergencyGroup);
+
+          // ── Player car (visible in chase mode) — detailed low-poly ──
+          var playerCarGroup = new T.Group();
+          // Main body
+          var bodyMat = new T.MeshLambertMaterial({ color: 0x22d3ee });
+          var bodyGeo = new T.BoxGeometry(1.9, 0.6, 0.95);
+          var body = new T.Mesh(bodyGeo, bodyMat);
+          body.position.y = 0.55;
+          body.castShadow = true;
+          playerCarGroup.add(body);
+          // Hood (sloped front)
+          var hoodGeo = new T.BoxGeometry(0.5, 0.15, 0.9);
+          var hoodMat = new T.MeshLambertMaterial({ color: 0x1ebbd4 });
+          var hood = new T.Mesh(hoodGeo, hoodMat);
+          hood.position.set(0.8, 0.78, 0);
+          hood.rotation.z = -0.15;
+          playerCarGroup.add(hood);
+          // Trunk (rear)
+          var trunkGeo = new T.BoxGeometry(0.4, 0.12, 0.88);
+          var trunk = new T.Mesh(trunkGeo, hoodMat);
+          trunk.position.set(-0.75, 0.78, 0);
+          playerCarGroup.add(trunk);
+          // Roof / cabin
+          var roofGeo = new T.BoxGeometry(0.95, 0.42, 0.82);
+          var roofMat = new T.MeshLambertMaterial({ color: 0x1ca8c4 });
+          var roofMesh = new T.Mesh(roofGeo, roofMat);
+          roofMesh.position.set(-0.1, 0.97, 0);
+          playerCarGroup.add(roofMesh);
+          // Windshield (angled glass)
+          var wsGeo = new T.PlaneGeometry(0.45, 0.38);
+          var wsMat = new T.MeshBasicMaterial({ color: 0x0c4a6e, transparent: true, opacity: 0.65, side: T.DoubleSide });
+          var ws = new T.Mesh(wsGeo, wsMat);
+          ws.position.set(0.38, 0.9, 0); ws.rotation.y = Math.PI / 2; ws.rotation.z = -0.2;
+          playerCarGroup.add(ws);
+          // Rear windshield
+          var rwsGeo = new T.PlaneGeometry(0.35, 0.34);
+          var rws = new T.Mesh(rwsGeo, wsMat);
+          rws.position.set(-0.57, 0.88, 0); rws.rotation.y = -Math.PI / 2; rws.rotation.z = 0.15;
+          playerCarGroup.add(rws);
+          // Side windows (left + right)
+          var sideWinGeo = new T.PlaneGeometry(0.6, 0.28);
+          var sideWinMatL = new T.Mesh(sideWinGeo, wsMat);
+          sideWinMatL.position.set(-0.1, 0.92, 0.42); sideWinMatL.rotation.y = 0;
+          playerCarGroup.add(sideWinMatL);
+          var sideWinR = new T.Mesh(sideWinGeo, wsMat);
+          sideWinR.position.set(-0.1, 0.92, -0.42); sideWinR.rotation.y = Math.PI;
+          playerCarGroup.add(sideWinR);
+          // Front bumper
+          var bumperGeo = new T.BoxGeometry(0.1, 0.2, 0.98);
+          var bumperMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
+          var fBumper = new T.Mesh(bumperGeo, bumperMat);
+          fBumper.position.set(0.98, 0.38, 0);
+          playerCarGroup.add(fBumper);
+          // Rear bumper
+          var rBumper = new T.Mesh(bumperGeo, bumperMat);
+          rBumper.position.set(-0.98, 0.38, 0);
+          playerCarGroup.add(rBumper);
+          // Grille
+          var grilleGeo = new T.PlaneGeometry(0.2, 0.5);
+          var grilleMat = new T.MeshBasicMaterial({ color: 0x0f172a });
+          var grille = new T.Mesh(grilleGeo, grilleMat);
+          grille.position.set(1.0, 0.52, 0); grille.rotation.y = Math.PI / 2;
+          playerCarGroup.add(grille);
+          // Side mirrors
+          var mirGeo = new T.BoxGeometry(0.12, 0.08, 0.06);
+          var mirMat = new T.MeshLambertMaterial({ color: 0x22d3ee });
+          var mirL = new T.Mesh(mirGeo, mirMat);
+          mirL.position.set(0.25, 0.85, 0.52);
+          playerCarGroup.add(mirL);
+          var mirR = new T.Mesh(mirGeo, mirMat);
+          mirR.position.set(0.25, 0.85, -0.52);
+          playerCarGroup.add(mirR);
+          // Wheels
+          var wheelMat = new T.MeshLambertMaterial({ color: 0x111111 });
+          [[-0.55, 0.2, 0.5], [-0.55, 0.2, -0.5], [0.55, 0.2, 0.5], [0.55, 0.2, -0.5]].forEach(function(pos) {
+            var wGeo = new T.CylinderGeometry(0.2, 0.2, 0.15, 12);
+            var wMesh = new T.Mesh(wGeo, wheelMat);
+            wMesh.rotation.x = Math.PI / 2;
+            wMesh.position.set(pos[0], pos[1], pos[2]);
+            playerCarGroup.add(wMesh);
+          });
+          // Headlights
+          var hlMat = new T.MeshBasicMaterial({ color: 0xffffee, transparent: true, opacity: isNight ? 0.9 : 0.3 });
+          [-0.3, 0.3].forEach(function(z) {
+            var hlGeo = new T.SphereGeometry(0.06, 6, 6);
+            var hl = new T.Mesh(hlGeo, hlMat);
+            hl.position.set(0.92, 0.55, z);
+            playerCarGroup.add(hl);
+          });
+          // Headlight spotlights (at night)
+          var headlightL = null, headlightR = null;
+          if (isNight) {
+            headlightL = new T.SpotLight(0xfff5cc, 1.5, 30, Math.PI / 6, 0.5, 1);
+            headlightL.position.set(0.95, 0.55, -0.3);
+            headlightL.target.position.set(10, 0, -0.3);
+            playerCarGroup.add(headlightL);
+            playerCarGroup.add(headlightL.target);
+            headlightR = new T.SpotLight(0xfff5cc, 1.5, 30, Math.PI / 6, 0.5, 1);
+            headlightR.position.set(0.95, 0.55, 0.3);
+            headlightR.target.position.set(10, 0, 0.3);
+            playerCarGroup.add(headlightR);
+            playerCarGroup.add(headlightR.target);
+          }
+          // Brake lights
+          var brakeMat = new T.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.3 });
+          var brakeL = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
+          brakeL.position.set(-0.92, 0.55, -0.3);
+          playerCarGroup.add(brakeL);
+          var brakeR = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
+          brakeR.position.set(-0.92, 0.55, 0.3);
+          playerCarGroup.add(brakeR);
+
+          scene.add(playerCarGroup);
+
+          // ── Skid tire marks group ──
+          var skidMarksGroup = new T.Group();
+          scene.add(skidMarksGroup);
+          var skidMarkMat = new T.MeshBasicMaterial({ color: 0x1a1a1a, transparent: true, opacity: 0.6 });
+
+          // ── Turn signal indicator meshes (orange spheres on player car) ──
+          var blinkerMeshL = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), new T.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0 }));
+          blinkerMeshL.position.set(0.92, 0.42, 0.45);
+          playerCarGroup.add(blinkerMeshL);
+          var blinkerMeshR = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), new T.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0 }));
+          blinkerMeshR.position.set(0.92, 0.42, -0.45);
+          playerCarGroup.add(blinkerMeshR);
+          // Rear blinkers
+          var blinkerMeshRL = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), new T.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0 }));
+          blinkerMeshRL.position.set(-0.92, 0.42, 0.45);
+          playerCarGroup.add(blinkerMeshRL);
+          var blinkerMeshRR = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), new T.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0 }));
+          blinkerMeshRR.position.set(-0.92, 0.42, -0.45);
+          playerCarGroup.add(blinkerMeshRR);
+
+          // ── Weather particles ──
+          var weatherParticles = null;
+          if (isRain || isSnow) {
+            var pCount = isRain ? 2000 : 800;
+            var pGeo = new T.BufferGeometry();
+            var positions = new Float32Array(pCount * 3);
+            for (var pi = 0; pi < pCount; pi++) {
+              positions[pi * 3] = (Math.random() - 0.5) * 60;
+              positions[pi * 3 + 1] = Math.random() * 20;
+              positions[pi * 3 + 2] = (Math.random() - 0.5) * 60;
+            }
+            pGeo.setAttribute('position', new T.BufferAttribute(positions, 3));
+            var pMat = new T.PointsMaterial({
+              color: isRain ? 0xaaccff : 0xffffff,
+              size: isRain ? 0.08 : 0.15,
+              transparent: true,
+              opacity: isRain ? 0.6 : 0.8
+            });
+            weatherParticles = new T.Points(pGeo, pMat);
+            scene.add(weatherParticles);
+          }
+
+          return {
+            scene: scene, camera: camera, renderer: renderer,
+            playerCarGroup: playerCarGroup, signalObjs: signalObjs,
+            trafficGroup: trafficGroup, pedGroup: pedGroup,
+            cyclistGroup: cyclistGroup, wildlifeGroup: wildlifeGroup,
+            emergencyGroup: emergencyGroup,
+            brakeMat: brakeMat, headlightL: headlightL, headlightR: headlightR,
+            weatherParticles: weatherParticles,
+            skidMarksGroup: skidMarksGroup, skidMarkMat: skidMarkMat,
+            blinkerMeshL: blinkerMeshL, blinkerMeshR: blinkerMeshR,
+            blinkerMeshRL: blinkerMeshRL, blinkerMeshRR: blinkerMeshRR,
+            exhaustParticles: exhaustParticles
+          };
+        }
+
+        // ── Update Three.js scene each frame ──
+        function updateThreeScene(s3) {
+          if (!s3) return;
+          var T = window.THREE;
+          var car = carRef.current;
+          var scn = currentScenario;
+          var carWorldX = car.x - MAP_SIZE / 2;
+          var carWorldZ = car.y - MAP_SIZE / 2;
+
+          // Position player car
+          s3.playerCarGroup.position.set(carWorldX, 0, carWorldZ);
+          s3.playerCarGroup.rotation.y = -car.heading + Math.PI / 2;
+
+          // Camera follows car
+          var camMode = cameraModeRef.current;
+          if (camMode === 'cockpit') {
+            s3.camera.position.set(
+              carWorldX + Math.cos(car.heading) * 0.3,
+              1.1,
+              carWorldZ + Math.sin(car.heading) * 0.3
+            );
+            s3.camera.lookAt(
+              carWorldX + Math.cos(car.heading) * 10,
+              1.0,
+              carWorldZ + Math.sin(car.heading) * 10
+            );
+            s3.playerCarGroup.visible = false;
+          } else if (camMode === 'chase') {
+            s3.camera.position.set(
+              carWorldX - Math.cos(car.heading) * 5,
+              2.5,
+              carWorldZ - Math.sin(car.heading) * 5
+            );
+            s3.camera.lookAt(carWorldX, 0.8, carWorldZ);
+            s3.playerCarGroup.visible = true;
+          } else { // overhead
+            s3.camera.position.set(carWorldX, 25, carWorldZ + 0.1);
+            s3.camera.lookAt(carWorldX, 0, carWorldZ);
+            s3.playerCarGroup.visible = true;
+          }
+
+          // Brake lights
+          s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
+
+          // Turn signal blinkers (3D orange spheres on car)
+          var blinkOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
+          var bDir = blinkerRef.current;
+          s3.blinkerMeshL.material.opacity = (bDir === -1 && blinkOn) ? 0.9 : 0;
+          s3.blinkerMeshR.material.opacity = (bDir === 1 && blinkOn) ? 0.9 : 0;
+          s3.blinkerMeshRL.material.opacity = (bDir === -1 && blinkOn) ? 0.9 : 0;
+          s3.blinkerMeshRR.material.opacity = (bDir === 1 && blinkOn) ? 0.9 : 0;
+
+          // Skid tire marks — drop dark plane strips when skidding
+          if (skidRef.current.active && car.speed > 4) {
+            var T2 = window.THREE;
+            var markGeo = new T2.PlaneGeometry(0.08, 0.5);
+            var mark = new T2.Mesh(markGeo, s3.skidMarkMat);
+            mark.rotation.x = -Math.PI / 2;
+            mark.rotation.z = -car.heading + Math.PI / 2;
+            mark.position.set(carWorldX, 0.015, carWorldZ);
+            s3.skidMarksGroup.add(mark);
+            // Cap at 200 marks, remove oldest
+            while (s3.skidMarksGroup.children.length > 200) {
+              s3.skidMarksGroup.remove(s3.skidMarksGroup.children[0]);
+            }
+          }
+
+          // Update traffic signals
+          s3.signalObjs.forEach(function(so) {
+            if (so.type === 'light' && so.lamps) {
+              so.lamps.forEach(function(lamp, li) {
+                var on = (li === 0 && so.ref.state === 'red') || (li === 1 && so.ref.state === 'yellow') || (li === 2 && so.ref.state === 'green');
+                lamp.mesh.material.color.setHex(on ? lamp.onColor : 0x111111);
+              });
+            }
+          });
+
+          // Update traffic vehicles (low-poly car groups)
+          var tGroup = s3.trafficGroup;
+          while (tGroup.children.length > trafficRef.current.length) tGroup.remove(tGroup.children[tGroup.children.length - 1]);
+          trafficRef.current.forEach(function(t, ti) {
+            var m;
+            if (ti < tGroup.children.length) {
+              m = tGroup.children[ti];
+            } else {
+              // Build a proper low-poly car group
+              var cg = new T.Group();
+              var isTruck = t.type === 'truck';
+              var bLen = isTruck ? 2.4 : 1.7;
+              var bH = isTruck ? 0.8 : 0.55;
+              var tCol = new T.Color(t.color).getHex();
+              // Body
+              var bGeo = new T.BoxGeometry(bLen, bH, 0.85);
+              var bMat = new T.MeshLambertMaterial({ color: tCol });
+              var bdy = new T.Mesh(bGeo, bMat);
+              bdy.position.y = bH / 2 + 0.2;
+              bdy.castShadow = true;
+              cg.add(bdy);
+              // Roof / cabin (cars only, trucks have flat top)
+              if (!isTruck) {
+                var rGeo = new T.BoxGeometry(bLen * 0.5, 0.35, 0.78);
+                var rMat = new T.MeshLambertMaterial({ color: tCol });
+                var roof = new T.Mesh(rGeo, rMat);
+                roof.position.set(-bLen * 0.05, bH + 0.35, 0);
+                cg.add(roof);
+                // Windshield + rear window
+                var glassMat = new T.MeshBasicMaterial({ color: 0x1a2a3a, transparent: true, opacity: 0.6 });
+                var fwGeo = new T.PlaneGeometry(0.32, 0.78);
+                var fw = new T.Mesh(fwGeo, glassMat);
+                fw.position.set(bLen * 0.2, bH + 0.18, 0);
+                fw.rotation.y = Math.PI / 2;
+                fw.rotation.z = -0.2;
+                cg.add(fw);
+                var rwGeo = new T.PlaneGeometry(0.28, 0.78);
+                var rw = new T.Mesh(rwGeo, glassMat);
+                rw.position.set(-bLen * 0.3, bH + 0.18, 0);
+                rw.rotation.y = -Math.PI / 2;
+                rw.rotation.z = 0.2;
+                cg.add(rw);
+              }
+              // Wheels (4)
+              var wMat = new T.MeshLambertMaterial({ color: 0x111111 });
+              var wR = 0.18;
+              [[-bLen * 0.3, wR, 0.45], [-bLen * 0.3, wR, -0.45], [bLen * 0.3, wR, 0.45], [bLen * 0.3, wR, -0.45]].forEach(function(wp) {
+                var wGeo = new T.CylinderGeometry(wR, wR, 0.12, 10);
+                var wheel = new T.Mesh(wGeo, wMat);
+                wheel.rotation.x = Math.PI / 2;
+                wheel.position.set(wp[0], wp[1], wp[2]);
+                cg.add(wheel);
+              });
+              // Headlights (front, visible at night)
+              var hlMat2 = new T.MeshBasicMaterial({ color: 0xffffee, transparent: true, opacity: currentScenario.time === 'night' ? 0.9 : 0.2 });
+              [0.3, -0.3].forEach(function(z) {
+                var hlGeo = new T.SphereGeometry(0.05, 6, 6);
+                var hl = new T.Mesh(hlGeo, hlMat2);
+                hl.position.set(bLen / 2 + 0.01, bH / 2 + 0.2, z);
+                cg.add(hl);
+              });
+              // Tail lights
+              var tlMat = new T.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.5 });
+              [0.3, -0.3].forEach(function(z) {
+                var tlGeo = new T.SphereGeometry(0.04, 6, 6);
+                var tl = new T.Mesh(tlGeo, tlMat);
+                tl.position.set(-bLen / 2, bH / 2 + 0.2, z);
+                cg.add(tl);
+              });
+              tGroup.add(cg);
+              m = cg;
+            }
+            m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
+            m.rotation.y = -t.heading + Math.PI / 2;
+          });
+
+          // Update pedestrians
+          var pGroup = s3.pedGroup;
+          while (pGroup.children.length > pedsRef.current.length) pGroup.remove(pGroup.children[pGroup.children.length - 1]);
+          pedsRef.current.forEach(function(p, pi) {
+            var m;
+            if (pi < pGroup.children.length) {
+              m = pGroup.children[pi];
+            } else {
+              var pg = new T.Group();
+              var headGeo = new T.SphereGeometry(0.15, 8, 8);
+              var headMat = new T.MeshLambertMaterial({ color: new T.Color(p.color).getHex() });
+              var head = new T.Mesh(headGeo, headMat);
+              head.position.y = 1.5;
+              pg.add(head);
+              var bodyGeo2 = new T.CylinderGeometry(0.12, 0.15, 0.8, 8);
+              var bodyMat2 = new T.MeshLambertMaterial({ color: 0x445566 });
+              var bodyMesh = new T.Mesh(bodyGeo2, bodyMat2);
+              bodyMesh.position.y = 1.0;
+              pg.add(bodyMesh);
+              pg.castShadow = true;
+              pGroup.add(pg);
+              m = pg;
+            }
+            m.position.set(p.x - MAP_SIZE / 2, 0, p.y - MAP_SIZE / 2);
+          });
+
+          // Update cyclists
+          var cGroup = s3.cyclistGroup;
+          while (cGroup.children.length > cyclistsRef.current.length) cGroup.remove(cGroup.children[cGroup.children.length - 1]);
+          cyclistsRef.current.forEach(function(cy, ci) {
+            var m;
+            if (ci < cGroup.children.length) {
+              m = cGroup.children[ci];
+            } else {
+              var cg = new T.Group();
+              var wheelGeo = new T.TorusGeometry(0.25, 0.02, 8, 16);
+              var wheelMat2 = new T.MeshLambertMaterial({ color: 0x888888 });
+              var w1 = new T.Mesh(wheelGeo, wheelMat2); w1.position.set(0.3, 0.25, 0); w1.rotation.y = Math.PI / 2; cg.add(w1);
+              var w2 = new T.Mesh(wheelGeo, wheelMat2); w2.position.set(-0.3, 0.25, 0); w2.rotation.y = Math.PI / 2; cg.add(w2);
+              var riderGeo = new T.CylinderGeometry(0.1, 0.1, 0.6, 6);
+              var riderMat = new T.MeshLambertMaterial({ color: cy.type === 'motorcycle' ? 0x1e293b : 0x06b6d4 });
+              var rider = new T.Mesh(riderGeo, riderMat);
+              rider.position.y = 0.9;
+              cg.add(rider);
+              var helmetGeo = new T.SphereGeometry(0.12, 8, 8);
+              var helmetMat = new T.MeshLambertMaterial({ color: cy.type === 'motorcycle' ? 0xef4444 : 0xfbbf24 });
+              var helmet = new T.Mesh(helmetGeo, helmetMat);
+              helmet.position.y = 1.3;
+              cg.add(helmet);
+              cg.castShadow = true;
+              cGroup.add(cg);
+              m = cg;
+            }
+            m.position.set(cy.x - MAP_SIZE / 2, 0, cy.y - MAP_SIZE / 2);
+            m.rotation.y = -cy.heading + Math.PI / 2;
+          });
+
+          // Wildlife
+          var wGroup = s3.wildlifeGroup;
+          while (wGroup.children.length > 0) wGroup.remove(wGroup.children[0]);
+          if (wildlifeRef.current) {
+            var wl = wildlifeRef.current;
+            var wSize = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
+            var wGeo = new T.BoxGeometry(wSize * 1.5, wSize, wSize * 0.6);
+            var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
+            var wMesh = new T.Mesh(wGeo, wMat);
+            wMesh.position.set(wl.x - MAP_SIZE / 2, wSize / 2, wl.y - MAP_SIZE / 2);
+            wMesh.castShadow = true;
+            wGroup.add(wMesh);
+          }
+
+          // Emergency vehicles
+          var eGroup = s3.emergencyGroup;
+          while (eGroup.children.length > 0) eGroup.remove(eGroup.children[0]);
           if (emergencyRef.current) {
             var em = emergencyRef.current;
-            all.push({ x: em.x, y: em.y, color: em.color, type: 'emergency', icon: em.icon, size: 1.4 });
+            var eGrp = new T.Group();
+            var eBGeo = new T.BoxGeometry(2.2, 1.2, 1.0);
+            var eBMat = new T.MeshLambertMaterial({ color: new T.Color(em.color).getHex() });
+            var eBody = new T.Mesh(eBGeo, eBMat);
+            eBody.position.y = 0.7;
+            eBody.castShadow = true;
+            eGrp.add(eBody);
+            // Flashing lights
+            var flashOn = Math.floor(timeRef.current * 6) % 2 === 0;
+            var lCol = flashOn ? 0xef4444 : 0x3b82f6;
+            var rCol = flashOn ? 0x3b82f6 : 0xef4444;
+            var flashMat1 = new T.MeshBasicMaterial({ color: lCol });
+            var flashMat2 = new T.MeshBasicMaterial({ color: rCol });
+            var fGeo = new T.SphereGeometry(0.12, 8, 8);
+            var fL = new T.Mesh(fGeo, flashMat1); fL.position.set(0, 1.4, -0.3); eGrp.add(fL);
+            var fR = new T.Mesh(fGeo, flashMat2); fR.position.set(0, 1.4, 0.3); eGrp.add(fR);
+            eGrp.position.set(em.x - MAP_SIZE / 2, 0, em.y - MAP_SIZE / 2);
+            eGrp.rotation.y = -em.heading + Math.PI / 2;
+            eGroup.add(eGrp);
           }
-          // Sort back to front
-          all.sort(function(a, b) {
-            var da = Math.hypot(a.x - car.x, a.y - car.y);
-            var db = Math.hypot(b.x - car.x, b.y - car.y);
-            return db - da;
-          });
-          all.forEach(function(obj) {
-            var dx = obj.x - car.x;
-            var dy = obj.y - car.y;
-            var dist = Math.hypot(dx, dy);
-            if (dist > maxDist || dist < 0.3) return;
-            var angle = Math.atan2(dy, dx) - car.heading;
-            // Wrap angle
-            while (angle > Math.PI) angle -= 2 * Math.PI;
-            while (angle < -Math.PI) angle += 2 * Math.PI;
-            if (Math.abs(angle) > Math.PI / 3) return;
-            var fov = Math.PI / 3;
-            var screenX = W / 2 + (angle / (fov / 2)) * (W / 2);
-            var size = (H * 0.3 * obj.size) / dist;
-            var y0 = H / 2 - size / 2;
-            gfx.fillStyle = obj.color;
-            if (obj.type === 'ped') {
-              // stick figure
-              gfx.beginPath(); gfx.arc(screenX, y0 + size * 0.2, size * 0.15, 0, Math.PI * 2); gfx.fill();
-              gfx.fillRect(screenX - size * 0.08, y0 + size * 0.35, size * 0.16, size * 0.6);
-            } else if (obj.type === 'stopSign') {
-              // Octagon stop sign on a pole
-              gfx.fillStyle = '#475569';
-              gfx.fillRect(screenX - size * 0.04, y0 + size * 0.4, size * 0.08, size * 0.6);
-              gfx.fillStyle = '#dc2626';
-              gfx.beginPath();
-              for (var oi = 0; oi < 8; oi++) {
-                var oa = oi * Math.PI / 4 + Math.PI / 8;
-                var ox = screenX + Math.cos(oa) * size * 0.35;
-                var oy = (y0 + size * 0.3) + Math.sin(oa) * size * 0.35;
-                if (oi === 0) gfx.moveTo(ox, oy); else gfx.lineTo(ox, oy);
+
+          // Exhaust particles
+          if (s3.exhaustParticles && car.speed > 1) {
+            var exPos = s3.exhaustParticles.geometry.attributes.position;
+            var exIdx = Math.floor(timeRef.current * 15) % exPos.count;
+            // Spawn new particle at exhaust pipe position (rear-left of car)
+            var exWorldX = carWorldX - Math.cos(car.heading) * 1.0 + Math.sin(car.heading) * 0.2;
+            var exWorldZ = carWorldZ - Math.sin(car.heading) * 1.0 - Math.cos(car.heading) * 0.2;
+            exPos.setXYZ(exIdx, exWorldX, 0.35, exWorldZ);
+            // Drift existing particles upward and away
+            for (var epi = 0; epi < exPos.count; epi++) {
+              var epy = exPos.getY(epi);
+              if (epy > 0 && epy < 3) {
+                exPos.setY(epi, epy + 0.02);
+                exPos.setX(epi, exPos.getX(epi) + (Math.random() - 0.5) * 0.02);
+              } else if (epy >= 3) {
+                exPos.setY(epi, -999);
               }
-              gfx.closePath(); gfx.fill();
-              gfx.fillStyle = '#fff'; gfx.font = 'bold ' + Math.max(8, size * 0.18) + 'px system-ui'; gfx.textAlign = 'center';
-              gfx.fillText('STOP', screenX, y0 + size * 0.34);
-            } else if (obj.type === 'signal') {
-              // Traffic light box with three lamps
-              gfx.fillStyle = '#1e293b';
-              gfx.fillRect(screenX - size * 0.18, y0, size * 0.36, size * 0.9);
-              ['#ef4444', '#fbbf24', '#22c55e'].forEach(function(c, li) {
-                var cy = y0 + size * 0.18 + li * size * 0.27;
-                gfx.fillStyle = (c === obj.color) ? c : '#0f172a';
-                gfx.beginPath(); gfx.arc(screenX, cy, size * 0.1, 0, Math.PI * 2); gfx.fill();
-                if (c === obj.color) {
-                  gfx.fillStyle = c + '88';
-                  gfx.beginPath(); gfx.arc(screenX, cy, size * 0.18, 0, Math.PI * 2); gfx.fill();
-                }
-              });
-            } else if (obj.type === 'wildlife') {
-              gfx.font = Math.max(20, size * 30) + 'px system-ui';
-              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
-              gfx.fillText(obj.icon, screenX, y0 + size * 0.4);
-              gfx.textBaseline = 'alphabetic';
-            } else if (obj.type === 'cyclist') {
-              // helmet + torso
-              gfx.fillStyle = '#fbbf24';
-              gfx.beginPath(); gfx.arc(screenX, y0 + size * 0.15, size * 0.13, 0, Math.PI * 2); gfx.fill();
-              gfx.fillStyle = '#06b6d4';
-              gfx.fillRect(screenX - size * 0.12, y0 + size * 0.28, size * 0.24, size * 0.35);
-              // bike frame
-              gfx.strokeStyle = '#fff'; gfx.lineWidth = 1.5;
-              gfx.beginPath(); gfx.moveTo(screenX - size * 0.15, y0 + size * 0.8); gfx.lineTo(screenX + size * 0.15, y0 + size * 0.8); gfx.stroke();
-              // wheels
-              gfx.beginPath(); gfx.arc(screenX - size * 0.18, y0 + size * 0.85, size * 0.1, 0, Math.PI * 2); gfx.stroke();
-              gfx.beginPath(); gfx.arc(screenX + size * 0.18, y0 + size * 0.85, size * 0.1, 0, Math.PI * 2); gfx.stroke();
-            } else if (obj.type === 'motorcycle') {
-              gfx.fillStyle = '#1e293b';
-              gfx.fillRect(screenX - size * 0.18, y0 + size * 0.3, size * 0.36, size * 0.4);
-              gfx.fillStyle = '#ef4444';
-              gfx.beginPath(); gfx.arc(screenX, y0 + size * 0.15, size * 0.12, 0, Math.PI * 2); gfx.fill();
-              gfx.fillStyle = '#000';
-              gfx.beginPath(); gfx.arc(screenX - size * 0.2, y0 + size * 0.85, size * 0.14, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath(); gfx.arc(screenX + size * 0.2, y0 + size * 0.85, size * 0.14, 0, Math.PI * 2); gfx.fill();
-            } else if (obj.type === 'emergency') {
-              // Big vehicle with flashing lights
-              gfx.fillStyle = '#fff';
-              gfx.fillRect(screenX - size * 0.55, y0, size * 1.1, size * 0.75);
-              gfx.fillStyle = obj.color;
-              gfx.fillRect(screenX - size * 0.5, y0 + size * 0.05, size * 1.0, size * 0.3);
-              // Flashing roof lights
-              var flashOn = Math.floor(timeRef.current * 6) % 2 === 0;
-              gfx.fillStyle = flashOn ? '#ef4444' : '#3b82f6';
-              gfx.beginPath(); gfx.arc(screenX - size * 0.25, y0, size * 0.08, 0, Math.PI * 2); gfx.fill();
-              gfx.fillStyle = flashOn ? '#3b82f6' : '#ef4444';
-              gfx.beginPath(); gfx.arc(screenX + size * 0.25, y0, size * 0.08, 0, Math.PI * 2); gfx.fill();
-              // Glow
-              gfx.fillStyle = 'rgba(239,68,68,' + (flashOn ? '0.3' : '0.1') + ')';
-              gfx.beginPath(); gfx.arc(screenX, y0, size * 0.5, 0, Math.PI * 2); gfx.fill();
-              // Icon
-              gfx.font = Math.max(14, size * 0.3) + 'px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
-              gfx.fillText(obj.icon, screenX, y0 + size * 0.5);
-              gfx.textBaseline = 'alphabetic';
-            } else {
-              // Detailed car body
-              var carW = size * 1.0, carH = size * 0.65;
-              var cx = screenX - carW / 2, cy = y0 + size * 0.1;
-              // Body
-              gfx.fillStyle = obj.color;
-              if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cx, cy, carW, carH, 4); gfx.fill(); }
-              else { gfx.fillRect(cx, cy, carW, carH); }
-              // Roof (lighter)
-              gfx.fillStyle = 'rgba(255,255,255,0.15)';
-              gfx.fillRect(cx + carW * 0.15, cy - carH * 0.2, carW * 0.7, carH * 0.3);
-              // Windshield (dark glass)
-              gfx.fillStyle = 'rgba(0,20,40,0.7)';
-              gfx.fillRect(cx + carW * 0.12, cy + carH * 0.08, carW * 0.35, carH * 0.4);
-              gfx.fillRect(cx + carW * 0.52, cy + carH * 0.08, carW * 0.35, carH * 0.4);
-              // Headlights (glow at night)
-              if (isNight) {
-                gfx.fillStyle = 'rgba(255,255,200,0.7)';
-                gfx.beginPath(); gfx.arc(cx + 3, cy + carH * 0.3, 3, 0, Math.PI * 2); gfx.fill();
-                gfx.beginPath(); gfx.arc(cx + carW - 3, cy + carH * 0.3, 3, 0, Math.PI * 2); gfx.fill();
+            }
+            exPos.needsUpdate = true;
+            s3.exhaustParticles.material.opacity = Math.min(0.35, car.throttle * 0.3 + 0.05);
+          }
+
+          // Weather particles
+          if (s3.weatherParticles) {
+            var pos = s3.weatherParticles.geometry.attributes.position;
+            for (var wpi = 0; wpi < pos.count; wpi++) {
+              var py = pos.getY(wpi);
+              py -= (scn.weather === 'rain' ? 0.5 : 0.1);
+              if (py < 0) py = 20;
+              pos.setY(wpi, py);
+              if (scn.weather === 'snow') {
+                pos.setX(wpi, pos.getX(wpi) + Math.sin(wpi + timeRef.current) * 0.01);
               }
-              // Tail/brake lights
-              gfx.fillStyle = '#ef4444';
-              gfx.fillRect(cx, cy + carH * 0.65, carW * 0.12, carH * 0.15);
-              gfx.fillRect(cx + carW * 0.88, cy + carH * 0.65, carW * 0.12, carH * 0.15);
-              // Wheels (dark circles at bottom)
-              gfx.fillStyle = '#0f172a';
-              gfx.beginPath(); gfx.arc(cx + carW * 0.2, cy + carH, Math.max(2, carW * 0.08), 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath(); gfx.arc(cx + carW * 0.8, cy + carH, Math.max(2, carW * 0.08), 0, Math.PI * 2); gfx.fill();
             }
-          });
-        };
-
-        var renderOverhead = function(W, H) {
-          var map = mapRef.current;
-          if (!map) return;
-          gfx.fillStyle = '#0f172a'; gfx.fillRect(0, 0, W, H);
-          var cellSize = Math.min(W, H) / MAP_SIZE;
-          for (var y = 0; y < MAP_SIZE; y++) {
-            for (var x = 0; x < MAP_SIZE; x++) {
-              var c = map[y][x];
-              var col;
-              if (c === 0) col = '#334155';
-              else if (c === 1) col = '#92400e';
-              else if (c === 2) col = '#166534';
-              else if (c === 3) col = '#facc15';
-              else if (c === 5) col = '#14532d';
-              else col = '#1e293b';
-              gfx.fillStyle = col;
-              gfx.fillRect(x * cellSize, y * cellSize, cellSize + 1, cellSize + 1);
-            }
+            pos.needsUpdate = true;
+            s3.weatherParticles.position.set(carWorldX, 0, carWorldZ);
           }
-          // Draw traffic
-          trafficRef.current.forEach(function(t) {
-            gfx.fillStyle = t.color;
-            gfx.fillRect(t.x * cellSize - 3, t.y * cellSize - 3, 6, 6);
-          });
-          // Draw pedestrians
-          pedsRef.current.forEach(function(p) {
-            gfx.fillStyle = p.color;
-            gfx.beginPath(); gfx.arc(p.x * cellSize, p.y * cellSize, 2, 0, Math.PI * 2); gfx.fill();
-          });
-          // Signals
-          signalsRef.current.forEach(function(s) {
-            var col = s.type === 'stop' ? '#ef4444' : (s.state === 'green' ? '#22c55e' : s.state === 'yellow' ? '#fbbf24' : '#ef4444');
-            gfx.fillStyle = col;
-            gfx.fillRect(s.x * cellSize - 4, s.y * cellSize - 4, 8, 8);
-          });
-          // Cyclists + motorcycles
-          cyclistsRef.current.forEach(function(cy) {
-            gfx.fillStyle = cy.type === 'motorcycle' ? '#ef4444' : '#fbbf24';
-            gfx.beginPath(); gfx.arc(cy.x * cellSize, cy.y * cellSize, 3, 0, Math.PI * 2); gfx.fill();
-          });
-          // Wildlife
-          if (wildlifeRef.current) {
-            var w = wildlifeRef.current;
-            gfx.font = '16px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
-            gfx.fillText(w.icon, w.x * cellSize, w.y * cellSize);
-            gfx.textBaseline = 'alphabetic';
-          }
-          // Draw car
-          var car = carRef.current;
-          gfx.save();
-          gfx.translate(car.x * cellSize, car.y * cellSize);
-          gfx.rotate(car.heading);
-          gfx.fillStyle = '#22d3ee';
-          gfx.fillRect(-5, -3, 10, 6);
-          gfx.fillStyle = '#0ea5e9';
-          gfx.fillRect(3, -3, 2, 6);
-          gfx.restore();
-        };
 
-        var drawRain = function(W, H) {
-          gfx.strokeStyle = 'rgba(186,230,253,0.6)';
-          gfx.lineWidth = 1;
-          for (var i = 0; i < 100; i++) {
-            var rx = (Math.random() * W);
-            var ry = (Math.random() * H);
-            gfx.beginPath(); gfx.moveTo(rx, ry); gfx.lineTo(rx - 3, ry + 10); gfx.stroke();
-          }
-        };
+          // Render
+          s3.renderer.render(s3.scene, s3.camera);
+        }
 
-        var drawSnow = function(W, H) {
-          gfx.fillStyle = 'rgba(255,255,255,0.8)';
-          for (var i = 0; i < 60; i++) {
-            var sx = (Math.random() * W);
-            var sy = (Math.random() * H);
-            gfx.beginPath(); gfx.arc(sx, sy, 1.5, 0, Math.PI * 2); gfx.fill();
-          }
-        };
-
+        // ── 2D HUD overlay (drawn on the separate 2D canvas) ──
         var drawHUD = function(W, H) {
+          var gfx = canvas.getContext('2d');
+          gfx.clearRect(0, 0, W, H);
           var car = carRef.current;
           var scn = currentScenario;
           var veh = currentVehicle;
           var speedMph = Math.round(car.speed * MS_TO_MPH);
           var stats = statsRef.current;
           var avgMpg = stats.mpgSamples > 0 ? (stats.mpgSum / stats.mpgSamples) : 0;
+          var isNight = scn.time === 'night';
+          var isFog = scn.weather === 'fog';
 
           // Bottom HUD bar
           gfx.fillStyle = 'rgba(0,0,0,0.75)';
           gfx.fillRect(0, H - 90, W, 90);
-          gfx.strokeStyle = '#22d3ee';
-          gfx.lineWidth = 2;
+          gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 2;
           gfx.strokeRect(0, H - 90, W, 90);
 
           // Analog speedometer gauge
           var gaugeX = 60, gaugeY = H - 50, gaugeR = 38;
           var maxGauge = Math.max(80, scn.speedLimit + 30);
-          // Arc background
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, 0, false);
           gfx.strokeStyle = '#1e293b'; gfx.lineWidth = 6; gfx.stroke();
-          // Speed zone arcs
           var limitAngle = Math.PI + (scn.speedLimit / maxGauge) * Math.PI;
           var overAngle = Math.PI + (Math.min(maxGauge, scn.speedLimit + 10) / maxGauge) * Math.PI;
-          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false);
-          gfx.strokeStyle = '#22c55e'; gfx.lineWidth = 6; gfx.stroke();
-          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false);
-          gfx.strokeStyle = '#f59e0b'; gfx.lineWidth = 6; gfx.stroke();
-          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false);
-          gfx.strokeStyle = '#ef4444'; gfx.lineWidth = 6; gfx.stroke();
-          // Needle
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false); gfx.strokeStyle = '#22c55e'; gfx.lineWidth = 6; gfx.stroke();
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false); gfx.strokeStyle = '#f59e0b'; gfx.lineWidth = 6; gfx.stroke();
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false); gfx.strokeStyle = '#ef4444'; gfx.lineWidth = 6; gfx.stroke();
           var needleAngle = Math.PI + (Math.min(speedMph, maxGauge) / maxGauge) * Math.PI;
           gfx.strokeStyle = '#fff'; gfx.lineWidth = 2;
-          gfx.beginPath();
-          gfx.moveTo(gaugeX, gaugeY);
-          gfx.lineTo(gaugeX + Math.cos(needleAngle) * (gaugeR - 8), gaugeY + Math.sin(needleAngle) * (gaugeR - 8));
-          gfx.stroke();
-          // Center dot
+          gfx.beginPath(); gfx.moveTo(gaugeX, gaugeY); gfx.lineTo(gaugeX + Math.cos(needleAngle) * (gaugeR - 8), gaugeY + Math.sin(needleAngle) * (gaugeR - 8)); gfx.stroke();
           gfx.fillStyle = '#fff'; gfx.beginPath(); gfx.arc(gaugeX, gaugeY, 3, 0, Math.PI * 2); gfx.fill();
-          // Digital readout
           gfx.fillStyle = speedMph > scn.speedLimit + 5 ? '#ef4444' : speedMph > scn.speedLimit ? '#f59e0b' : '#4ade80';
           gfx.font = 'bold 18px monospace'; gfx.textAlign = 'center';
           gfx.fillText(speedMph, gaugeX, gaugeY - 8);
           gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui';
           gfx.fillText('MPH', gaugeX, gaugeY + 4);
-          // Tick marks
           for (var ti = 0; ti <= maxGauge; ti += 10) {
             var ta = Math.PI + (ti / maxGauge) * Math.PI;
-            var tx1 = gaugeX + Math.cos(ta) * (gaugeR + 2);
-            var ty1 = gaugeY + Math.sin(ta) * (gaugeR + 2);
-            var tx2 = gaugeX + Math.cos(ta) * (gaugeR + 8);
-            var ty2 = gaugeY + Math.sin(ta) * (gaugeR + 8);
             gfx.strokeStyle = '#64748b'; gfx.lineWidth = 1;
-            gfx.beginPath(); gfx.moveTo(tx1, ty1); gfx.lineTo(tx2, ty2); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(gaugeX + Math.cos(ta) * (gaugeR + 2), gaugeY + Math.sin(ta) * (gaugeR + 2)); gfx.lineTo(gaugeX + Math.cos(ta) * (gaugeR + 8), gaugeY + Math.sin(ta) * (gaugeR + 8)); gfx.stroke();
             gfx.fillStyle = '#64748b'; gfx.font = '7px monospace'; gfx.textAlign = 'center';
             gfx.fillText(ti, gaugeX + Math.cos(ta) * (gaugeR + 14), gaugeY + Math.sin(ta) * (gaugeR + 14) + 2);
           }
@@ -2617,7 +2936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText(veh.type === 'electric' ? 'MPGe AVG' : 'MPG AVG', W / 2, H - 22);
 
-          // Safety + efficiency scores
+          // Safety + efficiency
           gfx.fillStyle = stats.safetyScore > 70 ? '#4ade80' : stats.safetyScore > 40 ? '#f59e0b' : '#ef4444';
           gfx.font = 'bold 18px monospace'; gfx.textAlign = 'right';
           gfx.fillText(Math.max(0, Math.round(stats.safetyScore)), W - 20, H - 50);
@@ -2629,113 +2948,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText('ECO', W - 100, H - 35);
 
-          // Top-left: scenario info
+          // Top-left info
           gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(10, 10, 220, 54);
           gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'left';
           gfx.fillText(scn.icon + ' ' + scn.name, 20, 28);
           gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
           gfx.fillText(veh.icon + ' ' + veh.name, 20, 44);
-          gfx.fillText((cameraModeRef.current).toUpperCase() + ' VIEW — press C', 20, 58);
+          gfx.fillText(cameraModeRef.current.toUpperCase() + ' — C to switch', 20, 58);
 
-          // Signal-ahead HUD indicator
-          var nearestSig = null;
-          var nearestSigDist = Infinity;
+          // Signal ahead
+          var nearestSig = null, nearestSigDist = Infinity;
           signalsRef.current.forEach(function(s) {
-            var dy = s.y - car.y;
-            var ahead = Math.abs(dy);
-            if (ahead < 10 && ahead < nearestSigDist && Math.abs(s.x - car.x) < 4) {
-              nearestSigDist = ahead;
-              nearestSig = s;
-            }
+            var ahead = Math.abs(s.y - car.y);
+            if (ahead < 10 && ahead < nearestSigDist && Math.abs(s.x - car.x) < 4) { nearestSigDist = ahead; nearestSig = s; }
           });
           if (nearestSig && nearestSigDist < 10) {
             var sigLabel = nearestSig.type === 'stop' ? 'STOP SIGN' : nearestSig.state.toUpperCase();
             var sigCol = nearestSig.type === 'stop' ? '#ef4444' : nearestSig.state === 'green' ? '#22c55e' : nearestSig.state === 'yellow' ? '#fbbf24' : '#ef4444';
-            gfx.fillStyle = sigCol;
-            gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center';
+            gfx.fillStyle = sigCol; gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center';
             gfx.fillText('● ' + sigLabel + ' AHEAD', W / 2, H - 100);
           }
 
-          // Event toast banner (mid-screen)
+          // Event toast
           var et = eventToastRef.current;
           if (et && et.msg && timeRef.current < et.until) {
-            var bannerH = 36;
             gfx.fillStyle = 'rgba(127,29,29,0.85)';
-            gfx.fillRect(W * 0.1, 80, W * 0.8, bannerH);
+            gfx.fillRect(W * 0.1, 80, W * 0.8, 36);
             gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2;
-            gfx.strokeRect(W * 0.1, 80, W * 0.8, bannerH);
+            gfx.strokeRect(W * 0.1, 80, W * 0.8, 36);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
             gfx.fillText(et.msg, W / 2, 102);
           }
 
-          // Speed limit sign (top-right)
-          var signX = W - 70, signY = 20;
-          gfx.fillStyle = '#fff';
-          gfx.fillRect(signX, signY, 50, 60);
-          gfx.strokeStyle = '#000'; gfx.lineWidth = 2;
-          gfx.strokeRect(signX, signY, 50, 60);
+          // Speed limit sign
+          var signX = W - 70, signY2 = 20;
+          gfx.fillStyle = '#fff'; gfx.fillRect(signX, signY2, 50, 60);
+          gfx.strokeStyle = '#000'; gfx.lineWidth = 2; gfx.strokeRect(signX, signY2, 50, 60);
           gfx.fillStyle = '#000'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText('SPEED', signX + 25, signY + 14);
-          gfx.fillText('LIMIT', signX + 25, signY + 24);
-          gfx.font = 'bold 20px monospace';
-          gfx.fillText(scn.speedLimit, signX + 25, signY + 48);
+          gfx.fillText('SPEED', signX + 25, signY2 + 14); gfx.fillText('LIMIT', signX + 25, signY2 + 24);
+          gfx.font = 'bold 20px monospace'; gfx.fillText(scn.speedLimit, signX + 25, signY2 + 48);
 
-          // Blinker indicators (bottom-center of HUD)
+          // Blinkers
           var blink = blinkerRef.current;
           var blinkOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
           if (blink !== 0 && blinkOn) {
-            gfx.fillStyle = '#22c55e';
-            gfx.font = 'bold 20px system-ui'; gfx.textAlign = 'center';
-            if (blink === -1) gfx.fillText('◄', W / 2 - 70, H - 55);
-            else gfx.fillText('►', W / 2 + 70, H - 55);
+            gfx.fillStyle = '#22c55e'; gfx.font = 'bold 20px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(blink === -1 ? '◄' : '►', W / 2 + blink * 70, H - 55);
           }
-          // Blinker labels
           gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('E=◄  R=►  T=off', W / 2, H - 8);
 
-          // MPG sparkline (bottom-center, above HUD bar)
+          // MPG sparkline
           var mHist = mpgHistoryRef.current;
           if (mHist.length > 4) {
             var sparkW = 120, sparkH = 30;
             var sparkX = W / 2 - sparkW / 2, sparkY = H - 132;
-            gfx.fillStyle = 'rgba(0,0,0,0.5)';
-            gfx.fillRect(sparkX - 2, sparkY - 2, sparkW + 4, sparkH + 12);
+            gfx.fillStyle = 'rgba(0,0,0,0.5)'; gfx.fillRect(sparkX - 2, sparkY - 2, sparkW + 4, sparkH + 12);
             var sparkMax = Math.max.apply(null, mHist.filter(function(m) { return m < 999; }));
             if (sparkMax < 1) sparkMax = 1;
-            gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 1.5;
-            gfx.beginPath();
+            gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 1.5; gfx.beginPath();
             for (var si = 0; si < mHist.length; si++) {
               var sx = sparkX + (si / (mHist.length - 1)) * sparkW;
               var sy = sparkY + sparkH - (Math.min(mHist[si], sparkMax) / sparkMax) * sparkH;
               if (si === 0) gfx.moveTo(sx, sy); else gfx.lineTo(sx, sy);
             }
             gfx.stroke();
-            gfx.fillStyle = '#4ade80'; gfx.font = '8px system-ui'; gfx.textAlign = 'left';
-            gfx.fillText('MPG', sparkX, sparkY + sparkH + 9);
-            gfx.textAlign = 'right';
-            gfx.fillText(mHist[mHist.length - 1].toFixed(0), sparkX + sparkW, sparkY + sparkH + 9);
+            gfx.fillStyle = '#4ade80'; gfx.font = '8px system-ui'; gfx.textAlign = 'left'; gfx.fillText('MPG', sparkX, sparkY + sparkH + 9);
+            gfx.textAlign = 'right'; gfx.fillText(mHist[mHist.length - 1].toFixed(0), sparkX + sparkW, sparkY + sparkH + 9);
           }
 
-          // Rearview mirror (small rectangle at top-center showing what's behind)
-          var mirrorW = Math.min(200, W * 0.25);
-          var mirrorH = 50;
-          var mirrorX = W / 2 - mirrorW / 2;
-          var mirrorY = 74;
-          gfx.fillStyle = 'rgba(0,0,0,0.7)';
-          gfx.fillRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
-          gfx.strokeStyle = '#475569'; gfx.lineWidth = 1;
-          gfx.strokeRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
-          // Draw tiny sky/ground in mirror
+          // Rearview mirror
+          var mirrorW = Math.min(200, W * 0.25), mirrorH = 50;
+          var mirrorX = W / 2 - mirrorW / 2, mirrorY = 74;
+          gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
+          gfx.strokeStyle = '#475569'; gfx.lineWidth = 1; gfx.strokeRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
           gfx.fillStyle = isNight ? '#0a0f1e' : isFog ? '#94a3b8' : '#60a5fa';
           gfx.fillRect(mirrorX, mirrorY, mirrorW, mirrorH / 2);
           gfx.fillStyle = isNight ? '#0a0a14' : '#334155';
           gfx.fillRect(mirrorX, mirrorY + mirrorH / 2, mirrorW, mirrorH / 2);
-          // Show trailing traffic in mirror
-          var rearCar = carRef.current;
-          var rearAngle = rearCar.heading + Math.PI;
+          var rearAngle = car.heading + Math.PI;
           trafficRef.current.forEach(function(t) {
-            var dx = t.x - rearCar.x;
-            var dy = t.y - rearCar.y;
+            var dx = t.x - car.x, dy = t.y - car.y;
             var dist = Math.hypot(dx, dy);
             if (dist > 15 || dist < 0.5) return;
             var angle = Math.atan2(dy, dx) - rearAngle;
@@ -2746,35 +3039,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var mSize = Math.max(4, 20 / dist);
             gfx.fillStyle = t.color;
             gfx.fillRect(mx - mSize / 2, mirrorY + mirrorH / 2 - mSize / 2, mSize, mSize * 0.6);
-            // Headlights in mirror
             if (isNight) {
               gfx.fillStyle = 'rgba(255,255,200,0.6)';
               gfx.beginPath(); gfx.arc(mx - mSize * 0.3, mirrorY + mirrorH / 2, 1.5, 0, Math.PI * 2); gfx.fill();
               gfx.beginPath(); gfx.arc(mx + mSize * 0.3, mirrorY + mirrorH / 2, 1.5, 0, Math.PI * 2); gfx.fill();
             }
           });
-          // Cyclists in mirror too
-          cyclistsRef.current.forEach(function(cy) {
-            var dx = cy.x - rearCar.x;
-            var dy = cy.y - rearCar.y;
-            var dist = Math.hypot(dx, dy);
-            if (dist > 10 || dist < 0.5) return;
-            var angle = Math.atan2(dy, dx) - rearAngle;
-            while (angle > Math.PI) angle -= 2 * Math.PI;
-            while (angle < -Math.PI) angle += 2 * Math.PI;
-            if (Math.abs(angle) > Math.PI / 4) return;
-            var mx = mirrorX + mirrorW / 2 + (angle / (Math.PI / 4)) * (mirrorW / 2);
-            gfx.fillStyle = cy.type === 'motorcycle' ? '#ef4444' : '#fbbf24';
-            gfx.beginPath(); gfx.arc(mx, mirrorY + mirrorH / 2, 2.5, 0, Math.PI * 2); gfx.fill();
-          });
           gfx.fillStyle = '#475569'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('REARVIEW', W / 2, mirrorY - 4);
+
+          // Skid warning
+          if (skidRef.current.active) {
+            gfx.fillStyle = 'rgba(239,68,68,0.15)'; gfx.fillRect(0, 0, W, H);
+            gfx.fillStyle = 'rgba(239,68,68,0.9)'; gfx.font = 'bold 18px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('⚠️ SKID — ease off & steer gently', W / 2, 160);
+          }
+
+          // Pause
+          if (pausedRef.current) {
+            gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, H);
+            gfx.fillStyle = '#fff'; gfx.font = 'bold 32px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('⏸ PAUSED', W / 2, H / 2);
+            gfx.font = '14px system-ui'; gfx.fillText('Press SPACE to resume', W / 2, H / 2 + 30);
+          }
         };
 
-        animRef.current = requestAnimationFrame(step);
+        // ── Main render loop: init Three.js then loop ──
+        function ensureThreeAndStart() {
+          if (window.THREE) {
+            scn3d = initThreeScene();
+            threeRef.current = scn3d;
+            threeReady = !!scn3d;
+            if (threeReady) animRef.current = requestAnimationFrame(step);
+          } else {
+            // Load Three.js on demand
+            var s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            s.async = true;
+            s.onload = function() {
+              scn3d = initThreeScene();
+              threeRef.current = scn3d;
+              threeReady = !!scn3d;
+              if (threeReady) animRef.current = requestAnimationFrame(step);
+            };
+            s.onerror = function() { console.error('[RoadReady] Three.js failed to load'); };
+            document.head.appendChild(s);
+          }
+        }
+        ensureThreeAndStart();
+
+        var render = function() {
+          if (threeReady && scn3d) {
+            updateThreeScene(scn3d);
+          }
+          var hudCanvas = canvasRef.current;
+          if (hudCanvas && showHUDRef.current) {
+            hudCanvas.width = hudCanvas.offsetWidth;
+            hudCanvas.height = hudCanvas.offsetHeight;
+            drawHUD(hudCanvas.width, hudCanvas.height);
+          }
+        };
+
         return function() {
           drivingRef.current = false;
           if (animRef.current) cancelAnimationFrame(animRef.current);
+          if (threeRef.current && threeRef.current.renderer) {
+            threeRef.current.renderer.dispose();
+          }
         };
       }, [view, currentScenario, currentVehicle]);
 
@@ -3072,12 +3403,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── DRIVING VIEW ──
       if (view === 'driving') {
         return h('div', { style: { position: 'relative', width: '100%', height: '100%', minHeight: '520px', maxHeight: 'calc(100vh - 80px)', background: '#000', borderRadius: '12px', overflow: 'hidden' } },
+          // Three.js WebGL canvas (behind)
+          h('canvas', {
+            ref: canvas3dRef,
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' }
+          }),
+          // 2D HUD overlay canvas (on top, transparent)
           h('canvas', {
             ref: canvasRef,
             role: 'application',
             'aria-label': 'RoadReady driving simulator. W/S throttle and brake, A/D steering, C camera toggle, Space pause.',
             tabIndex: 0,
-            style: { width: '100%', height: '100%', display: 'block', outline: 'none' }
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', outline: 'none', pointerEvents: 'none' }
           }),
           // Controls legend
           h('div', { style: { position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },

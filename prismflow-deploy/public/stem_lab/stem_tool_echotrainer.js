@@ -2,7 +2,7 @@
 // stem_tool_echotrainer.js — Echo Navigator: 3D Spatial Audio Echolocation Trainer
 // First-person 3D navigation using HRTF binaural spatial audio + Three.js.
 // Students emit sonar clicks and listen for echoes off virtual walls, objects,
-// and moving agents (pedestrians, cars, bats) to build a mental map.
+// and moving agents (pedestrians, cars, bats, joggers, cyclists) to build a mental map.
 // The world is pitch-black — the only way to "see" is via sonar Echo Vision pulses.
 // Designed as an accessibility training tool and perceptual skill builder.
 // ═══════════════════════════════════════════
@@ -52,7 +52,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   }
 
   // ── Environments that support 3D rendering ──
-  var ENV_3D_READY = { urban: true, cave: true, simple_room: true, forest: true, corridor: true };
+  var ENV_3D_READY = { urban: true, cave: true, simple_room: true, forest: true, corridor: true, school: true, grocery: true, park: true };
 
   // ── Environment presets ──
   var ENVIRONMENTS = [
@@ -61,6 +61,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     { id: 'corridor', name: 'Corridor Maze', icon: '\uD83C\uDFDB\uFE0F', desc: 'Hallways and turns \u2014 can you find the exit?', complexity: 3 },
     { id: 'forest', name: 'Forest Path', icon: '\uD83C\uDF32', desc: 'Trees and rocks in an open space. Materials vary.', complexity: 2 },
     { id: 'urban', name: 'Urban Street', icon: '\uD83C\uDFD9\uFE0F', desc: 'Buildings, metal posts, glass, moving pedestrians and cars.', complexity: 3 },
+    { id: 'school', name: 'School Hallway', icon: '\uD83C\uDFEB', desc: 'Navigate a school: classrooms, lockers, trophy case. Find the main office.', complexity: 2 },
+    { id: 'grocery', name: 'Grocery Store', icon: '\uD83D\uDED2', desc: 'Aisles, freezers, deli counter. Reach the checkout while avoiding shoppers.', complexity: 3 },
+    { id: 'park', name: 'City Park', icon: '\uD83C\uDFDE\uFE0F', desc: 'Benches, fountain, playground, paths. Joggers and cyclists pass by.', complexity: 2 },
     { id: 'challenge', name: 'Random Challenge', icon: '\uD83C\uDFB2', desc: 'Procedurally generated. Every attempt is unique.', complexity: 4 }
   ];
 
@@ -137,6 +140,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       for (var pi = 0; pi < 3; pi++) {
         objects.push({ x: 80 + rng() * 640, y: 80 + rng() * 640, r: 8, mat: 'metal', ref: 0.95 });
       }
+    } else if (type === 'school') {
+      // ── School Hallway layout ──
+      // Main hallway: horizontal corridor y=360..440, x=60..740
+      walls.push({ x1: 60, y1: 360, x2: 120, y2: 360, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 180, y1: 360, x2: 400, y2: 360, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 400, y1: 360, x2: 460, y2: 360, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 520, y1: 360, x2: 740, y2: 360, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 60, y1: 440, x2: 120, y2: 440, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 180, y1: 440, x2: 400, y2: 440, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 400, y1: 440, x2: 460, y2: 440, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 520, y1: 440, x2: 740, y2: 440, mat: 'concrete', ref: 0.92 });
+      // Hallway end caps
+      walls.push({ x1: 60, y1: 360, x2: 60, y2: 440, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 740, y1: 360, x2: 740, y2: 440, mat: 'concrete', ref: 0.92 });
+      // Top-left classroom: x=60..240, y=100..360
+      walls.push({ x1: 60, y1: 100, x2: 240, y2: 100, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 60, y1: 100, x2: 60, y2: 360, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 240, y1: 100, x2: 240, y2: 360, mat: 'concrete', ref: 0.92 });
+      // Top-right classroom: x=400..600, y=100..360
+      walls.push({ x1: 400, y1: 100, x2: 600, y2: 100, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 400, y1: 100, x2: 400, y2: 360, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 600, y1: 100, x2: 600, y2: 360, mat: 'wood', ref: 0.5 });
+      // Bottom-left classroom: x=60..240, y=440..700
+      walls.push({ x1: 60, y1: 700, x2: 240, y2: 700, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 60, y1: 440, x2: 60, y2: 700, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 240, y1: 440, x2: 240, y2: 700, mat: 'wood', ref: 0.5 });
+      // Bottom-right classroom: x=400..600, y=440..700
+      walls.push({ x1: 400, y1: 700, x2: 600, y2: 700, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 400, y1: 440, x2: 400, y2: 700, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 600, y1: 440, x2: 600, y2: 700, mat: 'concrete', ref: 0.92 });
+      // Metal lockers along hallway walls
+      objects.push({ x: 250, y: 365, r: 6, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 310, y: 365, r: 6, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 620, y: 365, r: 6, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 250, y: 435, r: 6, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 310, y: 435, r: 6, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 620, y: 435, r: 6, mat: 'metal', ref: 0.95 });
+      // Glass trophy case
+      objects.push({ x: 350, y: 380, r: 15, mat: 'glass', ref: 0.3 });
+      // Water fountain
+      objects.push({ x: 650, y: 365, r: 8, mat: 'metal', ref: 0.95 });
+      // Goal inside bottom-right classroom
+      objects.push({ x: 500, y: 580, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+    } else if (type === 'grocery') {
+      // ── Grocery Store layout ──
+      // 5 parallel aisles running vertically
+      var aisleXs = [150, 280, 410, 540, 670];
+      for (var gai = 0; gai < aisleXs.length; gai++) {
+        var ax = aisleXs[gai];
+        // Left shelf of aisle: segments with gaps at y=300 and y=450
+        walls.push({ x1: ax - 20, y1: 150, x2: ax - 20, y2: 275, mat: 'metal', ref: 0.95 });
+        walls.push({ x1: ax - 20, y1: 325, x2: ax - 20, y2: 425, mat: 'metal', ref: 0.95 });
+        walls.push({ x1: ax - 20, y1: 475, x2: ax - 20, y2: 600, mat: 'metal', ref: 0.95 });
+        // Right shelf of aisle: segments with gaps at y=300 and y=450
+        walls.push({ x1: ax + 20, y1: 150, x2: ax + 20, y2: 275, mat: 'metal', ref: 0.95 });
+        walls.push({ x1: ax + 20, y1: 325, x2: ax + 20, y2: 425, mat: 'metal', ref: 0.95 });
+        walls.push({ x1: ax + 20, y1: 475, x2: ax + 20, y2: 600, mat: 'metal', ref: 0.95 });
+      }
+      // Deli counter
+      walls.push({ x1: 100, y1: 120, x2: 300, y2: 120, mat: 'glass', ref: 0.3 });
+      // Freezer section
+      walls.push({ x1: 500, y1: 120, x2: 740, y2: 120, mat: 'glass', ref: 0.3 });
+      walls.push({ x1: 500, y1: 100, x2: 740, y2: 100, mat: 'metal', ref: 0.95 });
+      // Checkout area: short counter walls near y=700
+      walls.push({ x1: 120, y1: 700, x2: 220, y2: 700, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 300, y1: 700, x2: 400, y2: 700, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 480, y1: 700, x2: 580, y2: 700, mat: 'concrete', ref: 0.92 });
+      // Shopping carts scattered in aisles
+      objects.push({ x: 160, y: 350, r: 10, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 420, y: 500, r: 10, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 550, y: 250, r: 10, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 290, y: 550, r: 10, mat: 'metal', ref: 0.95 });
+      // Goal near checkout
+      objects.push({ x: 350, y: 730, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+    } else if (type === 'park') {
+      // ── City Park layout ──
+      // No inner boundary walls — open space with paths
+      // Horizontal path: y=390..410 from x=80..720
+      walls.push({ x1: 80, y1: 390, x2: 720, y2: 390, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 80, y1: 410, x2: 720, y2: 410, mat: 'concrete', ref: 0.92 });
+      // Vertical path: x=390..410 from y=80..720
+      walls.push({ x1: 390, y1: 80, x2: 390, y2: 390, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 410, y1: 80, x2: 410, y2: 390, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 390, y1: 410, x2: 390, y2: 720, mat: 'concrete', ref: 0.92 });
+      walls.push({ x1: 410, y1: 410, x2: 410, y2: 720, mat: 'concrete', ref: 0.92 });
+      // Fountain at center
+      objects.push({ x: 400, y: 400, r: 40, mat: 'metal', ref: 0.95 });
+      // 8 benches along paths
+      objects.push({ x: 200, y: 385, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 300, y: 415, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 500, y: 385, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 600, y: 415, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 385, y: 200, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 415, y: 300, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 385, y: 550, r: 12, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 415, y: 650, r: 12, mat: 'wood', ref: 0.5 });
+      // Playground area (lower-right quadrant): 3 metal objects
+      objects.push({ x: 560, y: 560, r: 15, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 620, y: 620, r: 15, mat: 'metal', ref: 0.95 });
+      objects.push({ x: 650, y: 540, r: 15, mat: 'metal', ref: 0.95 });
+      // 5 trees scattered in quadrants
+      objects.push({ x: 150, y: 180, r: 25, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 250, y: 600, r: 25, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 600, y: 150, r: 25, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 680, y: 300, r: 25, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 140, y: 500, r: 25, mat: 'wood', ref: 0.5 });
+      // Goal near playground
+      objects.push({ x: 590, y: 590, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
     } else {
       // Random challenge
       var nw = 3 + Math.floor(rng() * 5);
@@ -155,16 +266,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       }
     }
 
-    // Goal (always present)
-    var goalX, goalY;
-    do { goalX = 80 + rng() * 640; goalY = 80 + rng() * 640; } while (Math.sqrt((goalX - 400) * (goalX - 400) + (goalY - 700) * (goalY - 700)) < 200);
-    objects.push({ x: goalX, y: goalY, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+    // Goal (always present) — skip if already placed by specific environment
+    var hasGoal = false;
+    for (var gi = 0; gi < objects.length; gi++) {
+      if (objects[gi].isGoal) { hasGoal = true; break; }
+    }
+    if (!hasGoal) {
+      var goalX, goalY;
+      do { goalX = 80 + rng() * 640; goalY = 80 + rng() * 640; } while (Math.sqrt((goalX - 400) * (goalX - 400) + (goalY - 700) * (goalY - 700)) < 200);
+      objects.push({ x: goalX, y: goalY, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+    }
 
     return { walls: walls, objects: objects, W: W, H: H, seed: seed, type: type };
   }
 
   // ══════════════════════════════════════════════════════════
-  // AGENT GENERATOR — Moving entities (pedestrians, cars, bats, deer, birds)
+  // AGENT GENERATOR — Moving entities (pedestrians, cars, bats, deer, birds, joggers, cyclists)
   // ══════════════════════════════════════════════════════════
   function generateAgents(type, seed, map) {
     var rng = seededRng(seed + 7777);
@@ -312,6 +429,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         waypoints: [{ x: 740, y: 500 }, { x: 60, y: 500 }],
         speed: 35,
         loop: false,
+        radius: 10,
+        mat: 'flesh',
+        ref: 0.6,
+        height: 1.7
+      });
+    } else if (type === 'school') {
+      // 3 students walking the hallway
+      agents.push({
+        id: 'stu_0',
+        kind: 'pedestrian',
+        x: 100,
+        y: 400,
+        targetIdx: 1,
+        waypoints: [{ x: 100, y: 400 }, { x: 700, y: 400 }],
+        speed: 25,
+        loop: false,
+        radius: 10,
+        mat: 'flesh',
+        ref: 0.6,
+        height: 1.7
+      });
+      agents.push({
+        id: 'stu_1',
+        kind: 'pedestrian',
+        x: 600,
+        y: 400,
+        targetIdx: 1,
+        waypoints: [{ x: 600, y: 400 }, { x: 80, y: 400 }],
+        speed: 28,
+        loop: false,
+        radius: 10,
+        mat: 'flesh',
+        ref: 0.6,
+        height: 1.7
+      });
+      agents.push({
+        id: 'stu_2',
+        kind: 'pedestrian',
+        x: 350,
+        y: 400,
+        targetIdx: 1,
+        waypoints: [{ x: 350, y: 400 }, { x: 700, y: 400 }, { x: 350, y: 400 }],
+        speed: 22,
+        loop: true,
+        radius: 10,
+        mat: 'flesh',
+        ref: 0.6,
+        height: 1.7
+      });
+      // 1 janitor with wider radius (pushing cart), goes through classroom then hallway
+      agents.push({
+        id: 'janitor_0',
+        kind: 'pedestrian',
+        x: 150,
+        y: 550,
+        targetIdx: 1,
+        waypoints: [{ x: 150, y: 550 }, { x: 150, y: 440 }, { x: 150, y: 400 }, { x: 500, y: 400 }, { x: 500, y: 440 }, { x: 500, y: 550 }],
+        speed: 15,
+        loop: true,
+        radius: 12,
+        mat: 'flesh',
+        ref: 0.6,
+        height: 1.7
+      });
+    } else if (type === 'grocery') {
+      // 4 shoppers with carts, each follows a path down one aisle then across
+      var shopperPaths = [
+        [{ x: 150, y: 160 }, { x: 150, y: 590 }, { x: 280, y: 590 }, { x: 280, y: 160 }],
+        [{ x: 280, y: 160 }, { x: 280, y: 590 }, { x: 410, y: 590 }, { x: 410, y: 160 }],
+        [{ x: 410, y: 160 }, { x: 410, y: 590 }, { x: 540, y: 590 }, { x: 540, y: 160 }],
+        [{ x: 540, y: 160 }, { x: 540, y: 590 }, { x: 670, y: 590 }, { x: 670, y: 160 }]
+      ];
+      for (var gsi = 0; gsi < 4; gsi++) {
+        var spWp = shopperPaths[gsi];
+        var spStart = Math.floor(rng() * spWp.length);
+        agents.push({
+          id: 'shopper_' + gsi,
+          kind: 'pedestrian',
+          x: spWp[spStart].x,
+          y: spWp[spStart].y,
+          targetIdx: (spStart + 1) % spWp.length,
+          waypoints: spWp,
+          speed: 20,
+          loop: true,
+          radius: 12,
+          mat: 'flesh',
+          ref: 0.6,
+          height: 1.7
+        });
+      }
+      // 1 employee walking perimeter near checkout
+      agents.push({
+        id: 'employee_0',
+        kind: 'pedestrian',
+        x: 60,
+        y: 700,
+        targetIdx: 1,
+        waypoints: [{ x: 60, y: 700 }, { x: 740, y: 700 }, { x: 740, y: 650 }, { x: 60, y: 650 }],
+        speed: 30,
+        loop: true,
+        radius: 10,
+        mat: 'flesh',
+        ref: 0.6,
+        height: 1.7
+      });
+    } else if (type === 'park') {
+      // 2 joggers following the cross paths
+      agents.push({
+        id: 'jogger_0',
+        kind: 'jogger',
+        x: 80,
+        y: 400,
+        targetIdx: 1,
+        waypoints: [{ x: 80, y: 400 }, { x: 720, y: 400 }],
+        speed: 60,
+        loop: false,
+        radius: 8,
+        mat: 'flesh',
+        ref: 0.5,
+        height: 1.7
+      });
+      agents.push({
+        id: 'jogger_1',
+        kind: 'jogger',
+        x: 400,
+        y: 80,
+        targetIdx: 1,
+        waypoints: [{ x: 400, y: 80 }, { x: 400, y: 720 }],
+        speed: 60,
+        loop: false,
+        radius: 8,
+        mat: 'flesh',
+        ref: 0.5,
+        height: 1.7
+      });
+      // 1 cyclist on horizontal path
+      agents.push({
+        id: 'cyclist_0',
+        kind: 'cyclist',
+        x: 80,
+        y: 400,
+        targetIdx: 1,
+        waypoints: [{ x: 80, y: 400 }, { x: 720, y: 400 }],
+        speed: 90,
+        loop: false,
+        radius: 8,
+        mat: 'car',
+        ref: 0.7,
+        height: 1.3
+      });
+      // 1 dog walker meandering through tree area
+      agents.push({
+        id: 'dogwalker_0',
+        kind: 'pedestrian',
+        x: 150,
+        y: 180,
+        targetIdx: 1,
+        waypoints: [{ x: 150, y: 180 }, { x: 250, y: 600 }, { x: 140, y: 500 }, { x: 150, y: 180 }],
+        speed: 15,
+        loop: true,
         radius: 10,
         mat: 'flesh',
         ref: 0.6,
@@ -493,6 +770,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         deerMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
         aMesh = new THREE.Mesh(deerGeo, deerMat);
         aMesh.position.set(ag.x * SCALE, 0.65, ag.y * SCALE);
+      } else if (ag.kind === 'jogger') {
+        var jogGeo = new THREE.BoxGeometry(0.4, 1.7, 0.4);
+        var jogMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        jogMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
+        aMesh = new THREE.Mesh(jogGeo, jogMat);
+        aMesh.position.set(ag.x * SCALE, 0.85, ag.y * SCALE);
+      } else if (ag.kind === 'cyclist') {
+        var cycGeo = new THREE.BoxGeometry(0.5, 1.3, 1.2);
+        var cycMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        cycMat.userData = { baseColor: getGlowBase('car'), ref: ag.ref, mat: 'car' };
+        aMesh = new THREE.Mesh(cycGeo, cycMat);
+        aMesh.position.set(ag.x * SCALE, 0.65, ag.y * SCALE);
       } else {
         // pedestrian
         var pedGeo = new THREE.BoxGeometry(0.5, 1.7, 0.5);
@@ -565,7 +854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     { title: 'The World Is Dark', text: 'The world is pitch-black. Press SPACE (or click the Click button) to emit a sonar click. Listen for echoes bouncing off nearby surfaces. Each echo tells you where something is.' },
     { title: 'Materials Glow Differently', text: 'Each surface lights up differently when hit by sonar. Metal is bright white-blue, wood is warm brown, concrete is cool blue, glass is faint teal. Brighter glow = stronger echo.' },
     { title: 'Move Toward the Goal', text: 'Use WASD to walk (or arrow keys to turn). The goal is a golden sphere somewhere in the room. As you get closer, you will hear a proximity beep that gets faster.' },
-    { title: 'Watch for Moving Entities', text: 'A pedestrian is walking around the room. You will hear a faint tone and see a subtle glow from their body. In Urban mode, cars are dangerous \u2014 avoid them!' }
+    { title: 'Watch for Moving Entities', text: 'A pedestrian is walking around the room. You will hear a faint tone and see a subtle glow from their body. In Urban mode, watch for cars. In School, Grocery, and Park modes, watch for pedestrians, joggers, and cyclists!' }
   ];
 
   // ═══════════════════════════════════════════
@@ -582,7 +871,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       { id: 'find_goal_5', label: 'Find goals in 5 different environments', icon: '\uD83C\uDFC6', check: function(d) { return d.goalsFound >= 5; }, progress: function(d) { return (d.goalsFound || 0) + '/5'; } },
       { id: 'blind_navigation', label: 'Find a goal in Audio Only mode', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'cross_urban', label: 'Survive Urban Street without a car hit', icon: '\uD83D\uDE97', check: function(d) { return !!d.urbanNoCarHit; }, progress: function(d) { return d.urbanNoCarHit ? 'Done!' : 'Not yet'; } },
-      { id: 'bat_master_win', label: 'Find a goal on Bat Master difficulty', icon: '\uD83E\uDD87', check: function(d) { return !!d.batMasterWin; }, progress: function(d) { return d.batMasterWin ? 'Done!' : 'Not yet'; } }
+      { id: 'bat_master_win', label: 'Find a goal on Bat Master difficulty', icon: '\uD83E\uDD87', check: function(d) { return !!d.batMasterWin; }, progress: function(d) { return d.batMasterWin ? 'Done!' : 'Not yet'; } },
+      { id: 'school_nav', label: 'Navigate to the office in School Hallway', icon: '\uD83C\uDFEB', check: function(d) { return !!d.schoolWin; }, progress: function(d) { return d.schoolWin ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -911,6 +1201,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 osc.type = 'triangle';
                 osc.frequency.value = 80;
                 gn.gain.value = 0.012;
+              } else if (ag.kind === 'jogger') {
+                osc.type = 'triangle';
+                osc.frequency.value = 180;
+                gn.gain.value = 0.01;
+              } else if (ag.kind === 'cyclist') {
+                osc.type = 'sawtooth';
+                osc.frequency.value = 90;
+                gn.gain.value = 0.015;
               } else {
                 osc.type = 'triangle';
                 osc.frequency.value = 200;
@@ -979,6 +1277,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               traffGain.connect(ac.destination);
               traffOsc.start();
               ambientNodes.push({ type: 'traffic', osc: traffOsc, gain: traffGain, filter: traffFilter });
+            } else if (envType === 'school') {
+              // Fluorescent light hum (60Hz sine)
+              var fluorescentOsc = ac.createOscillator();
+              fluorescentOsc.type = 'sine';
+              fluorescentOsc.frequency.value = 60;
+              var fluorescentGain = ac.createGain();
+              fluorescentGain.gain.value = 0.004;
+              fluorescentOsc.connect(fluorescentGain);
+              fluorescentGain.connect(ac.destination);
+              fluorescentOsc.start();
+              ambientNodes.push({ type: 'fluorescent', osc: fluorescentOsc, gain: fluorescentGain });
+              // PA system tone (440Hz through lowpass 500Hz)
+              var paOsc = ac.createOscillator();
+              paOsc.type = 'sine';
+              paOsc.frequency.value = 440;
+              var paFilter = ac.createBiquadFilter();
+              paFilter.type = 'lowpass';
+              paFilter.frequency.value = 500;
+              var paGain = ac.createGain();
+              paGain.gain.value = 0.002;
+              paOsc.connect(paFilter);
+              paFilter.connect(paGain);
+              paGain.connect(ac.destination);
+              paOsc.start();
+              ambientNodes.push({ type: 'pa', osc: paOsc, gain: paGain, filter: paFilter });
+            } else if (envType === 'grocery') {
+              // Refrigerator hum (sawtooth 50Hz through lowpass 120Hz)
+              var fridgeOsc = ac.createOscillator();
+              fridgeOsc.type = 'sawtooth';
+              fridgeOsc.frequency.value = 50;
+              var fridgeFilter = ac.createBiquadFilter();
+              fridgeFilter.type = 'lowpass';
+              fridgeFilter.frequency.value = 120;
+              var fridgeGain = ac.createGain();
+              fridgeGain.gain.value = 0.006;
+              fridgeOsc.connect(fridgeFilter);
+              fridgeFilter.connect(fridgeGain);
+              fridgeGain.connect(ac.destination);
+              fridgeOsc.start();
+              ambientNodes.push({ type: 'fridge', osc: fridgeOsc, gain: fridgeGain, filter: fridgeFilter });
+              // Faint muzak (sine 330Hz through lowpass 400Hz)
+              var muzakOsc = ac.createOscillator();
+              muzakOsc.type = 'sine';
+              muzakOsc.frequency.value = 330;
+              var muzakFilter = ac.createBiquadFilter();
+              muzakFilter.type = 'lowpass';
+              muzakFilter.frequency.value = 400;
+              var muzakGain = ac.createGain();
+              muzakGain.gain.value = 0.002;
+              muzakOsc.connect(muzakFilter);
+              muzakFilter.connect(muzakGain);
+              muzakGain.connect(ac.destination);
+              muzakOsc.start();
+              ambientNodes.push({ type: 'muzak', osc: muzakOsc, gain: muzakGain, filter: muzakFilter });
+            } else if (envType === 'park') {
+              // Bird chirping (sine 2800Hz, pulsing slowly)
+              var chirpOsc = ac.createOscillator();
+              chirpOsc.type = 'sine';
+              chirpOsc.frequency.value = 2800;
+              var chirpGain = ac.createGain();
+              chirpGain.gain.value = 0.005;
+              chirpOsc.connect(chirpGain);
+              chirpGain.connect(ac.destination);
+              chirpOsc.start();
+              ambientNodes.push({ type: 'chirp', osc: chirpOsc, gain: chirpGain });
+              // Fountain splash (sawtooth 400Hz through lowpass 600Hz, HRTF panner at fountain location)
+              var fountainOsc = ac.createOscillator();
+              fountainOsc.type = 'sawtooth';
+              fountainOsc.frequency.value = 400;
+              var fountainFilter = ac.createBiquadFilter();
+              fountainFilter.type = 'lowpass';
+              fountainFilter.frequency.value = 600;
+              var fountainGain = ac.createGain();
+              fountainGain.gain.value = 0.008;
+              var fountainPan = ac.createPanner();
+              fountainPan.panningModel = 'HRTF';
+              fountainPan.distanceModel = 'inverse';
+              fountainPan.refDistance = 1;
+              fountainPan.maxDistance = 40;
+              fountainPan.rolloffFactor = 1.5;
+              fountainOsc.connect(fountainFilter);
+              fountainFilter.connect(fountainGain);
+              fountainGain.connect(fountainPan);
+              fountainPan.connect(ac.destination);
+              fountainOsc.start();
+              ambientNodes.push({ type: 'fountain', osc: fountainOsc, gain: fountainGain, filter: fountainFilter, panner: fountainPan, pos: { x: 400, y: 400 } });
             }
           }
         } catch(e) {}
@@ -1058,7 +1442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var ag = agents[aci];
             var adx = player.x - ag.x, ady = player.y - ag.y;
             var adist = Math.sqrt(adx * adx + ady * ady);
-            var hitRadius = ag.kind === 'car' ? 25 : ag.kind === 'bat' ? 8 : ag.kind === 'deer' ? 18 : ag.kind === 'bird' ? 6 : 15;
+            var hitRadius = ag.kind === 'car' ? 25 : ag.kind === 'bat' ? 8 : ag.kind === 'deer' ? 18 : ag.kind === 'bird' ? 6 : ag.kind === 'cyclist' ? 12 : 15;
             if (adist < hitRadius) {
               if (ag.kind === 'car' && bumpFlash <= 0) {
                 bumpFlash = 0.5;
@@ -1071,11 +1455,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var cac = audioRef.current && audioRef.current.ctx;
                   if (cac) { var co = cac.createOscillator(); var cg = cac.createGain(); co.type = 'sawtooth'; co.frequency.value = 180; cg.gain.setValueAtTime(0.12, cac.currentTime); cg.gain.exponentialRampToValueAtTime(0.001, cac.currentTime + 0.3); co.connect(cg); cg.connect(cac.destination); co.start(); co.stop(cac.currentTime + 0.3); }
                 } catch(e) {}
-              } else if (ag.kind === 'pedestrian' && bumpFlash <= 0) {
+              } else if (ag.kind === 'cyclist' && bumpFlash <= 0) {
+                bumpFlash = 0.4;
+                updMulti({ bumps: (d.bumps || 0) + 2 });
+                if (addToast) addToast('\uD83D\uDEB4 Hit by a cyclist! -2 bumps penalty', 'warn');
+                if (announceToSR) announceToSR('Hit by a cyclist! 2 bump penalty.');
+                if (window._alloHaptic) window._alloHaptic('bump');
+              } else if ((ag.kind === 'pedestrian' || ag.kind === 'jogger') && bumpFlash <= 0) {
                 bumpFlash = 0.2;
                 updMulti({ bumps: (d.bumps || 0) + 1 });
-                if (addToast) addToast('\uD83D\uDEB6 Bumped into a pedestrian!', 'warn');
-                if (announceToSR) announceToSR('Bumped into a pedestrian.');
+                if (addToast) addToast('\uD83D\uDEB6 Bumped into a ' + ag.kind + '!', 'warn');
+                if (announceToSR) announceToSR('Bumped into a ' + ag.kind + '.');
                 if (window._alloHaptic) window._alloHaptic('bump');
               }
             }
@@ -1099,7 +1489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var relZ = (sag.y - player.y) * 0.01;
             var cosP = Math.cos(-player.angle), sinP = Math.sin(-player.angle);
             asnd.panner.positionX.value = relX * cosP - relZ * sinP;
-            asnd.panner.positionY.value = (sag.kind === 'bat' ? 1.5 : sag.kind === 'bird' ? 2.0 : sag.kind === 'deer' ? -0.5 : 0);
+            asnd.panner.positionY.value = (sag.kind === 'bat' ? 1.5 : sag.kind === 'bird' ? 2.0 : sag.kind === 'deer' ? -0.5 : sag.kind === 'jogger' ? 0 : sag.kind === 'cyclist' ? -0.3 : 0);
             asnd.panner.positionZ.value = relX * sinP + relZ * cosP;
           }
 
@@ -1120,6 +1510,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               } else {
                 aNode.gain.gain.value = 0;
               }
+            } else if (aNode.type === 'chirp') {
+              // Pulsing bird chirp — slow amplitude modulation
+              var chirpPulse = Math.sin(ambientTime * 1.5) * 0.5 + 0.5;
+              aNode.gain.gain.value = 0.005 * chirpPulse;
+            } else if (aNode.type === 'fountain' && aNode.panner) {
+              // Update fountain panner position relative to player
+              var fRelX = (aNode.pos.x - player.x) * 0.01;
+              var fRelZ = (aNode.pos.y - player.y) * 0.01;
+              var fCosP = Math.cos(-player.angle), fSinP = Math.sin(-player.angle);
+              aNode.panner.positionX.value = fRelX * fCosP - fRelZ * fSinP;
+              aNode.panner.positionY.value = 0;
+              aNode.panner.positionZ.value = fRelX * fSinP + fRelZ * fCosP;
             }
           }
 
@@ -1181,7 +1583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var agl = 0; agl < sd.agentMeshes.length; agl++) {
             var agMesh = sd.agentMeshes[agl];
             var agKind = agMesh.agent.kind;
-            var baseGlow = agKind === 'car' ? 0.32 : agKind === 'pedestrian' ? 0.18 : agKind === 'deer' ? 0.15 : agKind === 'bird' ? 0.08 : 0.1;
+            var baseGlow = agKind === 'car' ? 0.32 : agKind === 'pedestrian' ? 0.18 : agKind === 'deer' ? 0.15 : agKind === 'bird' ? 0.08 : agKind === 'jogger' ? 0.15 : agKind === 'cyclist' ? 0.22 : 0.1;
             var ambientGlow = baseGlow + sinePulse;
             if (ambientGlow > agMesh.mesh.userData.glowAmt) {
               agMesh.mesh.userData.glowAmt = ambientGlow;
@@ -1277,6 +1679,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 // Bat Master quest
                 if (diffId === 'master') {
                   updateObj.batMasterWin = true;
+                }
+                // School navigation quest
+                if (envType === 'school') {
+                  updateObj.schoolWin = true;
                 }
                 updMulti(updateObj);
 
@@ -1435,7 +1841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (showMap || isMinimap) {
             for (var dai = 0; dai < agents.length; dai++) {
               var da = agents[dai];
-              gfx.fillStyle = da.kind === 'car' ? '#ffc47c' : da.kind === 'bat' ? '#c4b5fd' : da.kind === 'deer' ? '#a3e635' : da.kind === 'bird' ? '#67e8f9' : '#ff9c9c';
+              gfx.fillStyle = da.kind === 'car' ? '#ffc47c' : da.kind === 'bat' ? '#c4b5fd' : da.kind === 'deer' ? '#a3e635' : da.kind === 'bird' ? '#67e8f9' : da.kind === 'jogger' ? '#fb923c' : da.kind === 'cyclist' ? '#f472b6' : '#ff9c9c';
               gfx.beginPath();
               gfx.arc(da.x, da.y, isMinimap ? 5 : 8, 0, Math.PI * 2);
               gfx.fill();
@@ -1517,7 +1923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var eadist = Math.sqrt(eadx * eadx + eady * eady);
                   if (Math.abs(eadist - evRadius) < ea.radius + 12) {
                     var eaInt = evAlpha * ea.ref * (1 - Math.abs(eadist - evRadius) / (ea.radius + 12));
-                    var eaColor = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : '255,156,156';
+                    var eaColor = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : ea.kind === 'jogger' ? '251,146,60' : ea.kind === 'cyclist' ? '244,114,182' : '255,156,156';
                     gfx.fillStyle = 'rgba(' + eaColor + ',' + (eaInt * 0.6) + ')';
                     gfx.beginPath();
                     gfx.arc(ea.x, ea.y, ea.radius + 3, 0, Math.PI * 2);
@@ -1599,6 +2005,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   if (diffId === 'master') {
                     updateObj2d.batMasterWin = true;
                   }
+                  // School navigation quest (2D)
+                  if (envType === 'school') {
+                    updateObj2d.schoolWin = true;
+                  }
                   updMulti(updateObj2d);
                   var baseXP2 = isAudioOnly2d ? 30 : (currentViewMode2d === 'echo' ? 20 : 10);
                   var bumpPenalty2 = Math.min(baseXP2 - 5, d.bumps || 0);
@@ -1633,19 +2043,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       // ── Agent count text ──
       var agentCounts = [];
       var agts = agentsRef.current;
-      var pedCount = 0, carCount = 0, batCount = 0, deerCount = 0, birdCount = 0;
+      var pedCount = 0, carCount = 0, batCount = 0, deerCount = 0, birdCount = 0, joggerCount = 0, cyclistCount = 0;
       for (var aci2 = 0; aci2 < agts.length; aci2++) {
         if (agts[aci2].kind === 'pedestrian') pedCount++;
         else if (agts[aci2].kind === 'car') carCount++;
         else if (agts[aci2].kind === 'bat') batCount++;
         else if (agts[aci2].kind === 'deer') deerCount++;
         else if (agts[aci2].kind === 'bird') birdCount++;
+        else if (agts[aci2].kind === 'jogger') joggerCount++;
+        else if (agts[aci2].kind === 'cyclist') cyclistCount++;
       }
       if (pedCount > 0) agentCounts.push(pedCount + ' pedestrian' + (pedCount > 1 ? 's' : ''));
       if (carCount > 0) agentCounts.push(carCount + ' car' + (carCount > 1 ? 's' : ''));
       if (batCount > 0) agentCounts.push(batCount + ' bat' + (batCount > 1 ? 's' : ''));
       if (deerCount > 0) agentCounts.push(deerCount + ' deer');
       if (birdCount > 0) agentCounts.push(birdCount + ' bird' + (birdCount > 1 ? 's' : ''));
+      if (joggerCount > 0) agentCounts.push(joggerCount + ' jogger' + (joggerCount > 1 ? 's' : ''));
+      if (cyclistCount > 0) agentCounts.push(cyclistCount + ' cyclist' + (cyclistCount > 1 ? 's' : ''));
 
       // ══════════════════════════════════════════════════════════
       // RENDER (React.createElement tree)
@@ -1974,11 +2388,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('span', { style: { fontWeight: 700 } }, 'Wood:'), h('span', null, 'Muffled echo (absorbs high frequencies, reflects ~50%)'),
               h('span', { style: { fontWeight: 700 } }, 'Glass:'), h('span', null, 'Faint, high-pitched echo (mostly transparent to sound)'),
               h('span', { style: { fontWeight: 700 } }, 'Fabric/Carpet:'), h('span', null, 'Nearly silent (absorbs most sound \u2014 hard to detect)'),
+              h('span', { style: { fontWeight: 700 } }, 'Locker/Shopping Cart (Metal):'), h('span', null, 'Sharp ring, highest reflectivity \u2014 easy to locate'),
+              h('span', { style: { fontWeight: 700 } }, 'Trophy Case/Freezer (Glass):'), h('span', null, 'Faint echo \u2014 deceptively quiet, easy to walk into'),
               h('span', { style: { fontWeight: 700, color: '#ff9c9c' } }, 'Pedestrian:'), h('span', null, 'Soft echo, faint glow, triangle-wave tone at 200Hz'),
               h('span', { style: { fontWeight: 700, color: '#ffc47c' } }, 'Car:'), h('span', null, 'Strong echo, sawtooth engine rumble at 55Hz \u2014 AVOID!'),
               h('span', { style: { fontWeight: 700, color: '#c4b5fd' } }, 'Bat:'), h('span', null, 'Faint, ultrasonic chirp at 3200Hz \u2014 tiny targets'),
               h('span', { style: { fontWeight: 700, color: '#a3e635' } }, 'Deer:'), h('span', null, 'Low 80Hz thud \u2014 large, slow-moving body'),
               h('span', { style: { fontWeight: 700, color: '#67e8f9' } }, 'Bird:'), h('span', null, 'High 2400-3200Hz chirp \u2014 tiny, fast-moving'),
+              h('span', { style: { fontWeight: 700, color: '#fb923c' } }, 'Jogger:'), h('span', null, 'Rhythmic 180Hz footsteps \u2014 fast, small target'),
+              h('span', { style: { fontWeight: 700, color: '#f472b6' } }, 'Cyclist:'), h('span', null, 'Low 90Hz wheel hum \u2014 very fast, watch out!'),
               h('span', { style: { fontWeight: 700, color: '#fbbf24' } }, 'Goal \u2B50:'), h('span', null, 'Distinctive bright echo with a unique tonal quality')
             ),
             h('p', { style: { marginTop: '6px', fontStyle: 'italic', fontSize: '9px' } },
