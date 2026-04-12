@@ -1941,8 +1941,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
           // Extra brake clamping: if braking and speed is very low, snap to zero (prevents creeping)
-          if (brakeInput > 0.5 && Math.abs(car.speed) < 1.5) car.speed *= 0.85;
-          if (brakeInput > 0.5 && Math.abs(car.speed) < 0.3) car.speed = 0;
+          // Low-speed brake clamping (works for analog gamepad triggers too)
+          if (brakeInput > 0.2 && Math.abs(car.speed) < 1.5) car.speed *= 0.82;
+          if (brakeInput > 0.2 && Math.abs(car.speed) < 0.3) car.speed = 0;
           // Engine braking / coast deceleration (lift off gas = gradual slow)
           if (gear === 'D' && throttleInput === 0 && brakeInput === 0 && car.speed > 0.5) {
             car.speed *= (1 - dt * 0.3); // gentle coast deceleration
@@ -1974,7 +1975,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var gripAvail = mu * 9.81;
           var lateralAvail = Math.max(0, Math.sqrt(Math.max(0, gripAvail * gripAvail - longitudinalUsed * longitudinalUsed)));
           var skid = lateralAccelNeeded > lateralAvail * 1.1;
-          if (skid && car.speed > 4) {
+          // Grace period: no skid penalties in first 3 seconds
+          if (skid && Math.abs(car.speed) > 4 && timeRef.current > 3) {
             skidRef.current.active = true;
             skidRef.current.intensity = Math.min(1, (lateralAccelNeeded - lateralAvail) / lateralAvail);
             statsRef.current.safetyScore -= dt * 8;
@@ -2048,9 +2050,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
           }
-          // Speed violation
+          // Speed violation — only in Drive, with 5-second grace period, +8 mph threshold
           var speedMph = Math.abs(car.speed) * MS_TO_MPH;
-          if (speedMph > scn.speedLimit + 5) {
+          if (gear === 'D' && timeRef.current > 5 && speedMph > scn.speedLimit + 8) {
             statsRef.current.speedViolations += dt;
             statsRef.current.safetyScore -= dt * 2;
           }
@@ -2068,22 +2070,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Blinker timer (for visual blink)
           blinkerTimerRef.current += dt;
 
-          // Lane change detection — if steering crosses center, check signal
-          var centerX = Math.floor(MAP_SIZE / 2);
-          var carLane = car.x < centerX ? 'left' : 'right';
-          if (!laneChangeRef.current.lastLane) laneChangeRef.current.lastLane = carLane;
-          if (carLane !== laneChangeRef.current.lastLane) {
-            var dir = carLane === 'right' ? 1 : -1;
-            if (blinkerRef.current !== dir) {
-              statsRef.current.safetyScore -= 5;
-              if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
-              statsRef.current.unsignaledLaneChanges++;
-              addToast('⚠️ Lane change without signal! -5');
-            } else {
-              addToast('✓ Signaled lane change');
+          // Lane change detection — hysteresis-based to prevent false positives on curves
+          // Only trigger if car moves 2+ world units from its last stable lane position
+          if (!laneChangeRef.current.stableX) laneChangeRef.current.stableX = car.x;
+          var laneShift = car.x - laneChangeRef.current.stableX;
+          if (Math.abs(laneShift) > 2.0 && Math.abs(car.speed) > 5 && timeRef.current > 5) {
+            // Genuine lane change detected
+            if (!laneChangeRef.current._cooldown || timeRef.current - laneChangeRef.current._cooldown > 5) {
+              var dir = laneShift > 0 ? 1 : -1;
+              if (blinkerRef.current !== dir) {
+                statsRef.current.safetyScore -= 5;
+                if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
+                statsRef.current.unsignaledLaneChanges++;
+                addToast('⚠️ Lane change without signal! -5');
+              } else {
+                addToast('✓ Signaled lane change');
+              }
+              laneChangeRef.current._cooldown = timeRef.current;
             }
-            laneChangeRef.current.lastLane = carLane;
+            laneChangeRef.current.stableX = car.x;
           }
+          // Slowly drift the stable position toward current (tolerates gradual curves)
+          laneChangeRef.current.stableX += (car.x - laneChangeRef.current.stableX) * dt * 0.3;
 
           // MPG history for sparkline (sample every 0.5s)
           if (car.speed > 1 && mpg < 999) {
@@ -2573,10 +2581,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
             if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
             // Physical collision: hit radius ~1.2 world units
-            if (dist < 1.2 && absSpeed > 1) {
-              if (!t._hitCooldown || timeRef.current - t._hitCooldown > 3) {
+            // Collision: require meaningful relative speed difference (not just being near a car going the same speed)
+            var relativeSpeed = Math.abs(car.speed - t.speed);
+            if (dist < 1.2 && relativeSpeed > 2 && absSpeed > 2) {
+              if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
-                var impactSpeed = Math.abs(car.speed - t.speed) * MS_TO_MPH;
+                var impactSpeed = relativeSpeed * MS_TO_MPH;
                 statsRef.current.crashes++;
                 if (impactSpeed > 30) {
                   statsRef.current.safetyScore -= 40;
@@ -2605,9 +2615,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (nearest && absSpeed > 5) {
             var safeFeet = safeFollowingFeet(absSpeed * MS_TO_MPH, currentScenario.weather);
             var actualFeet = nearestDist * 10;
-            if (actualFeet < safeFeet * 0.5) {
-              statsRef.current.closeFollows++;
+            // Only count cars in the same lane (within 1.5 units of car.x) and debounce
+            if (actualFeet < safeFeet * 0.5 && Math.abs(nearest.x - car.x) < 1.5) {
+              if (!nearest._closeFollowFlagged) {
+                nearest._closeFollowFlagged = true;
+                statsRef.current.closeFollows++;
+              }
               statsRef.current.safetyScore -= 0.1;
+            } else if (nearest._closeFollowFlagged && actualFeet > safeFeet * 0.7) {
+              nearest._closeFollowFlagged = false; // reset when distance is restored
             }
           }
           // ── Physical collision with pedestrians ──
