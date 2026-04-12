@@ -1409,6 +1409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     tags: ['driving', 'physics', 'safety', 'life-skills', 'maine'],
 
     render: function(ctx) {
+      try {
       var React = ctx.React;
       var h = React.createElement;
       var useEffect = React.useEffect;
@@ -5367,6 +5368,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // Fallback
       return h('div', { style: { padding: '24px', textAlign: 'center', color: '#64748b' } }, 'Loading RoadReady...');
+    } catch(renderErr) {
+      console.error('[RoadReady] Render error:', renderErr);
+      return ctx.React.createElement('div', { style: { padding: '24px', color: '#ef4444', textAlign: 'center' } },
+        ctx.React.createElement('h3', null, '🚗 RoadReady Error'),
+        ctx.React.createElement('p', { style: { fontSize: '12px', color: '#94a3b8', marginTop: '8px' } }, String(renderErr.message || renderErr)),
+        ctx.React.createElement('pre', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px', textAlign: 'left', maxHeight: '200px', overflow: 'auto', background: '#0f172a', padding: '8px', borderRadius: '8px' } }, renderErr.stack || '')
+      );
+    }
     }
   });
 
