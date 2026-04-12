@@ -2100,6 +2100,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText('⚠️ SKID — ease off & steer gently', W / 2, 160);
           }
 
+          // ── Dashboard cockpit frame ──
+          if (cameraModeRef.current === 'cockpit') {
+            // Windshield pillars (A-pillars)
+            gfx.fillStyle = '#1e293b';
+            // Left pillar
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(40, 0); gfx.lineTo(25, H); gfx.lineTo(0, H); gfx.fill();
+            // Right pillar
+            gfx.beginPath(); gfx.moveTo(W, 0); gfx.lineTo(W - 40, 0); gfx.lineTo(W - 25, H); gfx.lineTo(W, H); gfx.fill();
+            // Dashboard top edge (hood line)
+            var dashY = H - 95;
+            gfx.fillStyle = '#0f172a';
+            gfx.fillRect(0, dashY, W, 5);
+            // Steering wheel (centered arc)
+            var swX = W / 2, swY = H - 40, swR = 55;
+            gfx.strokeStyle = '#475569'; gfx.lineWidth = 8;
+            gfx.beginPath(); gfx.arc(swX, swY + 30, swR, Math.PI + 0.4, 2 * Math.PI - 0.4); gfx.stroke();
+            // Steering column
+            gfx.fillStyle = '#334155';
+            gfx.fillRect(swX - 6, swY + 20, 12, 40);
+            // Wheel turns with steering input
+            var steerAngle = carRef.current.steering * 0.8;
+            gfx.save(); gfx.translate(swX, swY + 30); gfx.rotate(steerAngle);
+            gfx.strokeStyle = '#64748b'; gfx.lineWidth = 6; gfx.lineCap = 'round';
+            gfx.beginPath(); gfx.arc(0, 0, swR - 4, Math.PI + 0.5, 2 * Math.PI - 0.5); gfx.stroke();
+            // Spokes
+            gfx.strokeStyle = '#475569'; gfx.lineWidth = 4;
+            gfx.beginPath(); gfx.moveTo(-swR + 12, -5); gfx.lineTo(swR - 12, -5); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(0, -swR + 12); gfx.lineTo(0, 8); gfx.stroke();
+            gfx.restore();
+            // Side mirrors (small trapezoids at pillar edges)
+            gfx.fillStyle = '#334155';
+            gfx.fillRect(8, H * 0.35, 28, 18);
+            gfx.fillRect(W - 36, H * 0.35, 28, 18);
+            gfx.fillStyle = '#60a5fa';
+            gfx.fillRect(10, H * 0.35 + 2, 24, 14);
+            gfx.fillRect(W - 34, H * 0.35 + 2, 24, 14);
+          }
+
           // HUD
           if (showHUDRef.current) drawHUD(W, H);
 
@@ -2405,14 +2443,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               gfx.fillText(obj.icon, screenX, y0 + size * 0.5);
               gfx.textBaseline = 'alphabetic';
             } else {
-              gfx.fillRect(screenX - size * 0.5, y0, size, size * 0.7);
-              gfx.fillStyle = 'rgba(0,0,0,0.4)';
-              gfx.fillRect(screenX - size * 0.4, y0 + size * 0.1, size * 0.3, size * 0.15);
-              gfx.fillRect(screenX + size * 0.1, y0 + size * 0.1, size * 0.3, size * 0.15);
-              // brake lights
+              // Detailed car body
+              var carW = size * 1.0, carH = size * 0.65;
+              var cx = screenX - carW / 2, cy = y0 + size * 0.1;
+              // Body
+              gfx.fillStyle = obj.color;
+              if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(cx, cy, carW, carH, 4); gfx.fill(); }
+              else { gfx.fillRect(cx, cy, carW, carH); }
+              // Roof (lighter)
+              gfx.fillStyle = 'rgba(255,255,255,0.15)';
+              gfx.fillRect(cx + carW * 0.15, cy - carH * 0.2, carW * 0.7, carH * 0.3);
+              // Windshield (dark glass)
+              gfx.fillStyle = 'rgba(0,20,40,0.7)';
+              gfx.fillRect(cx + carW * 0.12, cy + carH * 0.08, carW * 0.35, carH * 0.4);
+              gfx.fillRect(cx + carW * 0.52, cy + carH * 0.08, carW * 0.35, carH * 0.4);
+              // Headlights (glow at night)
+              if (isNight) {
+                gfx.fillStyle = 'rgba(255,255,200,0.7)';
+                gfx.beginPath(); gfx.arc(cx + 3, cy + carH * 0.3, 3, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.arc(cx + carW - 3, cy + carH * 0.3, 3, 0, Math.PI * 2); gfx.fill();
+              }
+              // Tail/brake lights
               gfx.fillStyle = '#ef4444';
-              gfx.fillRect(screenX - size * 0.45, y0 + size * 0.45, size * 0.1, size * 0.08);
-              gfx.fillRect(screenX + size * 0.35, y0 + size * 0.45, size * 0.1, size * 0.08);
+              gfx.fillRect(cx, cy + carH * 0.65, carW * 0.12, carH * 0.15);
+              gfx.fillRect(cx + carW * 0.88, cy + carH * 0.65, carW * 0.12, carH * 0.15);
+              // Wheels (dark circles at bottom)
+              gfx.fillStyle = '#0f172a';
+              gfx.beginPath(); gfx.arc(cx + carW * 0.2, cy + carH, Math.max(2, carW * 0.08), 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(cx + carW * 0.8, cy + carH, Math.max(2, carW * 0.08), 0, Math.PI * 2); gfx.fill();
             }
           });
         };
