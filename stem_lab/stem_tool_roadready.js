@@ -1659,17 +1659,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         } catch (e) { /* audio unavailable */ }
         // Start position: on the road, right lane, heading north, away from intersections
-        // Start position: on the road, right lane, heading north, away from intersections
-        var startY = Math.floor(MAP_SIZE * 0.85); // near the bottom of the map
+        // Start position: right lane, heading north, away from intersections
+        var startY = Math.floor(MAP_SIZE * 0.85);
         var startCenterX = Math.floor(MAP_SIZE / 2);
-        // For curved roads, find the actual road center at the start Y
+        // For curved roads, find the actual CENTERLINE (cell type 3) at the start Y
         if (mapRef.current && mapRef.current[startY]) {
-          for (var findX = startCenterX - 8; findX <= startCenterX + 8; findX++) {
-            if (mapRef.current[startY][findX] === 0 || mapRef.current[startY][findX] === 3) {
-              startCenterX = findX; break;
+          // First try to find the centerline marker
+          var foundCenter = false;
+          for (var findX = startCenterX - 10; findX <= startCenterX + 10; findX++) {
+            if (findX >= 0 && findX < MAP_SIZE && mapRef.current[startY][findX] === 3) {
+              startCenterX = findX; foundCenter = true; break;
             }
           }
+          // Fallback: find the middle of the road surface
+          if (!foundCenter) {
+            var roadLeft = -1, roadRight = -1;
+            for (var sx = 0; sx < MAP_SIZE; sx++) {
+              if (mapRef.current[startY][sx] === 0 || mapRef.current[startY][sx] === 3) {
+                if (roadLeft === -1) roadLeft = sx;
+                roadRight = sx;
+              }
+            }
+            if (roadLeft !== -1) startCenterX = Math.floor((roadLeft + roadRight) / 2);
+          }
         }
+        // Place car in RIGHT lane (US: drive on the right, heading north = -PI/2)
+        // +1.5 = right lane (positive X from center)
         carRef.current = { x: startCenterX + 1.5, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0 };
         gearRef.current = 'P'; // start in Park
