@@ -1076,7 +1076,7 @@ window.SelHub = window.SelHub || {
 
             // ── DISCOVER TAB ──
             tab === 'discover' ? h('div', null,
-              h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+              h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.6 } },
                 band === 'elementary' ? 'Tap the strengths that describe YOU! Everyone has different strengths \u2014 there are no wrong answers.' :
                 band === 'middle' ? 'Select the strengths you identify with. Consider what comes naturally, what others notice in you, and what you enjoy.' :
                 'Identify your signature strengths. Consider not just what you\'re good at, but what energizes you and aligns with your values.'
@@ -1165,7 +1165,7 @@ window.SelHub = window.SelHub || {
                   ),
                   callTTS ? h('button', { 'aria-label': 'Read Analysis Aloud', onClick: function() { speak(interviewResult); }, style: { marginBottom: 12, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Read Analysis Aloud') : null,
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8 } },
-                    h('button', { 'aria-label': 'Start Over', onClick: function() { upd({ interviewResult: null, interviewAnswers: {}, interviewStep: 0, interviewComplete: false }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Start Over'),
+                    h('button', { 'aria-label': 'Start Over', onClick: function() { upd({ interviewResult: null, interviewAnswers: {}, interviewStep: 0, interviewComplete: false }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Start Over'),
                     h('button', { 'aria-label': 'Go Select Strengths', onClick: function() { upd({ tab: 'discover' }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2B50 Go Select Strengths')
                   )
                 );
@@ -1173,7 +1173,7 @@ window.SelHub = window.SelHub || {
 
               var q = questions[interviewStep];
               return h('div', null,
-                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } },
                   band === 'elementary' ? 'Answer these questions to discover strengths you might not know you have!' :
                   'This guided interview helps uncover strengths through self-reflection. Answer honestly \u2014 there are no wrong answers.'
                 ),
@@ -1187,7 +1187,7 @@ window.SelHub = window.SelHub || {
                 // Question card
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
                   h('p', { style: { fontSize: 15, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 8 } }, q.question),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 12 } }, '\uD83D\uDCA1 ' + q.hint),
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 12 } }, '\uD83D\uDCA1 ' + q.hint),
                   callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(q.question + '. ' + q.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
                   h('textarea', { value: interviewAnswers[q.id] || '', 'aria-label': 'Interview answer', onChange: function(e) {
                     var newAnswers = Object.assign({}, interviewAnswers);
@@ -1220,7 +1220,7 @@ window.SelHub = window.SelHub || {
               var scenarios = SCENARIOS[band] || SCENARIOS.elementary;
               var sc = scenarios[scenarioIdx % scenarios.length];
               return h('div', null,
-                h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } },
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
                   band === 'elementary' ? 'Read the story and pick the choice that shows YOUR strengths!' :
                   'Choose how you\'d respond. Each choice shows a different strength in action.'
                 ),
@@ -1257,7 +1257,7 @@ window.SelHub = window.SelHub || {
                     h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, scenarioChoice.choice.feedback),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 12 } },
                       h('button', { 'aria-label': 'Next Scenario', onClick: function() { upd({ scenarioChoice: null, scenarioIdx: (scenarioIdx + 1) % scenarios.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u27A1 Next Scenario'),
-                      h('button', { 'aria-label': 'Try Again', onClick: function() { upd({ scenarioChoice: null }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Try Again')
+                      h('button', { 'aria-label': 'Try Again', onClick: function() { upd({ scenarioChoice: null }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Try Again')
                     )
                   )
                 )
@@ -1271,7 +1271,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 30 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83E\uDDE9'),
                   h('p', { style: { fontSize: 16, fontWeight: 'bold', color: '#fbbf24', marginBottom: 8 } }, 'Strength Match Quiz'),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8', maxWidth: 350, margin: '0 auto 16px', lineHeight: 1.6 } },
+                  h('p', { style: { fontSize: 12, color: '#cbd5e1', maxWidth: 350, margin: '0 auto 16px', lineHeight: 1.6 } },
                     'Read each situation and identify which strength is being used. Test how well you can spot strengths in action!'
                   ),
                   h('p', { style: { fontSize: 11, color: '#64748b', marginBottom: 16 } }, quizData.length + ' questions \u2022 Best score: ' + quizBest + '/' + quizData.length),
@@ -1283,14 +1283,14 @@ window.SelHub = window.SelHub || {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 30 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, pct >= 80 ? '\uD83C\uDFC6' : pct >= 50 ? '\uD83C\uDF1F' : '\uD83D\uDCAA'),
                   h('p', { style: { fontSize: 20, fontWeight: 'bold', color: '#fbbf24', marginBottom: 4 } }, quizScore + ' / ' + quizData.length),
-                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } },
+                  h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16 } },
                     pct >= 80 ? 'Outstanding! You\'re a natural strength spotter!' :
                     pct >= 50 ? 'Great work! Keep exploring to sharpen your strength sense.' :
                     'Good start! The more you practice, the better you\'ll get.'
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, justifyContent: 'center' } },
                     h('button', { 'aria-label': 'Play Again', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
-                    h('button', { 'aria-label': 'Back', onClick: function() { upd({ quizActive: false, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Back')
+                    h('button', { 'aria-label': 'Back', onClick: function() { upd({ quizActive: false, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Back')
                   )
                 );
               }
@@ -1306,7 +1306,7 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginBottom: 8 } }, 'Question ' + (quizIdx + 1) + ' / ' + quizData.length + ' \u2022 Score: ' + quizScore),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', marginBottom: 16 } },
                   h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 4 } }, '\uD83D\uDCA1 ' + q.situation),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 'bold', marginTop: 8 } }, 'Which strength is being demonstrated?')
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 'bold', marginTop: 8 } }, 'Which strength is being demonstrated?')
                 ),
                 quizFeedback ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 14, borderRadius: 10, marginBottom: 12, background: quizFeedback.correct ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (quizFeedback.correct ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)') } },
                   h('p', { style: { fontSize: 13, fontWeight: 'bold', color: quizFeedback.correct ? '#34d399' : '#f87171' } }, quizFeedback.correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 the answer is ' + q.answer),
@@ -1343,7 +1343,7 @@ window.SelHub = window.SelHub || {
                 h('textarea', { value: reflectionInput, 'aria-label': 'Reflection response', onChange: function(e) { upd({ reflectionInput: e.target.value }); }, placeholder: band === 'elementary' ? 'Write your answer here...' : 'Take your time. There\'s no right or wrong answer...', style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
                   h('button', { 'aria-label': 'Save Reflection', onClick: saveReflection, disabled: !reflectionInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: reflectionInput.trim() ? '#f59e0b' : '#334155', color: reflectionInput.trim() ? '#0f172a' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: reflectionInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Reflection'),
-                  h('button', { 'aria-label': 'Next Prompt', onClick: function() { upd({ currentPromptIdx: (currentPromptIdx + 1) % prompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
+                  h('button', { 'aria-label': 'Next Prompt', onClick: function() { upd({ currentPromptIdx: (currentPromptIdx + 1) % prompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
                 )
               ),
               // ── Deep Reflection Prompts ──
@@ -1372,16 +1372,16 @@ window.SelHub = window.SelHub || {
 
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#c4b5fd', fontWeight: 'bold', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83E\uDDE0 Deep Reflection'),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'These prompts go deeper \u2014 explore how strengths really work in your life.'),
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, 'These prompts go deeper \u2014 explore how strengths really work in your life.'),
                   h('p', { style: { fontSize: 14, color: '#e0d4ff', lineHeight: 1.6, fontWeight: 600, marginBottom: 12 } }, currentDeep),
                   callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(currentDeep); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 6, padding: '4px 10px', color: '#c4b5fd', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
                   h('textarea', { value: deepInput, 'aria-label': 'Deep reflection response', onChange: function(e) { upd({ deepInput: e.target.value }); }, placeholder: 'Go deeper... really think about this one.', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
                     h('button', { 'aria-label': 'Save Deep Reflection', onClick: saveDeepReflection, disabled: !deepInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: deepInput.trim() ? '#8b5cf6' : '#334155', color: deepInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: deepInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Deep Reflection'),
-                    h('button', { 'aria-label': 'Next Deep Prompt', onClick: function() { upd({ deepPromptIdx: (deepPromptIdx + 1) % deepPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Deep Prompt')
+                    h('button', { 'aria-label': 'Next Deep Prompt', onClick: function() { upd({ deepPromptIdx: (deepPromptIdx + 1) % deepPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Deep Prompt')
                   ),
                   deepReflections.length > 0 ? h('div', { style: { marginTop: 12 } },
-                    h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#94a3b8', marginBottom: 6 } }, '\uD83E\uDDE0 Deep Reflections (' + deepReflections.length + ')'),
+                    h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 6 } }, '\uD83E\uDDE0 Deep Reflections (' + deepReflections.length + ')'),
                     deepReflections.slice().reverse().slice(0, 3).map(function(r, i) {
                       return h('div', { key: 'deep' + i, style: { padding: 10, marginBottom: 6, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.1)' } },
                         h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 2 } }, new Date(r.timestamp).toLocaleDateString()),
@@ -1395,7 +1395,7 @@ window.SelHub = window.SelHub || {
 
               // Past reflections
               reflections.length > 0 ? h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCD6 Past Reflections (' + reflections.length + ')'),
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 8 } }, '\uD83D\uDCD6 Past Reflections (' + reflections.length + ')'),
                 reflections.slice().reverse().map(function(r, i) {
                   return h('div', { key: i, style: { padding: 12, marginBottom: 8, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
                     h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, new Date(r.timestamp).toLocaleDateString()),
@@ -1420,7 +1420,7 @@ window.SelHub = window.SelHub || {
               if (selectedStrengths.length === 0) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 40 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCD6'),
-                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 14, color: '#cbd5e1' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to write stories about using them.'),
                   h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
@@ -1434,7 +1434,7 @@ window.SelHub = window.SelHub || {
 
               if (storyViewMode === 'past') {
                 return h('div', null,
-                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } }, 'Your collection of strengths stories \u2014 moments when you put your strengths into action.'),
+                  h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } }, 'Your collection of strengths stories \u2014 moments when you put your strengths into action.'),
                   modeToggle,
                   stories.length === 0 ?
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 30, color: '#64748b' } },
@@ -1470,7 +1470,7 @@ window.SelHub = window.SelHub || {
               // Step 0: Choose a strength
               if (!storyStrength) {
                 return h('div', null,
-                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 4, lineHeight: 1.6 } },
+                  h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 4, lineHeight: 1.6 } },
                     band === 'elementary' ? 'Write a story about a time you used one of YOUR strengths! First, pick the strength:' :
                     'Tell the story of a moment when one of your strengths came to life. Select the strength to write about:'
                   ),
@@ -1540,7 +1540,7 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 } },
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 20 } }, storyStrength.emoji),
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, 'Writing about: ' + storyStrength.label),
-                  h('button', { 'aria-label': 'Change', onClick: function() { upd({ storyStrength: null, storyDraft: {}, storyStep: 0, storyAiResponse: '' }); }, style: { marginLeft: 'auto', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 6, padding: '3px 8px', color: '#94a3b8', fontSize: 10, cursor: 'pointer' } }, '\u2715 Change')
+                  h('button', { 'aria-label': 'Change', onClick: function() { upd({ storyStrength: null, storyDraft: {}, storyStep: 0, storyAiResponse: '' }); }, style: { marginLeft: 'auto', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 6, padding: '3px 8px', color: '#cbd5e1', fontSize: 10, cursor: 'pointer' } }, '\u2715 Change')
                 ),
                 // Progress
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 4, marginBottom: 12 } },
@@ -1554,7 +1554,7 @@ window.SelHub = window.SelHub || {
                 // Prompt card
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 12 } },
                   h('p', { style: { fontSize: 14, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 6 } }, promptLabel),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 10 } }, '\uD83D\uDCA1 ' + currentStoryPrompt.hint),
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 } }, '\uD83D\uDCA1 ' + currentStoryPrompt.hint),
                   callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(promptLabel + '. ' + currentStoryPrompt.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
                   h('textarea', { value: storyDraft[currentStoryPrompt.id] || '', 'aria-label': 'Strength story response', onChange: function(e) {
                     var newDraft = Object.assign({}, storyDraft);
@@ -1599,7 +1599,7 @@ window.SelHub = window.SelHub || {
               if (selectedStrengths.length === 0) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 40 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD0D'),
-                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 14, color: '#cbd5e1' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then compare them to different roles.'),
                   h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
@@ -1607,7 +1607,7 @@ window.SelHub = window.SelHub || {
 
               if (!compareRole) {
                 return h('div', null,
-                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                  h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.6 } },
                     band === 'elementary' ? 'See how your strengths match up with different roles! Pick one to compare:' :
                     'Compare your strength profile to different roles. See what you share, what\u0027s unique to you, and what you might develop.'
                   ),
@@ -1623,7 +1623,7 @@ window.SelHub = window.SelHub || {
                         explored ? h('span', { style: { position: 'absolute', top: 4, right: 6, fontSize: 10, color: '#22c55e' } }, '\u2713') : null,
                         h('span', { style: { fontSize: 28 } }, role.emoji),
                         h('span', { style: { fontSize: 12, fontWeight: 'bold', color: role.color } }, role.label),
-                        h('span', { style: { fontSize: 10, color: '#94a3b8', textAlign: 'center', lineHeight: 1.3 } }, role.desc)
+                        h('span', { style: { fontSize: 10, color: '#cbd5e1', textAlign: 'center', lineHeight: 1.3 } }, role.desc)
                       );
                     })
                   ),
@@ -1676,7 +1676,7 @@ window.SelHub = window.SelHub || {
 
               return h('div', null,
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 } },
-                  h('button', { 'aria-label': 'Back', onClick: function() { upd({ compareRole: null }); }, style: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 8, padding: '4px 10px', color: '#94a3b8', fontSize: 11, cursor: 'pointer' } }, '\u2190 Back'),
+                  h('button', { 'aria-label': 'Back', onClick: function() { upd({ compareRole: null }); }, style: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 8, padding: '4px 10px', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' } }, '\u2190 Back'),
                   h('span', { style: { fontSize: 20 } }, role.emoji),
                   h('span', { style: { fontSize: 14, fontWeight: 'bold', color: role.color } }, 'My Strengths vs ' + role.label)
                 ),
@@ -1684,7 +1684,7 @@ window.SelHub = window.SelHub || {
                 // Match meter
                 h('div', { style: { textAlign: 'center', marginBottom: 16, padding: 14, borderRadius: 12, background: role.color + '10', border: '1px solid ' + role.color + '33' } },
                   h('div', { style: { fontSize: 28, fontWeight: 'bold', color: role.color } }, matchPercent + '%'),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Strength Match'),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, 'Strength Match'),
                   h('div', { style: { width: '100%', height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                     h('div', { style: { width: matchPercent + '%', height: '100%', background: role.color, borderRadius: 4, transition: 'width 0.5s' } })
                   )
@@ -1723,7 +1723,7 @@ window.SelHub = window.SelHub || {
                     var actions = ACTION_SUGGESTIONS[sid];
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: 'sug_' + sid, style: { marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(99,102,241,0.08)' } },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 2 } }, label),
-                      actions ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, 'Try: ' + actions[0]) : null
+                      actions ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, 'Try: ' + actions[0]) : null
                     );
                   })
                 ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 14, borderRadius: 12, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', textAlign: 'center' } },
@@ -1731,7 +1731,7 @@ window.SelHub = window.SelHub || {
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 'bold', color: '#34d399' } }, 'Perfect match! You have all the strengths for this role!')
                 ),
 
-                h('button', { 'aria-label': 'Compare Another Role', onClick: function() { upd({ compareRole: null }); }, style: { marginTop: 14, width: '100%', padding: '10px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0D Compare Another Role')
+                h('button', { 'aria-label': 'Compare Another Role', onClick: function() { upd({ compareRole: null }); }, style: { marginTop: 14, width: '100%', padding: '10px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0D Compare Another Role')
               );
             })() : null,
 
@@ -1747,7 +1747,7 @@ window.SelHub = window.SelHub || {
               if (selectedStrengths.length === 0) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 40 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\u26A1'),
-                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 14, color: '#cbd5e1' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab so we can give you daily challenges based on YOUR strengths.'),
                   h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
@@ -1785,7 +1785,7 @@ window.SelHub = window.SelHub || {
               }
 
               return h('div', null,
-                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.6 } },
                   band === 'elementary' ? 'Every day you get a fun challenge based on one of your strengths! Can you do it?' :
                   'A new challenge every day, matched to one of your strengths. Small actions build big habits.'
                 ),
@@ -1806,15 +1806,15 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 } },
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' } },
                     h('div', { style: { fontSize: 22, fontWeight: 'bold', color: '#fbbf24' } }, String(challengesDone)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Completed')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Completed')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' } },
                     h('div', { style: { fontSize: 22, fontWeight: 'bold', color: '#34d399' } }, String(streak)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Day Streak')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
                     h('div', { style: { fontSize: 22, fontWeight: 'bold', color: '#c4b5fd' } }, String(challengesDone * 10)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'XP Earned')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'XP Earned')
                   )
                 ),
 
@@ -1834,14 +1834,14 @@ window.SelHub = window.SelHub || {
                   var logKeys = Object.keys(challengeLog).sort().reverse().slice(0, 7);
                   if (logKeys.length === 0) return null;
                   return h('div', null,
-                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCC5 Recent Challenges'),
+                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 8 } }, '\uD83D\uDCC5 Recent Challenges'),
                     logKeys.map(function(key) {
                       var entry = challengeLog[key];
                       return h('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' } },
                         h('span', { style: { fontSize: 14 } }, entry.emoji || '\u2B50'),
                         h('div', { style: { flex: 1 } },
                           h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#fbbf24' } }, entry.strength),
-                          h('div', { style: { fontSize: 10, color: '#94a3b8' } }, entry.challenge)
+                          h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, entry.challenge)
                         ),
                         h('span', { style: { fontSize: 10, color: '#64748b' } }, key),
                         h('span', { style: { color: '#22c55e', fontSize: 12 } }, '\u2713')
@@ -1888,7 +1888,7 @@ window.SelHub = window.SelHub || {
               });
 
               return h('div', null,
-                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.6 } },
                   band === 'elementary' ? 'Say thank you for the strengths you see in the people around you! It feels good to notice the good in others.' :
                   band === 'middle' ? 'Express gratitude for the strengths you see in others. Noticing strengths in people around you builds empathy and deepens relationships.' :
                   'Gratitude for others\u0027 strengths builds empathy, strengthens relationships, and develops your own capacity for perspective-taking.'
@@ -1922,7 +1922,7 @@ window.SelHub = window.SelHub || {
                   h('textarea', { value: gratInput, 'aria-label': 'Gratitude message', onChange: function(e) { upd({ gratInput: e.target.value }); }, placeholder: band === 'elementary' ? 'I\u0027m grateful because...' : 'Express your gratitude...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
                     h('button', { 'aria-label': 'Save Gratitude', onClick: saveGratitude, disabled: !gratInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: gratInput.trim() ? '#8b5cf6' : '#334155', color: gratInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: gratInput.trim() ? 'pointer' : 'default' } }, '\uD83D\uDE4F Save Gratitude'),
-                    h('button', { 'aria-label': 'Next Prompt', onClick: function() { upd({ gratPromptIdx: (gratPromptIdx + 1) % gratPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
+                    h('button', { 'aria-label': 'Next Prompt', onClick: function() { upd({ gratPromptIdx: (gratPromptIdx + 1) % gratPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
                   )
                 ),
 
@@ -1953,13 +1953,13 @@ window.SelHub = window.SelHub || {
               if (selectedStrengths.length === 0) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 40 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCCB'),
-                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 14, color: '#cbd5e1' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to plan how to use them.'),
                   h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
               return h('div', null,
-                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 4, lineHeight: 1.6 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 4, lineHeight: 1.6 } },
                   band === 'elementary' ? 'Here are fun things you can do this week using YOUR strengths!' :
                   'Connect your strengths to real-life action. Check off activities as you complete them.'
                 ),
@@ -1974,7 +1974,7 @@ window.SelHub = window.SelHub || {
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16 } }, s.emoji),
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 'bold', color: catColor } }, 'Your strength: ' + s.label)
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic' } }, 'This week, try:'),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8, fontStyle: 'italic' } }, 'This week, try:'),
                     actions.map(function(action, ai) {
                       var actionKey = s.id + '_' + s.category + '_' + ai;
                       var checked = !!actionChecked[actionKey];
@@ -2017,7 +2017,7 @@ window.SelHub = window.SelHub || {
               };
 
               return h('div', null,
-                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.6 } },
                   band === 'elementary' ? 'Notice the strengths in people around you! You don\'t have to name anyone \u2014 just describe what you see.' :
                   'Observing strengths in others sharpens your ability to see strengths in yourself. All entries are anonymous \u2014 describe what you see, not who.'
                 ),
@@ -2030,14 +2030,14 @@ window.SelHub = window.SelHub || {
                   h('textarea', { value: peerInput, 'aria-label': 'Peer strength observation', onChange: function(e) { upd({ peerInput: e.target.value }); }, placeholder: 'Describe the strength you noticed (no names needed)...', style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
                     h('button', { 'aria-label': 'Save Observation', onClick: savePeerNote, disabled: !peerInput.trim(), style: { padding: '8px 16px', borderRadius: 8, background: peerInput.trim() ? '#6366f1' : '#334155', color: peerInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: peerInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Observation'),
-                    h('button', { 'aria-label': 'Next Prompt', onClick: function() { upd({ peerPromptIdx: (peerPromptIdx + 1) % peerPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
+                    h('button', { 'aria-label': 'Next Prompt', onClick: function() { upd({ peerPromptIdx: (peerPromptIdx + 1) % peerPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
                   )
                 ),
 
                 // Ask a Friend section
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 12, padding: 16, marginBottom: 20 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#fbbf24', marginBottom: 8 } }, '\uD83D\uDCE8 Ask a Friend'),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5 } },
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.5 } },
                     'Want to know what others see in you? Share one of these questions with a friend, family member, or teacher.'
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', marginBottom: 10 } },
@@ -2050,13 +2050,13 @@ window.SelHub = window.SelHub || {
                         if (addToast) addToast('\uD83D\uDCCB Question copied! Share it with someone you trust.', 'success');
                       }).catch(function() {});
                     }, style: { padding: '6px 14px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),
-                    h('button', { 'aria-label': 'Different Question', onClick: function() { upd({ askFriendIdx: (askFriendIdx + 1) % ASK_FRIEND_TEMPLATES.length }); }, style: { padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 11, cursor: 'pointer' } }, '\u27A1 Different Question')
+                    h('button', { 'aria-label': 'Different Question', onClick: function() { upd({ askFriendIdx: (askFriendIdx + 1) % ASK_FRIEND_TEMPLATES.length }); }, style: { padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 11, cursor: 'pointer' } }, '\u27A1 Different Question')
                   )
                 ),
 
                 // Past peer notes
                 peerNotes.length > 0 ? h('div', null,
-                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCD6 My Observations (' + peerNotes.length + ')'),
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 8 } }, '\uD83D\uDCD6 My Observations (' + peerNotes.length + ')'),
                   peerNotes.slice().reverse().map(function(n, i) {
                     return h('div', { key: i, style: { padding: 10, marginBottom: 6, borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
                       h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 2 } }, new Date(n.timestamp).toLocaleDateString()),
@@ -2112,7 +2112,7 @@ window.SelHub = window.SelHub || {
                   h('button', { 'aria-label': 'Previous', onClick: function() {
                     var prev = affirmIdx > 0 ? affirmIdx - 1 : cards.length - 1;
                     upd({ affirmIdx: prev });
-                  }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Previous'),
+                  }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Previous'),
                   callTTS ? h('button', { 'aria-label': 'Read Aloud', onClick: function() {
                     speak(currentAffirmation);
                     var newCount = affirmationsRead + 1;
@@ -2122,7 +2122,7 @@ window.SelHub = window.SelHub || {
                     var next = (affirmIdx + 1) % cards.length;
                     var newCount = affirmationsRead + 1;
                     upd({ affirmIdx: next, affirmationsRead: newCount });
-                  }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, 'Next \u2192')
+                  }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, 'Next \u2192')
                 ),
 
                 // Affirmation stats
@@ -2136,7 +2136,7 @@ window.SelHub = window.SelHub || {
             tab === 'coach' ? h('div', null,
               h('div', { style: { textAlign: 'center', padding: 20 } },
                 h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83E\uDD16'),
-                h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 16px' } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 16px' } },
                   band === 'elementary' ? 'I\'m your Strengths Coach! Ask me anything about your strengths. I\'ll help you see how amazing you are!' :
                   'I\'m your AI Strengths Coach. Ask me about your strengths, how to use them, or how to grow in areas that matter to you.'
                 )
@@ -2172,7 +2172,7 @@ window.SelHub = window.SelHub || {
               selectedStrengths.length === 0 ?
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 40 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\u2B50'),
-                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'No strengths selected yet.'),
+                  h('p', { style: { fontSize: 14, color: '#cbd5e1' } }, 'No strengths selected yet.'),
                   h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths!'),
                   h('button', { 'aria-label': 'Start Discovering', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Start Discovering')
                 ) :
@@ -2245,7 +2245,7 @@ window.SelHub = window.SelHub || {
                   }),
                   // Stats grid
                   h('div', { style: { marginTop: 20, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
-                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCCA Summary'),
+                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 8 } }, '\uD83D\uDCCA Summary'),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, textAlign: 'center' } },
                       [
                         { val: selectedStrengths.length, label: 'Strengths', color: '#fbbf24' },

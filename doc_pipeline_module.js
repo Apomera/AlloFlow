@@ -94,6 +94,20 @@ var createDocPipeline = function(deps) {
     return fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body');
   };
 
+  // sampleHtml: return a stratified sample (start + middle + end) instead of just the first N chars.
+  // Gives the AI representative visibility into the full document for diagnosis prompts.
+  const sampleHtml = (html, budget) => {
+    if (!html) return '';
+    const b = budget || 9000;
+    if (html.length <= b) return html;
+    const third = Math.floor(b / 3);
+    return html.slice(0, third) +
+      '\n<!-- ... middle section ... -->\n' +
+      html.slice(Math.floor(html.length / 2) - Math.floor(third / 2), Math.floor(html.length / 2) + Math.floor(third / 2)) +
+      '\n<!-- ... end section ... -->\n' +
+      html.slice(html.length - third);
+  };
+
   // ── Source hint prescan: deterministic analysis of extracted text to guide the transform prompt ──
   const scanSourceHints = (text) => {
     if (!text) return { hasContent: false };
@@ -281,8 +295,19 @@ var createDocPipeline = function(deps) {
         isScanned: avgCharsPerPage < 50,
       };
     } catch (e) {
-      warnLog('[PDF Det] extractPdfTextDeterministic failed:', e?.message);
-      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: e?.message };
+      const msg = e?.message || '';
+      const isEncrypted = /password|encrypted|decrypt/i.test(msg);
+      const isCorrupt = /invalid|corrupt|unexpected|stream/i.test(msg);
+      if (isEncrypted) {
+        warnLog('[PDF Det] PDF is password-protected — falling through to Vision OCR');
+        if (typeof addToast === 'function') addToast('PDF appears password-protected — using Vision OCR instead of text layer extraction.', 'info');
+      } else if (isCorrupt) {
+        warnLog('[PDF Det] PDF may be corrupted:', msg);
+        if (typeof addToast === 'function') addToast('PDF may be corrupted or malformed — attempting Vision OCR fallback.', 'info');
+      } else {
+        warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
+      }
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt };
     }
   };
 
@@ -373,8 +398,11 @@ var createDocPipeline = function(deps) {
       const fullText = paragraphs.join('\n\n');
       return { fullText, sourceCharCount: fullText.length, method: 'jszip' };
     } catch (e) {
-      warnLog('[DOCX Det] jszip fallback failed:', e?.message);
-      return { fullText: '', sourceCharCount: 0, method: 'failed', error: e?.message };
+      const msg = e?.message || '';
+      warnLog('[DOCX Det] jszip fallback failed:', msg);
+      if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast('DOCX appears password-protected — using Vision OCR instead.', 'info');
+      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast('DOCX may be corrupted — attempting Vision OCR fallback.', 'info');
+      return { fullText: '', sourceCharCount: 0, method: 'failed', error: msg };
     }
   };
 
@@ -409,8 +437,11 @@ var createDocPipeline = function(deps) {
       const fullText = slides.map(s => '## Slide ' + s.slideNum + '\n\n' + s.text).join('\n\n');
       return { fullText, slides, slideCount: slideFiles.length, sourceCharCount: fullText.length, method: 'jszip' };
     } catch (e) {
-      warnLog('[PPTX Det] extraction failed:', e?.message);
-      return { fullText: '', slides: [], slideCount: 0, sourceCharCount: 0, method: 'failed', error: e?.message };
+      const msg = e?.message || '';
+      warnLog('[PPTX Det] extraction failed:', msg);
+      if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast('PPTX appears password-protected — using Vision OCR instead.', 'info');
+      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast('PPTX may be corrupted — attempting Vision OCR fallback.', 'info');
+      return { fullText: '', slides: [], slideCount: 0, sourceCharCount: 0, method: 'failed', error: msg };
     }
   };
 
@@ -701,30 +732,11 @@ Return ONLY valid JSON:
       };
       setPdfAuditResult(triangulated);
 
-      // ── Quick axe-core baseline: extract text with pdf.js, build minimal HTML, run axe-core ──
-      // This gives us a deterministic "before" score on the same 0-100 scale as the "after"
+      // ── Quick axe-core baseline: extract text deterministically, build minimal HTML, run axe-core ──
+      // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation)
       try {
-        // Lazy-load pdf.js if not already available
-        if (!window.pdfjsLib) {
-          const s = document.createElement('script');
-          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-          document.head.appendChild(s);
-          await new Promise((resolve, reject) => {
-            const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
-            setTimeout(() => { clearInterval(wait); reject(new Error('pdf.js load timeout')); }, 10000);
-          });
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-        const rawBase64 = pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64;
-        const pdfBytes = Uint8Array.from(atob(rawBase64), c => c.charCodeAt(0));
-        const pdfDoc = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
-        // Extract text from ALL pages for unbiased baseline assessment
-        let rawText = '';
-        for (let p = 1; p <= pdfDoc.numPages; p++) {
-          const page = await pdfDoc.getPage(p);
-          const tc = await page.getTextContent();
-          rawText += tc.items.map(item => item.str).join(' ') + '\n\n';
-        }
+        const detBaseline = await extractPdfTextDeterministic(pendingPdfBase64);
+        const rawText = detBaseline.fullText || '';
         // Build minimal HTML shell from extracted text
         const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${rawText.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n')}</main></body></html>`;
         const baselineAxe = await runAxeAudit(minimalHtml);
@@ -1721,7 +1733,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
 
         var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' +
           'VIOLATIONS:\n' + surgViolations + '\n\n' +
-          'HTML (first 6000 chars for context):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' +
+          'HTML (stratified sample for context):\n"""\n' + sampleHtml(accessibleHtml, 9000) + '\n"""\n\n' +
           'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' +
           'CONTENT FIXES:\n' +
           '- fix_alt_text: { "tool": "fix_alt_text", "index": <img# 0-based>, "alt": "descriptive text" }\n' +
@@ -1756,7 +1768,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
         // Run 3 parallel diagnoses and merge — each catches different issues
-        var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (first 6000 chars):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
+        var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (stratified sample):\n"""\n' + sampleHtml(accessibleHtml, 9000) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
         var [surgDiagnosis2, surgDiagnosis3] = await Promise.all([
           callGemini('You are an independent accessibility expert (second opinion). Focus on content fixes — alt text quality, link descriptions, and heading structure.\n\n' + surgPromptBase, true),
           callGemini('You are a strict WCAG compliance auditor (third opinion). Focus on structural fixes — landmarks, ARIA, table headers, and form labels.\n\n' + surgPromptBase, true),
@@ -2155,6 +2167,34 @@ Extract all readable text from this educational document.
 Return ONLY the extracted text.`;
     try {
       let extractedText = '';
+
+      // ── Deterministic extraction first (zero AI, zero truncation) ──
+      try {
+        const _fn = pendingPdfFile?.name || '';
+        const _isDocx = /\.docx$/i.test(_fn);
+        const _isPptx = /\.pptx$/i.test(_fn);
+        if (_isDocx) {
+          setGenerationStep('Extracting DOCX text deterministically...');
+          const det = await extractDocxTextDeterministic(pendingPdfBase64);
+          if (det && det.sourceCharCount > 50) { extractedText = det.fullText; warnLog(`[ProceedTransform Det] DOCX → ${det.sourceCharCount} chars`); }
+        } else if (_isPptx) {
+          setGenerationStep('Extracting PPTX text deterministically...');
+          const det = await extractPptxTextDeterministic(pendingPdfBase64);
+          if (det && det.sourceCharCount > 50) { extractedText = det.fullText; warnLog(`[ProceedTransform Det] PPTX → ${det.sourceCharCount} chars`); }
+        } else {
+          setGenerationStep('Extracting PDF text layer...');
+          const det = await extractPdfTextDeterministic(pendingPdfBase64);
+          if (det && !det.isScanned && det.sourceCharCount > 100) {
+            extractedText = det.fullText;
+            warnLog(`[ProceedTransform Det] PDF → ${det.sourceCharCount} chars from ${det.pageCount} pages`);
+          }
+        }
+      } catch (detErr) {
+        warnLog('[ProceedTransform Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
+      }
+
+      // ── Vision OCR fallback (only if deterministic didn't yield text) ──
+      if (!extractedText || extractedText.length < 50) {
       // Large PDF chunking (>5MB) or if audit found many pages
       if (pendingPdfFile && pendingPdfFile.size > 5 * 1024 * 1024) {
         const sizeMB = (pendingPdfFile.size / (1024 * 1024)).toFixed(1);
@@ -2178,6 +2218,7 @@ Return ONLY the extracted text.`;
       } else {
         extractedText = await callGeminiVision(ocrPrompt, pendingPdfBase64, 'application/pdf');
       }
+      } // end Vision OCR fallback
 
       // ── Quality/Accuracy Verification ──
       if (extractedText && extractedText.length > 100) {
@@ -2186,7 +2227,7 @@ Return ONLY the extracted text.`;
           const verifyResult = await callGeminiVision(
             `Compare the original PDF document with this extracted text. Rate the extraction quality 1-10 and note any significant missing content, misread sections, or structural errors. Be brief (2-3 sentences).
 
-Extracted text (first 2000 chars): """${extractedText.substring(0, 2000)}"""
+Extracted text (representative sample): """${sampleHtml(extractedText, 4000)}"""
 
 Return ONLY JSON: {"quality": N, "issues": "description or null", "missingContent": true/false}`,
             pendingPdfBase64, 'application/pdf'
@@ -2967,7 +3008,21 @@ HTML section ${chunkNum}/${chunks.length}:
       return `<img${newAttrs} alt="" role="presentation">`;
     });
 
-    if (fixCount > 0) warnLog(`[Decorative Images] Marked ${fixCount} images as decorative deterministically`);
+    // Also handle inline <svg> elements that are decorative (by class or tiny dimensions)
+    fixed = fixed.replace(/<svg\b([^>]*)>/gi, (match, attrs) => {
+      if (/\srole\s*=\s*["']presentation["']/i.test(attrs) || /\saria-hidden\s*=\s*["']true["']/i.test(attrs)) return match;
+      const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']+)["']/i);
+      const widthMatch = attrs.match(/\bwidth\s*=\s*["']?(\d+)/i);
+      const heightMatch = attrs.match(/\bheight\s*=\s*["']?(\d+)/i);
+      const isDecoratClass = classMatch && /\b(decor|decoration|separator|divider|bullet|spacer|ornament|icon|chevron)\b/i.test(classMatch[1]);
+      const isTiny = (widthMatch && parseInt(widthMatch[1], 10) <= 24) || (heightMatch && parseInt(heightMatch[1], 10) <= 24);
+      if (!isDecoratClass && !isTiny) return match;
+      let newAttrs = attrs.replace(/\srole\s*=\s*["'][^"']*["']/gi, '').replace(/\saria-hidden\s*=\s*["'][^"']*["']/gi, '');
+      fixCount++;
+      return `<svg${newAttrs} role="presentation" aria-hidden="true">`;
+    });
+
+    if (fixCount > 0) warnLog(`[Decorative Images] Marked ${fixCount} images/SVGs as decorative deterministically`);
     return { html: fixed, fixCount };
   };
 
@@ -2991,6 +3046,25 @@ HTML section ${chunkNum}/${chunks.length}:
       if (!/<caption\b/i.test(newBody)) {
         newBody = newBody.replace(/^(\s*)/, `$1<caption class="sr-only">Data table ${tableIdx}</caption>`);
         fixCount++;
+      }
+
+      // If the table has NO <th> at all, promote the first row's <td> elements to <th scope="col">
+      if (!/<th\b/i.test(newBody)) {
+        let firstRowDone = false;
+        newBody = newBody.replace(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/i, (rowMatch, rowAttrs, rowContent) => {
+          if (firstRowDone) return rowMatch;
+          firstRowDone = true;
+          const promoted = rowContent.replace(/<td\b([^>]*)>([\s\S]*?)<\/td>/gi, (tdMatch, tdAttrs, tdContent) => {
+            fixCount++;
+            return `<th scope="col"${tdAttrs}>${tdContent}</th>`;
+          });
+          // Wrap in <thead> if not already inside one
+          if (!/<thead\b/i.test(newBody)) {
+            fixCount++;
+            return `<thead><tr${rowAttrs}>${promoted}</tr></thead>`;
+          }
+          return `<tr${rowAttrs}>${promoted}</tr>`;
+        });
       }
 
       // Assign IDs to all <th> elements that don't have one
@@ -3034,8 +3108,11 @@ HTML section ${chunkNum}/${chunks.length}:
       { lang: 'th', pattern: /([\u0E00-\u0E7F][\u0E00-\u0E7F\s,.!?;:'"()-]{2,})/g },
     ];
 
-    // Only touch text inside visible content tags — split the doc into tags + text nodes
-    fixed = fixed.replace(/>([^<]+)</g, (match, textContent) => {
+    // Only touch text inside visible content tags — skip text already inside <span lang="...">
+    // Use a broader regex that captures the preceding tag so we can check for existing lang attr
+    fixed = fixed.replace(/(<[^>]*>)([^<]+)/g, (match, precedingTag, textContent) => {
+      // Skip if this text node is already inside a <span lang="..."> — prevents double-wrapping
+      if (/<span\b[^>]*\blang\s*=/i.test(precedingTag)) return match;
       let newText = textContent;
       for (const { lang, pattern } of scriptRanges) {
         newText = newText.replace(pattern, (runMatch) => {
@@ -3044,7 +3121,7 @@ HTML section ${chunkNum}/${chunks.length}:
           return `<span lang="${lang}">${runMatch}</span>`;
         });
       }
-      return '>' + newText + '<';
+      return precedingTag + newText;
     });
 
     if (fixCount > 0) warnLog(`[Lang Spans] Wrapped ${fixCount} non-Latin script runs deterministically`);
@@ -3566,7 +3643,7 @@ Rate this section 0-100 where:
 
 HTML SECTION:
 """
-${cleaned.substring(0, 6000)}
+${sampleHtml(cleaned, 9000)}
 """
 
 Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"], "passes": ["pass1", "pass2"]}`, true);
@@ -3761,20 +3838,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const topViolation = currentAxe.critical[0] || currentAxe.serious[0] || currentAxe.moderate[0];
           if (topViolation) {
             try {
-              const targetedFix = await callGemini(`Fix ONLY this one specific accessibility violation in the HTML below:
-
-VIOLATION: ${topViolation.description} (${topViolation.id})
-WCAG: ${topViolation.wcag || 'N/A'}
-AFFECTED ELEMENTS: ${topViolation.nodes || 'unknown'} element(s)
-
-Find every instance of this violation in the HTML and fix it. Do NOT change anything else.
-Return the COMPLETE HTML document.
-
-HTML:
-"""
-${currentHtml.substring(0, 20000)}
-"""`, true);
-              if (acceptFixedHtml(targetedFix, currentHtml)) {
+              const targetViolationDesc = `VIOLATION: ${topViolation.description} (${topViolation.id})\nWCAG: ${topViolation.wcag || 'N/A'}\nAFFECTED ELEMENTS: ${topViolation.nodes || 'unknown'} element(s)\nFind every instance of this violation and fix it. Do NOT change anything else.`;
+              const targetedFix = await aiFixChunked(currentHtml, targetViolationDesc, `targeted-${topViolation.id}`);
+              if (targetedFix && targetedFix !== currentHtml) {
                 const targetedAxe = await runAxeAudit(targetedFix);
                 if (targetedAxe && targetedAxe.totalViolations < currentAxe.totalViolations) {
                   currentHtml = targetedFix;
@@ -3945,7 +4011,7 @@ ${currentHtml.substring(0, 20000)}
         setStep(`Scoring chunk ${chunkIndex + 1}/${totalChunks}...`);
         let aiScore = scoreChunkLocally(cleaned);
         try {
-          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.1 AA accessibility.\n\nHTML:\n"""\n${cleaned.substring(0, 6000)}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true);
+          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.1 AA accessibility.\n\nHTML:\n"""\n${sampleHtml(cleaned, 9000)}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true);
           try {
             const aj = JSON.parse(ar.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
             if (typeof aj.score === 'number' && aj.score >= 0 && aj.score <= 100) {
@@ -4750,41 +4816,27 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           }
         };
 
-        // ── Polish passes: unify heading hierarchy and clean transitions ──
+        // ── Polish passes: unify heading hierarchy and clean transitions (chunked for large docs) ──
         if (transformChunks > 1 && pdfPolishPasses > 0) {
+          const polishViolations = 'HEADING HIERARCHY: Ensure exactly ONE <h1>. Demote extra <h1> to <h2>. Fix h2→h3→h4 hierarchy.\nDUPLICATE CONTENT: Remove headings or paragraphs duplicated at chunk seams.\nTRANSITIONS: Remove redundant horizontal rules between sections.\nTABLE CONTINUITY: Merge table fragments split across sections.\nSTYLE CONSISTENCY: Unify inline CSS — match all similar elements to the dominant color scheme.\nPRESERVE ALL INLINE STYLES: Do NOT strip any style="" attributes.\nKeep ALL unique content. Only remove true duplicates and fix structure. Do NOT summarize or shorten.';
           for (let polishIdx = 0; polishIdx < pdfPolishPasses; polishIdx++) {
-          updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses}...`);
-          try {
-            const polished = await callGemini(`You are an HTML document editor. This accessible HTML was generated in ${transformChunks} sections and needs polish.
-
-FIX THESE ISSUES:
-1. HEADING HIERARCHY: Ensure exactly ONE <h1> (the document title). Demote any extra <h1> tags to <h2>. Ensure h2→h3→h4 hierarchy with no skipped levels.
-2. DUPLICATE CONTENT: If the same heading or paragraph appears at the end of one section and start of the next, remove the duplicate.
-3. TRANSITIONS: Remove any awkward section breaks or redundant horizontal rules between sections.
-4. TABLE CONTINUITY: If a table was split across sections, merge the fragments into one complete table.
-5. STYLE CONSISTENCY: Ensure consistent inline CSS throughout — if one section uses a navy blue heading color and another uses black, unify to the dominant color scheme. Match all similar elements to the same style.
-6. PRESERVE ALL INLINE STYLES: Do NOT strip any style="" attributes. The visual styling is intentional and must be kept.
-
-IMPORTANT: Keep ALL unique content and ALL inline styles. Only remove true duplicates and fix structure. Do NOT summarize or shorten.
-
-HTML TO POLISH:
-"""
-${bodyContent.substring(0, 30000)}${bodyContent.length > 30000 ? '\n[... document continues, ' + bodyContent.length + ' chars total ...]' : ''}
-"""
-
-Return ONLY the polished HTML body content.`, true);
-            // Polish pass: looser floor (0.9 size, 0.95 text) because polish legitimately removes duplicates
-            if (polished && polished.length >= bodyContent.length * 0.9 && textCharCount(polished) >= textCharCount(bodyContent) * 0.95) {
-              bodyContent = polished.trim()
-                .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-                .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1');
-            } else if (polished) {
-              warnLog(`[Polish] Pass ${polishIdx + 1} rejected: output ${polished.length} chars vs source ${bodyContent.length} chars`);
+            updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses}...`);
+            try {
+              const polished = await aiFixChunked(bodyContent, polishViolations, `polish-${polishIdx + 1}`);
+              if (polished && polished !== bodyContent) {
+                // Polish pass: looser floor — polish legitimately removes duplicates
+                if (polished.length >= bodyContent.length * 0.9 && textCharCount(polished) >= textCharCount(bodyContent) * 0.95) {
+                  bodyContent = polished.trim()
+                    .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
+                    .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1');
+                } else {
+                  warnLog(`[Polish] Pass ${polishIdx + 1} rejected: output ${polished.length} chars vs source ${bodyContent.length} chars`);
+                }
+              }
+            } catch (polishErr) {
+              warnLog(`[PDF Fix] Polish pass ${polishIdx + 1} failed:`, polishErr);
             }
-          } catch (polishErr) {
-            warnLog(`[PDF Fix] Polish pass ${polishIdx + 1} failed:`, polishErr);
           }
-          } // end polish loop
         }
       }
 
@@ -4880,15 +4932,23 @@ ${bodyContent}
 
       warnLog(`[PDF Fix] Final HTML: ${accessibleHtml.length} chars from ${extractedLength} chars extracted text`);
 
-      // ── Step 2c: Spelling & grammar correction pass ──
+      // ── Step 2c: Spelling & grammar correction pass (chunked to cover full document) ──
       updateProgress(2, 'Checking spelling & grammar...');
       try {
         const textForCheck = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        const grammarResult = await callGemini(`You are a professional proofreader. Check this text for spelling errors, grammar mistakes, and OCR artifacts (garbled characters from scanning).
+        const GRAMMAR_CHUNK = 5000;
+        const grammarChunks = [];
+        for (let gi = 0; gi < textForCheck.length; gi += GRAMMAR_CHUNK) {
+          grammarChunks.push(textForCheck.slice(gi, Math.min(gi + GRAMMAR_CHUNK, textForCheck.length)));
+        }
+        const allCorrections = new Map(); // dedupe by "wrong" text
+        for (let gci = 0; gci < grammarChunks.length; gci++) {
+          try {
+            const grammarResult = await callGemini(`You are a professional proofreader. Check this text for spelling errors, grammar mistakes, and OCR artifacts (garbled characters from scanning).
 
-TEXT TO CHECK (first 5000 chars):
+TEXT TO CHECK (section ${gci + 1} of ${grammarChunks.length}):
 """
-${textForCheck.substring(0, 5000)}
+${grammarChunks[gci]}
 """
 
 Find ONLY clear errors — not stylistic preferences. Focus on:
@@ -4900,22 +4960,29 @@ Find ONLY clear errors — not stylistic preferences. Focus on:
 Return ONLY JSON:
 {"corrections": [{"wrong": "exact wrong text", "right": "corrected text", "type": "spelling|grammar|ocr"}], "totalErrors": N}
 If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
-        if (grammarResult) {
-          let gc = grammarResult.trim();
-          if (gc.indexOf('```') !== -1) { const ps = gc.split('```'); gc = ps[1] || ps[0]; if (gc.indexOf('\n') !== -1) gc = gc.split('\n').slice(1).join('\n'); if (gc.lastIndexOf('```') !== -1) gc = gc.substring(0, gc.lastIndexOf('```')); }
-          const corrections = JSON.parse(gc);
-          if (corrections.corrections && corrections.corrections.length > 0) {
-            let fixCount = 0;
-            corrections.corrections.forEach(c => {
-              if (c.wrong && c.right && c.wrong !== c.right && accessibleHtml.includes(c.wrong)) {
-                accessibleHtml = accessibleHtml.split(c.wrong).join(c.right);
-                fixCount++;
+            if (grammarResult) {
+              let gc = grammarResult.trim();
+              if (gc.indexOf('```') !== -1) { const ps = gc.split('```'); gc = ps[1] || ps[0]; if (gc.indexOf('\n') !== -1) gc = gc.split('\n').slice(1).join('\n'); if (gc.lastIndexOf('```') !== -1) gc = gc.substring(0, gc.lastIndexOf('```')); }
+              const parsed = JSON.parse(gc);
+              if (parsed.corrections && parsed.corrections.length > 0) {
+                parsed.corrections.forEach(c => {
+                  if (c.wrong && c.right && c.wrong !== c.right) allCorrections.set(c.wrong, c);
+                });
               }
-            });
-            if (fixCount > 0) {
-              warnLog(`[PDF Fix] Grammar/spelling: fixed ${fixCount}/${corrections.corrections.length} issues`);
-              if (addToast) addToast(`✏️ Fixed ${fixCount} spelling/grammar issue${fixCount > 1 ? 's' : ''}`, 'success');
             }
+          } catch(chunkErr) { warnLog(`[Grammar] Chunk ${gci + 1} failed:`, chunkErr?.message); }
+        }
+        if (allCorrections.size > 0) {
+          let fixCount = 0;
+          for (const [, c] of allCorrections) {
+            if (accessibleHtml.includes(c.wrong)) {
+              accessibleHtml = accessibleHtml.split(c.wrong).join(c.right);
+              fixCount++;
+            }
+          }
+          if (fixCount > 0) {
+            warnLog(`[PDF Fix] Grammar/spelling: fixed ${fixCount}/${allCorrections.size} issues across ${grammarChunks.length} sections`);
+            if (addToast) addToast(`✏️ Fixed ${fixCount} spelling/grammar issue${fixCount > 1 ? 's' : ''}`, 'success');
           }
         }
       } catch(gramErr) { warnLog('[PDF Fix] Grammar check failed (non-blocking):', gramErr); }

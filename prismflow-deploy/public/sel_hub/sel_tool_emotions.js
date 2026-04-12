@@ -705,7 +705,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: '#3b82f6', fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -765,7 +765,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
               band === 'elementary' ? '\uD83E\uDDE9 Feelings Word Quiz!' : '\uD83E\uDDE9 Vocabulary Quiz'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Read the meaning, then pick the right feelings word!' : 'Match the definition to the correct emotion word.'
             ),
             h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 20 } },
@@ -821,7 +821,7 @@ window.SelHub = window.SelHub || {
                     ? (band === 'elementary' ? '\u2B50 You got it!' : '\u2705 Correct!')
                     : (band === 'elementary' ? 'Not quite!' : 'Not this time')
                 ),
-                quizAnswer !== quizWord && h('p', { style: { fontSize: 13, color: '#94a3b8' } },
+                quizAnswer !== quizWord && h('p', { style: { fontSize: 13, color: '#cbd5e1' } },
                   'The answer was: ' + quizWord
                 )
               ),
@@ -846,7 +846,7 @@ window.SelHub = window.SelHub || {
           wheelMode === 'explore' && h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? 'How Do Feelings Work?' : 'Emotion Wheel'
           ),
-          wheelMode === 'explore' && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          wheelMode === 'explore' && h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Tap a color to explore that feeling family!' :
             band === 'middle' ? 'Explore emotion families and build your feelings vocabulary.' :
             'Map the landscape of human emotion \u2014 from primary affects to nuanced states.'
@@ -876,7 +876,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 36, marginBottom: 6 } }, fam.emoji),
                 h('div', { style: { fontWeight: 700, color: fam.color, fontSize: 14, marginBottom: 2 } }, fam.label),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.3 } }, fam.desc[band]),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.3 } }, fam.desc[band]),
                 explored && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, '\u2713 explored')
               );
             })
@@ -891,13 +891,13 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Emotions',
                 onClick: function() { upd({ selectedFamily: null, expandedFeeling: null }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Emotions'),
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                 h('span', { style: { fontSize: 36 } }, fam.emoji),
                 h('h4', { style: { margin: '4px 0', color: fam.color, fontSize: 20 } }, fam.label + ' Family'),
-                h('p', { style: { color: '#94a3b8', fontSize: 12 } }, fam.desc[band])
+                h('p', { style: { color: '#cbd5e1', fontSize: 12 } }, fam.desc[band])
               ),
 
               // Vocabulary cards
@@ -945,7 +945,7 @@ window.SelHub = window.SelHub || {
                       h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.5, marginTop: 10, marginBottom: 10 } }, feeling.def),
                       band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
                         onClick: function() { readAloud(feeling.word + '. ' + feeling.def); },
-                        style: { padding: '5px 12px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 11, marginRight: 6 }
+                        style: { padding: '5px 12px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11, marginRight: 6 }
                       }, '\uD83D\uDD0A Read Aloud'),
                       h('button', { 'aria-label': 'I’m feeling this',
                         onClick: function() {
@@ -977,7 +977,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? 'How Are You Feeling?' : 'Emotion Check-In'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Pick the color that matches your feeling, then tell me more!' :
             'Identify your current emotional state with precision.'
           ),
@@ -1122,7 +1122,7 @@ window.SelHub = window.SelHub || {
               ),
               !bodyMapViewed[checkinFamily] && h('span', { style: { fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#3b82f622', color: '#60a5fa', fontWeight: 600 } }, 'NEW')
             ),
-            h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12, lineHeight: 1.4 } },
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.4 } },
               band === 'elementary' ? 'Feelings live in your body too! See where this feeling shows up:' :
               band === 'middle' ? 'Emotions create physical sensations. Here\'s where this one often shows up:' :
               'Emotions are embodied experiences. These are common somatic markers for this affect:'
@@ -1156,7 +1156,7 @@ window.SelHub = window.SelHub || {
 
           // Recent check-ins
           checkinHistory.length > 0 && h('div', { style: { marginTop: 20 } },
-            h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Recent Check-Ins'),
+            h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Recent Check-Ins'),
             checkinHistory.slice().reverse().slice(0, 3).map(function(entry, i) {
               var fam = EMOTION_FAMILIES.find(function(f) { return f.id === entry.family; });
               return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 6 } },
@@ -1198,7 +1198,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } },
               band === 'elementary' ? '\uD83D\uDE04 What Face Is This?' : '\uD83D\uDE04 Facial Expression Reader'
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Look at the face and pick the right feeling!' :
               'Identify the emotion shown in each facial expression.'
             ),
@@ -1255,7 +1255,7 @@ window.SelHub = window.SelHub || {
                         ? (band === 'elementary' ? 'Yes! Great job!' : 'Correct!')
                         : (band === 'elementary' ? 'Not quite!' : 'Not this time')
                     ),
-                    faceRevealed === 'wrong' && h('p', { style: { fontSize: 13, color: '#94a3b8' } },
+                    faceRevealed === 'wrong' && h('p', { style: { fontSize: 13, color: '#cbd5e1' } },
                       'This face shows: ' + challenge.emotion
                     )
                   ),
@@ -1276,7 +1276,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } },
               '\uD83D\uDD0D Body Language Reader'
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Read how the person is acting. What are they feeling?' :
               'Read the body language description and identify the emotion.'
             ),
@@ -1331,7 +1331,7 @@ window.SelHub = window.SelHub || {
                     h('p', { style: { fontSize: 18, fontWeight: 700, color: bodyLangRevealed === 'correct' ? '#22c55e' : '#ef4444', marginBottom: 4 } },
                       bodyLangRevealed === 'correct' ? '\u2705 Correct!' : 'Not this time'
                     ),
-                    bodyLangRevealed !== 'correct' && h('p', { style: { fontSize: 13, color: '#94a3b8' } },
+                    bodyLangRevealed !== 'correct' && h('p', { style: { fontSize: 13, color: '#cbd5e1' } },
                       'The answer was: ' + blChallenge.emotion
                     )
                   ),
@@ -1370,7 +1370,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', color: '#f1f5f9', fontSize: 18, marginBottom: 4 } },
               band === 'elementary' ? '\uD83E\uDD1D How Would They Feel?' : '\uD83E\uDD1D Empathy Perspective'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Think about how the OTHER person feels in this story!' :
               band === 'middle' ? 'Step into someone else\'s shoes. What might they be experiencing?' :
               'Practice cognitive empathy \u2014 infer another person\'s emotional state from context.'
@@ -1450,7 +1450,7 @@ window.SelHub = window.SelHub || {
                       '\uD83D\uDCA1 ' + (band === 'elementary' ? 'That\'s a thoughtful guess! Empathy means trying to understand \u2014 even when we guess differently.' :
                       'Different perspective, but the effort to understand matters most. Empathy is a skill that grows with practice.')
                     ),
-                h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 } },
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 8, lineHeight: 1.5 } },
                   band === 'elementary'
                     ? 'Putting yourself in someone else\'s shoes is a superpower! The more you practice, the better you get at understanding others.'
                     : band === 'middle'
@@ -1473,7 +1473,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', color: '#f1f5f9', fontSize: 18, marginBottom: 4 } },
             band === 'elementary' ? '\uD83C\uDFAD What Would You Feel?' : '\uD83C\uDFAD Emotion Scenarios'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read what happens and pick how you\'d feel!' :
             'Consider each situation. What emotions might arise?'
           ),
@@ -1546,7 +1546,7 @@ window.SelHub = window.SelHub || {
                     '\uD83D\uDCA1 ' + (band === 'elementary' ? 'Different people feel different things \u2014 and that\'s okay! There\'s no wrong answer.' :
                     'Everyone reacts differently. Your response is valid \u2014 emotional responses are personal.')
                   ),
-              h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 } },
+              h('p', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 8, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Many people might feel ' + currentScenario.likely.slice(0, 3).join(', ') + ' in this situation. Did you think of a different feeling? That\'s okay too!' :
                 band === 'middle' ? 'This situation commonly triggers ' + currentScenario.likely.join(', ') + '. Notice: most situations produce multiple emotions at once.' :
                 'Common affective responses include ' + currentScenario.likely.join(', ') + '. Note the complexity \u2014 real emotional experiences are rarely mono-dimensional.'
@@ -1554,7 +1554,7 @@ window.SelHub = window.SelHub || {
             ),
             currentScenario.likely.length > 2 && !earnedBadges['mixed_feelings'] && h('button', { 'aria-label': 'I see there can be mixed emotions!',
               onClick: function() { tryAwardBadge('mixed_feelings'); addToast('You noticed that situations can cause mixed feelings!', 'success'); },
-              style: { width: '100%', padding: '10px 0', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer', marginBottom: 12 }
+              style: { width: '100%', padding: '10px 0', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontWeight: 600, fontSize: 12, cursor: 'pointer', marginBottom: 12 }
             }, '\uD83C\uDF00 I see \u2014 there can be mixed emotions!'),
             h('button', { 'aria-label': 'Next Scenario',
               onClick: function() { upd({ scenarioIdx: scenarioIdx + 1, scenarioAnswer: null, scenarioRevealed: false }); },
@@ -1574,7 +1574,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDCD3 My Feelings Journal' : '\uD83D\uDCD3 Emotion Journal'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Write about your feelings. You can ask the AI helper for advice!' :
             'Reflect on your emotional experiences. The AI coach can help you process.'
           ),
@@ -1666,7 +1666,7 @@ window.SelHub = window.SelHub || {
 
           // Past entries
           journalEntries.length > 0 && h('div', null,
-            h('p', { style: { fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } },
+            h('p', { style: { fontSize: 13, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } },
               'Past Entries (' + journalEntries.length + ')'
             ),
             journalEntries.slice().reverse().slice(0, 5).map(function(entry, i) {
@@ -1743,7 +1743,7 @@ window.SelHub = window.SelHub || {
             if (uniqueDays >= 7) tryAwardBadge('calendar_week');
 
             return h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-              h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Mood Calendar (Last 28 Days)'),
+              h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } }, '\uD83D\uDCC5 Mood Calendar (Last 28 Days)'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 } },
                 // Day-of-week headers
                 ['S','M','T','W','T','F','S'].map(function(dn, di) {
@@ -1802,15 +1802,15 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
                   h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 24, fontWeight: 800, color: '#3b82f6' } }, totalCheckins),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Check-Ins')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Check-Ins')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 24, fontWeight: 800, color: '#f59e0b' } }, avgIntensity.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Intensity')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Avg Intensity')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 24, fontWeight: 800, color: '#22c55e' } }, Object.keys(learnedWords).length),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Words Learned')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Words Learned')
                   )
                 ),
 
@@ -1820,19 +1820,19 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { flex: 1 } },
                     h('p', { style: { fontSize: 10, color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' } }, 'Most Frequent Feeling'),
                     h('p', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0, textTransform: 'capitalize' } }, topFeeling),
-                    h('p', { style: { fontSize: 11, color: '#94a3b8', margin: '2px 0 0 0' } }, topCount + ' time' + (topCount !== 1 ? 's' : ''))
+                    h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: '2px 0 0 0' } }, topCount + ' time' + (topCount !== 1 ? 's' : ''))
                   )
                 ),
 
                 // Emotion family distribution
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, 'Emotion Family Distribution'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } }, 'Emotion Family Distribution'),
                   EMOTION_FAMILIES.map(function(fam) {
                     var count = familyCounts[fam.id] || 0;
                     var pct = totalCheckins > 0 ? (count / totalCheckins * 100) : 0;
                     return h('div', { key: fam.id, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                       h('span', { style: { fontSize: 16, width: 24, textAlign: 'center', flexShrink: 0 } }, fam.emoji),
-                      h('span', { style: { fontSize: 11, color: '#94a3b8', width: 60, flexShrink: 0 } }, fam.label),
+                      h('span', { style: { fontSize: 11, color: '#cbd5e1', width: 60, flexShrink: 0 } }, fam.label),
                       h('div', { style: { flex: 1, height: 12, borderRadius: 6, background: '#0f172a', overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: pct + '%', background: fam.color, borderRadius: 6, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
                       ),
@@ -1843,7 +1843,7 @@ window.SelHub = window.SelHub || {
 
                 // Intensity trend
                 recentHist.length >= 2 && h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Intensity Trend (last ' + recentHist.length + ')'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Intensity Trend (last ' + recentHist.length + ')'),
                   h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 3, height: 60 } },
                     recentHist.map(function(entry, i) {
                       var pct = (entry.intensity / 10) * 100;
@@ -1863,7 +1863,7 @@ window.SelHub = window.SelHub || {
 
                 // Recent log
                 h('div', null,
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Recent Log'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Recent Log'),
                   hist.slice().reverse().slice(0, 8).map(function(entry, i) {
                     var fam = EMOTION_FAMILIES.find(function(f) { return f.id === entry.family; });
                     var time = new Date(entry.timestamp);
@@ -1895,7 +1895,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83E\uDDEA Emotion Mixing Lab!' : '\uD83E\uDDEA Emotion Mixer'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Pick two feelings and see what happens when they mix together!' :
             band === 'middle' ? 'Combine two emotions to discover complex feelings. Real emotions are rarely simple!' :
             'Explore how primary emotions blend into complex affective states. Plutchik\'s wheel meets experiential learning.'
@@ -2036,7 +2036,7 @@ window.SelHub = window.SelHub || {
                   'AI: What Does This Mix Create?'
                 ),
                 mixAiLoading && h('p', { style: { color: '#a78bfa', fontSize: 13, fontStyle: 'italic' } }, 'Analyzing this emotional blend...'),
-                !callGemini && !mixAiCustom && h('p', { style: { color: '#94a3b8', fontSize: 13 } },
+                !callGemini && !mixAiCustom && h('p', { style: { color: '#cbd5e1', fontSize: 13 } },
                   'This is a unique combination! Think about what it would feel like to experience both ' + (fam1 ? fam1.label.toLowerCase() : mixEmotion1) + ' and ' + (fam2 ? fam2.label.toLowerCase() : mixEmotion2) + ' at the same time.'
                 ),
                 mixAiCustom && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, padding: 14, borderRadius: 12, background: '#8b5cf618', border: '1px solid #8b5cf644' } },
@@ -2053,7 +2053,7 @@ window.SelHub = window.SelHub || {
 
           // Mix history
           mixHistory.length > 0 && h('div', { style: { marginTop: 8 } },
-            h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, '\uD83E\uDDEA Discoveries (' + mixHistory.length + ')'),
+            h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, '\uD83E\uDDEA Discoveries (' + mixHistory.length + ')'),
             mixHistory.slice().reverse().slice(0, 6).map(function(m, i) {
               var fam1 = EMOTION_FAMILIES.find(function(f) { return f.id === m.e1; });
               var fam2 = EMOTION_FAMILIES.find(function(f) { return f.id === m.e2; });

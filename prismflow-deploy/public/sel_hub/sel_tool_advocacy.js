@@ -1293,7 +1293,7 @@ window.SelHub = window.SelHub || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1' } }, popBadge.desc)
             )
           );
         }
@@ -1308,7 +1308,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : '#334155'), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 4 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, b.desc)
+                  h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } }, b.desc)
                 );
               })
             )
@@ -1328,14 +1328,14 @@ window.SelHub = window.SelHub || {
 
         scenariosContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCE2 Advocacy Scenarios'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Read the situation, choose how to respond, and see what happens.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } }, 'Read the situation, choose how to respond, and see what happens.'),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
             'Scenario ' + ((scIdx % scScenarios.length) + 1) + ' of ' + scScenarios.length + (scCompleted > 0 ? ' \u00B7 ' + scCompleted + ' completed' : '')
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curSc.title),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 10 } },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, background: '#1e293b', padding: '3px 8px', borderRadius: 6, color: '#94a3b8' } }, '\uD83D\uDC64 Advocate to: ' + curSc.who)
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, background: '#1e293b', padding: '3px 8px', borderRadius: 6, color: '#cbd5e1' } }, '\uD83D\uDC64 Advocate to: ' + curSc.who)
             ),
             h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curSc.setup)
           ),
@@ -1397,14 +1397,14 @@ window.SelHub = window.SelHub || {
 
         scriptsContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCDD Script Builder'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Fill in the blanks to build a script you can actually use.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } }, 'Fill in the blanks to build a script you can actually use.'),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
             'Template ' + ((stIdx % stTemplates.length) + 1) + ' of ' + stTemplates.length + (stCompleted > 0 ? ' \u00B7 ' + stCompleted + ' completed' : '')
           ),
           // Context card
           h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSt.title),
-            h('p', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, curSt.context)
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } }, curSt.context)
           ),
           // Fill-in-the-blank area
           h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
@@ -1485,7 +1485,7 @@ window.SelHub = window.SelHub || {
 
         rightsContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2696\uFE0F Know Your Rights'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Tap a card to learn about your rights as a student.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } }, 'Tap a card to learn about your rights as a student.'),
           // Card selector
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
             rtCards.map(function(card, ci) {
@@ -1564,7 +1564,7 @@ window.SelHub = window.SelHub || {
           var color = pct < 30 ? '#ef4444' : pct < 60 ? '#f59e0b' : '#22c55e';
           return h('div', { style: { marginBottom: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, 'Confidence'),
+              h('span', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 600 } }, 'Confidence'),
               h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, pct + '/100')
             ),
             h('div', { style: { height: 8, borderRadius: 4, background: '#1e293b' } },
@@ -1586,7 +1586,7 @@ window.SelHub = window.SelHub || {
         if (!voMode) {
           voiceContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFA4 Voice Practice'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Practice advocating with AI-powered authority figures. Build confidence through conversation.'),
+            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } }, 'Practice advocating with AI-powered authority figures. Build confidence through conversation.'),
             voCompleted > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } }, voCompleted + ' sessions completed'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               voScenarios.map(function(sc, si) {
@@ -1601,7 +1601,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 28, flexShrink: 0 } }, sc.authority.emoji),
                   h('div', null,
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, sc.title),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.4 } }, sc.desc),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.4 } }, sc.desc),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, sc.authority.role + ': ' + sc.authority.name)
                   )
                 );
@@ -1618,12 +1618,12 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 20 } }, curVo.authority.emoji),
               h('div', null,
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, curVo.authority.name),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8' } }, curVo.authority.role)
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1' } }, curVo.authority.role)
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginLeft: 'auto' } }, 'Turn ' + voTurnCount + '/20')
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', marginLeft: 'auto' } }, 'Turn ' + voTurnCount + '/20')
             ),
             confidenceBar(voConfidence),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 10, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12, fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, curVo.desc),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 10, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, curVo.desc),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, overflow: 'auto', marginBottom: 12, maxHeight: 300 } },
               voChatHistory.map(function(msg, mi) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: mi }, chatBubble(msg.text, msg.role === 'user', curVo.authority.emoji));
@@ -1736,7 +1736,7 @@ window.SelHub = window.SelHub || {
           voiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto', textAlign: 'center' } },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 12 } }, '\uD83C\uDF89'),
             h('h3', { style: { color: '#22c55e', fontSize: 20, marginBottom: 8 } }, 'You Advocated Successfully!'),
-            h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 4 } }, curVo.authority.name + ' heard you and committed to action.'),
+            h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 4 } }, curVo.authority.name + ' heard you and committed to action.'),
             confidenceBar(voConfidence),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'left' } },
               h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Conversation Replay'),
@@ -1776,7 +1776,7 @@ window.SelHub = window.SelHub || {
 
         phrasesContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCAC Power Phrases'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 6 } }, 'Memorize these phrases. They\'re tools you can use in real life.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 6 } }, 'Memorize these phrases. They\'re tools you can use in real life.'),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 16 } }, ppCount + ' of ' + ppPhrases.length + ' practiced'),
           // Progress bar
           h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b', marginBottom: 20 } },
@@ -1792,7 +1792,7 @@ window.SelHub = window.SelHub || {
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
                       h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4, lineHeight: 1.5 } }, p.phrase),
-                      h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '\u2192 ' + p.when)
+                      h('p', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic' } }, '\u2192 ' + p.when)
                     ),
                     h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
@@ -1851,7 +1851,7 @@ window.SelHub = window.SelHub || {
 
         advocacyScriptsContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFA4 Self-Advocacy Practice Scripts'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Fill in the blanks to create a script, then practice saying it out loud.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } }, 'Fill in the blanks to create a script, then practice saying it out loud.'),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
             'Script ' + ((sasIdx % sasScripts.length) + 1) + ' of ' + sasScripts.length + (sasCompleted > 0 ? ' \u00B7 ' + sasCompleted + ' practiced' : '')
           ),
@@ -1870,14 +1870,14 @@ window.SelHub = window.SelHub || {
           // Situation card
           h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSas.title),
-            h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } }, curSas.situation)
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, curSas.situation)
           ),
           // Fill-in-the-blank area
           h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
             h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Fill In Your Script'),
             curSas.blanks.map(function(blank, bi) {
               return h('div', { key: bi, style: { marginBottom: 10 } },
-                h('label', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 4 } }, blank.label),
+                h('label', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: 4 } }, blank.label),
                 h('input', {
                   type: 'text',
                   'aria-label': blank.label + ' advocacy response',
@@ -1914,7 +1914,7 @@ window.SelHub = window.SelHub || {
           sasPracticeMode && sasAllFilled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid #f59e0b44', marginBottom: 16, textAlign: 'center' } },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 32, marginBottom: 8 } }, '\uD83C\uDFA4'),
             h('p', { style: { fontSize: 14, fontWeight: 700, color: '#f59e0b', marginBottom: 8 } }, 'Practice Mode'),
-            h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } }, 'Read the script out loud. Practice until it feels natural. Try it with different tones: confident, calm, and firm.'),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } }, 'Read the script out loud. Practice until it feels natural. Try it with different tones: confident, calm, and firm.'),
             h('p', { style: { fontSize: 16, color: '#f1f5f9', lineHeight: 2, padding: '12px 16px', background: '#1e293b', borderRadius: 10, fontStyle: 'italic' } },
               '\u201C' + buildSasScript(curSas, sasParts) + '\u201D'
             ),
@@ -2004,13 +2004,13 @@ window.SelHub = window.SelHub || {
 
         assessmentContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCB Advocacy Strength Assessment'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Rate each statement honestly. There are no right or wrong answers \u2014 this is about self-awareness.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } }, 'Rate each statement honestly. There are no right or wrong answers \u2014 this is about self-awareness.'),
 
           // If results are showing
           assessDone && assessResults && h('div', null,
             h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
               h('div', { style: { fontSize: 36, fontWeight: 700, color: ACCENT } }, assessResults.totalScore + ' / ' + assessResults.totalMax),
-              h('div', { style: { fontSize: 13, color: '#94a3b8', marginTop: 4 } }, 'Overall Advocacy Strength Score'),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 4 } }, 'Overall Advocacy Strength Score'),
               h('div', { style: { height: 8, borderRadius: 4, background: '#1e293b', marginTop: 12 } },
                 h('div', { style: { height: '100%', borderRadius: 4, background: assessResults.totalScore / assessResults.totalMax >= 0.7 ? '#22c55e' : assessResults.totalScore / assessResults.totalMax >= 0.4 ? '#f59e0b' : '#ef4444', width: Math.round((assessResults.totalScore / assessResults.totalMax) * 100) + '%', transition: 'width 0.4s' } })
               )
@@ -2119,7 +2119,7 @@ window.SelHub = window.SelHub || {
 
         lettersContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2709\uFE0F Letter & Email Builder'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Build a formal advocacy letter you can actually send. Fill in the fields and export.'),
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } }, 'Build a formal advocacy letter you can actually send. Fill in the fields and export.'),
           // Template selector
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
             LETTER_TEMPLATES.map(function(lt, li) {
@@ -2140,12 +2140,12 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 20 } }, curLt.icon),
               h('div', null,
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, curLt.title),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Fill in each field below')
+                h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Fill in each field below')
               )
             ),
             curLt.fields.map(function(field, fi) {
               return h('div', { key: fi, style: { marginBottom: 10 } },
-                h('label', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 4 } }, field.label),
+                h('label', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: 4 } }, field.label),
                 h('textarea', {
                   value: ltFields[field.key] || '',
                   'aria-label': field.label,
@@ -2237,14 +2237,14 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
           h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
-            h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
+            h('div', { style: { fontSize: 13, color: '#cbd5e1' } }, 'Total Activities Completed')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10, marginBottom: 20 } },
             stats.map(function(s) {
               return h('div', { key: s.label, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' } },
                 h('div', { style: { fontSize: 22 } }, s.icon),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.label)
+                h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, s.label)
               );
             })
           ),

@@ -669,7 +669,7 @@ window.SelHub = window.SelHub || {
             },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1' } }, popBadge.desc)
             )
           );
         }
@@ -695,7 +695,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 4 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, b.desc)
+                  h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } }, b.desc)
                 );
               })
             )
@@ -721,7 +721,7 @@ window.SelHub = window.SelHub || {
 
         dtContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF33 Decision Tree'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
             'Walk through a structured decision-making process step by step.'
           ),
           // Scenario counter
@@ -765,7 +765,7 @@ window.SelHub = window.SelHub || {
           // Step 1: Identify values at stake
           dtStep === 1 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDC9C What values are at stake?'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Select all the values that are involved in this decision:'),
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 12 } }, 'Select all the values that are involved in this decision:'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
               ['honesty', 'kindness', 'fairness', 'loyalty', 'courage', 'respect', 'responsibility', 'safety', 'inclusion', 'integrity', 'compassion', 'independence', 'generosity', 'self-care'].map(function(v) {
                 var selected = dtValues.indexOf(v) >= 0;
@@ -802,7 +802,7 @@ window.SelHub = window.SelHub || {
           // Step 2: Consider options
           dtStep === 2 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDD00 What are your options?'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Think about what you could do. Here are some possibilities:'),
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 12 } }, 'Think about what you could do. Here are some possibilities:'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
               curDt.options.map(function(opt, i) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
@@ -825,7 +825,7 @@ window.SelHub = window.SelHub || {
           // Step 3: Make your choice
           dtStep === 3 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\u2705 What would you choose?'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Pick the option that best aligns with the values you identified:'),
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 12 } }, 'Pick the option that best aligns with the values you identified:'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
               curDt.options.map(function(opt, i) {
                 var isChosen = dtChoice === i;
@@ -854,7 +854,7 @@ window.SelHub = window.SelHub || {
           // Step 4: Reflect with AI
           dtStep === 4 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDCAD Reflect on your choice'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
               'You chose: "' + curDt.options[dtChoice] + '". Why? What might happen as a result?'
             ),
             h('textarea', {
@@ -945,7 +945,7 @@ window.SelHub = window.SelHub || {
 
         edContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2696\uFE0F Ethical Dilemmas'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
             'No clear right answer \u2014 weigh competing values and defend your reasoning.'
           ),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
@@ -1073,7 +1073,7 @@ window.SelHub = window.SelHub || {
 
         csContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD17 Consequence Map'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
             'Trace the ripple effects of a choice across time and people.'
           ),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
@@ -1088,7 +1088,7 @@ window.SelHub = window.SelHub || {
               curCs.affectedPeople.map(function(p) {
                 return h('span', {
                   key: p,
-                  style: { fontSize: 10, color: '#94a3b8', background: '#1e293b', padding: '3px 8px', borderRadius: 6 }
+                  style: { fontSize: 10, color: '#cbd5e1', background: '#1e293b', padding: '3px 8px', borderRadius: 6 }
                 }, '\uD83D\uDC64 ' + p);
               })
             )
@@ -1177,7 +1177,7 @@ window.SelHub = window.SelHub || {
 
         biasContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83E\uDDE0 Bias Check'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
             'Learn to recognize the thinking traps that lead to bad decisions.'
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
@@ -1201,7 +1201,7 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { fontSize: 40, marginBottom: 8 } }, curBias.icon),
             h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, curBias.simple),
-            h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'Tap to learn about this thinking trap')
+            h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Tap to learn about this thinking trap')
           ),
           // Revealed bias detail
           biasRevealed && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
@@ -1290,7 +1290,7 @@ window.SelHub = window.SelHub || {
 
         vsContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDCCF Values Sort'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
             'Rank these values from MOST to LEAST important for this situation. There are no wrong answers!'
           ),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
@@ -1381,7 +1381,7 @@ window.SelHub = window.SelHub || {
 
         rwContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF0D Real-World Decisions'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12 } },
             'Study real decisions that changed history. What would YOU have done?'
           ),
           h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
@@ -1507,7 +1507,7 @@ window.SelHub = window.SelHub || {
 
         compassContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83E\uDDED Moral Compass'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
             allAnswered && !mcDone
               ? 'All questions answered! See your results below.'
               : mcDone
@@ -1518,7 +1518,7 @@ window.SelHub = window.SelHub || {
           // Progress bar
           !mcDone && h('div', { style: { marginBottom: 16 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: '#94a3b8' } }, answeredCount + ' of ' + mcStatements.length),
+              h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, answeredCount + ' of ' + mcStatements.length),
               h('span', { style: { fontSize: 11, color: ACCENT } }, Math.round((answeredCount / mcStatements.length) * 100) + '%')
             ),
             h('div', { style: { height: 6, borderRadius: 3, background: '#334155', overflow: 'hidden' } },
@@ -1680,7 +1680,7 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'advisor') {
         advContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2728 Decision Advisor'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
             'Describe a real decision you\'re facing and get structured thinking tools to help.'
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
@@ -1760,7 +1760,7 @@ window.SelHub = window.SelHub || {
           // Total
           h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
-            h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
+            h('div', { style: { fontSize: 13, color: '#cbd5e1' } }, 'Total Activities Completed')
           ),
           // Stats grid
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
@@ -1771,7 +1771,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 24 } }, s.icon),
                 h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
+                h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, s.label)
               );
             })
           ),

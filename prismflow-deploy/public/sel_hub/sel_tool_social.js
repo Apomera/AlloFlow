@@ -1031,7 +1031,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: '#0ea5e9', fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -1077,7 +1077,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDDE3\uFE0F What Would You Say?' : '\uD83D\uDDE3\uFE0F Conversation Practice'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read the situation and think about what you would say!' :
             'Practice responding to real social situations. Think before you speak!'
           ),
@@ -1190,7 +1190,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDC42 Be a Good Listener!' : '\uD83D\uDC42 Active Listening Lab'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read what someone says, then pick the BEST way to respond!' :
             'Identify which response demonstrates stronger active listening skills.'
           ),
@@ -1234,11 +1234,11 @@ window.SelHub = window.SelHub || {
               ),
               h('div', null,
                 h('p', { style: { fontSize: 10, color: '#ef4444', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Weaker response:'),
-                h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' } }, '"' + currentListen.badResponse + '"')
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } }, '"' + currentListen.badResponse + '"')
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 10, padding: '8px 12px', borderRadius: 8, background: '#0ea5e912' } },
                 h('p', { style: { fontSize: 11, color: '#38bdf8', fontWeight: 700, marginBottom: 2 } }, '\uD83C\uDFAF Skill: ' + currentListen.skill),
-                h('p', { style: { fontSize: 12, color: '#94a3b8', margin: 0, lineHeight: 1.4 } },
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', margin: 0, lineHeight: 1.4 } },
                   band === 'elementary' ? 'The better response shows you were REALLY listening \u2014 not just waiting for your turn to talk!' :
                   'Active listening means reflecting, validating, and staying focused on the speaker \u2014 not redirecting to yourself.'
                 )
@@ -1273,7 +1273,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
               band === 'elementary' ? '\uD83D\uDC40 Reading Body Language' : '\uD83D\uDC40 Body Language Guide'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'People say a LOT without using words! Learn to read body clues.' :
               'Over 70% of communication is non-verbal. Learn to read the signals.'
             ),
@@ -1334,7 +1334,7 @@ window.SelHub = window.SelHub || {
           var currentQuiz = BL_QUIZ[blQuizIdx % BL_QUIZ.length];
           bodyContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83E\uDDE9 Body Language Quiz'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
               'Read the description and identify the body language type.'
             ),
             blToggle,
@@ -1372,7 +1372,7 @@ window.SelHub = window.SelHub || {
                     h('p', { style: { fontSize: 16, fontWeight: 700, color: blQuizAnswer === currentQuiz.answer ? '#22c55e' : '#ef4444' } },
                       blQuizAnswer === currentQuiz.answer ? '\u2705 Correct!' : 'Not quite!'
                     ),
-                    blQuizAnswer !== currentQuiz.answer && h('p', { style: { fontSize: 13, color: '#94a3b8' } },
+                    blQuizAnswer !== currentQuiz.answer && h('p', { style: { fontSize: 13, color: '#cbd5e1' } },
                       'The answer was: ' + (BODY_LANGUAGE.find(function(b) { return b.id === currentQuiz.answer; }) || {}).label
                     )
                   ),
@@ -1397,7 +1397,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83E\uDD1D Working Together!' : '\uD83E\uDD1D Cooperation Scenarios'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Pick the BEST way to handle this teamwork situation!' :
             'Choose the most effective cooperative response. Look for the "best" option!'
           ),
@@ -1462,10 +1462,10 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 700, color: colorMap[choice.quality] } }, labelMap[choice.quality]),
-                    isChosen && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', fontWeight: 600 } }, '\u2190 Your choice')
+                    isChosen && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1', fontWeight: 600 } }, '\u2190 Your choice')
                   ),
                   h('p', { style: { fontSize: 12, color: '#e2e8f0', margin: '0 0 4px', lineHeight: 1.4 } }, choice.text),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', margin: 0, fontStyle: 'italic', lineHeight: 1.4 } }, choice.feedback)
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: 0, fontStyle: 'italic', lineHeight: 1.4 } }, choice.feedback)
                 );
               })
             ),
@@ -1486,7 +1486,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDC9B All About Friends!' : '\uD83D\uDC9B Friendship Skills'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Learn how to make friends, keep friends, and fix problems!' :
             'Evidence-based strategies for building and maintaining healthy relationships.'
           ),
@@ -1555,7 +1555,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             '\uD83C\uDFAC Conversation Simulator'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Practice real conversations step by step! Pick what you\u2019d say.' :
             band === 'middle' ? 'Navigate branching conversations. Every choice matters.' :
             'Practice high-stakes conversations with branching dialogue trees.'
@@ -1579,7 +1579,7 @@ window.SelHub = window.SelHub || {
                 h('span', { style: { fontSize: 10, color: '#64748b' } }, 'Tone: ' + (opt ? opt.tone : '?'))
               ),
               h('p', { style: { fontSize: 12, color: '#e2e8f0', margin: '0 0 4px', lineHeight: 1.4 } }, opt ? opt.text : ''),
-              h('p', { style: { fontSize: 11, color: '#94a3b8', margin: 0, fontStyle: 'italic' } }, opt ? opt.feedback : '')
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: 0, fontStyle: 'italic' } }, opt ? opt.feedback : '')
             );
           });
 
@@ -1593,7 +1593,7 @@ window.SelHub = window.SelHub || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid #0ea5e944', marginBottom: 16 } },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 40, marginBottom: 8 } }, strongCount >= 3 ? '\uD83C\uDF1F' : strongCount >= 2 ? '\uD83D\uDC4D' : '\uD83D\uDCAA'),
               h('h4', { style: { color: '#f1f5f9', margin: '0 0 4px', fontSize: 16 } }, 'Conversation Complete!'),
-              h('p', { style: { color: '#94a3b8', fontSize: 12, margin: 0 } }, strongCount + '/' + currentSim.branches.length + ' strong responses')
+              h('p', { style: { color: '#cbd5e1', fontSize: 12, margin: 0 } }, strongCount + '/' + currentSim.branches.length + ' strong responses')
             ),
             h('div', null, summaryItems),
             h('button', { 'aria-label': 'Next Scenario',
@@ -1685,7 +1685,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
               '\uD83D\uDD75\uFE0F Body Language Reader'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Learn what people\u2019s bodies are telling you!' :
               band === 'middle' ? 'Decode non-verbal cues to understand what people really mean.' :
               'Advanced non-verbal communication: cultural context, professional signals, and micro-expressions.'
@@ -1746,7 +1746,7 @@ window.SelHub = window.SelHub || {
 
           blReaderContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83E\uDDE9 Body Language Matching Quiz'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } }, 'Match the scenario to the body language cue!'),
+            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 4 } }, 'Match the scenario to the body language cue!'),
             blrToggle,
             h('p', { style: { color: '#64748b', fontSize: 11, marginBottom: 16 } }, 'Score: ' + blrQuizScore + '/' + blrQuizTotal),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid #8b5cf644', marginBottom: 16 } },
@@ -1776,7 +1776,7 @@ window.SelHub = window.SelHub || {
                     h('p', { style: { fontSize: 16, fontWeight: 700, color: blrQuizAnswer === blrQ.answer ? '#22c55e' : '#ef4444' } },
                       blrQuizAnswer === blrQ.answer ? '\u2705 Correct!' : 'Not quite!'
                     ),
-                    blrQuizAnswer !== blrQ.answer && h('p', { style: { fontSize: 13, color: '#94a3b8' } },
+                    blrQuizAnswer !== blrQ.answer && h('p', { style: { fontSize: 13, color: '#cbd5e1' } },
                       'The answer was: ' + (blrCueMap[blrQ.answer] ? blrCueMap[blrQ.answer].cue : blrQ.answer)
                     ),
                     blrCueMap[blrQ.answer] && h('p', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 8, lineHeight: 1.5 } },
@@ -1804,7 +1804,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             '\uD83C\uDFA7 Active Listening Challenge'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Someone is talking to you. Show them you REALLY heard them!' :
             band === 'middle' ? 'Practice paraphrasing, reflecting, clarifying, and summarizing.' :
             'Develop advanced active listening: hold complexity, name subtext, and create safety.'
@@ -1835,7 +1835,7 @@ window.SelHub = window.SelHub || {
           // Good starters hint
           !ldRevealed && h('div', { style: { marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: '#22c55e08', border: '1px solid #22c55e22' } },
             h('p', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700, marginBottom: 2 } }, '\uD83D\uDCA1 Try starting with:'),
-            h('p', { style: { fontSize: 11, color: '#94a3b8', margin: 0 } }, currentLd.goodStarters.join('  \u2022  '))
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: 0 } }, currentLd.goodStarters.join('  \u2022  '))
           ),
 
           // Input
@@ -1957,7 +1957,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
               '\uD83E\uDE7A Friendship Health Check'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
               band === 'elementary' ? 'How good of a friend are you? Be honest \u2014 there are no wrong answers!' :
               band === 'middle' ? 'Rate yourself honestly on these friendship skills. Self-awareness is the first step to growth.' :
               'Assess your relational competencies. Honesty with yourself is the highest form of social intelligence.'
@@ -2040,7 +2040,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center', padding: 24, borderRadius: 16, background: '#0f172a', border: '1px solid #0ea5e944', marginBottom: 20 } },
               h('div', { style: { fontSize: 48, marginBottom: 8 } }, ratingEmoji),
               h('h4', { style: { color: '#f1f5f9', margin: '0 0 4px', fontSize: 18 } }, rating),
-              h('p', { style: { color: '#94a3b8', fontSize: 13, margin: 0 } }, 'Score: ' + scoreTotal + '/' + maxScore + ' (' + pct + '%)')
+              h('p', { style: { color: '#cbd5e1', fontSize: 13, margin: 0 } }, 'Score: ' + scoreTotal + '/' + maxScore + ' (' + pct + '%)')
             ),
 
             // Strengths
@@ -2054,7 +2054,7 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: 16 } }, st.icon),
                       h('span', { style: { fontSize: 12, fontWeight: 700, color: '#22c55e' } }, st.text)
                     ),
-                    tip && h('p', { style: { fontSize: 11, color: '#94a3b8', margin: 0, fontStyle: 'italic' } }, tip.strength)
+                    tip && h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: 0, fontStyle: 'italic' } }, tip.strength)
                   );
                 })
               )
@@ -2083,7 +2083,7 @@ window.SelHub = window.SelHub || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
               h('button', { 'aria-label': 'Retake',
                 onClick: function() { upd({ fhAnswers: {}, fhShowResults: false, fhDone: false }); },
-                style: { flex: 1, padding: '12px 0', borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { flex: 1, padding: '12px 0', borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDD04 Retake'),
               h('button', { 'aria-label': 'Back to Questions',
                 onClick: function() { upd('fhShowResults', false); },
@@ -2125,21 +2125,21 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 } },
                   h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 24, fontWeight: 800, color: '#0ea5e9' } }, streak),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Day Streak')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 24, fontWeight: 800, color: '#22c55e' } }, total),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Total Practices')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Total Practices')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 24, fontWeight: 800, color: '#f59e0b' } }, Object.keys(daySet).length),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Active')
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Days Active')
                   )
                 ),
 
                 // Type breakdown
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, 'Practice Areas'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } }, 'Practice Areas'),
                   [
                     { key: 'convo', label: 'Conversation', emoji: '\uD83D\uDDE3\uFE0F', color: '#0ea5e9' },
                     { key: 'sim', label: 'Simulator', emoji: '\uD83C\uDFAC', color: '#a78bfa' },
@@ -2156,7 +2156,7 @@ window.SelHub = window.SelHub || {
                     var pct = total > 0 ? (count / total * 100) : 0;
                     return h('div', { key: typ.key, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                       h('span', { style: { fontSize: 14, width: 20, textAlign: 'center', flexShrink: 0 } }, typ.emoji),
-                      h('span', { style: { fontSize: 11, color: '#94a3b8', width: 80, flexShrink: 0 } }, typ.label),
+                      h('span', { style: { fontSize: 11, color: '#cbd5e1', width: 80, flexShrink: 0 } }, typ.label),
                       h('div', { style: { flex: 1, height: 12, borderRadius: 6, background: '#0f172a', overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: pct + '%', background: typ.color, borderRadius: 6, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
                       ),
@@ -2167,7 +2167,7 @@ window.SelHub = window.SelHub || {
 
                 // Recent log
                 h('div', null,
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Recent Activity'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Recent Activity'),
                   practiceLog.slice().reverse().slice(0, 8).map(function(entry, i) {
                     var labels = { convo: '\uD83D\uDDE3\uFE0F Conversation', sim: '\uD83C\uDFAC Simulator', listen: '\uD83D\uDC42 Listening', listenDeep: '\uD83C\uDFA7 Deep Listen', body: '\uD83D\uDC40 Body Language', body_quiz: '\uD83E\uDDE9 BL Quiz', blReader: '\uD83D\uDD75\uFE0F BL Reader', blr_quiz: '\uD83C\uDFAF BLR Quiz', coop: '\uD83E\uDD1D Cooperation', healthChk: '\uD83E\uDE7A Health Check' };
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#0f172a', marginBottom: 4 } },

@@ -238,6 +238,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'The 3-second rule is used to determine:', a: ['Maximum legal speed', 'Minimum safe following distance', 'Reaction time after braking', 'Turn signal duration'], correct: 1, exp: '3-second rule: pick a fixed landmark. When the car ahead passes it, count "1-Mississippi, 2-Mississippi, 3-Mississippi." You should reach it no sooner. Increase to 4+ in rain/snow.' },
     { q: 'Your right front tire drops off the pavement edge. You should:', a: ['Jerk the wheel left immediately', 'Hold the wheel firmly, ease off the gas, and gradually return when safe', 'Slam the brakes', 'Speed up to climb back up'], correct: 1, exp: 'Jerking left can cause you to cross oncoming traffic. Grip firmly, ease off gas, wait until the road edge is safe to re-enter, then steer gently back.' },
     { q: 'In Maine, you must give cyclists at least how much space when passing?', a: ['1 foot', '2 feet', '3 feet', '6 feet'], correct: 2, exp: 'Maine law (2015) requires a minimum 3 feet of space when passing a cyclist. Crossing a double yellow to do so is legal if safe.' },
+    { q: 'When making a lane change, you should signal:', a: ['While changing lanes', 'At least 100 feet before the change', 'Only if other cars are close', 'Never on empty roads'], correct: 1, exp: 'Signal at least 100 feet before any lane change. This gives following drivers time to react. Check mirrors AND blind spots before moving.' },
+    { q: 'What is the correct procedure for a 3-point turn?', a: ['Turn left, reverse right, drive forward', 'Make a U-turn across all lanes', 'Back up in a straight line', 'Turn right, reverse left, drive forward'], correct: 0, exp: 'A 3-point turn (K-turn): (1) Turn wheel left, drive forward to far curb. (2) Turn wheel right, reverse to near curb. (3) Straighten, drive forward in new direction.' },
+    { q: 'The friction circle concept teaches you to:', a: ['Always brake and turn at the same time', 'Use grip for braking OR steering, but not both at full', 'Drive only in circles', 'Ignore ABS warnings'], correct: 1, exp: 'Your tires have a total grip budget (the friction circle). If you use 100% for braking, 0% is left for steering — and vice versa. This is why you brake BEFORE a turn, not during.' },
     { q: 'You approach a railroad crossing and the gates begin to lower as you arrive. You should:', a: ['Go around the gates quickly', 'Stop and wait — never drive around lowered gates', 'Speed up to beat the train', 'Honk and proceed'], correct: 1, exp: 'NEVER go around lowered gates. Trains can take a mile to stop. A stuck gate means call the number on the crossbuck or 911.' },
     { q: 'The primary purpose of antilock brakes (ABS) is to:', a: ['Stop the car faster on all surfaces', 'Allow you to steer while braking hard', 'Replace the handbrake', 'Prevent tire wear'], correct: 1, exp: 'ABS pulses the brakes so wheels do not lock. Locked wheels cannot steer. ABS may not always stop you faster, but it keeps the steering alive.' },
     { q: 'When driving in heavy fog, you should use:', a: ['High beams', 'Low beams and/or fog lights', 'Hazard lights while moving', 'Parking lights only'], correct: 1, exp: 'High beams reflect off fog and reduce visibility. Use LOW beams and fog lights. Hazards while driving are illegal in most states — reserved for actual hazards.' },
@@ -622,6 +625,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }];
   }
 
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9e: ACHIEVEMENTS
+  // ─────────────────────────────────────────────────────────
+
+  var ACHIEVEMENTS = [
+    { id: 'first_drive', icon: '🔑', name: 'First Drive', desc: 'Complete your first drive session.' },
+    { id: 'no_crash', icon: '🛡️', name: 'No Scratch', desc: 'Complete a drive with zero crashes.' },
+    { id: 'eco_warrior', icon: '🌿', name: 'Eco Warrior', desc: 'Achieve efficiency score 90+.' },
+    { id: 'safety_star', icon: '⭐', name: 'Safety Star', desc: 'Achieve safety score 95+.' },
+    { id: 'a_plus', icon: '🏆', name: 'A+ Driver', desc: 'Earn an A+ grade on any drive.' },
+    { id: 'permit_pass', icon: '📝', name: 'Test Ready', desc: 'Pass the permit test (80%+).' },
+    { id: 'night_owl', icon: '🦉', name: 'Night Owl', desc: 'Complete a night drive with safety 80+.' },
+    { id: 'winter_warrior', icon: '❄️', name: 'Winter Warrior', desc: 'Complete the Snow scenario with safety 70+.' },
+    { id: 'hypermiler', icon: '⛽', name: 'Hypermiler', desc: 'Beat the EPA city MPG rating in a drive.' },
+    { id: 'full_stop', icon: '🛑', name: 'Full Stop', desc: 'Make 3+ full stops at stop signs in one drive.' },
+    { id: 'signal_perfect', icon: '◄►', name: 'Signal Perfect', desc: 'Complete a drive with zero unsignaled lane changes.' },
+    { id: 'park_master', icon: '🅿️', name: 'Park Master', desc: 'Parallel park with score 80+.' },
+    { id: 'three_point', icon: '↩️', name: 'K-Turn Pro', desc: 'Complete 3-point turn with score 80+.' },
+    { id: 'speed_demon', icon: '🏎️', name: 'Speed Demon', desc: 'Hit 80+ mph (not recommended in real life!).' },
+    { id: 'moose_dodge', icon: '🫎', name: 'Moose Dodge', desc: 'Encounter a moose and NOT hit it.' },
+    { id: 'five_scenarios', icon: '🗺️', name: 'Explorer', desc: 'Drive in 5 different scenarios.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9f: EMERGENCY VEHICLES
+  // ─────────────────────────────────────────────────────────
+
+  function maybeSpawnEmergency(scenario, time) {
+    if (time < 15) return null; // give player time to settle
+    if (Math.random() > 0.002) return null; // rare
+    var types = [
+      { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800 },
+      { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600 },
+      { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000 }
+    ];
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
   // Traffic signals — placed at intersections along the main road.
   // Cycle: green → yellow → red → green. Yellow gives the driver decision time.
   function spawnSignals(scenario) {
@@ -904,6 +945,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
 
   // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9d: 3-POINT TURN MODE (2D top-down)
+  // ─────────────────────────────────────────────────────────
+  // Reverse direction on a narrow road without hitting curbs.
+
+  function ThreePointMode(props) {
+    var React = props.React;
+    var h = props.h;
+    var useEffect = React.useEffect;
+    var useRef = React.useRef;
+    var useState = React.useState;
+    var canvasRef = useRef(null);
+    var carRef = useRef({ x: 460, y: 240, heading: 0, speed: 0, steering: 0 });
+    var keysRef = useRef({});
+    var animRef = useRef(null);
+    var stageRef = useRef(0);
+    var doneRef = useRef(false);
+    var fb = useState('Step 1: Turn the wheel FULL LEFT. Drive forward slowly until your front bumper nears the far curb.');
+    var fbText = fb[0]; var setFb = fb[1];
+    var st = useState({ score: 100, hits: 0, done: false });
+    var stVal = st[0]; var setSt = st[1];
+
+    var ROAD_TOP = 140;
+    var ROAD_BOT = 340;
+    var CURB_W = 8;
+
+    var STEPS = [
+      'Step 1: Turn the wheel FULL LEFT. Drive forward slowly until your front nears the far curb. STOP.',
+      'Step 2: Now shift to REVERSE (S/Shift). Turn wheel FULL RIGHT. Back slowly toward the near curb. STOP.',
+      'Step 3: Shift to DRIVE (W). Steer straight or slightly left. Drive forward — you should now be facing the opposite direction.',
+      '✅ 3-POINT TURN COMPLETE! Score: '
+    ];
+
+    useEffect(function() {
+      var onD = function(e) {
+        keysRef.current[e.key.toLowerCase()] = true;
+        if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+        if (e.key.toLowerCase() === 'r') resetCar();
+      };
+      var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
+      window.addEventListener('keydown', onD);
+      window.addEventListener('keyup', onU);
+      return function() { window.removeEventListener('keydown', onD); window.removeEventListener('keyup', onU); };
+    }, []);
+
+    function resetCar() {
+      carRef.current = { x: 460, y: 240, heading: 0, speed: 0, steering: 0 };
+      stageRef.current = 0;
+      doneRef.current = false;
+      setSt({ score: 100, hits: 0, done: false });
+      setFb(STEPS[0]);
+    }
+
+    useEffect(function() {
+      var canvas = canvasRef.current;
+      if (!canvas) return;
+      var gfx = canvas.getContext('2d');
+
+      var step = function() {
+        if (!doneRef.current) update();
+        render();
+        animRef.current = requestAnimationFrame(step);
+      };
+
+      var update = function() {
+        var car = carRef.current;
+        var k = keysRef.current;
+        var fwd = (k['w'] || k['arrowup']) ? 1 : 0;
+        var rev = (k['s'] || k['arrowdown'] || k['shift']) ? 1 : 0;
+        var left = (k['a'] || k['arrowleft']) ? 1 : 0;
+        var right = (k['d'] || k['arrowright']) ? 1 : 0;
+        var steerTarget = (right - left) * 0.7;
+        car.steering += (steerTarget - car.steering) * 0.15;
+        var accel = (fwd - rev) * 30;
+        car.speed += accel * 0.016;
+        car.speed *= 0.92;
+        if (car.speed > 50) car.speed = 50;
+        if (car.speed < -35) car.speed = -35;
+        var turnRate = car.steering * (car.speed / 30) * 1.4;
+        car.heading += turnRate * 0.016;
+        car.x += Math.cos(car.heading) * car.speed * 0.016;
+        car.y += Math.sin(car.heading) * car.speed * 0.016;
+        // Curb collisions
+        if (car.y < ROAD_TOP + 14 || car.y > ROAD_BOT - 14) {
+          if (Math.abs(car.speed) > 3) {
+            var ns = Object.assign({}, stVal);
+            ns.score -= 15; ns.hits++;
+            setSt(ns);
+            setFb('💥 Curb hit! -15. Slow down near the edge. Press R to reset.');
+          }
+          car.speed *= -0.2;
+          car.y = Math.max(ROAD_TOP + 15, Math.min(ROAD_BOT - 15, car.y));
+        }
+        // Left/right bounds
+        if (car.x < 30) { car.x = 30; car.speed *= 0.2; }
+        if (car.x > 620) { car.x = 620; car.speed *= 0.2; }
+        // Stage progression
+        var headDeg = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
+        if (stageRef.current === 0 && car.y < ROAD_TOP + 40 && Math.abs(car.speed) < 2) {
+          stageRef.current = 1; setFb(STEPS[1]);
+        } else if (stageRef.current === 1 && car.y > ROAD_BOT - 40 && Math.abs(car.speed) < 2) {
+          stageRef.current = 2; setFb(STEPS[2]);
+        } else if (stageRef.current === 2 && headDeg > 150 && headDeg < 210 && Math.abs(car.speed) < 3) {
+          stageRef.current = 3;
+          doneRef.current = true;
+          var ns2 = Object.assign({}, stVal);
+          ns2.done = true;
+          setSt(ns2);
+          setFb(STEPS[3] + ns2.score + '/100 (' + ns2.hits + ' hits)');
+        }
+      };
+
+      var render = function() {
+        var W = canvas.width = canvas.offsetWidth;
+        var H = canvas.height = 480;
+        // Background
+        gfx.fillStyle = '#166534'; gfx.fillRect(0, 0, W, H);
+        // Road
+        gfx.fillStyle = '#334155'; gfx.fillRect(0, ROAD_TOP, W, ROAD_BOT - ROAD_TOP);
+        // Curbs
+        gfx.fillStyle = '#fbbf24';
+        gfx.fillRect(0, ROAD_TOP, W, CURB_W);
+        gfx.fillRect(0, ROAD_BOT - CURB_W, W, CURB_W);
+        // Center dashes
+        gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.setLineDash([20, 20]);
+        gfx.beginPath(); gfx.moveTo(0, (ROAD_TOP + ROAD_BOT) / 2); gfx.lineTo(W, (ROAD_TOP + ROAD_BOT) / 2); gfx.stroke();
+        gfx.setLineDash([]);
+        // Direction arrow showing target
+        gfx.fillStyle = 'rgba(74,222,128,0.3)';
+        gfx.beginPath(); gfx.moveTo(100, (ROAD_TOP + ROAD_BOT) / 2 - 20); gfx.lineTo(50, (ROAD_TOP + ROAD_BOT) / 2); gfx.lineTo(100, (ROAD_TOP + ROAD_BOT) / 2 + 20); gfx.fill();
+        gfx.fillStyle = '#4ade80'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
+        gfx.fillText('Target: face this way ←', 120, (ROAD_TOP + ROAD_BOT) / 2 + 4);
+        // Car
+        var car = carRef.current;
+        gfx.save();
+        gfx.translate(car.x, car.y);
+        gfx.rotate(car.heading);
+        gfx.fillStyle = '#ec4899';
+        gfx.fillRect(-30, -14, 60, 28);
+        gfx.fillStyle = '#831843';
+        gfx.fillRect(-24, -11, 16, 22);
+        // Reverse lights
+        if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(25, -10, 6, 6); gfx.fillRect(25, 4, 6, 6); }
+        // Steering indicator
+        gfx.save(); gfx.translate(-18, 0); gfx.rotate(car.steering);
+        gfx.fillStyle = '#0f172a'; gfx.fillRect(-3, -9, 6, 18);
+        gfx.restore();
+        gfx.restore();
+        // HUD
+        gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(10, 10, 300, 50);
+        gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
+        gfx.fillText('↩️ 3-Point Turn Trainer', 20, 28);
+        gfx.fillStyle = '#ec4899'; gfx.font = '10px system-ui';
+        gfx.fillText('Score: ' + stVal.score + ' · Hits: ' + stVal.hits + (stVal.done ? ' · ✓ DONE' : ' · Step ' + (stageRef.current + 1)), 20, 44);
+        gfx.fillStyle = '#94a3b8';
+        gfx.fillText('W=fwd  S/Shift=reverse  A/D=steer  R=reset', 20, 56);
+      };
+
+      animRef.current = requestAnimationFrame(step);
+      return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    }, [stVal]);
+
+    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+      h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+      h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '10px', border: '1px solid #ec4899' } },
+        h('canvas', { ref: canvasRef, style: { width: '100%', height: '480px', display: 'block', borderRadius: '8px', background: '#1e293b' } })
+      ),
+      h('div', { style: { marginTop: '10px', padding: '12px', background: '#0f172a', borderRadius: '10px', border: '1px solid #334155' } },
+        h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
+        h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' } }, fbText),
+        h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#64748b' } }, 'Tip: On the Maine road test, examiner checks that you complete the turn in exactly 3 moves without hitting a curb or crossing traffic. Slow is good.')
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: REGISTER TOOL & RENDER
   // ─────────────────────────────────────────────────────────
 
@@ -957,6 +1174,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
+      var blinkerRef = useRef(0); // -1 left, 0 off, 1 right
+      var blinkerTimerRef = useRef(0); // for visual blink
+      var laneChangeRef = useRef({ active: false, dir: 0, signaled: false });
+      var mpgHistoryRef = useRef([]); // last 60 MPG readings for sparkline
+      var rearviewRef = useRef(null); // canvas ref for mirror
+      var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
+      var earnedBadges = d.badges || {};
+      var scenariosDriven = d.scenariosDriven || {};
 
       // ── Input handling ──
       useEffect(function() {
@@ -970,6 +1195,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           if (e.key.toLowerCase() === 'h') showHUDRef.current = !showHUDRef.current;
           if (e.key.toLowerCase() === 'l') upd('highBeams', !d.highBeams);
+          // Turn signals: E = left, R = right, T = cancel
+          if (e.key.toLowerCase() === 'e') blinkerRef.current = blinkerRef.current === -1 ? 0 : -1;
+          if (e.key.toLowerCase() === 'r') blinkerRef.current = blinkerRef.current === 1 ? 0 : 1;
+          if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
           // Horn — quick beep on 'q'
           if (e.key.toLowerCase() === 'q') {
             try {
@@ -1026,7 +1255,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         } catch (e) { /* audio unavailable */ }
         carRef.current = { x: 32, y: 55, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0 };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0 };
+        blinkerRef.current = 0;
+        laneChangeRef.current = { lastLane: null };
+        mpgHistoryRef.current = [];
+        emergencyRef.current = null;
         lastStateRef.current = { speed: 0, accel: 0 };
         timeRef.current = 0;
         drivingRef.current = true;
@@ -1066,7 +1299,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             stops: s.stops,
             fuelUsed_gal: s.fuelUsed.toFixed(3),
             skidSeconds: Math.round(s.skidSeconds),
-            cyclistClose: s.cyclistClose
+            cyclistClose: s.cyclistClose,
+            unsignaledLaneChanges: s.unsignaledLaneChanges || 0
           }
         });
       }, [currentScenario, currentVehicle]);
@@ -1091,6 +1325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             updatePeds(dt);
             updateCyclists(dt);
             updateWildlife(dt);
+            updateEmergency(dt);
             updateAudio();
             checkSignalCompliance();
             checkCyclistPassing();
@@ -1206,6 +1441,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.safetyScore -= dt * 2;
           }
           lastStateRef.current = { speed: car.speed, accel: accel };
+
+          // Blinker timer (for visual blink)
+          blinkerTimerRef.current += dt;
+
+          // Lane change detection — if steering crosses center, check signal
+          var centerX = Math.floor(MAP_SIZE / 2);
+          var carLane = car.x < centerX ? 'left' : 'right';
+          if (!laneChangeRef.current.lastLane) laneChangeRef.current.lastLane = carLane;
+          if (carLane !== laneChangeRef.current.lastLane) {
+            var dir = carLane === 'right' ? 1 : -1;
+            if (blinkerRef.current !== dir) {
+              statsRef.current.safetyScore -= 5;
+              if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
+              statsRef.current.unsignaledLaneChanges++;
+              addToast('⚠️ Lane change without signal! -5');
+            } else {
+              addToast('✓ Signaled lane change');
+            }
+            laneChangeRef.current.lastLane = carLane;
+          }
+
+          // MPG history for sparkline (sample every 0.5s)
+          if (car.speed > 1 && mpg < 999) {
+            if (!mpgHistoryRef.current._lastSample || timeRef.current - mpgHistoryRef.current._lastSample > 0.5) {
+              mpgHistoryRef.current.push(mpg);
+              if (mpgHistoryRef.current.length > 120) mpgHistoryRef.current.shift();
+              mpgHistoryRef.current._lastSample = timeRef.current;
+            }
+          }
         };
 
         var updateTraffic = function(dt) {
@@ -1783,15 +2047,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.lineWidth = 2;
           gfx.strokeRect(0, H - 90, W, 90);
 
-          // Speedometer
+          // Analog speedometer gauge
+          var gaugeX = 60, gaugeY = H - 50, gaugeR = 38;
+          var maxGauge = Math.max(80, scn.speedLimit + 30);
+          // Arc background
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, 0, false);
+          gfx.strokeStyle = '#1e293b'; gfx.lineWidth = 6; gfx.stroke();
+          // Speed zone arcs
+          var limitAngle = Math.PI + (scn.speedLimit / maxGauge) * Math.PI;
+          var overAngle = Math.PI + (Math.min(maxGauge, scn.speedLimit + 10) / maxGauge) * Math.PI;
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false);
+          gfx.strokeStyle = '#22c55e'; gfx.lineWidth = 6; gfx.stroke();
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false);
+          gfx.strokeStyle = '#f59e0b'; gfx.lineWidth = 6; gfx.stroke();
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false);
+          gfx.strokeStyle = '#ef4444'; gfx.lineWidth = 6; gfx.stroke();
+          // Needle
+          var needleAngle = Math.PI + (Math.min(speedMph, maxGauge) / maxGauge) * Math.PI;
+          gfx.strokeStyle = '#fff'; gfx.lineWidth = 2;
+          gfx.beginPath();
+          gfx.moveTo(gaugeX, gaugeY);
+          gfx.lineTo(gaugeX + Math.cos(needleAngle) * (gaugeR - 8), gaugeY + Math.sin(needleAngle) * (gaugeR - 8));
+          gfx.stroke();
+          // Center dot
+          gfx.fillStyle = '#fff'; gfx.beginPath(); gfx.arc(gaugeX, gaugeY, 3, 0, Math.PI * 2); gfx.fill();
+          // Digital readout
           gfx.fillStyle = speedMph > scn.speedLimit + 5 ? '#ef4444' : speedMph > scn.speedLimit ? '#f59e0b' : '#4ade80';
-          gfx.font = 'bold 42px monospace';
-          gfx.textAlign = 'left';
-          gfx.fillText(speedMph, 20, H - 40);
-          gfx.fillStyle = '#94a3b8';
-          gfx.font = '11px system-ui';
-          gfx.fillText('MPH', 20, H - 18);
-          gfx.fillText('LIMIT ' + scn.speedLimit, 90, H - 40);
+          gfx.font = 'bold 18px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(speedMph, gaugeX, gaugeY - 8);
+          gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui';
+          gfx.fillText('MPH', gaugeX, gaugeY + 4);
+          // Tick marks
+          for (var ti = 0; ti <= maxGauge; ti += 10) {
+            var ta = Math.PI + (ti / maxGauge) * Math.PI;
+            var tx1 = gaugeX + Math.cos(ta) * (gaugeR + 2);
+            var ty1 = gaugeY + Math.sin(ta) * (gaugeR + 2);
+            var tx2 = gaugeX + Math.cos(ta) * (gaugeR + 8);
+            var ty2 = gaugeY + Math.sin(ta) * (gaugeR + 8);
+            gfx.strokeStyle = '#64748b'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(tx1, ty1); gfx.lineTo(tx2, ty2); gfx.stroke();
+            gfx.fillStyle = '#64748b'; gfx.font = '7px monospace'; gfx.textAlign = 'center';
+            gfx.fillText(ti, gaugeX + Math.cos(ta) * (gaugeR + 14), gaugeY + Math.sin(ta) * (gaugeR + 14) + 2);
+          }
 
           // Fuel gauge
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 20px monospace'; gfx.textAlign = 'center';
@@ -1861,6 +2158,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText('LIMIT', signX + 25, signY + 24);
           gfx.font = 'bold 20px monospace';
           gfx.fillText(scn.speedLimit, signX + 25, signY + 48);
+
+          // Blinker indicators (bottom-center of HUD)
+          var blink = blinkerRef.current;
+          var blinkOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
+          if (blink !== 0 && blinkOn) {
+            gfx.fillStyle = '#22c55e';
+            gfx.font = 'bold 20px system-ui'; gfx.textAlign = 'center';
+            if (blink === -1) gfx.fillText('◄', W / 2 - 70, H - 55);
+            else gfx.fillText('►', W / 2 + 70, H - 55);
+          }
+          // Blinker labels
+          gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('E=◄  R=►  T=off', W / 2, H - 8);
+
+          // MPG sparkline (bottom-center, above HUD bar)
+          var mHist = mpgHistoryRef.current;
+          if (mHist.length > 4) {
+            var sparkW = 120, sparkH = 30;
+            var sparkX = W / 2 - sparkW / 2, sparkY = H - 132;
+            gfx.fillStyle = 'rgba(0,0,0,0.5)';
+            gfx.fillRect(sparkX - 2, sparkY - 2, sparkW + 4, sparkH + 12);
+            var sparkMax = Math.max.apply(null, mHist.filter(function(m) { return m < 999; }));
+            if (sparkMax < 1) sparkMax = 1;
+            gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 1.5;
+            gfx.beginPath();
+            for (var si = 0; si < mHist.length; si++) {
+              var sx = sparkX + (si / (mHist.length - 1)) * sparkW;
+              var sy = sparkY + sparkH - (Math.min(mHist[si], sparkMax) / sparkMax) * sparkH;
+              if (si === 0) gfx.moveTo(sx, sy); else gfx.lineTo(sx, sy);
+            }
+            gfx.stroke();
+            gfx.fillStyle = '#4ade80'; gfx.font = '8px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText('MPG', sparkX, sparkY + sparkH + 9);
+            gfx.textAlign = 'right';
+            gfx.fillText(mHist[mHist.length - 1].toFixed(0), sparkX + sparkW, sparkY + sparkH + 9);
+          }
+
+          // Rearview mirror (small rectangle at top-center showing what's behind)
+          var mirrorW = Math.min(200, W * 0.25);
+          var mirrorH = 50;
+          var mirrorX = W / 2 - mirrorW / 2;
+          var mirrorY = 74;
+          gfx.fillStyle = 'rgba(0,0,0,0.7)';
+          gfx.fillRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
+          gfx.strokeStyle = '#475569'; gfx.lineWidth = 1;
+          gfx.strokeRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
+          // Draw tiny sky/ground in mirror
+          gfx.fillStyle = isNight ? '#0a0f1e' : isFog ? '#94a3b8' : '#60a5fa';
+          gfx.fillRect(mirrorX, mirrorY, mirrorW, mirrorH / 2);
+          gfx.fillStyle = isNight ? '#0a0a14' : '#334155';
+          gfx.fillRect(mirrorX, mirrorY + mirrorH / 2, mirrorW, mirrorH / 2);
+          // Show trailing traffic in mirror
+          var rearCar = carRef.current;
+          var rearAngle = rearCar.heading + Math.PI;
+          trafficRef.current.forEach(function(t) {
+            var dx = t.x - rearCar.x;
+            var dy = t.y - rearCar.y;
+            var dist = Math.hypot(dx, dy);
+            if (dist > 15 || dist < 0.5) return;
+            var angle = Math.atan2(dy, dx) - rearAngle;
+            while (angle > Math.PI) angle -= 2 * Math.PI;
+            while (angle < -Math.PI) angle += 2 * Math.PI;
+            if (Math.abs(angle) > Math.PI / 4) return;
+            var mx = mirrorX + mirrorW / 2 + (angle / (Math.PI / 4)) * (mirrorW / 2);
+            var mSize = Math.max(4, 20 / dist);
+            gfx.fillStyle = t.color;
+            gfx.fillRect(mx - mSize / 2, mirrorY + mirrorH / 2 - mSize / 2, mSize, mSize * 0.6);
+            // Headlights in mirror
+            if (isNight) {
+              gfx.fillStyle = 'rgba(255,255,200,0.6)';
+              gfx.beginPath(); gfx.arc(mx - mSize * 0.3, mirrorY + mirrorH / 2, 1.5, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(mx + mSize * 0.3, mirrorY + mirrorH / 2, 1.5, 0, Math.PI * 2); gfx.fill();
+            }
+          });
+          // Cyclists in mirror too
+          cyclistsRef.current.forEach(function(cy) {
+            var dx = cy.x - rearCar.x;
+            var dy = cy.y - rearCar.y;
+            var dist = Math.hypot(dx, dy);
+            if (dist > 10 || dist < 0.5) return;
+            var angle = Math.atan2(dy, dx) - rearAngle;
+            while (angle > Math.PI) angle -= 2 * Math.PI;
+            while (angle < -Math.PI) angle += 2 * Math.PI;
+            if (Math.abs(angle) > Math.PI / 4) return;
+            var mx = mirrorX + mirrorW / 2 + (angle / (Math.PI / 4)) * (mirrorW / 2);
+            gfx.fillStyle = cy.type === 'motorcycle' ? '#ef4444' : '#fbbf24';
+            gfx.beginPath(); gfx.arc(mx, mirrorY + mirrorH / 2, 2.5, 0, Math.PI * 2); gfx.fill();
+          });
+          gfx.fillStyle = '#475569'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('REARVIEW', W / 2, mirrorY - 4);
         };
 
         animRef.current = requestAnimationFrame(step);
@@ -1948,6 +2335,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '🔬'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Vehicle Science'),
               h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, 'Compare specs, Cd, mass, MPG')
+            ),
+            h('button', { onClick: function() { upd('view', 'threePoint'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '↩️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, '3-Point Turn'),
+              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, 'Road-test maneuver, 2D trainer')
             )
           ),
           // Maine facts strip
@@ -2035,7 +2428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '6px 10px', borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW')
           ),
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: '#cbd5e1', fontSize: '10px', zIndex: 10 } },
-            'W/↑ Accel · S/↓ Brake · A/← Left · D/→ Right · C Camera · L Beams · Q Horn · H HUD · SPACE Pause'
+            'W/↑ Accel · S/↓ Brake · A/← Left · D/→ Right · E/R Signal · C Camera · L Beams · Q Horn · SPACE Pause'
           )
         );
       }
@@ -2198,21 +2591,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── DEBRIEF VIEW ──
       if (view === 'debrief' && drivingStats) {
-        var grade, gradeColor;
+        var gradeLabel, gradeColor, gradeLetter, gradeXP;
         var combined = (drivingStats.safetyScore + drivingStats.efficiencyScore) / 2;
-        if (combined >= 90) { grade = '🏆 Outstanding'; gradeColor = '#fbbf24'; }
-        else if (combined >= 75) { grade = '🌟 Great Drive'; gradeColor = '#4ade80'; }
-        else if (combined >= 60) { grade = '👍 Good'; gradeColor = '#60a5fa'; }
-        else if (combined >= 40) { grade = '📝 Keep Practicing'; gradeColor = '#f59e0b'; }
-        else { grade = '⚠️ More Training Needed'; gradeColor = '#ef4444'; }
+        if (combined >= 95) { gradeLabel = '🏆 Outstanding — Instructor Ready'; gradeColor = '#fbbf24'; gradeLetter = 'A+'; gradeXP = 50; }
+        else if (combined >= 90) { gradeLabel = '🏆 Excellent'; gradeColor = '#fbbf24'; gradeLetter = 'A'; gradeXP = 40; }
+        else if (combined >= 80) { gradeLabel = '🌟 Great Drive'; gradeColor = '#4ade80'; gradeLetter = 'B'; gradeXP = 30; }
+        else if (combined >= 70) { gradeLabel = '👍 Good — Room to Improve'; gradeColor = '#60a5fa'; gradeLetter = 'C'; gradeXP = 20; }
+        else if (combined >= 55) { gradeLabel = '📝 Fair — Study the Lessons'; gradeColor = '#f59e0b'; gradeLetter = 'D'; gradeXP = 10; }
+        else { gradeLabel = '⚠️ Fail — More Training Needed'; gradeColor = '#ef4444'; gradeLetter = 'F'; gradeXP = 5; }
 
         return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
           h('div', { style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '14px', padding: '24px', border: '1px solid #334155' } },
             h('div', { style: { textAlign: 'center', marginBottom: '14px' } },
               h('div', { style: { fontSize: '48px' } }, '🚗'),
               h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Drive Debrief'),
-              h('div', { style: { fontSize: '14px', color: gradeColor, fontWeight: 800, marginTop: '4px' } }, grade),
-              h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, drivingStats.scenario + ' · ' + drivingStats.vehicle)
+              h('div', { style: { fontSize: '14px', color: gradeColor, fontWeight: 800, marginTop: '4px' } }, gradeLabel),
+              h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, drivingStats.scenario + ' · ' + drivingStats.vehicle),
+              h('div', { style: { display: 'inline-flex', gap: '12px', marginTop: '8px' } },
+                h('span', { style: { padding: '4px 14px', borderRadius: '8px', background: gradeColor + '22', border: '2px solid ' + gradeColor, fontSize: '18px', fontWeight: 900, color: gradeColor } }, gradeLetter),
+                h('span', { style: { padding: '4px 12px', borderRadius: '8px', background: '#1e3a5f', border: '1px solid #3b82f6', fontSize: '12px', fontWeight: 700, color: '#60a5fa' } }, '+' + gradeXP + ' XP')
+              )
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' } },
               [['⏱️', drivingStats.time, 'Drive Time'],
@@ -2242,6 +2640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.crashes === 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '✅ Zero crashes! That is the baseline real drivers are measured against.') : null,
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
                 drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
+                drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, R=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
                 parseFloat(drivingStats.avgMPG) > currentVehicle.cityMPG ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🌿 Beat the EPA sticker average. Hypermiling working!') : null
               )
             ),
@@ -2516,6 +2915,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── PARALLEL PARKING (2D) ──
       if (view === 'parking') {
         return h(ParkingMode, { ctx: ctx, h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+      }
+
+      // ── 3-POINT TURN (2D) ──
+      if (view === 'threePoint') {
+        return h(ThreePointMode, { h: h, React: React, onExit: function() { upd('view', 'menu'); } });
       }
 
       // ── HYPERMILING LAB ──
