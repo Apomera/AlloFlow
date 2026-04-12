@@ -603,6 +603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var gradeLevel = ctx.gradeLevel;
       var setStemLabTool = ctx.setStemLabTool;
       var theme = ctx.theme;
+      var threeLoaded = (ctx.toolData && ctx.toolData._threeLoaded) || !!window.THREE;
 
       // ── State ──
       var tab = d.tab || 'sonar';
@@ -1423,7 +1424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
             cave3dEngineRef.current = null;
           };
-      }, [tab]);
+      }, [tab, threeLoaded]);
 
       function renderCave3dTab() {
         var threeReady = window.THREE;

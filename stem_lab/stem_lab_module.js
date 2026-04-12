@@ -1207,7 +1207,7 @@
       /* graphCalc canvas renderer: removed — see stem_tool_graphcalc.js */
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld')) return;
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation')) return;
         if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
         var s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -2362,7 +2362,7 @@
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-600 uppercase"
+          className: "text-xs font-bold text-slate-500 uppercase"
         }, "Style:"), [{
           val: t('stem.solver.stepbystep'),
           label: t('stem.solver.stepbystep')
@@ -2387,7 +2387,7 @@
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-600"
+          className: "text-xs font-bold text-slate-500"
         }, "Quantity:"), /*#__PURE__*/React.createElement("input", {
           type: "range",
           min: "1",
@@ -2416,7 +2416,7 @@
         }), " ", stemLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Problems'), /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-2 pt-1"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-[10px] text-slate-600 font-bold uppercase"
+          className: "text-[10px] text-slate-500 font-bold uppercase"
         }, "Tools:"), [{
           // @tool volume
           id: 'volume',
@@ -2458,7 +2458,7 @@
         })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
           className: "text-lg font-bold text-slate-800"
         }, "\uD83D\uDCCB Assessment Builder"), /*#__PURE__*/React.createElement("p", {
-          className: "text-xs text-slate-600"
+          className: "text-xs text-slate-500"
         }, "Compose blocks of different problem types into a custom assessment")))), /*#__PURE__*/React.createElement("div", {
           className: "space-y-2"
         }, assessmentBlocks.map((block, idx) => /*#__PURE__*/React.createElement("div", {
@@ -2511,7 +2511,7 @@
         }, "\u2728 Custom"), /*#__PURE__*/React.createElement("option", {
           value: "manipulative"
         }, "\uD83E\uDDF1 Manipulative Response")), /*#__PURE__*/React.createElement("span", {
-          className: "text-xs text-slate-600"
+          className: "text-xs text-slate-500"
         }, "\xD7"), /*#__PURE__*/React.createElement("input", {
           type: "number",
           min: "1",
@@ -2676,7 +2676,7 @@
             className: "text-sm font-bold text-slate-700"
           }, "\uD83D\uDCF8 Tool Snapshots (", toolSnapshots.length, ")"), /*#__PURE__*/React.createElement("button", { "aria-label": "Clear all",
             onClick: () => setToolSnapshots([]),
-            className: "text-[10px] text-slate-600 hover:text-red-500 transition-colors"
+            className: "text-[10px] text-slate-500 hover:text-red-500 transition-colors"
           }, "\u21BA Clear all")), /*#__PURE__*/React.createElement("div", {
             className: "grid grid-cols-2 gap-2"
           }, toolSnapshots.map((snap, si) => /*#__PURE__*/React.createElement("div", {
@@ -2713,7 +2713,7 @@
           }, /*#__PURE__*/React.createElement(X, {
             size: 12
           }))), /*#__PURE__*/React.createElement("div", {
-            className: "text-[10px] text-slate-600 mt-1"
+            className: "text-[10px] text-slate-500 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
@@ -3053,11 +3053,6 @@
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
                 desc: 'Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports with real physics.',
                 color: 'sky', ready: true
-              },
-              {
-                id: 'roadReady', icon: '🚗', label: "RoadReady: Driver's Ed",
-                desc: "3D driving simulator + US permit test + fuel efficiency physics. 14 scenarios, 80 practice questions, real stopping-distance math. Maine state focus.",
-                color: 'emerald', ready: true
               },
               {
                 id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
@@ -3849,7 +3844,7 @@
                   key: tool.id,
                   className: "col-span-2 mt-3 first:mt-0"
                 }, /*#__PURE__*/React.createElement("h3", {
-                  className: "text-sm font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
+                  className: "text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
                 }, tool.label));
               }
               var _ci = _cardIndex++;
@@ -4129,7 +4124,6 @@
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
             flightSim: true,
-            roadReady: true,
             atcTower: true,
             musicSynth: true,
             beehive: true,
@@ -4165,7 +4159,7 @@
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" })
               ),
               React.createElement("p", { className: "text-center text-xs text-slate-400", role: 'status', 'aria-live': 'polite' }, "\uD83D\uDD2C Loading " + stemLabTool + "..."),
-              React.createElement("p", { className: "text-center text-[10px] text-slate-600 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
+              React.createElement("p", { className: "text-center text-[10px] text-slate-500 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
             );
           }
 

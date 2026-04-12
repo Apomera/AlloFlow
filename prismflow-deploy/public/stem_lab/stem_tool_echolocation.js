@@ -1424,7 +1424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
             cave3dEngineRef.current = null;
           };
-      }, [tab]);
+      }, [tab, threeLoaded]);
 
       function renderCave3dTab() {
         var threeReady = window.THREE;
