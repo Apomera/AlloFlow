@@ -1897,14 +1897,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
-        // Run 3 parallel diagnoses and merge — each catches different issues
+        // Run 2 diagnoses and merge — primary (general) + second opinion (content + structural combined)
         var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (stratified sample):\n"""\n' + sampleHtml(accessibleHtml, 9000) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
-        var [surgDiagnosis2, surgDiagnosis3] = await Promise.all([
-          callGemini('You are an independent accessibility expert (second opinion). Focus on content fixes — alt text quality, link descriptions, and heading structure.\n\n' + surgPromptBase, true),
-          callGemini('You are a strict WCAG compliance auditor (third opinion). Focus on structural fixes — landmarks, ARIA, table headers, and form labels.\n\n' + surgPromptBase, true),
-        ]);
+        var surgDiagnosis2 = await callGemini('You are an independent accessibility expert (second opinion). Focus on BOTH content fixes (alt text quality, link descriptions, heading structure) AND structural fixes (landmarks, ARIA, table headers, form labels). Be thorough — catch anything the first auditor may have missed.\n\n' + surgPromptBase, true);
 
-        // Parse all diagnoses
+        // Parse both diagnoses
         var parseSurgical = function(raw) {
           if (!raw) return [];
           var fixes = [];
@@ -1915,12 +1912,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         };
         var fixes1 = parseSurgical(surgDiagnosis);
         var fixes2 = parseSurgical(surgDiagnosis2);
-        var fixes3 = parseSurgical(surgDiagnosis3);
 
-        // Merge all 3: deduplicate by tool+index
+        // Merge both: deduplicate by tool+index
         var seenKeys = {};
         var surgFixes = [];
-        [].concat(fixes1, fixes2, fixes3).forEach(function(fix) {
+        [].concat(fixes1, fixes2).forEach(function(fix) {
           if (!fix || !fix.tool) return;
           var key = fix.tool + '-' + (fix.index || 0) + '-' + (fix.tag || '');
           if (!seenKeys[key]) { seenKeys[key] = true; surgFixes.push(fix); }
@@ -5626,24 +5622,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             return m;
           });
 
-          // Re-audit with 3 AI engines + axe-core for statistical reliability
+          // Re-audit with 2 AI engines + axe-core (2 provides averaging + disagreement detection while saving ~33% API calls vs 3)
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
-          const [reVerify1, reVerify2, reVerify3, reAxe] = await Promise.all([
-            auditOutputAccessibility(accessibleHtml),
+          const [reVerify1, reVerify2, reAxe] = await Promise.all([
             auditOutputAccessibility(accessibleHtml),
             auditOutputAccessibility(accessibleHtml),
             runAxeAudit(accessibleHtml)
           ]);
 
-          // Average 3 AI scores & compute SEM for significance testing
-          const reScores = [reVerify1, reVerify2, reVerify3].map(v => v ? v.score : null).filter(s => s !== null);
+          // Average 2 AI scores & compute SEM for significance testing
+          const reScores = [reVerify1, reVerify2].map(v => v ? v.score : null).filter(s => s !== null);
           const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
           const reSD = reScores.length > 1 ? Math.sqrt(reScores.reduce((s, x) => s + (x - newAiScore) ** 2, 0) / (reScores.length - 1)) : 0;
           const reSEM = reScores.length > 1 ? reSD / Math.sqrt(reScores.length) : 0;
-          // Pick auditor with HIGHEST score for issues list (not first truthy)
-          // The || operator was giving the fastest responder's issues, which could be
-          // more pessimistic than the averaged score suggests
-          const reVerify = [reVerify1, reVerify2, reVerify3]
+          // Pick auditor with HIGHEST score for issues list
+          const reVerify = [reVerify1, reVerify2]
             .filter(Boolean)
             .sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
           if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
