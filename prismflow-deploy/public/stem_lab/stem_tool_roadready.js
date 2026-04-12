@@ -241,6 +241,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'When making a lane change, you should signal:', a: ['While changing lanes', 'At least 100 feet before the change', 'Only if other cars are close', 'Never on empty roads'], correct: 1, exp: 'Signal at least 100 feet before any lane change. This gives following drivers time to react. Check mirrors AND blind spots before moving.' },
     { q: 'What is the correct procedure for a 3-point turn?', a: ['Turn left, reverse right, drive forward', 'Make a U-turn across all lanes', 'Back up in a straight line', 'Turn right, reverse left, drive forward'], correct: 0, exp: 'A 3-point turn (K-turn): (1) Turn wheel left, drive forward to far curb. (2) Turn wheel right, reverse to near curb. (3) Straighten, drive forward in new direction.' },
     { q: 'The friction circle concept teaches you to:', a: ['Always brake and turn at the same time', 'Use grip for braking OR steering, but not both at full', 'Drive only in circles', 'Ignore ABS warnings'], correct: 1, exp: 'Your tires have a total grip budget (the friction circle). If you use 100% for braking, 0% is left for steering — and vice versa. This is why you brake BEFORE a turn, not during.' },
+    { q: 'When backing up, you should primarily look:', a: ['In the rearview mirror only', 'Over your right shoulder through the rear window', 'Straight ahead', 'At the side mirrors only'], correct: 1, exp: 'Turn your body and look over your right shoulder through the rear window. Mirrors have blind spots. Your head gives you the widest view.' },
+    { q: 'An emergency vehicle with lights and siren is approaching from behind. On a 2-lane road you should:', a: ['Speed up to get out of the way', 'Move left to give them room', 'Pull to the RIGHT shoulder and stop until it passes', 'Keep driving but slow down'], correct: 2, exp: 'Pull RIGHT and STOP completely until the emergency vehicle passes. This is law in all 50 states. Do not slam your brakes in traffic — signal, move right smoothly, then stop.' },
+    { q: 'After an emergency vehicle passes you with lights on, you should:', a: ['Follow it closely to get through traffic', 'Wait a moment, then resume driving carefully', 'Immediately speed up to normal', 'Flash your lights to acknowledge'], correct: 1, exp: 'Wait until the emergency vehicle is well past, then check for additional emergency vehicles before resuming. Following an emergency vehicle too closely (tailgating) is illegal.' },
+    { q: 'Going from 15 MPG to 20 MPG saves MORE fuel than going from 35 to 50 MPG for the same distance. True or false?', a: ['True — MPG is non-linear', 'False — higher MPG always saves more', 'They save the same', 'It depends on the vehicle weight'], correct: 0, exp: 'TRUE. Over 10,000 miles: 15→20 MPG saves 167 gallons. 35→50 MPG saves only 86 gallons. This is the "MPG illusion" — switching from a gas-guzzler to mediocre saves more than mediocre to excellent.' },
+    { q: 'Idling your car for more than about how long wastes more fuel than restarting?', a: ['5 minutes', '2 minutes', '30 seconds', '10 minutes'], correct: 2, exp: 'Modern fuel-injected engines use so little fuel to restart that idling for more than ~30 seconds wastes more. The "warm up for 5 minutes" advice is from the carburetor era and no longer applies.' },
     { q: 'You approach a railroad crossing and the gates begin to lower as you arrive. You should:', a: ['Go around the gates quickly', 'Stop and wait — never drive around lowered gates', 'Speed up to beat the train', 'Honk and proceed'], correct: 1, exp: 'NEVER go around lowered gates. Trains can take a mile to stop. A stuck gate means call the number on the crossbuck or 911.' },
     { q: 'The primary purpose of antilock brakes (ABS) is to:', a: ['Stop the car faster on all surfaces', 'Allow you to steer while braking hard', 'Replace the handbrake', 'Prevent tire wear'], correct: 1, exp: 'ABS pulses the brakes so wheels do not lock. Locked wheels cannot steer. ABS may not always stop you faster, but it keeps the steering alive.' },
     { q: 'When driving in heavy fog, you should use:', a: ['High beams', 'Low beams and/or fog lights', 'Hazard lights while moving', 'Parking lights only'], correct: 1, exp: 'High beams reflect off fog and reduce visibility. Use LOW beams and fog lights. Hazards while driving are illegal in most states — reserved for actual hazards.' },
@@ -1121,6 +1126,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9g: STRAIGHT BACKING DRILL (2D top-down)
+  // ─────────────────────────────────────────────────────────
+
+  function BackingDrillMode(props) {
+    var React = props.React;
+    var h = props.h;
+    var useEffect = React.useEffect;
+    var useRef = React.useRef;
+    var useState = React.useState;
+    var canvasRef = useRef(null);
+    var carRef = useRef({ x: 300, y: 80, heading: Math.PI / 2, speed: 0, steering: 0 });
+    var keysRef = useRef({});
+    var animRef = useRef(null);
+    var doneRef = useRef(false);
+    var fb = useState('Reverse in a perfectly straight line for 100 ft. Stay between the cones. Use S/Shift to reverse, A/D to steer.');
+    var fbText = fb[0]; var setFb = fb[1];
+    var st = useState({ score: 100, conesHit: 0, done: false });
+    var stVal = st[0]; var setSt = st[1];
+
+    var LANE_LEFT = 275;
+    var LANE_RIGHT = 325;
+    var TARGET_Y = 430;
+    var CONES = [];
+    for (var ci = 0; ci < 10; ci++) {
+      CONES.push({ x: LANE_LEFT, y: 100 + ci * 36 });
+      CONES.push({ x: LANE_RIGHT, y: 100 + ci * 36 });
+    }
+
+    useEffect(function() {
+      var onD = function(e) { keysRef.current[e.key.toLowerCase()] = true; if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.key.toLowerCase() === 'r') resetCar(); };
+      var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
+      window.addEventListener('keydown', onD); window.addEventListener('keyup', onU);
+      return function() { window.removeEventListener('keydown', onD); window.removeEventListener('keyup', onU); };
+    }, []);
+
+    function resetCar() {
+      carRef.current = { x: 300, y: 80, heading: Math.PI / 2, speed: 0, steering: 0 };
+      doneRef.current = false;
+      setSt({ score: 100, conesHit: 0, done: false });
+      setFb('Reverse in a perfectly straight line for 100 ft. Stay between the cones.');
+    }
+
+    useEffect(function() {
+      var canvas = canvasRef.current;
+      if (!canvas) return;
+      var gfx = canvas.getContext('2d');
+      var step = function() {
+        if (!doneRef.current) update();
+        render();
+        animRef.current = requestAnimationFrame(step);
+      };
+      var update = function() {
+        var car = carRef.current;
+        var k = keysRef.current;
+        var rev = (k['s'] || k['shift']) ? 1 : 0;
+        var fwd = (k['w']) ? 1 : 0;
+        var left = (k['a']) ? 1 : 0;
+        var right = (k['d']) ? 1 : 0;
+        car.steering += ((right - left) * 0.5 - car.steering) * 0.12;
+        car.speed += (fwd - rev) * 25 * 0.016;
+        car.speed *= 0.92;
+        var turnRate = car.steering * (car.speed / 30) * 1.2;
+        car.heading += turnRate * 0.016;
+        car.x += Math.cos(car.heading) * car.speed * 0.016;
+        car.y += Math.sin(car.heading) * car.speed * 0.016;
+        // Cone collision
+        CONES.forEach(function(cone) {
+          if (Math.hypot(car.x - cone.x, car.y - cone.y) < 16 && !cone.hit) {
+            cone.hit = true;
+            var ns = Object.assign({}, stVal);
+            ns.score -= 10; ns.conesHit++;
+            setSt(ns);
+            setFb('🔶 Cone hit! -10. Steer more gently.');
+          }
+        });
+        // Success check
+        if (car.y >= TARGET_Y && Math.abs(car.x - 300) < 30) {
+          doneRef.current = true;
+          var ns2 = Object.assign({}, stVal);
+          ns2.done = true;
+          setSt(ns2);
+          setFb('✅ Backed straight! Score: ' + ns2.score + '/100. ' + (ns2.conesHit === 0 ? 'Perfect — zero cones!' : ns2.conesHit + ' cone(s) hit.'));
+        }
+      };
+      var render = function() {
+        var W = canvas.width = canvas.offsetWidth;
+        var H = canvas.height = 480;
+        gfx.fillStyle = '#334155'; gfx.fillRect(0, 0, W, H);
+        // Lane lines
+        gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.setLineDash([14, 14]);
+        gfx.beginPath(); gfx.moveTo(LANE_LEFT, 60); gfx.lineTo(LANE_LEFT, H); gfx.stroke();
+        gfx.beginPath(); gfx.moveTo(LANE_RIGHT, 60); gfx.lineTo(LANE_RIGHT, H); gfx.stroke();
+        gfx.setLineDash([]);
+        // Target zone
+        gfx.fillStyle = 'rgba(74,222,128,0.15)';
+        gfx.fillRect(LANE_LEFT, TARGET_Y - 10, LANE_RIGHT - LANE_LEFT, 30);
+        gfx.fillStyle = '#4ade80'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
+        gfx.fillText('TARGET', 300, TARGET_Y + 8);
+        // Cones
+        CONES.forEach(function(cone) {
+          gfx.fillStyle = cone.hit ? '#475569' : '#f97316';
+          gfx.beginPath(); gfx.moveTo(cone.x, cone.y - 8); gfx.lineTo(cone.x - 6, cone.y + 6); gfx.lineTo(cone.x + 6, cone.y + 6); gfx.closePath(); gfx.fill();
+        });
+        // Car
+        var car = carRef.current;
+        gfx.save(); gfx.translate(car.x, car.y); gfx.rotate(car.heading - Math.PI / 2);
+        gfx.fillStyle = '#a3a3a3'; gfx.fillRect(-22, -12, 44, 24);
+        gfx.fillStyle = '#404040'; gfx.fillRect(-16, -10, 14, 20);
+        if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(17, -8, 5, 5); gfx.fillRect(17, 3, 5, 5); }
+        gfx.restore();
+        // HUD
+        gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(10, 10, 280, 50);
+        gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
+        gfx.fillText('🔙 Straight Backing Drill', 20, 28);
+        gfx.fillStyle = '#a3a3a3'; gfx.font = '10px system-ui';
+        gfx.fillText('Score: ' + stVal.score + ' · Cones: ' + stVal.conesHit + (stVal.done ? ' · ✓ DONE' : ''), 20, 44);
+      };
+      animRef.current = requestAnimationFrame(step);
+      return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    }, [stVal]);
+
+    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+      h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+      h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '10px', border: '1px solid #a3a3a3' } },
+        h('canvas', { ref: canvasRef, style: { width: '100%', height: '480px', display: 'block', borderRadius: '8px', background: '#1e293b' } })
+      ),
+      h('div', { style: { marginTop: '10px', padding: '12px', background: '#0f172a', borderRadius: '10px', border: '1px solid #334155' } },
+        h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a3a3a3', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
+        h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' } }, fbText),
+        h('div', { style: { marginTop: '6px', fontSize: '10px', color: '#64748b' } }, 'Tip: Look over your RIGHT shoulder, not in the mirrors. Use small steering corrections. Press R to reset.')
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: REGISTER TOOL & RENDER
   // ─────────────────────────────────────────────────────────
 
@@ -1275,7 +1415,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var a = audioRef.current;
           if (a.engineGain) a.engineGain.gain.value = 0;
           if (a._skidGain) a._skidGain.gain.value = 0;
+          if (a._sirenGain) a._sirenGain.gain.value = 0;
         } catch (e) {}
+        emergencyRef.current = null;
         var s = statsRef.current;
         var minutes = Math.floor((Date.now() - s.startTime) / 60000);
         var seconds = Math.floor(((Date.now() - s.startTime) % 60000) / 1000);
@@ -1300,9 +1442,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             fuelUsed_gal: s.fuelUsed.toFixed(3),
             skidSeconds: Math.round(s.skidSeconds),
             cyclistClose: s.cyclistClose,
-            unsignaledLaneChanges: s.unsignaledLaneChanges || 0
+            unsignaledLaneChanges: s.unsignaledLaneChanges || 0,
+            scenarioId: currentScenario.id
           }
         });
+        // Check achievements
+        var newBadges = Object.assign({}, earnedBadges);
+        var safety = Math.max(0, Math.round(s.safetyScore));
+        var eco = Math.max(0, Math.round(s.efficiencyScore));
+        var comb = (safety + eco) / 2;
+        newBadges.first_drive = true;
+        if (s.crashes === 0) newBadges.no_crash = true;
+        if (eco >= 90) newBadges.eco_warrior = true;
+        if (safety >= 95) newBadges.safety_star = true;
+        if (comb >= 95) newBadges.a_plus = true;
+        if (currentScenario.time === 'night' && safety >= 80) newBadges.night_owl = true;
+        if (currentScenario.id === 'snow' && safety >= 70) newBadges.winter_warrior = true;
+        if (avgMPG > currentVehicle.cityMPG) newBadges.hypermiler = true;
+        if (s.stops >= 3) newBadges.full_stop = true;
+        if ((s.unsignaledLaneChanges || 0) === 0) newBadges.signal_perfect = true;
+        if (Math.round(s.maxSpeed * MS_TO_MPH) >= 80) newBadges.speed_demon = true;
+        if (wildlifeRef.current === null && s.distance > 500 && ['rural','snow','fog','night'].indexOf(currentScenario.id) !== -1) newBadges.moose_dodge = true;
+        var newScenarios = Object.assign({}, scenariosDriven);
+        newScenarios[currentScenario.id] = true;
+        if (Object.keys(newScenarios).length >= 5) newBadges.five_scenarios = true;
+        upd('badges', newBadges);
+        upd('scenariosDriven', newScenarios);
       }, [currentScenario, currentVehicle]);
 
       // ── Main simulation loop ──
@@ -1556,6 +1721,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 addToast('💥 Animal struck. -15 safety');
               }
             }
+          }
+        };
+
+        var updateEmergency = function(dt) {
+          var em = emergencyRef.current;
+          var car = carRef.current;
+          if (!em) {
+            var spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
+            if (spawn) {
+              emergencyRef.current = {
+                kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
+                x: car.x + (Math.random() < 0.5 ? -1 : 1),
+                y: car.y + 15 + Math.random() * 5,
+                heading: car.heading,
+                speed: car.speed + 10,
+                life: 20,
+                responded: false,
+                checked: false
+              };
+              eventToastRef.current = { msg: '🚨 EMERGENCY VEHICLE BEHIND YOU — Pull RIGHT and STOP!', until: timeRef.current + 6 };
+              addToast('🚨 ' + spawn.icon + ' ' + spawn.kind + ' approaching!');
+              // Start siren audio
+              try {
+                var ac = audioRef.current.ctx;
+                if (ac && !audioRef.current._sirenOsc) {
+                  audioRef.current._sirenOsc = ac.createOscillator();
+                  audioRef.current._sirenGain = ac.createGain();
+                  audioRef.current._sirenOsc.type = 'sine';
+                  audioRef.current._sirenOsc.frequency.value = spawn.sirenFreq;
+                  audioRef.current._sirenGain.gain.value = 0.06;
+                  audioRef.current._sirenOsc.connect(audioRef.current._sirenGain);
+                  audioRef.current._sirenGain.connect(ac.destination);
+                  audioRef.current._sirenOsc.start();
+                }
+              } catch (e) {}
+            }
+            return;
+          }
+          // Move emergency vehicle toward player (from behind, fast)
+          em.y -= em.speed * dt / 5;
+          em.life -= dt;
+          // Siren warble
+          try {
+            if (audioRef.current._sirenOsc) {
+              var wob = em.sirenFreq + Math.sin(timeRef.current * 8) * 200;
+              audioRef.current._sirenOsc.frequency.setTargetAtTime(wob, audioRef.current.ctx.currentTime, 0.05);
+              // Fade out as it passes
+              if (em.y < car.y - 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
+            }
+          } catch (e) {}
+          // Check if player pulled right and stopped
+          if (!em.checked && em.y < car.y + 3) {
+            em.checked = true;
+            var centerX = Math.floor(MAP_SIZE / 2);
+            var pulledRight = car.x > centerX + 1.5;
+            var stopped = car.speed < 2;
+            if (pulledRight && stopped) {
+              em.responded = true;
+              statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
+              addToast('✓ Good — pulled right and stopped for emergency vehicle. +5');
+              eventToastRef.current = { msg: '✓ Correct response: pull RIGHT, STOP until it passes.', until: timeRef.current + 4 };
+            } else if (stopped && !pulledRight) {
+              statsRef.current.safetyScore -= 10;
+              addToast('⚠️ You stopped but didn\'t pull right. -10');
+              eventToastRef.current = { msg: '⚠️ You must pull to the RIGHT side of the road, then stop.', until: timeRef.current + 4 };
+            } else {
+              statsRef.current.safetyScore -= 20;
+              addToast('🚨 Failed to yield to emergency vehicle! -20');
+              eventToastRef.current = { msg: '🚨 FAILURE TO YIELD. All 50 states require you to pull right and stop for emergency vehicles.', until: timeRef.current + 5 };
+            }
+          }
+          // Remove when done
+          if (em.life <= 0 || em.y < car.y - 20) {
+            try {
+              if (audioRef.current._sirenGain) audioRef.current._sirenGain.gain.setTargetAtTime(0, audioRef.current.ctx.currentTime, 0.05);
+              setTimeout(function() { try { if (audioRef.current._sirenOsc) { audioRef.current._sirenOsc.stop(); audioRef.current._sirenOsc = null; } } catch(e){} }, 200);
+            } catch (e) {}
+            emergencyRef.current = null;
           }
         };
 
@@ -1863,6 +2106,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var w = wildlifeRef.current;
             all.push({ x: w.x, y: w.y, color: '#fff', type: 'wildlife', icon: w.icon, size: w.mass === 'massive' ? 1.8 : w.mass === 'medium' ? 1.2 : 0.6 });
           }
+          if (emergencyRef.current) {
+            var em = emergencyRef.current;
+            all.push({ x: em.x, y: em.y, color: em.color, type: 'emergency', icon: em.icon, size: 1.4 });
+          }
           // Sort back to front
           all.sort(function(a, b) {
             var da = Math.hypot(a.x - car.x, a.y - car.y);
@@ -1941,6 +2188,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               gfx.fillStyle = '#000';
               gfx.beginPath(); gfx.arc(screenX - size * 0.2, y0 + size * 0.85, size * 0.14, 0, Math.PI * 2); gfx.fill();
               gfx.beginPath(); gfx.arc(screenX + size * 0.2, y0 + size * 0.85, size * 0.14, 0, Math.PI * 2); gfx.fill();
+            } else if (obj.type === 'emergency') {
+              // Big vehicle with flashing lights
+              gfx.fillStyle = '#fff';
+              gfx.fillRect(screenX - size * 0.55, y0, size * 1.1, size * 0.75);
+              gfx.fillStyle = obj.color;
+              gfx.fillRect(screenX - size * 0.5, y0 + size * 0.05, size * 1.0, size * 0.3);
+              // Flashing roof lights
+              var flashOn = Math.floor(timeRef.current * 6) % 2 === 0;
+              gfx.fillStyle = flashOn ? '#ef4444' : '#3b82f6';
+              gfx.beginPath(); gfx.arc(screenX - size * 0.25, y0, size * 0.08, 0, Math.PI * 2); gfx.fill();
+              gfx.fillStyle = flashOn ? '#3b82f6' : '#ef4444';
+              gfx.beginPath(); gfx.arc(screenX + size * 0.25, y0, size * 0.08, 0, Math.PI * 2); gfx.fill();
+              // Glow
+              gfx.fillStyle = 'rgba(239,68,68,' + (flashOn ? '0.3' : '0.1') + ')';
+              gfx.beginPath(); gfx.arc(screenX, y0, size * 0.5, 0, Math.PI * 2); gfx.fill();
+              // Icon
+              gfx.font = Math.max(14, size * 0.3) + 'px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(obj.icon, screenX, y0 + size * 0.5);
+              gfx.textBaseline = 'alphabetic';
             } else {
               gfx.fillRect(screenX - size * 0.5, y0, size, size * 0.7);
               gfx.fillStyle = 'rgba(0,0,0,0.4)';
@@ -2341,6 +2607,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '↩️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, '3-Point Turn'),
               h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, 'Road-test maneuver, 2D trainer')
+            ),
+            h('button', { onClick: function() { upd('view', 'fuelCalc'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '💰'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Fuel Cost Calculator'),
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, '$/mi, annual cost, EV vs gas')
+            ),
+            h('button', { onClick: function() { upd('view', 'backingDrill'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔙'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Straight Backing'),
+              h('div', { style: { fontSize: '10px', color: '#d4d4d4', marginTop: '2px' } }, 'Reverse in a straight line')
             )
           ),
           // Maine facts strip
@@ -2353,6 +2631,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', null, '• Phone use: ', h('b', null, 'BANNED (all handheld)')),
               h('div', null, '• Studded tires: ', h('b', null, 'Oct 1–May 1')),
               h('div', null, '• Headlights: ', h('b', null, 'ON when wipers on'))
+            )
+          ),
+          // Achievements strip
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+              ACHIEVEMENTS.map(function(ach) {
+                var earned = !!earnedBadges[ach.id];
+                return h('div', { key: ach.id, title: ach.name + ': ' + ach.desc,
+                  style: { padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#334155', border: '1px solid ' + (earned ? '#3b82f6' : '#1e293b'), cursor: 'default' }
+                }, ach.icon + ' ' + (earned ? ach.name : '???'));
+              })
             )
           ),
           // Stats
@@ -2920,6 +3210,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── 3-POINT TURN (2D) ──
       if (view === 'threePoint') {
         return h(ThreePointMode, { h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+      }
+
+      // ── BACKING DRILL (2D) ──
+      if (view === 'backingDrill') {
+        return h(BackingDrillMode, { h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+      }
+
+      // ── FUEL COST CALCULATOR ──
+      if (view === 'fuelCalc') {
+        var fcMiles = d.fcMiles || 12000;
+        var fcGasPrice = d.fcGasPrice || 3.50;
+        var fcElecPrice = d.fcElecPrice || 0.14;
+
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '36px' } }, '💰'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Fuel Cost Calculator'),
+            h('div', { style: { fontSize: '11px', color: '#fed7aa' } }, 'See what driving really costs — by vehicle, habits, and fuel type.')
+          ),
+          // Inputs
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, 'ANNUAL MILES'),
+              h('input', { type: 'range', min: 3000, max: 30000, step: 1000, value: fcMiles, onChange: function(e) { upd('fcMiles', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, fcMiles.toLocaleString())
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, 'GAS $/GAL'),
+              h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: fcGasPrice, onChange: function(e) { upd('fcGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcGasPrice.toFixed(2))
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, 'ELECTRICITY $/kWh'),
+              h('input', { type: 'range', min: 0.08, max: 0.35, step: 0.01, value: fcElecPrice, onChange: function(e) { upd('fcElecPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcElecPrice.toFixed(2))
+            )
+          ),
+          // Results table
+          h('div', { style: { overflowX: 'auto' } },
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
+              h('thead', null,
+                h('tr', { style: { background: '#1e293b', color: '#94a3b8', fontWeight: 700, fontSize: '10px' } },
+                  ['', 'Vehicle', 'AVG MPG', 'GAL/yr', '$/year', '$/mile', 'vs Sedan'].map(function(col, ci) {
+                    return h('th', { key: ci, style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid #334155' } }, col);
+                  })
+                )
+              ),
+              h('tbody', null,
+                VEHICLES.map(function(v) {
+                  var avgMpg = (v.cityMPG + v.hwyMPG) / 2;
+                  var isEV = v.type === 'electric';
+                  var galYr = isEV ? 0 : fcMiles / avgMpg;
+                  var kwhYr = isEV ? fcMiles / (avgMpg / 33.7) : 0; // MPGe to kWh
+                  var costYr = isEV ? kwhYr * fcElecPrice : galYr * fcGasPrice;
+                  var costMi = costYr / fcMiles;
+                  var sedanAvg = (VEHICLES[0].cityMPG + VEHICLES[0].hwyMPG) / 2;
+                  var sedanCost = (fcMiles / sedanAvg) * fcGasPrice;
+                  var diff = costYr - sedanCost;
+                  return h('tr', { key: v.id, style: { borderBottom: '1px solid #1e293b' } },
+                    h('td', { style: { padding: '8px', fontSize: '16px' } }, v.icon),
+                    h('td', { style: { padding: '8px', fontWeight: 700, color: '#fff' } }, v.name),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, avgMpg.toFixed(0) + (isEV ? 'e' : '')),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, isEV ? kwhYr.toFixed(0) + ' kWh' : galYr.toFixed(0)),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: costYr < sedanCost ? '#4ade80' : costYr > sedanCost * 1.2 ? '#ef4444' : '#fbbf24' } }, '$' + costYr.toFixed(0)),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: '#94a3b8' } }, '$' + costMi.toFixed(3)),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: diff < 0 ? '#4ade80' : diff > 0 ? '#ef4444' : '#94a3b8' } }, (diff >= 0 ? '+' : '') + '$' + diff.toFixed(0))
+                  );
+                })
+              )
+            )
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginTop: '12px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', textTransform: 'uppercase', marginBottom: '6px' } }, '💡 Insights'),
+            h('div', null, '• The average American drives ~12,000 mi/yr. At $3.50/gal in a 37-MPG sedan, that is ~$1,135/yr in fuel.'),
+            h('div', null, '• Switching from a pickup (21 MPG avg) to a hybrid (53 MPG avg) saves ~$', Math.round((fcMiles / 21 - fcMiles / 53) * fcGasPrice), '/yr.'),
+            h('div', null, '• The EV at $', fcElecPrice.toFixed(2), '/kWh costs ~$', Math.round(fcMiles / ((130 + 115) / 2 / 33.7) * fcElecPrice), '/yr — ', Math.round((1 - (fcMiles / ((130 + 115) / 2 / 33.7) * fcElecPrice) / ((fcMiles / 37) * fcGasPrice)) * 100), '% less than a sedan.'),
+            h('div', null, '• Smooth driving (no jackrabbits, coast to stops) improves real-world MPG by 20-40% over the EPA sticker.')
+          )
+        );
       }
 
       // ── HYPERMILING LAB ──

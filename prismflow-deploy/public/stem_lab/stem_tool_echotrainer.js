@@ -52,7 +52,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   }
 
   // ── Environments that support 3D rendering ──
-  var ENV_3D_READY = { urban: true, cave: true, simple_room: true };
+  var ENV_3D_READY = { urban: true, cave: true, simple_room: true, forest: true, corridor: true };
 
   // ── Environment presets ──
   var ENVIRONMENTS = [
@@ -236,6 +236,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           height: 0.3
         });
       }
+    } else if (type === 'forest') {
+      // 2 deer — slow, large, weave between trees
+      for (var dri = 0; dri < 2; dri++) {
+        var deerWp = [];
+        for (var dwi = 0; dwi < 5; dwi++) {
+          deerWp.push({ x: 100 + rng() * 600, y: 100 + rng() * 600 });
+        }
+        agents.push({
+          id: 'deer_' + dri, kind: 'deer',
+          x: deerWp[0].x, y: deerWp[0].y,
+          targetIdx: 1, waypoints: deerWp, speed: 30 + rng() * 15,
+          loop: true, radius: 14, mat: 'flesh', ref: 0.5, height: 1.3
+        });
+      }
+      // 4 birds — fast, overhead, chirping audio
+      for (var bdi = 0; bdi < 4; bdi++) {
+        var birdWp = [];
+        for (var bwi2 = 0; bwi2 < 6; bwi2++) {
+          birdWp.push({ x: 60 + rng() * 680, y: 60 + rng() * 680 });
+        }
+        agents.push({
+          id: 'bird_' + bdi, kind: 'bird',
+          x: birdWp[0].x, y: birdWp[0].y,
+          targetIdx: 1, waypoints: birdWp, speed: 70 + rng() * 40,
+          loop: true, radius: 4, mat: 'flesh', ref: 0.2, height: 0.2
+        });
+      }
+    } else if (type === 'corridor') {
+      // 2 patrolling "guards" (pedestrians walking back and forth in corridors)
+      agents.push({
+        id: 'patrol_0', kind: 'pedestrian',
+        x: 400, y: 150, targetIdx: 1,
+        waypoints: [{ x: 100, y: 150 }, { x: 700, y: 150 }],
+        speed: 35 + rng() * 15, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7
+      });
+      agents.push({
+        id: 'patrol_1', kind: 'pedestrian',
+        x: 400, y: 500, targetIdx: 1,
+        waypoints: [{ x: 100, y: 500 }, { x: 700, y: 500 }],
+        speed: 40 + rng() * 10, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7
+      });
     } else if (type === 'simple_room') {
       // 1 slow pedestrian for tutorial
       agents.push({
@@ -394,12 +435,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         carMat.userData = { baseColor: getGlowBase('car'), ref: ag.ref, mat: 'car' };
         aMesh = new THREE.Mesh(carGeo, carMat);
         aMesh.position.set(ag.x * SCALE, 0.6, ag.y * SCALE);
-      } else if (ag.kind === 'bat') {
-        var batGeo = new THREE.SphereGeometry(0.18, 8, 6);
-        var batMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        batMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
-        aMesh = new THREE.Mesh(batGeo, batMat);
-        aMesh.position.set(ag.x * SCALE, 2.5, ag.y * SCALE);
+      } else if (ag.kind === 'bat' || ag.kind === 'bird') {
+        var flyGeo = new THREE.SphereGeometry(ag.kind === 'bird' ? 0.12 : 0.18, 8, 6);
+        var flyMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        flyMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
+        aMesh = new THREE.Mesh(flyGeo, flyMat);
+        aMesh.position.set(ag.x * SCALE, ag.kind === 'bird' ? 3.0 : 2.5, ag.y * SCALE);
+      } else if (ag.kind === 'deer') {
+        var deerGeo = new THREE.BoxGeometry(0.8, 1.3, 1.4);
+        var deerMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        deerMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
+        aMesh = new THREE.Mesh(deerGeo, deerMat);
+        aMesh.position.set(ag.x * SCALE, 0.65, ag.y * SCALE);
       } else {
         // pedestrian
         var pedGeo = new THREE.BoxGeometry(0.5, 1.7, 0.5);
@@ -468,6 +515,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   // ══════════════════════════════════════════════════════════
   // TUTORIAL STEPS (simple_room only)
   // ══════════════════════════════════════════════════════════
+  // ── Difficulty presets ──
+  var DIFFICULTY = [
+    { id: 'easy', label: 'Explorer', icon: '\uD83C\uDF3F', agentSpeedMult: 0.5, ghostDecay: 0.008, ghostMax: 0.14, xpMult: 0.7, desc: 'Slower agents, longer ghost outlines' },
+    { id: 'normal', label: 'Navigator', icon: '\u2699\uFE0F', agentSpeedMult: 1.0, ghostDecay: 0.015, ghostMax: 0.08, xpMult: 1.0, desc: 'Standard difficulty' },
+    { id: 'hard', label: 'Echolocator', icon: '\uD83D\uDD25', agentSpeedMult: 1.5, ghostDecay: 0.04, ghostMax: 0.04, xpMult: 1.5, desc: 'Faster agents, ghosts fade quickly' },
+    { id: 'master', label: 'Bat Master', icon: '\uD83E\uDD87', agentSpeedMult: 2.0, ghostDecay: 999, ghostMax: 0, xpMult: 2.0, desc: 'No ghost outlines, double-speed agents' }
+  ];
+
   var TUTORIAL_STEPS = [
     { title: 'The World Is Dark', text: 'The world is pitch-black. Press SPACE (or click the Click button) to emit a sonar click. Listen for echoes bouncing off nearby surfaces. Each echo tells you where something is.' },
     { title: 'Materials Glow Differently', text: 'Each surface lights up differently when hit by sonar. Metal is bright white-blue, wood is warm brown, concrete is cool blue, glass is faint teal. Brighter glow = stronger echo.' },
@@ -488,7 +543,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       { id: 'find_goal_1', label: 'Find the goal in any environment', icon: '\u2B50', check: function(d) { return d.goalsFound >= 1; }, progress: function(d) { return (d.goalsFound || 0) + '/1'; } },
       { id: 'find_goal_5', label: 'Find goals in 5 different environments', icon: '\uD83C\uDFC6', check: function(d) { return d.goalsFound >= 5; }, progress: function(d) { return (d.goalsFound || 0) + '/5'; } },
       { id: 'blind_navigation', label: 'Find a goal in Audio Only mode', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
-      { id: 'cross_urban', label: 'Survive Urban Street without a car hit', icon: '\uD83D\uDE97', check: function(d) { return !!d.urbanNoCarHit; }, progress: function(d) { return d.urbanNoCarHit ? 'Done!' : 'Not yet'; } }
+      { id: 'cross_urban', label: 'Survive Urban Street without a car hit', icon: '\uD83D\uDE97', check: function(d) { return !!d.urbanNoCarHit; }, progress: function(d) { return d.urbanNoCarHit ? 'Done!' : 'Not yet'; } },
+      { id: 'bat_master_win', label: 'Find a goal on Bat Master difficulty', icon: '\uD83E\uDD87', check: function(d) { return !!d.batMasterWin; }, progress: function(d) { return d.batMasterWin ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -519,6 +575,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var bumps = d.bumps || 0;
       var multiBounce = d.multiBounce || false;
       var tutStep = d.tutStep || 0;
+      var diffId = d.difficulty || 'normal';
+      var diff = DIFFICULTY[1]; // default normal
+      for (var dfi = 0; dfi < DIFFICULTY.length; dfi++) { if (DIFFICULTY[dfi].id === diffId) { diff = DIFFICULTY[dfi]; break; } }
 
       var has3D = !!(window.THREE) && !!ENV_3D_READY[envType];
 
@@ -802,6 +861,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 osc.type = 'sine';
                 osc.frequency.value = 3200;
                 gn.gain.value = 0.006;
+              } else if (ag.kind === 'bird') {
+                osc.type = 'sine';
+                osc.frequency.value = 2400 + Math.random() * 800;
+                gn.gain.value = 0.01;
+              } else if (ag.kind === 'deer') {
+                osc.type = 'triangle';
+                osc.frequency.value = 80;
+                gn.gain.value = 0.012;
               } else {
                 osc.type = 'triangle';
                 osc.frequency.value = 200;
@@ -816,6 +883,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
         } catch(e) {}
         agentOscRef.current = agentSounds;
+
+        // ── Ambient environmental audio (positional) ──
+        var ambientSounds = [];
+        try {
+          var ambAudio = initAudio();
+          if (ambAudio && ambAudio.ctx) {
+            var ambAc = ambAudio.ctx;
+            if (envType === 'cave') {
+              // Water drips at 3 random positions
+              for (var wdi = 0; wdi < 3; wdi++) {
+                var dripOsc = ambAc.createOscillator();
+                dripOsc.type = 'sine';
+                dripOsc.frequency.value = 1800 + wdi * 400;
+                var dripGain = ambAc.createGain();
+                dripGain.gain.value = 0.0;
+                var dripPan = ambAc.createPanner();
+                dripPan.panningModel = 'HRTF';
+                dripPan.distanceModel = 'inverse';
+                dripPan.refDistance = 1;
+                dripPan.maxDistance = 40;
+                dripPan.rolloffFactor = 2;
+                var dripX = (150 + wdi * 250) * SCALE;
+                var dripZ = (150 + wdi * 200) * SCALE;
+                dripPan.positionX.value = dripX;
+                dripPan.positionY.value = 2.5;
+                dripPan.positionZ.value = dripZ;
+                dripOsc.connect(dripGain);
+                dripGain.connect(dripPan);
+                dripPan.connect(ambAc.destination);
+                dripOsc.start();
+                ambientSounds.push({ osc: dripOsc, gain: dripGain, panner: dripPan, kind: 'drip', mapX: 150 + wdi * 250, mapY: 150 + wdi * 200, phase: wdi * 2.1 });
+              }
+            } else if (envType === 'forest') {
+              // Wind noise via detuned oscillators
+              var windOsc = ambAc.createOscillator();
+              windOsc.type = 'sawtooth';
+              windOsc.frequency.value = 120;
+              var windGain = ambAc.createGain();
+              windGain.gain.value = 0.008;
+              var windFilter = ambAc.createBiquadFilter();
+              windFilter.type = 'lowpass';
+              windFilter.frequency.value = 300;
+              windOsc.connect(windFilter);
+              windFilter.connect(windGain);
+              windGain.connect(ambAc.destination);
+              windOsc.start();
+              ambientSounds.push({ osc: windOsc, gain: windGain, kind: 'wind' });
+            } else if (envType === 'urban') {
+              // Distant traffic hum
+              var humOsc = ambAc.createOscillator();
+              humOsc.type = 'sawtooth';
+              humOsc.frequency.value = 40;
+              var humGain = ambAc.createGain();
+              humGain.gain.value = 0.006;
+              var humFilter = ambAc.createBiquadFilter();
+              humFilter.type = 'lowpass';
+              humFilter.frequency.value = 200;
+              humOsc.connect(humFilter);
+              humFilter.connect(humGain);
+              humGain.connect(ambAc.destination);
+              humOsc.start();
+              ambientSounds.push({ osc: humOsc, gain: humGain, kind: 'hum' });
+            }
+          }
+        } catch(e) {}
 
         // Animation state
         var running = true;
@@ -880,8 +1012,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             }
           }
 
-          // ── Update agents ──
-          updateAgents(agents, dt, map);
+          // ── Update agents (speed scaled by difficulty) ──
+          updateAgents(agents, dt * diff.agentSpeedMult, map);
 
           // ── Agent collision detection ──
           for (var aci = 0; aci < agents.length; aci++) {
@@ -929,8 +1061,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var relZ = (sag.y - player.y) * 0.01;
             var cosP = Math.cos(-player.angle), sinP = Math.sin(-player.angle);
             asnd.panner.positionX.value = relX * cosP - relZ * sinP;
-            asnd.panner.positionY.value = (sag.kind === 'bat' ? 1.5 : 0);
+            asnd.panner.positionY.value = (sag.kind === 'bat' ? 1.5 : sag.kind === 'bird' ? 2.0 : sag.kind === 'deer' ? -0.5 : 0);
             asnd.panner.positionZ.value = relX * sinP + relZ * cosP;
+          }
+
+          // ── Update ambient sounds (drip pulsing, panner relative to player) ──
+          for (var ambi = 0; ambi < ambientSounds.length; ambi++) {
+            var amb = ambientSounds[ambi];
+            if (amb.kind === 'drip') {
+              // Drip: pulse gain in a rhythmic pattern
+              var dripTime = now * 0.001 + (amb.phase || 0);
+              var dripPhase = dripTime % 2.5; // drip every ~2.5s
+              var dripVol = dripPhase < 0.05 ? 0.035 : 0;
+              amb.gain.gain.value = dripVol;
+              // Update panner position relative to player
+              var drRelX = (amb.mapX - player.x) * 0.01;
+              var drRelZ = (amb.mapY - player.y) * 0.01;
+              var drCos = Math.cos(-player.angle), drSin = Math.sin(-player.angle);
+              amb.panner.positionX.value = drRelX * drCos - drRelZ * drSin;
+              amb.panner.positionZ.value = drRelX * drSin + drRelZ * drCos;
+            }
           }
 
           // ── Sonar pulse glow logic ──
@@ -963,11 +1113,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           pulsesRef.current = activePulses;
 
-          // ── Glow decay ──
+          // ── Glow decay + ghost persistence ──
           for (var gdi = 0; gdi < sd.meshes.length; gdi++) {
             var gm = sd.meshes[gdi];
             if (gm.userData.glowAmt > 0) {
               gm.userData.glowAmt = Math.max(0, gm.userData.glowAmt - 1.2 * dt);
+              // Track peak glow ever reached — this builds the persistent ghost map
+              if (!gm.userData.peakGlow || gm.userData.glowAmt > gm.userData.peakGlow) {
+                gm.userData.peakGlow = gm.userData.glowAmt;
+              }
+            }
+            // Ghost residual: once something has been sonar'd, it retains a faint outline
+            // Decays based on difficulty — Explorer builds a lasting map, Bat Master gets nothing
+            if (gm.userData.peakGlow > 0 && gm.userData.kind !== 'agent' && diff.ghostMax > 0) {
+              gm.userData.ghostGlow = Math.max(
+                gm.userData.ghostGlow || 0,
+                Math.min(diff.ghostMax, gm.userData.peakGlow * 0.12)
+              );
+              gm.userData.ghostGlow = Math.max(0, gm.userData.ghostGlow - diff.ghostDecay * dt);
+            } else if (diff.ghostMax <= 0) {
+              gm.userData.ghostGlow = 0;
             }
           }
 
@@ -976,7 +1141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var agl = 0; agl < sd.agentMeshes.length; agl++) {
             var agMesh = sd.agentMeshes[agl];
             var agKind = agMesh.agent.kind;
-            var baseGlow = agKind === 'car' ? 0.32 : agKind === 'pedestrian' ? 0.18 : 0.1;
+            var baseGlow = agKind === 'car' ? 0.32 : agKind === 'pedestrian' ? 0.18 : agKind === 'deer' ? 0.15 : agKind === 'bird' ? 0.08 : 0.1;
             var ambientGlow = baseGlow + sinePulse;
             if (ambientGlow > agMesh.mesh.userData.glowAmt) {
               agMesh.mesh.userData.glowAmt = ambientGlow;
@@ -995,12 +1160,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             } else if (currentViewMode === 'audio') {
               cmMat.color.setHex(0x000000);
             } else {
-              // echo mode
+              // echo mode: active glow + ghost residual
               var ga = cm.userData.glowAmt || 0;
+              var ghost = cm.userData.ghostGlow || 0;
+              var effectiveGlow = Math.max(ga, ghost);
               cmMat.color.setRGB(
-                cmUD.baseColor.r * ga,
-                cmUD.baseColor.g * ga,
-                cmUD.baseColor.b * ga
+                cmUD.baseColor.r * effectiveGlow,
+                cmUD.baseColor.g * effectiveGlow,
+                cmUD.baseColor.b * effectiveGlow
               );
             }
           }
@@ -1067,14 +1234,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 if (envType === 'urban' && !carHitRef.current) {
                   updateObj.urbanNoCarHit = true;
                 }
+                // Bat Master difficulty quest
+                if (diffId === 'master') {
+                  updateObj.batMasterWin = true;
+                }
                 updMulti(updateObj);
 
                 var baseXP = isAudioOnly ? 30 : (currentViewMode === 'echo' ? 20 : 10);
                 var bumpPenalty = Math.min(baseXP - 5, d.bumps || 0);
-                var finalXP = Math.max(5, baseXP - bumpPenalty);
+                var finalXP = Math.max(5, Math.round((baseXP - bumpPenalty) * diff.xpMult));
                 var modeLabel = currentViewMode === 'audio' ? 'Audio-only' : currentViewMode === 'echo' ? 'Echo Vision' : 'Revealed';
 
-                if (addToast) addToast('\uD83C\uDFC6 Goal found! ' + (d.clicks || 0) + ' clicks, ' + (d.bumps || 0) + ' bumps \u2192 ' + finalXP + ' XP (' + modeLabel + ')', 'success');
+                if (addToast) addToast('\uD83C\uDFC6 Goal found! ' + (d.clicks || 0) + ' clicks, ' + (d.bumps || 0) + ' bumps \u2192 ' + finalXP + ' XP (' + modeLabel + ', ' + diff.label + ')', 'success');
                 if (window._alloHaptic) window._alloHaptic('achieve');
                 if (awardXP) awardXP('echoTrainer', finalXP, modeLabel + ': ' + (d.bumps || 0) + ' bumps');
                 if (announceToSR) announceToSR('Goal found! ' + finalXP + ' XP earned. ' + (d.bumps || 0) + ' wall bumps. ' + modeLabel + ' mode.');
@@ -1105,6 +1276,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             try { agentSounds[osi].osc.stop(); } catch(e) {}
           }
           agentOscRef.current = [];
+          // Stop ambient sounds
+          for (var amsi = 0; amsi < ambientSounds.length; amsi++) {
+            try { ambientSounds[amsi].osc.stop(); } catch(e) {}
+          }
           // Dispose renderer
           if (renderer) {
             try { renderer.dispose(); } catch(e) {}
@@ -1186,8 +1361,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             }
             if (player._bumpCooldown > 0) player._bumpCooldown--;
 
-            // Update agents for 2D standalone
-            updateAgents(agents, 1 / 60, map);
+            // Update agents for 2D standalone (speed scaled by difficulty)
+            updateAgents(agents, (1 / 60) * diff.agentSpeedMult, map);
           }
 
           // ── Draw ──
@@ -1381,7 +1556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   updMulti({ goalFoundThisRun: true, goalsFound: goalsFound + 1, blindWins: isAudioOnly2d ? blindWins + 1 : blindWins });
                   var baseXP2 = isAudioOnly2d ? 30 : (currentViewMode2d === 'echo' ? 20 : 10);
                   var bumpPenalty2 = Math.min(baseXP2 - 5, d.bumps || 0);
-                  var finalXP2 = Math.max(5, baseXP2 - bumpPenalty2);
+                  var finalXP2 = Math.max(5, Math.round((baseXP2 - bumpPenalty2) * diff.xpMult));
                   var modeLabel2 = currentViewMode2d === 'audio' ? 'Audio-only' : currentViewMode2d === 'echo' ? 'Echo Vision' : 'Map revealed';
                   if (addToast) addToast('\uD83C\uDFC6 Goal found! ' + (d.clicks || 0) + ' clicks, ' + (d.bumps || 0) + ' bumps \u2192 ' + finalXP2 + ' XP (' + modeLabel2 + ')', 'success');
                   if (window._alloHaptic) window._alloHaptic('achieve');
@@ -1412,15 +1587,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       // ── Agent count text ──
       var agentCounts = [];
       var agts = agentsRef.current;
-      var pedCount = 0, carCount = 0, batCount = 0;
+      var pedCount = 0, carCount = 0, batCount = 0, deerCount = 0, birdCount = 0;
       for (var aci2 = 0; aci2 < agts.length; aci2++) {
         if (agts[aci2].kind === 'pedestrian') pedCount++;
         else if (agts[aci2].kind === 'car') carCount++;
         else if (agts[aci2].kind === 'bat') batCount++;
+        else if (agts[aci2].kind === 'deer') deerCount++;
+        else if (agts[aci2].kind === 'bird') birdCount++;
       }
       if (pedCount > 0) agentCounts.push(pedCount + ' pedestrian' + (pedCount > 1 ? 's' : ''));
       if (carCount > 0) agentCounts.push(carCount + ' car' + (carCount > 1 ? 's' : ''));
       if (batCount > 0) agentCounts.push(batCount + ' bat' + (batCount > 1 ? 's' : ''));
+      if (deerCount > 0) agentCounts.push(deerCount + ' deer');
+      if (birdCount > 0) agentCounts.push(birdCount + ' bird' + (birdCount > 1 ? 's' : ''));
 
       // ══════════════════════════════════════════════════════════
       // RENDER (React.createElement tree)
@@ -1622,6 +1801,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           d.goalFoundThisRun && h('span', { style: { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + ((d.viewMode || 'echo') === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
         ),
 
+        // ── Difficulty selector ──
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+          h('span', { style: { fontSize: '11px', fontWeight: 700, color: isDark ? '#64748b' : '#94a3b8' } }, 'Difficulty:'),
+          DIFFICULTY.map(function(dif) {
+            var isActive = diffId === dif.id;
+            return h('button', {
+              key: dif.id,
+              onClick: function() { upd('difficulty', dif.id); if (announceToSR) announceToSR('Difficulty: ' + dif.label + '. ' + dif.desc); },
+              'aria-label': dif.label + ': ' + dif.desc,
+              'aria-pressed': isActive ? 'true' : 'false',
+              title: dif.desc,
+              style: {
+                padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                border: '1px solid ' + (isActive ? '#6366f1' : (isDark ? '#334155' : '#e2e8f0')),
+                background: isActive ? '#6366f1' : (isDark ? '#1e293b' : '#fff'),
+                color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569')
+              }
+            }, dif.icon + ' ' + dif.label + (dif.xpMult !== 1 ? ' (' + dif.xpMult + 'x XP)' : ''));
+          })
+        ),
+
         // ── Tutorial overlay (simple_room, tutStep < 4) ──
         (envType === 'simple_room' && tutStep < 4) ? h('div', {
           role: 'dialog',
@@ -1725,10 +1925,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('span', { style: { fontWeight: 700, color: '#ff9c9c' } }, 'Pedestrian:'), h('span', null, 'Soft echo, faint glow, triangle-wave tone at 200Hz'),
               h('span', { style: { fontWeight: 700, color: '#ffc47c' } }, 'Car:'), h('span', null, 'Strong echo, sawtooth engine rumble at 55Hz \u2014 AVOID!'),
               h('span', { style: { fontWeight: 700, color: '#c4b5fd' } }, 'Bat:'), h('span', null, 'Faint, ultrasonic chirp at 3200Hz \u2014 tiny targets'),
+              h('span', { style: { fontWeight: 700, color: '#ff9c9c' } }, 'Deer:'), h('span', null, 'Soft thud at 80Hz \u2014 large, slow, forest-dweller'),
+              h('span', { style: { fontWeight: 700, color: '#86efac' } }, 'Bird:'), h('span', null, 'High chirp at 2400-3200Hz \u2014 fast, overhead, faint echo'),
               h('span', { style: { fontWeight: 700, color: '#fbbf24' } }, 'Goal \u2B50:'), h('span', null, 'Distinctive bright echo with a unique tonal quality')
             ),
             h('p', { style: { marginTop: '6px', fontStyle: 'italic', fontSize: '9px' } },
-              '\uD83E\uDD87 Real bats use frequencies of 20-200 kHz (ultrasonic). Humans echolocate best with tongue clicks at 2-4 kHz. The key cue is the time delay between click and echo \u2014 at 343 m/s, a wall 1.7m away returns an echo in 10ms.')
+              '\uD83E\uDD87 Real bats use frequencies of 20-200 kHz (ultrasonic). Humans echolocate best with tongue clicks at 2-4 kHz. The key cue is the time delay between click and echo \u2014 at 343 m/s, a wall 1.7m away returns an echo in 10ms.'),
+            h('p', { style: { marginTop: '4px', fontStyle: 'italic', fontSize: '9px', color: '#6366f1' } },
+              '\uD83D\uDC7B Ghost Outlines: Surfaces you\'ve sonar\'d retain a faint glow to help you build a mental map. Glow persistence depends on difficulty \u2014 Explorer mode gives lasting outlines, Bat Master gives none.')
           )
         ),
 

@@ -521,13 +521,13 @@ window.SelHub = window.SelHub || {
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#9ca3af', fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badges button
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           title: 'View badges',
-          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: '#9ca3af', fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
 
@@ -589,7 +589,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
                 h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, badge.desc)
+                h('div', { style: { fontSize: 11, color: '#9ca3af', marginTop: 2 } }, badge.desc)
               );
             })
           ),
@@ -679,14 +679,14 @@ window.SelHub = window.SelHub || {
                 'Intensity rating (1 = barely perceptible, 10 = overwhelming)'
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 24 } }, '1'),
+                h('span', { style: { fontSize: 11, color: '#9ca3af', minWidth: 24 } }, '1'),
                 h('input', {
                   type: 'range', min: 1, max: 10, value: intensityLevel,
                   onChange: function(e) { upd('intensityLevel', parseInt(e.target.value)); },
                   'aria-label': 'Intensity level',
                   style: { flex: 1, accentColor: ZONES.find(function(z) { return z.id === selectedZone; }).color }
                 }),
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 24, textAlign: 'right' } }, '10'),
+                h('span', { style: { fontSize: 11, color: '#9ca3af', minWidth: 24, textAlign: 'right' } }, '10'),
                 h('span', {
                   style: {
                     fontSize: 20, fontWeight: 700, minWidth: 40, textAlign: 'center',
@@ -934,7 +934,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Completed count
-            breathingComplete > 0 && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 16 } },
+            breathingComplete > 0 && h('p', { style: { textAlign: 'center', color: '#9ca3af', fontSize: 12, marginTop: 16 } },
               '\uD83E\uDDD8 You\'ve completed ' + breathingComplete + ' breathing exercise' + (breathingComplete > 1 ? 's' : '') + '!'
             )
           );
@@ -955,7 +955,7 @@ window.SelHub = window.SelHub || {
 
             breatheContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
               h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, currentPattern.name),
-              h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+              h('p', { style: { color: '#9ca3af', fontSize: 12, marginBottom: 20 } },
                 isComplete ? 'Exercise complete!' : 'Cycle ' + (breathingCycle + 1) + ' of ' + currentPattern.cycles
               ),
 
@@ -1078,7 +1078,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } },
               band === 'elementary' ? 'Body Scan' : 'Guided Body Scan'
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 8 } },
+            h('p', { style: { color: '#9ca3af', fontSize: 12, marginBottom: 8 } },
               'Area ' + (bodyScanStep + 1) + ' of ' + BODY_MAP_AREAS.length
             ),
             // Progress
@@ -1238,7 +1238,7 @@ window.SelHub = window.SelHub || {
 
           // Scenario card
           h('div', { style: { padding: 24, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 20, textAlign: 'center' } },
-            h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+            h('p', { style: { fontSize: 11, color: '#9ca3af', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
               useAiScenario ? 'AI-Generated Scenario' : 'Scenario ' + ((scenarioIdx % scenarios.length) + 1) + ' of ' + scenarios.length
             ),
             h('p', { style: { fontSize: 16, color: '#f1f5f9', lineHeight: 1.6, fontWeight: 500 } }, currentScenario.text),
@@ -1408,7 +1408,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 28, marginBottom: 6 } }, '\uD83C\uDF2C\uFE0F'),
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#3b82f6' } }, 'Breathing'),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Guided exercises')
+                h('div', { style: { fontSize: 10, color: '#9ca3af' } }, 'Guided exercises')
               ),
               // Body scan shortcut
               h('button', { 'aria-label': 'Body Scan',
@@ -1417,7 +1417,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 28, marginBottom: 6 } }, '\uD83E\uDDD1'),
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#8b5cf6' } }, 'Body Scan'),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Check your body')
+                h('div', { style: { fontSize: 10, color: '#9ca3af' } }, 'Check your body')
               )
             )
           ),
@@ -1426,7 +1426,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { marginBottom: 24, padding: 20, borderRadius: 14, border: '1px solid #334155', background: '#1e293b' } },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
               h('h4', { style: { margin: 0, fontSize: 14, color: '#f1f5f9' } }, '\u270B 5-4-3-2-1 Grounding'),
-              groundingComplete > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Completed ' + groundingComplete + 'x')
+              groundingComplete > 0 && h('span', { style: { fontSize: 10, color: '#9ca3af' } }, 'Completed ' + groundingComplete + 'x')
             ),
             h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 16 } },
               band === 'elementary' ? 'Use your senses to feel calm and safe!' : 'A sensory grounding technique to bring you back to the present moment.'
@@ -1507,7 +1507,7 @@ window.SelHub = window.SelHub || {
             'Saved Strategies (' + myToolbox.length + ')'
           ),
           myToolbox.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: 32, color: '#94a3b8', background: '#1e293b', borderRadius: 14 } },
+            ? h('div', { style: { textAlign: 'center', padding: 32, color: '#9ca3af', background: '#1e293b', borderRadius: 14 } },
                 h('p', { style: { fontSize: 28, marginBottom: 8 } }, '\uD83E\uDDF0'),
                 h('p', { style: { fontWeight: 600, fontSize: 13 } }, 'Your toolbox is empty'),
                 h('p', { style: { fontSize: 11 } }, 'Go to the Explore tab and tap + on strategies you like!')
@@ -1555,7 +1555,7 @@ window.SelHub = window.SelHub || {
         historyContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, 'My Check-In History'),
           log.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: 40, color: '#94a3b8' } },
+            ? h('div', { style: { textAlign: 'center', padding: 40, color: '#9ca3af' } },
                 h('p', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDCDD'),
                 h('p', { style: { fontWeight: 600 } }, 'No check-ins yet'),
                 h('p', { style: { fontSize: 12 } }, 'Go to the Check-In tab to log your first zone!')
@@ -1584,11 +1584,11 @@ window.SelHub = window.SelHub || {
                           })
                         ),
                         h('div', { style: { fontSize: 14, fontWeight: 700, color: zone.color } }, count),
-                        h('div', { style: { fontSize: 10, color: '#94a3b8' } }, pct + '%')
+                        h('div', { style: { fontSize: 10, color: '#9ca3af' } }, pct + '%')
                       );
                     })
                   ),
-                  h('p', { style: { textAlign: 'center', fontSize: 11, color: '#94a3b8', margin: 0 } },
+                  h('p', { style: { textAlign: 'center', fontSize: 11, color: '#9ca3af', margin: 0 } },
                     log.length + ' total check-in' + (log.length !== 1 ? 's' : '')
                   )
                 ),
@@ -1612,8 +1612,8 @@ window.SelHub = window.SelHub || {
                     })
                   ),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                    h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Older'),
-                    h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Recent')
+                    h('span', { style: { fontSize: 11, color: '#9ca3af' } }, 'Older'),
+                    h('span', { style: { fontSize: 11, color: '#9ca3af' } }, 'Recent')
                   )
                 ),
 
@@ -1632,7 +1632,7 @@ window.SelHub = window.SelHub || {
                       );
                     })
                   ),
-                  h('p', { style: { textAlign: 'center', fontSize: 10, color: '#94a3b8', marginTop: 8 } },
+                  h('p', { style: { textAlign: 'center', fontSize: 10, color: '#9ca3af', marginTop: 8 } },
                     band === 'elementary' ? 'This shows how your zones changed over time!' : 'Your emotional trajectory across recent check-ins'
                   )
                 ),
@@ -1651,7 +1651,7 @@ window.SelHub = window.SelHub || {
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                         h('span', { style: { fontWeight: 700, color: zone.color, fontSize: 13 } }, zone.label),
                         entry.intensity && h('span', { style: { fontSize: 10, padding: '1px 6px', borderRadius: 6, background: zone.color + '22', color: zone.color } }, 'Intensity: ' + entry.intensity + '/10'),
-                        h('span', { style: { fontSize: 10, color: '#94a3b8' } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+                        h('span', { style: { fontSize: 10, color: '#9ca3af' } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
                       ),
                       entry.note && h('p', { style: { margin: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.4 } }, entry.note)
                     )
