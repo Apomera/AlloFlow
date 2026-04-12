@@ -66,7 +66,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       { id: 'vocab_10', label: 'Explore 10 vocabulary terms', icon: '\uD83D\uDCD6', field: 'vocabLookedUp', check: function(d) { return (d.vocabLookedUp || []).length >= 10; }, progress: function(d) { return (d.vocabLookedUp || []).length + '/10 terms'; } },
       { id: 'poe_5', label: 'Make predictions for 5 planets', icon: '\uD83E\uDD14', field: 'poeSeen', check: function(d) { return (d.poeSeen || []).length >= 5; }, progress: function(d) { return (d.poeSeen || []).length + '/5 predictions'; } },
       { id: 'misconception_5', label: 'Answer 5 misconception checkpoints', icon: '\u2753', field: 'misconceptionsSeen', check: function(d) { return (d.misconceptionsSeen || []).length >= 5; }, progress: function(d) { return (d.misconceptionsSeen || []).length + '/5 checked'; } },
-      { id: 'assignment_complete', label: 'Complete any assignment', icon: '\uD83D\uDCCB', field: 'activeAssignment', check: function(d) { if (!d.activeAssignment) return false; var tasks = d['asn_done_' + d.activeAssignment] || []; var asnLen = { inner_planets: 4, gas_giants: 4, habitability: 4, full_survey: 5 }; return tasks.length >= (asnLen[d.activeAssignment] || 4); }, progress: function(d) { if (!d.activeAssignment) return 'Not started'; var tasks = d['asn_done_' + d.activeAssignment] || []; return tasks.length + ' tasks done'; } }
+      { id: 'assignment_complete', label: 'Complete any assignment', icon: '\uD83D\uDCCB', field: 'activeAssignment', check: function(d) { if (!d.activeAssignment) return false; var tasks = d['asn_done_' + d.activeAssignment] || []; var asnLen = { inner_planets: 4, gas_giants: 4, habitability: 4, full_survey: 5 }; return tasks.length >= (asnLen[d.activeAssignment] || 4); }, progress: function(d) { if (!d.activeAssignment) return 'Not started'; var tasks = d['asn_done_' + d.activeAssignment] || []; return tasks.length + ' tasks done'; }, }
+      { id: 'orrery_explore', label: 'Open the Orrery Lab', icon: '🌌', field: 'orreryMode', check: function(d) { return d.orreryMode === true; }, progress: function(d) { return d.orreryMode ? 'Done' : 'Not yet'; } },
+      { id: 'orrery_kepler_all', label: 'Explore all 3 Kepler Law tabs', icon: '📚', field: 'orreryKeplerSeen', check: function(d) { var s = d.orreryKeplerSeen || []; return s.indexOf('keplerI') !== -1 && s.indexOf('keplerII') !== -1 && s.indexOf('keplerIII') !== -1; }, progress: function(d) { return (d.orreryKeplerSeen || []).length + '/3 laws'; } },
+      { id: 'orrery_calc_3', label: 'Solve 3 calculation challenges', icon: '🧠', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 3; }, progress: function(d) { return (d._chalScore || 0) + '/3 solved'; } },
+      { id: 'orrery_live_calc', label: 'Solve a live simulation challenge', icon: '⚡', field: '_liveSolved', check: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).some(function(k) { return ls[k].correct; }); }, progress: function(d) { var ls = d._liveSolved || {}; var n = Object.keys(ls).filter(function(k) { return ls[k].correct; }).length; return n > 0 ? n + ' solved' : 'Not yet'; } }
     ],
     render: function(ctx) {
       // Aliases â€" maps ctx properties to original variable names
@@ -1609,13 +1613,1640 @@ const d = labToolData.solarSystem;
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, "3D")
+              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, d.orreryMode ? "Orrery" : "3D"),
+              React.createElement("button", { onClick: function() { upd("orreryMode", !d.orreryMode); }, "aria-label": d.orreryMode ? "Switch to 3D" : "Switch to Orrery", className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orreryMode ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-purple-50 border border-slate-200") }, d.orreryMode ? "🌍 3D Explorer" : "🌌 Orrery Lab")
 
             ),
 
-            // 3D Canvas container
+            // ═══ ORRERY MODE ═══
+            d.orreryMode ? (function() {
+  var h = React.createElement;
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-800/50 shadow-lg", style: { background: '#0a0e27' } },
+  /* ====================================================================
+   *  0. BODY DATA — 14 solar-system objects
+   * ==================================================================== */
+  var OB = [
+    { id: "mercury",  name: "Mercury",        emoji: "\u263f", color: "#b0b0b0", a: 0.387,   e: 0.2056, T: 0.241,    i: 7.0,   m: 0.0553,  R: 2439.7, type: "planet", desc: "Smallest planet, closest to the Sun, no atmosphere to speak of." },
+    { id: "venus",    name: "Venus",          emoji: "\u2640", color: "#e8c36a", a: 0.723,   e: 0.0068, T: 0.615,    i: 3.4,   m: 0.815,   R: 6051.8, type: "planet", desc: "Thick CO\u2082 atmosphere, runaway greenhouse, rotates retrograde." },
+    { id: "earth",    name: "Earth",          emoji: "\ud83c\udf0d", color: "#4a90d9", a: 1.000,   e: 0.0167, T: 1.000,    i: 0.0,   m: 1.000,   R: 6371.0, type: "planet", desc: "Our home \u2014 liquid water, magnetosphere, life." },
+    { id: "mars",     name: "Mars",           emoji: "\u2642", color: "#c1440e", a: 1.524,   e: 0.0934, T: 1.881,    i: 1.85,  m: 0.107,   R: 3389.5, type: "planet", desc: "Thin atmosphere, iron oxide surface, two small moons." },
+    { id: "jupiter",  name: "Jupiter",        emoji: "\u2643", color: "#c88b3a", a: 5.203,   e: 0.0489, T: 11.86,    i: 1.3,   m: 317.8,   R: 69911,  type: "planet", desc: "Gas giant, Great Red Spot, 95 known moons." },
+    { id: "saturn",   name: "Saturn",         emoji: "\u2644", color: "#e0c068", a: 9.537,   e: 0.0565, T: 29.46,    i: 2.49,  m: 95.16,   R: 58232,  type: "planet", desc: "Magnificent ring system, density less than water." },
+    { id: "uranus",   name: "Uranus",         emoji: "\u26e2", color: "#73c2d0", a: 19.19,   e: 0.0457, T: 84.01,    i: 0.77,  m: 14.54,   R: 25362,  type: "planet", desc: "Ice giant tilted 98\u00b0, faint rings, 27 known moons." },
+    { id: "neptune",  name: "Neptune",        emoji: "\u2646", color: "#3f5fc4", a: 30.07,   e: 0.0113, T: 164.8,    i: 1.77,  m: 17.15,   R: 24622,  type: "planet", desc: "Strongest winds in the solar system, vivid blue colour." },
+    { id: "pluto",    name: "Pluto",          emoji: "\u2647", color: "#c9a76c", a: 39.48,   e: 0.2488, T: 247.9,    i: 17.16, m: 0.0022,  R: 1188.3, type: "dwarf",  desc: "Heart-shaped N\u2082 glacier, 5 moons, Kuiper Belt king." },
+    { id: "ceres",    name: "Ceres",          emoji: "\u26b3", color: "#8a8a8a", a: 2.769,   e: 0.0758, T: 4.60,     i: 10.59, m: 0.000157,R: 473,    type: "dwarf",  desc: "Largest asteroid-belt object, bright salt deposits." },
+    { id: "haumea",   name: "Haumea",         emoji: "\u2b2d", color: "#d0d0d0", a: 43.13,   e: 0.1912, T: 283.3,    i: 28.19, m: 0.00066, R: 816,    type: "dwarf",  desc: "Egg-shaped, fastest-rotating dwarf planet, has a ring." },
+    { id: "eris",     name: "Eris",           emoji: "\u26b7", color: "#e0e0e0", a: 67.67,   e: 0.4407, T: 557.0,    i: 44.04, m: 0.0028,  R: 1163,   type: "dwarf",  desc: "Most massive known dwarf planet, highly inclined orbit." },
+    { id: "halley",   name: "Halley\u2019s Comet",  emoji: "\u2604", color: "#7ecbf5", a: 17.83,   e: 0.9671, T: 75.3,     i: 162.3, m: 0,       R: 5.5,    type: "comet",  desc: "Most famous periodic comet, next perihelion 2061." },
+    { id: "encke",    name: "Encke\u2019s Comet",   emoji: "\u2604", color: "#b0e0b0", a: 2.215,   e: 0.8471, T: 3.30,     i: 11.78, m: 0,       R: 2.4,    type: "comet",  desc: "Shortest known period of any comet, parent of Taurids." }
+  ];
+
+  /* ====================================================================
+   *  1. CONSTANTS & HELPERS
+   * ==================================================================== */
+  var PI = Math.PI;
+  var TAU = 2 * PI;
+  var DEG = PI / 180;
+  var AU_KM = 1.496e8;
+  var G_SI = 6.674e-11;
+  var M_SUN = 1.989e30;
+
+  /** Solve Kepler equation M = E - e sin E via Newton-Raphson */
+  function solveKepler(M, e, tol) {
+    tol = tol || 1e-10;
+    var E = M;
+    for (var it = 0; it < 50; it++) {
+      var dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+      E -= dE;
+      if (Math.abs(dE) < tol) break;
+    }
+    return E;
+  }
+
+  /** True anomaly from eccentric anomaly */
+  function trueAnomaly(E, e) {
+    return 2 * Math.atan2(
+      Math.sqrt(1 + e) * Math.sin(E / 2),
+      Math.sqrt(1 - e) * Math.cos(E / 2)
+    );
+  }
+
+  /** Radius at true anomaly for given a, e */
+  function radiusAt(a, e, nu) {
+    return a * (1 - e * e) / (1 + e * Math.cos(nu));
+  }
+
+  /** Orbital position (x,y) at mean anomaly M for given a,e */
+  function orbitalPos(a, e, M) {
+    var E = solveKepler(M, e);
+    var nu = trueAnomaly(E, e);
+    var r = radiusAt(a, e, nu);
+    return { x: r * Math.cos(nu), y: r * Math.sin(nu), r: r, nu: nu, E: E };
+  }
+
+  /** Vis-viva speed in km/s */
+  function visViva(r_au, a_au) {
+    var mu = G_SI * M_SUN;
+    var r = r_au * AU_KM * 1000;
+    var a = a_au * AU_KM * 1000;
+    return Math.sqrt(mu * (2 / r - 1 / a)) / 1000;
+  }
+
+  /** Escape velocity in km/s */
+  function escapeVelocity(r_au) {
+    var mu = G_SI * M_SUN;
+    var r = r_au * AU_KM * 1000;
+    return Math.sqrt(2 * mu / r) / 1000;
+  }
+
+  /** Hohmann transfer delta-v and transit time */
+  function hohmann(a1, a2) {
+    var mu = G_SI * M_SUN;
+    var r1 = a1 * AU_KM * 1000;
+    var r2 = a2 * AU_KM * 1000;
+    var at = (r1 + r2) / 2;
+    var v1 = Math.sqrt(mu / r1);
+    var vt1 = Math.sqrt(mu * (2 / r1 - 1 / at));
+    var vt2 = Math.sqrt(mu * (2 / r2 - 1 / at));
+    var v2 = Math.sqrt(mu / r2);
+    var dv1 = Math.abs(vt1 - v1) / 1000;
+    var dv2 = Math.abs(v2 - vt2) / 1000;
+    var transit = PI * Math.sqrt(Math.pow(at, 3) / mu); // seconds
+    var transitYrs = transit / (365.25 * 86400);
+    return { dv1: dv1, dv2: dv2, dvTotal: dv1 + dv2, transitYrs: transitYrs };
+  }
+
+  /** Synodic period in years */
+  function synodicPeriod(T1, T2) {
+    if (T1 === T2) return Infinity;
+    return 1 / Math.abs(1 / T1 - 1 / T2);
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function fmt(n, dp) { return Number(n).toFixed(dp === undefined ? 2 : dp); }
+
+  /* style helpers */
+  var bg = isDark ? "#1e1e2e" : "#ffffff";
+  var fg = isDark ? "#e0e0e0" : "#1a1a2e";
+  var accent = "#4a90d9";
+  var border = isDark ? "#444" : "#ccc";
+  var cardBg = isDark ? "#2a2a3e" : "#f0f4f8";
+  var mutedFg = isDark ? "#999" : "#666";
+
+  function btn(label, active, onClick, extra) {
+    return h("button", Object.assign({
+      onClick: onClick,
+      style: {
+        padding: "6px 14px",
+        borderRadius: "6px",
+        border: active ? "2px solid " + accent : "1px solid " + border,
+        background: active ? accent : cardBg,
+        color: active ? "#fff" : fg,
+        cursor: "pointer",
+        fontWeight: active ? 700 : 400,
+        fontSize: "13px",
+        transition: "all 0.15s"
+      }
+    }, extra || {}), label);
+  }
+
+  function card(children, style) {
+    return h("div", {
+      style: Object.assign({
+        background: cardBg,
+        borderRadius: "10px",
+        padding: "14px",
+        border: "1px solid " + border
+      }, style || {})
+    }, children);
+  }
+
+  /* ====================================================================
+   *  2. STATE KEYS — all under d.orr_*
+   * ==================================================================== */
+  var stab = d.orr_tab || 0;            // sub-tab index
+  var simTime = d.orr_time || 0;         // simulation time in years
+  var speed = d.orr_speed || 1;          // years/sec
+  var paused = d.orr_paused || false;
+  var selBody = d.orr_sel || null;       // selected body id
+  var zoomMode = d.orr_zoom || "full";   // inner/full/outer
+
+  // Kepler I
+  var k1_ecc = d.orr_k1e !== undefined ? d.orr_k1e : 0.5;
+
+  // Kepler II
+  var k2_ecc = d.orr_k2e !== undefined ? d.orr_k2e : 0.6;
+  var k2_sectors = d.orr_k2s || 6;
+
+  // Workshop
+  var ws_body = d.orr_wsb || "earth";
+  var ws_ecc = d.orr_wse;
+  var ws_sma = d.orr_wsa;
+
+  // Transfers
+  var tr_from = d.orr_trf || "earth";
+  var tr_to = d.orr_trt || "mars";
+
+  // Challenges
+  var ch_idx = d.orr_chi || 0;
+  var ch_ans = d.orr_cha || {};
+  var ch_hints = d.orr_chh || {};
+  var ch_correct = d.orr_chc || {};
+
+  // TF
+  var tf_idx = d.orr_tfi || 0;
+  var tf_ans = d.orr_tfa || {};
+
+  /* ====================================================================
+   *  3. SUB-TAB NAMES
+   * ==================================================================== */
+  var TAB_NAMES = [
+    "Full Orrery",
+    "I Ellipses",
+    "II Areas",
+    "III Periods",
+    "Workshop",
+    "Transfers",
+    "Challenges",
+    "True/False"
+  ];
+
+  function setTab(i) { upd("orr_tab", i); }
+
+  /* ====================================================================
+   *  4. TAB HEADER
+   * ==================================================================== */
+  var tabHeader = h("div", {
+    style: { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }
+  }, TAB_NAMES.map(function(nm, i) {
+    return btn(nm, stab === i, function() { setTab(i); }, { key: "tab" + i });
+  }));
+
+  /* ====================================================================
+   *  SHARED: Canvas hook helper (useRef + useEffect wrapper)
+   * ==================================================================== */
+  function CanvasPanel(props) {
+    var ref = React.useRef(null);
+    var raf = React.useRef(null);
+    var stateRef = React.useRef({});
+
+    React.useEffect(function() {
+      var cv = ref.current;
+      if (!cv) return;
+      var ctx = cv.getContext("2d");
+      var running = true;
+
+      // Pointer state for pan/zoom
+      var st = stateRef.current;
+      if (!st.cx) {
+        st.cx = props.width / 2;
+        st.cy = props.height / 2;
+        st.scale = props.initScale || 1;
+        st.dragging = false;
+        st.lastX = 0;
+        st.lastY = 0;
+      }
+
+      function draw(t) {
+        if (!running) return;
+        if (props.draw) props.draw(ctx, cv, st, t);
+        raf.current = requestAnimationFrame(draw);
+      }
+      raf.current = requestAnimationFrame(draw);
+
+      function onWheel(ev) {
+        ev.preventDefault();
+        var f = ev.deltaY < 0 ? 1.1 : 0.9;
+        st.scale = clamp(st.scale * f, (props.minScale || 0.1), (props.maxScale || 200));
+      }
+      function onDown(ev) {
+        st.dragging = true;
+        st.lastX = ev.clientX;
+        st.lastY = ev.clientY;
+      }
+      function onMove(ev) {
+        if (!st.dragging) return;
+        st.cx += ev.clientX - st.lastX;
+        st.cy += ev.clientY - st.lastY;
+        st.lastX = ev.clientX;
+        st.lastY = ev.clientY;
+      }
+      function onUp() { st.dragging = false; }
+
+      if (props.panZoom) {
+        cv.addEventListener("wheel", onWheel, { passive: false });
+        cv.addEventListener("pointerdown", onDown);
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      }
+
+      if (props.onClick) {
+        cv.addEventListener("click", function(ev) {
+          var rect = cv.getBoundingClientRect();
+          props.onClick(ev.clientX - rect.left, ev.clientY - rect.top, st);
+        });
+      }
+
+      return function() {
+        running = false;
+        if (raf.current) cancelAnimationFrame(raf.current);
+        if (props.panZoom) {
+          cv.removeEventListener("wheel", onWheel);
+          cv.removeEventListener("pointerdown", onDown);
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+        }
+      };
+    }, [props.redrawKey || 0]);
+
+    return h("canvas", {
+      ref: ref,
+      width: props.width,
+      height: props.height,
+      style: Object.assign({
+        border: "1px solid " + border,
+        borderRadius: "8px",
+        background: isDark ? "#111122" : "#f8f8ff",
+        cursor: props.panZoom ? "grab" : "default",
+        maxWidth: "100%",
+        display: "block"
+      }, props.style || {})
+    });
+  }
+
+  /* ====================================================================
+   *  5. FULL ORRERY TAB
+   * ==================================================================== */
+  function buildOrreryTab() {
+    var W = 800, H = 800;
+
+    var zoomScales = {
+      inner: 160,
+      full: 12,
+      outer: 3
+    };
+    var baseScale = zoomScales[zoomMode] || 12;
+
+    var timeRef = React.useRef(simTime);
+    var hoverRef = React.useRef(null);
+    React.useEffect(function() { timeRef.current = simTime; }, [simTime]);
+
+    // Time stepping
+    React.useEffect(function() {
+      if (paused) return;
+      var iv = setInterval(function() {
+        timeRef.current += speed / 30;
+        upd("orr_time", timeRef.current);
+      }, 33);
+      return function() { clearInterval(iv); };
+    }, [paused, speed]);
+
+    var bodyInfoCard = null;
+    if (selBody) {
+      var sb = OB.filter(function(b) { return b.id === selBody; })[0];
+      if (sb) {
+        var pos = orbitalPos(sb.a, sb.e, (TAU * timeRef.current / sb.T) % TAU);
+        var spd = visViva(pos.r, sb.a);
+        var peri = sb.a * (1 - sb.e);
+        var aph = sb.a * (1 + sb.e);
+        var vPeri = visViva(peri, sb.a);
+        var vAph = visViva(aph, sb.a);
+        bodyInfoCard = card([
+          h("div", { key: "hdr", style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+            h("strong", null, sb.emoji + " " + sb.name),
+            h("button", {
+              onClick: function() { upd("orr_sel", null); },
+              style: { background: "none", border: "none", cursor: "pointer", color: fg, fontSize: "16px" }
+            }, "\u2716")
+          ),
+          h("p", { key: "desc", style: { fontSize: "12px", color: mutedFg, margin: "4px 0" } }, sb.desc),
+          h("div", { key: "stats", style: { fontSize: "12px", lineHeight: "1.6" } },
+            h("div", null, "Semi-major axis: " + fmt(sb.a, 3) + " AU"),
+            h("div", null, "Eccentricity: " + fmt(sb.e, 4)),
+            h("div", null, "Period: " + fmt(sb.T, 2) + " yr"),
+            h("div", null, "Inclination: " + fmt(sb.i, 1) + "\u00b0"),
+            h("div", null, "Perihelion: " + fmt(peri, 3) + " AU (" + fmt(vPeri, 1) + " km/s)"),
+            h("div", null, "Aphelion: " + fmt(aph, 3) + " AU (" + fmt(vAph, 1) + " km/s)"),
+            h("div", null, "Current r: " + fmt(pos.r, 3) + " AU"),
+            h("div", null, "Current v: " + fmt(spd, 2) + " km/s"),
+            sb.m > 0 ? h("div", null, "Mass: " + fmt(sb.m, 4) + " M\u2295") : null,
+            sb.R > 100 ? h("div", null, "Radius: " + fmt(sb.R, 0) + " km") : null
+          )
+        ], { marginTop: "8px" });
+      }
+    }
+
+    var cvPanel = h(CanvasPanel, {
+      key: "orrery-cv",
+      width: W,
+      height: H,
+      panZoom: true,
+      initScale: baseScale,
+      minScale: 0.5,
+      maxScale: 300,
+      redrawKey: zoomMode,
+      onClick: function(mx, my, st) {
+        // hit-test bodies
+        var t = timeRef.current;
+        for (var i = OB.length - 1; i >= 0; i--) {
+          var b = OB[i];
+          var M = (TAU * t / b.T) % TAU;
+          var pos = orbitalPos(b.a, b.e, M);
+          var sx = st.cx + pos.x * st.scale;
+          var sy = st.cy - pos.y * st.scale;
+          var dx = mx - sx;
+          var dy = my - sy;
+          if (dx * dx + dy * dy < 144) {
+            upd("orr_sel", b.id);
+            return;
+          }
+        }
+      },
+      draw: function(ctx, cv, st, timestamp) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
+        ctx.fillRect(0, 0, W, H);
+
+        var t = timeRef.current;
+
+        // Export live state for challenges
+        cv._liveState = { time: t, bodies: {} };
+
+        // Sun
+        ctx.beginPath();
+        ctx.arc(st.cx, st.cy, Math.max(3, st.scale * 0.02), 0, TAU);
+        ctx.fillStyle = "#ffdd44";
+        ctx.fill();
+
+        // Draw orbits and bodies
+        for (var i = 0; i < OB.length; i++) {
+          var b = OB[i];
+          // Draw ellipse orbit path
+          var c_dist = b.a * b.e; // center-to-focus
+          var bSemi = b.a * Math.sqrt(1 - b.e * b.e);
+
+          ctx.beginPath();
+          ctx.strokeStyle = b.color + "55";
+          ctx.lineWidth = 1;
+          ctx.ellipse(
+            st.cx - c_dist * st.scale,
+            st.cy,
+            b.a * st.scale,
+            bSemi * st.scale,
+            0, 0, TAU
+          );
+          ctx.stroke();
+
+          // Body position
+          var M = (TAU * t / b.T) % TAU;
+          var pos = orbitalPos(b.a, b.e, M);
+          var sx = st.cx + pos.x * st.scale;
+          var sy = st.cy - pos.y * st.scale;
+          var spd = b.a > 0.01 ? visViva(pos.r, b.a) : 0;
+
+          cv._liveState.bodies[b.id] = {
+            x: pos.x,
+            y: pos.y,
+            r: pos.r,
+            speed: spd,
+            nu: pos.nu
+          };
+
+          // Draw body dot
+          var dotR = b.type === "comet" ? 3 : (b.type === "dwarf" ? 4 : clamp(Math.log(b.R + 1) * 1.2, 4, 10));
+          ctx.beginPath();
+          ctx.arc(sx, sy, dotR, 0, TAU);
+          ctx.fillStyle = b.color;
+          ctx.fill();
+
+          // Label (only if scale allows)
+          if (st.scale > 2 || (b.type === "planet" && st.scale > 0.8)) {
+            ctx.fillStyle = fg;
+            ctx.font = "11px sans-serif";
+            ctx.fillText(b.name, sx + dotR + 3, sy + 4);
+          }
+        }
+
+        // Hover/tooltip — tooltip built from last known hover set by mousemove
+        // (simplified: labels serve as hoverable info)
+      }
+    });
+
+    var controls = h("div", {
+      style: { display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", marginBottom: "8px" }
+    },
+      btn(paused ? "\u25b6 Play" : "\u23f8 Pause", false, function() { upd("orr_paused", !paused); }),
+      h("label", { style: { fontSize: "12px", color: fg } }, "Speed: "),
+      h("input", {
+        type: "range", min: "0.1", max: "50", step: "0.1",
+        value: speed,
+        onChange: function(ev) { upd("orr_speed", parseFloat(ev.target.value)); },
+        style: { width: "120px" }
+      }),
+      h("span", { style: { fontSize: "12px", color: mutedFg } }, fmt(speed, 1) + " yr/s"),
+      h("span", { style: { fontSize: "12px", color: mutedFg, marginLeft: "12px" } }, "t = " + fmt(timeRef.current, 2) + " yr"),
+      btn("Reset", false, function() { updMulti({ orr_time: 0, orr_sel: null }); }),
+      h("span", { style: { fontSize: "12px", color: mutedFg, marginLeft: "12px" } }, "Zoom: "),
+      btn("Inner", zoomMode === "inner", function() { upd("orr_zoom", "inner"); }),
+      btn("Full", zoomMode === "full", function() { upd("orr_zoom", "full"); }),
+      btn("Outer", zoomMode === "outer", function() { upd("orr_zoom", "outer"); })
+    );
+
+    return h("div", { className: "space-y-3" },
+      controls,
+      cvPanel,
+      bodyInfoCard
+    );
+  }
+
+  /* ====================================================================
+   *  6. KEPLER I — ELLIPSES TAB
+   * ==================================================================== */
+  function buildKeplerITab() {
+    var W = 700, H = 500;
+    var ecc = k1_ecc;
+    var a_px = 200;
+    var presets = [
+      { label: "Circle (0)", e: 0.0 },
+      { label: "Venus (0.007)", e: 0.007 },
+      { label: "Earth (0.017)", e: 0.017 },
+      { label: "Mars (0.093)", e: 0.093 },
+      { label: "Mercury (0.206)", e: 0.206 },
+      { label: "Pluto (0.249)", e: 0.249 },
+      { label: "Halley (0.967)", e: 0.967 }
+    ];
+
+    var animRef = React.useRef(0);
+
+    var cvPanel = h(CanvasPanel, {
+      key: "k1-cv",
+      width: W,
+      height: H,
+      panZoom: false,
+      redrawKey: ecc,
+      draw: function(ctx, cv, st, timestamp) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
+        ctx.fillRect(0, 0, W, H);
+
+        animRef.current = (animRef.current + 0.01) % TAU;
+
+        var cx = W / 2;
+        var cy = H / 2 - 30;
+        var e = ecc;
+        var b_px = a_px * Math.sqrt(1 - e * e);
+        var c_px = a_px * e;
+
+        // Orbit ellipse
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, a_px, b_px, 0, 0, TAU);
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Focus 1 (Sun) and Focus 2
+        var f1x = cx + c_px;
+        var f1y = cy;
+        var f2x = cx - c_px;
+        var f2y = cy;
+
+        ctx.beginPath();
+        ctx.arc(f1x, f1y, 8, 0, TAU);
+        ctx.fillStyle = "#ffdd44";
+        ctx.fill();
+        ctx.fillStyle = fg;
+        ctx.font = "12px sans-serif";
+        ctx.fillText("F\u2081 (Sun)", f1x + 12, f1y + 4);
+
+        ctx.beginPath();
+        ctx.arc(f2x, f2y, 5, 0, TAU);
+        ctx.fillStyle = "#888";
+        ctx.fill();
+        ctx.fillText("F\u2082", f2x + 8, f2y + 4);
+
+        // Animated planet
+        var M = animRef.current;
+        var E = solveKepler(M, e);
+        var nu = trueAnomaly(E, e);
+        var r = a_px * (1 - e * e) / (1 + e * Math.cos(nu));
+        // Position relative to F1
+        var px = f1x + r * Math.cos(nu);
+        var py = f1y - r * Math.sin(nu);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 7, 0, TAU);
+        ctx.fillStyle = "#4a90d9";
+        ctx.fill();
+
+        // Lines F1-P and F2-P (r1 + r2 = 2a proof)
+        var r1 = Math.sqrt((px - f1x) * (px - f1x) + (py - f1y) * (py - f1y));
+        var r2 = Math.sqrt((px - f2x) * (px - f2x) + (py - f2y) * (py - f2y));
+
+        ctx.beginPath();
+        ctx.moveTo(f1x, f1y);
+        ctx.lineTo(px, py);
+        ctx.strokeStyle = "#e74c3c";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(f2x, f2y);
+        ctx.lineTo(px, py);
+        ctx.strokeStyle = "#27ae60";
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // r1 + r2 label
+        ctx.fillStyle = fg;
+        ctx.font = "13px sans-serif";
+        ctx.fillText("r\u2081 = " + fmt(r1, 1) + "px", W - 200, cy + a_px + 50);
+        ctx.fillStyle = "#27ae60";
+        ctx.fillText("r\u2082 = " + fmt(r2, 1) + "px", W - 200, cy + a_px + 68);
+        ctx.fillStyle = accent;
+        ctx.fillText("r\u2081 + r\u2082 = " + fmt(r1 + r2, 1) + "px  (2a = " + fmt(2 * a_px, 1) + "px)", W - 200, cy + a_px + 86);
+
+        // Perihelion / Aphelion labels
+        var periX = f1x + a_px * (1 - e);
+        var aphX = f1x - a_px * (1 + e);
+        ctx.fillStyle = "#e74c3c";
+        ctx.font = "11px sans-serif";
+        ctx.fillText("Perihelion", cx + a_px + 5, cy - 5);
+        ctx.fillText("Aphelion", cx - a_px - 55, cy - 5);
+
+        // Small marks at perihelion/aphelion
+        ctx.beginPath();
+        ctx.arc(cx + a_px, cy, 3, 0, TAU);
+        ctx.fillStyle = "#e74c3c";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx - a_px, cy, 3, 0, TAU);
+        ctx.fill();
+
+        // Equation
+        ctx.fillStyle = fg;
+        ctx.font = "14px serif";
+        ctx.fillText("Kepler I:  Every planet moves in an ellipse with the Sun at one focus.", 20, H - 20);
+        ctx.font = "13px monospace";
+        ctx.fillText("r\u2081 + r\u2082 = 2a   |   e = " + fmt(e, 4) + "   |   b = a\u221a(1\u2013e\u00b2)", 20, H - 40);
+      }
+    });
+
+    return h("div", { className: "space-y-3" },
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", marginBottom: "8px" } },
+        h("label", { style: { fontSize: "13px", color: fg } }, "Eccentricity: "),
+        h("input", {
+          type: "range", min: "0", max: "0.98", step: "0.001",
+          value: ecc,
+          onChange: function(ev) { upd("orr_k1e", parseFloat(ev.target.value)); },
+          style: { width: "200px" }
+        }),
+        h("span", { style: { fontSize: "13px", color: mutedFg, minWidth: "50px" } }, fmt(ecc, 3))
+      ),
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" } },
+        presets.map(function(p) {
+          return btn(p.label, Math.abs(ecc - p.e) < 0.002, function() { upd("orr_k1e", p.e); }, { key: "k1p-" + p.label });
+        })
+      ),
+      cvPanel,
+      card(h("div", { style: { fontSize: "13px", lineHeight: "1.7" } },
+        h("div", null, "\u2022 An ellipse is defined by r\u2081 + r\u2082 = 2a (constant sum of distances to both foci)."),
+        h("div", null, "\u2022 Eccentricity e \u2208 [0, 1):  e = 0 is a circle, e \u2192 1 is a very elongated ellipse."),
+        h("div", null, "\u2022 Semi-minor axis b = a\u221a(1 \u2013 e\u00b2).  Focus distance c = ae."),
+        h("div", null, "\u2022 Perihelion = a(1\u2013e),  Aphelion = a(1+e).")
+      ), { marginTop: "8px" })
+    );
+  }
+
+  /* ====================================================================
+   *  7. KEPLER II — EQUAL AREAS TAB
+   * ==================================================================== */
+  function buildKeplerIITab() {
+    var W = 700, H = 550;
+    var ecc = k2_ecc;
+    var nSectors = k2_sectors;
+    var animRef = React.useRef(0);
+
+    var sectorColors = [
+      "#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db",
+      "#9b59b6", "#1abc9c", "#e84393", "#fd79a8", "#636e72",
+      "#00b894", "#6c5ce7"
+    ];
+
+    var cvPanel = h(CanvasPanel, {
+      key: "k2-cv",
+      width: W,
+      height: H,
+      panZoom: false,
+      redrawKey: ecc * 100 + nSectors,
+      draw: function(ctx, cv, st, timestamp) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
+        ctx.fillRect(0, 0, W, H);
+
+        animRef.current = (animRef.current + 0.008) % TAU;
+
+        var cx = W / 2;
+        var cy = H / 2 - 40;
+        var a_px = 180;
+        var e = ecc;
+        var b_px = a_px * Math.sqrt(1 - e * e);
+        var c_px = a_px * e;
+        var f1x = cx + c_px;
+        var f1y = cy;
+
+        // Draw equal-time sectors (equal area per Kepler II)
+        var dM = TAU / nSectors;
+        for (var s = 0; s < nSectors; s++) {
+          var M_start = s * dM;
+          var M_end = (s + 1) * dM;
+          ctx.beginPath();
+          ctx.moveTo(f1x, f1y);
+          var steps = 40;
+          for (var j = 0; j <= steps; j++) {
+            var M_j = M_start + (M_end - M_start) * j / steps;
+            var E_j = solveKepler(M_j, e);
+            var nu_j = trueAnomaly(E_j, e);
+            var r_j = a_px * (1 - e * e) / (1 + e * Math.cos(nu_j));
+            var px = f1x + r_j * Math.cos(nu_j);
+            var py = f1y - r_j * Math.sin(nu_j);
+            if (j === 0) ctx.lineTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = sectorColors[s % sectorColors.length] + "44";
+          ctx.fill();
+          ctx.strokeStyle = sectorColors[s % sectorColors.length] + "aa";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        // Orbit outline
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, a_px, b_px, 0, 0, TAU);
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Sun
+        ctx.beginPath();
+        ctx.arc(f1x, f1y, 7, 0, TAU);
+        ctx.fillStyle = "#ffdd44";
+        ctx.fill();
+
+        // Animated planet with velocity vector
+        var M_now = animRef.current;
+        var E_now = solveKepler(M_now, e);
+        var nu_now = trueAnomaly(E_now, e);
+        var r_now = a_px * (1 - e * e) / (1 + e * Math.cos(nu_now));
+        var px = f1x + r_now * Math.cos(nu_now);
+        var py = f1y - r_now * Math.sin(nu_now);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, TAU);
+        ctx.fillStyle = "#4a90d9";
+        ctx.fill();
+
+        // Velocity direction: tangent to orbit
+        // dnu/dE * dE/dM gives angular rate; velocity proportional to r^(-2) in sweep
+        var dE = 0.01;
+        var E2 = E_now + dE;
+        var nu2 = trueAnomaly(E2, e);
+        var r2 = a_px * (1 - e * e) / (1 + e * Math.cos(nu2));
+        var px2 = f1x + r2 * Math.cos(nu2);
+        var py2 = f1y - r2 * Math.sin(nu2);
+        var vdx = px2 - px;
+        var vdy = py2 - py;
+        var vmag = Math.sqrt(vdx * vdx + vdy * vdy);
+        if (vmag > 0) {
+          var vLen = 40;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + vdx / vmag * vLen, py + vdy / vmag * vLen);
+          ctx.strokeStyle = "#e74c3c";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          // arrowhead
+          var ax = px + vdx / vmag * vLen;
+          var ay = py + vdy / vmag * vLen;
+          var angle = Math.atan2(vdy, vdx);
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(ax - 8 * Math.cos(angle - 0.4), ay - 8 * Math.sin(angle - 0.4));
+          ctx.lineTo(ax - 8 * Math.cos(angle + 0.4), ay - 8 * Math.sin(angle + 0.4));
+          ctx.closePath();
+          ctx.fillStyle = "#e74c3c";
+          ctx.fill();
+        }
+
+        // Speed vs position mini-graph at bottom
+        var gx = 40;
+        var gy = H - 90;
+        var gw = W - 80;
+        var gh = 60;
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(gx, gy, gw, gh);
+        ctx.fillStyle = fg;
+        ctx.font = "11px sans-serif";
+        ctx.fillText("Speed vs. Orbit Position", gx, gy - 5);
+        ctx.fillText("Perihelion", gx, gy + gh + 14);
+        ctx.fillText("Aphelion", gx + gw - 50, gy + gh + 14);
+
+        // Plot speed curve
+        ctx.beginPath();
+        var pts = 100;
+        for (var j = 0; j <= pts; j++) {
+          var nu_p = -PI + TAU * j / pts;
+          var r_p = 1 * (1 - e * e) / (1 + e * Math.cos(nu_p));
+          var v_p = Math.sqrt(2 / r_p - 1 / 1); // vis-viva normalized
+          var xx = gx + (j / pts) * gw;
+          var yy = gy + gh - (v_p / 2.5) * gh;
+          if (j === 0) ctx.moveTo(xx, yy);
+          else ctx.lineTo(xx, yy);
+        }
+        ctx.strokeStyle = "#e74c3c";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Current position marker on graph
+        var nuNorm = ((nu_now + PI) % TAU) / TAU;
+        var rCur = 1 * (1 - e * e) / (1 + e * Math.cos(nu_now));
+        var vCur = Math.sqrt(2 / rCur - 1);
+        var mx = gx + nuNorm * gw;
+        var my = gy + gh - (vCur / 2.5) * gh;
+        ctx.beginPath();
+        ctx.arc(mx, my, 5, 0, TAU);
+        ctx.fillStyle = "#4a90d9";
+        ctx.fill();
+
+        // Equation
+        ctx.fillStyle = fg;
+        ctx.font = "14px serif";
+        ctx.fillText("Kepler II:  A line from the Sun to a planet sweeps equal areas in equal times.", 20, H - 10);
+      }
+    });
+
+    return h("div", { className: "space-y-3" },
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center", marginBottom: "8px" } },
+        h("label", { style: { fontSize: "13px", color: fg } }, "Eccentricity: "),
+        h("input", {
+          type: "range", min: "0.01", max: "0.95", step: "0.01",
+          value: ecc,
+          onChange: function(ev) { upd("orr_k2e", parseFloat(ev.target.value)); },
+          style: { width: "150px" }
+        }),
+        h("span", { style: { fontSize: "13px", color: mutedFg } }, fmt(ecc, 2)),
+        h("label", { style: { fontSize: "13px", color: fg, marginLeft: "16px" } }, "Sectors: "),
+        h("input", {
+          type: "range", min: "3", max: "12", step: "1",
+          value: nSectors,
+          onChange: function(ev) { upd("orr_k2s", parseInt(ev.target.value)); },
+          style: { width: "100px" }
+        }),
+        h("span", { style: { fontSize: "13px", color: mutedFg } }, nSectors)
+      ),
+      cvPanel,
+      card(h("div", { style: { fontSize: "13px", lineHeight: "1.7" } },
+        h("div", null, "\u2022 Each colored sector covers the same \u0394t (time interval)."),
+        h("div", null, "\u2022 Despite different shapes, each sector has the same area (dA/dt = const)."),
+        h("div", null, "\u2022 Planet moves fastest at perihelion (closest), slowest at aphelion (farthest)."),
+        h("div", null, "\u2022 Conservation of angular momentum: L = m \u00d7 r \u00d7 v\u22a5 = const.")
+      ), { marginTop: "8px" })
+    );
+  }
+
+  /* ====================================================================
+   *  8. KEPLER III — HARMONIC LAW TAB
+   * ==================================================================== */
+  function buildKeplerIIITab() {
+    var W = 700, H = 450;
+
+    var cvPanel = h(CanvasPanel, {
+      key: "k3-cv",
+      width: W,
+      height: H,
+      panZoom: false,
+      draw: function(ctx) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
+        ctx.fillRect(0, 0, W, H);
+
+        // Log-log plot: log10(a) on x, log10(T) on y
+        var margin = 60;
+        var pw = W - 2 * margin;
+        var ph = H - 2 * margin;
+
+        // Axis ranges
+        var xMin = -0.6, xMax = 2.1;
+        var yMin = -0.8, yMax = 3.0;
+
+        function toSx(logA) { return margin + (logA - xMin) / (xMax - xMin) * pw; }
+        function toSy(logT) { return margin + ph - (logT - yMin) / (yMax - yMin) * ph; }
+
+        // Grid
+        ctx.strokeStyle = border + "44";
+        ctx.lineWidth = 0.5;
+        for (var gx = Math.ceil(xMin); gx <= Math.floor(xMax); gx++) {
+          ctx.beginPath();
+          ctx.moveTo(toSx(gx), margin);
+          ctx.lineTo(toSx(gx), margin + ph);
+          ctx.stroke();
+        }
+        for (var gy = Math.ceil(yMin); gy <= Math.floor(yMax); gy++) {
+          ctx.beginPath();
+          ctx.moveTo(margin, toSy(gy));
+          ctx.lineTo(margin + pw, toSy(gy));
+          ctx.stroke();
+        }
+
+        // Axes
+        ctx.strokeStyle = fg;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(margin, margin);
+        ctx.lineTo(margin, margin + ph);
+        ctx.lineTo(margin + pw, margin + ph);
+        ctx.stroke();
+
+        // Axis labels
+        ctx.fillStyle = fg;
+        ctx.font = "13px sans-serif";
+        ctx.fillText("log\u2081\u2080(a / AU)", W / 2 - 40, H - 8);
+        ctx.save();
+        ctx.translate(14, H / 2 + 40);
+        ctx.rotate(-PI / 2);
+        ctx.fillText("log\u2081\u2080(T / yr)", 0, 0);
+        ctx.restore();
+
+        // Tick labels
+        ctx.font = "10px sans-serif";
+        ctx.fillStyle = mutedFg;
+        for (var gx = Math.ceil(xMin); gx <= Math.floor(xMax); gx++) {
+          ctx.fillText(gx.toString(), toSx(gx) - 4, margin + ph + 16);
+        }
+        for (var gy = Math.ceil(yMin); gy <= Math.floor(yMax); gy++) {
+          ctx.fillText(gy.toString(), margin - 20, toSy(gy) + 4);
+        }
+
+        // T = a^(3/2) theoretical line
+        ctx.beginPath();
+        ctx.strokeStyle = "#e74c3c88";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        for (var lx = xMin; lx <= xMax; lx += 0.01) {
+          var ly = 1.5 * lx; // log T = 1.5 * log a
+          var sx = toSx(lx);
+          var sy = toSy(ly);
+          if (lx === xMin) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Label the line
+        ctx.fillStyle = "#e74c3c";
+        ctx.font = "12px serif";
+        ctx.fillText("T = a^(3/2)  [slope = 3/2]", toSx(1.0) + 10, toSy(1.5) - 10);
+
+        // Plot each body
+        for (var i = 0; i < OB.length; i++) {
+          var b = OB[i];
+          var lga = Math.log10(b.a);
+          var lgT = Math.log10(b.T);
+          var sx = toSx(lga);
+          var sy = toSy(lgT);
+          ctx.beginPath();
+          ctx.arc(sx, sy, 5, 0, TAU);
+          ctx.fillStyle = b.color;
+          ctx.fill();
+          ctx.strokeStyle = fg;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+
+          // Label
+          ctx.fillStyle = fg;
+          ctx.font = "10px sans-serif";
+          var labelOffset = (b.id === "venus" || b.id === "earth") ? -12 : 8;
+          ctx.fillText(b.name, sx + 8, sy + labelOffset);
+        }
+
+        // Title
+        ctx.fillStyle = fg;
+        ctx.font = "14px serif";
+        ctx.fillText("Kepler III: T\u00b2 = a\u00b3  (log-log plot should be a straight line with slope 3/2)", margin, margin - 10);
+      }
+    });
+
+    // Verification table: T^2 / a^3 ratio
+    var tableRows = OB.map(function(b) {
+      var T2 = b.T * b.T;
+      var a3 = b.a * b.a * b.a;
+      var ratio = T2 / a3;
+      return h("tr", { key: "k3r-" + b.id },
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border } }, b.emoji + " " + b.name),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(b.a, 3)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(b.T, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(T2, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(a3, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right", fontWeight: 700, color: Math.abs(ratio - 1) < 0.05 ? "#27ae60" : "#e74c3c" } }, fmt(ratio, 4))
+      );
+    });
+
+    var verTable = h("div", { style: { overflowX: "auto", marginTop: "10px" } },
+      h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
+        h("thead", null,
+          h("tr", null,
+            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "left" } }, "Body"),
+            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "a (AU)"),
+            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "T (yr)"),
+            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "T\u00b2"),
+            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "a\u00b3"),
+            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "T\u00b2/a\u00b3")
+          )
+        ),
+        h("tbody", null, tableRows)
+      )
+    );
+
+    return h("div", { className: "space-y-3" },
+      cvPanel,
+      card([
+        h("strong", { key: "vh" }, "Verification Table \u2014 T\u00b2/a\u00b3 should \u2248 1.00 for solar orbits"),
+        verTable
+      ], { marginTop: "8px" })
+    );
+  }
+
+  /* ====================================================================
+   *  9. WORKSHOP TAB
+   * ==================================================================== */
+  function buildWorkshopTab() {
+    var body = OB.filter(function(b) { return b.id === ws_body; })[0] || OB[2];
+    var ecc = ws_ecc !== undefined ? ws_ecc : body.e;
+    var sma = ws_sma !== undefined ? ws_sma : body.a;
+
+    // Derived quantities
+    var T = Math.sqrt(sma * sma * sma); // Kepler III
+    var peri = sma * (1 - ecc);
+    var aph = sma * (1 + ecc);
+    var vPeri = peri > 0.001 ? visViva(peri, sma) : 0;
+    var vAph = aph > 0.001 ? visViva(aph, sma) : 0;
+    var vEsc = peri > 0.001 ? escapeVelocity(peri) : 0;
+    var habitable = (peri <= 1.7 && aph >= 0.75 && peri >= 0.38);
+
+    var presets = [
+      { label: "Circular Earth", e: 0.0, a: 1.0 },
+      { label: "Eccentric Earth", e: 0.3, a: 1.0 },
+      { label: "Hot Jupiter", e: 0.05, a: 0.05 },
+      { label: "Halley-like", e: 0.96, a: 17.8 },
+      { label: "Habitable Mars", e: 0.0, a: 1.2 }
+    ];
+
+    var bodyButtons = OB.filter(function(b) { return b.type !== "comet"; }).map(function(b) {
+      return btn(b.emoji + " " + b.name, ws_body === b.id, function() {
+        updMulti({ orr_wsb: b.id, orr_wse: undefined, orr_wsa: undefined });
+      }, { key: "wb-" + b.id });
+    });
+
+    return h("div", { className: "space-y-3" },
+      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } }, "Select a body:"),
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "10px" } }, bodyButtons),
+
+      card([
+        h("div", { key: "realhdr", style: { fontSize: "12px", color: mutedFg, marginBottom: "6px" } },
+          "Real values: a = " + fmt(body.a, 3) + " AU, e = " + fmt(body.e, 4) + ", T = " + fmt(body.T, 2) + " yr"
+        ),
+        h("div", { key: "ecc-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
+          h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, "Eccentricity:"),
+          h("input", {
+            type: "range", min: "0", max: "0.99", step: "0.001",
+            value: ecc,
+            onChange: function(ev) { upd("orr_wse", parseFloat(ev.target.value)); },
+            style: { width: "200px" }
+          }),
+          h("span", { style: { fontSize: "13px", color: mutedFg, minWidth: "50px" } }, fmt(ecc, 3))
+        ),
+        h("div", { key: "sma-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
+          h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, "Semi-major (AU):"),
+          h("input", {
+            type: "range", min: "0.05", max: "80", step: "0.01",
+            value: sma,
+            onChange: function(ev) { upd("orr_wsa", parseFloat(ev.target.value)); },
+            style: { width: "200px" }
+          }),
+          h("span", { style: { fontSize: "13px", color: mutedFg, minWidth: "50px" } }, fmt(sma, 3))
+        ),
+        h("div", { key: "presets", style: { display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" } },
+          h("span", { style: { fontSize: "12px", color: mutedFg, marginRight: "4px" } }, "What-if presets:"),
+          presets.map(function(p) {
+            return btn(p.label, false, function() {
+              updMulti({ orr_wse: p.e, orr_wsa: p.a });
+            }, { key: "wsp-" + p.label });
+          })
+        ),
+        h("button", {
+          key: "reset-btn",
+          onClick: function() { updMulti({ orr_wse: undefined, orr_wsa: undefined }); },
+          style: { padding: "4px 12px", borderRadius: "4px", border: "1px solid " + border, background: "transparent", color: fg, cursor: "pointer", fontSize: "12px", marginBottom: "6px" }
+        }, "\u21ba Reset to real values")
+      ], { marginBottom: "10px" }),
+
+      card([
+        h("div", { key: "dh", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } }, "Derived Quantities"),
+        h("div", { key: "d1", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
+          h("div", null, "Period T = " + fmt(T, 3) + " yr  (" + fmt(T * 365.25, 1) + " days)"),
+          h("div", null, "Perihelion = " + fmt(peri, 4) + " AU  (" + fmt(peri * AU_KM, 0) + " km)"),
+          h("div", null, "Aphelion = " + fmt(aph, 4) + " AU  (" + fmt(aph * AU_KM, 0) + " km)"),
+          h("div", null, "v at perihelion = " + fmt(vPeri, 2) + " km/s"),
+          h("div", null, "v at aphelion = " + fmt(vAph, 2) + " km/s"),
+          h("div", null, "Escape v at perihelion = " + fmt(vEsc, 2) + " km/s"),
+          h("div", {
+            style: {
+              marginTop: "6px",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              background: habitable ? "#27ae6022" : "#e74c3c22",
+              border: "1px solid " + (habitable ? "#27ae60" : "#e74c3c"),
+              fontWeight: 700
+            }
+          }, habitable
+            ? "\u2705 This orbit passes through the habitable zone (0.75\u20131.7 AU)."
+            : "\u274c This orbit does NOT remain in the habitable zone."
+          )
+        )
+      ])
+    );
+  }
+
+  /* ====================================================================
+   *  10. TRANSFERS TAB
+   * ==================================================================== */
+  function buildTransfersTab() {
+    var planets = OB.filter(function(b) { return b.type === "planet"; });
+    var fromBody = OB.filter(function(b) { return b.id === tr_from; })[0] || OB[2];
+    var toBody = OB.filter(function(b) { return b.id === tr_to; })[0] || OB[3];
+
+    var transfer = hohmann(fromBody.a, toBody.a);
+    var synodic = synodicPeriod(fromBody.T, toBody.T);
+
+    var fromButtons = planets.map(function(p) {
+      return btn(p.emoji + " " + p.name, tr_from === p.id, function() { upd("orr_trf", p.id); }, { key: "tf-" + p.id });
+    });
+    var toButtons = planets.map(function(p) {
+      return btn(p.emoji + " " + p.name, tr_to === p.id, function() { upd("orr_trt", p.id); }, { key: "tt-" + p.id });
+    });
+
+    // Delta-v budget from Earth
+    var earth = OB[2];
+    var budgetRows = planets.filter(function(p) { return p.id !== "earth"; }).map(function(p) {
+      var t = hohmann(earth.a, p.a);
+      return h("tr", { key: "bud-" + p.id },
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border } }, p.emoji + " " + p.name),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(t.dv1, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(t.dv2, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right", fontWeight: 700 } }, fmt(t.dvTotal, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } },
+          t.transitYrs < 1 ? fmt(t.transitYrs * 365.25, 0) + " d" : fmt(t.transitYrs, 2) + " yr")
+      );
+    });
+
+    return h("div", { className: "space-y-3" },
+      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } }, "Hohmann Transfer Calculator"),
+      h("div", { style: { marginBottom: "6px" } },
+        h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "From:"),
+        h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, fromButtons)
+      ),
+      h("div", { style: { marginBottom: "10px" } },
+        h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "To:"),
+        h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, toButtons)
+      ),
+
+      card([
+        h("div", { key: "th", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } },
+          fromBody.emoji + " " + fromBody.name + "  \u2192  " + toBody.emoji + " " + toBody.name
+        ),
+        h("div", { key: "td", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
+          h("div", null, "\u0394v\u2081 (departure burn): " + fmt(transfer.dv1, 3) + " km/s"),
+          h("div", null, "\u0394v\u2082 (arrival burn): " + fmt(transfer.dv2, 3) + " km/s"),
+          h("div", null, "Total \u0394v: " + fmt(transfer.dvTotal, 3) + " km/s"),
+          h("div", null, "Transit time: " + (transfer.transitYrs < 1
+            ? fmt(transfer.transitYrs * 365.25, 1) + " days"
+            : fmt(transfer.transitYrs, 3) + " years")),
+          h("div", null, "Synodic period: " + (synodic === Infinity ? "\u221e" : fmt(synodic, 2) + " yr") + " (launch window interval)")
+        )
+      ], { marginBottom: "12px" }),
+
+      card([
+        h("div", { key: "bh", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } },
+          "\u0394v Budget: Earth \u2192 All Planets (Hohmann)"
+        ),
+        h("div", { key: "bt", style: { overflowX: "auto" } },
+          h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
+            h("thead", null,
+              h("tr", null,
+                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "left" } }, "Destination"),
+                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "\u0394v\u2081 (km/s)"),
+                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "\u0394v\u2082 (km/s)"),
+                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "Total (km/s)"),
+                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "Transit")
+              )
+            ),
+            h("tbody", null, budgetRows)
+          )
+        )
+      ])
+    );
+  }
+
+  /* ====================================================================
+   *  11. CHALLENGES TAB
+   * ==================================================================== */
+  function buildChallengesTab() {
+    var CHALLENGES = [
+      {
+        q: "Jupiter orbits at a = 5.203 AU. Using Kepler III (T = a^(3/2)), what is Jupiter's orbital period in years?",
+        answer: 11.86,
+        tol: 0.15,
+        hints: ["T = a^(3/2)", "T = 5.203^1.5", "Compute 5.203^1.5 = 5.203 \u00d7 \u221a5.203"],
+        unit: "yr"
+      },
+      {
+        q: "Earth orbits at 1 AU. Using the vis-viva equation, what is Earth's orbital speed in km/s? (Assume circular orbit.)",
+        answer: 29.78,
+        tol: 0.3,
+        hints: ["v = \u221a(GM/r)", "GM\u2299 = 1.327\u00d710\u00b2\u2070 m\u00b3/s\u00b2, r = 1.496\u00d710\u00b9\u00b9 m", "v = \u221a(1.327e20 / 1.496e11)"],
+        unit: "km/s"
+      },
+      {
+        q: "Mercury has a = 0.387 AU, e = 0.2056. What is Mercury's perihelion distance in AU?",
+        answer: 0.307,
+        tol: 0.005,
+        hints: ["Perihelion = a(1 - e)", "= 0.387 \u00d7 (1 - 0.2056)", "= 0.387 \u00d7 0.7944"],
+        unit: "AU"
+      },
+      {
+        q: "A comet has perihelion 0.5 AU and aphelion 35 AU. What is its orbital speed ratio v_peri / v_aph?",
+        answer: 70,
+        tol: 1.5,
+        hints: ["By conservation of angular momentum: v_p / v_a = r_a / r_p", "= 35 / 0.5"],
+        unit: ""
+      },
+      {
+        q: "Calculate the total \u0394v for a Hohmann transfer from Earth (1 AU) to Mars (1.524 AU) in km/s.",
+        answer: 5.59,
+        tol: 0.25,
+        hints: [
+          "Transfer semi-major axis a_t = (r1 + r2)/2",
+          "\u0394v1 = |v_t1 - v_circ1|, \u0394v2 = |v_circ2 - v_t2|",
+          "v_t at r: v = \u221a(\u03bc(2/r - 1/a_t))"
+        ],
+        unit: "km/s"
+      },
+      {
+        q: "What is the escape velocity from the Sun at Earth's orbit (1 AU) in km/s?",
+        answer: 42.1,
+        tol: 0.5,
+        hints: ["v_esc = \u221a(2GM/r)", "= \u221a2 \u00d7 v_circular", "\u221a2 \u00d7 29.78 \u2248 42.1"],
+        unit: "km/s"
+      },
+      {
+        q: "Saturn orbits at 9.537 AU. How many times farther from the Sun is Saturn than Earth? Use this to find Saturn's period using Kepler III.",
+        answer: 29.46,
+        tol: 0.4,
+        hints: ["Ratio = 9.537 / 1.0 = 9.537", "T = a^(3/2) = 9.537^1.5", "9.537^1.5 \u2248 29.46"],
+        unit: "yr"
+      },
+      {
+        q: "An asteroid has T = 8.0 years. What is its semi-major axis in AU? (Use T\u00b2 = a\u00b3.)",
+        answer: 4.0,
+        tol: 0.1,
+        hints: ["a\u00b3 = T\u00b2 = 64", "a = 64^(1/3)", "a = 4.0"],
+        unit: "AU"
+      },
+      {
+        q: "Mars has a = 1.524 AU, e = 0.0934. What is Mars's speed at aphelion in km/s?",
+        answer: 21.97,
+        tol: 0.4,
+        hints: ["Aphelion r = a(1+e) = 1.524 \u00d7 1.0934", "v = \u221a(GM(2/r - 1/a))", "GM = 1.327\u00d710\u00b2\u2070 m\u00b3/s\u00b2"],
+        unit: "km/s"
+      },
+      {
+        q: "How long (in days) does a Hohmann transfer from Earth to Venus (a = 0.723 AU) take?",
+        answer: 146,
+        tol: 5,
+        hints: ["Transfer a_t = (1.0 + 0.723)/2 = 0.8615 AU", "Transfer T_full = a_t^(3/2) years", "Transit = T_full/2, convert to days"],
+        unit: "days"
+      }
+    ];
+
+    var idx = clamp(ch_idx, 0, CHALLENGES.length - 1);
+    var prob = CHALLENGES[idx];
+    var answered = ch_correct[idx];
+    var hintCount = ch_hints[idx] || 0;
+
+    // Live challenge section
+    var liveSection = null;
+    // We define live challenges that read from cv._liveState
+    var LIVE_CHALLENGES = [
+      {
+        id: "earth_dist",
+        q: "LIVE: What is Earth's current distance from the Sun (in AU)? Check the orrery!",
+        getAnswer: function() {
+          // Try to find canvas with _liveState
+          var cvs = typeof document !== "undefined" ? document.querySelectorAll("canvas") : [];
+          for (var i = 0; i < cvs.length; i++) {
+            if (cvs[i]._liveState && cvs[i]._liveState.bodies && cvs[i]._liveState.bodies.earth) {
+              return cvs[i]._liveState.bodies.earth.r;
+            }
+          }
+          return 1.0; // fallback
+        },
+        tol: 0.02,
+        unit: "AU"
+      },
+      {
+        id: "body_speed",
+        q: "LIVE: What is Mars's current orbital speed (in km/s)? Switch to Full Orrery to see.",
+        getAnswer: function() {
+          var cvs = typeof document !== "undefined" ? document.querySelectorAll("canvas") : [];
+          for (var i = 0; i < cvs.length; i++) {
+            if (cvs[i]._liveState && cvs[i]._liveState.bodies && cvs[i]._liveState.bodies.mars) {
+              return cvs[i]._liveState.bodies.mars.speed;
+            }
+          }
+          return 24.1;
+        },
+        tol: 0.5,
+        unit: "km/s"
+      },
+      {
+        id: "planet_dist",
+        q: "LIVE: What is the current distance between Earth and Mars in AU?",
+        getAnswer: function() {
+          var cvs = typeof document !== "undefined" ? document.querySelectorAll("canvas") : [];
+          for (var i = 0; i < cvs.length; i++) {
+            var ls = cvs[i]._liveState;
+            if (ls && ls.bodies && ls.bodies.earth && ls.bodies.mars) {
+              var dx = ls.bodies.earth.x - ls.bodies.mars.x;
+              var dy = ls.bodies.earth.y - ls.bodies.mars.y;
+              return Math.sqrt(dx * dx + dy * dy);
+            }
+          }
+          return 1.5;
+        },
+        tol: 0.05,
+        unit: "AU"
+      }
+    ];
+
+    var liveIdx = d.orr_cli || 0;
+    var liveAns = d.orr_cla || {};
+    var liveCorrect = d.orr_clc || {};
+    var liveCh = LIVE_CHALLENGES[clamp(liveIdx, 0, LIVE_CHALLENGES.length - 1)];
+
+    liveSection = card([
+      h("div", { key: "lhdr", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: accent } }, "\ud83d\udce1 Live Simulation Challenges"),
+      h("div", { key: "lnav", style: { display: "flex", gap: "4px", marginBottom: "8px" } },
+        LIVE_CHALLENGES.map(function(lc, li) {
+          return btn(
+            (liveCorrect[li] ? "\u2705 " : "") + "Live " + (li + 1),
+            liveIdx === li,
+            function() { upd("orr_cli", li); },
+            { key: "lnb-" + li }
+          );
+        })
+      ),
+      h("p", { key: "lq", style: { fontSize: "13px", color: fg, marginBottom: "8px" } }, liveCh.q),
+      !liveCorrect[liveIdx] ? h("div", { key: "linput", style: { display: "flex", gap: "8px", alignItems: "center" } },
+        h("input", {
+          type: "number",
+          step: "any",
+          value: liveAns[liveIdx] || "",
+          onChange: function(ev) {
+            var newAns = Object.assign({}, liveAns);
+            newAns[liveIdx] = ev.target.value;
+            upd("orr_cla", newAns);
+          },
+          style: { width: "120px", padding: "6px", borderRadius: "4px", border: "1px solid " + border, background: bg, color: fg }
+        }),
+        h("span", { style: { fontSize: "12px", color: mutedFg } }, liveCh.unit),
+        h("button", {
+          onClick: function() {
+            var userVal = parseFloat(liveAns[liveIdx]);
+            var correctVal = liveCh.getAnswer();
+            if (!isNaN(userVal) && Math.abs(userVal - correctVal) <= liveCh.tol) {
+              var newCorrect = Object.assign({}, liveCorrect);
+              newCorrect[liveIdx] = true;
+              upd("orr_clc", newCorrect);
+              if (awardStemXP) awardStemXP(10);
+              if (addToast) addToast("\u2705 Correct! +10 XP");
+            } else {
+              if (addToast) addToast("\u274c Not quite. The live value is \u2248" + fmt(correctVal, 3) + " " + liveCh.unit);
+            }
+          },
+          style: { padding: "6px 16px", borderRadius: "6px", border: "none", background: accent, color: "#fff", cursor: "pointer", fontWeight: 700 }
+        }, "Check")
+      ) : h("div", { key: "lcorr", style: { color: "#27ae60", fontWeight: 700, fontSize: "14px" } }, "\u2705 Correct!")
+    ], { marginTop: "12px", border: "2px solid " + accent });
+
+    // Equation reference card
+    var eqRef = card([
+      h("div", { key: "eqh", style: { fontWeight: 700, fontSize: "13px", marginBottom: "6px", color: fg } }, "\ud83d\udcdc Equation Quick Reference"),
+      h("div", { key: "eqb", style: { fontSize: "12px", lineHeight: "1.8", color: fg, fontFamily: "monospace" } },
+        h("div", null, "Kepler III:   T\u00b2 = a\u00b3   \u2192   T = a^(3/2)"),
+        h("div", null, "Vis-viva:     v = \u221a[GM(2/r \u2013 1/a)]"),
+        h("div", null, "Perihelion:   r_p = a(1\u2013e)"),
+        h("div", null, "Aphelion:     r_a = a(1+e)"),
+        h("div", null, "Escape vel:   v_esc = \u221a(2GM/r) = \u221a2 \u00b7 v_circ"),
+        h("div", null, "Hohmann a_t:  a_t = (r\u2081 + r\u2082)/2"),
+        h("div", null, "Transit time: t = \u03c0\u221a(a_t\u00b3/GM)"),
+        h("div", null, "Angular mom:  v_p \u00b7 r_p = v_a \u00b7 r_a"),
+        h("div", null, "GM\u2299 = 1.327\u00d710\u00b2\u2070 m\u00b3/s\u00b2   |   1 AU = 1.496\u00d710\u2078 km")
+      )
+    ], { marginTop: "10px", background: isDark ? "#1a2a1a" : "#f0fff0" });
+
+    return h("div", { className: "space-y-3" },
+      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } },
+        "Challenge " + (idx + 1) + " of " + CHALLENGES.length
+      ),
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
+        CHALLENGES.map(function(c, ci) {
+          var label = (ch_correct[ci] ? "\u2705 " : "") + (ci + 1);
+          return btn(label, idx === ci, function() { upd("orr_chi", ci); }, { key: "ch-" + ci });
+        })
+      ),
+
+      card([
+        h("p", { key: "cq", style: { fontSize: "14px", color: fg, marginBottom: "10px", lineHeight: "1.6" } }, prob.q),
+
+        // Hints
+        hintCount > 0 ? h("div", { key: "hints", style: { marginBottom: "10px" } },
+          prob.hints.slice(0, hintCount).map(function(ht, hi) {
+            return h("div", { key: "h-" + hi, style: { fontSize: "12px", color: "#e67e22", padding: "3px 0" } }, "\ud83d\udca1 Hint " + (hi + 1) + ": " + ht);
+          })
+        ) : null,
+
+        !answered ? h("div", { key: "hinbtn", style: { marginBottom: "10px" } },
+          hintCount < prob.hints.length ? h("button", {
+            onClick: function() {
+              var newH = Object.assign({}, ch_hints);
+              newH[idx] = (newH[idx] || 0) + 1;
+              upd("orr_chh", newH);
+            },
+            style: { padding: "4px 12px", borderRadius: "4px", border: "1px solid #e67e22", background: "transparent", color: "#e67e22", cursor: "pointer", fontSize: "12px" }
+          }, "\ud83d\udca1 Reveal Hint (" + (prob.hints.length - hintCount) + " left)") : h("span", { style: { fontSize: "12px", color: mutedFg } }, "All hints revealed")
+        ) : null,
+
+        !answered ? h("div", { key: "ainput", style: { display: "flex", gap: "8px", alignItems: "center" } },
+          h("input", {
+            type: "number",
+            step: "any",
+            value: ch_ans[idx] || "",
+            onChange: function(ev) {
+              var newA = Object.assign({}, ch_ans);
+              newA[idx] = ev.target.value;
+              upd("orr_cha", newA);
+            },
+            placeholder: "Your answer",
+            style: { width: "140px", padding: "8px", borderRadius: "6px", border: "1px solid " + border, background: bg, color: fg, fontSize: "14px" }
+          }),
+          h("span", { style: { fontSize: "13px", color: mutedFg } }, prob.unit),
+          h("button", {
+            onClick: function() {
+              var userVal = parseFloat(ch_ans[idx]);
+              if (isNaN(userVal)) { if (addToast) addToast("Enter a number."); return; }
+              if (Math.abs(userVal - prob.answer) <= prob.tol) {
+                var newC = Object.assign({}, ch_correct);
+                newC[idx] = true;
+                upd("orr_chc", newC);
+                if (awardStemXP) awardStemXP(10);
+                if (addToast) addToast("\u2705 Correct! +10 XP");
+              } else {
+                if (addToast) addToast("\u274c Not quite. Try again or reveal a hint.");
+              }
+            },
+            style: { padding: "8px 20px", borderRadius: "6px", border: "none", background: "#27ae60", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px" }
+          }, "Submit")
+        ) : h("div", { key: "acorr", style: { color: "#27ae60", fontWeight: 700, fontSize: "16px", padding: "8px 0" } },
+          "\u2705 Correct! The answer is " + fmt(prob.answer, 3) + " " + prob.unit
+        ),
+
+        // Navigation
+        h("div", { key: "cnav", style: { display: "flex", gap: "8px", marginTop: "12px" } },
+          idx > 0 ? h("button", {
+            onClick: function() { upd("orr_chi", idx - 1); },
+            style: { padding: "6px 14px", borderRadius: "6px", border: "1px solid " + border, background: "transparent", color: fg, cursor: "pointer" }
+          }, "\u2190 Prev") : null,
+          idx < CHALLENGES.length - 1 ? h("button", {
+            onClick: function() { upd("orr_chi", idx + 1); },
+            style: { padding: "6px 14px", borderRadius: "6px", border: "1px solid " + border, background: "transparent", color: fg, cursor: "pointer" }
+          }, "Next \u2192") : null
+        )
+      ]),
+
+      liveSection,
+      eqRef
+    );
+  }
+
+  /* ====================================================================
+   *  12. TRUE/FALSE MISCONCEPTIONS TAB
+   * ==================================================================== */
+  function buildTrueFalseTab() {
+    var MISCONCEPTIONS = [
+      {
+        q: "Planets orbit the Sun in perfect circles.",
+        answer: false,
+        explain: "Planets orbit in ellipses with the Sun at one focus (Kepler I). Most planetary orbits are nearly circular but none is a perfect circle."
+      },
+      {
+        q: "A planet moves faster when it is farther from the Sun.",
+        answer: false,
+        explain: "A planet moves SLOWER when farther (aphelion) and FASTER when closer (perihelion). This follows from Kepler II (equal areas) and conservation of angular momentum."
+      },
+      {
+        q: "All planets take the same time to orbit the Sun.",
+        answer: false,
+        explain: "Orbital period increases with distance: T = a^(3/2). Mercury takes 88 days; Neptune takes 165 years."
+      },
+      {
+        q: "If you double a planet's distance from the Sun, its period more than doubles.",
+        answer: true,
+        explain: "By Kepler III, T = a^(3/2). Doubling a: T_new = (2a)^(3/2) = 2^(3/2) \u00d7 T \u2248 2.83 \u00d7 T. So the period nearly triples."
+      },
+      {
+        q: "The Sun sits at the center of each planet's orbit.",
+        answer: false,
+        explain: "The Sun sits at one FOCUS of the ellipse, not the center. The other focus is empty. For low-eccentricity orbits they are close but never identical."
+      },
+      {
+        q: "A Hohmann transfer orbit uses the least fuel of any two-impulse transfer between circular coplanar orbits.",
+        answer: true,
+        explain: "The Hohmann transfer is the minimum-energy two-impulse manoeuvre between two coplanar circular orbits. More complex trajectories (bi-elliptic) can beat it only for very large orbit ratios."
+      },
+      {
+        q: "Escape velocity from the Sun at Earth's orbit is exactly twice Earth's orbital speed.",
+        answer: false,
+        explain: "Escape velocity = \u221a2 \u00d7 circular velocity. \u221a2 \u2248 1.414, not 2. So v_esc \u2248 42.1 km/s vs. Earth's 29.8 km/s."
+      },
+      {
+        q: "Comets follow the same gravitational laws as planets.",
+        answer: true,
+        explain: "Comets obey Kepler's laws and Newton's gravity just like planets. They simply have much higher eccentricities, producing elongated elliptical (or sometimes parabolic/hyperbolic) paths."
+      }
+    ];
+
+    var idx = clamp(tf_idx, 0, MISCONCEPTIONS.length - 1);
+    var mc = MISCONCEPTIONS[idx];
+    var userAns = tf_ans[idx]; // undefined, true, or false
+    var answered = userAns !== undefined;
+    var correct = answered && (userAns === mc.answer);
+
+    return h("div", { className: "space-y-3" },
+      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } },
+        "Misconception " + (idx + 1) + " of " + MISCONCEPTIONS.length
+      ),
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
+        MISCONCEPTIONS.map(function(m, mi) {
+          var done = tf_ans[mi] !== undefined;
+          var wasCorrect = done && (tf_ans[mi] === MISCONCEPTIONS[mi].answer);
+          var label = (done ? (wasCorrect ? "\u2705 " : "\u274c ") : "") + (mi + 1);
+          return btn(label, idx === mi, function() { upd("orr_tfi", mi); }, { key: "tf-" + mi });
+        })
+      ),
+
+      card([
+        h("div", { key: "stmt", style: { fontSize: "16px", color: fg, marginBottom: "16px", lineHeight: "1.6", fontStyle: "italic" } },
+          "\u201c" + mc.q + "\u201d"
+        ),
+
+        !answered ? h("div", { key: "btns", style: { display: "flex", gap: "12px" } },
+          h("button", {
+            onClick: function() {
+              var newA = Object.assign({}, tf_ans);
+              newA[idx] = true;
+              upd("orr_tfa", newA);
+              if (true === mc.answer) {
+                if (awardStemXP) awardStemXP(8);
+                if (addToast) addToast("\u2705 Correct! +8 XP");
+              } else {
+                if (addToast) addToast("\u274c Incorrect.");
+              }
+            },
+            style: { padding: "10px 28px", borderRadius: "8px", border: "2px solid #27ae60", background: "#27ae6022", color: "#27ae60", cursor: "pointer", fontWeight: 700, fontSize: "16px" }
+          }, "\u2714 TRUE"),
+          h("button", {
+            onClick: function() {
+              var newA = Object.assign({}, tf_ans);
+              newA[idx] = false;
+              upd("orr_tfa", newA);
+              if (false === mc.answer) {
+                if (awardStemXP) awardStemXP(8);
+                if (addToast) addToast("\u2705 Correct! +8 XP");
+              } else {
+                if (addToast) addToast("\u274c Incorrect.");
+              }
+            },
+            style: { padding: "10px 28px", borderRadius: "8px", border: "2px solid #e74c3c", background: "#e74c3c22", color: "#e74c3c", cursor: "pointer", fontWeight: 700, fontSize: "16px" }
+          }, "\u2718 FALSE")
+        ) : h("div", { key: "result" },
+          h("div", {
+            style: {
+              padding: "10px 14px",
+              borderRadius: "8px",
+              marginBottom: "10px",
+              background: correct ? "#27ae6022" : "#e74c3c22",
+              border: "2px solid " + (correct ? "#27ae60" : "#e74c3c"),
+              fontWeight: 700,
+              fontSize: "15px",
+              color: correct ? "#27ae60" : "#e74c3c"
+            }
+          }, correct ? "\u2705 Correct!" : "\u274c Incorrect \u2014 the answer is " + (mc.answer ? "TRUE" : "FALSE")),
+          h("div", { style: { fontSize: "13px", color: fg, lineHeight: "1.6", padding: "4px 0" } }, mc.explain)
+        ),
+
+        h("div", { key: "nav", style: { display: "flex", gap: "8px", marginTop: "14px" } },
+          idx > 0 ? h("button", {
+            onClick: function() { upd("orr_tfi", idx - 1); },
+            style: { padding: "6px 14px", borderRadius: "6px", border: "1px solid " + border, background: "transparent", color: fg, cursor: "pointer" }
+          }, "\u2190 Prev") : null,
+          idx < MISCONCEPTIONS.length - 1 ? h("button", {
+            onClick: function() { upd("orr_tfi", idx + 1); },
+            style: { padding: "6px 14px", borderRadius: "6px", border: "1px solid " + border, background: "transparent", color: fg, cursor: "pointer" }
+          }, "Next \u2192") : null
+        )
+      ])
+    );
+  }
+
+  /* ====================================================================
+   *  13. RENDER — dispatch to active tab
+   * ==================================================================== */
+  var content;
+  switch (stab) {
+    case 0: content = buildOrreryTab(); break;
+    case 1: content = buildKeplerITab(); break;
+    case 2: content = buildKeplerIITab(); break;
+    case 3: content = buildKeplerIIITab(); break;
+    case 4: content = buildWorkshopTab(); break;
+    case 5: content = buildTransfersTab(); break;
+    case 6: content = buildChallengesTab(); break;
+    case 7: content = buildTrueFalseTab(); break;
+    default: content = h("div", null, "Unknown tab");
+  }
+
+  return h("div", { className: "space-y-3" },
+    tabHeader,
+    content
+  );
+
+            })() : null,
+
+            // 3D Canvas container (hidden in orrery mode)
+            !d.orreryMode && React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-800/50 shadow-lg", style: { background: '#0a0e27' } },
 
               React.createElement("canvas", {
 
@@ -1680,7 +3311,7 @@ const d = labToolData.solarSystem;
 
             // Planet buttons row
 
-            React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
+            !d.orreryMode && React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
 
               PLANETS.map(p => React.createElement("button", { "aria-label": "Select planet: " + p.name,
 
@@ -1698,7 +3329,7 @@ const d = labToolData.solarSystem;
 
             // â"€â"€ Scale Explanation Collapsible â"€â"€
 
-            React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
+            !d.orreryMode && React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
 
               React.createElement("summary", { className: "px-3 py-1.5 text-[11px] font-bold text-amber-700 cursor-pointer select-none hover:bg-amber-100/50 transition-colors" }, "\uD83D\uDD2D Why aren't the sizes truly to scale?"),
 
@@ -1746,7 +3377,7 @@ const d = labToolData.solarSystem;
 
             // â"€â"€ Planet Info Card (Enhanced with Close-Up & Drone) â"€â"€
 
-            sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
+            !d.orreryMode && sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
 
               // Planet header
 
