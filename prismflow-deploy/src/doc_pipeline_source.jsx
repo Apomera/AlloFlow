@@ -5104,13 +5104,10 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           }
         };
 
-        // ── Polish: heading hierarchy + duplicate cleanup (deterministic, no AI) ──
-        // Previously this ran AI polish passes via aiFixChunked, but Gemini consistently
-        // hits MAX_TOKENS on large documents, wasting API calls. These fixes are better
-        // done deterministically — they're rule-based, not content-dependent.
+        // ── Polish passes: deterministic first, then AI with small chunks ──
         if (transformChunks > 1) {
-          _pipeLog('Polish', 'Running deterministic polish (heading hierarchy + dedup)');
-          // Fix heading hierarchy: ensure exactly one h1, demote extras
+          // Phase 1: Deterministic fixes (instant, free)
+          _pipeLog('Polish', 'Phase 1: deterministic heading/dedup fixes');
           let h1Count = 0;
           bodyContent = bodyContent.replace(/<h1([^>]*)>/gi, function(m, attrs) {
             h1Count++;
@@ -5120,15 +5117,51 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             bodyContent = bodyContent.replace(/<\/h1>/gi, function() {
               return h1Count-- > 1 ? '</h2>' : '</h1>';
             });
-            // Re-count after fix to reset
-            h1Count = (bodyContent.match(/<h1[\s>]/gi) || []).length;
-            warnLog('[Polish] Demoted ' + (h1Count > 0 ? 'extra' : '') + ' h1 tags → h2');
+            warnLog('[Polish] Demoted extra h1 tags → h2');
           }
-          // Remove duplicate headings at chunk seams (same text within 200 chars)
           bodyContent = bodyContent.replace(/<(h[1-6])[^>]*>([^<]{3,})<\/\1>\s*<\1[^>]*>\2<\/\1>/gi, '<$1>$2</$1>');
-          // Remove redundant <hr> between sections
           bodyContent = bodyContent.replace(/(<\/(?:section|article|div)>)\s*<hr\s*\/?>\s*(<(?:section|article|div))/gi, '$1\n$2');
-          warnLog('[Polish] Deterministic polish complete');
+
+          // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
+          // Uses 4KB chunks to stay well within Gemini's output token limit
+          if (pdfPolishPasses > 0) {
+            const POLISH_CHUNK = 4000;
+            const polishViolations = 'TABLE CONTINUITY: Merge table fragments split across sections — combine <thead>/<tbody> that were separated.\nSTYLE CONSISTENCY: Unify inline CSS — if similar headings or paragraphs use different colors/fonts, match them to the dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries — orphaned closing tags, repeated introductory text, or awkward breaks.\nPRESERVE ALL CONTENT AND INLINE STYLES. Do NOT summarize, shorten, or remove any unique text.';
+            for (let polishIdx = 0; polishIdx < pdfPolishPasses; polishIdx++) {
+              updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses} (style + table unification)...`);
+              _pipeLog('Polish', 'Phase 2: AI polish pass ' + (polishIdx + 1) + ' (' + POLISH_CHUNK + ' char chunks)');
+              try {
+                const polishChunks = splitHtmlOnTagBoundary(bodyContent, POLISH_CHUNK);
+                const polishedParts = [];
+                let polishSkipped = 0;
+                for (let pci = 0; pci < polishChunks.length; pci++) {
+                  const pc = polishChunks[pci];
+                  try {
+                    const pPrompt = `Fix these issues in this HTML fragment. Change ONLY what's needed. Preserve ALL content and inline styles.\n\n${polishViolations}\n\nHTML FRAGMENT (${pci + 1}/${polishChunks.length}):\n"""\n${pc}\n"""\n\nReturn ONLY the fixed fragment.`;
+                    const pOut = stripFence(await callGemini(pPrompt, true));
+                    if (pOut && pOut.length >= pc.length * 0.85 && textCharCount(pOut) >= textCharCount(pc) * 0.9) {
+                      polishedParts.push(pOut);
+                    } else {
+                      polishSkipped++;
+                      polishedParts.push(pc);
+                    }
+                  } catch (pcErr) {
+                    polishSkipped++;
+                    polishedParts.push(pc);
+                  }
+                }
+                const polished = polishedParts.join('');
+                if (polished.length >= bodyContent.length * 0.9) {
+                  bodyContent = polished;
+                  _pipeLog('Polish', 'Pass ' + (polishIdx + 1) + ' applied (' + polishChunks.length + ' chunks, ' + polishSkipped + ' kept original)');
+                } else {
+                  warnLog('[Polish] Pass ' + (polishIdx + 1) + ' rejected: output too short');
+                }
+              } catch (polishErr) {
+                warnLog('[PDF Fix] Polish pass ' + (polishIdx + 1) + ' failed:', polishErr);
+              }
+            }
+          }
         }
       }
 
