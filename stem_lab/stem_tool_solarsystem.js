@@ -1652,12 +1652,12 @@ const d = labToolData.solarSystem;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors " + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-400" : "text-slate-500" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
+              React.createElement("h3", { className: "text-lg font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, "\uD83C\uDF0D Solar System Explorer"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, d.orreryMode ? "Orrery" : "3D"),
-              React.createElement("button", { onClick: function() { upd("orreryMode", !d.orreryMode); }, "aria-label": d.orreryMode ? "Switch to 3D" : "Switch to Orrery", className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orreryMode ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-purple-50 border border-slate-200") }, d.orreryMode ? "\uD83C\uDF0D 3D Explorer" : "\uD83C\uDF0C Orrery Lab")
+              React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D"),
+              React.createElement("button", { onClick: function() { upd("orreryMode", !d.orreryMode); }, "aria-label": d.orreryMode ? "Switch to 3D" : "Switch to Orrery", className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orreryMode ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md" : (isDark ? "bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600" : "bg-slate-100 text-slate-600 hover:bg-purple-50 border border-slate-200")) }, d.orreryMode ? "\uD83C\uDF0D 3D Explorer" : "\uD83C\uDF0C Orrery Lab")
 
             ),
 
@@ -4197,11 +4197,11 @@ const d = labToolData.solarSystem;
 
             // â"€â"€ Scale Explanation Collapsible â"€â"€
 
-            !d.orreryMode && React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
+            !d.orreryMode && React.createElement("details", { className: "mt-2 rounded-xl border overflow-hidden " + (isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200') },
 
-              React.createElement("summary", { className: "px-3 py-1.5 text-[11px] font-bold text-amber-700 cursor-pointer select-none hover:bg-amber-100/50 transition-colors" }, "\uD83D\uDD2D Why aren't the sizes truly to scale?"),
+              React.createElement("summary", { className: "px-3 py-1.5 text-[11px] font-bold cursor-pointer select-none transition-colors " + (isDark ? 'text-amber-300 hover:bg-amber-900/30' : 'text-amber-700 hover:bg-amber-100/50') }, "\uD83D\uDD2D Why aren't the sizes truly to scale?"),
 
-              React.createElement("div", { className: "px-3 pb-3 text-[10px] text-amber-800 leading-relaxed" },
+              React.createElement("div", { className: "px-3 pb-3 text-[11px] leading-relaxed " + (isDark ? 'text-amber-300/80' : 'text-amber-800') },
 
                 React.createElement("p", { className: "mb-2" }, "If this model were truly to scale, the Sun would be a beach ball and Earth would be a grain of sand 30 meters away! Jupiter would be a marble 155 meters away, and Pluto would be invisible 1.2 km from the Sun."),
 
@@ -6183,7 +6183,7 @@ const d = labToolData.solarSystem;
                   )
                 ),
                 // Descent visualization canvas
-                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-300 shadow-lg", style: { height: '400px' } },
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 shadow-lg " + (isDark ? 'border-indigo-700/60' : 'border-indigo-300'), style: { height: '400px' } },
                   React.createElement("canvas", {
                     "aria-label": "Atmospheric descent visualization for " + sel.name,
                     style: { width: '100%', height: '100%', display: 'block' },
@@ -11230,8 +11230,8 @@ const d = labToolData.solarSystem;
                           style: { borderColor: card.color + '60', color: card.color, backgroundColor: card.color + '10' }
                         }, React.createElement("span", null, card.icon), card.title, React.createElement("span", { className: "ml-auto text-[10px]" }, d['showConcept_' + k] ? '\u25B2' : '\u25BC')),
                         d['showConcept_' + k] && React.createElement("div", {
-                          className: "mt-1 p-3 rounded-lg border text-xs text-slate-700 leading-relaxed",
-                          style: { borderColor: card.color + '30', backgroundColor: card.color + '08' }
+                          className: "mt-1 p-3 rounded-lg border text-xs leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-700'),
+                          style: { borderColor: card.color + '30', backgroundColor: isDark ? card.color + '12' : card.color + '08' }
                         }, card.content)
                       );
                     })
@@ -11239,7 +11239,7 @@ const d = labToolData.solarSystem;
 
                   // â"€â"€ Quiz Mode (Enhanced with Error-Correcting Feedback) â"€â"€
 
-                  React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+                  React.createElement("div", { className: "mt-4 border-t pt-3 " + (isDark ? 'border-slate-700' : 'border-slate-200') },
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -11275,7 +11275,13 @@ const d = labToolData.solarSystem;
 
                           var wasChosen = d.quiz.chosen === opt;
 
-                          var cls = !d.quiz.answered ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50' : isCorrect ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : wasChosen && !isCorrect ? 'bg-red-100 text-red-800 border-red-300' : 'bg-slate-50 text-slate-600 border-slate-200';
+                          var cls = !d.quiz.answered
+                            ? (isDark ? 'bg-slate-700 text-slate-200 border-slate-600 hover:border-indigo-400 hover:bg-slate-600' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50')
+                            : isCorrect
+                              ? (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50' : 'bg-emerald-100 text-emerald-800 border-emerald-300')
+                              : wasChosen && !isCorrect
+                                ? (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50' : 'bg-red-100 text-red-800 border-red-300')
+                                : (isDark ? 'bg-slate-800 text-slate-500 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-200');
 
                           return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
@@ -11297,12 +11303,11 @@ const d = labToolData.solarSystem;
                       ),
 
                       // Error-correcting feedback: explain WHY wrong answer is wrong
-                      d.quiz.answered && !d.quiz.correct && d.quiz.wrongFeedback && d.quiz.wrongFeedback[d.quiz.chosen] && React.createElement("div", { className: "mt-3 bg-red-50 rounded-lg p-3 border border-red-200" },
-                        React.createElement("p", { className: "text-xs font-bold text-red-700 mb-1" }, "\u274C Why \"" + d.quiz.chosen + "\" isn\u2019t right:"),
-                        React.createElement("p", { className: "text-xs text-red-600 leading-relaxed" }, d.quiz.wrongFeedback[d.quiz.chosen]),
-                        React.createElement("p", { className: "text-xs font-bold text-emerald-600 mt-2" }, "\u2705 The answer is " + d.quiz.a + ": " + d.quiz.tip),
-                        // Link to vocabulary if concept matches
-                        d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 bg-white rounded p-2 border border-slate-100" },
+                      d.quiz.answered && !d.quiz.correct && d.quiz.wrongFeedback && d.quiz.wrongFeedback[d.quiz.chosen] && React.createElement("div", { className: "mt-3 rounded-lg p-3 border " + (isDark ? 'bg-red-900/20 border-red-700/40' : 'bg-red-50 border-red-200') },
+                        React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? 'text-red-300' : 'text-red-700') }, "\u274C Why \"" + d.quiz.chosen + "\" isn\u2019t right:"),
+                        React.createElement("p", { className: "text-xs leading-relaxed " + (isDark ? 'text-red-400/80' : 'text-red-600') }, d.quiz.wrongFeedback[d.quiz.chosen]),
+                        React.createElement("p", { className: "text-xs font-bold mt-2 " + (isDark ? 'text-emerald-300' : 'text-emerald-600') }, "\u2705 The answer is " + d.quiz.a + ": " + d.quiz.tip),
+                        d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 rounded p-2 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100') },
                           React.createElement("span", { className: "text-[10px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
                           React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, d.quiz.concept + ': '),
                           React.createElement("span", { className: "text-[10px] text-slate-600" }, VOCAB[d.quiz.concept].def))
@@ -12551,21 +12556,21 @@ const d = labToolData.solarSystem;
               // ═══ PEDAGOGICAL PANELS ═══
 
               // ── Learning Path Selector ──
-              React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+              React.createElement("div", { className: "mt-4 border-t pt-3 " + (isDark ? 'border-slate-700' : 'border-slate-200') },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-xs font-black text-slate-600" }, "\uD83D\uDDFA\uFE0F Learning Path"),
-                  d.learningPath && React.createElement("span", { className: "text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold" }, d.learningPath)
+                  React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "\uD83D\uDDFA\uFE0F Learning Path"),
+                  d.learningPath && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600') }, d.learningPath)
                 ),
                 React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                   Object.keys(LEARNING_PATHS).map(function(k) {
                     var lp = LEARNING_PATHS[k];
                     var active = d.learningPath === k;
                     return React.createElement("button", { key: k, onClick: function() { upd('learningPath', active ? null : k); },
-                      className: "p-2 rounded-lg border text-left transition-all " + (active ? 'bg-indigo-50 border-indigo-300 shadow-sm' : 'bg-white border-slate-200 hover:border-indigo-300')
+                      className: "p-2 rounded-lg border text-left transition-all " + (active ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 shadow-sm' : 'bg-indigo-50 border-indigo-300 shadow-sm') : (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-300'))
                     },
                       React.createElement("div", { className: "text-sm mb-0.5" }, lp.icon),
-                      React.createElement("div", { className: "text-[10px] font-bold " + (active ? 'text-indigo-700' : 'text-slate-700') }, lp.name),
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, lp.desc)
+                      React.createElement("div", { className: "text-[10px] font-bold " + (active ? (isDark ? 'text-indigo-300' : 'text-indigo-700') : (isDark ? 'text-slate-300' : 'text-slate-700')) }, lp.name),
+                      React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-500') }, lp.desc)
                     );
                   })
                 ),
@@ -12624,17 +12629,17 @@ const d = labToolData.solarSystem;
                   ),
                   // Previous entries
                   journalEntries.length > 0 && React.createElement("div", { className: "space-y-1" },
-                    React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mt-2" }, "Previous Entries:"),
+                    React.createElement("div", { className: "text-[11px] font-bold mt-2 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Previous Entries:"),
                     journalEntries.slice().reverse().slice(0, 5).map(function(entry, ei) {
-                      return React.createElement("div", { key: ei, className: "bg-white rounded-lg p-2 border border-slate-100 text-[10px]" },
+                      return React.createElement("div", { key: ei, className: "rounded-lg p-2.5 border text-[11px] " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100') },
                         React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                          React.createElement("span", { className: "font-bold text-slate-700" }, "\uD83C\uDF0D " + entry.planet),
-                          React.createElement("span", { className: "text-[10px] text-slate-500" }, new Date(entry.timestamp).toLocaleDateString())
+                          React.createElement("span", { className: "font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\uD83C\uDF0D " + entry.planet),
+                          React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-500') }, new Date(entry.timestamp).toLocaleDateString())
                         ),
-                        entry.prediction && React.createElement("div", { className: "text-slate-500" }, "\uD83D\uDCDD " + entry.prediction),
-                        React.createElement("div", { className: "text-slate-600" }, "\uD83D\uDD2D " + entry.observation),
-                        entry.surprise && React.createElement("div", { className: "text-amber-600" }, "\u2757 " + entry.surprise),
-                        entry.question && React.createElement("div", { className: "text-indigo-600" }, "\u2753 " + entry.question)
+                        entry.prediction && React.createElement("div", { className: isDark ? 'text-slate-400' : 'text-slate-500' }, "\uD83D\uDCDD " + entry.prediction),
+                        React.createElement("div", { className: isDark ? 'text-slate-300' : 'text-slate-600' }, "\uD83D\uDD2D " + entry.observation),
+                        entry.surprise && React.createElement("div", { className: isDark ? 'text-amber-400' : 'text-amber-600' }, "\u2757 " + entry.surprise),
+                        entry.question && React.createElement("div", { className: isDark ? 'text-indigo-400' : 'text-indigo-600' }, "\u2753 " + entry.question)
                       );
                     })
                   )
@@ -12642,10 +12647,10 @@ const d = labToolData.solarSystem;
               ),
 
               // ── Vocabulary Browser ──
-              React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+              React.createElement("div", { className: "mt-3 border-t pt-3 " + (isDark ? 'border-slate-700' : 'border-slate-200') },
                 React.createElement("button", {
                   onClick: function() { upd('showVocab', !d.showVocab); },
-                  className: "flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+                  className: "flex items-center gap-2 text-xs font-bold transition-colors " + (isDark ? 'text-slate-300 hover:text-indigo-400' : 'text-slate-600 hover:text-indigo-600')
                 }, "\uD83D\uDCD6 Vocabulary Glossary (" + Object.keys(VOCAB).length + " terms)", React.createElement("span", { className: "text-[10px]" }, d.showVocab ? '\u25B2' : '\u25BC')),
                 d.showVocab && React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" },
                   Object.keys(VOCAB).sort().map(function(term) {
@@ -12653,7 +12658,7 @@ const d = labToolData.solarSystem;
                     var looked = (d.vocabLookedUp || []).indexOf(term) !== -1;
                     return React.createElement("button", { key: term,
                       onClick: function() { upd('vocabSelected', d.vocabSelected === term ? null : term); if (!looked) upd('vocabLookedUp', (d.vocabLookedUp || []).concat([term])); },
-                      className: "text-left p-1.5 rounded text-[10px] border transition-all " + (d.vocabSelected === term ? 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700' : looked ? 'bg-emerald-50 border-emerald-100 text-slate-600' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200')
+                      className: "text-left p-1.5 rounded text-[11px] border transition-all " + (d.vocabSelected === term ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 font-bold text-indigo-300' : 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700') : looked ? (isDark ? 'bg-emerald-900/20 border-emerald-700/30 text-slate-300' : 'bg-emerald-50 border-emerald-100 text-slate-600') : (isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-indigo-500/50' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200'))
                     }, (looked ? '\u2705 ' : '') + term + (v.grade > 6 ? ' \u2B50' : ''));
                   })
                 ),
@@ -12668,16 +12673,16 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
                 React.createElement("button", {
                   onClick: function() { upd('showAssignments', !d.showAssignments); },
-                  className: "flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+                  className: "flex items-center gap-2 text-xs font-bold transition-colors " + (isDark ? 'text-slate-300 hover:text-indigo-400' : 'text-slate-600 hover:text-indigo-600')
                 }, "\uD83D\uDCCB Assignment Mode", React.createElement("span", { className: "text-[10px]" }, d.showAssignments ? '\u25B2' : '\u25BC')),
                 d.showAssignments && React.createElement("div", { className: "mt-2 space-y-2" },
                   PRESET_ASSIGNMENTS.map(function(asn) {
                     var active = d.activeAssignment === asn.id;
                     var tasksDone = active ? (d['asn_done_' + asn.id] || []) : [];
-                    return React.createElement("div", { key: asn.id, className: "rounded-lg border p-3 transition-all " + (active ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200') },
+                    return React.createElement("div", { key: asn.id, className: "rounded-lg border p-3 transition-all " + (active ? (isDark ? 'bg-blue-900/20 border-blue-700/50' : 'bg-blue-50 border-blue-300') : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                        React.createElement("span", { className: "text-[10px] font-bold " + (active ? 'text-blue-700' : 'text-slate-700') }, asn.name),
-                        React.createElement("span", { className: "text-[10px] text-slate-500" }, "Grades " + asn.gradeRange)
+                        React.createElement("span", { className: "text-[11px] font-bold " + (active ? (isDark ? 'text-blue-300' : 'text-blue-700') : (isDark ? 'text-slate-200' : 'text-slate-700')) }, asn.name),
+                        React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-500') }, "Grades " + asn.gradeRange)
                       ),
                       React.createElement("div", { className: "space-y-1" },
                         asn.tasks.map(function(task, ti) {
@@ -12689,9 +12694,9 @@ const d = labToolData.solarSystem;
                                 upd('asn_done_' + asn.id, updated);
                                 if (!done && updated.length === asn.tasks.length) { addToast('\uD83C\uDF89 Assignment complete: ' + asn.name + '!', 'success'); if (awardStemXP) awardStemXP('solarSystem', 25); }
                               },
-                              className: "mt-0.5 w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[10px] " + (done ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-300')
+                              className: "mt-0.5 w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[10px] " + (done ? 'bg-emerald-500 border-emerald-500 text-white' : (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'))
                             }, done ? '\u2713' : ''),
-                            React.createElement("span", { className: "text-[10px] " + (done ? 'text-slate-400 line-through' : 'text-slate-600') }, task)
+                            React.createElement("span", { className: "text-[10px] " + (done ? (isDark ? 'text-slate-500 line-through' : 'text-slate-400 line-through') : (isDark ? 'text-slate-300' : 'text-slate-600')) }, task)
                           );
                         })
                       ),
@@ -12705,13 +12710,13 @@ const d = labToolData.solarSystem;
               ),
 
               // ── Teacher Progress Export ──
-              React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+              React.createElement("div", { className: "mt-3 border-t pt-3 " + (isDark ? 'border-slate-700' : 'border-slate-200') },
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("button", {
                     onClick: exportProgressCSV,
-                    className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-all"
+                    className: "px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
                   }, "\uD83D\uDCCA Export Progress (CSV)"),
-                  React.createElement("span", { className: "text-[10px] text-slate-500" }, "For teacher review")
+                  React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-500') }, "For teacher review")
                 ),
                 // Quick stats summary
                 React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1" },
@@ -12721,9 +12726,9 @@ const d = labToolData.solarSystem;
                     { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#64748b' },
                     { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#64748b' }
                   ].map(function(stat) {
-                    return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded bg-slate-50 border border-slate-100" },
-                      React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color } }, stat.value),
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, stat.label)
+                    return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100') },
+                      React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color, fontFamily: 'monospace' } }, stat.value),
+                      React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-500') }, stat.label)
                     );
                   })
                 )
