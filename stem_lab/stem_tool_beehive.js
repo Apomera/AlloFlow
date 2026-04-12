@@ -102,6 +102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var eventLog = d.eventLog || [];
         var activeEvent = d.activeEvent || null;
         var phase = d.phase || 'manage'; // 'manage' | 'inspect'
+        var history = d.history || []; // [{day, workers, honey, varroa, morale}]
 
         // ── Garden Bridge: Read pollinator plants from companion planting ──
         var gardenPollinators = 0;
@@ -246,6 +247,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Pesticide natural decay (slow)
           var newPesticide = Math.max(0, pesticideExposure - 0.3);
 
+          // Record history (keep last 120 days for sparkline)
+          var newHistory = history.concat([{ d: day + 1, w: Math.round(newWorkers), h: Math.round(newHoney * 10) / 10, v: Math.round(newVarroa), m: Math.round(newMorale) }]);
+          if (newHistory.length > 120) newHistory = newHistory.slice(-120);
+
           updAll({
             day: day + 1,
             workers: Math.round(newWorkers),
@@ -260,10 +265,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             queenHealth: Math.round(newQueenHealth),
             activeEvent: newEvent,
             score: score + Math.round(nectarCollected * 10),
-            actionPoints: 3, // reset each day
+            actionPoints: 3,
             habitat: habitat,
             pesticideExposure: Math.round(newPesticide),
-            totalHoney: totalHoney + Math.max(0, nectarCollected)
+            totalHoney: totalHoney + Math.max(0, nectarCollected),
+            history: newHistory
           });
         }
 
@@ -1039,6 +1045,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: dk ? 'text-slate-400' : 'text-slate-600', style: { fontFamily: 'monospace' } }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '%)' : ''))),
                 h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                   h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))))),
+
+          // ── Colony History Sparkline Chart ──
+          history.length > 2 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+            h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '\uD83D\uDCCA Colony History (' + history.length + ' days)'),
+            h('canvas', {
+              ref: function(cv) {
+                if (!cv) return;
+                var cCtx = cv.getContext('2d');
+                if (!cCtx) return;
+                var cW = cv.parentElement ? cv.parentElement.clientWidth - 32 : 400;
+                var cH = 100;
+                var dpr = window.devicePixelRatio || 1;
+                cv.width = cW * dpr; cv.height = cH * dpr;
+                cv.style.width = cW + 'px'; cv.style.height = cH + 'px';
+                cCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                cCtx.clearRect(0, 0, cW, cH);
+
+                // Draw sparklines: workers (amber), honey (gold), varroa (red), morale (green)
+                var lines = [
+                  { key: 'w', color: '#f59e0b', label: 'Workers', max: 40000 },
+                  { key: 'h', color: '#eab308', label: 'Honey', max: 80 },
+                  { key: 'v', color: '#ef4444', label: 'Varroa', max: 100 },
+                  { key: 'm', color: '#22c55e', label: 'Morale', max: 100 }
+                ];
+                var hLen = history.length;
+                var mx = 4, my = 4, pw = cW - mx * 2, ph = cH - my * 2 - 14;
+
+                // Season background bands
+                for (var si = 0; si < hLen; si++) {
+                  var sx = mx + (si / hLen) * pw;
+                  var sSeason = Math.floor((history[si].d % 120) / 30);
+                  var sCol = ['rgba(74,222,128,0.06)', 'rgba(250,204,21,0.06)', 'rgba(251,146,60,0.06)', 'rgba(148,163,184,0.06)'][sSeason];
+                  cCtx.fillStyle = sCol; cCtx.fillRect(sx, my, pw / hLen + 1, ph);
+                }
+
+                lines.forEach(function(line) {
+                  cCtx.beginPath();
+                  for (var i = 0; i < hLen; i++) {
+                    var px = mx + (i / (hLen - 1)) * pw;
+                    var val = history[i][line.key] || 0;
+                    var py = my + ph - (Math.min(val, line.max) / line.max) * ph;
+                    i === 0 ? cCtx.moveTo(px, py) : cCtx.lineTo(px, py);
+                  }
+                  cCtx.strokeStyle = line.color;
+                  cCtx.lineWidth = 1.5;
+                  cCtx.stroke();
+                });
+
+                // Legend
+                cCtx.font = '9px system-ui';
+                lines.forEach(function(line, li) {
+                  var lx = mx + li * (pw / 4);
+                  cCtx.fillStyle = line.color;
+                  cCtx.fillRect(lx, cH - 10, 8, 8);
+                  cCtx.fillStyle = dk ? '#94a3b8' : '#64748b';
+                  cCtx.fillText(line.label, lx + 11, cH - 3);
+                });
+              },
+              style: { display: 'block', width: '100%', borderRadius: '8px' },
+              'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days'
+            })
+          ),
 
           // ── Hive Cross-Section Visual ──
           h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
