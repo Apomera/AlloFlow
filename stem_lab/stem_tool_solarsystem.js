@@ -1817,6 +1817,11 @@ const d = labToolData.solarSystem;
 
   // TF
   var tf_idx = d.orr_tfi || 0;
+
+  // Body filter toggles (all visible by default)
+  var showComets = d.orr_showComets !== false;
+  var showDwarfs = d.orr_showDwarfs !== false;
+  var showLabels = d.orr_showLabels !== false;
   var tf_ans = d.orr_tfa || {};
 
   /* ====================================================================
@@ -2851,6 +2856,154 @@ const d = labToolData.solarSystem;
         }, "\u21ba Reset to real values")
       ], { marginBottom: "10px" }),
 
+      // ── Orbit Preview Canvas ──
+      h("div", { key: "ws-canvases", style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "10px" } },
+        h(CanvasPanel, {
+          key: "ws-orbit-cv",
+          width: 350,
+          height: 350,
+          panZoom: false,
+          redrawKey: ecc * 1000 + sma,
+          draw: function(ctx) {
+            var WW = 350, HH = 350;
+            ctx.clearRect(0, 0, WW, HH);
+            ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff"; ctx.fillRect(0, 0, WW, HH);
+            var cx = WW / 2, cy = HH / 2;
+            var maxAU = Math.max(aph, 2) * 1.2;
+            var sc = (WW / 2 - 30) / maxAU;
+
+            // Habitable zone ring
+            ctx.beginPath(); ctx.arc(cx, cy, 0.75 * sc, 0, TAU);
+            ctx.strokeStyle = "#22c55e20"; ctx.lineWidth = (1.7 - 0.75) * sc; ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, 0.75 * sc, 0, TAU);
+            ctx.strokeStyle = "#22c55e44"; ctx.lineWidth = 1; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+            ctx.beginPath(); ctx.arc(cx, cy, 1.7 * sc, 0, TAU);
+            ctx.strokeStyle = "#22c55e44"; ctx.lineWidth = 1; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+
+            // Sun
+            var sGlow = ctx.createRadialGradient(cx, cy, 2, cx, cy, 16);
+            sGlow.addColorStop(0, "rgba(255,220,50,0.5)"); sGlow.addColorStop(1, "rgba(255,180,0,0)");
+            ctx.beginPath(); ctx.arc(cx, cy, 16, 0, TAU); ctx.fillStyle = sGlow; ctx.fill();
+            ctx.beginPath(); ctx.arc(cx, cy, 4, 0, TAU); ctx.fillStyle = "#ffee88"; ctx.fill();
+
+            // Custom orbit ellipse
+            var b_semi = sma * Math.sqrt(1 - ecc * ecc);
+            var c_dist = sma * ecc;
+            ctx.beginPath();
+            ctx.ellipse(cx - c_dist * sc, cy, sma * sc, b_semi * sc, 0, 0, TAU);
+            ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
+
+            // Real orbit comparison (dimmed)
+            if (ws_ecc !== undefined || ws_sma !== undefined) {
+              var rb = body.a * Math.sqrt(1 - body.e * body.e);
+              var rc = body.a * body.e;
+              ctx.beginPath();
+              ctx.ellipse(cx - rc * sc, cy, body.a * sc, rb * sc, 0, 0, TAU);
+              ctx.strokeStyle = body.color + "44"; ctx.lineWidth = 1; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+            }
+
+            // Perihelion / aphelion markers
+            var periX = cx + peri * sc, aphX = cx - aph * sc;
+            ctx.beginPath(); ctx.arc(periX, cy, 4, 0, TAU); ctx.fillStyle = "#22c55e"; ctx.fill();
+            ctx.beginPath(); ctx.arc(aphX, cy, 4, 0, TAU); ctx.fillStyle = "#ef4444"; ctx.fill();
+
+            // Labels
+            ctx.font = "10px sans-serif"; ctx.fillStyle = "#22c55e"; ctx.fillText("Peri", periX - 8, cy + 16);
+            ctx.fillStyle = "#ef4444"; ctx.fillText("Aph", aphX - 8, cy + 16);
+            ctx.fillStyle = mutedFg; ctx.font = "9px sans-serif"; ctx.fillText("HZ", cx + 1.2 * sc + 2, cy - 2);
+          }
+        }),
+
+        // ── Energy Diagram ──
+        h(CanvasPanel, {
+          key: "ws-energy-cv",
+          width: 350,
+          height: 350,
+          panZoom: false,
+          redrawKey: ecc * 1000 + sma,
+          draw: function(ctx) {
+            var WW = 350, HH = 350;
+            ctx.clearRect(0, 0, WW, HH);
+            ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff"; ctx.fillRect(0, 0, WW, HH);
+
+            var mx = 50, my = 30, pw = WW - mx - 20, ph = HH - my - 50;
+            // Plot KE, PE, Total E over true anomaly
+            var nPts = 200;
+            var mu_norm = 1; // normalized GM
+            var a_norm = 1; // normalized semi-major axis
+            // Energy scale: total E = -mu/(2a), PE = -mu/r, KE = mu(1/r - 1/(2a))
+            var Etotal = -mu_norm / (2 * a_norm);
+            var maxE = 0, minE = Etotal * 3;
+
+            // Pre-scan for scale
+            for (var i = 0; i <= nPts; i++) {
+              var nu = -PI + TAU * i / nPts;
+              var r = a_norm * (1 - ecc * ecc) / (1 + ecc * Math.cos(nu));
+              var PE = -mu_norm / r;
+              var KE = mu_norm * (1 / r - 1 / (2 * a_norm));
+              if (KE > maxE) maxE = KE;
+              if (PE < minE) minE = PE;
+            }
+            maxE *= 1.15; minE *= 1.1;
+            var eRange = maxE - minE;
+
+            function toX(i) { return mx + (i / nPts) * pw; }
+            function toY(e) { return my + ph - ((e - minE) / eRange) * ph; }
+
+            // Axes
+            ctx.strokeStyle = fg; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx, my + ph); ctx.lineTo(mx + pw, my + ph); ctx.stroke();
+
+            // Zero line
+            if (0 > minE && 0 < maxE) {
+              ctx.beginPath(); ctx.moveTo(mx, toY(0)); ctx.lineTo(mx + pw, toY(0));
+              ctx.strokeStyle = fg + "44"; ctx.lineWidth = 1; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+              ctx.fillStyle = mutedFg; ctx.font = "9px sans-serif"; ctx.fillText("0", mx - 12, toY(0) + 3);
+            }
+
+            // Plot PE (red)
+            ctx.beginPath();
+            for (var i = 0; i <= nPts; i++) {
+              var nu = -PI + TAU * i / nPts;
+              var r = a_norm * (1 - ecc * ecc) / (1 + ecc * Math.cos(nu));
+              var PE = -mu_norm / r;
+              if (i === 0) ctx.moveTo(toX(i), toY(PE)); else ctx.lineTo(toX(i), toY(PE));
+            }
+            ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 2; ctx.stroke();
+
+            // Plot KE (blue)
+            ctx.beginPath();
+            for (var i = 0; i <= nPts; i++) {
+              var nu = -PI + TAU * i / nPts;
+              var r = a_norm * (1 - ecc * ecc) / (1 + ecc * Math.cos(nu));
+              var KE = mu_norm * (1 / r - 1 / (2 * a_norm));
+              if (i === 0) ctx.moveTo(toX(i), toY(KE)); else ctx.lineTo(toX(i), toY(KE));
+            }
+            ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2; ctx.stroke();
+
+            // Total E line (constant, green)
+            ctx.beginPath(); ctx.moveTo(mx, toY(Etotal)); ctx.lineTo(mx + pw, toY(Etotal));
+            ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 2; ctx.setLineDash([6,3]); ctx.stroke(); ctx.setLineDash([]);
+
+            // Labels
+            ctx.font = "11px sans-serif";
+            ctx.fillStyle = "#ef4444"; ctx.fillText("PE (potential)", mx + pw - 85, toY(minE * 0.85));
+            ctx.fillStyle = "#3b82f6"; ctx.fillText("KE (kinetic)", mx + 8, toY(maxE * 0.75));
+            ctx.fillStyle = "#22c55e"; ctx.fillText("Total E = const", mx + pw - 95, toY(Etotal) - 8);
+
+            // Axis labels
+            ctx.fillStyle = fg; ctx.font = "12px sans-serif";
+            ctx.fillText("Orbital Energy Diagram", mx + pw / 2 - 70, my - 10);
+            ctx.font = "10px sans-serif"; ctx.fillStyle = mutedFg;
+            ctx.fillText("Perihelion", mx, my + ph + 16);
+            ctx.fillText("Aphelion", mx + pw / 2 - 20, my + ph + 16);
+            ctx.fillText("Perihelion", mx + pw - 50, my + ph + 16);
+            ctx.save(); ctx.translate(12, my + ph / 2 + 20); ctx.rotate(-PI / 2);
+            ctx.fillText("Energy (normalized)", 0, 0); ctx.restore();
+          }
+        })
+      ),
+
       card([
         h("div", { key: "dh", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } }, "Derived Quantities"),
         h("div", { key: "d1", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
@@ -2896,15 +3049,130 @@ const d = labToolData.solarSystem;
       return btn(p.emoji + " " + p.name, tr_to === p.id, function() { upd("orr_trt", p.id); }, { key: "tt-" + p.id });
     });
 
+    // ── Hohmann transfer orbit visualization canvas ──
+    var TW = 500, TH = 500;
+    var transferCanvas = h(CanvasPanel, {
+      key: "transfer-cv",
+      width: TW,
+      height: TH,
+      panZoom: false,
+      redrawKey: tr_from + "-" + tr_to,
+      draw: function(ctx) {
+        ctx.clearRect(0, 0, TW, TH);
+        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
+        ctx.fillRect(0, 0, TW, TH);
+
+        var cx = TW / 2, cy = TH / 2;
+        var r1_au = Math.min(fromBody.a, toBody.a);
+        var r2_au = Math.max(fromBody.a, toBody.a);
+        var maxR = r2_au * 1.3;
+        var scale = (TW / 2 - 40) / maxR;
+
+        // Sun glow
+        var sunGlow = ctx.createRadialGradient(cx, cy, 2, cx, cy, 20);
+        sunGlow.addColorStop(0, "rgba(255,220,50,0.5)");
+        sunGlow.addColorStop(1, "rgba(255,180,20,0)");
+        ctx.beginPath(); ctx.arc(cx, cy, 20, 0, TAU); ctx.fillStyle = sunGlow; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, TAU); ctx.fillStyle = "#ffee88"; ctx.fill();
+
+        // Departure orbit (circular)
+        ctx.beginPath(); ctx.arc(cx, cy, fromBody.a * scale, 0, TAU);
+        ctx.strokeStyle = fromBody.color + "88"; ctx.lineWidth = 2; ctx.stroke();
+
+        // Arrival orbit (circular)
+        ctx.beginPath(); ctx.arc(cx, cy, toBody.a * scale, 0, TAU);
+        ctx.strokeStyle = toBody.color + "88"; ctx.lineWidth = 2; ctx.stroke();
+
+        // Transfer ellipse
+        var a_t = (fromBody.a + toBody.a) / 2;
+        var e_t = Math.abs(toBody.a - fromBody.a) / (toBody.a + fromBody.a);
+        var b_t = a_t * Math.sqrt(1 - e_t * e_t);
+        var c_t = a_t * e_t;
+        // If going outward, transfer starts at bottom; draw half ellipse
+        var outward = toBody.a >= fromBody.a;
+        ctx.beginPath();
+        ctx.setLineDash([6, 4]);
+        ctx.ellipse(cx + (outward ? -c_t : c_t) * scale, cy, a_t * scale, b_t * scale, 0, outward ? PI : 0, outward ? TAU : PI);
+        ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Transfer arc (solid, the actual path taken)
+        ctx.beginPath();
+        ctx.ellipse(cx + (outward ? -c_t : c_t) * scale, cy, a_t * scale, b_t * scale, 0, outward ? PI : 0, outward ? TAU : PI);
+        ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
+
+        // Departure planet
+        var dep_x = cx - fromBody.a * scale;
+        var dep_y = cy;
+        ctx.beginPath(); ctx.arc(dep_x, dep_y, 8, 0, TAU);
+        var dGrad = ctx.createRadialGradient(dep_x - 2, dep_y - 2, 0, dep_x, dep_y, 8);
+        dGrad.addColorStop(0, "#fff"); dGrad.addColorStop(0.3, fromBody.color); dGrad.addColorStop(1, fromBody.color);
+        ctx.fillStyle = dGrad; ctx.fill();
+
+        // Arrival planet (at opposite side)
+        var arr_x = cx + toBody.a * scale;
+        var arr_y = cy;
+        ctx.beginPath(); ctx.arc(arr_x, arr_y, 8, 0, TAU);
+        var aGrad = ctx.createRadialGradient(arr_x - 2, arr_y - 2, 0, arr_x, arr_y, 8);
+        aGrad.addColorStop(0, "#fff"); aGrad.addColorStop(0.3, toBody.color); aGrad.addColorStop(1, toBody.color);
+        ctx.fillStyle = aGrad; ctx.fill();
+
+        // Burn arrows
+        // dv1 arrow at departure
+        var arrLen1 = clamp(transfer.dv1 * 5, 15, 60);
+        ctx.beginPath(); ctx.moveTo(dep_x, dep_y - 12); ctx.lineTo(dep_x, dep_y - 12 - arrLen1);
+        ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 3; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(dep_x, dep_y - 12 - arrLen1);
+        ctx.lineTo(dep_x - 5, dep_y - 12 - arrLen1 + 8); ctx.lineTo(dep_x + 5, dep_y - 12 - arrLen1 + 8);
+        ctx.closePath(); ctx.fillStyle = "#22c55e"; ctx.fill();
+
+        // dv2 arrow at arrival
+        var arrLen2 = clamp(transfer.dv2 * 5, 15, 60);
+        ctx.beginPath(); ctx.moveTo(arr_x, arr_y + 12); ctx.lineTo(arr_x, arr_y + 12 + arrLen2);
+        ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 3; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(arr_x, arr_y + 12 + arrLen2);
+        ctx.lineTo(arr_x - 5, arr_y + 12 + arrLen2 - 8); ctx.lineTo(arr_x + 5, arr_y + 12 + arrLen2 - 8);
+        ctx.closePath(); ctx.fillStyle = "#ef4444"; ctx.fill();
+
+        // Labels
+        ctx.font = "bold 12px sans-serif";
+        ctx.fillStyle = fromBody.color; ctx.fillText(fromBody.name, dep_x - 20, dep_y + 22);
+        ctx.fillStyle = toBody.color; ctx.fillText(toBody.name, arr_x - 15, arr_y - 14);
+        ctx.fillStyle = "#f59e0b"; ctx.fillText("Transfer orbit", cx - 35, cy - a_t * scale * 0.3);
+
+        // dv labels
+        ctx.font = "11px sans-serif";
+        ctx.fillStyle = "#22c55e"; ctx.fillText("\u0394v\u2081 = " + fmt(transfer.dv1, 2) + " km/s", dep_x + 12, dep_y - 20 - arrLen1 / 2);
+        ctx.fillStyle = "#ef4444"; ctx.fillText("\u0394v\u2082 = " + fmt(transfer.dv2, 2) + " km/s", arr_x + 12, arr_y + 20 + arrLen2 / 2);
+
+        // Legend
+        ctx.font = "11px sans-serif"; ctx.fillStyle = fg;
+        ctx.fillText("Transit: " + (transfer.transitYrs < 1 ? fmt(transfer.transitYrs * 365.25, 0) + " days" : fmt(transfer.transitYrs, 2) + " yr"), 12, TH - 30);
+        ctx.fillText("Total \u0394v: " + fmt(transfer.dvTotal, 2) + " km/s", 12, TH - 14);
+
+        // Habitable zone ring
+        ctx.beginPath(); ctx.arc(cx, cy, 0.75 * scale, 0, TAU);
+        ctx.strokeStyle = "#22c55e33"; ctx.lineWidth = (1.7 - 0.75) * scale; ctx.stroke();
+      }
+    });
+
+    // Swap button
+    var swapBtn = h("button", {
+      onClick: function() { updMulti({ orr_trf: tr_to, orr_trt: tr_from }); },
+      style: { padding: "4px 12px", borderRadius: "6px", border: "1px solid " + border, background: cardBg, color: fg, cursor: "pointer", fontSize: "12px", fontWeight: 700 }
+    }, "\u21c4 Swap");
+
     // Delta-v budget from Earth
     var earth = OB[2];
     var budgetRows = planets.filter(function(p) { return p.id !== "earth"; }).map(function(p) {
       var t = hohmann(earth.a, p.a);
+      var diffColor = t.dvTotal > 15 ? "#ef4444" : t.dvTotal > 8 ? "#f59e0b" : "#22c55e";
       return h("tr", { key: "bud-" + p.id },
         h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border } }, p.emoji + " " + p.name),
         h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(t.dv1, 2)),
         h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(t.dv2, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right", fontWeight: 700 } }, fmt(t.dvTotal, 2)),
+        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right", fontWeight: 700, color: diffColor } }, fmt(t.dvTotal, 2)),
         h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } },
           t.transitYrs < 1 ? fmt(t.transitYrs * 365.25, 0) + " d" : fmt(t.transitYrs, 2) + " yr")
       );
@@ -2914,27 +3182,32 @@ const d = labToolData.solarSystem;
       h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } }, "Hohmann Transfer Calculator"),
       h("div", { style: { marginBottom: "6px" } },
         h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "From:"),
-        h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, fromButtons)
+        h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", alignItems: "center" } }, fromButtons.concat([swapBtn]))
       ),
       h("div", { style: { marginBottom: "10px" } },
         h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "To:"),
         h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, toButtons)
       ),
 
-      card([
-        h("div", { key: "th", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } },
-          fromBody.emoji + " " + fromBody.name + "  \u2192  " + toBody.emoji + " " + toBody.name
-        ),
-        h("div", { key: "td", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
-          h("div", null, "\u0394v\u2081 (departure burn): " + fmt(transfer.dv1, 3) + " km/s"),
-          h("div", null, "\u0394v\u2082 (arrival burn): " + fmt(transfer.dv2, 3) + " km/s"),
-          h("div", null, "Total \u0394v: " + fmt(transfer.dvTotal, 3) + " km/s"),
-          h("div", null, "Transit time: " + (transfer.transitYrs < 1
-            ? fmt(transfer.transitYrs * 365.25, 1) + " days"
-            : fmt(transfer.transitYrs, 3) + " years")),
-          h("div", null, "Synodic period: " + (synodic === Infinity ? "\u221e" : fmt(synodic, 2) + " yr") + " (launch window interval)")
+      h("div", { style: { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-start" } },
+        transferCanvas,
+        h("div", { style: { flex: "1", minWidth: "220px" } },
+          card([
+            h("div", { key: "th", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } },
+              fromBody.emoji + " " + fromBody.name + "  \u2192  " + toBody.emoji + " " + toBody.name
+            ),
+            h("div", { key: "td", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
+              h("div", null, "\u0394v\u2081 (departure burn): " + fmt(transfer.dv1, 3) + " km/s"),
+              h("div", null, "\u0394v\u2082 (arrival burn): " + fmt(transfer.dv2, 3) + " km/s"),
+              h("div", { style: { fontWeight: 700, fontSize: "14px", marginTop: "4px" } }, "Total \u0394v: " + fmt(transfer.dvTotal, 3) + " km/s"),
+              h("div", null, "Transit time: " + (transfer.transitYrs < 1
+                ? fmt(transfer.transitYrs * 365.25, 1) + " days"
+                : fmt(transfer.transitYrs, 3) + " years")),
+              h("div", null, "Synodic period: " + (synodic === Infinity ? "\u221e" : fmt(synodic, 2) + " yr") + " (launch window interval)")
+            )
+          ], { marginBottom: "12px" })
         )
-      ], { marginBottom: "12px" }),
+      ),
 
       card([
         h("div", { key: "bh", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } },

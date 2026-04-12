@@ -1660,10 +1660,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (!canvas) return;
         var lastT = performance.now();
 
+        // ── Gamepad API support ──
+        var pollGamepad = function() {
+          var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+          for (var gi = 0; gi < gamepads.length; gi++) {
+            var gp = gamepads[gi];
+            if (!gp) continue;
+            // Standard gamepad mapping:
+            // Left stick X = steering (-1 left, +1 right)
+            // Right trigger (axis 5 or button 7) = throttle
+            // Left trigger (axis 4 or button 6) = brake
+            // A button (0) = horn, B button (1) = camera, X (2) = blinker left, Y (3) = blinker right
+            // D-pad up (12) = gear up (D), D-pad down (13) = gear down (R), D-pad left (14) = blinker L, D-pad right (15) = blinker R
+            // Start (9) = pause, LB (4) = low beams, RB (5) = high beams
+            var axes = gp.axes;
+            var buttons = gp.buttons;
+            var k = keysRef.current;
+            // Steering from left stick X (axis 0) — analog!
+            if (Math.abs(axes[0]) > 0.1) {
+              k._gpSteer = axes[0]; // -1 to 1 analog value
+            } else {
+              k._gpSteer = 0;
+            }
+            // Throttle from right trigger
+            var rtVal = buttons[7] ? buttons[7].value : 0;
+            if (axes.length > 5 && axes[5] > 0) rtVal = Math.max(rtVal, (axes[5] + 1) / 2);
+            k._gpThrottle = rtVal;
+            // Brake from left trigger
+            var ltVal = buttons[6] ? buttons[6].value : 0;
+            if (axes.length > 4 && axes[4] > 0) ltVal = Math.max(ltVal, (axes[4] + 1) / 2);
+            k._gpBrake = ltVal;
+            // Buttons (edge-triggered)
+            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; /* horn */ try { var ac = audioRef.current.ctx; if (ac) { var h2 = ac.createOscillator(); var hg = ac.createGain(); h2.type = 'square'; h2.frequency.value = 440; hg.gain.value = 0.08; h2.connect(hg); hg.connect(ac.destination); h2.start(); hg.gain.setTargetAtTime(0, ac.currentTime + 0.25, 0.05); h2.stop(ac.currentTime + 0.3); } } catch(e2){} }
+            else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
+            if (buttons[1] && buttons[1].pressed && !k._gpB) { k._gpB = true; var modes = ['cockpit','chase','overhead','rearview']; cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current)+1)%modes.length]; }
+            else if (!buttons[1] || !buttons[1].pressed) k._gpB = false;
+            if (buttons[2] && buttons[2].pressed && !k._gpX) { k._gpX = true; blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; }
+            else if (!buttons[2] || !buttons[2].pressed) k._gpX = false;
+            if (buttons[3] && buttons[3].pressed && !k._gpY) { k._gpY = true; blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; }
+            else if (!buttons[3] || !buttons[3].pressed) k._gpY = false;
+            if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; pausedRef.current = !pausedRef.current; }
+            else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
+            // D-pad gear shifting
+            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (carRef.current.speed < 2) gearRef.current = 'D'; }
+            else if (!buttons[12] || !buttons[12].pressed) k._gpUp = false;
+            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (carRef.current.speed < 2) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
+            else if (!buttons[13] || !buttons[13].pressed) k._gpDown = false;
+            // Headlight toggle with shoulder buttons
+            if (buttons[4] && buttons[4].pressed && !k._gpLB) { k._gpLB = true; upd('highBeams', false); }
+            else if (!buttons[4] || !buttons[4].pressed) k._gpLB = false;
+            if (buttons[5] && buttons[5].pressed && !k._gpRB) { k._gpRB = true; upd('highBeams', true); }
+            else if (!buttons[5] || !buttons[5].pressed) k._gpRB = false;
+            break; // use first connected gamepad
+          }
+        };
+
         var step = function(now) {
           if (!drivingRef.current) return;
           var dt = Math.min(0.1, (now - lastT) / 1000);
           lastT = now;
+          pollGamepad();
           if (!pausedRef.current) {
             timeRef.current += dt;
             updateSignals(signalsRef.current, dt);
