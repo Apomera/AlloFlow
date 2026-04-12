@@ -11204,14 +11204,14 @@ const d = labToolData.solarSystem;
                     if (relevantMC.length === 0) return null;
                     var mc = relevantMC[0];
                     if (d['mc_answered_' + mcTrigger]) return null;
-                    return React.createElement("div", { className: "mt-3 bg-purple-50 rounded-xl p-3 border border-purple-200" },
+                    return React.createElement("div", { className: "mt-3 rounded-xl p-3 border " + (isDark ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
                       React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                         React.createElement("span", { className: "text-sm" }, "\u2753"),
-                        React.createElement("span", { className: "text-[10px] font-black text-purple-700 tracking-wide" }, "TRUE OR FALSE?")),
-                      React.createElement("p", { className: "text-xs font-bold text-purple-900 mb-2" }, '"' + mc.statement + '"'),
+                        React.createElement("span", { className: "text-[10px] font-black tracking-wide " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "TRUE OR FALSE?")),
+                      React.createElement("p", { className: "text-xs font-bold mb-2 " + (isDark ? 'text-purple-200' : 'text-purple-900') }, '"' + mc.statement + '"'),
                       !d['mc_choice_' + mcTrigger] ? React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200 transition-all" }, "\u2705 True"),
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-700 border border-red-300 hover:bg-red-200 transition-all" }, "\u274C False")
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-200') }, "\u2705 True"),
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200') }, "\u274C False")
                       ) : React.createElement("div", null,
                         React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
                         React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
@@ -12085,7 +12085,7 @@ const d = labToolData.solarSystem;
                         React.createElement("span", null, "\uD83D\uDE80 Escape velocity: " + escapeVel + " km/s")
                       ),
                       React.createElement("div", {
-                        className: "mt-1.5 text-[10px] font-bold text-center py-1 rounded " + (habitable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')
+                        className: "mt-1.5 text-[11px] font-bold text-center py-1.5 rounded-lg " + (habitable ? (isDark ? 'bg-green-900/30 text-green-300 border border-green-700/40' : 'bg-green-100 text-green-700') : (isDark ? 'bg-red-900/30 text-red-300 border border-red-700/40' : 'bg-red-100 text-red-700'))
                       }, habitable ? '\u2705 HABITABLE ZONE! Life could exist here!' : '\u274C Not in habitable zone' + (dist < 0.8 ? ' (too hot)' : dist > 1.5 ? ' (too cold)' : !hasAtmo ? ' (no atmosphere)' : !hasWater ? ' (no water)' : mass < 0.5 ? ' (too small to hold atmosphere)' : ' (too massive \u2014 gas giant)'))
                     );
                   })()
