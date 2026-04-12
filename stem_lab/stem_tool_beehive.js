@@ -566,9 +566,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // Track if animation loop is already running to avoid teardown/rebuild on every render
         var _loopRunning = React.useRef(false);
 
+        // Store live colony state in a ref so the animation loop always reads fresh values
+        var _liveState = React.useRef({});
+        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones };
+
         React.useEffect(function() {
-          // Don't restart the loop if it's already running — just let it read fresh closures next frame
-          if (_loopRunning.current) return;
+          // Run only once on mount — animation loop reads _liveState.current for fresh values
           var cv = _cvRef.current;
           if (!cv) return;
           var c = cv.getContext('2d');
