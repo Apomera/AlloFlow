@@ -437,6 +437,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
 
           function frame() {
+            // Always read birds from the ref so Auto-Form V / Scatter take effect immediately
+            birds = birdsRef.current || birds;
             if (reducedMotionRef.current) {
               c.clearRect(0, 0, W, H);
               renderFrame(c, W, H, birds, vortices, windParts, 0);
