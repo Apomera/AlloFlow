@@ -73,7 +73,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       { id: 'orrery_workshop', label: 'Modify an orbit in the Workshop', icon: '\uD83D\uDD27', field: 'bodyOverrides', check: function(d) { return d.bodyOverrides && Object.keys(d.bodyOverrides).length > 0; }, progress: function(d) { return d.bodyOverrides && Object.keys(d.bodyOverrides).length > 0 ? 'Done' : 'Not yet'; } },
       { id: 'orrery_transfer', label: 'Plan a Hohmann transfer', icon: '\uD83D\uDE80', field: 'orreryTab', check: function(d) { return d.orreryTab === 'transfers'; }, progress: function(d) { return d.orreryTab === 'transfers' ? 'Done' : 'Not yet'; } },
       { id: 'orrery_calc_3', label: 'Solve 3 orbital mechanics problems', icon: '\uD83E\uDDE0', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 3; }, progress: function(d) { return (d._chalScore || 0) + '/3 solved'; } },
-      { id: 'orrery_calc_all', label: 'Solve all calculation challenges', icon: '\uD83C\uDFC6', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 10; }, progress: function(d) { return (d._chalScore || 0) + '/10 solved'; } }
+      { id: 'orrery_calc_all', label: 'Solve all calculation challenges', icon: '\uD83C\uDFC6', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 10; }, progress: function(d) { return (d._chalScore || 0) + '/10 solved'; } },
+      { id: 'orrery_live_calc', label: 'Solve a live simulation challenge', icon: '\u26A1', field: '_liveSolved', check: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).some(function(k) { return ls[k].correct; }); }, progress: function(d) { var ls = d._liveSolved || {}; var n = Object.keys(ls).filter(function(k) { return ls[k].correct; }).length; return n > 0 ? n + ' solved' : 'Not yet'; } }
     ],
     render: function(ctx) {
       // Aliases â€" maps ctx properties to original variable names
@@ -1803,6 +1804,12 @@ const d = labToolData.solarSystem;
                             if (bSc.x > -50 && bSc.x < oW + 50 && bSc.y > -50 && bSc.y < oH + 50) { oCtx.font = (isSel ? 'bold ' : '') + '8px Inter,system-ui,sans-serif'; oCtx.fillStyle = isSel ? '#fff' : 'rgba(255,255,255,0.45)'; oCtx.textAlign = 'center'; oCtx.fillText(b.emoji + ' ' + b.name, bSc.x, bSc.y - bSize - 4); }
                             // Perihelion/Aphelion for selected
                             if (isSel) { var pR = a * (1 - ecc), aR = a * (1 + ecc); var pS = w2s((pR - fo) / viewZoom, 0), aS = w2s((-aR - fo) / viewZoom, 0); oCtx.save(); oCtx.globalAlpha = 0.4; oCtx.font = '7px monospace'; oCtx.fillStyle = '#22c55e'; oCtx.textAlign = 'center'; oCtx.fillText('P', pS.x, pS.y - 6); oCtx.beginPath(); oCtx.arc(pS.x, pS.y, 2, 0, Math.PI * 2); oCtx.fill(); oCtx.fillStyle = '#ef4444'; oCtx.fillText('A', aS.x, aS.y - 6); oCtx.beginPath(); oCtx.arc(aS.x, aS.y, 2, 0, Math.PI * 2); oCtx.fill(); oCtx.restore(); }
+                            // Export live state for Challenges tab
+                            if (!cv._liveState) cv._liveState = {};
+                            var speed_kms = 29.78 * Math.sqrt(2 / (r / a * b.a_au) - 1 / b.a_au);
+                            var taDeg = ((ta * 180 / Math.PI) % 360 + 360) % 360;
+                            var r_au = r / a * b.a_au;
+                            cv._liveState[b.id] = { ta: ta, taDeg: taDeg, r_au: r_au, r_px: r, ecc: ecc, a_au: b.a_au, period: b.period_yr, speed_kms: speed_kms, M: M, E: E, name: b.name, emoji: b.emoji };
                           });
                           // Tooltip
                           if (hoveredBody && !isDrag) { var hb = hoveredBody; var rect = cv.getBoundingClientRect(), sc2 = oW / rect.width; var tmx = mouseX * sc2, tmy = mouseY * sc2; oCtx.save(); oCtx.fillStyle = 'rgba(15,23,42,0.9)'; oCtx.beginPath(); oCtx.roundRect(tmx + 12, tmy - 30, 190, 36, 4); oCtx.fill(); oCtx.strokeStyle = 'rgba(99,102,241,0.3)'; oCtx.lineWidth = 0.5; oCtx.stroke(); oCtx.font = 'bold 9px Inter,system-ui,sans-serif'; oCtx.fillStyle = '#fff'; oCtx.textAlign = 'left'; oCtx.fillText(hb.emoji + ' ' + hb.name + ' (' + hb.type + ')', tmx + 18, tmy - 16); oCtx.font = '7px monospace'; oCtx.fillStyle = '#a5b4fc'; oCtx.fillText('a=' + hb.a_au.toFixed(2) + ' AU  e=' + hb.ecc.toFixed(4) + '  T=' + hb.period_yr.toFixed(1) + ' yr', tmx + 18, tmy - 4); oCtx.restore(); }
@@ -2725,7 +2732,253 @@ const d = labToolData.solarSystem;
                         (Object.keys(chalAnswered).filter(function(k) { return chalAnswered[k].correct && chalAnswered[k].attempts === 1; }).length > 0 ? ' (' + Object.keys(chalAnswered).filter(function(k) { return chalAnswered[k].correct && chalAnswered[k].attempts === 1; }).length + ' first try)' : '') +
                         ' \u2022 ' + chalScore * 10 + ' XP earned'
                       )
-                    )
+                    ),
+
+                    // ═══════════════════════════════════════════════════
+                    // LIVE CHALLENGES — Generated from current sim state
+                    // ═══════════════════════════════════════════════════
+                    (function() {
+                      var cv = document.querySelector('[data-orrery-canvas]');
+                      var live = cv && cv._liveState;
+                      if (!live || Object.keys(live).length === 0) {
+                        return React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-sky-50 to-indigo-50 border-sky-200') + " rounded-xl p-3 border" },
+                          React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') + " mb-1" }, "\u26A1 Live Simulation Challenges"),
+                          React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic" }, "Switch to the Full Orrery tab and let the simulation run, then come back here. Live challenges will be generated from the current orbital positions!")
+                        );
+                      }
+
+                      // Pick planets that have live state
+                      var planets = ['earth', 'mars', 'jupiter', 'mercury', 'saturn', 'venus', 'neptune', 'pluto'].filter(function(id) { return live[id]; });
+                      if (planets.length < 2) return null;
+
+                      // Generate challenges from live state
+                      var liveProblems = [];
+                      var liveSolved = d._liveSolved || {};
+
+                      // Helper: pick two different bodies
+                      function pickTwo() {
+                        var a = planets[Math.floor((d._liveSeed || 0) % planets.length)];
+                        var b = planets[Math.floor(((d._liveSeed || 0) + 3) % planets.length)];
+                        if (a === b) b = planets[(planets.indexOf(b) + 1) % planets.length];
+                        return [live[a], live[b]];
+                      }
+                      var pair = pickTwo();
+                      var body1 = pair[0], body2 = pair[1];
+
+                      // -- LIVE PROBLEM 1: Current distance --
+                      if (live.earth) {
+                        var eState = live.earth;
+                        liveProblems.push({
+                          id: 'live_earth_r',
+                          question: "Earth is currently at true anomaly \u03b8 = " + eState.taDeg.toFixed(1) + "\u00B0 in its orbit (a = " + eState.a_au.toFixed(3) + " AU, e = " + eState.ecc.toFixed(4) + "). What is Earth's current distance from the Sun? Use r = a(1\u2212e\u00B2)/(1+e\u00B7cos\u03b8).",
+                          hints: [
+                            'Step 1: Calculate 1 \u2212 e\u00B2 = 1 \u2212 (' + eState.ecc.toFixed(4) + ')\u00B2 = ' + (1 - eState.ecc * eState.ecc).toFixed(6),
+                            'Step 2: a(1\u2212e\u00B2) = ' + eState.a_au.toFixed(3) + ' \u00D7 ' + (1 - eState.ecc * eState.ecc).toFixed(6) + ' = ' + (eState.a_au * (1 - eState.ecc * eState.ecc)).toFixed(6),
+                            'Step 3: cos(' + eState.taDeg.toFixed(1) + '\u00B0) = ' + Math.cos(eState.ta).toFixed(4),
+                            'Step 4: Denominator: 1 + ' + eState.ecc.toFixed(4) + ' \u00D7 ' + Math.cos(eState.ta).toFixed(4) + ' = ' + (1 + eState.ecc * Math.cos(eState.ta)).toFixed(6),
+                            'Step 5: r = ' + (eState.a_au * (1 - eState.ecc * eState.ecc)).toFixed(6) + ' / ' + (1 + eState.ecc * Math.cos(eState.ta)).toFixed(6)
+                          ],
+                          answer: eState.r_au, unit: 'AU', tolerance: 0.003,
+                          explanation: "Right now in the simulation, Earth is " + eState.r_au.toFixed(4) + " AU from the Sun. Since Earth's eccentricity is very small (0.0167), its distance barely changes \u2014 ranging from 0.983 AU (perihelion in January) to 1.017 AU (aphelion in July)."
+                        });
+                      }
+
+                      // -- LIVE PROBLEM 2: Current speed of a body --
+                      if (body1) {
+                        var vExpected = 29.78 * Math.sqrt(2 / body1.r_au - 1 / body1.a_au);
+                        liveProblems.push({
+                          id: 'live_speed_' + body1.name.toLowerCase(),
+                          question: body1.emoji + " " + body1.name + " is currently at r = " + body1.r_au.toFixed(3) + " AU from the Sun (a = " + body1.a_au.toFixed(3) + " AU). Using the vis-viva equation v = 29.78\u221A(2/r \u2212 1/a), what is its current speed in km/s?",
+                          hints: [
+                            'Step 1: 2/r = 2/' + body1.r_au.toFixed(3) + ' = ' + (2 / body1.r_au).toFixed(4),
+                            'Step 2: 1/a = 1/' + body1.a_au.toFixed(3) + ' = ' + (1 / body1.a_au).toFixed(4),
+                            'Step 3: 2/r \u2212 1/a = ' + (2 / body1.r_au - 1 / body1.a_au).toFixed(4),
+                            'Step 4: \u221A(' + (2 / body1.r_au - 1 / body1.a_au).toFixed(4) + ') = ' + Math.sqrt(2 / body1.r_au - 1 / body1.a_au).toFixed(4),
+                            'Step 5: v = 29.78 \u00D7 ' + Math.sqrt(2 / body1.r_au - 1 / body1.a_au).toFixed(4)
+                          ],
+                          answer: vExpected, unit: 'km/s', tolerance: 0.5,
+                          explanation: body1.name + " is moving at " + vExpected.toFixed(1) + " km/s right now. The vis-viva equation works at ANY point in the orbit \u2014 it's the master velocity equation that unifies Kepler's laws with Newton's gravity."
+                        });
+                      }
+
+                      // -- LIVE PROBLEM 3: Distance between two planets --
+                      if (body1 && body2 && body1.name !== body2.name) {
+                        // Angular positions
+                        var x1 = body1.r_au * Math.cos(body1.ta), y1 = body1.r_au * Math.sin(body1.ta);
+                        var x2 = body2.r_au * Math.cos(body2.ta), y2 = body2.r_au * Math.sin(body2.ta);
+                        var dist = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+                        var angSep = Math.abs(body1.taDeg - body2.taDeg);
+                        if (angSep > 180) angSep = 360 - angSep;
+                        liveProblems.push({
+                          id: 'live_dist_' + body1.name.toLowerCase() + '_' + body2.name.toLowerCase(),
+                          question: body1.emoji + " " + body1.name + " is at r\u2081 = " + body1.r_au.toFixed(3) + " AU, \u03b8\u2081 = " + body1.taDeg.toFixed(1) + "\u00B0. " + body2.emoji + " " + body2.name + " is at r\u2082 = " + body2.r_au.toFixed(3) + " AU, \u03b8\u2082 = " + body2.taDeg.toFixed(1) + "\u00B0. Using the law of cosines, d = \u221A(r\u2081\u00B2 + r\u2082\u00B2 \u2212 2r\u2081r\u2082cos\u0394\u03b8), find their current distance.",
+                          hints: [
+                            'Step 1: \u0394\u03b8 = |' + body1.taDeg.toFixed(1) + ' \u2212 ' + body2.taDeg.toFixed(1) + '| = ' + angSep.toFixed(1) + '\u00B0',
+                            'Step 2: cos(' + angSep.toFixed(1) + '\u00B0) = ' + Math.cos(angSep * Math.PI / 180).toFixed(4),
+                            'Step 3: r\u2081\u00B2 = ' + (body1.r_au * body1.r_au).toFixed(4) + ', r\u2082\u00B2 = ' + (body2.r_au * body2.r_au).toFixed(4),
+                            'Step 4: 2r\u2081r\u2082cos\u0394\u03b8 = ' + (2 * body1.r_au * body2.r_au * Math.cos(angSep * Math.PI / 180)).toFixed(4),
+                            'Step 5: d = \u221A(' + (body1.r_au * body1.r_au + body2.r_au * body2.r_au - 2 * body1.r_au * body2.r_au * Math.cos(angSep * Math.PI / 180)).toFixed(4) + ')'
+                          ],
+                          answer: dist, unit: 'AU', tolerance: Math.max(0.05, dist * 0.03),
+                          explanation: "Right now, " + body1.name + " and " + body2.name + " are " + dist.toFixed(3) + " AU apart. This distance constantly changes as both planets orbit! The law of cosines lets us find the distance knowing only each body's distance from the Sun and the angle between them."
+                        });
+                      }
+
+                      // -- LIVE PROBLEM 4: Time since/until perihelion --
+                      if (body1 && body1.period > 0) {
+                        var M_rad = body1.M % (2 * Math.PI);
+                        if (M_rad < 0) M_rad += 2 * Math.PI;
+                        var fractionOfOrbit = M_rad / (2 * Math.PI);
+                        var daysSincePeri = fractionOfOrbit * body1.period * 365.25;
+                        var daysUntilPeri = (1 - fractionOfOrbit) * body1.period * 365.25;
+                        liveProblems.push({
+                          id: 'live_peri_' + body1.name.toLowerCase(),
+                          question: body1.emoji + " " + body1.name + " has completed " + (fractionOfOrbit * 100).toFixed(1) + "% of its current orbit (mean anomaly M = " + (M_rad * 180 / Math.PI).toFixed(1) + "\u00B0). If its orbital period is " + body1.period.toFixed(2) + " years (" + (body1.period * 365.25).toFixed(0) + " days), how many days until its next perihelion passage?",
+                          hints: [
+                            'Step 1: Fraction completed = M/(2\u03C0) = ' + fractionOfOrbit.toFixed(4),
+                            'Step 2: Fraction remaining = 1 \u2212 ' + fractionOfOrbit.toFixed(4) + ' = ' + (1 - fractionOfOrbit).toFixed(4),
+                            'Step 3: Days remaining = ' + (1 - fractionOfOrbit).toFixed(4) + ' \u00D7 ' + (body1.period * 365.25).toFixed(0) + ' days'
+                          ],
+                          answer: daysUntilPeri, unit: 'days', tolerance: Math.max(3, daysUntilPeri * 0.02),
+                          explanation: body1.name + " will reach perihelion in about " + daysUntilPeri.toFixed(0) + " days. The mean anomaly M tracks the 'clock' of the orbit \u2014 it advances uniformly, unlike the true anomaly which speeds up near perihelion (Kepler's 2nd Law)."
+                        });
+                      }
+
+                      // -- LIVE PROBLEM 5: Gravitational force ratio --
+                      if (body1 && body2 && body1.name !== body2.name) {
+                        var forceRatio = (body2.r_au * body2.r_au) / (body1.r_au * body1.r_au);
+                        liveProblems.push({
+                          id: 'live_force_' + body1.name.toLowerCase() + body2.name.toLowerCase(),
+                          question: "The Sun's gravitational pull on a planet is proportional to 1/r\u00B2. " + body1.emoji + " " + body1.name + " is at r\u2081 = " + body1.r_au.toFixed(3) + " AU. " + body2.emoji + " " + body2.name + " is at r\u2082 = " + body2.r_au.toFixed(3) + " AU. How many times stronger is the Sun's pull on " + body1.name + " compared to " + body2.name + "? (Calculate r\u2082\u00B2/r\u2081\u00B2)",
+                          hints: [
+                            'Step 1: r\u2081\u00B2 = (' + body1.r_au.toFixed(3) + ')\u00B2 = ' + (body1.r_au * body1.r_au).toFixed(4),
+                            'Step 2: r\u2082\u00B2 = (' + body2.r_au.toFixed(3) + ')\u00B2 = ' + (body2.r_au * body2.r_au).toFixed(4),
+                            'Step 3: F\u2081/F\u2082 = r\u2082\u00B2/r\u2081\u00B2 = ' + (body2.r_au * body2.r_au).toFixed(4) + '/' + (body1.r_au * body1.r_au).toFixed(4)
+                          ],
+                          answer: forceRatio, unit: '\u00D7 stronger', tolerance: Math.max(0.1, forceRatio * 0.03),
+                          explanation: "The Sun pulls on " + body1.name + " about " + forceRatio.toFixed(1) + "\u00D7 harder than on " + body2.name + " right now. Gravity follows an inverse-square law \u2014 double the distance means 1/4 the force. This is why inner planets orbit faster!"
+                        });
+                      }
+
+                      var liveIdx = d._liveIdx || 0;
+                      var currentLive = liveProblems[liveIdx % liveProblems.length];
+                      if (!currentLive) return null;
+                      var liveAns = liveSolved[currentLive.id];
+                      var liveCorrect = liveAns && liveAns.correct;
+                      var liveWrong = liveAns && !liveAns.correct;
+
+                      return React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-sky-50 to-indigo-50 border-sky-200') + " rounded-xl p-4 border space-y-3" },
+                        React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                          React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') }, "\u26A1 Live Simulation Challenge"),
+                          React.createElement("div", { className: "flex items-center gap-2" },
+                            React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full animate-pulse " + (isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-600') }, '\uD83D\uDD34 LIVE'),
+                            React.createElement("button", {
+                              onClick: function() { upd('_liveSeed', (d._liveSeed || 0) + 1); upd('_liveIdx', 0); upd('_liveInput', ''); upd('_liveHints', 0); },
+                              className: "text-[10px] font-bold " + (isDark ? 'text-sky-400 hover:text-sky-300' : 'text-sky-600 hover:text-sky-800')
+                            }, '\u21BB New bodies')
+                          )
+                        ),
+                        React.createElement("p", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic" }, "These problems use the current positions from your running orrery simulation. The numbers change as planets move!"),
+
+                        // Problem navigation dots
+                        React.createElement("div", { className: "flex gap-1" },
+                          liveProblems.map(function(p, i) {
+                            var s = liveSolved[p.id];
+                            var isCur = i === (liveIdx % liveProblems.length);
+                            return React.createElement("button", {
+                              key: i, onClick: function() { upd('_liveIdx', i); upd('_liveInput', ''); upd('_liveHints', 0); },
+                              className: "w-6 h-6 rounded text-[9px] font-bold " + (isCur ? 'ring-2 ring-sky-500 ring-offset-1 ' : '') + (s && s.correct ? 'bg-emerald-500 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-500 border border-slate-200'))
+                            }, s && s.correct ? '\u2713' : (i + 1));
+                          })
+                        ),
+
+                        // Current live problem
+                        React.createElement("div", { className: "text-[12px] font-medium " + (isDark ? 'text-white' : 'text-slate-800') + " leading-relaxed" }, currentLive.question),
+
+                        // Hints
+                        React.createElement("div", null,
+                          React.createElement("button", {
+                            onClick: function() { upd('_liveShowHints', !d._liveShowHints); },
+                            className: "text-[10px] font-bold " + (isDark ? 'text-sky-400' : 'text-sky-600')
+                          }, d._liveShowHints ? '\u25BC Hide hints' : '\uD83D\uDCA1 Show hints'),
+                          d._liveShowHints && React.createElement("div", { className: "mt-2 space-y-1" },
+                            currentLive.hints.map(function(h, hi) {
+                              var revealed = (d._liveHints || 0) > hi;
+                              var isNext = (d._liveHints || 0) === hi;
+                              return React.createElement("div", { key: hi },
+                                revealed ? React.createElement("div", { className: "text-[11px] font-mono " + (isDark ? 'text-sky-300 bg-sky-900/30 border-sky-800' : 'text-sky-700 bg-sky-50 border-sky-200') + " px-2.5 py-1.5 rounded-lg border" }, h) :
+                                isNext ? React.createElement("button", { onClick: function() { upd('_liveHints', (d._liveHints || 0) + 1); }, className: "text-[10px] font-bold px-2.5 py-1.5 rounded-lg " + (isDark ? 'bg-sky-800 text-sky-200 hover:bg-sky-700 border-sky-700' : 'bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-300') + " border" }, '\uD83D\uDD13 Reveal step ' + (hi + 1)) :
+                                React.createElement("div", { className: "text-[10px] px-2.5 py-1.5 rounded-lg " + (isDark ? 'bg-slate-700/50 text-slate-600 border-slate-700' : 'bg-slate-100 text-slate-400 border-slate-200') + " border" }, '\uD83D\uDD12 Step ' + (hi + 1))
+                              );
+                            })
+                          )
+                        ),
+
+                        // Answer input
+                        !liveCorrect && React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("input", {
+                            type: "number", step: "any", value: d._liveInput || '', placeholder: 'Your answer...',
+                            'aria-label': 'Your answer to the live challenge',
+                            onChange: function(e) { upd('_liveInput', e.target.value); },
+                            onKeyDown: function(e) {
+                              if (e.key === 'Enter') {
+                                var val = parseFloat(d._liveInput);
+                                if (isNaN(val)) return;
+                                var correct = Math.abs(val - currentLive.answer) <= currentLive.tolerance;
+                                var ns = Object.assign({}, liveSolved);
+                                ns[currentLive.id] = { value: val, correct: correct, attempts: (ns[currentLive.id] ? ns[currentLive.id].attempts + 1 : 1) };
+                                upd('_liveSolved', ns);
+                                if (correct) { if (awardStemXP) awardStemXP('solarSystem', 15); if (addToast) addToast('\u26A1 Live challenge solved! +15 XP', 'success'); }
+                              }
+                            },
+                            className: "flex-1 px-3 py-1.5 rounded-lg text-sm font-mono " + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-800 border-slate-200') + " border focus:ring-2 focus:ring-sky-500 focus:outline-none" + (liveWrong ? ' ring-2 ring-amber-500' : '')
+                          }),
+                          React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, currentLive.unit),
+                          React.createElement("button", {
+                            onClick: function() {
+                              var val = parseFloat(d._liveInput);
+                              if (isNaN(val)) return;
+                              var correct = Math.abs(val - currentLive.answer) <= currentLive.tolerance;
+                              var ns = Object.assign({}, liveSolved);
+                              ns[currentLive.id] = { value: val, correct: correct, attempts: (ns[currentLive.id] ? ns[currentLive.id].attempts + 1 : 1) };
+                              upd('_liveSolved', ns);
+                              if (correct) { if (awardStemXP) awardStemXP('solarSystem', 15); if (addToast) addToast('\u26A1 Live challenge solved! +15 XP', 'success'); }
+                            },
+                            className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-sky-600 text-white hover:bg-sky-700"
+                          }, 'Check')
+                        ),
+
+                        // Feedback
+                        liveCorrect && React.createElement("div", { className: "px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center gap-2" },
+                          React.createElement("span", { className: "text-lg" }, "\u26A1"),
+                          React.createElement("div", null,
+                            React.createElement("div", { className: "text-xs font-bold text-emerald-700" }, "Correct! +15 XP"),
+                            React.createElement("div", { className: "text-[10px] text-emerald-600" }, "Answer: " + liveAns.value + " " + currentLive.unit + (liveAns.attempts === 1 ? ' (first try!)' : ''))
+                          )
+                        ),
+                        liveWrong && React.createElement("div", { className: "px-3 py-2 rounded-lg bg-amber-50 border border-amber-200" },
+                          React.createElement("div", { className: "text-xs font-bold text-amber-700" }, "Not quite \u2014 try again!"),
+                          React.createElement("div", { className: "text-[10px] text-amber-600" }, "Expected ~" + currentLive.answer.toFixed(3) + " \u00B1" + currentLive.tolerance.toFixed(3) + ". " + (liveAns.attempts >= 2 ? 'Use the hints!' : ''))
+                        ),
+
+                        // Solution (after correct or 3 fails)
+                        (liveCorrect || (liveWrong && liveAns && liveAns.attempts >= 3)) && React.createElement("div", { className: (isDark ? 'bg-emerald-900/20 border-emerald-800' : 'bg-emerald-50 border-emerald-200') + " rounded-lg p-3 border" },
+                          React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-emerald-200' : 'text-emerald-800') + " leading-relaxed" }, currentLive.explanation)
+                        ),
+
+                        // Navigation
+                        React.createElement("div", { className: "flex justify-between pt-2 border-t " + (isDark ? 'border-slate-700' : 'border-sky-100') },
+                          React.createElement("button", {
+                            onClick: function() { var ni = ((liveIdx % liveProblems.length) - 1 + liveProblems.length) % liveProblems.length; upd('_liveIdx', ni); upd('_liveInput', ''); upd('_liveHints', 0); },
+                            className: "px-3 py-1 rounded text-[10px] font-bold " + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')
+                          }, '\u2190 Prev'),
+                          React.createElement("button", {
+                            onClick: function() { var ni = ((liveIdx % liveProblems.length) + 1) % liveProblems.length; upd('_liveIdx', ni); upd('_liveInput', ''); upd('_liveHints', 0); },
+                            className: "px-3 py-1 rounded text-[10px] font-bold bg-sky-600 text-white hover:bg-sky-700"
+                          }, 'Next \u2192')
+                        )
+                      );
+                    })()
                   );
                 })()
               );

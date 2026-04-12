@@ -2349,27 +2349,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // ── Trees from map ──
+          // ── Trees from map (pine + deciduous mix + bushes) ──
           if (map) {
             var treeTrunkMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
-            var treeLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc8d0d8 : 0x2a7e2a });
+            var pineLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc8d0d8 : 0x1a5c1a });
+            var decidLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xd4dce4 : 0x3a8a2a });
+            var autumnLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xd0d4d8 : 0xc87020 });
+            var bushMat = new T.MeshLambertMaterial({ color: isSnow ? 0xb8c0c8 : 0x2a6a22 });
             for (var ty = 0; ty < MAP_SIZE; ty++) {
               for (var tx = 0; tx < MAP_SIZE; tx++) {
                 if (map[ty][tx] === 5) {
-                  var tH = 2 + ((tx * 47 + ty * 83) % 3);
+                  var treeHash = (tx * 47 + ty * 83) % 7;
+                  var tH = 2 + (treeHash % 3);
+                  var tPosX = tx - MAP_SIZE / 2;
+                  var tPosZ = ty - MAP_SIZE / 2;
                   // Trunk
-                  var trunkGeo = new T.CylinderGeometry(0.12, 0.18, tH * 0.5, 6);
+                  var trunkGeo = new T.CylinderGeometry(0.1, 0.16, tH * 0.5, 6);
                   var trunk = new T.Mesh(trunkGeo, treeTrunkMat);
-                  trunk.position.set(tx - MAP_SIZE / 2, tH * 0.25, ty - MAP_SIZE / 2);
+                  trunk.position.set(tPosX, tH * 0.25, tPosZ);
                   trunk.castShadow = true;
                   scene.add(trunk);
-                  // Foliage (cone for pines)
-                  var leafGeo = new T.ConeGeometry(0.8 + ((tx + ty) % 3) * 0.2, tH * 0.7, 6);
-                  var leaf = new T.Mesh(leafGeo, treeLeafMat);
-                  leaf.position.set(tx - MAP_SIZE / 2, tH * 0.5 + tH * 0.35, ty - MAP_SIZE / 2);
-                  leaf.castShadow = true;
-                  scene.add(leaf);
+                  if (treeHash < 3) {
+                    // Pine tree: tiered cones (Maine classic)
+                    var tiers = 2 + (treeHash % 2);
+                    for (var tier = 0; tier < tiers; tier++) {
+                      var tierR = (0.9 - tier * 0.15) + ((tx + ty) % 3) * 0.1;
+                      var tierH = tH * 0.35;
+                      var tierGeo = new T.ConeGeometry(tierR, tierH, 7);
+                      var tierMesh = new T.Mesh(tierGeo, pineLeafMat);
+                      tierMesh.position.set(tPosX, tH * 0.4 + tier * tierH * 0.6, tPosZ);
+                      tierMesh.castShadow = true;
+                      scene.add(tierMesh);
+                    }
+                  } else if (treeHash < 5) {
+                    // Deciduous tree: sphere canopy
+                    var canopyR = 0.7 + ((tx * 13 + ty * 7) % 4) * 0.15;
+                    var canopyGeo = new T.SphereGeometry(canopyR, 8, 6);
+                    var canopyMesh = new T.Mesh(canopyGeo, (tx + ty) % 5 === 0 ? autumnLeafMat : decidLeafMat);
+                    canopyMesh.position.set(tPosX, tH * 0.55 + canopyR * 0.6, tPosZ);
+                    canopyMesh.castShadow = true;
+                    scene.add(canopyMesh);
+                  } else {
+                    // Bush (low, round, no trunk visible)
+                    var bushR = 0.4 + ((tx * 29 + ty * 11) % 3) * 0.1;
+                    var bushGeo = new T.SphereGeometry(bushR, 8, 6);
+                    var bushMesh = new T.Mesh(bushGeo, bushMat);
+                    bushMesh.position.set(tPosX, bushR * 0.7, tPosZ);
+                    bushMesh.castShadow = true;
+                    scene.add(bushMesh);
+                  }
                 }
+              }
+            }
+            // Hedges along sidewalks (residential/suburban)
+            if (currentScenario.id === 'residential' || currentScenario.id === 'suburban' || currentScenario.id === 'school_zone') {
+              for (var hi = -MAP_SIZE + 2; hi < MAP_SIZE; hi += 3) {
+                if ((hi + MAP_SIZE) % 6 < 3) continue; // gaps for driveways
+                [-5.8, 5.8].forEach(function(hOff) {
+                  var hedgeGeo = new T.BoxGeometry(0.4, 0.5, 2.5);
+                  var hedge = new T.Mesh(hedgeGeo, bushMat);
+                  hedge.position.set(centerX - MAP_SIZE / 2 + hOff, 0.25, hi);
+                  hedge.castShadow = true;
+                  scene.add(hedge);
+                });
               }
             }
           }
@@ -2608,14 +2650,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Camera follows car
           var camMode = cameraModeRef.current;
           if (camMode === 'cockpit') {
+            // Camera bob from road vibration (subtle, speed-dependent)
+            var bobAmp = Math.min(0.03, car.speed * 0.002);
+            var bobY = Math.sin(timeRef.current * 8) * bobAmp;
+            var bobX = Math.sin(timeRef.current * 5.3) * bobAmp * 0.3;
+            // Skid shake
+            var shakeX = 0, shakeZ = 0;
+            if (skidRef.current.active) {
+              var si = skidRef.current.intensity * 0.15;
+              shakeX = (Math.random() - 0.5) * si;
+              shakeZ = (Math.random() - 0.5) * si;
+            }
             s3.camera.position.set(
-              carWorldX + Math.cos(car.heading) * 0.3,
-              1.1,
-              carWorldZ + Math.sin(car.heading) * 0.3
+              carWorldX + Math.cos(car.heading) * 0.3 + bobX + shakeX,
+              1.1 + bobY,
+              carWorldZ + Math.sin(car.heading) * 0.3 + shakeZ
             );
             s3.camera.lookAt(
               carWorldX + Math.cos(car.heading) * 10,
-              1.0,
+              0.95,
               carWorldZ + Math.sin(car.heading) * 10
             );
             s3.playerCarGroup.visible = false;

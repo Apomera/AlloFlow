@@ -1894,7 +1894,7 @@ window.SelHub = window.SelHub || {
                           onClick: function() { callTTS(phrase); },
                           className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
-                        h('button', { 'aria-label': 'div',
+                        h('button', { 'aria-label': 'Send response',
                           onClick: function() {
                             if (navigator.clipboard && navigator.clipboard.writeText) {
                               navigator.clipboard.writeText(phrase);
