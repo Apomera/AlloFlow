@@ -488,80 +488,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var MAP_SIZE = 64;
 
   function buildMap(scenarioId) {
-    // Create a base grid of grass (2) then carve roads.
     var map = [];
     for (var y = 0; y < MAP_SIZE; y++) {
       var row = [];
-      for (var x = 0; x < MAP_SIZE; x++) row.push(2);
+      for (var x = 0; x < MAP_SIZE; x++) row.push(2); // grass
       map.push(row);
     }
-    // Carve a long main road running north-south down the middle.
     var centerX = Math.floor(MAP_SIZE / 2);
-    for (var y2 = 0; y2 < MAP_SIZE; y2++) {
-      for (var dx = -3; dx <= 3; dx++) map[y2][centerX + dx] = 0;
-      map[y2][centerX] = 3; // centerline marker
-    }
-    // For most scenarios, add buildings/trees on the sides.
-    if (scenarioId === 'residential' || scenarioId === 'suburban' || scenarioId === 'night' || scenarioId === 'school_zone' || scenarioId === 'construction') {
-      for (var by = 4; by < MAP_SIZE - 4; by += 6) {
-        // Left side houses
-        for (var bx = 0; bx < 3; bx++) {
-          var lx = centerX - 6 - bx;
-          if (lx >= 0) map[by][lx] = 1;
-          if (lx >= 0 && by + 1 < MAP_SIZE) map[by + 1][lx] = 1;
-          if (lx >= 0 && by + 2 < MAP_SIZE) map[by + 2][lx] = 1;
+
+    // Helper: carve a road strip (N-S or E-W)
+    function carveRoadNS(cx, yStart, yEnd) {
+      for (var y = yStart; y < yEnd; y++) {
+        for (var dx = -3; dx <= 3; dx++) {
+          if (cx + dx >= 0 && cx + dx < MAP_SIZE) map[y][cx + dx] = 0;
         }
-        // Right side houses
-        for (var bx2 = 0; bx2 < 3; bx2++) {
-          var rx = centerX + 6 + bx2;
-          if (rx < MAP_SIZE) map[by][rx] = 1;
-          if (rx < MAP_SIZE && by + 1 < MAP_SIZE) map[by + 1][rx] = 1;
-          if (rx < MAP_SIZE && by + 2 < MAP_SIZE) map[by + 2][rx] = 1;
+        if (cx >= 0 && cx < MAP_SIZE) map[y][cx] = 3;
+      }
+    }
+    function carveRoadEW(cy, xStart, xEnd) {
+      for (var x = xStart; x < xEnd; x++) {
+        for (var dy = -3; dy <= 3; dy++) {
+          if (cy + dy >= 0 && cy + dy < MAP_SIZE && x >= 0 && x < MAP_SIZE) map[cy + dy][x] = 0;
         }
       }
-      // Sprinkle trees
-      for (var ti = 0; ti < 30; ti++) {
+    }
+    function addSidewalks(cx) {
+      for (var y = 0; y < MAP_SIZE; y++) {
+        [-4, -5, 4, 5].forEach(function(off) {
+          var sx = cx + off;
+          if (sx >= 0 && sx < MAP_SIZE && map[y][sx] === 2) map[y][sx] = 4;
+        });
+      }
+    }
+
+    // Main N-S road
+    carveRoadNS(centerX, 0, MAP_SIZE);
+
+    if (scenarioId === 'residential' || scenarioId === 'suburban' || scenarioId === 'night' || scenarioId === 'school_zone' || scenarioId === 'construction') {
+      // Cross streets every 16 cells — creates a real grid
+      var crossStreets = [16, 32, 48];
+      crossStreets.forEach(function(cy) { carveRoadEW(cy, 0, MAP_SIZE); });
+      addSidewalks(centerX);
+      // Buildings in blocks between streets
+      for (var by = 4; by < MAP_SIZE - 4; by++) {
+        if (crossStreets.some(function(cs) { return Math.abs(by - cs) < 4; })) continue; // skip near intersections
+        if (by % 3 !== 0) continue; // space buildings
+        for (var side = -1; side <= 1; side += 2) {
+          for (var bd = 0; bd < 3; bd++) {
+            var bx = centerX + side * (6 + bd);
+            if (bx >= 0 && bx < MAP_SIZE) map[by][bx] = 1;
+            if (bx >= 0 && bx < MAP_SIZE && by + 1 < MAP_SIZE) map[by + 1][bx] = 1;
+          }
+        }
+      }
+      // Parking lot (suburban only) — flat asphalt area near one intersection
+      if (scenarioId === 'suburban') {
+        for (var py = 34; py < 42; py++) {
+          for (var px = centerX + 8; px < centerX + 16 && px < MAP_SIZE; px++) {
+            map[py][px] = 0;
+          }
+        }
+      }
+      // Trees in yards
+      for (var ti = 0; ti < 50; ti++) {
         var tx = Math.floor(Math.random() * MAP_SIZE);
         var ty = Math.floor(Math.random() * MAP_SIZE);
         if (map[ty][tx] === 2) map[ty][tx] = 5;
       }
     } else if (scenarioId === 'rural' || scenarioId === 'snow' || scenarioId === 'fog') {
-      // Trees along sides, sparser
-      for (var ti2 = 0; ti2 < 120; ti2++) {
+      // Dense forest along a winding road (simulate curves via slight offset)
+      for (var ti2 = 0; ti2 < 180; ti2++) {
         var tx2 = Math.floor(Math.random() * MAP_SIZE);
         var ty2 = Math.floor(Math.random() * MAP_SIZE);
-        if (map[ty2][tx2] === 2) map[ty2][tx2] = 5;
+        if (map[ty2][tx2] === 2 && Math.abs(tx2 - centerX) > 5) map[ty2][tx2] = 5;
       }
     } else if (scenarioId === 'highway') {
-      // Wider road, medians
+      // 4-lane highway with median
       for (var y3 = 0; y3 < MAP_SIZE; y3++) {
         for (var dx2 = -6; dx2 <= 6; dx2++) map[y3][centerX + dx2] = 0;
         map[y3][centerX - 1] = 3;
         map[y3][centerX + 1] = 3;
+        // Median barrier (cell type 6 = solid but not building)
+        map[y3][centerX] = 6;
       }
-      // Occasional trees far from road
-      for (var ti3 = 0; ti3 < 40; ti3++) {
+      // On-ramp at y=50
+      for (var ry = 45; ry < 55; ry++) {
+        for (var rx = centerX + 7; rx < centerX + 7 + (55 - ry); rx++) {
+          if (rx < MAP_SIZE) map[ry][rx] = 0;
+        }
+      }
+      // Sparse trees far from road
+      for (var ti3 = 0; ti3 < 50; ti3++) {
         var tx3 = Math.floor(Math.random() * MAP_SIZE);
         var ty3 = Math.floor(Math.random() * MAP_SIZE);
-        if (map[ty3][tx3] === 2 && Math.abs(tx3 - centerX) > 10) map[ty3][tx3] = 5;
+        if (map[ty3][tx3] === 2 && Math.abs(tx3 - centerX) > 12) map[ty3][tx3] = 5;
       }
     } else if (scenarioId === 'roundabout') {
-      // Circular road around center (radius 8)
-      var cy = Math.floor(MAP_SIZE / 2);
+      // Circular road with 4 approach roads
+      var cy2 = Math.floor(MAP_SIZE / 2);
+      // Circle
       for (var rr = 6; rr <= 10; rr++) {
-        for (var aa = 0; aa < 360; aa += 2) {
+        for (var aa = 0; aa < 360; aa += 1.5) {
           var ax = Math.round(centerX + Math.cos(aa * Math.PI / 180) * rr);
-          var ay = Math.round(cy + Math.sin(aa * Math.PI / 180) * rr);
+          var ay = Math.round(cy2 + Math.sin(aa * Math.PI / 180) * rr);
           if (ax >= 0 && ax < MAP_SIZE && ay >= 0 && ay < MAP_SIZE) map[ay][ax] = 0;
         }
       }
       // Center island
-      for (var iy = cy - 4; iy <= cy + 4; iy++) {
+      for (var iy = cy2 - 4; iy <= cy2 + 4; iy++) {
         for (var ix = centerX - 4; ix <= centerX + 4; ix++) {
-          var dd = Math.hypot(ix - centerX, iy - cy);
-          if (dd < 5 && ix >= 0 && ix < MAP_SIZE && iy >= 0 && iy < MAP_SIZE) map[iy][ix] = 5;
+          if (Math.hypot(ix - centerX, iy - cy2) < 5 && ix >= 0 && ix < MAP_SIZE && iy >= 0 && iy < MAP_SIZE) map[iy][ix] = 5;
         }
       }
+      // 4 approach roads (N, S, E, W)
+      carveRoadNS(centerX, 0, cy2 - 10);
+      carveRoadNS(centerX, cy2 + 10, MAP_SIZE);
+      carveRoadEW(cy2, 0, centerX - 10);
+      carveRoadEW(cy2, centerX + 10, MAP_SIZE);
     }
     return map;
   }
@@ -1900,6 +1943,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               setTimeout(function() { try { oldOsc.stop(); } catch(e){} }, 200);
               a._skidOsc = null;
             }
+            // Wind / road noise: white noise filtered, volume scales with speed
+            if (!a._windNode) {
+              // Create white noise buffer
+              var bufSize = a.ctx.sampleRate * 2;
+              var buf = a.ctx.createBuffer(1, bufSize, a.ctx.sampleRate);
+              var data = buf.getChannelData(0);
+              for (var ni = 0; ni < bufSize; ni++) data[ni] = (Math.random() * 2 - 1) * 0.3;
+              a._windBuf = buf;
+              a._windNode = a.ctx.createBufferSource();
+              a._windNode.buffer = buf;
+              a._windNode.loop = true;
+              a._windFilter = a.ctx.createBiquadFilter();
+              a._windFilter.type = 'lowpass';
+              a._windFilter.frequency.value = 400;
+              a._windGain = a.ctx.createGain();
+              a._windGain.gain.value = 0;
+              a._windNode.connect(a._windFilter);
+              a._windFilter.connect(a._windGain);
+              a._windGain.connect(a.ctx.destination);
+              a._windNode.start();
+            }
+            // Scale wind volume and filter cutoff with speed
+            var windVol = Math.min(0.06, car.speed * 0.003);
+            var windCutoff = 200 + car.speed * 20;
+            a._windGain.gain.setTargetAtTime(windVol, a.ctx.currentTime, 0.1);
+            a._windFilter.frequency.setTargetAtTime(windCutoff, a.ctx.currentTime, 0.1);
+            // Rain ambient (if raining — constant patter)
+            if (currentScenario.weather === 'rain' && !a._rainNode) {
+              var rainBuf = a.ctx.createBuffer(1, a.ctx.sampleRate * 2, a.ctx.sampleRate);
+              var rd = rainBuf.getChannelData(0);
+              for (var rni = 0; rni < rd.length; rni++) rd[rni] = (Math.random() * 2 - 1) * 0.15;
+              a._rainNode = a.ctx.createBufferSource();
+              a._rainNode.buffer = rainBuf;
+              a._rainNode.loop = true;
+              a._rainFilter = a.ctx.createBiquadFilter();
+              a._rainFilter.type = 'bandpass';
+              a._rainFilter.frequency.value = 3000;
+              a._rainFilter.Q.value = 0.5;
+              a._rainGain = a.ctx.createGain();
+              a._rainGain.gain.value = 0.025;
+              a._rainNode.connect(a._rainFilter);
+              a._rainFilter.connect(a._rainGain);
+              a._rainGain.connect(a.ctx.destination);
+              a._rainNode.start();
+            }
+            // Blinker tick sound
+            if (blinkerRef.current !== 0) {
+              var shouldTick = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
+              if (shouldTick && !a._lastBlinkerTick) {
+                a._lastBlinkerTick = true;
+                var tick = a.ctx.createOscillator();
+                var tickG = a.ctx.createGain();
+                tick.type = 'sine'; tick.frequency.value = 1200;
+                tickG.gain.value = 0.03;
+                tick.connect(tickG); tickG.connect(a.ctx.destination);
+                tick.start();
+                tickG.gain.setTargetAtTime(0, a.ctx.currentTime + 0.05, 0.01);
+                tick.stop(a.ctx.currentTime + 0.08);
+              } else if (!shouldTick) {
+                a._lastBlinkerTick = false;
+              }
+            }
           } catch (e) { /* ignore */ }
         };
 
@@ -2120,6 +2225,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               scene.add(csMesh);
             }
           });
+
+          // ── 3D Speed Limit Signs ──
+          var speedSignMat = new T.MeshBasicMaterial({ color: 0xffffff });
+          var speedSignBorderMat = new T.MeshBasicMaterial({ color: 0x000000 });
+          var signPostMat = new T.MeshLambertMaterial({ color: 0x888888 });
+          // Place at regular intervals along the road
+          [8, 32, 56].forEach(function(signY) {
+            // Post
+            var spGeo = new T.CylinderGeometry(0.04, 0.04, 2.2, 6);
+            var sp = new T.Mesh(spGeo, signPostMat);
+            sp.position.set(centerX - MAP_SIZE / 2 + 4.0, 1.1, signY - MAP_SIZE / 2);
+            scene.add(sp);
+            // Sign face (white rectangle)
+            var sfGeo = new T.BoxGeometry(0.04, 0.6, 0.45);
+            var sf = new T.Mesh(sfGeo, speedSignMat);
+            sf.position.set(centerX - MAP_SIZE / 2 + 4.0, 2.1, signY - MAP_SIZE / 2);
+            scene.add(sf);
+            // Black border
+            var sbGeo = new T.BoxGeometry(0.05, 0.65, 0.5);
+            var sb = new T.Mesh(sbGeo, speedSignBorderMat);
+            sb.position.set(centerX - MAP_SIZE / 2 + 3.99, 2.1, signY - MAP_SIZE / 2);
+            scene.add(sb);
+          });
+
+          // ── School Zone sign (if school_zone scenario) ──
+          if (currentScenario.id === 'school_zone') {
+            var szPostGeo = new T.CylinderGeometry(0.04, 0.04, 2.5, 6);
+            var szPost = new T.Mesh(szPostGeo, signPostMat);
+            szPost.position.set(centerX - MAP_SIZE / 2 + 4.2, 1.25, -8);
+            scene.add(szPost);
+            // Pentagon-ish shape (use cone with 5 sides as approximation)
+            var szGeo = new T.ConeGeometry(0.35, 0.5, 5);
+            var szMat = new T.MeshBasicMaterial({ color: 0xccff00 }); // fluorescent yellow-green
+            var szSign = new T.Mesh(szGeo, szMat);
+            szSign.position.set(centerX - MAP_SIZE / 2 + 4.2, 2.5, -8);
+            szSign.rotation.z = Math.PI;
+            scene.add(szSign);
+          }
+
+          // ── Construction cones (if construction scenario) ──
+          if (currentScenario.id === 'construction') {
+            var coneMat = new T.MeshLambertMaterial({ color: 0xf97316 });
+            var coneStripeMat = new T.MeshBasicMaterial({ color: 0xffffff });
+            for (var ci = 0; ci < 12; ci++) {
+              var coneZ = -MAP_SIZE / 2 + 20 + ci * 3;
+              // Orange cone body
+              var coneGeo = new T.ConeGeometry(0.12, 0.6, 8);
+              var coneMesh = new T.Mesh(coneGeo, coneMat);
+              coneMesh.position.set(centerX - MAP_SIZE / 2 + (ci % 2 === 0 ? 2.5 : -2.5), 0.3, coneZ);
+              coneMesh.castShadow = true;
+              scene.add(coneMesh);
+              // White stripe
+              var stripeGeo = new T.CylinderGeometry(0.11, 0.09, 0.08, 8);
+              var stripe = new T.Mesh(stripeGeo, coneStripeMat);
+              stripe.position.set(centerX - MAP_SIZE / 2 + (ci % 2 === 0 ? 2.5 : -2.5), 0.35, coneZ);
+              scene.add(stripe);
+            }
+          }
+
+          // ── Highway guardrails ──
+          if (currentScenario.id === 'highway') {
+            var railMat = new T.MeshLambertMaterial({ color: 0x999999 });
+            [-7.5, 7.5].forEach(function(railOff) {
+              for (var ri = -MAP_SIZE; ri < MAP_SIZE; ri += 2) {
+                // Post
+                var rpGeo = new T.CylinderGeometry(0.03, 0.03, 0.6, 4);
+                var rp = new T.Mesh(rpGeo, railMat);
+                rp.position.set(centerX - MAP_SIZE / 2 + railOff, 0.3, ri);
+                scene.add(rp);
+              }
+              // Rail beam
+              var beamGeo = new T.BoxGeometry(0.04, 0.15, MAP_SIZE * 2);
+              var beam = new T.Mesh(beamGeo, railMat);
+              beam.position.set(centerX - MAP_SIZE / 2 + railOff, 0.5, 0);
+              scene.add(beam);
+            });
+            // Highway median barrier
+            var medianMat = new T.MeshLambertMaterial({ color: 0x666666 });
+            var medGeo = new T.BoxGeometry(0.3, 0.8, MAP_SIZE * 2);
+            var med = new T.Mesh(medGeo, medianMat);
+            med.position.set(centerX - MAP_SIZE / 2, 0.4, 0);
+            scene.add(med);
+          }
 
           // ── Roadside props: mailboxes, hydrants (residential/suburban) ──
           if (currentScenario.id === 'residential' || currentScenario.id === 'suburban' || currentScenario.id === 'school_zone') {
