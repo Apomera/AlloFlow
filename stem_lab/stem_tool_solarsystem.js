@@ -11187,12 +11187,12 @@ const d = labToolData.solarSystem;
                   ),
 
                   sel && POE_PROMPTS[sel.name] && d['poe_revealed_' + sel.name] && React.createElement("div", {
-                    className: "mt-2 bg-emerald-50 rounded-xl p-3 border border-emerald-300"
+                    className: "mt-2 rounded-xl p-3 border " + (isDark ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-300')
                   },
-                    React.createElement("p", { className: "text-xs font-bold text-emerald-800 mb-1" }, "\uD83D\uDCA1 " + POE_PROMPTS[sel.name].concept.toUpperCase()),
-                    React.createElement("p", { className: "text-xs text-emerald-700 leading-relaxed" }, POE_PROMPTS[sel.name].reveal),
-                    VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 bg-white rounded-lg p-2 border border-emerald-100" },
-                      React.createElement("span", { className: "text-[10px] font-black text-emerald-600" }, "\uD83D\uDCD6 VOCABULARY: "),
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, "\uD83D\uDCA1 " + POE_PROMPTS[sel.name].concept.toUpperCase()),
+                    React.createElement("p", { className: "text-xs leading-relaxed " + (isDark ? 'text-emerald-400/80' : 'text-emerald-700') }, POE_PROMPTS[sel.name].reveal),
+                    VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 rounded-lg p-2 border " + (isDark ? 'bg-slate-800 border-emerald-700/30' : 'bg-white border-emerald-100') },
+                      React.createElement("span", { className: "text-[10px] font-black " + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, "\uD83D\uDCD6 VOCABULARY: "),
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, POE_PROMPTS[sel.name].concept),
                       React.createElement("span", { className: "text-[10px] text-slate-600" }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.name].concept].def))
                   ),
@@ -12588,12 +12588,12 @@ const d = labToolData.solarSystem;
                 ),
                 React.createElement("button", {
                   onClick: function() { upd('showJournal', !d.showJournal); },
-                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg " + (d.showJournal ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-amber-700 text-white hover:bg-amber-600') + " transition-all"
+                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (d.showJournal ? (isDark ? 'bg-amber-900/30 text-amber-300 border border-amber-700/50' : 'bg-amber-100 text-amber-700 border border-amber-300') : (isDark ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-700 text-white hover:bg-amber-600'))
                 }, d.showJournal ? 'Close Journal' : (sel ? 'Write about ' + sel.name : 'Open Journal')),
                 d.showJournal && React.createElement("div", { className: "mt-2 space-y-2" },
                   // New entry form
-                  sel && React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200 space-y-2" },
-                    React.createElement("div", { className: "text-[10px] font-bold text-amber-800" }, "\uD83D\uDCDD New Entry: " + sel.name),
+                  sel && React.createElement("div", { className: "rounded-lg p-3 border space-y-2 " + (isDark ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
+                    React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "\uD83D\uDCDD New Entry: " + sel.name),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-amber-600 block mb-0.5" }, "What I predicted:"),
                       React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })

@@ -11177,9 +11177,9 @@ const d = labToolData.solarSystem;
 
                   // POE Reveal (after exploring, show the answer)
                   sel && POE_PROMPTS[sel.name] && d['poe_seen_' + sel.name] === 'predicted' && !d['poe_revealed_' + sel.name] && React.createElement("div", {
-                    className: "mt-2 bg-emerald-50 rounded-xl p-3 border border-emerald-200"
+                    className: "mt-2 rounded-xl p-3 border " + (isDark ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200')
                   },
-                    React.createElement("p", { className: "text-xs font-bold text-emerald-700 mb-1" }, "\uD83D\uDD0D Ready to check your prediction?"),
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, "\uD83D\uDD0D Ready to check your prediction?"),
                     React.createElement("button", {
                       onClick: function() { upd('poe_revealed_' + sel.name, true); },
                       className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-600 transition-all"
@@ -11187,12 +11187,12 @@ const d = labToolData.solarSystem;
                   ),
 
                   sel && POE_PROMPTS[sel.name] && d['poe_revealed_' + sel.name] && React.createElement("div", {
-                    className: "mt-2 bg-emerald-50 rounded-xl p-3 border border-emerald-300"
+                    className: "mt-2 rounded-xl p-3 border " + (isDark ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-300')
                   },
-                    React.createElement("p", { className: "text-xs font-bold text-emerald-800 mb-1" }, "\uD83D\uDCA1 " + POE_PROMPTS[sel.name].concept.toUpperCase()),
-                    React.createElement("p", { className: "text-xs text-emerald-700 leading-relaxed" }, POE_PROMPTS[sel.name].reveal),
-                    VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 bg-white rounded-lg p-2 border border-emerald-100" },
-                      React.createElement("span", { className: "text-[10px] font-black text-emerald-600" }, "\uD83D\uDCD6 VOCABULARY: "),
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, "\uD83D\uDCA1 " + POE_PROMPTS[sel.name].concept.toUpperCase()),
+                    React.createElement("p", { className: "text-xs leading-relaxed " + (isDark ? 'text-emerald-400/80' : 'text-emerald-700') }, POE_PROMPTS[sel.name].reveal),
+                    VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 rounded-lg p-2 border " + (isDark ? 'bg-slate-800 border-emerald-700/30' : 'bg-white border-emerald-100') },
+                      React.createElement("span", { className: "text-[10px] font-black " + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, "\uD83D\uDCD6 VOCABULARY: "),
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, POE_PROMPTS[sel.name].concept),
                       React.createElement("span", { className: "text-[10px] text-slate-600" }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.name].concept].def))
                   ),
