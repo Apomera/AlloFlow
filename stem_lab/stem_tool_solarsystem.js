@@ -1774,34 +1774,62 @@ const d = labToolData.solarSystem;
   var bg = isDark ? "#1e1e2e" : "#ffffff";
   var fg = isDark ? "#e0e0e0" : "#1a1a2e";
   var accent = "#4a90d9";
-  var border = isDark ? "#444" : "#ccc";
-  var cardBg = isDark ? "#2a2a3e" : "#f0f4f8";
+  var accentLight = isDark ? "#5a9ee9" : "#3a80c9";
+  var border = isDark ? "#444" : "#d0d5dd";
+  var cardBg = isDark ? "#2a2a3e" : "#f8f9fc";
   var mutedFg = isDark ? "#999" : "#666";
+  var shadowSm = isDark ? "0 1px 3px rgba(0,0,0,0.4)" : "0 1px 3px rgba(0,0,0,0.08)";
+  var shadowMd = isDark ? "0 4px 12px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.1)";
+
+  // ── Inject CSS for hover/focus effects (once per mount) ──
+  if (!document.getElementById("orrery-css")) {
+    var css = document.createElement("style");
+    css.id = "orrery-css";
+    css.textContent = [
+      ".orr-btn{transition:all .18s ease!important}",
+      ".orr-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}",
+      ".orr-btn:active{transform:translateY(0);filter:brightness(0.95)}",
+      ".orr-btn-active{box-shadow:0 2px 10px rgba(74,144,217,0.35)!important}",
+      ".orr-card{transition:box-shadow .2s,transform .2s}",
+      ".orr-card:hover{box-shadow:" + (isDark ? "0 6px 20px rgba(0,0,0,0.5)" : "0 6px 20px rgba(0,0,0,0.1)") + ";transform:translateY(-1px)}",
+      ".orr-input:focus{outline:none;border-color:" + accent + "!important;box-shadow:0 0 0 3px " + accent + "33!important}",
+      ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.08)" : "rgba(74,144,217,0.05)") + "!important}",
+      ".orr-tr:nth-child(even){background:" + (isDark ? "#252535" : "#f4f6f9") + "}"
+    ].join("\n");
+    document.head.appendChild(css);
+  }
 
   function btn(label, active, onClick, extra) {
     return h("button", Object.assign({
       onClick: onClick,
+      className: "orr-btn" + (active ? " orr-btn-active" : ""),
       style: {
-        padding: "6px 14px",
-        borderRadius: "6px",
+        padding: "7px 15px",
+        borderRadius: "8px",
         border: active ? "2px solid " + accent : "1px solid " + border,
-        background: active ? accent : cardBg,
+        background: active
+          ? "linear-gradient(135deg, " + accent + ", " + accentLight + ")"
+          : cardBg,
         color: active ? "#fff" : fg,
         cursor: "pointer",
-        fontWeight: active ? 700 : 400,
+        fontWeight: active ? 700 : 500,
         fontSize: "13px",
-        transition: "all 0.15s"
+        letterSpacing: "0.01em",
+        boxShadow: active ? "0 2px 10px rgba(74,144,217,0.3)" : shadowSm,
+        transition: "all 0.18s ease"
       }
     }, extra || {}), label);
   }
 
   function card(children, style) {
     return h("div", {
+      className: "orr-card",
       style: Object.assign({
         background: cardBg,
-        borderRadius: "10px",
-        padding: "14px",
-        border: "1px solid " + border
+        borderRadius: "12px",
+        padding: "16px",
+        border: "1px solid " + border,
+        boxShadow: shadowSm
       }, style || {})
     }, children);
   }
@@ -1874,8 +1902,13 @@ const d = labToolData.solarSystem;
   /* ====================================================================
    *  4. TAB HEADER
    * ==================================================================== */
+  var TAB_ICONS = ["\uD83C\uDF0C", "I", "II", "III", "\uD83D\uDD27", "\uD83D\uDE80", "\uD83C\uDFC6", "\u2753"];
   var tabHeader = h("div", {
-    style: { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" },
+    style: {
+      display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "14px",
+      padding: "6px", background: isDark ? "#1a1a2e" : "#eef1f6", borderRadius: "12px",
+      boxShadow: "inset " + (isDark ? "0 1px 4px rgba(0,0,0,0.4)" : "0 1px 4px rgba(0,0,0,0.06)")
+    },
     role: "tablist",
     onKeyDown: function(ev) {
       if (ev.key === "ArrowRight" || ev.key === "ArrowDown") { ev.preventDefault(); setTab(Math.min(stab + 1, TAB_NAMES.length - 1)); }
@@ -1884,7 +1917,27 @@ const d = labToolData.solarSystem;
       if (ev.key === "End") { ev.preventDefault(); setTab(TAB_NAMES.length - 1); }
     }
   }, TAB_NAMES.map(function(nm, i) {
-    return btn(nm, stab === i, function() { setTab(i); }, { key: "tab" + i, role: "tab", "aria-selected": stab === i, tabIndex: stab === i ? 0 : -1 });
+    var isActive = stab === i;
+    return h("button", {
+      key: "tab" + i, role: "tab", "aria-selected": isActive, tabIndex: isActive ? 0 : -1,
+      className: "orr-btn" + (isActive ? " orr-btn-active" : ""),
+      onClick: function() { setTab(i); },
+      style: {
+        padding: "8px 14px",
+        borderRadius: "8px",
+        border: isActive ? "none" : "1px solid transparent",
+        background: isActive
+          ? "linear-gradient(135deg, " + accent + ", " + accentLight + ")"
+          : "transparent",
+        color: isActive ? "#fff" : mutedFg,
+        cursor: "pointer",
+        fontWeight: isActive ? 700 : 500,
+        fontSize: "13px",
+        boxShadow: isActive ? shadowMd : "none",
+        transition: "all 0.2s ease",
+        letterSpacing: "0.01em"
+      }
+    }, TAB_ICONS[i] + " " + nm);
   }));
 
   /* ====================================================================
@@ -2039,28 +2092,53 @@ const d = labToolData.solarSystem;
         var aph = sb.a * (1 + sb.e);
         var vPeri = visViva(peri, sb.a);
         var vAph = visViva(aph, sb.a);
+        var statBadge = function(label, value, icon) {
+          return h("div", { style: {
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            padding: "4px 10px", borderRadius: "6px", fontSize: "12px",
+            background: isDark ? "#1e2a3e" : "#eef2f7", border: "1px solid " + border,
+            marginBottom: "4px", marginRight: "4px"
+          } },
+            h("span", { style: { opacity: 0.6 } }, icon || ""),
+            h("span", { style: { color: mutedFg, fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" } }, label),
+            h("span", { style: { fontFamily: "monospace", fontWeight: 700, color: fg } }, value)
+          );
+        };
         bodyInfoCard = card([
-          h("div", { key: "hdr", style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
-            h("strong", null, sb.emoji + " " + sb.name),
+          // Header with colored left border
+          h("div", { key: "hdr", style: {
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            paddingBottom: "8px", marginBottom: "8px",
+            borderBottom: "2px solid " + sb.color
+          } },
+            h("span", { style: { fontWeight: 700, fontSize: "15px", color: fg } }, sb.emoji + " " + sb.name),
+            h("span", { style: {
+              padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700,
+              background: sb.type === "planet" ? accent + "22" : sb.type === "comet" ? "#7ecbf522" : "#8a8a8a22",
+              color: sb.type === "planet" ? accent : sb.type === "comet" ? "#7ecbf5" : "#8a8a8a",
+              textTransform: "uppercase", letterSpacing: "0.05em"
+            } }, sb.type),
             h("button", {
+              className: "orr-btn",
               onClick: function() { upd("orr_sel", null); },
-              style: { background: "none", border: "none", cursor: "pointer", color: fg, fontSize: "16px" }
+              style: { background: "none", border: "none", cursor: "pointer", color: mutedFg, fontSize: "18px", padding: "2px 6px", borderRadius: "4px" }
             }, "\u2716")
           ),
-          h("p", { key: "desc", style: { fontSize: "12px", color: mutedFg, margin: "4px 0" } }, sb.desc),
-          h("div", { key: "stats", style: { fontSize: "12px", lineHeight: "1.6" } },
-            h("div", null, "Semi-major axis: " + fmt(sb.a, 3) + " AU"),
-            h("div", null, "Eccentricity: " + fmt(sb.e, 4)),
-            h("div", null, "Period: " + fmt(sb.T, 2) + " yr"),
-            h("div", null, "Inclination: " + fmt(sb.i, 1) + "\u00b0"),
-            h("div", null, "Perihelion: " + fmt(peri, 3) + " AU (" + fmt(vPeri, 1) + " km/s)"),
-            h("div", null, "Aphelion: " + fmt(aph, 3) + " AU (" + fmt(vAph, 1) + " km/s)"),
-            h("div", null, "Current r: " + fmt(pos.r, 3) + " AU"),
-            h("div", null, "Current v: " + fmt(spd, 2) + " km/s"),
-            sb.m > 0 ? h("div", null, "Mass: " + fmt(sb.m, 4) + " M\u2295") : null,
-            sb.R > 100 ? h("div", null, "Radius: " + fmt(sb.R, 0) + " km") : null
+          h("p", { key: "desc", style: { fontSize: "12px", color: mutedFg, margin: "0 0 10px 0", lineHeight: "1.5", fontStyle: "italic" } }, sb.desc),
+          // Stat grid
+          h("div", { key: "stats", style: { display: "flex", flexWrap: "wrap", gap: "0" } },
+            statBadge("a", fmt(sb.a, 3) + " AU", "\uD83D\uDCCF"),
+            statBadge("e", fmt(sb.e, 4), "\u2B2D"),
+            statBadge("T", fmt(sb.T, 2) + " yr", "\u23F0"),
+            statBadge("i", fmt(sb.i, 1) + "\u00b0", "\u2220"),
+            statBadge("peri", fmt(peri, 3) + " AU", "\u2600"),
+            statBadge("aph", fmt(aph, 3) + " AU", "\u2744"),
+            statBadge("r now", fmt(pos.r, 3) + " AU", "\uD83D\uDCCD"),
+            statBadge("v now", fmt(spd, 2) + " km/s", "\uD83D\uDE80"),
+            sb.m > 0 ? statBadge("mass", fmt(sb.m, 4) + " M\u2295", "\u2696") : null,
+            sb.R > 100 ? statBadge("R", fmt(sb.R, 0) + " km", "\u2B55") : null
           )
-        ], { marginTop: "8px" });
+        ], { marginTop: "10px", borderLeft: "4px solid " + sb.color });
       }
     }
 
@@ -2977,30 +3055,34 @@ const d = labToolData.solarSystem;
     });
 
     // Verification table: T^2 / a^3 ratio
+    var tCellStyle = { padding: "6px 10px", borderBottom: "1px solid " + border };
+    var tCellR = Object.assign({}, tCellStyle, { textAlign: "right", fontFamily: "monospace", fontSize: "11px" });
+    var tHeadStyle = { padding: "8px 10px", borderBottom: "2px solid " + accent, fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg };
+
     var tableRows = OB.map(function(b) {
       var T2 = b.T * b.T;
       var a3 = b.a * b.a * b.a;
       var ratio = T2 / a3;
-      return h("tr", { key: "k3r-" + b.id },
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border } }, b.emoji + " " + b.name),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(b.a, 3)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(b.T, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(T2, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(a3, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right", fontWeight: 700, color: Math.abs(ratio - 1) < 0.05 ? "#27ae60" : "#e74c3c" } }, fmt(ratio, 4))
+      return h("tr", { key: "k3r-" + b.id, className: "orr-tr" },
+        h("td", { style: tCellStyle }, b.emoji + " " + b.name),
+        h("td", { style: tCellR }, fmt(b.a, 3)),
+        h("td", { style: tCellR }, fmt(b.T, 2)),
+        h("td", { style: tCellR }, fmt(T2, 2)),
+        h("td", { style: tCellR }, fmt(a3, 2)),
+        h("td", { style: Object.assign({}, tCellR, { fontWeight: 700, color: Math.abs(ratio - 1) < 0.05 ? "#27ae60" : "#e74c3c" }) }, fmt(ratio, 4))
       );
     });
 
     var verTable = h("div", { style: { overflowX: "auto", marginTop: "10px" } },
       h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
         h("thead", null,
-          h("tr", null,
-            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "left" } }, "Body"),
-            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "a (AU)"),
-            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "T (yr)"),
-            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "T\u00b2"),
-            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "a\u00b3"),
-            h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "T\u00b2/a\u00b3")
+          h("tr", { style: { background: isDark ? "#1e2a3e" : "#eef2f7" } },
+            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "left" }) }, "Body"),
+            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "a (AU)"),
+            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T (yr)"),
+            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2"),
+            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "a\u00b3"),
+            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2/a\u00b3")
           )
         ),
         h("tbody", null, tableRows)
@@ -3239,27 +3321,46 @@ const d = labToolData.solarSystem;
       ),
 
       card([
-        h("div", { key: "dh", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } }, "Derived Quantities"),
-        h("div", { key: "d1", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
-          h("div", null, "Period T = " + fmt(T, 3) + " yr  (" + fmt(T * 365.25, 1) + " days)"),
-          h("div", null, "Perihelion = " + fmt(peri, 4) + " AU  (" + fmt(peri * AU_KM, 0) + " km)"),
-          h("div", null, "Aphelion = " + fmt(aph, 4) + " AU  (" + fmt(aph * AU_KM, 0) + " km)"),
-          h("div", null, "v at perihelion = " + fmt(vPeri, 2) + " km/s"),
-          h("div", null, "v at aphelion = " + fmt(vAph, 2) + " km/s"),
-          h("div", null, "Escape v at perihelion = " + fmt(vEsc, 2) + " km/s"),
-          h("div", {
-            style: {
-              marginTop: "6px",
-              padding: "6px 10px",
-              borderRadius: "6px",
-              background: habitable ? "#27ae6022" : "#e74c3c22",
-              border: "1px solid " + (habitable ? "#27ae60" : "#e74c3c"),
-              fontWeight: 700
-            }
-          }, habitable
-            ? "\u2705 This orbit passes through the habitable zone (0.75\u20131.7 AU)."
-            : "\u274c This orbit does NOT remain in the habitable zone."
-          )
+        h("div", { key: "dh", style: {
+          fontWeight: 700, fontSize: "14px", marginBottom: "10px", color: fg,
+          paddingBottom: "8px", borderBottom: "2px solid " + accent
+        } }, "\uD83D\uDCCA Derived Quantities"),
+        h("div", { key: "d1", style: { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" } },
+          // Metric badges
+          (function() {
+            var wsBadge = function(icon, label, val) {
+              return h("div", { key: "ws-" + label, style: {
+                display: "inline-flex", alignItems: "center", gap: "6px",
+                padding: "6px 12px", borderRadius: "8px",
+                background: isDark ? "#1e2a3e" : "#eef2f7", border: "1px solid " + border
+              } },
+                h("span", { style: { fontSize: "14px" } }, icon),
+                h("span", { style: { fontSize: "10px", fontWeight: 600, color: mutedFg, textTransform: "uppercase", letterSpacing: "0.04em" } }, label),
+                h("span", { style: { fontFamily: "monospace", fontWeight: 700, color: fg, fontSize: "12px" } }, val)
+              );
+            };
+            return [
+              wsBadge("\u23F0", "Period", fmt(T, 3) + " yr"),
+              wsBadge("\u2600", "Perihelion", fmt(peri, 4) + " AU"),
+              wsBadge("\u2744", "Aphelion", fmt(aph, 4) + " AU"),
+              wsBadge("\uD83D\uDE80", "v peri", fmt(vPeri, 2) + " km/s"),
+              wsBadge("\uD83D\uDCA8", "v aph", fmt(vAph, 2) + " km/s"),
+              wsBadge("\u26A1", "v esc", fmt(vEsc, 2) + " km/s")
+            ];
+          })()
+        ),
+        h("div", { key: "dhab", style: {
+          padding: "10px 14px",
+          borderRadius: "8px",
+          background: habitable
+            ? (isDark ? "rgba(39,174,96,0.1)" : "rgba(39,174,96,0.06)")
+            : (isDark ? "rgba(231,76,60,0.1)" : "rgba(231,76,60,0.06)"),
+          borderLeft: "4px solid " + (habitable ? "#27ae60" : "#e74c3c"),
+          fontWeight: 700, fontSize: "13px",
+          color: habitable ? "#27ae60" : "#e74c3c"
+        } }, habitable
+          ? "\u2705 This orbit passes through the habitable zone (0.75\u20131.7 AU)."
+          : "\u274c This orbit does NOT remain in the habitable zone."
         )
       ])
     );
@@ -3399,15 +3500,17 @@ const d = labToolData.solarSystem;
 
     // Delta-v budget from Earth
     var earth = OB[2];
+    var bCellStyle = { padding: "6px 10px", borderBottom: "1px solid " + border };
+    var bCellR = Object.assign({}, bCellStyle, { textAlign: "right", fontFamily: "monospace", fontSize: "11px" });
     var budgetRows = planets.filter(function(p) { return p.id !== "earth"; }).map(function(p) {
       var t = hohmann(earth.a, p.a);
       var diffColor = t.dvTotal > 15 ? "#ef4444" : t.dvTotal > 8 ? "#f59e0b" : "#22c55e";
-      return h("tr", { key: "bud-" + p.id },
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border } }, p.emoji + " " + p.name),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(t.dv1, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } }, fmt(t.dv2, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right", fontWeight: 700, color: diffColor } }, fmt(t.dvTotal, 2)),
-        h("td", { style: { padding: "4px 10px", borderBottom: "1px solid " + border, textAlign: "right" } },
+      return h("tr", { key: "bud-" + p.id, className: "orr-tr" },
+        h("td", { style: bCellStyle }, p.emoji + " " + p.name),
+        h("td", { style: bCellR }, fmt(t.dv1, 2)),
+        h("td", { style: bCellR }, fmt(t.dv2, 2)),
+        h("td", { style: Object.assign({}, bCellR, { fontWeight: 700, color: diffColor }) }, fmt(t.dvTotal, 2)),
+        h("td", { style: bCellR },
           t.transitYrs < 1 ? fmt(t.transitYrs * 365.25, 0) + " d" : fmt(t.transitYrs, 2) + " yr")
       );
     });
@@ -3450,12 +3553,12 @@ const d = labToolData.solarSystem;
         h("div", { key: "bt", style: { overflowX: "auto" } },
           h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
             h("thead", null,
-              h("tr", null,
-                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "left" } }, "Destination"),
-                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "\u0394v\u2081 (km/s)"),
-                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "\u0394v\u2082 (km/s)"),
-                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "Total (km/s)"),
-                h("th", { style: { padding: "6px 10px", borderBottom: "2px solid " + border, textAlign: "right" } }, "Transit")
+              h("tr", { style: { background: isDark ? "#1e2a3e" : "#eef2f7" } },
+                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "left", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "Destination"),
+                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2081"),
+                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2082"),
+                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "Total"),
+                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "Transit")
               )
             ),
             h("tbody", null, budgetRows)
@@ -3628,13 +3731,14 @@ const d = labToolData.solarSystem;
         h("input", {
           type: "number",
           step: "any",
+          className: "orr-input",
           value: liveAns[liveIdx] || "",
           onChange: function(ev) {
             var newAns = Object.assign({}, liveAns);
             newAns[liveIdx] = ev.target.value;
             upd("orr_cla", newAns);
           },
-          style: { width: "120px", padding: "6px", borderRadius: "4px", border: "1px solid " + border, background: bg, color: fg }
+          style: { width: "120px", padding: "8px 10px", borderRadius: "8px", border: "2px solid " + border, background: bg, color: fg, fontFamily: "monospace", transition: "border-color 0.2s, box-shadow 0.2s" }
         }),
         h("span", { style: { fontSize: "12px", color: mutedFg } }, liveCh.unit),
         h("button", {
@@ -3684,35 +3788,54 @@ const d = labToolData.solarSystem;
       ),
 
       card([
-        h("p", { key: "cq", style: { fontSize: "14px", color: fg, marginBottom: "10px", lineHeight: "1.6" } }, prob.q),
+        // Question with accent border container
+        h("div", { key: "cq", style: {
+          fontSize: "15px", color: fg, marginBottom: "12px", lineHeight: "1.7",
+          padding: "14px 16px", borderRadius: "8px",
+          background: isDark ? "#1e2a3e" : "#f0f4f8",
+          borderLeft: "4px solid " + accent,
+          boxShadow: "inset 0 1px 3px " + (isDark ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.04)")
+        } }, prob.q),
 
-        // Hints
+        // Hints with styled containers
         hintCount > 0 ? h("div", { key: "hints", style: { marginBottom: "10px" } },
           prob.hints.slice(0, hintCount).map(function(ht, hi) {
-            return h("div", { key: "h-" + hi, style: { fontSize: "12px", color: "#e67e22", padding: "3px 0" } }, "\ud83d\udca1 Hint " + (hi + 1) + ": " + ht);
+            return h("div", { key: "h-" + hi, style: {
+              fontSize: "12px", color: isDark ? "#f59e0b" : "#b45309",
+              padding: "8px 12px", marginBottom: "4px", borderRadius: "6px",
+              background: isDark ? "rgba(245,158,11,0.1)" : "rgba(245,158,11,0.08)",
+              borderLeft: "3px solid #f59e0b"
+            } }, "\ud83d\udca1 Hint " + (hi + 1) + ": " + ht);
           })
         ) : null,
 
         !answered ? h("div", { key: "hinbtn", style: { marginBottom: "10px" } },
           hintCount < prob.hints.length ? h("button", {
+            className: "orr-btn",
             onClick: function() {
               var newH = Object.assign({}, ch_hints);
               newH[idx] = (newH[idx] || 0) + 1;
               upd("orr_chh", newH);
             },
-            style: { padding: "4px 12px", borderRadius: "4px", border: "1px solid #e67e22", background: "transparent", color: "#e67e22", cursor: "pointer", fontSize: "12px" }
-          }, "\ud83d\udca1 Reveal Hint (" + (prob.hints.length - hintCount) + " left)") : h("span", { style: { fontSize: "12px", color: mutedFg } }, "All hints revealed")
+            style: { padding: "6px 14px", borderRadius: "6px", border: "1px solid #f59e0b", background: isDark ? "rgba(245,158,11,0.1)" : "rgba(245,158,11,0.08)", color: "#f59e0b", cursor: "pointer", fontSize: "12px", fontWeight: 600 }
+          }, "\ud83d\udca1 Reveal Hint (" + (prob.hints.length - hintCount) + " left)") : h("span", { style: { fontSize: "12px", color: mutedFg, fontStyle: "italic" } }, "All hints revealed")
         ) : null,
 
-        // Tolerance hint
-        !answered ? h("div", { key: "tol-hint", style: { fontSize: "11px", color: mutedFg, marginBottom: "6px", padding: "4px 8px", background: isDark ? "#1a2a3a" : "#f0f4ff", borderRadius: "4px", border: "1px solid " + border } },
-          "\uD83C\uDFAF Precision needed: within \u00b1" + prob.tol + " " + prob.unit
+        // Tolerance hint badge
+        !answered ? h("div", { key: "tol-hint", style: {
+          display: "inline-flex", alignItems: "center", gap: "6px",
+          fontSize: "11px", color: mutedFg, marginBottom: "8px",
+          padding: "5px 10px", background: isDark ? "#1a2a3a" : "#f0f4ff",
+          borderRadius: "20px", border: "1px solid " + border
+        } },
+          "\uD83C\uDFAF Precision: \u00b1" + prob.tol + " " + prob.unit
         ) : null,
 
         !answered ? h("div", { key: "ainput", style: { display: "flex", gap: "8px", alignItems: "center" } },
           h("input", {
             type: "number",
             step: "any",
+            className: "orr-input",
             value: ch_ans[idx] || "",
             onChange: function(ev) {
               var newA = Object.assign({}, ch_ans);
@@ -3732,7 +3855,7 @@ const d = labToolData.solarSystem;
               }
             },
             placeholder: "Your answer",
-            style: { width: "140px", padding: "8px", borderRadius: "6px", border: "1px solid " + border, background: bg, color: fg, fontSize: "14px" }
+            style: { width: "140px", padding: "8px 10px", borderRadius: "8px", border: "2px solid " + border, background: bg, color: fg, fontSize: "14px", fontFamily: "monospace", transition: "border-color 0.2s, box-shadow 0.2s" }
           }),
           h("span", { style: { fontSize: "13px", color: mutedFg } }, prob.unit),
           h("button", {
@@ -3751,9 +3874,14 @@ const d = labToolData.solarSystem;
                 if (addToast) addToast("\u274c " + hint + " Try again or reveal a hint.");
               }
             },
-            style: { padding: "8px 20px", borderRadius: "6px", border: "none", background: "#27ae60", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px" }
-          }, "Submit")
-        ) : h("div", { key: "acorr", style: { color: "#27ae60", fontWeight: 700, fontSize: "16px", padding: "8px 0" } },
+            className: "orr-btn",
+            style: { padding: "8px 22px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #27ae60, #229954)", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", boxShadow: "0 2px 8px rgba(39,174,96,0.3)" }
+          }, "\u2714 Submit")
+        ) : h("div", { key: "acorr", style: {
+          color: "#27ae60", fontWeight: 700, fontSize: "16px", padding: "12px 16px",
+          background: isDark ? "rgba(39,174,96,0.1)" : "rgba(39,174,96,0.08)",
+          borderRadius: "8px", borderLeft: "4px solid #27ae60"
+        } },
           "\u2705 Correct! The answer is " + fmt(prob.answer, 3) + " " + prob.unit
         ),
 
@@ -3877,12 +4005,20 @@ const d = labToolData.solarSystem;
       ),
 
       card([
-        h("div", { key: "stmt", style: { fontSize: "16px", color: fg, marginBottom: "16px", lineHeight: "1.6", fontStyle: "italic" } },
+        // Statement in styled container
+        h("div", { key: "stmt", style: {
+          fontSize: "17px", color: fg, marginBottom: "18px", lineHeight: "1.7", fontStyle: "italic",
+          padding: "18px 20px", borderRadius: "10px",
+          background: isDark ? "#1e2a3e" : "#f0f4f8",
+          borderLeft: "4px solid " + accent,
+          boxShadow: "inset 0 1px 3px " + (isDark ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.04)")
+        } },
           "\u201c" + mc.q + "\u201d"
         ),
 
-        !answered ? h("div", { key: "btns", style: { display: "flex", gap: "12px" } },
+        !answered ? h("div", { key: "btns", style: { display: "flex", gap: "14px" } },
           h("button", {
+            className: "orr-btn",
             onClick: function() {
               var newA = Object.assign({}, tf_ans);
               newA[idx] = true;
@@ -3894,9 +4030,10 @@ const d = labToolData.solarSystem;
                 if (addToast) addToast("\u274c Incorrect.");
               }
             },
-            style: { padding: "10px 28px", borderRadius: "8px", border: "2px solid #27ae60", background: "#27ae6022", color: "#27ae60", cursor: "pointer", fontWeight: 700, fontSize: "16px" }
+            style: { padding: "12px 32px", borderRadius: "10px", border: "2px solid #27ae60", background: "linear-gradient(135deg, rgba(39,174,96,0.15), rgba(39,174,96,0.05))", color: "#27ae60", cursor: "pointer", fontWeight: 700, fontSize: "16px", boxShadow: "0 2px 8px rgba(39,174,96,0.15)" }
           }, "\u2714 TRUE"),
           h("button", {
+            className: "orr-btn",
             onClick: function() {
               var newA = Object.assign({}, tf_ans);
               newA[idx] = false;
@@ -3908,19 +4045,23 @@ const d = labToolData.solarSystem;
                 if (addToast) addToast("\u274c Incorrect.");
               }
             },
-            style: { padding: "10px 28px", borderRadius: "8px", border: "2px solid #e74c3c", background: "#e74c3c22", color: "#e74c3c", cursor: "pointer", fontWeight: 700, fontSize: "16px" }
+            style: { padding: "12px 32px", borderRadius: "10px", border: "2px solid #e74c3c", background: "linear-gradient(135deg, rgba(231,76,60,0.15), rgba(231,76,60,0.05))", color: "#e74c3c", cursor: "pointer", fontWeight: 700, fontSize: "16px", boxShadow: "0 2px 8px rgba(231,76,60,0.15)" }
           }, "\u2718 FALSE")
         ) : h("div", { key: "result" },
           h("div", {
             style: {
-              padding: "10px 14px",
-              borderRadius: "8px",
-              marginBottom: "10px",
-              background: correct ? "#27ae6022" : "#e74c3c22",
-              border: "2px solid " + (correct ? "#27ae60" : "#e74c3c"),
+              padding: "12px 16px",
+              borderRadius: "10px",
+              marginBottom: "12px",
+              background: correct
+                ? (isDark ? "rgba(39,174,96,0.12)" : "rgba(39,174,96,0.08)")
+                : (isDark ? "rgba(231,76,60,0.12)" : "rgba(231,76,60,0.08)"),
+              borderLeft: "4px solid " + (correct ? "#27ae60" : "#e74c3c"),
+              border: "1px solid " + (correct ? "#27ae6044" : "#e74c3c44"),
               fontWeight: 700,
               fontSize: "15px",
-              color: correct ? "#27ae60" : "#e74c3c"
+              color: correct ? "#27ae60" : "#e74c3c",
+              boxShadow: "0 2px 8px " + (correct ? "rgba(39,174,96,0.15)" : "rgba(231,76,60,0.15)")
             }
           }, correct ? "\u2705 Correct!" : "\u274c Incorrect \u2014 the answer is " + (mc.answer ? "TRUE" : "FALSE")),
           h("div", { style: { fontSize: "13px", color: fg, lineHeight: "1.6", padding: "4px 0" } }, mc.explain)

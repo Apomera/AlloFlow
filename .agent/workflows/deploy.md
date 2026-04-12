@@ -26,7 +26,23 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 > commit, the CDN will serve **stale code**. This caused a real incident on 2026-03-24.
 > `build.js` now includes a safety guard that blocks prod builds with uncommitted module files.
 
-1. Copy updated module files to `prismflow-deploy/public/`:
+1. **Compile source modules** (if any `*_source.jsx` files were edited):
+
+For `doc_pipeline_source.jsx` → `doc_pipeline_module.js`:
+```bash
+{ echo '(function(){"use strict";'; echo 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}'; cat prismflow-deploy/src/doc_pipeline_source.jsx; echo ''; echo 'window.AlloModules = window.AlloModules || {};'; echo 'window.AlloModules.createDocPipeline = createDocPipeline;'; echo 'window.AlloModules.DocPipelineModule = true;'; echo "console.log('[DocPipelineModule] Pipeline factory registered');"; echo '})();'; } > doc_pipeline_module.js && cp doc_pipeline_module.js prismflow-deploy/public/doc_pipeline_module.js && node -c doc_pipeline_module.js && echo "✓ doc_pipeline compiled"
+```
+Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
+
+> **Source → Module mapping:**
+> - `prismflow-deploy/src/doc_pipeline_source.jsx` → `doc_pipeline_module.js` (+ copy to `prismflow-deploy/public/`)
+> - `prismflow-deploy/src/games_source.jsx` → `games_module.js`
+> - `prismflow-deploy/src/adventure_source.jsx` → `adventure_module.js`
+> - `prismflow-deploy/src/content_engine_source.jsx` → `content_engine_module.js`
+> Each compiled module wraps the source in an IIFE with a duplicate-load guard.
+> **Always run `node -c <module>.js` after compiling to verify syntax.**
+
+1b. Copy updated module files to `prismflow-deploy/public/`:
 ```
 Copy-Item -Path stem_lab\stem_lab_module.js -Destination prismflow-deploy\public\stem_lab_module.js -Force
 ```
