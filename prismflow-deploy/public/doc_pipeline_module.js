@@ -11,8 +11,39 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // State access: functions read window.__docPipelineState (updated every render by monolith)
 // This avoids stale closures — each function call reads fresh state from the window ref.
 var createDocPipeline = function(deps) {
-  var callGemini = deps.callGemini;
-  var callGeminiVision = deps.callGeminiVision;
+  // ── Timeout + Retry utilities ──
+  // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
+  var _withTimeout = function(promise, ms, label) {
+    var _timer;
+    return Promise.race([
+      promise,
+      new Promise(function(_, reject) {
+        _timer = setTimeout(function() { reject(new Error('Timeout after ' + (ms / 1000) + 's' + (label ? ' (' + label + ')' : ''))); }, ms);
+      })
+    ]).finally(function() { clearTimeout(_timer); });
+  };
+
+  // Wraps an async function call with timeout + 1 automatic retry on timeout/error.
+  // retryMs can be shorter than initialMs since we already waited once.
+  var _withRetry = function(fn, initialMs, retryMs, label) {
+    return _withTimeout(fn(), initialMs, label).catch(function(err) {
+      var isTimeout = err && err.message && err.message.indexOf('Timeout') === 0;
+      warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
+      return _withTimeout(fn(), retryMs || initialMs, label + ' (retry)');
+    });
+  };
+
+  // Wrap callGemini/callGeminiVision at the binding layer so ALL calls get automatic protection.
+  // Every existing callGemini(...) in the pipeline now has 60s timeout + 1 retry (45s).
+  // Every existing callGeminiVision(...) has 90s timeout + 1 retry (60s).
+  var _rawCallGemini = deps.callGemini;
+  var _rawCallGeminiVision = deps.callGeminiVision;
+  var callGemini = _rawCallGemini ? function() {
+    var args = arguments; return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 60000, 45000, 'callGemini');
+  } : null;
+  var callGeminiVision = _rawCallGeminiVision ? function() {
+    var args = arguments; return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 90000, 60000, 'callGeminiVision');
+  } : null;
   var callImagen = deps.callImagen;
   var addToast = deps.addToast;
   var t = deps.t;
@@ -2636,10 +2667,13 @@ HTML section ${chunkNum}/${chunks.length}:
       const iframeAxe = iframe.contentWindow.axe;
       if (!iframeAxe) throw new Error('axe-core not available in iframe');
 
-      results = await iframeAxe.run(iframeDoc, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
-        resultTypes: ['violations', 'passes', 'incomplete']
-      });
+      results = await _withTimeout(
+        iframeAxe.run(iframeDoc, {
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+          resultTypes: ['violations', 'passes', 'incomplete']
+        }),
+        30000, 'axe-core audit'
+      );
       } finally {
         // Always clean up iframe — prevents memory leak on error
         try { document.body.removeChild(iframe); } catch(e) { /* iframe may not be attached */ }

@@ -66,6 +66,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var isDark = ctx.isDark;
 
       return (function() {
         var d = (labToolData.beehive) || {};
@@ -966,14 +967,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }, []);
 
         // ── Render ──
+        var dk = isDark; // shorthand
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
           // Header
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'flex items-center gap-3' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-400' : 'text-slate-600' })),
               h('div', null,
-                h('h3', { className: 'text-lg font-bold text-slate-800' }, '🐝 Beehive Colony Simulator'),
-                h('p', { className: 'text-xs text-slate-600' }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
+                h('h3', { className: 'text-lg font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, '🐝 Beehive Colony Simulator'),
+                h('p', { className: 'text-xs ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
 
           // ═══ ANIMATED CANVAS SIMULATION ═══
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg', style: { height: '300px' } },
@@ -986,62 +988,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           ),
 
           // Event popup
-          activeEvent && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300') },
+          activeEvent && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
             h('div', { className: 'flex items-center gap-2' },
               h('span', { className: 'text-2xl' }, activeEvent.emoji),
               h('div', null,
-                h('div', { className: 'font-bold text-sm' }, activeEvent.label),
-                h('div', { className: 'text-xs text-slate-600' }, activeEvent.desc))),
-            h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border border-slate-200' },
+                h('div', { className: 'font-bold text-sm ' + (dk ? 'text-slate-100' : '') }, activeEvent.label),
+                h('div', { className: 'text-xs ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeEvent.desc))),
+            h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200') },
               h('strong', null, '🔬 Science: '), activeEvent.lesson),
-            h('button', { onClick: dismissEvent, 'aria-label': 'Acknowledge event', className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700' }, '✓ Acknowledge')),
+            h('button', { onClick: dismissEvent, 'aria-label': 'Acknowledge event', className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, '✓ Acknowledge')),
 
           // Status bar
           h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'status', 'aria-live': 'polite', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
-            h('span', { className: 'bg-sky-100 text-sky-800 px-3 py-1 rounded-full' }, seasonNames[season] + ' Day ' + ((day % 30) + 1)),
-            h('span', { className: 'bg-amber-100 text-amber-800 px-3 py-1 rounded-full' }, '🍯 ' + honey + ' lbs'),
-            h('span', { className: 'bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full' }, '🌼 ' + pollen + ' lbs'),
-            h('span', { className: 'bg-purple-100 text-purple-800 px-3 py-1 rounded-full' }, '⭐ ' + score + ' pts'),
-            gardenBonus > 0 && h('span', { className: 'bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full' }, '🌱 Garden +' + gardenBonus + '%')),
+            h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-800') }, seasonNames[season] + ' Day ' + ((day % 30) + 1)),
+            h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-800') }, '🍯 ' + honey + ' lbs'),
+            h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-yellow-900/40 text-yellow-300' : 'bg-yellow-100 text-yellow-800') }, '🌼 ' + pollen + ' lbs'),
+            h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-100 text-purple-800') }, '⭐ ' + score + ' pts'),
+            gardenBonus > 0 && h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800') }, '🌱 Garden +' + gardenBonus + '%')),
 
           // Colony Dashboard
-          h('div', { className: 'bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4', role: 'region', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
+          h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
             h('div', { className: 'flex items-center justify-between mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-900' }, '🐝 Colony Status'),
+              h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-amber-600' }, fmtPop(workers)), h('div', { className: 'text-[10px] text-slate-600' }, '👷 Workers')),
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-pink-500' }, fmtPop(brood)), h('div', { className: 'text-[10px] text-slate-600' }, '🥚 Brood')),
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-500' }, drones), h('div', { className: 'text-[10px] text-slate-600' }, '♂ Drones')),
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-500' : 'text-red-500') }, queenHealth + '%'), h('div', { className: 'text-[10px] text-slate-600' }, '👑 Queen'))),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '👷 Workers')),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '🥚 Brood')),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-blue-400', style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '♂ Drones')),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-400' : 'text-red-500'), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '👑 Queen'))),
             // Meters
             h('div', { className: 'space-y-2' },
               // Varroa
               h('div', null,
                 h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                  h('span', { className: 'text-red-700 font-bold' }, '🦟 Varroa Mites'),
-                  h('span', { className: varroaLevel > 30 ? 'text-red-600 font-bold' : 'text-slate-600' }, varroaLevel + '%')),
-                h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden' },
-                  h('div', { style: { width: varroaLevel + '%' }, className: 'h-full bg-red-500 rounded-full transition-all' }))),
+                  h('span', { className: 'font-bold ' + (dk ? 'text-red-400' : 'text-red-700') }, '🦟 Varroa Mites'),
+                  h('span', { className: varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-400' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, varroaLevel + '%')),
+                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                  h('div', { style: { width: varroaLevel + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' }))),
               // Morale
               h('div', null,
                 h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                  h('span', { className: 'text-amber-700 font-bold' }, '😊 Colony Morale'),
-                  h('span', { className: morale < 40 ? 'text-red-600 font-bold' : 'text-slate-600' }, morale + '%')),
-                h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden' },
-                  h('div', { style: { width: morale + '%' }, className: 'h-full bg-amber-400 rounded-full transition-all' }))),
+                  h('span', { className: 'font-bold ' + (dk ? 'text-amber-300' : 'text-amber-700') }, '😊 Colony Morale'),
+                  h('span', { className: morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-400' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, morale + '%')),
+                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                  h('div', { style: { width: morale + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all' }))),
               // Foraging
               h('div', null,
                 h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                  h('span', { className: 'text-green-700 font-bold' }, '🌸 Foraging Efficiency'),
-                  h('span', { className: 'text-slate-600' }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '% garden)' : ''))),
-                h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden' },
-                  h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-green-500 rounded-full transition-all' }))))),
+                  h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, '🌸 Foraging Efficiency'),
+                  h('span', { className: dk ? 'text-slate-400' : 'text-slate-600', style: { fontFamily: 'monospace' } }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '%)' : ''))),
+                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                  h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))))),
 
           // ── Hive Cross-Section Visual ──
-          h('div', { className: 'bg-gradient-to-b from-amber-100 to-amber-50 rounded-xl border border-amber-300 p-3',
+          h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
             role: 'img', 'aria-label': 'Hive cross-section: honey stores on outer edges (' + Math.round(honey) + ' lbs), pollen ring (' + Math.round(pollen) + ' lbs), brood nest in center (' + fmtPop(brood) + ' larvae), queen health ' + queenHealth + '%. Bees organize comb concentrically for thermal efficiency.' },
-            h('div', { className: 'text-xs font-bold text-amber-900 mb-2 text-center', role: 'heading', 'aria-level': '3' }, '🏠 Hive Cross-Section'),
+            h('div', { className: 'text-xs font-bold mb-2 text-center ' + (dk ? 'text-amber-300' : 'text-amber-900'), role: 'heading', 'aria-level': '3' }, '🏠 Hive Cross-Section'),
             h('div', { className: 'flex gap-0.5 justify-center', 'aria-hidden': 'true', style: { height: '80px' } },
               // Each column represents a frame — color shows contents
               [
@@ -1064,16 +1066,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { style: { height: Math.round(frame.pct) + '%' }, className: bgColor + ' transition-all duration-500 flex items-end justify-center' },
                     h('span', { className: 'text-[10px]' }, frame.pct > 20 ? frame.label : '')));
               })),
-            h('div', { className: 'flex justify-between mt-1 text-[10px] text-amber-700' },
+            h('div', { className: 'flex justify-between mt-1 text-[10px] ' + (dk ? 'text-amber-400' : 'text-amber-700') },
               h('span', null, '← Honey stores'),
               h('span', { className: 'font-bold' }, 'Brood nest (center)'),
               h('span', null, 'Honey stores →')),
-            h('p', { className: 'text-[10px] text-amber-600 text-center mt-1 italic' }, 'Bees organize the comb concentrically: brood in the warm center, pollen ring around it, honey stores on the outer edges. This pattern is universal across all Apis mellifera colonies.')),
+            h('p', { className: 'text-[10px] text-center mt-1 italic ' + (dk ? 'text-amber-400/70' : 'text-amber-600') }, 'Bees organize the comb concentrically: brood in the warm center, pollen ring around it, honey stores on the outer edges. This pattern is universal across all Apis mellifera colonies.')),
 
           // Garden connection
-          gardenBonus > 0 && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3 flex items-start gap-2' },
+          gardenBonus > 0 && h('div', { className: 'rounded-xl border p-3 flex items-start gap-2 ' + (dk ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200') },
             h('span', { className: 'text-lg' }, '🌱'),
-            h('div', { className: 'text-xs text-emerald-700' },
+            h('div', { className: 'text-xs ' + (dk ? 'text-emerald-300' : 'text-emerald-700') },
               h('strong', null, 'Garden Connection Active! '),
               gardenPollinators + ' pollinator plant' + (gardenPollinators !== 1 ? 's' : '') + ' detected in your Companion Planting garden. Your bees have ' + gardenBonus + '% better foraging. Plant more flowers to strengthen the connection!')),
 
@@ -1131,28 +1133,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           ),
 
           // Seasonal goals
-          colonySurvived && h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-3' },
+          colonySurvived && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200') },
             h('div', { className: 'flex items-center gap-2 mb-1' },
               h('span', null, SEASON_GOALS[season].emoji),
-              h('span', { className: 'text-xs font-bold text-indigo-800' }, SEASON_GOALS[season].season + ' Goals'),
-              h('span', { className: 'text-[10px] text-indigo-500 ml-auto' }, '🎯 ' + actionPoints + '/3 actions left today')),
+              h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
+              h('span', { className: 'text-[10px] ml-auto ' + (dk ? 'text-indigo-400' : 'text-indigo-500') }, '🎯 ' + actionPoints + '/3 actions left today')),
             h('div', { className: 'flex flex-wrap gap-1' },
-              SEASON_GOALS[season].goals.map(function(g, i) { return h('span', { key: i, className: 'text-[10px] bg-white px-2 py-0.5 rounded border border-indigo-100 text-indigo-700' }, g); }))),
+              SEASON_GOALS[season].goals.map(function(g, i) { return h('span', { key: i, className: 'text-[10px] px-2 py-0.5 rounded border ' + (dk ? 'bg-slate-800 border-indigo-700/30 text-indigo-300' : 'bg-white border-indigo-100 text-indigo-700') }, g); }))),
 
           // Habitat & Pesticide meters
           colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
-            h('div', { className: 'bg-green-50 rounded-lg border border-green-200 p-2' },
+            h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-green-900/20 border-green-700/40' : 'bg-green-50 border-green-200') },
               h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                h('span', { className: 'font-bold text-green-700' }, '🌳 Local Habitat'),
-                h('span', { className: habitat > 60 ? 'text-green-600' : habitat > 30 ? 'text-yellow-600' : 'text-red-600' }, habitat + '%')),
-              h('div', { className: 'h-2 bg-green-100 rounded-full overflow-hidden' },
-                h('div', { style: { width: habitat + '%' }, className: 'h-full bg-green-500 rounded-full transition-all' }))),
-            h('div', { className: 'bg-red-50 rounded-lg border border-red-200 p-2' },
+                h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, '🌳 Local Habitat'),
+                h('span', { className: habitat > 60 ? 'text-green-500' : habitat > 30 ? 'text-yellow-500' : 'text-red-500', style: { fontFamily: 'monospace' } }, habitat + '%')),
+              h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-green-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                h('div', { style: { width: habitat + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
+            h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-red-900/20 border-red-700/40' : 'bg-red-50 border-red-200') },
               h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                h('span', { className: 'font-bold text-red-700' }, '☠️ Pesticide Exposure'),
-                h('span', { className: pesticideExposure > 20 ? 'text-red-600 font-bold' : 'text-slate-600' }, pesticideExposure + '%')),
-              h('div', { className: 'h-2 bg-red-100 rounded-full overflow-hidden' },
-                h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-red-500 rounded-full transition-all' })))),
+                h('span', { className: 'font-bold ' + (dk ? 'text-red-300' : 'text-red-700') }, '☠️ Pesticide Exposure'),
+                h('span', { className: pesticideExposure > 20 ? 'text-red-500 font-bold' : (dk ? 'text-slate-400' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
+              h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-red-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' })))),
 
           // Action buttons — grouped by purpose
           colonySurvived && h('div', { className: 'space-y-2' },
@@ -1180,8 +1182,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { className: 'text-[10px] font-bold' }, 'Inspect'))),
 
             // Conservation Actions
-            h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-800 mb-2', role: 'heading', 'aria-level': '3' }, '🌍 Conservation Actions (help save bees!)'),
+            h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200') },
+              h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-emerald-300' : 'text-emerald-800'), role: 'heading', 'aria-level': '3' }, '🌍 Conservation Actions (help save bees!)'),
               h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Conservation actions — ' + actionPoints + ' action points available' },
                 CONSERVATION_ACTIONS.map(function(action) {
                   return h('button', { key: action.id, 'aria-label': action.label + ': ' + action.desc + '. Cost: ' + action.cost + ' action points.' + (actionPoints < action.cost ? ' Not enough action points.' : ''),
@@ -1198,12 +1200,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       if (awardStemXP) awardStemXP('beehive', 8, 'Conservation action');
                     },
                     title: action.desc + ' (Cost: ' + action.cost + ' AP)',
-                    className: 'text-left p-2 bg-white rounded-lg border border-emerald-100 hover:border-emerald-400 hover:shadow-sm transition-all ' + (actionPoints < action.cost ? 'opacity-40' : '')
+                    className: 'text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-emerald-700/30 hover:border-emerald-500/50 hover:bg-slate-700' : 'bg-white border-emerald-100 hover:border-emerald-400 hover:shadow-sm') + (actionPoints < action.cost ? ' opacity-40' : '')
                   },
                     h('div', { className: 'flex items-center gap-1' },
                       h('span', null, action.emoji),
-                      h('span', { className: 'text-[10px] font-bold text-slate-800' }, action.label)),
-                    h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, action.cost + ' AP · ' + action.desc));
+                      h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, action.label)),
+                    h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-600') }, action.cost + ' AP · ' + action.desc));
                 }))),
 
           // Hive Inspection (full view replacement)
@@ -1212,18 +1214,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Science cards (only when not inspecting)
           !showInspect &&
           h('div', { className: 'grid grid-cols-2 gap-3', role: 'region', 'aria-label': 'Bee science quick reference cards' },
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
-              h('h4', { className: 'text-xs font-bold text-slate-800 mb-1' }, '💃 The Waggle Dance'),
-              h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'When a forager finds nectar, she performs a figure-8 dance on the comb. The angle of the waggle run (relative to vertical) encodes the direction relative to the sun. The duration encodes distance. Karl von Frisch won the 1973 Nobel Prize for decoding this — the only known symbolic language in non-human animals.')),
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
-              h('h4', { className: 'text-xs font-bold text-slate-800 mb-1' }, '🧠 The Superorganism'),
-              h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'A honeybee colony is a superorganism — 50,000 individuals functioning as a single living entity. The queen is the reproductive system. Workers are the immune system, digestive system, and nervous system. Drones are the reproductive cells. Temperature is regulated at exactly 35°C (95°F) through fanning and clustering — like a warm-blooded animal made of thousands of cold-blooded insects.')),
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
-              h('h4', { className: 'text-xs font-bold text-slate-800 mb-1' }, '🍯 From Nectar to Honey'),
-              h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'Nectar is 80% water. Bees convert it to honey (18% water) through enzymatic processing (invertase breaks sucrose into glucose + fructose) and evaporative concentration (bees fan their wings to dehydrate the nectar). Once the moisture content drops below 18.6%, they cap the cell with beeswax. Honey never spoils — edible honey has been found in 3,000-year-old Egyptian tombs.')),
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
-              h('h4', { className: 'text-xs font-bold text-slate-800 mb-1' }, '⚠️ Colony Collapse Disorder'),
-              h('div', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'Since 2006, beekeepers have reported losing 30-50% of colonies annually. CCD involves workers abandoning the hive, leaving the queen and brood behind. Causes include: varroa mites + viruses they transmit, neonicotinoid pesticides, habitat loss reducing forage diversity, and nutritional stress from monoculture agriculture. Your garden\'s pollinator plants directly combat the habitat loss component.')))
+            [
+              { title: '💃 The Waggle Dance', text: 'When a forager finds nectar, she performs a figure-8 dance on the comb. The angle of the waggle run (relative to vertical) encodes the direction relative to the sun. The duration encodes distance. Karl von Frisch won the 1973 Nobel Prize for decoding this — the only known symbolic language in non-human animals.' },
+              { title: '🧠 The Superorganism', text: 'A honeybee colony is a superorganism — 50,000 individuals functioning as a single living entity. The queen is the reproductive system. Workers are the immune system, digestive system, and nervous system. Drones are the reproductive cells. Temperature is regulated at exactly 35°C (95°F) through fanning and clustering — like a warm-blooded animal made of thousands of cold-blooded insects.' },
+              { title: '🍯 From Nectar to Honey', text: 'Nectar is 80% water. Bees convert it to honey (18% water) through enzymatic processing (invertase breaks sucrose into glucose + fructose) and evaporative concentration (bees fan their wings to dehydrate the nectar). Once the moisture content drops below 18.6%, they cap the cell with beeswax. Honey never spoils — edible honey has been found in 3,000-year-old Egyptian tombs.' },
+              { title: '⚠️ Colony Collapse Disorder', text: 'Since 2006, beekeepers have reported losing 30-50% of colonies annually. CCD involves workers abandoning the hive, leaving the queen and brood behind. Causes include: varroa mites + viruses they transmit, neonicotinoid pesticides, habitat loss reducing forage diversity, and nutritional stress from monoculture agriculture. Your garden\'s pollinator plants directly combat the habitat loss component.' }
+            ].map(function(sc) {
+              return h('div', { key: sc.title, className: 'rounded-xl border p-3 transition-all hover:shadow-md ' + (dk ? 'bg-slate-800 border-slate-700 hover:border-amber-600/40' : 'bg-white border-slate-200 hover:border-amber-300'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
+                h('h4', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-200' : 'text-slate-800') }, sc.title),
+                h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, sc.text));
+            }))
         );
       })();
     }
