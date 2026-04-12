@@ -4321,11 +4321,14 @@ const d = labToolData.solarSystem;
 
                   ].map(function (item) {
 
-                    return React.createElement("div", { key: item[1], className: "bg-white rounded-xl p-2.5 text-center border border-slate-200 hover:border-indigo-200 transition-colors" },
+                    return React.createElement("div", { key: item[1],
+                      className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-md hover:-translate-y-0.5 " + (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/40' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 hover:border-indigo-300'),
+                      style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' }
+                    },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0] + ' ' + item[1]),
 
-                      React.createElement("p", { className: "text-xs font-bold text-slate-800 mt-0.5" }, item[2])
+                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-slate-200' : 'text-slate-800') }, item[2])
 
                     );
 
