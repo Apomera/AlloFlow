@@ -762,22 +762,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var peds = [];
     var count = scenario.id === 'school_zone' ? 8 : scenario.id === 'downtown' ? 10 : scenario.id === 'residential' ? 4 : 3;
     var centerX = Math.floor(MAP_SIZE / 2);
-    // Cluster peds near intersections (where crosswalks are)
+    // Sidewalk X positions (left and right sidewalks)
+    var sidewalkLeft = centerX - 4.5;
+    var sidewalkRight = centerX + 4.5;
     var crossYs = [16, 32, 48];
     for (var i = 0; i < count; i++) {
-      var nearIntersection = i < count * 0.6; // 60% near crosswalks
-      var pedY = nearIntersection ? crossYs[i % crossYs.length] + (Math.random() - 0.5) * 4 : 10 + Math.random() * (MAP_SIZE - 20);
-      var side = Math.random() < 0.5 ? -1 : 1;
+      var nearIntersection = i < count * 0.6;
+      var pedY = nearIntersection ? crossYs[i % crossYs.length] : 10 + Math.random() * (MAP_SIZE - 20);
+      var side = i % 2 === 0 ? -1 : 1; // alternate sides
+      // Spawn exactly ON the sidewalk
+      var pedX = side === -1 ? sidewalkLeft : sidewalkRight;
       peds.push({
-        x: centerX + side * (5 + Math.random() * 3),
+        x: pedX,
         y: pedY,
+        homeX: pedX, // remember which sidewalk they belong to
         vx: 0,
-        vy: 0,
+        vy: nearIntersection ? 0 : (Math.random() - 0.5) * 0.08, // walk along sidewalk slowly
         color: ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
         crossing: false,
         waitingAtCrosswalk: nearIntersection,
         crosswalkY: nearIntersection ? crossYs[i % crossYs.length] : null,
-        crossDirection: side // which way they'll cross
+        crossDirection: side,
+        sidewalkLeft: sidewalkLeft,
+        sidewalkRight: sidewalkRight
       });
     }
     return peds;
@@ -2489,38 +2496,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var updatePeds = function(dt) {
           var signals = signalsRef.current;
-          var centerXp = Math.floor(MAP_SIZE / 2);
           pedsRef.current.forEach(function(p) {
             if (p.waitingAtCrosswalk && p.crosswalkY != null) {
-              // Smart crosswalk behavior: check if the signal at this crosswalk is green
+              // Crosswalk behavior: wait on sidewalk, cross when traffic signal is red
               var signalAtCrosswalk = null;
               signals.forEach(function(s) {
                 if (Math.abs(s.y - p.crosswalkY) < 2) signalAtCrosswalk = s;
               });
-              var canCross = !signalAtCrosswalk || signalAtCrosswalk.state === 'red'; // pedestrian walks when traffic red
+              var canCross = !signalAtCrosswalk || signalAtCrosswalk.state === 'red';
               if (canCross && !p.crossing) {
-                // Start crossing
+                // Start crossing: move straight across from one sidewalk to the other
                 p.crossing = true;
-                p.vx = p.crossDirection * -0.8; // cross toward opposite side
-                p.vy = 0;
+                var targetX = p.crossDirection === -1 ? p.sidewalkRight : p.sidewalkLeft;
+                p.vx = (targetX - p.x) > 0 ? 0.6 : -0.6;
+                p.vy = 0; // straight across, stay on crosswalk Y
+                p.y = p.crosswalkY; // snap to crosswalk line
               } else if (!canCross && p.crossing) {
-                // Signal changed, hurry up
-                p.vx *= 1.3;
+                p.vx *= 1.3; // hurry if light changed
               } else if (!canCross && !p.crossing) {
-                // Wait at sidewalk — small fidget
+                // Wait on sidewalk: only fidget along Y (along the sidewalk), not X (into the road)
                 p.vx = 0;
-                p.vy = Math.sin(timeRef.current * 2 + p.y) * 0.02;
+                p.vy = Math.sin(timeRef.current * 1.5 + p.y) * 0.015;
+                p.x = p.homeX; // stay on their home sidewalk
               }
-              // Check if finished crossing
-              if (p.crossing && Math.abs(p.x - centerXp) > 7) {
-                p.crossing = false;
-                p.waitingAtCrosswalk = true;
-                p.crossDirection *= -1; // will cross back next time
-                p.vx = 0;
+              // Check if finished crossing (reached the other sidewalk)
+              if (p.crossing) {
+                var targetSidewalk = p.crossDirection === -1 ? p.sidewalkRight : p.sidewalkLeft;
+                if (Math.abs(p.x - targetSidewalk) < 0.5) {
+                  p.crossing = false;
+                  p.x = targetSidewalk;
+                  p.homeX = targetSidewalk;
+                  p.crossDirection *= -1;
+                  p.vx = 0;
+                }
               }
             } else {
-              // Random wandering (non-crosswalk peds)
-              if (Math.random() < 0.005) { p.vx = (Math.random() - 0.5) * 0.4; p.vy = (Math.random() - 0.5) * 0.15; }
+              // Non-crosswalk peds: walk ALONG the sidewalk only (Y movement, no X)
+              p.x = p.homeX; // always stay on their sidewalk
+              p.vx = 0;
+              // Walk along sidewalk slowly, occasionally reverse
+              if (Math.random() < 0.003) p.vy = (Math.random() - 0.5) * 0.1;
             }
             p.x += p.vx * dt * 2;
             p.y += p.vy * dt * 2;
@@ -3370,43 +3385,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // ── Traffic light + stop sign meshes (static, will update material color) ──
+          // ── Traffic light + stop sign meshes ──
+          // Traffic lights are overhead-mounted on arms extending from roadside poles (US style)
           var signalObjs = [];
+          var sigPoleMat = new T.MeshLambertMaterial({ color: 0x555555 });
           signalsRef.current.forEach(function(s) {
+            var sx = s.x - MAP_SIZE / 2;
+            var sz = s.y - MAP_SIZE / 2;
             if (s.type === 'stop') {
-              var poleMat = new T.MeshLambertMaterial({ color: 0x666666 });
-              var poleGeo = new T.CylinderGeometry(0.05, 0.05, 2.5, 6);
-              var pole = new T.Mesh(poleGeo, poleMat);
-              pole.position.set(s.x - MAP_SIZE / 2 + 0.8, 1.25, s.y - MAP_SIZE / 2);
+              // Stop sign: on a post at the right roadside
+              var poleGeo = new T.CylinderGeometry(0.04, 0.04, 2.5, 6);
+              var pole = new T.Mesh(poleGeo, sigPoleMat);
+              pole.position.set(sx + 4.0, 1.25, sz);
               scene.add(pole);
               var signMat = new T.MeshBasicMaterial({ color: 0xdc2626 });
-              var signGeo = new T.CylinderGeometry(0.4, 0.4, 0.05, 8);
+              var signGeo = new T.CylinderGeometry(0.35, 0.35, 0.05, 8);
               var signMesh = new T.Mesh(signGeo, signMat);
-              signMesh.position.set(s.x - MAP_SIZE / 2 + 0.8, 2.4, s.y - MAP_SIZE / 2);
+              signMesh.position.set(sx + 4.0, 2.4, sz);
               scene.add(signMesh);
               signalObjs.push({ ref: s, mesh: signMesh, type: 'stop' });
             } else {
-              var sPoleMat = new T.MeshLambertMaterial({ color: 0x333333 });
-              var sPoleGeo = new T.CylinderGeometry(0.06, 0.06, 3.5, 6);
-              var sPole = new T.Mesh(sPoleGeo, sPoleMat);
-              sPole.position.set(s.x - MAP_SIZE / 2 + 1, 1.75, s.y - MAP_SIZE / 2);
-              scene.add(sPole);
-              var boxMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
-              var boxGeo = new T.BoxGeometry(0.35, 0.9, 0.2);
-              var box = new T.Mesh(boxGeo, boxMat);
-              box.position.set(s.x - MAP_SIZE / 2 + 1, 3.2, s.y - MAP_SIZE / 2);
-              scene.add(box);
-              // Three lamp meshes
+              // Overhead traffic light: pole on right side + horizontal arm + hanging light box
+              // Vertical pole (on right sidewalk)
+              var vPoleGeo = new T.CylinderGeometry(0.08, 0.1, 5.5, 8);
+              var vPole = new T.Mesh(vPoleGeo, sigPoleMat);
+              vPole.position.set(sx + 4.5, 2.75, sz);
+              scene.add(vPole);
+              // Horizontal arm extending over the road
+              var armGeo = new T.CylinderGeometry(0.05, 0.05, 5.0, 6);
+              var arm = new T.Mesh(armGeo, sigPoleMat);
+              arm.position.set(sx + 2.0, 5.3, sz);
+              arm.rotation.z = Math.PI / 2; // horizontal
+              scene.add(arm);
+              // Light housing — hanging from the arm over the road
+              var housingMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
+              var housingGeo = new T.BoxGeometry(0.35, 0.9, 0.25);
+              var housing = new T.Mesh(housingGeo, housingMat);
+              housing.position.set(sx, 4.8, sz);
+              scene.add(housing);
+              // Three lamp spheres (red top, yellow middle, green bottom)
               var lampColors = [0xef4444, 0xfbbf24, 0x22c55e];
               var lamps = [];
               lampColors.forEach(function(lc, li) {
-                var lampMat = new T.MeshBasicMaterial({ color: 0x111111 });
-                var lampGeo = new T.SphereGeometry(0.08, 8, 8);
-                var lamp = new T.Mesh(lampGeo, lampMat);
-                lamp.position.set(s.x - MAP_SIZE / 2 + 1, 3.5 - li * 0.28, s.y - MAP_SIZE / 2 + 0.11);
-                scene.add(lamp);
-                lamps.push({ mesh: lamp, onColor: lc });
+                var lMat = new T.MeshBasicMaterial({ color: 0x111111 });
+                var lGeo = new T.SphereGeometry(0.09, 8, 8);
+                var lMesh = new T.Mesh(lGeo, lMat);
+                lMesh.position.set(sx, 5.05 - li * 0.28, sz + 0.14);
+                scene.add(lMesh);
+                lamps.push({ mesh: lMesh, onColor: lc });
               });
+              // Also add a second light housing on the other side for cross-street visibility
+              var housing2 = new T.Mesh(housingGeo.clone(), housingMat);
+              housing2.position.set(sx, 4.8, sz - 0.5);
+              housing2.rotation.y = Math.PI; // face opposite direction
+              scene.add(housing2);
               signalObjs.push({ ref: s, lamps: lamps, type: 'light' });
             }
           });
@@ -3727,7 +3759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Position player car
           s3.playerCarGroup.position.set(carWorldX, car._suspY || 0, carWorldZ);
-          s3.playerCarGroup.rotation.y = -car.heading + Math.PI / 2;
+          s3.playerCarGroup.rotation.y = -car.heading;
           // Weight transfer: body pitch (brake/accel) and roll (turns)
           s3.playerCarGroup.rotation.x = car._pitch || 0;
           s3.playerCarGroup.rotation.z = car._roll || 0;
@@ -3987,7 +4019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               m = cg;
             }
             m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
-            m.rotation.y = -t.heading + Math.PI / 2;
+            m.rotation.y = -t.heading;
             // Wheel spin + blinker on traffic vehicles
             if (m.children) {
               var tWheelAngle = timeRef.current * Math.abs(t.speed) * 2;
@@ -4107,7 +4139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               m = cg;
             }
             m.position.set(cy.x - MAP_SIZE / 2, 0, cy.y - MAP_SIZE / 2);
-            m.rotation.y = -cy.heading + Math.PI / 2;
+            m.rotation.y = -cy.heading;
           });
 
           // Wildlife
@@ -4220,7 +4252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               eGrp.add(stripe);
             }
             eGrp.position.set(em.x - MAP_SIZE / 2, 0, em.y - MAP_SIZE / 2);
-            eGrp.rotation.y = -em.heading + Math.PI / 2;
+            eGrp.rotation.y = -em.heading;
             eGroup.add(eGrp);
           }
 
