@@ -3243,7 +3243,6 @@ const d = labToolData.solarSystem;
     content
   );
 
-})(null, {}, function(){}, function(){}, false, null, null, null, null, []);
             })() : null,
 
             // 3D Canvas container (hidden in orrery mode)
