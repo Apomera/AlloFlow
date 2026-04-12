@@ -4115,7 +4115,7 @@
             // Art & Music
             artStudio: true, creative: true, gameStudio: true,
             // Earth & Space
-            galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true,
+            galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
             behaviorLab: true, dataStudio: true, economicsLab: true, logicLab: true,
             // Geography
