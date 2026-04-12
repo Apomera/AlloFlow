@@ -937,6 +937,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               });
 
+              // ── Bees at entrance (entering/exiting animation) ──
+              var entrX = hiveX + hiveW * 0.5, entrY = hiveY + hiveH + 2;
+              for (var ei = 0; ei < Math.min(8, Math.floor(safeWorkers / 2000)); ei++) {
+                var ePhase = (t2 * 0.02 + ei * 1.3) % 6.28;
+                var eDist = Math.sin(ePhase) * 18;
+                var eDir = Math.cos(ePhase) > 0 ? 1 : -1;
+                var ex = entrX + eDist * eDir + Math.sin(t2 * 0.05 + ei) * 3;
+                var ey = entrY + 3 - Math.abs(Math.sin(ePhase)) * 8;
+                c.fillStyle = '#fbbf24'; c.globalAlpha = 0.7;
+                c.beginPath(); c.ellipse(ex, ey, 2, 1.3, eDir * 0.3, 0, 6.28); c.fill();
+                c.fillStyle = '#292524'; c.fillRect(ex - 0.5, ey - 1, 1, 2);
+                c.globalAlpha = 1;
+              }
+
+              // ── Hive ambient glow (warm golden aura) ──
+              c.save();
+              var hGlow = c.createRadialGradient(hiveX + hiveW / 2, hiveY + hiveH / 2, hiveW * 0.3, hiveX + hiveW / 2, hiveY + hiveH / 2, hiveW * 0.9);
+              hGlow.addColorStop(0, 'rgba(251,191,36,0.06)');
+              hGlow.addColorStop(1, 'rgba(251,191,36,0)');
+              c.fillStyle = hGlow;
+              c.beginPath(); c.arc(hiveX + hiveW / 2, hiveY + hiveH / 2, hiveW * 0.9, 0, 6.28); c.fill();
+              c.restore();
+
+              // ── Vignette overlay (soft dark edges) ──
+              var vig = c.createRadialGradient(W / 2, H / 2, W * 0.3, W / 2, H / 2, W * 0.7);
+              vig.addColorStop(0, 'rgba(0,0,0,0)');
+              vig.addColorStop(1, 'rgba(0,0,0,0.15)');
+              c.fillStyle = vig; c.fillRect(0, 0, W, H);
+
               // ── HUD overlay (glass morphism style) ──
               c.save();
               c.fillStyle = 'rgba(15,23,42,0.6)';
@@ -1228,26 +1257,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           colonySurvived && h('div', { className: 'space-y-2' },
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
-              h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-sm transition-all hover:shadow-md' }, '\u23E9 Next Day'),
-              h('button', { onClick: function() { advanceDays(5); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 bg-amber-100 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-200' }, '\u23ED +5')
+              h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, '\u23E9 Next Day'),
+              h('button', { onClick: function() { advanceDays(5); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-700 hover:bg-amber-200') }, '\u23ED +5'),
+              h('button', { onClick: function() { advanceDays(30); }, 'aria-label': 'Advance 30 days (1 month)', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-600 hover:bg-amber-100') }, '\u23ED +30')
             ),
             // Management actions
             h('div', { className: 'grid grid-cols-5 gap-1.5' },
-              h('button', { onClick: treatVarroa, 'aria-label': 'Treat varroa mites', disabled: varroaLevel < 10, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl text-center transition-all ' + (varroaLevel >= 10 ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' : 'bg-slate-50 text-slate-300 border border-slate-100') },
-                h('span', { className: 'text-lg' }, '\uD83E\uDDEA'),
-                h('span', { className: 'text-[10px] font-bold' }, 'Treat')),
-              h('button', { onClick: addSuper, 'aria-label': 'Add honey super', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all' },
-                h('span', { className: 'text-lg' }, '\uD83D\uDCE6'),
-                h('span', { className: 'text-[10px] font-bold' }, 'Super')),
-              h('button', { onClick: harvestHoney, 'aria-label': 'Harvest honey', disabled: honey < 15, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all ' + (honey >= 15 ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200' : 'bg-slate-50 text-slate-300 border border-slate-100') },
-                h('span', { className: 'text-lg' }, '\uD83C\uDF6F'),
-                h('span', { className: 'text-[10px] font-bold' }, 'Harvest')),
-              h('button', { onClick: feedBees, 'aria-label': 'Feed bees', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all' },
-                h('span', { className: 'text-lg' }, '\uD83E\uDED9'),
-                h('span', { className: 'text-[10px] font-bold' }, 'Feed')),
-              h('button', { onClick: function() { upd('showInspect', true); }, 'aria-label': 'Inspect hive', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-all' },
-                h('span', { className: 'text-lg' }, '\uD83D\uDD2C'),
-                h('span', { className: 'text-[10px] font-bold' }, 'Inspect'))),
+              [
+                { onClick: treatVarroa, icon: '\uD83E\uDDEA', label: 'Treat', tip: 'Oxalic acid treatment (-25% mites, -5 morale)', disabled: varroaLevel < 10, color: 'red' },
+                { onClick: addSuper, icon: '\uD83D\uDCE6', label: 'Super', tip: 'Add honey super (+10 morale, +2 wax)', disabled: false, color: 'blue' },
+                { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: 'Harvest', tip: 'Harvest surplus honey (need 15+ lbs)', disabled: honey < 15, color: 'amber' },
+                { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: 'Feed sugar syrup (+5 lbs honey, +5 morale)', disabled: false, color: 'slate' },
+                { onClick: function() { upd('showInspect', true); }, icon: '\uD83D\uDD2C', label: 'Inspect', tip: 'Open hive inspector — explore bee biology', disabled: false, color: 'indigo' }
+              ].map(function(btn) {
+                var enabled = !btn.disabled;
+                var bg = enabled
+                  ? (dk ? 'bg-' + btn.color + '-900/30 text-' + btn.color + '-300 border-' + btn.color + '-700/40 hover:bg-' + btn.color + '-800/40' : 'bg-' + btn.color + '-50 text-' + btn.color + '-700 hover:bg-' + btn.color + '-100 border border-' + btn.color + '-200')
+                  : (dk ? 'bg-slate-800 text-slate-600 border-slate-700' : 'bg-slate-50 text-slate-300 border border-slate-100');
+                return h('button', { key: btn.label, onClick: btn.onClick, disabled: btn.disabled, title: btn.tip,
+                  'aria-label': btn.label + ': ' + btn.tip,
+                  className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl text-center transition-all border ' + bg + (enabled ? ' hover:shadow-md hover:-translate-y-0.5' : ' cursor-not-allowed'),
+                  style: enabled ? { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } : {}
+                },
+                  h('span', { className: 'text-xl' }, btn.icon),
+                  h('span', { className: 'text-[10px] font-bold' }, btn.label));
+              })),
 
             // Conservation Actions
             h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200') },
