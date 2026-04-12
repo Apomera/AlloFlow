@@ -724,16 +724,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   function spawnPedestrians(scenario) {
     if (scenario.id === 'highway' || scenario.id === 'rural') return [];
     var peds = [];
-    var count = scenario.id === 'school_zone' ? 5 : scenario.id === 'residential' ? 3 : 2;
+    var count = scenario.id === 'school_zone' ? 8 : scenario.id === 'downtown' ? 10 : scenario.id === 'residential' ? 4 : 3;
     var centerX = Math.floor(MAP_SIZE / 2);
+    // Cluster peds near intersections (where crosswalks are)
+    var crossYs = [16, 32, 48];
     for (var i = 0; i < count; i++) {
+      var nearIntersection = i < count * 0.6; // 60% near crosswalks
+      var pedY = nearIntersection ? crossYs[i % crossYs.length] + (Math.random() - 0.5) * 4 : 10 + Math.random() * (MAP_SIZE - 20);
+      var side = Math.random() < 0.5 ? -1 : 1;
       peds.push({
-        x: centerX + (Math.random() < 0.5 ? -7 : 7) + (Math.random() - 0.5) * 2,
-        y: 10 + Math.random() * (MAP_SIZE - 20),
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.1,
-        color: ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16'][i % 4],
-        crossing: Math.random() < 0.2
+        x: centerX + side * (5 + Math.random() * 3),
+        y: pedY,
+        vx: 0,
+        vy: 0,
+        color: ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
+        crossing: false,
+        waitingAtCrosswalk: nearIntersection,
+        crosswalkY: nearIntersection ? crossYs[i % crossYs.length] : null,
+        crossDirection: side // which way they'll cross
       });
     }
     return peds;
@@ -1499,6 +1507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var laneChangeRef = useRef({ active: false, dir: 0, signaled: false });
       var mpgHistoryRef = useRef([]); // last 60 MPG readings for sparkline
       var blackBoxRef = useRef([]); // last 5 seconds of car state for crash replay
+      var drivePathRef = useRef([]); // full drive path for debrief map (sampled every 0.5s)
       var rearviewRef = useRef(null); // canvas ref for mirror
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
       var earnedBadges = d.badges || {};
@@ -1651,7 +1660,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cyclistClose: s.cyclistClose,
             unsignaledLaneChanges: s.unsignaledLaneChanges || 0,
             scenarioId: currentScenario.id,
-            lastCrashReplay: s.crashes > 0 ? blackBoxRef.current.slice(-120) : null // last 2 sec before end
+            lastCrashReplay: s.crashes > 0 ? blackBoxRef.current.slice(-120) : null, // last 2 sec before end
+            drivePath: drivePathRef.current.slice() // full drive path for map
           }
         });
         // Check achievements
@@ -1853,6 +1863,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
           car._rollTarget = -car.steering * Math.abs(car.speed) * 0.003; // body rolls in turns
           car._roll = (car._roll || 0) + (car._rollTarget - (car._roll || 0)) * dt * 4;
+          // Suspension bounce — speed-dependent road vibration
+          var suspFreq = 3 + absSpeed * 0.3;
+          var suspAmp = Math.min(0.04, absSpeed * 0.001);
+          // Bumps from road surface irregularities (hash of position)
+          var roadBump = ((Math.floor(car.x * 5) * 37 + Math.floor(car.y * 5) * 73) % 10 - 5) * 0.002;
+          car._suspY = Math.sin(timeRef.current * suspFreq) * suspAmp + roadBump;
 
           // Friction circle: lateral grip needed vs available.
           // If you brake HARD while turning, you exceed the grip budget and skid.
@@ -1945,6 +1961,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Black box recording (last ~5 seconds for crash replay)
           blackBoxRef.current.push({ t: timeRef.current, x: car.x, y: car.y, heading: car.heading, speed: car.speed, gear: gear, steering: car.steering });
           if (blackBoxRef.current.length > 300) blackBoxRef.current.shift(); // ~5 sec at 60fps
+          // Drive path recording (sampled every 0.5s for debrief map)
+          if (!drivePathRef.current._lastSample || timeRef.current - drivePathRef.current._lastSample > 0.5) {
+            drivePathRef.current.push({ x: car.x, y: car.y, speed: Math.abs(car.speed) * MS_TO_MPH });
+            drivePathRef.current._lastSample = timeRef.current;
+            if (drivePathRef.current.length > 600) drivePathRef.current.shift(); // cap at 5 min
+          }
 
           // Blinker timer (for visual blink)
           blinkerTimerRef.current += dt;
@@ -2298,6 +2320,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               a._rainGain.connect(a.ctx.destination);
               a._rainNode.start();
             }
+            // Ambient environment sounds
+            if (!a._ambientNode && a.ctx) {
+              try {
+                var ambBuf = a.ctx.createBuffer(1, a.ctx.sampleRate * 3, a.ctx.sampleRate);
+                var ambData = ambBuf.getChannelData(0);
+                // Generate ambient texture: gentle noise with bird-like chirps mixed in
+                for (var ai = 0; ai < ambData.length; ai++) {
+                  ambData[ai] = (Math.random() * 2 - 1) * 0.05;
+                  // Occasional bird chirp-like spike (for rural/residential)
+                  if (Math.random() < 0.0001) {
+                    for (var bi = 0; bi < 400 && ai + bi < ambData.length; bi++) {
+                      ambData[ai + bi] += Math.sin(bi * 0.15) * Math.exp(-bi * 0.01) * 0.1;
+                    }
+                  }
+                }
+                a._ambientNode = a.ctx.createBufferSource();
+                a._ambientNode.buffer = ambBuf;
+                a._ambientNode.loop = true;
+                a._ambientFilter = a.ctx.createBiquadFilter();
+                a._ambientFilter.type = 'bandpass';
+                a._ambientFilter.frequency.value = 2000;
+                a._ambientFilter.Q.value = 0.3;
+                a._ambientGain = a.ctx.createGain();
+                a._ambientGain.gain.value = 0;
+                a._ambientNode.connect(a._ambientFilter);
+                a._ambientFilter.connect(a._ambientGain);
+                a._ambientGain.connect(a.ctx.destination);
+                a._ambientNode.start();
+              } catch(e) {}
+            }
+            // Adjust ambient volume based on scenario type and speed
+            if (a._ambientGain) {
+              var ambVol = car.speed < 5 ? 0.02 : 0.005; // louder when slow (can hear birds), fades at speed
+              if (currentScenario.id === 'highway') ambVol *= 0.3; // less nature on highway
+              if (currentScenario.id === 'downtown') ambVol *= 0.5;
+              a._ambientGain.gain.setTargetAtTime(ambVol, a.ctx.currentTime, 0.5);
+            }
             // Blinker tick sound
             if (blinkerRef.current !== 0) {
               var shouldTick = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
@@ -2354,10 +2413,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
 
         var updatePeds = function(dt) {
+          var signals = signalsRef.current;
+          var centerXp = Math.floor(MAP_SIZE / 2);
           pedsRef.current.forEach(function(p) {
+            if (p.waitingAtCrosswalk && p.crosswalkY != null) {
+              // Smart crosswalk behavior: check if the signal at this crosswalk is green
+              var signalAtCrosswalk = null;
+              signals.forEach(function(s) {
+                if (Math.abs(s.y - p.crosswalkY) < 2) signalAtCrosswalk = s;
+              });
+              var canCross = !signalAtCrosswalk || signalAtCrosswalk.state === 'red'; // pedestrian walks when traffic red
+              if (canCross && !p.crossing) {
+                // Start crossing
+                p.crossing = true;
+                p.vx = p.crossDirection * -0.8; // cross toward opposite side
+                p.vy = 0;
+              } else if (!canCross && p.crossing) {
+                // Signal changed, hurry up
+                p.vx *= 1.3;
+              } else if (!canCross && !p.crossing) {
+                // Wait at sidewalk — small fidget
+                p.vx = 0;
+                p.vy = Math.sin(timeRef.current * 2 + p.y) * 0.02;
+              }
+              // Check if finished crossing
+              if (p.crossing && Math.abs(p.x - centerXp) > 7) {
+                p.crossing = false;
+                p.waitingAtCrosswalk = true;
+                p.crossDirection *= -1; // will cross back next time
+                p.vx = 0;
+              }
+            } else {
+              // Random wandering (non-crosswalk peds)
+              if (Math.random() < 0.005) { p.vx = (Math.random() - 0.5) * 0.4; p.vy = (Math.random() - 0.5) * 0.15; }
+            }
             p.x += p.vx * dt * 2;
             p.y += p.vy * dt * 2;
-            if (Math.random() < 0.005) { p.vx = (Math.random() - 0.5) * 0.5; p.vy = (Math.random() - 0.5) * 0.2; }
           });
         };
 
@@ -3450,6 +3541,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           blinkerMeshRR.position.set(-0.92, 0.42, -0.45);
           playerCarGroup.add(blinkerMeshRR);
 
+          // ── Wet road surface overlay (rain makes road shinier) ──
+          if (isRain) {
+            var wetOverlayGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
+            var wetOverlayMat = new T.MeshBasicMaterial({ color: 0x556677, transparent: true, opacity: 0.15 });
+            var wetOverlay = new T.Mesh(wetOverlayGeo, wetOverlayMat);
+            wetOverlay.rotation.x = -Math.PI / 2;
+            wetOverlay.position.set(centerX - MAP_SIZE / 2, 0.018, 0);
+            scene.add(wetOverlay);
+          }
+
+          // ── Tire spray particle system (rain only, follows player car) ──
+          var tireSprayParticles = null;
+          if (isRain) {
+            var sprayCount = 100;
+            var sprayGeo = new T.BufferGeometry();
+            var sprayPos = new Float32Array(sprayCount * 3);
+            for (var spi = 0; spi < sprayCount; spi++) {
+              sprayPos[spi * 3] = 0;
+              sprayPos[spi * 3 + 1] = -999;
+              sprayPos[spi * 3 + 2] = 0;
+            }
+            sprayGeo.setAttribute('position', new T.BufferAttribute(sprayPos, 3));
+            var sprayMat = new T.PointsMaterial({ color: 0xaaccee, size: 0.06, transparent: true, opacity: 0.4 });
+            tireSprayParticles = new T.Points(sprayGeo, sprayMat);
+            scene.add(tireSprayParticles);
+          }
+
           // ── Rain puddles (reflective patches on road surface) ──
           if (isRain) {
             var puddleMat = new T.MeshBasicMaterial({ color: 0x334455, transparent: true, opacity: 0.4 });
@@ -3518,7 +3636,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             speedNeedle: needleMesh,
             rpmNeedle: rpmNeedle,
             steeringWheel3d: sw3d,
-            cloudGroup: cloudGroup
+            cloudGroup: cloudGroup,
+            tireSprayParticles: tireSprayParticles
           };
         }
 
@@ -3532,7 +3651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var carWorldZ = car.y - MAP_SIZE / 2;
 
           // Position player car
-          s3.playerCarGroup.position.set(carWorldX, 0, carWorldZ);
+          s3.playerCarGroup.position.set(carWorldX, car._suspY || 0, carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading + Math.PI / 2;
           // Weight transfer: body pitch (brake/accel) and roll (turns)
           s3.playerCarGroup.rotation.x = car._pitch || 0;
@@ -4028,6 +4147,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             eGrp.position.set(em.x - MAP_SIZE / 2, 0, em.y - MAP_SIZE / 2);
             eGrp.rotation.y = -em.heading + Math.PI / 2;
             eGroup.add(eGrp);
+          }
+
+          // Tire spray in rain (mist kicked up by rear tires)
+          if (s3.tireSprayParticles && Math.abs(car.speed) > 3) {
+            var spPos = s3.tireSprayParticles.geometry.attributes.position;
+            var spIdx = Math.floor(timeRef.current * 30) % spPos.count;
+            // Spawn at rear wheel positions
+            var rearX = carWorldX - Math.cos(car.heading) * 0.8;
+            var rearZ = carWorldZ - Math.sin(car.heading) * 0.8;
+            spPos.setXYZ(spIdx, rearX + (Math.random() - 0.5) * 0.5, 0.1 + Math.random() * 0.3, rearZ + (Math.random() - 0.5) * 0.5);
+            // Drift existing particles up and back
+            for (var spi = 0; spi < spPos.count; spi++) {
+              var spy = spPos.getY(spi);
+              if (spy > 0 && spy < 1.5) {
+                spPos.setY(spi, spy + 0.015);
+                spPos.setX(spi, spPos.getX(spi) - Math.cos(car.heading) * 0.01);
+                spPos.setZ(spi, spPos.getZ(spi) - Math.sin(car.heading) * 0.01);
+              } else if (spy >= 1.5) {
+                spPos.setY(spi, -999);
+              }
+            }
+            spPos.needsUpdate = true;
+            s3.tireSprayParticles.material.opacity = Math.min(0.5, Math.abs(car.speed) * 0.025);
           }
 
           // Exhaust particles
@@ -5147,6 +5289,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             // Coaching tips
             h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '14px' } },
+              // Drive path map
+              drivingStats.drivePath && drivingStats.drivePath.length > 5 ? h('div', { style: { marginBottom: '14px' } },
+                h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '6px' } }, '🗺️ Your Drive Path'),
+                h('canvas', {
+                  ref: function(c) {
+                    if (!c) return;
+                    var g = c.getContext('2d');
+                    var W = c.width = c.offsetWidth || 600;
+                    var H = c.height = 140;
+                    var path = drivingStats.drivePath;
+                    g.fillStyle = '#0a1628'; g.fillRect(0, 0, W, H);
+                    // Find bounds
+                    var minX = 999, maxX = -999, minY = 999, maxY = -999;
+                    path.forEach(function(p) { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; });
+                    var rangeX = Math.max(1, maxX - minX);
+                    var rangeY = Math.max(1, maxY - minY);
+                    var pad = 10;
+                    // Draw road grid (faint)
+                    g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 1;
+                    for (var gx = 0; gx < 5; gx++) { var lx = pad + gx * (W - pad * 2) / 4; g.beginPath(); g.moveTo(lx, 0); g.lineTo(lx, H); g.stroke(); }
+                    for (var gy = 0; gy < 4; gy++) { var ly = pad + gy * (H - pad * 2) / 3; g.beginPath(); g.moveTo(0, ly); g.lineTo(W, ly); g.stroke(); }
+                    // Draw path colored by speed
+                    var maxSpd = Math.max.apply(null, path.map(function(p) { return p.speed; })) || 1;
+                    path.forEach(function(p, i) {
+                      if (i === 0) return;
+                      var px = pad + (p.x - minX) / rangeX * (W - pad * 2);
+                      var py = pad + (p.y - minY) / rangeY * (H - pad * 2);
+                      var prevP = path[i - 1];
+                      var ppx = pad + (prevP.x - minX) / rangeX * (W - pad * 2);
+                      var ppy = pad + (prevP.y - minY) / rangeY * (H - pad * 2);
+                      // Color: green = slow, yellow = medium, red = fast
+                      var spdPct = p.speed / maxSpd;
+                      var r = Math.round(spdPct > 0.5 ? 255 : spdPct * 2 * 255);
+                      var gr2 = Math.round(spdPct < 0.5 ? 255 : (1 - spdPct) * 2 * 255);
+                      g.strokeStyle = 'rgb(' + r + ',' + gr2 + ',60)';
+                      g.lineWidth = 2.5;
+                      g.beginPath(); g.moveTo(ppx, ppy); g.lineTo(px, py); g.stroke();
+                    });
+                    // Start + end markers
+                    if (path.length > 1) {
+                      var sx = pad + (path[0].x - minX) / rangeX * (W - pad * 2);
+                      var sy = pad + (path[0].y - minY) / rangeY * (H - pad * 2);
+                      g.fillStyle = '#22d3ee'; g.beginPath(); g.arc(sx, sy, 4, 0, Math.PI * 2); g.fill();
+                      var ex = pad + (path[path.length - 1].x - minX) / rangeX * (W - pad * 2);
+                      var ey = pad + (path[path.length - 1].y - minY) / rangeY * (H - pad * 2);
+                      g.fillStyle = '#ef4444'; g.beginPath(); g.arc(ex, ey, 4, 0, Math.PI * 2); g.fill();
+                    }
+                    // Legend
+                    g.fillStyle = '#64748b'; g.font = '8px system-ui'; g.textAlign = 'left';
+                    g.fillText('🟢 slow  🟡 medium  🔴 fast  ● start  ● end', 4, H - 4);
+                  },
+                  style: { width: '100%', height: '140px', display: 'block', borderRadius: '8px', background: '#0a1628' }
+                })
+              ) : null,
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, '💡 Coach\'s Feedback'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } },
                 drivingStats.jackrabbits > 2 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '🚀 ' + drivingStats.jackrabbits + ' jackrabbit starts — every hard acceleration wastes fuel. Imagine an egg between your foot and the pedal.') : null,
