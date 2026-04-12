@@ -1864,7 +1864,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 tip = '💡 You\'re ' + Math.round(absSpd - currentScenario.speedLimit) + ' mph over the limit. Braking distance grows with v².';
               } else if (gearRef.current === 'P' && timeRef.current > 5 && absSpd < 1) {
                 tip = '💡 Press W to start driving (auto-shifts to Drive), or F for Drive, G for Reverse.';
-              } else if (Math.abs(carRef.current.steering) > 0.3 && blinkerRef.current === 0 && absSpd > 10) {
+              } else if (Math.abs(carRef.current.steering) > 0.55 && blinkerRef.current === 0 && absSpd > 15) {
+                // Only trigger for deliberate sharp steering, not gentle curve following
                 tip = '💡 Signal before turning or changing lanes. Press E (left) or V (right).';
               }
               if (tip) {
@@ -2041,9 +2042,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 car.y = newY;
               }
             }
-            // Wrap Y to loop the road (simple circular track)
-            if (car.y < 2) car.y = MAP_SIZE - 3;
-            if (car.y > MAP_SIZE - 2) car.y = 2;
+            // Wrap Y to loop the road — track wrap count for seamless 3D rendering
+            if (car.y < 2) { car.y += MAP_SIZE - 5; if (!car._wrapCount) car._wrapCount = 0; car._wrapCount--; }
+            if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; if (!car._wrapCount) car._wrapCount = 0; car._wrapCount++; }
           }
           // Update stats
           var deltaDist = car.speed * dt;
@@ -2057,13 +2058,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.mpgSamples++;
             statsRef.current.fuelUsed += (deltaDist / 1609) / Math.max(1, mpg);
           }
-          // Jackrabbit detection
-          if (accel > 3.5 && lastStateRef.current.accel <= 3.5) {
+          // Jackrabbit detection (with startup grace)
+          if (accel > 3.5 && lastStateRef.current.accel <= 3.5 && timeRef.current > 5) {
             statsRef.current.jackrabbits++;
             statsRef.current.efficiencyScore -= 3;
           }
-          // Hard brake detection
-          if (brakeInput > 0 && accel < -5 && lastStateRef.current.accel >= -5) {
+          // Hard brake detection (with startup grace)
+          if (brakeInput > 0 && accel < -5 && lastStateRef.current.accel >= -5 && timeRef.current > 5) {
             statsRef.current.hardBrakes++;
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
@@ -2342,8 +2343,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Are we abeam? (alongside)
             var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
             if (Math.abs(forwardDot) > 1.5) return;
-            // Lateral distance in world units; 1 world unit ≈ 10 ft
-            var latUnits = Math.abs(dx); // since road is vertical
+            // Lateral distance: perpendicular distance from car to cyclist
+            // Use cross product for true perpendicular distance (works on curved roads)
+            var carDirX = Math.cos(car.heading);
+            var carDirY = Math.sin(car.heading);
+            var latUnits = Math.abs(dx * carDirY - dy * carDirX); // perpendicular component
             var latFt = latUnits * 10;
             if (latFt < 3 && !cy._flaggedClose) {
               cy._flaggedClose = true;

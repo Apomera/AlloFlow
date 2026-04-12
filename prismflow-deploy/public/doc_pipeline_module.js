@@ -5106,27 +5106,31 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           }
         };
 
-        // ── Polish passes: unify heading hierarchy and clean transitions (chunked for large docs) ──
-        if (transformChunks > 1 && pdfPolishPasses > 0) {
-          const polishViolations = 'HEADING HIERARCHY: Ensure exactly ONE <h1>. Demote extra <h1> to <h2>. Fix h2→h3→h4 hierarchy.\nDUPLICATE CONTENT: Remove headings or paragraphs duplicated at chunk seams.\nTRANSITIONS: Remove redundant horizontal rules between sections.\nTABLE CONTINUITY: Merge table fragments split across sections.\nSTYLE CONSISTENCY: Unify inline CSS — match all similar elements to the dominant color scheme.\nPRESERVE ALL INLINE STYLES: Do NOT strip any style="" attributes.\nKeep ALL unique content. Only remove true duplicates and fix structure. Do NOT summarize or shorten.';
-          for (let polishIdx = 0; polishIdx < pdfPolishPasses; polishIdx++) {
-            updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses}...`);
-            try {
-              const polished = await aiFixChunked(bodyContent, polishViolations, `polish-${polishIdx + 1}`);
-              if (polished && polished !== bodyContent) {
-                // Polish pass: looser floor — polish legitimately removes duplicates
-                if (polished.length >= bodyContent.length * 0.9 && textCharCount(polished) >= textCharCount(bodyContent) * 0.95) {
-                  bodyContent = polished.trim()
-                    .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-                    .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1');
-                } else {
-                  warnLog(`[Polish] Pass ${polishIdx + 1} rejected: output ${polished.length} chars vs source ${bodyContent.length} chars`);
-                }
-              }
-            } catch (polishErr) {
-              warnLog(`[PDF Fix] Polish pass ${polishIdx + 1} failed:`, polishErr);
-            }
+        // ── Polish: heading hierarchy + duplicate cleanup (deterministic, no AI) ──
+        // Previously this ran AI polish passes via aiFixChunked, but Gemini consistently
+        // hits MAX_TOKENS on large documents, wasting API calls. These fixes are better
+        // done deterministically — they're rule-based, not content-dependent.
+        if (transformChunks > 1) {
+          _pipeLog('Polish', 'Running deterministic polish (heading hierarchy + dedup)');
+          // Fix heading hierarchy: ensure exactly one h1, demote extras
+          let h1Count = 0;
+          bodyContent = bodyContent.replace(/<h1([^>]*)>/gi, function(m, attrs) {
+            h1Count++;
+            return h1Count > 1 ? '<h2' + attrs + '>' : m;
+          });
+          if (h1Count > 1) {
+            bodyContent = bodyContent.replace(/<\/h1>/gi, function() {
+              return h1Count-- > 1 ? '</h2>' : '</h1>';
+            });
+            // Re-count after fix to reset
+            h1Count = (bodyContent.match(/<h1[\s>]/gi) || []).length;
+            warnLog('[Polish] Demoted ' + (h1Count > 0 ? 'extra' : '') + ' h1 tags → h2');
           }
+          // Remove duplicate headings at chunk seams (same text within 200 chars)
+          bodyContent = bodyContent.replace(/<(h[1-6])[^>]*>([^<]{3,})<\/\1>\s*<\1[^>]*>\2<\/\1>/gi, '<$1>$2</$1>');
+          // Remove redundant <hr> between sections
+          bodyContent = bodyContent.replace(/(<\/(?:section|article|div)>)\s*<hr\s*\/?>\s*(<(?:section|article|div))/gi, '$1\n$2');
+          warnLog('[Polish] Deterministic polish complete');
         }
       }
 
