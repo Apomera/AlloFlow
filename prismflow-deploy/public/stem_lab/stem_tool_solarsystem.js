@@ -1794,7 +1794,17 @@ const d = labToolData.solarSystem;
       ".orr-card:hover{box-shadow:" + (isDark ? "0 6px 20px rgba(0,0,0,0.5)" : "0 6px 20px rgba(0,0,0,0.1)") + ";transform:translateY(-1px)}",
       ".orr-input:focus{outline:none;border-color:" + accent + "!important;box-shadow:0 0 0 3px " + accent + "33!important}",
       ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.08)" : "rgba(74,144,217,0.05)") + "!important}",
-      ".orr-tr:nth-child(even){background:" + (isDark ? "#252535" : "#f4f6f9") + "}"
+      ".orr-tr:nth-child(even){background:" + (isDark ? "#252535" : "#f4f6f9") + "}",
+      // Custom range slider styling
+      "input[type=range].orr-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;transition:all .2s}",
+      "input[type=range].orr-slider::-webkit-slider-track{height:6px;border-radius:3px;background:" + (isDark ? "linear-gradient(90deg,#1e293b,#334155)" : "linear-gradient(90deg,#e2e8f0,#cbd5e1)") + "}",
+      "input[type=range].orr-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg," + accent + "," + accentLight + ");cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:2px solid #fff;transition:transform .15s}",
+      "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 8px " + accent + "44}",
+      "input[type=range].orr-slider::-moz-range-track{height:6px;border-radius:3px;background:" + (isDark ? "#334155" : "#cbd5e1") + "}",
+      "input[type=range].orr-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:" + accent + ";cursor:pointer;border:2px solid #fff}",
+      // Section header accent line
+      ".orr-section-hdr{position:relative;display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:10px}",
+      ".orr-section-hdr::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;border-radius:2px;background:linear-gradient(90deg," + accent + "," + accentLight + ")}"
     ].join("\n");
     document.head.appendChild(css);
   }
@@ -2055,12 +2065,15 @@ const d = labToolData.solarSystem;
       width: props.width,
       height: props.height,
       style: Object.assign({
-        border: "1px solid " + border,
-        borderRadius: "8px",
-        background: isDark ? "#111122" : "#f8f8ff",
+        border: isDark ? "1px solid rgba(74,144,217,0.2)" : "1px solid " + border,
+        borderRadius: "12px",
+        background: isDark ? "#0a0e1a" : "#f8f8ff",
         cursor: props.panZoom ? "grab" : "default",
         maxWidth: "100%",
-        display: "block"
+        display: "block",
+        boxShadow: isDark
+          ? "0 0 20px rgba(74,144,217,0.08), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)"
+          : "0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)"
       }, props.style || {})
     });
   }
@@ -2408,6 +2421,7 @@ const d = labToolData.solarSystem;
       h("label", { style: { fontSize: "12px", color: fg } }, "Speed: "),
       h("input", {
         type: "range", min: "0.1", max: "50", step: "0.1",
+        className: "orr-slider",
         value: speed,
         onChange: function(ev) { upd("orr_speed", parseFloat(ev.target.value)); },
         style: { width: "120px" }
@@ -2593,7 +2607,7 @@ const d = labToolData.solarSystem;
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", marginBottom: "8px" } },
         h("label", { style: { fontSize: "13px", color: fg } }, "Eccentricity: "),
         h("input", {
-          type: "range", min: "0", max: "0.98", step: "0.001",
+          type: "range", min: "0", max: "0.98", step: "0.001", className: "orr-slider",
           value: ecc,
           onChange: function(ev) { upd("orr_k1e", parseFloat(ev.target.value)); },
           style: { width: "200px" }
@@ -2606,12 +2620,27 @@ const d = labToolData.solarSystem;
         })
       ),
       cvPanel,
-      card(h("div", { style: { fontSize: "13px", lineHeight: "1.7" } },
-        h("div", null, "\u2022 An ellipse is defined by r\u2081 + r\u2082 = 2a (constant sum of distances to both foci)."),
-        h("div", null, "\u2022 Eccentricity e \u2208 [0, 1):  e = 0 is a circle, e \u2192 1 is a very elongated ellipse."),
-        h("div", null, "\u2022 Semi-minor axis b = a\u221a(1 \u2013 e\u00b2).  Focus distance c = ae."),
-        h("div", null, "\u2022 Perihelion = a(1\u2013e),  Aphelion = a(1+e).")
-      ), { marginTop: "8px" })
+      card([
+        h("div", { key: "k1-title", className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "13px", color: fg } }, "\uD83D\uDCDA Kepler\u2019s First Law"),
+        h("div", { key: "k1-items", style: { fontSize: "13px", lineHeight: "1.8" } },
+          h("div", { style: { display: "flex", gap: "8px", marginBottom: "4px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "1"),
+            h("span", null, "An ellipse is defined by ", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px", fontWeight: 600 } }, "r\u2081 + r\u2082 = 2a"), " (constant sum of focal radii).")
+          ),
+          h("div", { style: { display: "flex", gap: "8px", marginBottom: "4px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "2"),
+            h("span", null, "Eccentricity ", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px", fontWeight: 600 } }, "e \u2208 [0, 1)"), ":  e = 0 is a circle, e \u2192 1 is elongated.")
+          ),
+          h("div", { style: { display: "flex", gap: "8px", marginBottom: "4px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "3"),
+            h("span", null, "Semi-minor axis ", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px" } }, "b = a\u221a(1 \u2013 e\u00b2)"), ".  Focus distance ", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px" } }, "c = ae"), ".")
+          ),
+          h("div", { style: { display: "flex", gap: "8px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "4"),
+            h("span", null, h("span", { style: { color: "#22c55e", fontWeight: 600 } }, "Perihelion = a(1\u2013e)"), ",  ", h("span", { style: { color: "#ef4444", fontWeight: 600 } }, "Aphelion = a(1+e)"), ".")
+          )
+        )
+      ], { marginTop: "8px" })
     );
   }
 
@@ -2856,7 +2885,7 @@ const d = labToolData.solarSystem;
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center", marginBottom: "8px" } },
         h("label", { style: { fontSize: "13px", color: fg } }, "Eccentricity: "),
         h("input", {
-          type: "range", min: "0.01", max: "0.95", step: "0.01",
+          type: "range", min: "0.01", max: "0.95", step: "0.01", className: "orr-slider",
           value: ecc,
           onChange: function(ev) { upd("orr_k2e", parseFloat(ev.target.value)); },
           style: { width: "150px" }
@@ -2864,7 +2893,7 @@ const d = labToolData.solarSystem;
         h("span", { style: { fontSize: "13px", color: mutedFg } }, fmt(ecc, 2)),
         h("label", { style: { fontSize: "13px", color: fg, marginLeft: "16px" } }, "Sectors: "),
         h("input", {
-          type: "range", min: "3", max: "12", step: "1",
+          type: "range", min: "3", max: "12", step: "1", className: "orr-slider",
           value: nSectors,
           onChange: function(ev) { upd("orr_k2s", parseInt(ev.target.value)); },
           style: { width: "100px" }
@@ -2872,12 +2901,27 @@ const d = labToolData.solarSystem;
         h("span", { style: { fontSize: "13px", color: mutedFg } }, nSectors)
       ),
       cvPanel,
-      card(h("div", { style: { fontSize: "13px", lineHeight: "1.7" } },
-        h("div", null, "\u2022 Each colored sector covers the same \u0394t (time interval)."),
-        h("div", null, "\u2022 Despite different shapes, each sector has the same area (dA/dt = const)."),
-        h("div", null, "\u2022 Planet moves fastest at perihelion (closest), slowest at aphelion (farthest)."),
-        h("div", null, "\u2022 Conservation of angular momentum: L = m \u00d7 r \u00d7 v\u22a5 = const.")
-      ), { marginTop: "8px" })
+      card([
+        h("div", { key: "k2-title", className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "13px", color: fg } }, "\uD83D\uDCDA Kepler\u2019s Second Law"),
+        h("div", { key: "k2-items", style: { fontSize: "13px", lineHeight: "1.8" } },
+          h("div", { style: { display: "flex", gap: "8px", marginBottom: "4px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "1"),
+            h("span", null, "Each colored sector covers the same ", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px", fontWeight: 600 } }, "\u0394t"), " (time interval).")
+          ),
+          h("div", { style: { display: "flex", gap: "8px", marginBottom: "4px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "2"),
+            h("span", null, "Despite different shapes, each sector has the same area (", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px" } }, "dA/dt = const"), ").")
+          ),
+          h("div", { style: { display: "flex", gap: "8px", marginBottom: "4px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "3"),
+            h("span", null, "Planet moves ", h("span", { style: { color: "#ef4444", fontWeight: 600 } }, "fastest at perihelion"), " (closest), ", h("span", { style: { color: "#3b82f6", fontWeight: 600 } }, "slowest at aphelion"), " (farthest).")
+          ),
+          h("div", { style: { display: "flex", gap: "8px" } },
+            h("span", { style: { fontWeight: 700, color: accent, minWidth: "18px" } }, "4"),
+            h("span", null, "Conservation of angular momentum: ", h("span", { style: { fontFamily: "monospace", background: accent + "15", padding: "1px 5px", borderRadius: "4px", fontWeight: 600 } }, "L = m \u00d7 r \u00d7 v\u22a5 = const"), ".")
+          )
+        )
+      ], { marginTop: "8px" })
     );
   }
 
@@ -3136,7 +3180,7 @@ const d = labToolData.solarSystem;
     });
 
     return h("div", { className: "space-y-3" },
-      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } }, "Select a body:"),
+      h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } }, "\uD83D\uDE80 Select a body:"),
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "10px" } }, bodyButtons),
 
       card([
@@ -3146,7 +3190,7 @@ const d = labToolData.solarSystem;
         h("div", { key: "ecc-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
           h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, "Eccentricity:"),
           h("input", {
-            type: "range", min: "0", max: "0.99", step: "0.001",
+            type: "range", min: "0", max: "0.99", step: "0.001", className: "orr-slider",
             value: ecc,
             onChange: function(ev) { upd("orr_wse", parseFloat(ev.target.value)); },
             style: { width: "200px" }
@@ -3156,7 +3200,7 @@ const d = labToolData.solarSystem;
         h("div", { key: "sma-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
           h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, "Semi-major (AU):"),
           h("input", {
-            type: "range", min: "0.05", max: "80", step: "0.01",
+            type: "range", min: "0.05", max: "80", step: "0.01", className: "orr-slider",
             value: sma,
             onChange: function(ev) { upd("orr_wsa", parseFloat(ev.target.value)); },
             style: { width: "200px" }
@@ -3523,7 +3567,7 @@ const d = labToolData.solarSystem;
     });
 
     return h("div", { className: "space-y-3" },
-      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } }, "Hohmann Transfer Calculator"),
+      h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } }, "\uD83D\uDE80 Hohmann Transfer Calculator"),
       h("div", { style: { marginBottom: "6px" } },
         h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "From:"),
         h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", alignItems: "center" } }, fromButtons.concat([swapBtn]))
@@ -3768,24 +3812,30 @@ const d = labToolData.solarSystem;
     ], { marginTop: "12px", border: "2px solid " + accent });
 
     // Equation reference card
+    var eqBadge = function(label, eq) {
+      return h("div", { style: { display: "flex", gap: "8px", alignItems: "baseline", padding: "3px 0" } },
+        h("span", { style: { color: mutedFg, fontSize: "11px", fontWeight: 600, minWidth: "85px" } }, label),
+        h("span", { style: { fontFamily: "monospace", fontSize: "12px", background: isDark ? "rgba(74,144,217,0.1)" : "rgba(74,144,217,0.08)", padding: "2px 8px", borderRadius: "4px", fontWeight: 600, color: fg } }, eq)
+      );
+    };
     var eqRef = card([
-      h("div", { key: "eqh", style: { fontWeight: 700, fontSize: "13px", marginBottom: "6px", color: fg } }, "\ud83d\udcdc Equation Quick Reference"),
-      h("div", { key: "eqb", style: { fontSize: "12px", lineHeight: "1.8", color: fg, fontFamily: "monospace" } },
-        h("div", null, "Kepler III:   T\u00b2 = a\u00b3   \u2192   T = a^(3/2)"),
-        h("div", null, "Vis-viva:     v = \u221a[GM(2/r \u2013 1/a)]"),
-        h("div", null, "Perihelion:   r_p = a(1\u2013e)"),
-        h("div", null, "Aphelion:     r_a = a(1+e)"),
-        h("div", null, "Escape vel:   v_esc = \u221a(2GM/r) = \u221a2 \u00b7 v_circ"),
-        h("div", null, "Hohmann a_t:  a_t = (r\u2081 + r\u2082)/2"),
-        h("div", null, "Transit time: t = \u03c0\u221a(a_t\u00b3/GM)"),
-        h("div", null, "Angular mom:  v_p \u00b7 r_p = v_a \u00b7 r_a"),
-        h("div", null, "GM\u2299 = 1.327\u00d710\u00b2\u2070 m\u00b3/s\u00b2   |   1 AU = 1.496\u00d710\u2078 km")
+      h("div", { key: "eqh", className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "13px", color: fg } }, "\ud83d\udcdc Equation Quick Reference"),
+      h("div", { key: "eqb", style: { display: "flex", flexDirection: "column", gap: "2px" } },
+        eqBadge("Kepler III", "T\u00b2 = a\u00b3  \u2192  T = a^(3/2)"),
+        eqBadge("Vis-viva", "v = \u221a[GM(2/r \u2013 1/a)]"),
+        eqBadge("Perihelion", "r_p = a(1\u2013e)"),
+        eqBadge("Aphelion", "r_a = a(1+e)"),
+        eqBadge("Escape vel", "v_esc = \u221a(2GM/r) = \u221a2 \u00b7 v_circ"),
+        eqBadge("Hohmann a_t", "a_t = (r\u2081 + r\u2082)/2"),
+        eqBadge("Transit", "t = \u03c0\u221a(a_t\u00b3/GM)"),
+        eqBadge("Angular L", "v_p \u00b7 r_p = v_a \u00b7 r_a"),
+        h("div", { style: { marginTop: "6px", padding: "4px 8px", borderRadius: "6px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", fontSize: "11px", fontFamily: "monospace", color: mutedFg } }, "GM\u2299 = 1.327\u00d710\u00b2\u2070 m\u00b3/s\u00b2   |   1 AU = 1.496\u00d710\u2078 km")
       )
-    ], { marginTop: "10px", background: isDark ? "#1a2a1a" : "#f0fff0" });
+    ], { marginTop: "10px", background: isDark ? "#1a2a1a" : "#f0fff0", borderLeft: "4px solid #22c55e" });
 
     return h("div", { className: "space-y-3" },
-      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } },
-        "Challenge " + (idx + 1) + " of " + CHALLENGES.length
+      h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } },
+        "\uD83C\uDFC6 Challenge " + (idx + 1) + " of " + CHALLENGES.length
       ),
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
         CHALLENGES.map(function(c, ci) {
@@ -3999,8 +4049,8 @@ const d = labToolData.solarSystem;
     var correct = answered && (userAns === mc.answer);
 
     return h("div", { className: "space-y-3" },
-      h("div", { style: { fontWeight: 700, fontSize: "15px", color: fg, marginBottom: "6px" } },
-        "Misconception " + (idx + 1) + " of " + MISCONCEPTIONS.length
+      h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } },
+        "\u2753 Misconception " + (idx + 1) + " of " + MISCONCEPTIONS.length
       ),
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
         MISCONCEPTIONS.map(function(m, mi) {
@@ -4112,7 +4162,7 @@ const d = labToolData.solarSystem;
             })() : null,
 
             // 3D Canvas container (hidden in orrery mode)
-            !d.orreryMode && React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-800/50 shadow-lg", style: { background: '#0a0e27' } },
+            !d.orreryMode && React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-800/40", style: { background: '#0a0e27', boxShadow: '0 0 30px rgba(79,70,229,0.1), 0 8px 32px rgba(0,0,0,0.4)' } },
 
               React.createElement("canvas", {
 
@@ -4137,7 +4187,7 @@ const d = labToolData.solarSystem;
               // Floating planet labels
 
               React.createElement("div", { className: "solar-labels", style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' } }),
-              React.createElement("div", { className: "solar-telemetry", style: { position: 'absolute', top: '10px', left: '10px', color: '#60a5fa', background: 'rgba(0,0,0,0.6)', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontFamily: 'monospace', pointerEvents: 'none', border: '1px solid #1e3a8a', zIndex: 10 } }),
+              React.createElement("div", { className: "solar-telemetry", style: { position: 'absolute', top: '10px', left: '10px', color: '#60a5fa', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', fontFamily: 'monospace', pointerEvents: 'none', border: '1px solid rgba(96,165,250,0.15)', boxShadow: '0 0 12px rgba(96,165,250,0.06), 0 4px 12px rgba(0,0,0,0.3)', zIndex: 10 } }),
 
               // Controls overlay
 
@@ -12458,13 +12508,27 @@ const d = labToolData.solarSystem;
               ),
 
               // === FAMOUS MISSIONS ===
-              sel && MISSIONS[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-sky-50 border-sky-200') + " rounded-xl p-3 border" },
-                React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') + " mb-2" }, "\uD83D\uDE80 Famous Missions to " + sel.name),
-                React.createElement("div", { className: "space-y-1.5" },
+              sel && MISSIONS[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-sky-50 border-sky-200') + " rounded-xl p-3 border", style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
+                React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') + " mb-3" }, "\uD83D\uDE80 Famous Missions to " + sel.name),
+                // Timeline layout
+                React.createElement("div", { style: { position: 'relative', paddingLeft: '20px', borderLeft: '2px solid ' + (isDark ? 'rgba(56,189,248,0.3)' : 'rgba(14,165,233,0.3)') } },
                   (MISSIONS[sel.name] || []).map(function(m, mi) {
-                    return React.createElement("div", { key: mi, className: "flex items-start gap-2 text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                      React.createElement("span", { className: "font-bold text-sky-500 whitespace-nowrap" }, m.year),
-                      React.createElement("div", null,
+                    return React.createElement("div", { key: mi, className: "mb-3 last:mb-0", style: { position: 'relative' } },
+                      // Timeline dot
+                      React.createElement("div", { style: {
+                        position: 'absolute', left: '-25px', top: '2px',
+                        width: '10px', height: '10px', borderRadius: '50%',
+                        background: isDark ? 'linear-gradient(135deg, #38bdf8, #0ea5e9)' : 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                        border: '2px solid ' + (isDark ? '#0f172a' : '#f0f9ff'),
+                        boxShadow: '0 0 6px rgba(14,165,233,0.4)'
+                      } }),
+                      // Year badge
+                      React.createElement("span", {
+                        className: "text-[10px] font-bold px-1.5 py-0.5 rounded " + (isDark ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-700'),
+                        style: { fontFamily: 'monospace' }
+                      }, m.year),
+                      // Mission details
+                      React.createElement("div", { className: "mt-0.5 text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                         React.createElement("span", { className: "font-bold" }, m.name),
                         " \u2014 " + m.desc
                       )
@@ -12474,12 +12538,12 @@ const d = labToolData.solarSystem;
               ),
 
               // === EXTRA FUN FACTS ===
-              sel && EXTRA_FACTS[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-amber-50 border-amber-200') + " rounded-xl p-3 border" },
+              sel && EXTRA_FACTS[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-amber-50 border-amber-200') + " rounded-xl p-3 border", style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
                 React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') + " mb-2" }, "\uD83D\uDCA1 More " + sel.name + " Facts"),
-                React.createElement("div", { className: "space-y-1" },
+                React.createElement("div", { className: "space-y-1.5" },
                   (EXTRA_FACTS[sel.name] || []).map(function(fact, fi) {
-                    return React.createElement("div", { key: fi, className: "text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " flex items-start gap-1.5" },
-                      React.createElement("span", { className: "text-amber-400" }, "\u2022"),
+                    return React.createElement("div", { key: fi, className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " flex items-start gap-2" },
+                      React.createElement("span", { style: { fontWeight: 700, color: isDark ? '#fbbf24' : '#d97706', minWidth: '16px', fontSize: '10px' } }, (fi + 1) + "."),
                       fact
                     );
                   })

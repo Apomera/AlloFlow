@@ -4877,6 +4877,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Road Trip Planner'),
               h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, 'Distance, fuel cost, stop planning')
             ),
+            h('button', { onClick: function() { upd('view', 'reactionTrainer'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '⏱️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Reaction Time Test'),
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, 'Measure YOUR actual reaction speed')
+            ),
+            h('button', { onClick: function() { upd('view', 'nightVision'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔦'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Night Vision Math'),
+              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, 'Can you stop within your headlights?')
+            ),
+            h('button', { onClick: function() { upd('view', 'carBuying'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '💵'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'First Car Guide'),
+              h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, 'What to look for, what to avoid')
+            ),
             h('button', { onClick: function() { upd('view', 'forceDiagram'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📐'),
@@ -7025,6 +7043,249 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ' than on dry pavement. That is the difference between stopping safely and a collision. ',
             h('b', null, 'The physics is non-negotiable — the only variable you control is speed.')
           )
+        );
+      }
+
+      // ── REACTION TIME TRAINER ──
+      if (view === 'reactionTrainer') {
+        var rtState = d.rtState || { phase: 'waiting', times: [], bestTime: null };
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); upd('rtState', null); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #fb923c', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '⏱️'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Reaction Time Trainer'),
+            h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, 'Measure your ACTUAL reaction speed. The average driver is 1.5 seconds. How fast are you?')
+          ),
+          // The test area
+          h('div', {
+            style: {
+              background: rtState.phase === 'go' ? '#22c55e' : rtState.phase === 'ready' ? '#ef4444' : rtState.phase === 'result' ? '#0f172a' : '#1e293b',
+              borderRadius: '14px', padding: '50px 20px', textAlign: 'center', cursor: 'pointer',
+              minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+              border: '2px solid #334155', transition: 'background 0.1s'
+            },
+            onClick: function() {
+              if (rtState.phase === 'waiting') {
+                // Start: show red, then after random delay, show green
+                var newState = Object.assign({}, rtState, { phase: 'ready', startWait: Date.now(), greenAt: Date.now() + 2000 + Math.random() * 4000 });
+                upd('rtState', newState);
+              } else if (rtState.phase === 'ready') {
+                // Too early!
+                upd('rtState', Object.assign({}, rtState, { phase: 'early' }));
+              } else if (rtState.phase === 'go') {
+                // Measure reaction time
+                var rt = Date.now() - rtState.greenTime;
+                var newTimes = (rtState.times || []).concat([rt]);
+                var best = Math.min.apply(null, newTimes);
+                upd('rtState', { phase: 'result', times: newTimes, bestTime: best, lastTime: rt });
+              } else if (rtState.phase === 'early') {
+                upd('rtState', { phase: 'waiting', times: rtState.times || [], bestTime: rtState.bestTime });
+              } else if (rtState.phase === 'result') {
+                upd('rtState', { phase: 'waiting', times: rtState.times, bestTime: rtState.bestTime });
+              }
+            }
+          },
+            rtState.phase === 'waiting' ? h('div', null,
+              h('div', { style: { fontSize: '24px', fontWeight: 800, marginBottom: '8px' } }, 'Click / Tap to Start'),
+              h('div', { style: { fontSize: '12px', color: '#94a3b8' } }, 'Wait for GREEN, then click as fast as you can.'),
+              rtState.times && rtState.times.length > 0 ? h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '8px' } }, rtState.times.length + ' attempts · Best: ' + rtState.bestTime + ' ms') : null
+            ) :
+            rtState.phase === 'ready' ? h('div', null,
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fff' } }, '🔴 WAIT...'),
+              h('div', { style: { fontSize: '13px', color: '#fca5a5', marginTop: '8px' } }, 'Do NOT click yet — wait for GREEN')
+            ) :
+            rtState.phase === 'go' ? h('div', null,
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fff' } }, '🟢 GO! CLICK NOW!'),
+              h('div', { style: { fontSize: '14px', color: '#bbf7d0', marginTop: '4px' } }, 'Click / tap as FAST as you can!')
+            ) :
+            rtState.phase === 'early' ? h('div', null,
+              h('div', { style: { fontSize: '36px' } }, '⚠️'),
+              h('div', { style: { fontSize: '18px', fontWeight: 800, color: '#f59e0b' } }, 'TOO EARLY!'),
+              h('div', { style: { fontSize: '12px', color: '#fde68a', marginTop: '4px' } }, 'You clicked before the light turned green. Click to try again.')
+            ) :
+            rtState.phase === 'result' ? h('div', null,
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: rtState.lastTime < 250 ? '#4ade80' : rtState.lastTime < 400 ? '#fbbf24' : '#ef4444', fontFamily: 'monospace' } }, rtState.lastTime + ' ms'),
+              h('div', { style: { fontSize: '14px', color: '#94a3b8', marginTop: '4px' } },
+                rtState.lastTime < 200 ? 'Incredible! Fighter pilot level.' :
+                rtState.lastTime < 250 ? 'Excellent — faster than most people.' :
+                rtState.lastTime < 350 ? 'Good — average healthy adult.' :
+                rtState.lastTime < 500 ? 'Average — room to improve.' :
+                'Slow — this adds significant stopping distance.'
+              ),
+              h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '8px' } }, 'At 60 mph, ' + rtState.lastTime + ' ms = ' + Math.round(rtState.lastTime / 1000 * 88) + ' feet traveled before you even touch the brake.'),
+              h('div', { style: { fontSize: '12px', color: '#22d3ee', marginTop: '10px', fontWeight: 700 } }, 'Click to try again')
+            ) : null
+          ),
+          // Timer logic: transition from ready → go after random delay
+          rtState.phase === 'ready' ? h('div', { ref: function(el) {
+            if (!el) return;
+            if (!el._timerSet) {
+              el._timerSet = true;
+              var delay = 2000 + Math.random() * 4000;
+              setTimeout(function() {
+                var cur = d.rtState;
+                if (cur && cur.phase === 'ready') {
+                  upd('rtState', Object.assign({}, cur, { phase: 'go', greenTime: Date.now() }));
+                }
+              }, delay);
+            }
+          } }) : null,
+          // Stats
+          rtState.times && rtState.times.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginTop: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', marginBottom: '6px' } }, 'Your Results'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' } },
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#4ade80' } }, rtState.bestTime + ' ms'),
+                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Best')
+              ),
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22d3ee' } }, Math.round(rtState.times.reduce(function(a, b) { return a + b; }, 0) / rtState.times.length) + ' ms'),
+                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Average')
+              ),
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#94a3b8' } }, rtState.times.length),
+                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Attempts')
+              )
+            ),
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: '1.5' } },
+              'Your best reaction time of ' + rtState.bestTime + ' ms adds ' + Math.round(rtState.bestTime / 1000 * 88) + ' feet to your stopping distance at 60 mph. ',
+              'Fatigue, alcohol, or phone use can DOUBLE this. A 0.08% BAC typically increases reaction time to 400-600 ms.'
+            )
+          ) : null
+        );
+      }
+
+      // ── NIGHT VISION MATH ──
+      if (view === 'nightVision') {
+        var nvSpeed = d.nvSpeed || 55;
+        var nvBeams = d.nvBeams || 'low';
+        var headlightRange = nvBeams === 'high' ? 500 : 350;
+        var fwNv = 'clear';
+        var nvSD = stoppingDistance(nvSpeed, fwNv, 1.5);
+        var canStop = nvSD.total_ft <= headlightRange;
+        var overdriving = nvSD.total_ft > headlightRange;
+        // Find max safe speed (where stopping distance = headlight range)
+        var maxSafeSpeed = nvSpeed;
+        for (var testSpd = 80; testSpd > 10; testSpd--) {
+          if (stoppingDistance(testSpd, fwNv, 1.5).total_ft <= headlightRange) { maxSafeSpeed = testSpd; break; }
+        }
+
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #1e1b4b, #0a0f1e)', borderRadius: '14px', padding: '20px', border: '1px solid #a78bfa', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🔦'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Night Vision Math'),
+            h('div', { style: { fontSize: '11px', color: '#ddd6fe' } }, 'Can you stop within what your headlights reveal? This is how night crashes happen.')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a78bfa', marginBottom: '4px' } }, 'SPEED'),
+              h('input', { type: 'range', min: 25, max: 80, step: 5, value: nvSpeed, onChange: function(e) { upd('nvSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a78bfa' } }),
+              h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#fff', textAlign: 'center' } }, nvSpeed + ' mph')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a78bfa', marginBottom: '6px' } }, 'HEADLIGHTS'),
+              h('div', { style: { display: 'flex', gap: '6px' } },
+                h('button', { onClick: function() { upd('nvBeams', 'low'); },
+                  style: { flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid ' + (nvBeams === 'low' ? '#a78bfa' : '#334155'), background: nvBeams === 'low' ? '#1e1b4b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, '💡 Low (350 ft)'),
+                h('button', { onClick: function() { upd('nvBeams', 'high'); },
+                  style: { flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid ' + (nvBeams === 'high' ? '#fbbf24' : '#334155'), background: nvBeams === 'high' ? '#78350f' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, '🔆 High (500 ft)')
+              )
+            )
+          ),
+          // Visual: headlight range vs stopping distance
+          h('div', { style: { background: '#020617', borderRadius: '12px', padding: '16px', border: '2px solid ' + (overdriving ? '#ef4444' : '#4ade80'), marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: overdriving ? '#ef4444' : '#4ade80', marginBottom: '8px' } },
+              overdriving ? '⚠️ OVERDRIVING YOUR HEADLIGHTS — you CANNOT stop in time!' : '✅ You can stop within your headlight range'),
+            // Headlight range bar
+            h('div', { style: { marginBottom: '8px' } },
+              h('div', { style: { fontSize: '10px', color: '#fbbf24', marginBottom: '2px' } }, '🔦 Headlight range: ' + headlightRange + ' ft'),
+              h('div', { style: { height: '14px', background: '#0f172a', borderRadius: '3px' } },
+                h('div', { style: { height: '100%', background: 'linear-gradient(90deg, #fbbf24, #fbbf2433)', borderRadius: '3px', width: '100%' } })
+              )
+            ),
+            // Stopping distance bar (overlaid on same scale)
+            h('div', null,
+              h('div', { style: { fontSize: '10px', color: overdriving ? '#ef4444' : '#4ade80', marginBottom: '2px' } }, '🛑 Stopping distance: ' + Math.round(nvSD.total_ft) + ' ft'),
+              h('div', { style: { height: '14px', background: '#0f172a', borderRadius: '3px' } },
+                h('div', { style: { height: '100%', background: overdriving ? '#ef4444' : '#4ade80', borderRadius: '3px', width: Math.min(100, nvSD.total_ft / headlightRange * 100) + '%', transition: 'width 0.3s' } })
+              )
+            ),
+            overdriving ? h('div', { style: { fontSize: '11px', color: '#fca5a5', marginTop: '8px', fontWeight: 700 } },
+              '🔴 You are ' + Math.round(nvSD.total_ft - headlightRange) + ' ft PAST what you can see. An obstacle at the edge of your headlights = guaranteed crash.'
+            ) : null
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '4px' } }, '🔬 The Rule'),
+            h('div', null, '• Max safe speed with ' + nvBeams + ' beams: ', h('b', { style: { color: '#4ade80' } }, maxSafeSpeed + ' mph')),
+            h('div', null, '• Low beams illuminate ~350 ft. High beams ~500 ft.'),
+            h('div', null, '• Rule: NEVER drive faster than you can stop within your headlight range.'),
+            h('div', null, '• Dim high beams within 500 ft of oncoming traffic (glare blinds them for 2+ seconds).'),
+            h('div', null, '• Alcohol shrinks your visual field by up to 25% at night — tunnel vision + slow reaction = deadly.')
+          )
+        );
+      }
+
+      // ── FIRST CAR BUYING GUIDE ──
+      if (view === 'carBuying') {
+        var sections = [
+          { title: 'Budget Reality Check', icon: '💰', items: [
+            'The car itself is only 40-50% of the total cost. Add: insurance ($1,200-3,600/yr for teens), gas ($1,000-2,500/yr), maintenance ($500-1,200/yr), registration + inspection (~$150/yr).',
+            'Total first-year cost for a $5,000 used car: often $8,000-11,000. Budget accordingly.',
+            'Financing: never agree to more than 48 months. A 72-month loan means you owe more than the car is worth for years.',
+            'Put at least 20% down to avoid being "underwater" (owing more than value).'
+          ]},
+          { title: 'What to Look For', icon: '✅', items: [
+            'Mileage: under 100K is good. 100-150K is OK if well-maintained. Over 150K = expect repairs soon.',
+            'Service records: ask for them. Regular oil changes every 5K miles = good owner.',
+            'Rust: check wheel wells, door frames, undercarriage. Surface rust is cosmetic. Structural rust = walk away.',
+            'Tires: even wear = good alignment. Uneven = alignment/suspension problem. Tread depth: penny test.',
+            'Test drive: listen for knocks, clunks, grinding. Does it pull left or right? Do the brakes feel firm? AC work?'
+          ]},
+          { title: 'Best First Cars', icon: '🏆', items: [
+            'Honda Civic / Toyota Corolla: bulletproof reliability, cheap to insure, 30+ MPG. Gold standard for first cars.',
+            'Toyota Camry: bigger, still reliable, slightly more expensive to insure.',
+            'Mazda3: fun to drive, reliable, good value. Good for someone who wants a bit of personality.',
+            'Avoid: BMWs, Audis, Mercedes (maintenance costs 2-3× higher). Avoid V8 trucks (insurance nightmare for teens).',
+            'Avoid: cars with no service history, salvage titles, or "just needs one thing" deals.'
+          ]},
+          { title: 'The Inspection', icon: '🔍', items: [
+            'ALWAYS get a pre-purchase inspection from YOUR mechanic (not the seller\'s). Cost: $100-150. Can save you thousands.',
+            'Check the VIN for accident history: free at NICB (nicb.org) or paid at Carfax.',
+            'Look for mismatched paint (hidden body work), replaced airbags (previous crash), and dash warning lights.',
+            'Cold start: ask to see the car started cold. Hidden engine problems show up on cold starts.'
+          ]},
+          { title: 'Negotiation', icon: '🤝', items: [
+            'Check Kelley Blue Book (kbb.com) for fair market value BEFORE you go.',
+            'Private sale: typically 15-20% cheaper than dealers, but no warranty.',
+            'Never say "I love this car!" to the seller. Start your offer 10-15% below asking.',
+            'Be willing to walk away. There is always another car. Urgency is the seller\'s friend, not yours.'
+          ]},
+          { title: 'After Purchase', icon: '📋', items: [
+            'Get insurance BEFORE driving it home (call your agent, get a policy number).',
+            'Register within 30 days (Maine). Bring: bill of sale, title, proof of insurance, ID.',
+            'Maine inspection required within 10 days of purchase for used vehicles.',
+            'Change ALL fluids (oil, coolant, brake fluid, transmission) — you don\'t know when the previous owner did.'
+          ]}
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #10b981', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '💵'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'First Car Buying Guide'),
+            h('div', { style: { fontSize: '11px', color: '#a7f3d0' } }, 'Everything they don\'t teach you in driver\'s ed — the money, the negotiation, the traps.')
+          ),
+          sections.map(function(sec) {
+            return h('div', { key: sec.title, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
+                h('span', { style: { fontSize: '22px' } }, sec.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sec.title)
+              ),
+              sec.items.map(function(item, ii) {
+                return h('div', { key: ii, style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6', paddingLeft: '10px', borderLeft: '2px solid #10b981', marginBottom: '5px' } }, item);
+              })
+            );
+          })
         );
       }
 
