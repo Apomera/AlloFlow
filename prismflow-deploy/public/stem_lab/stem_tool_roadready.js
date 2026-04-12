@@ -1526,6 +1526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
       var gearRef = useRef('P'); // P = park, R = reverse, D = drive
+      var distractRef = useRef({ active: false, timer: 0, msg: '', penalty: false }); // distracted driving events
       var blinkerRef = useRef(0); // -1 left, 0 off, 1 right
       var blinkerTimerRef = useRef(0); // for visual blink
       var laneChangeRef = useRef({ active: false, dir: 0, signaled: false });
@@ -1819,9 +1820,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (tip) {
                 statsRef.current._lastTip = timeRef.current;
                 eventToastRef.current = { msg: tip, until: timeRef.current + 4 };
-                // Strip emoji for TTS and speak
                 speak(tip.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim());
               }
+            }
+            // ── Distracted driving events (phone buzzes) ──
+            var dd = distractRef.current;
+            if (!dd.active && Math.abs(carRef.current.speed) > 5 && timeRef.current > 20) {
+              if (!dd._nextEvent) dd._nextEvent = 30 + Math.random() * 60;
+              if (timeRef.current > dd._nextEvent) {
+                var msgs = [
+                  '📱 New text message: "Hey are you free tonight?"',
+                  '📱 Instagram notification: @friend liked your photo',
+                  '📱 Mom is calling...',
+                  '📱 Snapchat: 3 new snaps!',
+                  '📱 Spotify: Your playlist is ready',
+                  '📱 TikTok: @viral has a new video',
+                  '📱 Low battery warning: 5% remaining'
+                ];
+                dd.active = true;
+                dd.msg = msgs[Math.floor(Math.random() * msgs.length)];
+                dd.timer = timeRef.current + 6; // shows for 6 seconds
+                dd.penalty = false;
+                dd._nextEvent = timeRef.current + 45 + Math.random() * 60;
+              }
+            }
+            if (dd.active && timeRef.current > dd.timer) {
+              // Good — they ignored it
+              if (!dd.penalty) {
+                addToast('✅ Good — you ignored the phone distraction!');
+              }
+              dd.active = false;
             }
           }
           render();
@@ -4573,6 +4601,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(distFt + ' ft ahead', W / 2, H - 112);
           }
 
+          // Phone distraction notification (if active)
+          var dd = distractRef.current;
+          if (dd && dd.active) {
+            var ddX = W - 220, ddY = H / 2 - 40;
+            gfx.fillStyle = 'rgba(0,0,0,0.85)';
+            if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(ddX, ddY, 210, 75, 12); gfx.fill(); }
+            else { gfx.fillRect(ddX, ddY, 210, 75); }
+            gfx.strokeStyle = '#334155'; gfx.lineWidth = 1;
+            if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(ddX, ddY, 210, 75, 12); gfx.stroke(); }
+            gfx.fillStyle = '#fff'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText(dd.msg, ddX + 10, ddY + 22);
+            gfx.fillStyle = '#64748b'; gfx.font = '9px system-ui';
+            gfx.fillText('now', ddX + 10, ddY + 38);
+            gfx.fillStyle = '#ef4444'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('🚫 IGNORE IT — keep your eyes on the road!', ddX + 105, ddY + 60);
+            // Fade bar
+            var remaining = Math.max(0, dd.timer - timeRef.current);
+            var pct = remaining / 6;
+            gfx.fillStyle = '#334155';
+            gfx.fillRect(ddX + 10, ddY + 68, 190, 3);
+            gfx.fillStyle = '#ef4444';
+            gfx.fillRect(ddX + 10, ddY + 68, 190 * pct, 3);
+          }
+
           // Skid warning
           if (skidRef.current.active) {
             gfx.fillStyle = 'rgba(239,68,68,0.15)'; gfx.fillRect(0, 0, W, H);
@@ -4794,6 +4846,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '📋'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'After a Crash'),
               h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, 'What to do — step by step')
+            ),
+            h('button', { onClick: function() { upd('view', 'knowYourCar'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e879f9', background: 'linear-gradient(135deg, #701a75, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔍'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Know Your Car'),
+              h('div', { style: { fontSize: '10px', color: '#f0abfc', marginTop: '2px' } }, 'Every part explained — engine to tires')
             ),
             h('button', { onClick: function() { upd('view', 'roadTrip'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #34d399', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -6701,6 +6759,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, 'Net = Thrust - Drag - Roll = ' + Math.round(thrust) + ' - ' + Math.round(Fd) + ' - ' + Math.round(Fr) + ' = ', h('b', { style: { color: netF > 0 ? '#4ade80' : '#ef4444' } }, Math.round(netF) + ' N')),
             h('div', null, 'a = F/m = ' + Math.round(netF) + '/' + fdVeh.mass + ' = ', h('b', null, accel.toFixed(2) + ' m/s²'))
           )
+        );
+      }
+
+      // ── KNOW YOUR CAR ──
+      if (view === 'knowYourCar') {
+        var carParts = [
+          { area: 'Engine', icon: '🔧', parts: [
+            { name: 'Engine Block', desc: 'Converts fuel into mechanical motion via controlled explosions (internal combustion). Runs at 700-6000+ RPM.' },
+            { name: 'Alternator', desc: 'Generates electricity from the engine to charge the battery and power all electrical systems while driving.' },
+            { name: 'Radiator', desc: 'Cools the engine by circulating coolant. Sits at the front to catch airflow. Overheating = head gasket failure.' },
+            { name: 'Starter Motor', desc: 'Small electric motor that cranks the engine when you turn the key. Uses battery power for ~2 seconds.' }
+          ]},
+          { area: 'Drivetrain', icon: '⚙️', parts: [
+            { name: 'Transmission', desc: 'Changes gear ratios to match engine RPM to wheel speed. Automatic: fluid-coupled. Manual: clutch + gears.' },
+            { name: 'Differential', desc: 'Allows wheels to spin at different speeds in turns (outer wheel goes further). Essential for cornering.' },
+            { name: 'Driveshaft', desc: 'Transfers power from transmission to the wheels. FWD: half-shafts. RWD: single driveshaft + axle. AWD: both.' }
+          ]},
+          { area: 'Braking System', icon: '🛑', parts: [
+            { name: 'Disc Brakes', desc: 'Caliper squeezes pads against a spinning rotor. Friction converts kinetic energy → heat. Front brakes do ~70% of the work.' },
+            { name: 'Brake Fluid', desc: 'Hydraulic fluid transmits pedal force to calipers. Incompressible = instant response. Absorbs moisture over time.' },
+            { name: 'ABS Module', desc: 'Pulses brakes 15x/second to prevent wheel lockup. Lets you steer while braking hard. Pedal will vibrate — that is normal.' },
+            { name: 'Parking Brake', desc: 'Mechanical (cable) brake on rear wheels. Use when parked on hills. Some vehicles: electronic button instead of lever.' }
+          ]},
+          { area: 'Steering & Suspension', icon: '🎯', parts: [
+            { name: 'Power Steering', desc: 'Hydraulic or electric assist that reduces steering effort. Without it, turning at low speed requires enormous force.' },
+            { name: 'Struts/Shocks', desc: 'Absorb bumps and keep tires in contact with the road. Worn shocks = bouncy ride + longer braking distance.' },
+            { name: 'Tie Rods', desc: 'Connect steering wheel to the wheels. Worn tie rods = loose/wandering steering. Critical safety component.' },
+            { name: 'Wheel Alignment', desc: 'Angles of the wheels relative to the car. Misalignment = uneven tire wear + pulling to one side.' }
+          ]},
+          { area: 'Electrical', icon: '⚡', parts: [
+            { name: 'Battery', desc: '12V lead-acid (gas cars) or high-voltage lithium (EVs). Provides power for starting + electronics. Average life: 3-5 years.' },
+            { name: 'Fuse Box', desc: 'Protects circuits from overload. Blown fuse = dead circuit (lights, radio, etc.). Replace with SAME amperage fuse only.' },
+            { name: 'ECU (Computer)', desc: 'Engine Control Unit — the car\'s brain. Controls fuel injection, timing, emissions, transmission. Reads 100+ sensors.' }
+          ]},
+          { area: 'Safety Systems', icon: '🛡️', parts: [
+            { name: 'Airbags', desc: 'Inflate in ~30 milliseconds during a crash. Front, side, curtain, knee. SRS light on = system malfunction — get checked.' },
+            { name: 'Crumple Zones', desc: 'Engineered to crush in a controlled way, absorbing impact energy before it reaches the passenger cell.' },
+            { name: 'Seatbelts', desc: 'Pre-tensioners tighten on impact. Load limiters prevent chest injury. 3-point belt reduces fatality risk by ~45%.' },
+            { name: 'Traction Control', desc: 'Reduces engine power or brakes individual wheels when slip is detected. Keeps you in control on wet/icy roads.' },
+            { name: 'Blind Spot Monitor', desc: 'Radar sensors detect vehicles in your blind spots. Warning light in the side mirror. Does NOT replace shoulder checks.' }
+          ]},
+          { area: 'Tires & Wheels', icon: '🛞', parts: [
+            { name: 'Tire Tread', desc: 'Channels water away from the contact patch. Below 2/32" = unsafe. Penny test: see all of Lincoln\'s head = replace.' },
+            { name: 'Tire Sidewall', desc: 'Shows size (P205/55R16), max pressure, speed rating, and manufacture date (DOT code). Never exceed max PSI.' },
+            { name: 'TPMS Sensor', desc: 'Inside each wheel, measures air pressure. Light comes on if 25%+ below recommended. Check ALL 4 tires when it lights.' },
+            { name: 'Lug Nuts', desc: 'Hold the wheel on. Torque spec matters — too loose = wheel falls off. Too tight = warped rotor. Use a torque wrench.' }
+          ]}
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #701a75, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #e879f9', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🔍'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Know Your Car'),
+            h('div', { style: { fontSize: '11px', color: '#f0abfc' } }, 'Every major system and part — what it does, why it matters, and what breaks.')
+          ),
+          carParts.map(function(area) {
+            return h('div', { key: area.area, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '22px' } }, area.icon),
+                h('span', { style: { fontSize: '14px', fontWeight: 800 } }, area.area)
+              ),
+              area.parts.map(function(part, pi) {
+                return h('div', { key: pi, style: { paddingLeft: '10px', borderLeft: '2px solid #334155', marginBottom: '6px' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#e879f9' } }, part.name),
+                  h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: '1.5' } }, part.desc)
+                );
+              })
+            );
+          })
         );
       }
 
