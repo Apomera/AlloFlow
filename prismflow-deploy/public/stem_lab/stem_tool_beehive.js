@@ -41,6 +41,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   function sfxBeeBuzz() { beeTone(220,0.1,"sawtooth",0.04); }
   function sfxBeeCollect() { beeTone(660,0.06,"sine",0.06); }
   function sfxBeeWaggle() { beeTone(330,0.08,"triangle",0.05); }
+  function sfxDayChime() { beeTone(523,0.06,"sine",0.04); setTimeout(function() { beeTone(659,0.08,"sine",0.04); }, 60); }
+  function sfxAlert() { beeTone(440,0.12,"sawtooth",0.06); setTimeout(function() { beeTone(380,0.15,"sawtooth",0.05); }, 100); }
+  function sfxSuccess() { [523,659,784].forEach(function(f,i) { setTimeout(function() { beeTone(f,0.08,"sine",0.05); }, i*80); }); }
+  function sfxTreat() { beeTone(200,0.15,"square",0.03); beeTone(280,0.12,"square",0.03); }
 
 
   window.StemLab.registerTool('beehive', {
@@ -167,8 +171,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Advance Day ──
         function advanceDay() {
-          if (!colonySurvived) return; // dead colony can't advance
+          if (!colonySurvived) return;
           if (actionPoints <= 0) { if (addToast) addToast('No action points left today. Advance to next day first.', 'info'); return; }
+          sfxDayChime();
           var sf = [
             { broodRate: 1.2, forageMult: 0.8, consumeRate: 0.8 },  // spring — building up
             { broodRate: 1.5, forageMult: 1.3, consumeRate: 1.2 },  // summer — peak
@@ -230,6 +235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!activeEvent && day > 3 && Math.random() < 0.12) {
             var ev = HIVE_EVENTS[Math.floor(Math.random() * HIVE_EVENTS.length)];
             newEvent = ev;
+            sfxAlert();
             // Apply effects
             if (ev.effect) {
               if (ev.effect.varroaLevel) newVarroa = Math.max(0, Math.min(100, newVarroa + ev.effect.varroaLevel));
@@ -362,7 +368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ── Actions ──
         function treatVarroa() {
           updAll({ varroaLevel: Math.max(0, varroaLevel - 25), morale: Math.max(0, morale - 5) });
-          if (addToast) addToast('🧪 Varroa treatment applied (oxalic acid). Mite count reduced.', 'success');
+          sfxTreat(); if (addToast) addToast('🧪 Varroa treatment applied (oxalic acid). Mite count reduced.', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Treated varroa');
         }
         function addSuper() {
@@ -379,7 +385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function feedBees() {
           updAll({ honey: honey + 5, morale: Math.min(100, morale + 5) });
-          if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
+          sfxSuccess(); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
           if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
         }
         function dismissEvent() {
@@ -674,15 +680,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var c = cv.getContext('2d');
           if (!c) return;
 
-          // Size canvas from parent container
+          // Size canvas from parent container (with resize observer)
           var par = cv.parentElement;
           var W = (par ? par.clientWidth : cv.clientWidth) || 500;
           var H = (par ? par.clientHeight : cv.clientHeight) || 300;
-          if (!_sized.current || cv.width !== W * 2) {
+          function resizeCanvas() {
+            W = (par ? par.clientWidth : cv.clientWidth) || 500;
+            H = (par ? par.clientHeight : cv.clientHeight) || 300;
             cv.width = W * 2; cv.height = H * 2;
-            _sized.current = true;
+            c.setTransform(2, 0, 0, 2, 0, 0);
+            // Re-init bees and flowers for new dimensions
+            _bees.current = null; _flowers.current = null;
           }
-          c.setTransform(2, 0, 0, 2, 0, 0);
+          resizeCanvas();
+          var resizeObs = null;
+          if (typeof ResizeObserver !== 'undefined' && par) {
+            resizeObs = new ResizeObserver(function() { resizeCanvas(); });
+            resizeObs.observe(par);
+          }
 
           // roundRect polyfill
           if (typeof c.roundRect !== 'function') {
@@ -998,6 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return function() {
             _loopRunning.current = false;
             if (_animId.current) cancelAnimationFrame(_animId.current);
+            if (resizeObs) resizeObs.disconnect();
           };
         }, []);
 
@@ -1013,7 +1029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'text-xs ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
 
           // ═══ ANIMATED CANVAS SIMULATION ═══
-          h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg', style: { height: '300px' } },
+          h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
             h('canvas', { 'aria-label': 'Beehive colony visualization',
               ref: _cvRef,
               role: 'img',
@@ -1177,11 +1193,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               gardenPollinators + ' pollinator plant' + (gardenPollinators !== 1 ? 's' : '') + ' detected in your Companion Planting garden. Your bees have ' + gardenBonus + '% better foraging. Plant more flowers to strengthen the connection!')),
 
           // Colony collapsed state
-          !colonySurvived && h('div', { className: 'bg-gradient-to-b from-red-50 to-orange-50 rounded-xl border-2 border-red-300 p-5 space-y-3', role: 'alert' },
+          !colonySurvived && h('div', { className: 'rounded-xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-orange-900/20 border-red-700/50' : 'bg-gradient-to-b from-red-50 to-orange-50 border-red-300'), role: 'alert' },
             h('div', { className: 'text-center' },
               h('div', { className: 'text-4xl mb-1' }, '\uD83D\uDC1D\uD83D\uDE22'),
-              h('h3', { className: 'text-lg font-black text-red-800' }, 'Colony Collapse'),
-              h('p', { className: 'text-sm text-red-600' }, 'Your colony has fallen below 500 workers and can no longer sustain itself.')
+              h('h3', { className: 'text-lg font-black ' + (dk ? 'text-red-300' : 'text-red-800') }, 'Colony Collapse'),
+              h('p', { className: 'text-sm ' + (dk ? 'text-red-400' : 'text-red-600') }, 'Your colony has fallen below 500 workers and can no longer sustain itself.')
             ),
             // Stats summary
             h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
@@ -1191,16 +1207,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 ['\u2B50', 'Score', score + ' pts'],
                 ['\uD83C\uDF3F', 'Habitat', habitat + '%']
               ].map(function(s) {
-                return h('div', { key: s[1], className: 'bg-white rounded-lg p-2 border border-red-200' },
+                return h('div', { key: s[1], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-red-700/30' : 'bg-white border-red-200') },
                   h('div', { className: 'text-sm' }, s[0]),
-                  h('p', { className: 'text-xs font-bold text-slate-700' }, s[2]),
-                  h('p', { className: 'text-[10px] text-slate-600' }, s[1])
+                  h('p', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, s[2]),
+                  h('p', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, s[1])
                 );
               })
             ),
             // Diagnosis
-            h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border border-red-200' },
-              h('p', { className: 'font-bold text-red-700 mb-1' }, '\uD83D\uDD2C Diagnosis: What went wrong?'),
+            h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-red-700/30' : 'bg-white text-slate-700 border-red-200') },
+              h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-red-300' : 'text-red-700') }, '\uD83D\uDD2C Diagnosis: What went wrong?'),
               h('p', null,
                 varroaLevel > 40 ? 'High varroa mite levels (' + varroaLevel + '%) weakened the colony through virus transmission (Deformed Wing Virus, ABPV). Earlier mite treatment with oxalic acid or formic acid might have saved them.' :
                 pesticideExposure > 25 ? 'Cumulative pesticide exposure (' + pesticideExposure + '%) poisoned foragers and impaired colony immunity. Neonicotinoids cause sub-lethal effects \u2014 disorientation, memory loss, and weakened immune response.' :
@@ -1209,9 +1225,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               )
             ),
             // What to try differently
-            h('div', { className: 'bg-amber-50 rounded-lg p-3 text-xs border border-amber-200' },
-              h('p', { className: 'font-bold text-amber-800 mb-1' }, '\uD83D\uDCA1 Next time, try:'),
-              h('ul', { className: 'text-slate-600 space-y-0.5 pl-4 list-disc' },
+            h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
+              h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '\uD83D\uDCA1 Next time, try:'),
+              h('ul', { className: 'space-y-0.5 pl-4 list-disc ' + (dk ? 'text-slate-400' : 'text-slate-600') },
                 varroaLevel > 30 && h('li', null, 'Treat varroa mites as soon as levels exceed 15\u201320%'),
                 honey < 10 && h('li', null, 'Feed sugar syrup before honey drops below 15 lbs'),
                 habitat < 40 && h('li', null, 'Plant wildflowers and build bee hotels to improve habitat'),

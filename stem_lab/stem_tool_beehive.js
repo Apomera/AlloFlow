@@ -1215,8 +1215,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })
             ),
             // Diagnosis
-            h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border border-red-200' },
-              h('p', { className: 'font-bold text-red-700 mb-1' }, '\uD83D\uDD2C Diagnosis: What went wrong?'),
+            h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-red-700/30' : 'bg-white text-slate-700 border-red-200') },
+              h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-red-300' : 'text-red-700') }, '\uD83D\uDD2C Diagnosis: What went wrong?'),
               h('p', null,
                 varroaLevel > 40 ? 'High varroa mite levels (' + varroaLevel + '%) weakened the colony through virus transmission (Deformed Wing Virus, ABPV). Earlier mite treatment with oxalic acid or formic acid might have saved them.' :
                 pesticideExposure > 25 ? 'Cumulative pesticide exposure (' + pesticideExposure + '%) poisoned foragers and impaired colony immunity. Neonicotinoids cause sub-lethal effects \u2014 disorientation, memory loss, and weakened immune response.' :
@@ -1225,9 +1225,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               )
             ),
             // What to try differently
-            h('div', { className: 'bg-amber-50 rounded-lg p-3 text-xs border border-amber-200' },
-              h('p', { className: 'font-bold text-amber-800 mb-1' }, '\uD83D\uDCA1 Next time, try:'),
-              h('ul', { className: 'text-slate-600 space-y-0.5 pl-4 list-disc' },
+            h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
+              h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '\uD83D\uDCA1 Next time, try:'),
+              h('ul', { className: 'space-y-0.5 pl-4 list-disc ' + (dk ? 'text-slate-400' : 'text-slate-600') },
                 varroaLevel > 30 && h('li', null, 'Treat varroa mites as soon as levels exceed 15\u201320%'),
                 honey < 10 && h('li', null, 'Feed sugar syrup before honey drops below 15 lbs'),
                 habitat < 40 && h('li', null, 'Plant wildflowers and build bee hotels to improve habitat'),
