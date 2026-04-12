@@ -1576,10 +1576,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 'l') upd('highBeams', !d.highBeams);
           // Gear shifting: F = drive, G = reverse, P = park (only when stopped or slow)
           if (e.key.toLowerCase() === 'f') {
-            if (carRef.current.speed < 2) gearRef.current = 'D';
+            if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D';
           }
           if (e.key.toLowerCase() === 'g') {
-            if (carRef.current.speed < 2) gearRef.current = 'R';
+            if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'R';
           }
           if (e.key.toLowerCase() === 'p') {
             if (carRef.current.speed < 1) gearRef.current = 'P';
@@ -1809,9 +1809,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; pausedRef.current = !pausedRef.current; }
             else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
             // D-pad gear shifting
-            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (carRef.current.speed < 2) gearRef.current = 'D'; }
+            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D'; }
             else if (!buttons[12] || !buttons[12].pressed) k._gpUp = false;
-            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (carRef.current.speed < 2) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
+            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
             else if (!buttons[13] || !buttons[13].pressed) k._gpDown = false;
             // Headlight toggle with shoulder buttons
             if (buttons[4] && buttons[4].pressed && !k._gpLB) { k._gpLB = true; upd('highBeams', false); }
@@ -1919,7 +1919,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var kbSteer = (steerRight - steerLeft) * 0.6;
           var steerTarget = Math.abs(gpSteer) > 0.1 ? gpSteer * 0.7 : kbSteer;
           // Speed-dependent steering sensitivity (heavy at speed, light at slow)
-          var steerRate = 5 + Math.min(8, Math.abs(car.speed) * 0.3);
+          // Steering response: responsive at low speed, more stable at high speed (inverted for safety)
+          var steerRate = 8 - Math.min(4, Math.abs(car.speed) * 0.1);
           car.steering += (steerTarget - car.steering) * dt * steerRate;
           // Forces
           var mu = frictionCoef(scn.weather);
@@ -2271,7 +2272,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           } catch (e) {}
           // Check if player pulled right and stopped
-          if (!em.checked && em.y < car.y + 3) {
+          // Wider detection window (6 units = ~60 feet) and timeout if it passes completely
+          if (!em.checked && em.y < car.y + 6) {
             em.checked = true;
             var centerX = Math.floor(MAP_SIZE / 2);
             var pulledRight = car.x > centerX + 1.5;
@@ -2508,14 +2510,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 eventToastRef.current = { msg: '✓ Good stop at the stop sign.', until: timeRef.current + 2 };
               }
               if (Math.hypot(car.x - s.x, car.y - s.y) > 6) s._stopped = false;
-              if (!s._violated && s._lastY != null) {
+              // Rolling stop detection: only if approaching the sign from ahead (within 2.5 units X) and moving
+              if (!s._lastY) s._lastY = car.y;
+              if (!s._violated) {
                 var crossedStop = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-                if (crossedStop && Math.abs(car.x - s.x) < 4 && car.speed > 4 && !s._stopped) {
+                // Narrower X check (2.5 units = ~25 feet) + speed check + approach direction
+                if (crossedStop && Math.abs(car.x - s.x) < 2.5 && Math.abs(car.speed) > 3 && !s._stopped) {
                   s._violated = true;
                   statsRef.current.safetyScore -= 20;
                   addToast('🚨 ROLLING STOP! -20 safety');
                 }
               }
+              // Reset violated flag when far enough away (for looping maps)
+              if (Math.hypot(car.x - s.x, car.y - s.y) > 10) s._violated = false;
               s._lastY = car.y;
             }
           });
