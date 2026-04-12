@@ -66,6 +66,63 @@ var createDocPipeline = function(deps) {
     setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
   };
 
+  // ── IndexedDB chunk progress persistence ──
+  // Survives tab close, browser crash, API quota exhaustion.
+  // Session ID = simple hash of filename + size + page count for stable identification.
+  var _CHUNK_DB_NAME = 'alloflow-chunk-progress';
+  var _CHUNK_DB_VERSION = 1;
+  var _CHUNK_STORE = 'sessions';
+
+  var _openChunkDB = function() {
+    return new Promise(function(resolve, reject) {
+      if (typeof indexedDB === 'undefined') { reject(new Error('IndexedDB not available')); return; }
+      var req = indexedDB.open(_CHUNK_DB_NAME, _CHUNK_DB_VERSION);
+      req.onupgradeneeded = function(e) { var db = e.target.result; if (!db.objectStoreNames.contains(_CHUNK_STORE)) db.createObjectStore(_CHUNK_STORE); };
+      req.onsuccess = function(e) { resolve(e.target.result); };
+      req.onerror = function() { reject(req.error); };
+    });
+  };
+
+  var _chunkSessionId = function(filename, fileSize, pageCount) {
+    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
+    var hash = 0;
+    for (var i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash |= 0; }
+    return 'chunk_' + Math.abs(hash).toString(36);
+  };
+
+  var saveChunkProgress = function(sessionId, data) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+        tx.objectStore(_CHUNK_STORE).put(data, sessionId);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    }).catch(function(e) { warnLog('[ChunkProgress] Save failed:', e.message); });
+  };
+
+  var loadChunkProgress = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readonly');
+        var req = tx.objectStore(_CHUNK_STORE).get(sessionId);
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror = function() { reject(req.error); };
+      });
+    }).catch(function(e) { warnLog('[ChunkProgress] Load failed:', e.message); return null; });
+  };
+
+  var clearChunkProgress = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+        tx.objectStore(_CHUNK_STORE).delete(sessionId);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
+  };
+
   // ── Deterministic integrity helpers ──
   // textCharCount: count visible text characters in HTML (strips tags/scripts/styles)
   const textCharCount = (html) => {
@@ -3449,9 +3506,60 @@ Return ONLY the complete fixed HTML.`, true);
             }
           } catch(e) { /* non-blocking */ }
 
+          // ── Resume detection: check IndexedDB for saved progress from a prior session ──
+          const _sessionId = _chunkSessionId(
+            pendingPdfFile ? pendingPdfFile.name : 'document',
+            pendingPdfFile ? pendingPdfFile.size : currentHtml.length,
+            bodyChunks.length
+          );
+          let _resumedResults = null;
+          let _resumeStartIndex = 0;
+          try {
+            const saved = await loadChunkProgress(_sessionId);
+            if (saved && saved.chunkResults && saved.chunkResults.length > 0
+                && saved.totalChunks === bodyChunks.length && (Date.now() - saved.timestamp) < 24 * 60 * 60 * 1000) {
+              // Emit resume-available event for UI to show prompt
+              const resumePromise = new Promise(function(resolve) {
+                var _onAccept = function() { window.removeEventListener('alloflow:chunk-resume-accept', _onAccept); window.removeEventListener('alloflow:chunk-resume-decline', _onDecline); resolve(true); };
+                var _onDecline = function() { window.removeEventListener('alloflow:chunk-resume-accept', _onAccept); window.removeEventListener('alloflow:chunk-resume-decline', _onDecline); resolve(false); };
+                window.addEventListener('alloflow:chunk-resume-accept', _onAccept);
+                window.addEventListener('alloflow:chunk-resume-decline', _onDecline);
+                // Auto-decline after 15s if no user interaction
+                setTimeout(function() { _onDecline(); }, 15000);
+              });
+              window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-available', {
+                detail: {
+                  completedChunks: saved.chunkResults.length,
+                  totalChunks: saved.totalChunks,
+                  savedAt: saved.timestamp,
+                  sessionId: _sessionId,
+                }
+              }));
+              setPdfFixStep('Found saved progress (' + saved.chunkResults.length + '/' + saved.totalChunks + ' sections). Waiting for your choice...');
+              const userWantsResume = await resumePromise;
+              if (userWantsResume) {
+                _resumedResults = saved.chunkResults;
+                _resumeStartIndex = saved.chunkResults.length;
+                warnLog('[ChunkProgress] Resuming from chunk ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length);
+                setPdfFixStep('Resuming from section ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length + '...');
+                // Re-emit chunk-fixed events for already-completed chunks so live UI populates
+                for (var ri = 0; ri < _resumedResults.length; ri++) {
+                  try {
+                    window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', {
+                      detail: Object.assign({}, _resumedResults[ri], { index: ri, total: bodyChunks.length, resumed: true, timestamp: Date.now() })
+                    }));
+                  } catch(e) {}
+                }
+              } else {
+                await clearChunkProgress(_sessionId);
+                warnLog('[ChunkProgress] User chose to start fresh');
+              }
+            }
+          } catch(resumeErr) { warnLog('[ChunkProgress] Resume check failed:', resumeErr.message); }
+
           // Fix each chunk with integrity verification + retry
-          const chunkResults = [];
-          for (let chi = 0; chi < bodyChunks.length; chi++) {
+          const chunkResults = _resumedResults ? _resumedResults.slice() : [];
+          for (let chi = _resumeStartIndex; chi < bodyChunks.length; chi++) {
             const originalChunk = bodyChunks[chi];
 
             // ── Emit per-chunk start event: UI shows "working on chunk N" placeholder ──
