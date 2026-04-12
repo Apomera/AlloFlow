@@ -5561,7 +5561,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _totalIssues = bestAxeViolations + _aiIssueCount;
       const _targetScore = pdfTargetScore || 90;
       if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
+        // Emit live remediation session start so UI shows progress panel
+        warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
+        try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); } catch(e) {}
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
+          // Emit per-pass start event for live UI
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: fixPass, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
           const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
           const _passAiCount = verification && verification.issues ? verification.issues.length : 0;
           const _passTotal = _passAxeCount + _passAiCount;
@@ -5663,6 +5668,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
+          // Emit per-pass completion for live UI
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+
           // If BOTH engines report 0 actionable issues, stop regardless of score
           if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
@@ -5686,6 +5694,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             break;
           }
         }
+        // Emit session complete for live UI
+        try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: autoFixPasses, timestamp: Date.now() } })); } catch(e) {}
       }
 
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
