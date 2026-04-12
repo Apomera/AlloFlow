@@ -4141,23 +4141,24 @@ const d = labToolData.solarSystem;
 
               // Controls overlay
 
-              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
+              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto", style: { background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', borderRadius: '12px', padding: '6px 10px', border: '1px solid rgba(255,255,255,0.1)' } },
 
                 React.createElement("button", { "aria-label": "Toggle simulation playback",
 
                   onClick: () => upd('paused', !paused),
 
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-700 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (paused ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/15 text-white/90 hover:bg-white/25'),
+                  style: { border: 'none' }
 
                 }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
 
-                React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
+                React.createElement("div", { className: "flex items-center gap-2 flex-1 max-w-[200px] bg-white/10 rounded-lg px-3 py-1.5", style: { border: '1px solid rgba(255,255,255,0.08)' } },
 
-                  React.createElement("span", { className: "text-[11px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
+                  React.createElement("span", { className: "text-[11px] text-white/50 font-bold whitespace-nowrap" }, "\u23F1"),
 
-                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': 'Simulation speed', onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '12px' } }),
+                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': 'Simulation speed', onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '14px' } }),
 
-                  React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold min-w-[28px] text-right" }, simSpeed.toFixed(1) + "x")
+                  React.createElement("span", { className: "text-[11px] text-indigo-300 font-bold min-w-[32px] text-right", style: { fontFamily: 'monospace' } }, simSpeed.toFixed(1) + "x")
 
                 ),
 
@@ -4165,11 +4166,12 @@ const d = labToolData.solarSystem;
 
                   onClick: () => { upd('selectedPlanet', null); stopPlanetAmbience(); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white/10 text-white/70 hover:bg-white/20 transition-all",
+                  style: { border: '1px solid rgba(255,255,255,0.1)' }
 
-                }, "\uD83C\uDFE0 Reset View"),
+                }, "\uD83C\uDFE0 Reset"),
 
-                React.createElement("span", { className: "text-[11px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
+                React.createElement("span", { className: "text-[10px] text-white/30 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, "Drag \u2022 Scroll \u2022 Click")
 
               )
 
@@ -4293,9 +4295,9 @@ const d = labToolData.solarSystem;
                         }
                       },
 
-                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
+                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " +
 
-                        ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')
+                        ((d.viewTab || 'overview') === tab ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/25 ring-1 ring-indigo-400/30' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm'))
 
                     }, tabLabels[tab]);
 
