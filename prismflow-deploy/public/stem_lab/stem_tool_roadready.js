@@ -529,7 +529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // 3 = centerline (visual only), 4 = sidewalk, 5 = tree, 6 = building special.
   // Only 1, 5, 6 block raycasts.
 
-  var MAP_SIZE = 64;
+  var MAP_SIZE = 96;
 
   function buildMap(scenarioId) {
     var map = [];
@@ -570,7 +570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     if (scenarioId === 'residential' || scenarioId === 'suburban' || scenarioId === 'night' || scenarioId === 'school_zone' || scenarioId === 'construction') {
       // Cross streets every 16 cells — creates a real grid
-      var crossStreets = [16, 32, 48];
+      var crossStreets = [20, 40, 56, 72];
       crossStreets.forEach(function(cy) { carveRoadEW(cy, 0, MAP_SIZE); });
       addSidewalks(centerX);
       // Buildings in blocks between streets
@@ -587,7 +587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
       // Parking lot (suburban only) — flat asphalt area near one intersection
       if (scenarioId === 'suburban') {
-        for (var py = 34; py < 42; py++) {
+        for (var py = 44; py < 54; py++) {
           for (var px = centerX + 8; px < centerX + 16 && px < MAP_SIZE; px++) {
             map[py][px] = 0;
           }
@@ -666,7 +666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       carveRoadEW(cy2, centerX + 10, MAP_SIZE);
     } else if (scenarioId === 'downtown') {
       // Dense urban grid — lots of cross streets
-      var crossYs = [10, 18, 26, 34, 42, 50, 58];
+      var crossYs = [14, 24, 36, 48, 60, 72, 84];
       crossYs.forEach(function(cy3) { carveRoadEW(cy3, 0, MAP_SIZE); });
       // Second N-S road for one-way pair
       carveRoadNS(centerX - 10, 0, MAP_SIZE);
@@ -738,7 +738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
     // Cross-street traffic (on intersections — only for grid scenarios)
     if (['residential', 'suburban', 'school_zone', 'night'].indexOf(scenario.id) !== -1) {
-      var crossYs = [16, 32, 48];
+      var crossYs = [20, 40, 56, 72];
       crossYs.forEach(function(crossY, ci) {
         if (ci >= (scenario.traffic === 'light' ? 1 : 2)) return;
         var dir = ci % 2 === 0 ? 1 : -1;
@@ -765,7 +765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Sidewalk X positions (left and right sidewalks)
     var sidewalkLeft = centerX - 4.5;
     var sidewalkRight = centerX + 4.5;
-    var crossYs = [16, 32, 48];
+    var crossYs = [20, 40, 56, 72];
     for (var i = 0; i < count; i++) {
       var nearIntersection = i < count * 0.6;
       var pedY = nearIntersection ? crossYs[i % crossYs.length] : 10 + Math.random() * (MAP_SIZE - 20);
@@ -876,7 +876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var signals = [];
     var centerX = Math.floor(MAP_SIZE / 2);
     if (scenario.id === 'suburban' || scenario.id === 'school_zone' || scenario.id === 'night') {
-      [16, 32, 48].forEach(function(yPos, idx) {
+      [20, 40, 56, 72].forEach(function(yPos, idx) {
         signals.push({
           x: centerX, y: yPos, type: 'light',
           state: idx === 0 ? 'green' : idx === 1 ? 'red' : 'green',
@@ -886,7 +886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       });
     } else if (scenario.id === 'downtown') {
       // Traffic lights at every cross street (dense)
-      [10, 18, 26, 34, 42, 50, 58].forEach(function(yPos, idx) {
+      [14, 24, 36, 48, 60, 72, 84].forEach(function(yPos, idx) {
         signals.push({
           x: centerX, y: yPos, type: 'light',
           state: idx % 3 === 0 ? 'green' : idx % 3 === 1 ? 'red' : 'green',
@@ -895,7 +895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       });
     } else if (scenario.id === 'residential') {
       // Stop signs at intersections
-      [16, 32, 48].forEach(function(yPos) {
+      [20, 40, 56, 72].forEach(function(yPos) {
         signals.push({ x: centerX, y: yPos, type: 'stop', state: 'stop' });
       });
     } else if (scenario.id === 'construction') {
@@ -1658,7 +1658,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             audioRef.current.ctx = new Ac();
           }
         } catch (e) { /* audio unavailable */ }
-        carRef.current = { x: 32, y: 55, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
+        // Start position: on the road, right lane, heading north, away from intersections
+        // Start position: on the road, right lane, heading north, away from intersections
+        var startY = Math.floor(MAP_SIZE * 0.85); // near the bottom of the map
+        var startCenterX = Math.floor(MAP_SIZE / 2);
+        // For curved roads, find the actual road center at the start Y
+        if (mapRef.current && mapRef.current[startY]) {
+          for (var findX = startCenterX - 8; findX <= startCenterX + 8; findX++) {
+            if (mapRef.current[startY][findX] === 0 || mapRef.current[startY][findX] === 3) {
+              startCenterX = findX; break;
+            }
+          }
+        }
+        carRef.current = { x: startCenterX + 1.5, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0 };
         gearRef.current = 'P'; // start in Park
         blinkerRef.current = 0;
@@ -1924,10 +1936,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var Fr = rollingForce(veh.mass, crr);
           // Drag and rolling resist always oppose motion
           var resistSign = car.speed >= 0 ? 1 : -1;
-          var brakeForce = brakeInput * veh.mass * mu * 9.81 * 0.9;
+          var brakeForce = brakeInput * veh.mass * mu * 9.81 * 0.95;
           var netForce = thrust - (Fd + Fr + brakeForce) * resistSign;
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
+          // Extra brake clamping: if braking and speed is very low, snap to zero (prevents creeping)
+          if (brakeInput > 0.5 && Math.abs(car.speed) < 1.5) car.speed *= 0.85;
+          if (brakeInput > 0.5 && Math.abs(car.speed) < 0.3) car.speed = 0;
           // Engine braking / coast deceleration (lift off gas = gradual slow)
           if (gear === 'D' && throttleInput === 0 && brakeInput === 0 && car.speed > 0.5) {
             car.speed *= (1 - dt * 0.3); // gentle coast deceleration
@@ -2462,17 +2477,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var checkSignalCompliance = function() {
           var car = carRef.current;
           signalsRef.current.forEach(function(s) {
-            if (s.type === 'light' && s.state === 'red') {
-              // Did we cross while red? Track per-signal so we don't double-count.
+            if (s.type === 'light') {
+              // ALWAYS track position relative to each signal (regardless of state)
               if (!s._lastY) s._lastY = car.y;
               var crossed = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-              if (crossed && Math.abs(car.x - s.x) < 4 && car.speed > 2) {
+              // Only penalize if crossed while signal is RED
+              if (crossed && s.state === 'red' && Math.abs(car.x - s.x) < 4 && Math.abs(car.speed) > 2) {
                 statsRef.current.safetyScore -= 25;
                 statsRef.current.crashes++;
                 addToast('🚨 RED LIGHT VIOLATION! -25 safety');
                 eventToastRef.current = { msg: '🚨 You ran a red light. In real life, that is reckless driving + an accident.', until: timeRef.current + 4 };
               }
-              s._lastY = car.y;
+              // Green/yellow crossing is fine — no penalty
+              s._lastY = car.y; // always update, preventing stale position bugs
             } else if (s.type === 'stop') {
               if (!s._stopped && Math.hypot(car.x - s.x, car.y - s.y) < 3 && car.speed < 1) {
                 s._stopped = true;
@@ -2838,7 +2855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Street name signs at cross streets ──
           var streetNames = ['OAK ST', 'MAPLE AVE', 'PINE RD'];
           if (['residential', 'suburban', 'school_zone', 'night'].indexOf(currentScenario.id) !== -1) {
-            [16, 32, 48].forEach(function(crossY, ci) {
+            [20, 40, 56, 72].forEach(function(crossY, ci) {
               var nameTex = makeSignTexture([
                 { text: streetNames[ci] || 'CROSS ST', font: 'bold 22px Arial', y: 50 }
               ], '#166534', '#ffffff', 192, 64);
@@ -2889,7 +2906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Turn arrows painted on road at intersections ──
           if (['residential', 'suburban', 'school_zone', 'night'].indexOf(currentScenario.id) !== -1) {
             var arrowMat2 = new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
-            [16, 32, 48].forEach(function(crossY) {
+            [20, 40, 56, 72].forEach(function(crossY) {
               // Left turn arrow (left lane, before intersection)
               var ltArrowGeo = new T.PlaneGeometry(0.3, 0.8);
               var ltArrow = new T.Mesh(ltArrowGeo, arrowMat2);
