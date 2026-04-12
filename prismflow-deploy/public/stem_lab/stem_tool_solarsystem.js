@@ -4141,23 +4141,24 @@ const d = labToolData.solarSystem;
 
               // Controls overlay
 
-              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
+              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto", style: { background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', borderRadius: '12px', padding: '6px 10px', border: '1px solid rgba(255,255,255,0.1)' } },
 
                 React.createElement("button", { "aria-label": "Toggle simulation playback",
 
                   onClick: () => upd('paused', !paused),
 
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-700 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (paused ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/15 text-white/90 hover:bg-white/25'),
+                  style: { border: 'none' }
 
                 }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
 
-                React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
+                React.createElement("div", { className: "flex items-center gap-2 flex-1 max-w-[200px] bg-white/10 rounded-lg px-3 py-1.5", style: { border: '1px solid rgba(255,255,255,0.08)' } },
 
-                  React.createElement("span", { className: "text-[11px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
+                  React.createElement("span", { className: "text-[11px] text-white/50 font-bold whitespace-nowrap" }, "\u23F1"),
 
-                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': 'Simulation speed', onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '12px' } }),
+                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': 'Simulation speed', onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '14px' } }),
 
-                  React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold min-w-[28px] text-right" }, simSpeed.toFixed(1) + "x")
+                  React.createElement("span", { className: "text-[11px] text-indigo-300 font-bold min-w-[32px] text-right", style: { fontFamily: 'monospace' } }, simSpeed.toFixed(1) + "x")
 
                 ),
 
@@ -4165,11 +4166,12 @@ const d = labToolData.solarSystem;
 
                   onClick: () => { upd('selectedPlanet', null); stopPlanetAmbience(); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white/10 text-white/70 hover:bg-white/20 transition-all",
+                  style: { border: '1px solid rgba(255,255,255,0.1)' }
 
-                }, "\uD83C\uDFE0 Reset View"),
+                }, "\uD83C\uDFE0 Reset"),
 
-                React.createElement("span", { className: "text-[11px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
+                React.createElement("span", { className: "text-[10px] text-white/30 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, "Drag \u2022 Scroll \u2022 Click")
 
               )
 
@@ -4177,7 +4179,7 @@ const d = labToolData.solarSystem;
 
             // Planet buttons row
 
-            !d.orreryMode && React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
+            !d.orreryMode && React.createElement("div", { className: "flex gap-1.5 mt-2 flex-wrap justify-center", style: { padding: '4px 8px', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(241,245,249,0.8)', borderRadius: '12px' } },
 
               PLANETS.map(p => React.createElement("button", { "aria-label": "Select planet: " + p.name,
 
@@ -4185,9 +4187,9 @@ const d = labToolData.solarSystem;
 
                 onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
 
-                className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
 
-                style: d.selectedPlanet === p.name ? { backgroundColor: p.color } : {}
+                style: d.selectedPlanet === p.name ? { background: 'linear-gradient(135deg, ' + p.color + ', ' + p.color + 'cc)', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}
 
               }, p.emoji + " " + p.name))
 
@@ -4293,9 +4295,9 @@ const d = labToolData.solarSystem;
                         }
                       },
 
-                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
+                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " +
 
-                        ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')
+                        ((d.viewTab || 'overview') === tab ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/25 ring-1 ring-indigo-400/30' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm'))
 
                     }, tabLabels[tab]);
 
@@ -4319,11 +4321,14 @@ const d = labToolData.solarSystem;
 
                   ].map(function (item) {
 
-                    return React.createElement("div", { key: item[1], className: "bg-white rounded-xl p-2.5 text-center border border-slate-200 hover:border-indigo-200 transition-colors" },
+                    return React.createElement("div", { key: item[1],
+                      className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-md hover:-translate-y-0.5 " + (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/40' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 hover:border-indigo-300'),
+                      style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' }
+                    },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0] + ' ' + item[1]),
 
-                      React.createElement("p", { className: "text-xs font-bold text-slate-800 mt-0.5" }, item[2])
+                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-slate-200' : 'text-slate-800') }, item[2])
 
                     );
 
@@ -4334,22 +4339,22 @@ const d = labToolData.solarSystem;
                 // Visual comparison bars — gravity and size relative to Earth
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
                   // Gravity bar
-                  React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
-                    React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase" }, "\u2696\uFE0F Gravity vs Earth"),
-                      React.createElement("span", { className: "text-[10px] font-bold text-indigo-600" }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
+                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                    React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
+                      React.createElement("span", { className: "text-[10px] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-600') }, "\u2696\uFE0F Gravity vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-500", style: { fontFamily: 'monospace' } }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
                     ),
-                    React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
                       React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg, #6366f1, #818cf8)' } })
                     )
                   ),
                   // Size bar
-                  React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
-                    React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase" }, "\uD83D\uDCCF Radius vs Earth"),
-                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
+                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                    React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
+                      React.createElement("span", { className: "text-[10px] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-600') }, "\uD83D\uDCCF Radius vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500", style: { fontFamily: 'monospace' } }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
-                    React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
                       React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg, #10b981, #34d399)' } })
                     )
                   )
@@ -12322,19 +12327,34 @@ const d = labToolData.solarSystem;
               ),
 
                             // === RESEARCH POINTS BAR ===
-              React.createElement("div", { className: "mt-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-200" },
-                React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                  React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "\u2B50 Research Points: " + researchPoints + " RP"),
-                  React.createElement("span", { className: "text-[10px] text-indigo-400" }, completedChallenges.length + "/" + CHALLENGES.length + " challenges")
+              React.createElement("div", {
+                className: "mt-4 rounded-xl p-4 border " + (isDark ? 'bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-indigo-700/50' : 'bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200'),
+                style: { boxShadow: isDark ? '0 2px 8px rgba(79,70,229,0.15)' : '0 2px 8px rgba(99,102,241,0.1)' }
+              },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { style: { fontSize: '18px' } }, "\u2B50"),
+                    React.createElement("span", { className: "text-sm font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, researchPoints + " RP")
+                  ),
+                  React.createElement("span", {
+                    className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? 'bg-indigo-800/60 text-indigo-300' : 'bg-indigo-100 text-indigo-600')
+                  }, completedChallenges.length + "/" + CHALLENGES.length + " challenges")
                 ),
-                React.createElement("div", { className: "w-full bg-indigo-100 rounded-full h-2" },
-                  React.createElement("div", { className: "bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all", style: { width: Math.min(100, (completedChallenges.length / CHALLENGES.length) * 100) + '%' } })
+                React.createElement("div", { className: "w-full rounded-full h-2.5 " + (isDark ? 'bg-indigo-900/50' : 'bg-indigo-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                  React.createElement("div", {
+                    className: "bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-500",
+                    style: { width: Math.min(100, (completedChallenges.length / CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(99,102,241,0.4)' }
+                  })
                 ),
                 // Challenge badges
-                React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" },
+                React.createElement("div", { className: "flex flex-wrap gap-2 mt-3" },
                   CHALLENGES.map(function(ch) {
                     var done = completedChallenges.indexOf(ch.id) !== -1;
-                    return React.createElement("div", { key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)', className: "text-center cursor-default " + (done ? '' : 'opacity-30 grayscale'), style: { fontSize: '16px' } }, ch.icon);
+                    return React.createElement("div", {
+                      key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                      className: "text-center cursor-default transition-all " + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
+                      style: { fontSize: '18px' }
+                    }, ch.icon);
                   })
                 )
               ),
