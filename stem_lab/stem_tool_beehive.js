@@ -219,6 +219,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var newDrones = Math.max(0, drones + (season < 2 ? Math.round(newBrood * 0.05) : 0) - dyingDrones);
           var newHoney = Math.max(0, honey + nectarCollected - honeyConsumed);
           var newPollen = Math.max(0, pollen + pollenCollected - pollenConsumed);
+          var newWax = wax;
+          var newForagingEff = foragingEfficiency;
+          var newQueenHealth = queenHealth;
 
           // Random events
           var newEvent = activeEvent;
@@ -232,10 +235,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (ev.effect.brood) newBroodCount = Math.max(0, newBroodCount + ev.effect.brood);
               if (ev.effect.honey) newHoney = Math.max(0, newHoney + ev.effect.honey);
               if (ev.effect.pollen) newPollen = Math.max(0, newPollen + ev.effect.pollen);
-              if (ev.effect.wax) newVarroa = Math.max(0, wax + (ev.effect.wax || 0)); // reusing var for simplicity
+              if (ev.effect.wax) newWax = Math.max(0, wax + (ev.effect.wax || 0));
               if (ev.effect.morale) newMorale = Math.max(0, Math.min(100, newMorale + ev.effect.morale));
-              if (ev.effect.foragingEfficiency) efficiency = Math.max(0, Math.min(100, foragingEfficiency + ev.effect.foragingEfficiency));
-              if (ev.effect.queenHealth) queenHealth = Math.max(0, Math.min(100, queenHealth + ev.effect.queenHealth));
+              if (ev.effect.foragingEfficiency) newForagingEff = Math.max(0, Math.min(100, newForagingEff + ev.effect.foragingEfficiency));
+              if (ev.effect.queenHealth) newQueenHealth = Math.max(0, Math.min(100, newQueenHealth + ev.effect.queenHealth));
             }
           }
 
@@ -249,16 +252,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             drones: Math.round(newDrones),
             honey: Math.round(newHoney * 10) / 10,
             pollen: Math.round(newPollen * 10) / 10,
+            wax: Math.round(newWax * 10) / 10,
             varroaLevel: Math.round(newVarroa),
             morale: Math.round(newMorale),
-            foragingEfficiency: Math.round(efficiency * 100),
-            queenHealth: Math.round(queenHealth),
+            foragingEfficiency: Math.round(newForagingEff),
+            queenHealth: Math.round(newQueenHealth),
             activeEvent: newEvent,
             score: score + Math.round(nectarCollected * 10),
             actionPoints: 3, // reset each day
             habitat: habitat,
             pesticideExposure: Math.round(newPesticide),
             totalHoney: totalHoney + Math.max(0, nectarCollected)
+          });
+        }
+
+        // ── Advance Multiple Days (pure-functional, reads from prev state) ──
+        function advanceDays(n) {
+          if (!colonySurvived) return;
+          setLabToolData(function(prev) {
+            var b = Object.assign({}, prev.beehive || {});
+            for (var step = 0; step < n; step++) {
+              var bDay = b.day || 0;
+              var bSeason = Math.floor((bDay % 120) / 30);
+              var bWorkers = typeof b.workers === 'number' ? b.workers : 10000;
+              var bBrood = typeof b.brood === 'number' ? b.brood : 3000;
+              var bDrones = typeof b.drones === 'number' ? b.drones : 500;
+              var bQH = typeof b.queenHealth === 'number' ? b.queenHealth : 100;
+              var bHoney = typeof b.honey === 'number' ? b.honey : 20;
+              var bPollen = typeof b.pollen === 'number' ? b.pollen : 15;
+              var bWax = typeof b.wax === 'number' ? b.wax : 5;
+              var bVarroa = typeof b.varroaLevel === 'number' ? b.varroaLevel : 5;
+              var bMorale = typeof b.morale === 'number' ? b.morale : 80;
+              var bFE = typeof b.foragingEfficiency === 'number' ? b.foragingEfficiency : 70;
+              var bHabitat = b.habitat || 50;
+              var bPestExp = b.pesticideExposure || 0;
+              if (bWorkers < 500 && bDay > 30) break; // colony dead
+
+              var sf = [
+                { broodRate: 1.2, forageMult: 0.8, consumeRate: 0.8 },
+                { broodRate: 1.5, forageMult: 1.3, consumeRate: 1.2 },
+                { broodRate: 0.5, forageMult: 0.6, consumeRate: 0.9 },
+                { broodRate: 0.0, forageMult: 0.0, consumeRate: 0.6 }
+              ][bSeason];
+              var eff = (bFE + gardenBonus) / 100;
+              var foragers = Math.round(bWorkers * 0.4);
+              var nectarIn = foragers * 0.0002 * sf.forageMult * eff;
+              var pollenIn = foragers * 0.00008 * sf.forageMult * eff;
+              var honeyOut = bWorkers * 0.00015 * sf.consumeRate;
+              var pollenOut = (bBrood * 0.0001 + bWorkers * 0.00003) * sf.consumeRate;
+              var newBrood = Math.round(bQH / 100 * 1500 * sf.broodRate);
+              var emerging = Math.round(bBrood * 0.05);
+              var dying = Math.round(bWorkers * 0.005 * (1 + bVarroa / 50));
+              var dyingD = bSeason === 2 ? Math.round(bDrones * 0.1) : Math.round(bDrones * 0.02);
+              var vGrow = bBrood > 0 ? 0.3 * (1 + bBrood / 10000) : -0.5;
+              var nv = Math.max(0, Math.min(100, bVarroa + vGrow));
+              if (bPestExp > 20) { dying += Math.round(bWorkers * bPestExp / 1000); nv = Math.min(100, nv + 0.2); }
+              if (bHabitat > 70) { nectarIn *= 1.2; pollenIn *= 1.2; }
+              else if (bHabitat < 30) { nectarIn *= 0.6; pollenIn *= 0.6; }
+              var md = 0;
+              if (bHoney > 30) md += 2; if (bHoney < 10) md -= 5;
+              if (bVarroa > 30) md -= 3; if (bQH > 80) md += 1;
+              if (gardenBonus > 15) md += 2; if (bHabitat > 60) md += 1;
+              if (bPestExp > 30) md -= 4;
+
+              // Random event (simplified for batch — no toast/XP side effects)
+              if (!b.activeEvent && bDay > 3 && Math.random() < 0.12) {
+                var ev = HIVE_EVENTS[Math.floor(Math.random() * HIVE_EVENTS.length)];
+                b.activeEvent = ev;
+                if (ev.effect) {
+                  if (ev.effect.varroaLevel) nv = Math.max(0, Math.min(100, nv + ev.effect.varroaLevel));
+                  if (ev.effect.workers) bWorkers += ev.effect.workers;
+                  if (ev.effect.brood) bBrood += ev.effect.brood;
+                  if (ev.effect.honey) bHoney += ev.effect.honey;
+                  if (ev.effect.pollen) bPollen += ev.effect.pollen;
+                  if (ev.effect.wax) bWax += ev.effect.wax;
+                  if (ev.effect.morale) md += ev.effect.morale;
+                  if (ev.effect.foragingEfficiency) bFE = Math.max(0, Math.min(100, bFE + ev.effect.foragingEfficiency));
+                  if (ev.effect.queenHealth) bQH = Math.max(0, Math.min(100, bQH + ev.effect.queenHealth));
+                }
+              }
+
+              b.day = bDay + 1;
+              b.workers = Math.max(0, Math.round(bWorkers + emerging - dying));
+              b.brood = Math.max(0, Math.round(bBrood + newBrood - emerging));
+              b.drones = Math.max(0, Math.round(bDrones + (bSeason < 2 ? Math.round(newBrood * 0.05) : 0) - dyingD));
+              b.honey = Math.round(Math.max(0, bHoney + nectarIn - honeyOut) * 10) / 10;
+              b.pollen = Math.round(Math.max(0, bPollen + pollenIn - pollenOut) * 10) / 10;
+              b.wax = Math.round(bWax * 10) / 10;
+              b.varroaLevel = Math.round(nv);
+              b.morale = Math.round(Math.max(0, Math.min(100, bMorale + md)));
+              b.foragingEfficiency = Math.round(bFE);
+              b.queenHealth = Math.round(bQH);
+              b.score = (b.score || 0) + Math.round(nectarIn * 10);
+              b.actionPoints = 3;
+              b.pesticideExposure = Math.max(0, Math.round(bPestExp - 0.3));
+              b.totalHoney = (b.totalHoney || 0) + Math.max(0, nectarIn);
+            }
+            return Object.assign({}, prev, { beehive: b });
           });
         }
 
@@ -286,7 +376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
         }
         function dismissEvent() {
-          updAll({ activeEvent: null });
+          updAll({ activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 });
           if (awardStemXP) awardStemXP('beehive', 5, 'Handled event');
         }
 
@@ -850,7 +940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText(seasonNames[season] + ' \u2022 Day ' + day, W - 12, 20);
               c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
               c.fillText('Year ' + year + ' \u2022 \uD83D\uDC1D ' + Math.round(safeWorkers).toLocaleString(), W - 12, 33);
-              c.fillText('\uD83C\uDF6F ' + Math.round(safeHoney) + 'lbs \u2022 \u2764\uFE0F ' + (morale || 0) + '% \u2022 \uD83E\uDDA0 ' + (varroaLevel || 0) + '%', W - 12, 46);
+              c.fillText('\uD83C\uDF6F ' + Math.round(safeHoney) + ' lbs \u2022 \u2764\uFE0F ' + (morale || 0) + '% \u2022 \uD83E\uDDA0 ' + (varroaLevel || 0) + '%', W - 12, 46);
               c.restore();
 
               // Garden bonus badge
@@ -1069,7 +1159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
               h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-sm transition-all hover:shadow-md' }, '\u23E9 Next Day'),
-              h('button', { onClick: function() { for(var i=0;i<5;i++) advanceDay(); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 bg-amber-100 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-200' }, '\u23ED +5')
+              h('button', { onClick: function() { advanceDays(5); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 bg-amber-100 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-200' }, '\u23ED +5')
             ),
             // Management actions
             h('div', { className: 'grid grid-cols-5 gap-1.5' },
