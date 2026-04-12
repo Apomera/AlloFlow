@@ -298,7 +298,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'What percentage of all traffic deaths in the US involve alcohol?', a: ['About 5%', 'About 15%', 'About 30%', 'About 50%'], correct: 2, exp: 'Approximately 30% of all US traffic fatalities involve a drunk driver. That is roughly 10,000 deaths per year. Every single one is preventable.' },
     { q: 'Regenerative braking in electric and hybrid vehicles:', a: ['Uses the brakes harder', 'Converts the car\'s kinetic energy back into battery charge when decelerating', 'Only works at high speed', 'Wears out brake pads faster'], correct: 1, exp: 'Regen braking runs the electric motor backwards as a generator, converting motion → electricity → battery charge. This is why hybrids get BETTER city MPG — every stop recaptures energy.' },
     { q: 'The safest position for your hands on the steering wheel is:', a: ['10 and 2 o\'clock', '9 and 3 o\'clock', '12 o\'clock with one hand', 'Bottom of the wheel'], correct: 1, exp: '9 and 3 is now recommended over 10 and 2. It gives better control, reduces fatigue, and keeps your arms below the airbag deployment zone. 10-and-2 can cause arm injuries from airbag.' },
-    { q: 'What is the first thing to check when you get into an unfamiliar vehicle?', a: ['The radio presets', 'Seat position, mirrors, and the location of all controls (lights, wipers, signals, hazards)', 'The GPS', 'The gas level'], correct: 1, exp: 'Before driving ANY unfamiliar vehicle: adjust seat, adjust all 3 mirrors, locate headlights, wipers, signals, hazards, and horn. Find the parking brake. Then check gas level and tire pressure.' }
+    { q: 'What is the first thing to check when you get into an unfamiliar vehicle?', a: ['The radio presets', 'Seat position, mirrors, and the location of all controls (lights, wipers, signals, hazards)', 'The GPS', 'The gas level'], correct: 1, exp: 'Before driving ANY unfamiliar vehicle: adjust seat, adjust all 3 mirrors, locate headlights, wipers, signals, hazards, and horn. Find the parking brake. Then check gas level and tire pressure.' },
+    // ── Emergency situations + road test prep ──
+    { q: 'Your brakes fail completely while driving. Your first action should be:', a: ['Turn off the engine immediately', 'Pump the brake pedal rapidly, downshift, and use the parking brake gradually', 'Steer into the nearest object to stop', 'Open the door and drag your foot'], correct: 1, exp: 'Pump brakes (may restore pressure). Downshift to use engine braking. Apply parking/emergency brake GRADUALLY (yanking it can lock rear wheels). Steer toward an uphill or open area. Horn + hazards.' },
+    { q: 'Your accelerator (gas pedal) gets stuck. What should you do?', a: ['Turn off the engine immediately', 'Shift to neutral, steer to safety, then turn off the engine', 'Slam the brakes as hard as possible', 'Open the door and jump out'], correct: 1, exp: 'Shift to NEUTRAL (engine revs but wheels disconnect). Steer to the shoulder. Apply brakes firmly. Once stopped, turn off the engine. In many modern cars, pressing and holding the start button for 3 seconds forces shutdown.' },
+    { q: 'Your hood suddenly flies up while driving, blocking your view. You should:', a: ['Slam on the brakes', 'Look through the gap at the bottom of the windshield or out the side window, slow down, and pull over', 'Swerve off the road immediately', 'Close your eyes and hope for the best'], correct: 1, exp: 'Do NOT panic brake. You can see through the gap between the dashboard and the hood, or look out the side window. Slow down gradually with flashers on and pull to the shoulder. This is why you always check that the hood is fully latched.' },
+    { q: 'Your car starts to sink in water (flood, off a bridge). The most important thing to do is:', a: ['Call 911 first', 'Unbuckle your seatbelt and open the window or door IMMEDIATELY before the car sinks', 'Wait for the car to fill with water to equalize pressure', 'Try to start the engine'], correct: 1, exp: 'You have 30-60 seconds. Unbuckle. Open the window (or break it with a window breaker tool). Get out BEFORE the car submerges. Electric windows may still work for ~1 minute. Do not try to open doors until water equalizes.' },
+    { q: 'During the Maine road test, the examiner will mark you down for:', a: ['Driving exactly the speed limit', 'Not checking mirrors before lane changes, rolling through stops, poor hand position', 'Asking for directions', 'Driving too slowly in a school zone'], correct: 1, exp: 'Common failures: rolling stops, not checking mirrors/blind spots, wide turns, poor lane position, not yielding to pedestrians, and not using turn signals. The test is about demonstrating HABITS, not just skills.' },
+    { q: 'On the road test, when the examiner says "Turn left at the next intersection," you should:', a: ['Turn left immediately', 'Check mirrors, signal, move to the left lane if needed, slow for the turn, check for oncoming traffic, then turn', 'Ask them to repeat the instruction', 'Speed up to make the turn quickly'], correct: 1, exp: 'The examiner is testing your PROCESS: signal → mirror → blind spot → lane position → speed adjustment → gap assessment → smooth turn. Each step matters more than the turn itself.' },
+    { q: 'You see a sign that says "WRONG WAY." You should:', a: ['Continue slowly — it might be outdated', 'STOP immediately, then carefully reverse or turn around without entering the road further', 'Ignore it if you don\'t see oncoming traffic', 'Speed up to get through quickly'], correct: 1, exp: 'WRONG WAY means you are driving against traffic on a one-way road or highway ramp. This is immediately life-threatening. Stop. Do NOT continue. Carefully reverse or turn around. Check for oncoming traffic.' },
+    { q: 'When parallel parking during the road test, your car must end up:', a: ['Roughly near the curb', 'Within 12 inches of the curb, parallel to it, and fully within the space', 'Touching the curb', 'Anywhere between the two cars'], correct: 1, exp: 'Maine road test standard: within 12 inches of curb, reasonably parallel, without hitting either boundary car. You get 3 attempts. Examiners also watch for proper signaling and mirror checks.' },
+    { q: 'What is the "2-second rule" for following distance based on?', a: ['Distance in feet', 'Time gap — pick a fixed point, count seconds after the car ahead passes it', 'Speed in mph', 'The length of two cars'], correct: 1, exp: 'The time-based rule auto-adjusts for speed. At 30 mph, 2 seconds = 88 ft. At 60 mph, 2 seconds = 176 ft. The distance doubles but the gap in seconds stays the same. That is why seconds are better than feet or car lengths.' },
+    { q: 'Drowsy driving is comparable in danger to:', a: ['Mild speeding', 'Drunk driving — reaction times and judgment are similarly impaired', 'Driving without glasses', 'Driving with one hand'], correct: 1, exp: 'Being awake 17+ hours impairs you as much as a 0.05% BAC. 24 hours awake ≈ 0.10% BAC (legally drunk). Drowsy driving causes ~100,000 crashes/year in the US. The only cure is sleep, not coffee.' },
+    { q: 'If your car has a manual transmission and you are stopped on a steep uphill, you should:', a: ['Use the parking brake while starting to prevent rolling backward', 'Rev the engine and release the clutch quickly', 'Roll backward and try again', 'Shift to neutral'], correct: 0, exp: 'Hill start technique: hold the parking brake while you find the clutch engagement point and apply gas. Release the parking brake as you feel the car pull forward. This prevents the dangerous roll-back.' },
+    { q: 'Right-of-way at a T-intersection (no signs or signals):', a: ['The car on the through road always goes first', 'The car on the stem road goes first', 'The larger vehicle goes first', 'Whoever arrives first'], correct: 0, exp: 'At a T-intersection without signs, the through road (top of the T) has the right-of-way. The car on the terminating road (stem) must yield. This is because they are essentially entering a new road.' },
+    { q: 'The purpose of rumble strips on the highway shoulder is to:', a: ['Mark the edge for snow plows', 'Alert drowsy or distracted drivers that they are leaving the travel lane', 'Slow down traffic', 'Guide cyclists'], correct: 1, exp: 'Rumble strips create noise and vibration when you drive over them. They are specifically designed to wake up drowsy drivers or alert distracted ones before they leave the road. They reduce run-off-road crashes by 15-70%.' },
+    { q: 'When driving near a large truck, where is the SAFEST position?', a: ['Directly behind the truck (drafting)', 'Far enough behind or ahead that you can see the truck driver\'s mirrors', 'Beside the truck in the left lane', 'As close as possible to save fuel'], correct: 1, exp: 'Rule: if you cannot see the truck driver\'s mirrors, they cannot see you. Stay out of all 4 no-zones. Pass quickly — do not cruise alongside. Never cut in front of a truck (they need 40% more stopping distance than a car).' },
+    { q: 'In Maine, the minimum age to obtain a full unrestricted license is:', a: ['16', '16 and 9 months', '17', '18'], correct: 1, exp: 'Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), full unrestricted at 16 years and 9 months (after 9 months with no violations). The 9-month intermediate period has passenger and curfew restrictions.' }
   ];
 
   console.log('[RoadReady] Loaded ' + PERMIT_BANK.length + ' permit questions');
@@ -4895,6 +4911,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'First Car Guide'),
               h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, 'What to look for, what to avoid')
             ),
+            h('button', { onClick: function() { upd('view', 'learningPath'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🎯'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Learning Path'),
+              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, 'Step-by-step guided progression')
+            ),
+            h('button', { onClick: function() { upd('view', 'roadTestRubric'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📋'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Road Test Rubric'),
+              h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, 'What the examiner actually grades')
+            ),
+            h('button', { onClick: function() { upd('view', 'emergencySituations'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🆘'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Emergency Situations'),
+              h('div', { style: { fontSize: '10px', color: '#fca5a5', marginTop: '2px' } }, 'Blowout, brake failure, hood flies up')
+            ),
             h('button', { onClick: function() { upd('view', 'forceDiagram'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📐'),
@@ -7043,6 +7077,151 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ' than on dry pavement. That is the difference between stopping safely and a collision. ',
             h('b', null, 'The physics is non-negotiable — the only variable you control is speed.')
           )
+        );
+      }
+
+      // ── LEARNING PATH (guided progression) ──
+      if (view === 'learningPath') {
+        var stages = [
+          { stage: 1, title: 'Classroom Basics', icon: '📚', modes: ['lessonSelect', 'signsView', 'stoppingLab'], desc: 'Learn the theory first: physics, signs, and stopping distance.', check: function() { return Object.keys(earnedBadges).length >= 1; } },
+          { stage: 2, title: 'Permit Prep', icon: '📝', modes: ['permitStart'], desc: 'Take the practice permit test until you score 80%+.', check: function() { return !!earnedBadges.permit_pass; } },
+          { stage: 3, title: 'First Drive', icon: '🚗', modes: ['scenarioSelect'], desc: 'Residential at 25 mph. Get comfortable with steering, braking, and signals.', check: function() { return !!scenariosDriven.residential; } },
+          { stage: 4, title: 'Maneuvers', icon: '🅿️', modes: ['parking', 'threePoint', 'backingDrill'], desc: 'Parallel parking, 3-point turn, and straight backing. Road test maneuvers.', check: function() { return !!earnedBadges.park_master || !!earnedBadges.three_point; } },
+          { stage: 5, title: 'All Conditions', icon: '🌧️', modes: ['scenarioSelect'], desc: 'Drive in rain, snow, fog, and night. Build confidence in every condition.', check: function() { return !!earnedBadges.all_weather; } },
+          { stage: 6, title: 'Highway Skills', icon: '🛣️', modes: ['scenarioSelect'], desc: 'Highway merge, lane changes, and maintaining following distance at speed.', check: function() { return !!scenariosDriven.highway; } },
+          { stage: 7, title: 'Hazard Awareness', icon: '⚡', modes: ['hazardTest'], desc: 'Test your hazard perception reaction time. Target: 8/10.', check: function() { return !!earnedBadges.hazard_ace; } },
+          { stage: 8, title: 'Emergency Response', icon: '🚨', modes: ['emergencyDrill', 'emergencySituations'], desc: 'Yield to emergency vehicles. Learn brake failure, blowout, and stuck accelerator responses.', check: function() { return !!earnedBadges.emergency_yield; } },
+          { stage: 9, title: 'Advanced Physics', icon: '📐', modes: ['forceDiagram', 'hypermilingLab', 'speedCompare'], desc: 'Understand the forces. See why speed kills. Optimize your MPG.', check: function() { return !!earnedBadges.hypermiler; } },
+          { stage: 10, title: 'Road Test Ready', icon: '🏆', modes: ['roadTestRubric', 'freeExploreSetup'], desc: 'Know the rubric. Free explore until every maneuver is automatic. Get your certificate.', check: function() { return !!earnedBadges.a_plus; } }
+        ];
+        var currentStage = 0;
+        for (var si = 0; si < stages.length; si++) { if (stages[si].check()) currentStage = si + 1; else break; }
+
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🎯'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Your Learning Path'),
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Stage ' + currentStage + ' of ' + stages.length + ' complete. Follow the path from classroom to road test.'),
+            h('div', { style: { height: '6px', background: '#1e293b', borderRadius: '3px', marginTop: '10px' } },
+              h('div', { style: { height: '100%', background: '#f59e0b', borderRadius: '3px', width: (currentStage / stages.length * 100) + '%', transition: 'width 0.3s' } })
+            )
+          ),
+          stages.map(function(st, idx) {
+            var done = st.check();
+            var isCurrent = idx === currentStage;
+            var locked = idx > currentStage;
+            return h('div', { key: idx, style: { background: done ? '#0f2a1a' : isCurrent ? '#1e293b' : '#0f172a', borderRadius: '10px', padding: '14px', border: '2px solid ' + (done ? '#4ade80' : isCurrent ? '#f59e0b' : '#1e293b'), marginBottom: '6px', opacity: locked ? 0.5 : 1 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+                h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '16px' : '14px', fontWeight: 900, color: done || isCurrent ? '#000' : '#64748b', flexShrink: 0 } }, done ? '✓' : st.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 800, color: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#94a3b8' } }, 'Stage ' + (idx + 1) + ': ' + st.title),
+                  h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '2px' } }, st.desc)
+                ),
+                isCurrent && !locked ? h('button', { onClick: function() { upd('view', st.modes[0]); },
+                  style: { padding: '6px 14px', borderRadius: '6px', border: 'none', background: '#f59e0b', color: '#78350f', fontSize: '11px', fontWeight: 800, cursor: 'pointer', flexShrink: 0 } }, 'Start →') : null
+              )
+            );
+          })
+        );
+      }
+
+      // ── ROAD TEST RUBRIC ──
+      if (view === 'roadTestRubric') {
+        var rubricItems = [
+          { category: 'Pre-Drive', items: [
+            { skill: 'Mirror adjustment', weight: '⭐', note: 'Rearview + both side mirrors before moving.' },
+            { skill: 'Seatbelt', weight: '⭐', note: 'Must be on before engine starts.' },
+            { skill: 'Parking brake release', weight: '⭐', note: 'Release before driving. Forgetting it = automatic fail in some states.' }
+          ]},
+          { category: 'Basic Control', items: [
+            { skill: 'Smooth acceleration', weight: '⭐⭐', note: 'No jackrabbit starts. Gradual, controlled.' },
+            { skill: 'Smooth braking', weight: '⭐⭐', note: 'Stop without lurching. Begin braking well before the stop line.' },
+            { skill: 'Steering control', weight: '⭐⭐', note: 'Hand-over-hand or push-pull. No palming, no single-hand steering at speed.' },
+            { skill: 'Speed control', weight: '⭐⭐⭐', note: 'Within 5 mph of the limit. Too fast = fail. Too slow (>10 under) = points off.' }
+          ]},
+          { category: 'Intersections', items: [
+            { skill: 'Full stop at stop signs', weight: '⭐⭐⭐', note: 'COMPLETE stop behind the line. Rolling stop = instant fail in many states.' },
+            { skill: 'Left-right-left scan', weight: '⭐⭐⭐', note: 'Visible head movement to check all directions. Examiner must SEE you look.' },
+            { skill: 'Right-of-way', weight: '⭐⭐', note: 'Yield correctly. Taking right-of-way when it isn\'t yours = critical error.' },
+            { skill: 'Traffic light compliance', weight: '⭐⭐⭐', note: 'Do not enter on yellow if you can stop safely. NEVER enter on red.' }
+          ]},
+          { category: 'Lane Skills', items: [
+            { skill: 'Lane position', weight: '⭐⭐', note: 'Center of your lane. Not riding the line or drifting.' },
+            { skill: 'Lane changes', weight: '⭐⭐⭐', note: 'Signal ��� mirror → blind spot check → smooth move. Each step must be visible.' },
+            { skill: 'Turn signals', weight: '⭐⭐', note: '100 feet before turning or changing lanes. Signal BEFORE braking.' }
+          ]},
+          { category: 'Turns', items: [
+            { skill: 'Proper lane for turning', weight: '⭐⭐', note: 'Right turns from right lane into right lane. Left turns from left lane.' },
+            { skill: 'Speed through turns', weight: '⭐⭐', note: 'Brake BEFORE the turn, not during. Smooth speed through the arc.' },
+            { skill: 'Checking for pedestrians', weight: '⭐⭐⭐', note: 'Always look for pedestrians in crosswalks when turning. Yield.' }
+          ]},
+          { category: 'Parking', items: [
+            { skill: 'Parallel parking', weight: '⭐⭐', note: 'Within 12 inches of curb. 3 attempts allowed. Mirrors + signals + head checks.' },
+            { skill: 'Hill parking', weight: '⭐', note: 'Wheels turned correctly: uphill=away from curb, downhill=toward curb.' }
+          ]},
+          { category: 'Automatic Failures', items: [
+            { skill: 'Causing a crash', weight: '❌', note: 'Any collision = immediate fail.' },
+            { skill: 'Disobeying a traffic signal', weight: '❌', note: 'Running a red light or stop sign.' },
+            { skill: 'Dangerous action', weight: '❌', note: 'Anything the examiner considers unsafe enough to grab the wheel or brake.' },
+            { skill: 'Examiner intervention', weight: '❌', note: 'If the examiner has to verbally correct you to prevent danger = fail.' }
+          ]}
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '📋'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Maine Road Test Rubric'),
+            h('div', { style: { fontSize: '11px', color: '#99f6e4' } }, 'What the examiner ACTUALLY grades. ⭐ = checked, ⭐⭐ = weighted, ⭐⭐⭐ = critical, ❌ = auto-fail.')
+          ),
+          rubricItems.map(function(cat) {
+            return h('div', { key: cat.category, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '8px' } },
+              h('div', { style: { fontSize: '13px', fontWeight: 800, color: '#14b8a6', marginBottom: '8px' } }, cat.category),
+              cat.items.map(function(item, ii) {
+                return h('div', { key: ii, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingLeft: '8px', borderLeft: '2px solid ' + (item.weight === '❌' ? '#ef4444' : '#334155'), marginBottom: '6px' } },
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: item.weight === '❌' ? '#ef4444' : '#fff' } }, item.skill),
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' } }, item.note)
+                  ),
+                  h('div', { style: { fontSize: '12px', flexShrink: 0, marginLeft: '8px' } }, item.weight)
+                );
+              })
+            );
+          })
+        );
+      }
+
+      // ── EMERGENCY SITUATIONS GUIDE ──
+      if (view === 'emergencySituations') {
+        var emergencies = [
+          { title: 'Tire Blowout', icon: '💥', response: ['Grip the steering wheel firmly with both hands.', 'Do NOT slam the brakes (this causes loss of control).', 'Ease off the gas pedal gradually.', 'Steer straight — the car will pull toward the blown tire.', 'Let the car slow naturally, then gently brake.', 'Pull to the shoulder with hazards on.'], physics: 'A blowout instantly deflates one tire, creating asymmetric drag that pulls the car to that side. Hard braking shifts weight forward, unloading the rear = spin.' },
+          { title: 'Brake Failure', icon: '🛑', response: ['Pump the brake pedal rapidly (may restore hydraulic pressure).', 'Downshift through the gears (engine braking).', 'Apply the parking/emergency brake GRADUALLY.', 'If on a hill, steer toward an uphill slope or runaway truck ramp.', 'As a last resort, sideswipe a guardrail to slow down.', 'NEVER turn off the engine while moving (lose power steering).'], physics: 'Brake failure is usually hydraulic (fluid leak). Pumping may rebuild enough pressure for one stop. Engine braking uses compression resistance — lower gears = more braking force.' },
+          { title: 'Stuck Accelerator', icon: '⚡', response: ['Shift to NEUTRAL immediately (engine revs but wheels disengage).', 'Steer to the shoulder or a safe area.', 'Apply brakes firmly — they ARE stronger than the engine.', 'Once stopped, turn off the engine.', 'Modern cars: press and HOLD the start button for 3+ seconds to force shutdown.', 'If you have a floor mat, check if it is jamming the pedal.'], physics: 'In neutral, the engine is disconnected from the wheels via the transmission. Brakes can overpower even a stuck-open throttle — do not be afraid to brake hard.' },
+          { title: 'Hood Flies Up', icon: '🚗', response: ['Do NOT panic-brake.', 'Look through the gap between the dashboard and hood bottom.', 'Or look out the driver-side window for lane position.', 'Slow down gradually with hazards on.', 'Pull to the shoulder when safe.', 'Hood latch failure is preventable: always push down to confirm latch after closing.'], physics: 'The hood catches wind at speed and pivots upward. Your windshield may crack from the impact. Panic braking at highway speed without vision = far more dangerous than the hood itself.' },
+          { title: 'Submerging Vehicle', icon: '🌊', response: ['You have 30-60 seconds. Act IMMEDIATELY.', 'Unbuckle your seatbelt FIRST.', 'Open the window (electric windows work for ~1 minute).', 'If the window won\'t open, use a window breaker tool on the CORNER of the glass.', 'Climb out through the window. Push children out first.', 'Do NOT try to open the door until water fills the car and equalizes pressure.', 'Swim to the surface and away from the sinking car.'], physics: 'Water pressure makes doors impossible to open (up to 600 lbs/sqft of force differential). Once the car fills and pressure equalizes, the door opens easily — but you may be disoriented and running out of air.' },
+          { title: 'Engine Fire', icon: '🔥', response: ['Pull over immediately and turn off the engine.', 'Get all occupants out and move 100+ feet away.', 'Call 911.', 'Do NOT open the hood (oxygen feeds the fire).', 'If you have a fire extinguisher, aim at the base of visible flames through the grille.', 'If the fire is large or spreading to the cabin, retreat and wait for fire department.'], physics: 'Engine fires are usually fuel or electrical. Opening the hood supplies oxygen and can cause a flashover. The gas tank is at the rear but fuel lines run the length of the car.' }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🆘'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Emergency Situations'),
+            h('div', { style: { fontSize: '11px', color: '#fca5a5' } }, 'When things go wrong. Memorize these BEFORE you need them — there is no time to think in a real emergency.')
+          ),
+          emergencies.map(function(em) {
+            return h('div', { key: em.title, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
+                h('span', { style: { fontSize: '28px' } }, em.icon),
+                h('span', { style: { fontSize: '14px', fontWeight: 800 } }, em.title)
+              ),
+              em.response.map(function(step, si) {
+                return h('div', { key: si, style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5', paddingLeft: '10px', borderLeft: '2px solid #ef4444', marginBottom: '4px' } }, (si + 1) + '. ' + step);
+              }),
+              h('div', { style: { marginTop: '8px', padding: '8px', background: '#020617', borderRadius: '6px', fontSize: '10px', color: '#94a3b8', lineHeight: '1.5' } },
+                h('b', { style: { color: '#818cf8' } }, '🔬 Physics: '), em.physics
+              )
+            );
+          })
         );
       }
 

@@ -937,6 +937,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               });
 
+              // ── Bees at entrance (entering/exiting animation) ──
+              var entrX = hiveX + hiveW * 0.5, entrY = hiveY + hiveH + 2;
+              for (var ei = 0; ei < Math.min(8, Math.floor(safeWorkers / 2000)); ei++) {
+                var ePhase = (t2 * 0.02 + ei * 1.3) % 6.28;
+                var eDist = Math.sin(ePhase) * 18;
+                var eDir = Math.cos(ePhase) > 0 ? 1 : -1;
+                var ex = entrX + eDist * eDir + Math.sin(t2 * 0.05 + ei) * 3;
+                var ey = entrY + 3 - Math.abs(Math.sin(ePhase)) * 8;
+                c.fillStyle = '#fbbf24'; c.globalAlpha = 0.7;
+                c.beginPath(); c.ellipse(ex, ey, 2, 1.3, eDir * 0.3, 0, 6.28); c.fill();
+                c.fillStyle = '#292524'; c.fillRect(ex - 0.5, ey - 1, 1, 2);
+                c.globalAlpha = 1;
+              }
+
+              // ── Hive ambient glow (warm golden aura) ──
+              c.save();
+              var hGlow = c.createRadialGradient(hiveX + hiveW / 2, hiveY + hiveH / 2, hiveW * 0.3, hiveX + hiveW / 2, hiveY + hiveH / 2, hiveW * 0.9);
+              hGlow.addColorStop(0, 'rgba(251,191,36,0.06)');
+              hGlow.addColorStop(1, 'rgba(251,191,36,0)');
+              c.fillStyle = hGlow;
+              c.beginPath(); c.arc(hiveX + hiveW / 2, hiveY + hiveH / 2, hiveW * 0.9, 0, 6.28); c.fill();
+              c.restore();
+
+              // ── Vignette overlay (soft dark edges) ──
+              var vig = c.createRadialGradient(W / 2, H / 2, W * 0.3, W / 2, H / 2, W * 0.7);
+              vig.addColorStop(0, 'rgba(0,0,0,0)');
+              vig.addColorStop(1, 'rgba(0,0,0,0.15)');
+              c.fillStyle = vig; c.fillRect(0, 0, W, H);
+
               // ── HUD overlay (glass morphism style) ──
               c.save();
               c.fillStyle = 'rgba(15,23,42,0.6)';
