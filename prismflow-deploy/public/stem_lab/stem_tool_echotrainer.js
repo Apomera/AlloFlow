@@ -113,6 +113,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   ];
 
   // ══════════════════════════════════════════════════════════
+  // SOUND LANDMARKS — persistent positional audio anchors
+  // ══════════════════════════════════════════════════════════
+  var LANDMARKS = {
+    school: [
+      { x: 650, y: 400, name: 'Clock', freq: 800, type: 'tick', interval: 1.0, gain: 0.015 },
+      { x: 350, y: 435, name: 'Vending Machine', freq: 100, type: 'hum', gain: 0.008 }
+    ],
+    grocery: [
+      { x: 350, y: 720, name: 'Checkout Scanner', freq: 1200, type: 'beep', interval: 3.0, gain: 0.012 },
+      { x: 620, y: 110, name: 'Freezer Compressor', freq: 65, type: 'hum', gain: 0.01 }
+    ],
+    park: [
+      { x: 400, y: 400, name: 'Fountain', freq: 400, type: 'hum', gain: 0.008 },
+      { x: 590, y: 560, name: 'Playground Squeaking', freq: 1600, type: 'tick', interval: 0.5, gain: 0.006 }
+    ],
+    urban: [
+      { x: 400, y: 380, name: 'Traffic Signal', freq: 1000, type: 'beep', interval: 1.5, gain: 0.01 },
+      { x: 700, y: 400, name: 'Crosswalk Chirp', freq: 2400, type: 'tick', interval: 0.8, gain: 0.008 }
+    ],
+    cave: [
+      { x: 400, y: 300, name: 'Underground Stream', freq: 250, type: 'hum', gain: 0.012 }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // WAYPOINT ROUTES — multi-goal navigation challenges
+  // ══════════════════════════════════════════════════════════
+  var WAYPOINT_ROUTES = {
+    school: {
+      name: 'Classroom to Office',
+      points: [
+        { x: 150, y: 550, label: 'Start: Classroom' },
+        { x: 400, y: 400, label: 'Hallway Junction' },
+        { x: 650, y: 400, label: 'Water Fountain' },
+        { x: 500, y: 580, label: 'Main Office' }
+      ]
+    },
+    grocery: {
+      name: 'Shopping Trip',
+      points: [
+        { x: 150, y: 300, label: 'Start: Aisle 1' },
+        { x: 410, y: 450, label: 'Aisle 3 Intersection' },
+        { x: 620, y: 110, label: 'Freezer Section' },
+        { x: 350, y: 730, label: 'Checkout' }
+      ]
+    },
+    park: {
+      name: 'Park Tour',
+      points: [
+        { x: 200, y: 400, label: 'West Path' },
+        { x: 400, y: 400, label: 'Fountain' },
+        { x: 590, y: 590, label: 'Playground' },
+        { x: 400, y: 200, label: 'North Path' }
+      ]
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
   // ENVIRONMENT GENERATOR
   // ══════════════════════════════════════════════════════════
   function generateEnvironment(type, seed) {
@@ -555,7 +613,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       { id: 'blind_navigation', label: 'Find a goal in Audio Only mode', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'cross_urban', label: 'Survive Urban Street without a car hit', icon: '\uD83D\uDE97', check: function(d) { return !!d.urbanNoCarHit; }, progress: function(d) { return d.urbanNoCarHit ? 'Done!' : 'Not yet'; } },
       { id: 'bat_master_win', label: 'Find a goal on Bat Master difficulty', icon: '\uD83E\uDD87', check: function(d) { return !!d.batMasterWin; }, progress: function(d) { return d.batMasterWin ? 'Done!' : 'Not yet'; } },
-      { id: 'school_nav', label: 'Navigate to the office in School Hallway', icon: '\uD83C\uDFEB', check: function(d) { return !!d.schoolWin; }, progress: function(d) { return d.schoolWin ? 'Done!' : 'Not yet'; } }
+      { id: 'school_nav', label: 'Navigate to the office in School Hallway', icon: '\uD83C\uDFEB', check: function(d) { return !!d.schoolWin; }, progress: function(d) { return d.schoolWin ? 'Done!' : 'Not yet'; } },
+      { id: 'waypoint_complete', label: 'Complete a waypoint route', icon: '\uD83D\uDEA9', check: function(d) { return !!d.waypointComplete; }, progress: function(d) { return d.waypointComplete ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
       var React = ctx.React; var h = React.createElement; var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef; var useCallback = React.useCallback;
@@ -576,6 +635,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var clickType = d.clickType || 'tongue';
       var tutStep = d.tutStep || 0;
       var distChallenge = d.distChallenge || null;
+      var matQuiz = d.matQuiz || null;
+      var waypointMode = d.waypointMode || false;
+      var waypointIdx = d.waypointIdx || 0;
 
       var diffId = d.difficulty || 'normal';
       var diff = DIFFICULTY[1];
@@ -603,6 +665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var ambientSoundsRef = useRef([]);
       var runStartRef = useRef(Date.now());
       var footstepRef = useRef({ lastStep: 0, stepInterval: 0.4 });
+      var coverageRef = useRef(null);
 
       if (!mapRef.current || mapRef.current.seed !== seed || mapRef.current.type !== envType) {
         mapRef.current = generateEnvironment(envType, seed);
@@ -613,6 +676,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         carHitRef.current = false;
         goalFoundRef.current = !!d.goalFoundThisRun;
         runStartRef.current = Date.now();
+      }
+
+      // ── Initialize coverage grid ──
+      if (!coverageRef.current || (mapRef.current && mapRef.current.seed !== (coverageRef.current && coverageRef.current.seed))) {
+        var grid = [];
+        for (var ci = 0; ci < 40; ci++) { grid[ci] = []; for (var cj = 0; cj < 40; cj++) { grid[ci][cj] = 0; } }
+        coverageRef.current = { grid: grid, seed: seed };
       }
 
       function initAudio() {
@@ -649,6 +719,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var activeBuf = clickType === 'cane' ? audio.caneBuf : audio.clickBuf;
         if (has3D || viewMode === 'echo') {
           pulsesRef.current.push({ x: player.x, y: player.y, radius: 0, maxRadius: 500, birth: Date.now(), hits: [] });
+        }
+        // ── Coverage map update ──
+        if (coverageRef.current) {
+          var cGrid = coverageRef.current.grid;
+          var covCx = Math.floor(player.x / 20);
+          var covCy = Math.floor(player.y / 20);
+          for (var gx = Math.max(0, covCx - 5); gx <= Math.min(39, covCx + 5); gx++) {
+            for (var gy = Math.max(0, covCy - 5); gy <= Math.min(39, covCy + 5); gy++) {
+              var gDist = Math.sqrt((gx - covCx) * (gx - covCx) + (gy - covCy) * (gy - covCy));
+              if (gDist <= 5) {
+                cGrid[gx][gy] = Math.min(1, cGrid[gx][gy] + 0.3);
+              }
+            }
+          }
         }
         var directSrc = ac.createBufferSource();
         directSrc.buffer = activeBuf;
@@ -784,6 +868,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         }
       }
 
+      // ── Material identification quiz ──
+      function startMaterialQuiz() {
+        var player = playerRef.current;
+        var map = mapRef.current;
+        if (!map) return;
+        var rdx = Math.cos(player.angle), rdy = Math.sin(player.angle);
+        var minDist = Infinity, hitMat = null;
+        for (var wi = 0; wi < map.walls.length; wi++) {
+          var w = map.walls[wi];
+          var dist = rayHit(player.x, player.y, rdx, rdy, w.x1, w.y1, w.x2, w.y2);
+          if (dist > 0 && dist < minDist) { minDist = dist; hitMat = w.mat; }
+        }
+        for (var oi = 0; oi < map.objects.length; oi++) {
+          var obj = map.objects[oi];
+          if (obj.isGoal) continue;
+          var odx = obj.x - player.x, ody = obj.y - player.y;
+          var proj = odx * rdx + ody * rdy;
+          if (proj > 0) {
+            var perp = Math.abs(odx * rdy - ody * rdx);
+            if (perp < obj.r) {
+              var hd = proj - Math.sqrt(Math.max(0, obj.r * obj.r - perp * perp));
+              if (hd > 0 && hd < minDist) { minDist = hd; hitMat = obj.mat; }
+            }
+          }
+        }
+        if (hitMat && minDist < 400) {
+          var allMats = ['concrete', 'rock', 'wood', 'metal', 'glass'];
+          var options = [hitMat];
+          while (options.length < 4) {
+            var pick = allMats[Math.floor(Math.random() * allMats.length)];
+            if (options.indexOf(pick) === -1) options.push(pick);
+          }
+          // Shuffle options
+          for (var si = options.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var temp = options[si]; options[si] = options[sj]; options[sj] = temp;
+          }
+          upd('matQuiz', { active: true, correctMat: hitMat, options: options, answer: null, result: null });
+          emitClick();
+          if (announceToSR) announceToSR('Material quiz! Listen to the echo ahead and identify the material.');
+        } else {
+          if (addToast) addToast('No surface detected ahead. Try facing a wall first.', 'info');
+        }
+      }
+
       // ══════════════════════════════════════════════════════════
       // 3D RENDER LOOP
       // ══════════════════════════════════════════════════════════
@@ -890,6 +1019,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               var fountainPan = ac.createPanner(); fountainPan.panningModel = 'HRTF'; fountainPan.distanceModel = 'inverse'; fountainPan.refDistance = 1; fountainPan.maxDistance = 40; fountainPan.rolloffFactor = 1.5;
               fountainOsc.connect(fountainFilter); fountainFilter.connect(fountainGain); fountainGain.connect(fountainPan); fountainPan.connect(ac.destination); fountainOsc.start();
               ambientNodes.push({ type: 'fountain', osc: fountainOsc, gain: fountainGain, filter: fountainFilter, panner: fountainPan, pos: { x: 400, y: 400 } });
+            }
+            // ── Sound Landmarks ──
+            var envLandmarks = LANDMARKS[envType];
+            if (envLandmarks) {
+              for (var lmi = 0; lmi < envLandmarks.length; lmi++) {
+                var lm = envLandmarks[lmi];
+                var lmOsc = ac.createOscillator();
+                lmOsc.type = 'sine';
+                lmOsc.frequency.value = lm.freq;
+                var lmGain = ac.createGain();
+                var lmPan = ac.createPanner();
+                lmPan.panningModel = 'HRTF';
+                lmPan.distanceModel = 'inverse';
+                lmPan.refDistance = 1;
+                lmPan.maxDistance = 50;
+                lmPan.rolloffFactor = 1.5;
+                if (lm.type === 'hum') {
+                  lmGain.gain.value = lm.gain;
+                } else {
+                  lmGain.gain.value = 0;
+                }
+                lmOsc.connect(lmGain);
+                lmGain.connect(lmPan);
+                lmPan.connect(ac.destination);
+                lmOsc.start();
+                var lmType = lm.type === 'hum' ? 'landmark_hum' : (lm.type === 'beep' ? 'landmark_beep' : 'landmark_tick');
+                ambientNodes.push({ type: lmType, osc: lmOsc, gain: lmGain, panner: lmPan, pos: { x: lm.x, y: lm.y }, interval: lm.interval || 1.0, baseGain: lm.gain, name: lm.name });
+              }
             }
           }
         } catch(e) {}
@@ -1006,6 +1163,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               var fRelX = (aNode.pos.x - player.x) * 0.01; var fRelZ = (aNode.pos.y - player.y) * 0.01;
               var fCosP = Math.cos(-player.angle), fSinP = Math.sin(-player.angle);
               aNode.panner.positionX.value = fRelX * fCosP - fRelZ * fSinP; aNode.panner.positionY.value = 0; aNode.panner.positionZ.value = fRelX * fSinP + fRelZ * fCosP;
+            } else if (aNode.type === 'landmark_tick' || aNode.type === 'landmark_beep') {
+              var lmCycle = ambientTime % aNode.interval;
+              aNode.gain.gain.value = (lmCycle < 0.04) ? aNode.baseGain : 0;
+              var lmRelX = (aNode.pos.x - player.x) * 0.01;
+              var lmRelZ = (aNode.pos.y - player.y) * 0.01;
+              var lmCosP = Math.cos(-player.angle), lmSinP = Math.sin(-player.angle);
+              aNode.panner.positionX.value = lmRelX * lmCosP - lmRelZ * lmSinP;
+              aNode.panner.positionY.value = 0;
+              aNode.panner.positionZ.value = lmRelX * lmSinP + lmRelZ * lmCosP;
+            } else if (aNode.type === 'landmark_hum') {
+              var lhRelX = (aNode.pos.x - player.x) * 0.01;
+              var lhRelZ = (aNode.pos.y - player.y) * 0.01;
+              var lhCosP = Math.cos(-player.angle), lhSinP = Math.sin(-player.angle);
+              aNode.panner.positionX.value = lhRelX * lhCosP - lhRelZ * lhSinP;
+              aNode.panner.positionY.value = 0;
+              aNode.panner.positionZ.value = lhRelX * lhSinP + lhRelZ * lhCosP;
             }
           }
           var activePulses = []; var nowMs = Date.now();
@@ -1072,7 +1245,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               }
             });
           }
-          if (goalCheckTimer % 15 === 0 && !goalFoundRef.current) {
+          // ── Waypoint navigation detection (3D) ──
+          if (waypointMode && WAYPOINT_ROUTES[envType] && !goalFoundRef.current) {
+            var route = WAYPOINT_ROUTES[envType];
+            var wpIdx = d.waypointIdx || 0;
+            if (wpIdx < route.points.length) {
+              var wp = route.points[wpIdx];
+              var wpDist = Math.sqrt((player.x - wp.x) * (player.x - wp.x) + (player.y - wp.y) * (player.y - wp.y));
+              if (wpDist < 150 && goalCheckTimer % 12 === 0) {
+                var wpInterval = Math.max(6, Math.floor(wpDist / 2));
+                if (goalCheckTimer % wpInterval === 0) {
+                  try { var wpAc = audioRef.current && audioRef.current.ctx; if (wpAc) { var wpo = wpAc.createOscillator(); var wpg = wpAc.createGain(); wpo.type = 'square'; wpo.frequency.value = 1200; wpg.gain.setValueAtTime(0.03, wpAc.currentTime); wpg.gain.exponentialRampToValueAtTime(0.001, wpAc.currentTime + 0.04); wpo.connect(wpg); wpg.connect(wpAc.destination); wpo.start(); wpo.stop(wpAc.currentTime + 0.04); } } catch(e) {}
+                }
+              }
+              if (wpDist < 25) {
+                var nextIdx = wpIdx + 1;
+                if (nextIdx >= route.points.length) {
+                  goalFoundRef.current = true;
+                  var wpXP = 15 + route.points.length * 8;
+                  var wpUpdateObj = { goalFoundThisRun: true, goalsFound: goalsFound + 1, waypointIdx: nextIdx, waypointComplete: true };
+                  updMulti(wpUpdateObj);
+                  if (addToast) addToast('\uD83C\uDFC1 Route complete! ' + route.name + ' \u2192 ' + wpXP + ' XP!', 'success');
+                  if (awardXP) awardXP('echoTrainer', Math.round(wpXP * diff.xpMult), 'Waypoint route: ' + route.name);
+                  if (announceToSR) announceToSR('Route complete! ' + route.name + '. ' + wpXP + ' XP earned.');
+                } else {
+                  upd('waypointIdx', nextIdx);
+                  if (addToast) addToast('\u2705 Waypoint ' + nextIdx + '/' + route.points.length + ': ' + route.points[nextIdx].label, 'info');
+                  if (announceToSR) announceToSR('Waypoint reached! Next: ' + route.points[nextIdx].label);
+                  if (awardXP) awardXP('echoTrainer', 8, 'Waypoint: ' + route.points[wpIdx].label);
+                }
+              }
+            }
+          }
+          if (goalCheckTimer % 15 === 0 && !goalFoundRef.current && !waypointMode) {
             map.objects.forEach(function(o) {
               if (!o.isGoal) return;
               var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
@@ -1168,6 +1373,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           if (showMap || isMinimap) {
             for (var dai = 0; dai < agents.length; dai++) { var da = agents[dai]; gfx.fillStyle = da.kind === 'car' ? '#ffc47c' : da.kind === 'bat' ? '#c4b5fd' : da.kind === 'deer' ? '#a3e635' : da.kind === 'bird' ? '#67e8f9' : da.kind === 'jogger' ? '#fb923c' : da.kind === 'cyclist' ? '#f472b6' : '#ff9c9c'; gfx.beginPath(); gfx.arc(da.x, da.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill(); }
+          }
+          // ── Coverage heatmap overlay on minimap ──
+          if (coverageRef.current && isMinimap) {
+            var cGrid2 = coverageRef.current.grid;
+            for (var hx = 0; hx < 40; hx++) {
+              for (var hy = 0; hy < 40; hy++) {
+                var cv = cGrid2[hx][hy];
+                if (cv > 0.05) {
+                  gfx.fillStyle = 'rgba(99,102,241,' + (cv * 0.25) + ')';
+                  gfx.fillRect(hx * 20, hy * 20, 20, 20);
+                }
+              }
+            }
           }
           if (!isMinimap) {
             if (!player._trail) player._trail = [];
@@ -1284,6 +1502,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var viewModeLabel = (d.viewMode || 'echo') === 'echo' ? '\uD83C\uDF0A Echo' : (d.viewMode || 'echo') === 'audio' ? '\uD83C\uDFA7 Audio' : '\uD83D\uDC41 Reveal';
       var viewModeColor = (d.viewMode || 'echo') === 'echo' ? '#3b82f6' : (d.viewMode || 'echo') === 'audio' ? '#7c3aed' : '#ef4444';
 
+      // ── Coverage percentage calculation ──
+      var coveredCells = 0, totalCells = 0;
+      if (coverageRef.current) {
+        var cg = coverageRef.current.grid;
+        for (var cx2 = 0; cx2 < 40; cx2++) { for (var cy2 = 0; cy2 < 40; cy2++) { totalCells++; if (cg[cx2][cy2] > 0.2) coveredCells++; } }
+      }
+      var coveragePct = totalCells > 0 ? Math.round(coveredCells / totalCells * 100) : 0;
+
+      // ── Material quiz hint map ──
+      var matHints = { concrete: 'Bright echo', rock: 'Dull, heavy', wood: 'Muffled, warm', metal: 'Sharp ring', glass: 'Faint, high' };
+
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' } },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
           h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: { background: isDark ? '#1e293b' : '#f1f5f9', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), borderRadius: '8px', padding: '6px 12px', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', ' STEM Lab'),
@@ -1361,7 +1590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               'aria-label': unlocked ? (env.name + ': ' + env.desc + (is3D ? ' (3D available)' : '')) : (env.name + ' (Locked: ' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || '') + ')'),
               'aria-pressed': active ? 'true' : 'false',
               title: unlocked ? env.desc : 'Locked: ' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || ''),
-              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0 }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; runStartRef.current = Date.now(); if (announceToSR) announceToSR('Environment: ' + env.name + '. ' + env.desc + (is3D ? ' 3D mode.' : ' 2D mode.') + ' Press Space to click.'); }; }() : undefined,
+              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR('Environment: ' + env.name + '. ' + env.desc + (is3D ? ' 3D mode.' : ' 2D mode.') + ' Press Space to click.'); }; }() : undefined,
               style: {
                 padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700,
                 cursor: unlocked ? 'pointer' : 'not-allowed',
@@ -1383,9 +1612,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             'aria-label': 'Start a distance estimation challenge',
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: '#7c3aed', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, '\uD83D\uDCCF Distance Quiz'),
-          h('button', { onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0 }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; runStartRef.current = Date.now(); if (announceToSR) announceToSR('New ' + envType + ' environment generated.'); }, 'aria-label': 'Generate new random layout', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\uD83C\uDFB2 New Layout'),
+          h('button', {
+            onClick: startMaterialQuiz,
+            'aria-label': 'Start a material identification quiz',
+            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: '#f59e0b', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, '\uD83E\uDDCA Material Quiz'),
+          WAYPOINT_ROUTES[envType] ? h('button', {
+            onClick: function() {
+              var newMode = !waypointMode;
+              updMulti({ waypointMode: newMode, waypointIdx: 0, goalFoundThisRun: false });
+              goalFoundRef.current = false;
+              if (announceToSR) announceToSR(newMode ? 'Waypoint challenge ON! Navigate to: ' + WAYPOINT_ROUTES[envType].points[0].label : 'Waypoint challenge OFF. Find the single goal.');
+            },
+            'aria-label': waypointMode ? 'Disable waypoint challenge' : 'Enable waypoint navigation challenge',
+            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (waypointMode ? '#22c55e' : (isDark ? '#334155' : '#e2e8f0')), background: waypointMode ? '#166534' : (isDark ? '#1e293b' : '#fff'), color: waypointMode ? '#86efac' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, waypointMode ? '\uD83D\uDEA9 Waypoint ON (' + (d.waypointIdx || 0) + '/' + WAYPOINT_ROUTES[envType].points.length + ')' : '\uD83D\uDEA9 Waypoint Challenge') : null,
+          h('button', { onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR('New ' + envType + ' environment generated.'); }, 'aria-label': 'Generate new random layout', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\uD83C\uDFB2 New Layout'),
           d.goalFoundThisRun && h('span', { style: { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + ((d.viewMode || 'echo') === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
         ),
+        // ── Waypoint HUD info ──
+        (waypointMode && WAYPOINT_ROUTES[envType]) ? h('div', {
+          'aria-live': 'polite',
+          style: { padding: '8px 14px', borderRadius: '8px', background: isDark ? '#052e16' : '#f0fdf4', border: '1px solid #22c55e', fontSize: '12px', color: isDark ? '#86efac' : '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }
+        },
+          '\uD83D\uDEA9 ' + WAYPOINT_ROUTES[envType].name + ' \u2014 Waypoint ' + Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length) + '/' + WAYPOINT_ROUTES[envType].points.length + ': ' + ((d.waypointIdx || 0) < WAYPOINT_ROUTES[envType].points.length ? WAYPOINT_ROUTES[envType].points[d.waypointIdx || 0].label : 'Complete!')
+        ) : null,
         h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
           h('span', { style: { fontSize: '11px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569' } }, 'Difficulty:'),
           DIFFICULTY.map(function(dLvl) {
@@ -1394,7 +1645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           })
         ),
         h('details', { style: { fontSize: '11px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
-          h('summary', { style: { padding: '8px 12px', cursor: 'pointer', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc' } }, '\uD83D\uDCCA Performance Stats (' + (d.runHistory || []).length + ' runs)'),
+          h('summary', { style: { padding: '8px 12px', cursor: 'pointer', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc' } }, '\uD83D\uDCCA Performance Stats (' + (d.runHistory || []).length + ' runs) | ' + coveragePct + '% mapped | Mat Quiz: ' + (d.matQuizCorrect || 0) + '/' + (d.matQuizTotal || 0)),
           h('div', { style: { padding: '10px', background: isDark ? '#0f172a' : '#fff' } },
             (d.runHistory && d.runHistory.length > 0) ?
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' } },
@@ -1470,11 +1721,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#6366f1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
           }, 'Dismiss')
         ) : null,
+        // ── Material Quiz UI ──
+        (matQuiz && matQuiz.active && !matQuiz.result) ? h('div', {
+          role: 'dialog', 'aria-label': 'Material identification quiz',
+          style: { padding: '14px', borderRadius: '12px', border: '2px solid #f59e0b', background: isDark ? '#1c1917' : '#fffbeb', marginBottom: '8px' }
+        },
+          h('div', { style: { fontWeight: 800, fontSize: '13px', color: '#f59e0b', marginBottom: '6px' } }, '\uD83E\uDDCA Material Quiz'),
+          h('p', { style: { fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 10px 0' } },
+            'Listen to the echo ahead. What material did you just hear?'),
+          h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+            (matQuiz.options || []).map(function(opt) {
+              var hint = matHints[opt] || '';
+              return h('button', {
+                key: opt,
+                onClick: function() {
+                  var correct = opt === matQuiz.correctMat;
+                  var newTotal = (d.matQuizTotal || 0) + 1;
+                  var newCorrect = (d.matQuizCorrect || 0) + (correct ? 1 : 0);
+                  var explanation = correct ? 'Correct! ' + opt + ' has a ' + (matHints[opt] || '') + ' sound signature.' : 'Not quite. The material was ' + matQuiz.correctMat + ' (' + (matHints[matQuiz.correctMat] || '') + '). You guessed ' + opt + '.';
+                  var resultObj = { active: true, correctMat: matQuiz.correctMat, options: matQuiz.options, answer: opt, result: explanation };
+                  updMulti({ matQuiz: resultObj, matQuizTotal: newTotal, matQuizCorrect: newCorrect });
+                  if (announceToSR) announceToSR(explanation);
+                  if (correct && awardXP) awardXP('echoTrainer', 5, 'Material quiz: identified ' + opt);
+                },
+                style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textAlign: 'center', minWidth: '100px' }
+              }, h('div', { style: { fontWeight: 800, fontSize: '13px' } }, opt.charAt(0).toUpperCase() + opt.slice(1)), h('div', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b', marginTop: '2px' } }, hint));
+            })
+          )
+        ) : null,
+        // Material Quiz result display
+        (matQuiz && matQuiz.result) ? h('div', {
+          style: { padding: '10px 14px', borderRadius: '8px', background: (matQuiz.answer === matQuiz.correctMat) ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2'), border: '1px solid ' + ((matQuiz.answer === matQuiz.correctMat) ? '#22c55e' : '#ef4444'), marginBottom: '8px', fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b' }
+        },
+          h('span', { style: { fontWeight: 800, color: (matQuiz.answer === matQuiz.correctMat) ? '#22c55e' : '#ef4444' } }, (matQuiz.answer === matQuiz.correctMat) ? '\u2705 ' : '\u274C '),
+          matQuiz.result,
+          ' ',
+          h('button', {
+            onClick: function() { upd('matQuiz', null); },
+            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#6366f1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+          }, 'Dismiss')
+        ) : null,
         has3D ? h('div', { style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
           h('div', { ref: mountRef, role: 'application', 'aria-label': 'Echo navigation 3D viewport. Click to lock mouse, then click to emit sonar. WASD to move, mouse to look, Q/E to strafe. Shift to sprint, C to crouch.', tabIndex: 0, style: { width: '100%', height: '100%', minHeight: '400px', outline: 'none', cursor: 'crosshair' } }),
           h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { position: 'absolute', bottom: '10px', right: '10px', width: '200px', height: '200px', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.4)', opacity: 0.9, pointerEvents: 'none', zIndex: 5 } }),
+          h('div', { style: { position: 'absolute', bottom: '14px', right: '194px', fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: '4px', zIndex: 10, pointerEvents: 'none' } }, coveragePct + '% mapped'),
           h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 0, padding: '6px 12px', background: 'rgba(0,0,0,0.5)', color: '#94a3b8', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, zIndex: 5, pointerEvents: 'none' } },
-            'Echo Navigator 3D  |  ' + viewModeLabel + '  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + (d.bumps || 0) + '  |  Goals: ' + goalsFound + '  |  ' + envType + '  |  ' + diff.icon + ' ' + diff.label + '  |  Time: ' + timeStr + '  |  ' + cpm + ' clicks/min' + (pointerLockedRef.current ? '' : '  |  Click to lock mouse')
+            'Echo Navigator 3D  |  ' + viewModeLabel + '  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + (d.bumps || 0) + '  |  Goals: ' + goalsFound + '  |  ' + envType + '  |  ' + diff.icon + ' ' + diff.label + '  |  Time: ' + timeStr + '  |  ' + cpm + ' clicks/min' + (waypointMode && WAYPOINT_ROUTES[envType] ? '  |  WP ' + Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length) + '/' + WAYPOINT_ROUTES[envType].points.length : '') + (pointerLockedRef.current ? '' : '  |  Click to lock mouse')
           ),
           h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '20px', zIndex: 5, pointerEvents: 'none' } },
             h('div', { style: { position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'rgba(163,190,252,0.4)', transform: 'translateY(-1px)' } }),

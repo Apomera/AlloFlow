@@ -3055,6 +3055,11 @@
                 color: 'sky', ready: true
               },
               {
+                id: 'roadReady', icon: '🚗', label: "RoadReady: Driver's Ed",
+                desc: "3D driving simulator + US permit test + fuel efficiency physics. 14 scenarios, 80 practice questions, real stopping-distance math. Maine state focus.",
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
                 desc: 'Navigate virtual spaces using only spatial audio echoes — real HRTF binaural sound. Wear headphones!',
                 color: 'indigo', ready: true
@@ -4124,6 +4129,7 @@
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
             flightSim: true,
+            roadReady: true,
             atcTower: true,
             musicSynth: true,
             beehive: true,
