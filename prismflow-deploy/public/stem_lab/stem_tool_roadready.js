@@ -1576,10 +1576,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 'l') upd('highBeams', !d.highBeams);
           // Gear shifting: F = drive, G = reverse, P = park (only when stopped or slow)
           if (e.key.toLowerCase() === 'f') {
-            if (carRef.current.speed < 2) gearRef.current = 'D';
+            if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D';
           }
           if (e.key.toLowerCase() === 'g') {
-            if (carRef.current.speed < 2) gearRef.current = 'R';
+            if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'R';
           }
           if (e.key.toLowerCase() === 'p') {
             if (carRef.current.speed < 1) gearRef.current = 'P';
@@ -1809,9 +1809,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; pausedRef.current = !pausedRef.current; }
             else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
             // D-pad gear shifting
-            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (carRef.current.speed < 2) gearRef.current = 'D'; }
+            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D'; }
             else if (!buttons[12] || !buttons[12].pressed) k._gpUp = false;
-            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (carRef.current.speed < 2) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
+            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
             else if (!buttons[13] || !buttons[13].pressed) k._gpDown = false;
             // Headlight toggle with shoulder buttons
             if (buttons[4] && buttons[4].pressed && !k._gpLB) { k._gpLB = true; upd('highBeams', false); }
@@ -1919,7 +1919,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var kbSteer = (steerRight - steerLeft) * 0.6;
           var steerTarget = Math.abs(gpSteer) > 0.1 ? gpSteer * 0.7 : kbSteer;
           // Speed-dependent steering sensitivity (heavy at speed, light at slow)
-          var steerRate = 5 + Math.min(8, Math.abs(car.speed) * 0.3);
+          // Steering response: responsive at low speed, more stable at high speed (inverted for safety)
+          var steerRate = 8 - Math.min(4, Math.abs(car.speed) * 0.1);
           car.steering += (steerTarget - car.steering) * dt * steerRate;
           // Forces
           var mu = frictionCoef(scn.weather);
@@ -1941,8 +1942,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
           // Extra brake clamping: if braking and speed is very low, snap to zero (prevents creeping)
-          if (brakeInput > 0.5 && Math.abs(car.speed) < 1.5) car.speed *= 0.85;
-          if (brakeInput > 0.5 && Math.abs(car.speed) < 0.3) car.speed = 0;
+          // Low-speed brake clamping (works for analog gamepad triggers too)
+          if (brakeInput > 0.2 && Math.abs(car.speed) < 1.5) car.speed *= 0.82;
+          if (brakeInput > 0.2 && Math.abs(car.speed) < 0.3) car.speed = 0;
           // Engine braking / coast deceleration (lift off gas = gradual slow)
           if (gear === 'D' && throttleInput === 0 && brakeInput === 0 && car.speed > 0.5) {
             car.speed *= (1 - dt * 0.3); // gentle coast deceleration
@@ -1955,6 +1957,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (gear === 'R' && car.speed > 0) car.speed = 0;
           // Max reverse speed ~15 mph
           if (gear === 'R' && car.speed < -15 * MPH_TO_MS) car.speed = -15 * MPH_TO_MS;
+          // Reverse auto-stop when throttle released and nearly stopped
+          if (gear === 'R' && Math.abs(car.speed) < 0.5 && throttleInput === 0 && brakeInput === 0) car.speed = 0;
           // Weight transfer (affects car pitch — visible in 3D)
           car._pitchTarget = accel * 0.003; // nose dips on brake, lifts on accel
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
@@ -1974,7 +1978,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var gripAvail = mu * 9.81;
           var lateralAvail = Math.max(0, Math.sqrt(Math.max(0, gripAvail * gripAvail - longitudinalUsed * longitudinalUsed)));
           var skid = lateralAccelNeeded > lateralAvail * 1.1;
-          if (skid && car.speed > 4) {
+          // Grace period: no skid penalties in first 3 seconds
+          if (skid && Math.abs(car.speed) > 4 && timeRef.current > 3) {
             skidRef.current.active = true;
             skidRef.current.intensity = Math.min(1, (lateralAccelNeeded - lateralAvail) / lateralAvail);
             statsRef.current.safetyScore -= dt * 8;
@@ -2048,9 +2053,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
           }
-          // Speed violation
+          // Speed violation — only in Drive, with 5-second grace period, +8 mph threshold
           var speedMph = Math.abs(car.speed) * MS_TO_MPH;
-          if (speedMph > scn.speedLimit + 5) {
+          if (gear === 'D' && timeRef.current > 5 && speedMph > scn.speedLimit + 8) {
             statsRef.current.speedViolations += dt;
             statsRef.current.safetyScore -= dt * 2;
           }
@@ -2068,22 +2073,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Blinker timer (for visual blink)
           blinkerTimerRef.current += dt;
 
-          // Lane change detection — if steering crosses center, check signal
-          var centerX = Math.floor(MAP_SIZE / 2);
-          var carLane = car.x < centerX ? 'left' : 'right';
-          if (!laneChangeRef.current.lastLane) laneChangeRef.current.lastLane = carLane;
-          if (carLane !== laneChangeRef.current.lastLane) {
-            var dir = carLane === 'right' ? 1 : -1;
-            if (blinkerRef.current !== dir) {
-              statsRef.current.safetyScore -= 5;
-              if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
-              statsRef.current.unsignaledLaneChanges++;
-              addToast('⚠️ Lane change without signal! -5');
-            } else {
-              addToast('✓ Signaled lane change');
+          // Lane change detection — hysteresis-based to prevent false positives on curves
+          // Only trigger if car moves 2+ world units from its last stable lane position
+          if (!laneChangeRef.current.stableX) laneChangeRef.current.stableX = car.x;
+          var laneShift = car.x - laneChangeRef.current.stableX;
+          if (Math.abs(laneShift) > 2.0 && Math.abs(car.speed) > 5 && timeRef.current > 5) {
+            // Genuine lane change detected
+            if (!laneChangeRef.current._cooldown || timeRef.current - laneChangeRef.current._cooldown > 5) {
+              var dir = laneShift > 0 ? 1 : -1;
+              if (blinkerRef.current !== dir) {
+                statsRef.current.safetyScore -= 5;
+                if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
+                statsRef.current.unsignaledLaneChanges++;
+                addToast('⚠️ Lane change without signal! -5');
+              } else {
+                addToast('✓ Signaled lane change');
+              }
+              laneChangeRef.current._cooldown = timeRef.current;
             }
-            laneChangeRef.current.lastLane = carLane;
+            laneChangeRef.current.stableX = car.x;
           }
+          // Slowly drift the stable position toward current (tolerates gradual curves)
+          laneChangeRef.current.stableX += (car.x - laneChangeRef.current.stableX) * dt * 0.3;
 
           // MPG history for sparkline (sample every 0.5s)
           if (car.speed > 1 && mpg < 999) {
@@ -2261,7 +2272,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           } catch (e) {}
           // Check if player pulled right and stopped
-          if (!em.checked && em.y < car.y + 3) {
+          // Wider detection window (6 units = ~60 feet) and timeout if it passes completely
+          if (!em.checked && em.y < car.y + 6) {
             em.checked = true;
             var centerX = Math.floor(MAP_SIZE / 2);
             var pulledRight = car.x > centerX + 1.5;
@@ -2498,14 +2510,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 eventToastRef.current = { msg: '✓ Good stop at the stop sign.', until: timeRef.current + 2 };
               }
               if (Math.hypot(car.x - s.x, car.y - s.y) > 6) s._stopped = false;
-              if (!s._violated && s._lastY != null) {
+              // Rolling stop detection: only if approaching the sign from ahead (within 2.5 units X) and moving
+              if (!s._lastY) s._lastY = car.y;
+              if (!s._violated) {
                 var crossedStop = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-                if (crossedStop && Math.abs(car.x - s.x) < 4 && car.speed > 4 && !s._stopped) {
+                // Narrower X check (2.5 units = ~25 feet) + speed check + approach direction
+                if (crossedStop && Math.abs(car.x - s.x) < 2.5 && Math.abs(car.speed) > 3 && !s._stopped) {
                   s._violated = true;
                   statsRef.current.safetyScore -= 20;
                   addToast('🚨 ROLLING STOP! -20 safety');
                 }
               }
+              // Reset violated flag when far enough away (for looping maps)
+              if (Math.hypot(car.x - s.x, car.y - s.y) > 10) s._violated = false;
               s._lastY = car.y;
             }
           });
@@ -2573,10 +2590,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
             if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
             // Physical collision: hit radius ~1.2 world units
-            if (dist < 1.2 && absSpeed > 1) {
-              if (!t._hitCooldown || timeRef.current - t._hitCooldown > 3) {
+            // Collision: require meaningful relative speed difference (not just being near a car going the same speed)
+            var relativeSpeed = Math.abs(car.speed - t.speed);
+            if (dist < 1.2 && relativeSpeed > 2 && absSpeed > 2) {
+              if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
-                var impactSpeed = Math.abs(car.speed - t.speed) * MS_TO_MPH;
+                var impactSpeed = relativeSpeed * MS_TO_MPH;
                 statsRef.current.crashes++;
                 if (impactSpeed > 30) {
                   statsRef.current.safetyScore -= 40;
@@ -2605,9 +2624,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (nearest && absSpeed > 5) {
             var safeFeet = safeFollowingFeet(absSpeed * MS_TO_MPH, currentScenario.weather);
             var actualFeet = nearestDist * 10;
-            if (actualFeet < safeFeet * 0.5) {
-              statsRef.current.closeFollows++;
+            // Only count cars in the same lane (within 1.5 units of car.x) and debounce
+            if (actualFeet < safeFeet * 0.5 && Math.abs(nearest.x - car.x) < 1.5) {
+              if (!nearest._closeFollowFlagged) {
+                nearest._closeFollowFlagged = true;
+                statsRef.current.closeFollows++;
+              }
               statsRef.current.safetyScore -= 0.1;
+            } else if (nearest._closeFollowFlagged && actualFeet > safeFeet * 0.7) {
+              nearest._closeFollowFlagged = false; // reset when distance is restored
             }
           }
           // ── Physical collision with pedestrians ──

@@ -298,7 +298,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = 18000;
+  const HTML_FIX_CHUNK = 10000; // reduced from 18000 — Gemini's ~8K output token limit truncates chunks >12K
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     const chunks = [];
@@ -363,6 +363,26 @@ var createDocPipeline = function(deps) {
         // Per-chunk integrity: output must not shrink by more than 5% text content
         if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
           fixed[ci] = out;
+        } else if (part.length > 5000) {
+          // Truncation likely (MAX_TOKENS) — auto-split this chunk and retry with halves
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} truncated (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — splitting in half and retrying`);
+          const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
+          const halfFixed = [];
+          for (let hi = 0; hi < halfChunks.length; hi++) {
+            try {
+              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${halfChunks[hi]}\n"""\n\nReturn ONLY the fixed fragment.`;
+              const halfOut = stripFence(await callGemini(halfPrompt, true));
+              if (halfOut && halfOut.length >= halfChunks[hi].length * 0.85 && textCharCount(halfOut) >= textCharCount(halfChunks[hi]) * 0.9) {
+                halfFixed.push(halfOut);
+              } else {
+                warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} also rejected — keeping original half`);
+                halfFixed.push(halfChunks[hi]);
+              }
+            } catch (he) {
+              halfFixed.push(halfChunks[hi]);
+            }
+          }
+          fixed[ci] = halfFixed.join('');
         } else {
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
           fixed[ci] = part;
