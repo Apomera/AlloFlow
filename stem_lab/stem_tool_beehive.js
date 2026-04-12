@@ -625,11 +625,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           var bees = _bees.current, flowers = _flowers.current;
           var hiveX = W * 0.10, hiveY = H * 0.20, hiveW = W * 0.30, hiveH = H * 0.56;
-          var safeHoney = typeof honey === 'number' && isFinite(honey) ? honey : 20;
-          var safeWorkers = typeof workers === 'number' && isFinite(workers) ? workers : 10000;
 
           function frame() {
             try {
+              // Read live state from ref (updated every React render)
+              var ls = _liveState.current || {};
+              var safeHoney = typeof ls.honey === 'number' && isFinite(ls.honey) ? ls.honey : 20;
+              var safeWorkers = typeof ls.workers === 'number' && isFinite(ls.workers) ? ls.workers : 10000;
+              season = typeof ls.season === 'number' ? ls.season : 0;
+              gardenPollinators = ls.gardenPollinators || 0;
+              gardenBonus = ls.gardenBonus || 0;
+              colonyHealth = typeof ls.colonyHealth === 'number' ? ls.colonyHealth : 50;
               var t2 = ++_tick.current;
               c.clearRect(0, 0, W, H);
 
@@ -867,7 +873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             _loopRunning.current = false;
             if (_animId.current) cancelAnimationFrame(_animId.current);
           };
-        });
+        }, []);
 
         // ── Render ──
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
