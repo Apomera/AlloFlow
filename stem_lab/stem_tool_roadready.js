@@ -1956,6 +1956,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (gear === 'R' && car.speed > 0) car.speed = 0;
           // Max reverse speed ~15 mph
           if (gear === 'R' && car.speed < -15 * MPH_TO_MS) car.speed = -15 * MPH_TO_MS;
+          // Reverse auto-stop when throttle released and nearly stopped
+          if (gear === 'R' && Math.abs(car.speed) < 0.5 && throttleInput === 0 && brakeInput === 0) car.speed = 0;
           // Weight transfer (affects car pitch — visible in 3D)
           car._pitchTarget = accel * 0.003; // nose dips on brake, lifts on accel
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
