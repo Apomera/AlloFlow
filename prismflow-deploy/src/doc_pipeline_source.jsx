@@ -5527,9 +5527,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let bestAiScore = verification ? verification.score : 0;
       let bestAxeViolations = axeResults ? axeResults.totalViolations : 0;
 
-      if (maxFixPasses > 0 && ((axeResults && axeResults.totalViolations > 0) || bestAiScore < 90)) {
+      const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
+      const _totalIssues = bestAxeViolations + _aiIssueCount;
+      const _targetScore = pdfTargetScore || 90;
+      if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
-          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${axeResults.totalViolations} issue${axeResults.totalViolations !== 1 ? 's' : ''} remaining)...`);
+          const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
+          const _passAiCount = verification && verification.issues ? verification.issues.length : 0;
+          const _passTotal = _passAxeCount + _passAiCount;
+          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passTotal} issue${_passTotal !== 1 ? 's' : ''} remaining — ${_passAxeCount} axe-core, ${_passAiCount} AI-flagged)${_passTotal === 0 ? ' \u2714 verifying...' : ''}...`);
 
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
@@ -5629,6 +5635,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           bestAxeViolations = newAxeViolations;
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
+
+          // If BOTH engines report 0 actionable issues, stop regardless of score
+          if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
+            break;
+          }
 
           // If BOTH engines are satisfied, stop
           const targetScore = pdfTargetScore || 90;
