@@ -278,7 +278,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'A "no zone" refers to:', a: ['A speed-limit-free area', 'The blind spots around large trucks', 'A no-passing zone', 'A school zone at night'], correct: 1, exp: 'Large trucks have huge blind spots called "no zones" — directly behind, directly in front, and along both sides. If you can\'t see the driver\'s mirrors, they can\'t see you.' },
     { q: 'You can be charged with DUI in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'DUI laws cover ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.' },
     { q: 'Cell phone use while driving in Maine is:', a: ['Always legal', 'Banned for handheld; hands-free is OK for adults', 'Banned only for teens', 'Banned only at school zones'], correct: 1, exp: 'Maine bans ALL handheld phone use. Hands-free is legal for adults but banned for drivers under 18 with intermediate licenses. Texting is fully banned for everyone.' },
-    { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move over one lane if safe, or slow down significantly', 'Stop completely'], correct: 2, exp: 'Maine\'s "Move Over" law requires drivers to change lanes if safe, or slow down. Roadside workers die every year from drivers passing too close.' }
+    { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move over one lane if safe, or slow down significantly', 'Stop completely'], correct: 2, exp: 'Maine\'s "Move Over" law requires drivers to change lanes if safe, or slow down. Roadside workers die every year from drivers passing too close.' },
+    // ── Accident aftermath + advanced ──
+    { q: 'You are involved in a minor fender bender with no injuries. Your first step should be:', a: ['Leave the scene', 'Move vehicles to a safe location out of traffic', 'Call 911 immediately', 'Exchange insurance only'], correct: 1, exp: 'Move vehicles to safety first (if drivable). Then exchange info, take photos, call police if required by state law. In Maine, file a report if damage > $1,000.' },
+    { q: 'After a crash, what information should you exchange with the other driver?', a: ['Just phone numbers', 'Name, insurance company, policy number, driver\'s license, license plate, phone', 'Nothing — let insurance handle it', 'Only if police are present'], correct: 1, exp: 'Always exchange: name, phone, insurance company + policy number, driver\'s license number, license plate, vehicle make/model. Take photos of everything.' },
+    { q: 'You hit a parked car and the owner is nowhere around. You should:', a: ['Leave — no one saw it', 'Leave a note with your name and contact info on the car', 'Only report it if the damage is severe', 'Move your car and pretend it didn\'t happen'], correct: 1, exp: 'Leaving without a note is a hit-and-run in all 50 states — a criminal offense. Leave your name, phone, and insurance info. Take a photo of both cars.' },
+    { q: 'What is the purpose of the vehicle\'s VIN (Vehicle Identification Number)?', a: ['It shows the fuel type', 'It uniquely identifies your specific vehicle for registration, insurance, and recall tracking', 'It measures engine power', 'It is the same as the license plate'], correct: 1, exp: 'The VIN is a 17-character code unique to every vehicle manufactured. It encodes the make, model, year, factory, and serial number. Found on the dashboard and door frame.' },
+    { q: 'Tailgating (following too closely) is dangerous because:', a: ['It saves fuel from drafting', 'It leaves no room for reaction if the car ahead stops suddenly', 'It makes the other driver go faster', 'It only matters on highways'], correct: 1, exp: 'Tailgating eliminates your reaction buffer. At 60 mph with a 1-second following distance, you need 132 ft to react + 180 ft to brake = 312 ft. A 1-second gap at 60 mph is only 88 ft.' },
+    { q: 'When driving through a deep puddle, what should you do after crossing it?', a: ['Speed up to dry the brakes', 'Gently tap the brakes a few times to dry them', 'Nothing — modern brakes are waterproof', 'Pull over and wait 10 minutes'], correct: 1, exp: 'Water on brake rotors reduces braking power. Lightly tapping brakes creates friction heat that evaporates the water. This restores full braking within seconds.' },
+    { q: 'Carbon monoxide from your car\'s exhaust is dangerous because:', a: ['It smells bad', 'It is odorless and can cause unconsciousness or death in enclosed spaces', 'It only affects diesel engines', 'It causes engine damage'], correct: 1, exp: 'CO is odorless, colorless, and deadly. Never idle in a closed garage. If stuck in snow, keep the exhaust pipe clear and crack a window. CO poisoning symptoms: headache, dizziness, nausea.' },
+    { q: 'The two-second rule should be increased to four or more seconds when:', a: ['Driving a small car', 'Road conditions are wet, icy, or visibility is poor', 'Driving during the day', 'Driving below the speed limit'], correct: 1, exp: 'Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.' },
+    { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it — cars always smell like gas', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up to blow the fumes out', 'Turn on the AC to recirculate air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.' },
+    { q: 'What does it mean when your steering wheel vibrates at highway speed?', a: ['Normal road vibration', 'Likely wheel balance issue, alignment problem, or tire damage — have it inspected', 'The engine is overheating', 'You need new brakes'], correct: 1, exp: 'Steering vibration typically means: unbalanced wheels (most common, cheap fix), worn tie rod ends, or tire damage. If vibration is only when braking, it\'s warped rotors.' },
+    { q: 'In Maine, what is the penalty for a first-offense DUI?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI (Operating Under Influence): minimum 96 hours jail (or 48 hrs community service), $500+ fine, 150-day license suspension. Second offense: mandatory 7 days jail.' },
+    { q: 'You are approaching a green light that has been green for a long time (stale green). You should:', a: ['Speed up to make it through', 'Cover the brake and be ready for it to change', 'Honk to warn cross traffic', 'Stop and wait for the next green'], correct: 1, exp: 'A "stale green" is likely to turn yellow soon. Cover your brake pedal (hover your foot over it) so you can react instantly. This reduces reaction time by ~0.5 seconds.' },
+    { q: 'The "Dutch reach" is a technique for:', a: ['Parallel parking', 'Opening your car door safely by reaching with the far hand to check for cyclists', 'Merging onto a highway', 'Adjusting mirrors'], correct: 1, exp: 'Open your door with the hand farthest from the door (right hand for driver side). This naturally turns your body to look over your shoulder, checking for cyclists. Prevents "dooring" — a leading cause of cyclist injury.' },
+    { q: 'Your car starts to hydroplane. The correct response is:', a: ['Brake hard', 'Turn the steering wheel sharply', 'Ease off the gas, do not brake or steer sharply, and let the tires regain contact', 'Accelerate to push through'], correct: 2, exp: 'Hydroplaning = tires riding on a film of water, not the road. Braking or sharp steering = loss of control. Ease off gas smoothly and wait for tires to contact pavement again.' },
+    { q: 'What is the "Smith System" of driving?', a: ['A car manufacturing technique', 'Five principles: aim high, keep eyes moving, get the big picture, leave yourself an out, make sure they see you', 'A parallel parking method', 'An insurance discount program'], correct: 1, exp: 'The Smith System is a professional defensive driving method: (1) Aim High — look 15 sec ahead, (2) Keep Eyes Moving — scan constantly, (3) Get the Big Picture — awareness of all surroundings, (4) Leave Yourself an Out — always have an escape route, (5) Make Sure They See You — use signals, lights, horn.' },
+    { q: 'What percentage of all traffic deaths in the US involve alcohol?', a: ['About 5%', 'About 15%', 'About 30%', 'About 50%'], correct: 2, exp: 'Approximately 30% of all US traffic fatalities involve a drunk driver. That is roughly 10,000 deaths per year. Every single one is preventable.' },
+    { q: 'Regenerative braking in electric and hybrid vehicles:', a: ['Uses the brakes harder', 'Converts the car\'s kinetic energy back into battery charge when decelerating', 'Only works at high speed', 'Wears out brake pads faster'], correct: 1, exp: 'Regen braking runs the electric motor backwards as a generator, converting motion → electricity → battery charge. This is why hybrids get BETTER city MPG — every stop recaptures energy.' },
+    { q: 'The safest position for your hands on the steering wheel is:', a: ['10 and 2 o\'clock', '9 and 3 o\'clock', '12 o\'clock with one hand', 'Bottom of the wheel'], correct: 1, exp: '9 and 3 is now recommended over 10 and 2. It gives better control, reduces fatigue, and keeps your arms below the airbag deployment zone. 10-and-2 can cause arm injuries from airbag.' },
+    { q: 'What is the first thing to check when you get into an unfamiliar vehicle?', a: ['The radio presets', 'Seat position, mirrors, and the location of all controls (lights, wipers, signals, hazards)', 'The GPS', 'The gas level'], correct: 1, exp: 'Before driving ANY unfamiliar vehicle: adjust seat, adjust all 3 mirrors, locate headlights, wipers, signals, hazards, and horn. Find the parking brake. Then check gas level and tire pressure.' }
   ];
 
   console.log('[RoadReady] Loaded ' + PERMIT_BANK.length + ' permit questions');
@@ -800,7 +820,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'moose_dodge', icon: '🫎', name: 'Moose Dodge', desc: 'Encounter a moose and NOT hit it.' },
     { id: 'five_scenarios', icon: '🗺️', name: 'Explorer', desc: 'Drive in 5 different scenarios.' },
     { id: 'emergency_yield', icon: '🚑', name: 'First Responder', desc: 'Correctly yield to an emergency vehicle (pull right + stop).' },
-    { id: 'ten_drives', icon: '🔟', name: 'Road Veteran', desc: 'Complete 10 drive sessions.' }
+    { id: 'ten_drives', icon: '🔟', name: 'Road Veteran', desc: 'Complete 10 drive sessions.' },
+    { id: 'hazard_ace', icon: '⚡', name: 'Hazard Ace', desc: 'Score 8/10 or better on the Hazard Perception Test.' },
+    { id: 'night_drive', icon: '🌙', name: 'After Dark', desc: 'Complete a night or dawn/dusk scenario.' },
+    { id: 'all_weather', icon: '🌦️', name: 'All-Weather Driver', desc: 'Drive in clear, rain, snow, and fog conditions.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1513,6 +1536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
       var earnedBadges = d.badges || {};
       var scenariosDriven = d.scenariosDriven || {};
+      var weathersDriven = d.weathersDriven || {};
 
       // ── Input handling ──
       useEffect(function() {
@@ -1683,6 +1707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (Math.round(s.maxSpeed * MS_TO_MPH) >= 80) newBadges.speed_demon = true;
         if (wildlifeRef.current === null && s.distance > 500 && ['rural','snow','fog','night'].indexOf(currentScenario.id) !== -1) newBadges.moose_dodge = true;
         if (s.emergencyYields > 0) newBadges.emergency_yield = true;
+        if (currentScenario.time === 'night' || currentScenario.id === 'dawn') newBadges.night_drive = true;
         // Track total drives for Road Veteran badge
         var totalDrives = (d.totalDrives || 0) + 1;
         upd('totalDrives', totalDrives);
@@ -1690,6 +1715,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var newScenarios = Object.assign({}, scenariosDriven);
         newScenarios[currentScenario.id] = true;
         if (Object.keys(newScenarios).length >= 5) newBadges.five_scenarios = true;
+        // Track weather types for all-weather achievement
+        var newWeathers = Object.assign({}, weathersDriven);
+        newWeathers[currentScenario.weather || 'clear'] = true;
+        if (newWeathers.clear && newWeathers.rain && newWeathers.snow && newWeathers.fog) newBadges.all_weather = true;
+        upd('weathersDriven', newWeathers);
         upd('badges', newBadges);
         upd('scenariosDriven', newScenarios);
       }, [currentScenario, currentVehicle]);
@@ -4758,7 +4788,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '🤖'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'AI Driving Coach'),
               h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, 'Gemini analyzes your last drive')
-            ) : null
+            ) : null,
+            h('button', { onClick: function() { upd('view', 'accidentProtocol'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📋'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'After a Crash'),
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, 'What to do — step by step')
+            ),
+            h('button', { onClick: function() { upd('view', 'roadTrip'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #34d399', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🗺️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Road Trip Planner'),
+              h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, 'Distance, fuel cost, stop planning')
+            ),
+            h('button', { onClick: function() { upd('view', 'forceDiagram'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📐'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Force Diagram'),
+              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, 'Live drag, friction, thrust vectors')
+            )
           ),
           // Maine facts strip
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '16px' } },
@@ -6425,6 +6473,233 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 style: { marginTop: '10px', padding: '8px 16px', borderRadius: '6px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
               }, '🔄 Re-analyze')
             ) : null
+          )
+        );
+      }
+
+      // ── ACCIDENT AFTERMATH PROTOCOL ──
+      if (view === 'accidentProtocol') {
+        var steps = [
+          { step: 1, title: 'STOP — Do Not Leave', icon: '🛑', desc: 'Maine law: you MUST stop at the scene of any crash you are involved in. Leaving = hit-and-run (criminal offense, even for minor damage).', action: 'Stop your vehicle. Turn on hazard lights.' },
+          { step: 2, title: 'Check for Injuries', icon: '🏥', desc: 'Check yourself, your passengers, and occupants of the other vehicle. Do NOT move an injured person unless there is immediate danger (fire, sinking vehicle).', action: 'If anyone is injured, call 911 immediately.' },
+          { step: 3, title: 'Move to Safety', icon: '⚠️', desc: 'If vehicles are drivable and blocking traffic, move them to the shoulder. If not drivable, stay in your vehicle with your seatbelt on until help arrives (especially on highways).', action: 'Turn on hazards. Set up flares/triangles if you have them.' },
+          { step: 4, title: 'Call 911 / Police', icon: '📞', desc: 'In Maine, call police if: anyone is injured, damage exceeds $1,000 (which is almost any crash), or a vehicle must be towed. A police report protects you legally.', action: 'Give location, number of vehicles, injuries, and whether vehicles are blocking traffic.' },
+          { step: 5, title: 'Exchange Information', icon: '📝', desc: 'Get from the other driver: full name, phone, address, driver\'s license number, license plate, insurance company, policy number. Give them the same.', action: 'Take photos of their license, insurance card, and license plate.' },
+          { step: 6, title: 'Document Everything', icon: '📸', desc: 'Take photos of: all vehicle damage (every angle), the crash scene, road conditions, traffic signals, skid marks, weather, and any injuries.', action: 'Take at least 20 photos. You cannot over-document.' },
+          { step: 7, title: 'Get Witnesses', icon: '👥', desc: 'If anyone saw the crash, get their name and phone number. Witness testimony can be critical if the other driver lies to insurance.', action: 'Ask: "Did you see what happened? May I get your contact info?"' },
+          { step: 8, title: 'Do NOT Admit Fault', icon: '🤐', desc: 'Say "Are you OK?" — not "I\'m sorry" or "It was my fault." Fault is determined by investigators, not at the scene. Anything you say can be used against you.', action: 'Be polite and cooperative but factual only.' },
+          { step: 9, title: 'Notify Your Insurance', icon: '📱', desc: 'Call your insurance company within 24 hours. Give them the facts, the police report number, and the other driver\'s info. They handle the rest.', action: 'Most insurers have 24/7 claims hotlines.' },
+          { step: 10, title: 'See a Doctor', icon: '🩺', desc: 'Some injuries (whiplash, concussion) do not show symptoms for 24-72 hours. Get checked even if you feel fine. Medical records link injuries to the crash for insurance.', action: 'Go within 24-48 hours. Tell them it is crash-related.' }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fb923c', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '📋'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'What To Do After a Crash'),
+            h('div', { style: { fontSize: '11px', color: '#fed7aa' } }, '10 steps. Memorize them BEFORE you need them.')
+          ),
+          steps.map(function(s) {
+            return h('div', { key: s.step, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '6px', display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+              h('div', { style: { flexShrink: 0, width: '40px', textAlign: 'center' } },
+                h('div', { style: { fontSize: '24px' } }, s.icon),
+                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, 'Step ' + s.step)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '3px' } }, s.title),
+                h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5', marginBottom: '4px' } }, s.desc),
+                h('div', { style: { fontSize: '10px', color: '#fb923c', paddingLeft: '8px', borderLeft: '2px solid #fb923c' } }, '→ ' + s.action)
+              )
+            );
+          })
+        );
+      }
+
+      // ── ROAD TRIP PLANNER ──
+      if (view === 'roadTrip') {
+        var tripDist = d.tripDist || 300;
+        var tripMPG = d.tripMPG || 32;
+        var tripGasPrice = d.tripGasPrice || 3.50;
+        var tripSpeed = d.tripSpeed || 65;
+        var gallonsNeeded = tripDist / tripMPG;
+        var fuelCost = gallonsNeeded * tripGasPrice;
+        var driveHours = tripDist / tripSpeed;
+        var driveMins = Math.round(driveHours * 60);
+        var stopsNeeded = Math.floor(driveHours / 2); // stop every 2 hours
+        var totalTime = driveHours + stopsNeeded * 0.25; // 15 min per stop
+
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🗺️'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Road Trip Planner'),
+            h('div', { style: { fontSize: '11px', color: '#a7f3d0' } }, 'Calculate fuel cost, driving time, and rest stops.')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'DISTANCE (miles)'),
+              h('input', { type: 'range', min: 50, max: 3000, step: 50, value: tripDist, onChange: function(e) { upd('tripDist', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripDist.toLocaleString() + ' mi')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'YOUR MPG'),
+              h('input', { type: 'range', min: 15, max: 55, step: 1, value: tripMPG, onChange: function(e) { upd('tripMPG', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripMPG + ' MPG')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'GAS PRICE'),
+              h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: tripGasPrice, onChange: function(e) { upd('tripGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, '$' + tripGasPrice.toFixed(2) + '/gal')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'AVG SPEED'),
+              h('input', { type: 'range', min: 45, max: 80, step: 5, value: tripSpeed, onChange: function(e) { upd('tripSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripSpeed + ' mph')
+            )
+          ),
+          // Results
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '14px' } },
+            [['⛽', gallonsNeeded.toFixed(1) + ' gal', 'Fuel Needed'],
+             ['💰', '$' + fuelCost.toFixed(0), 'Fuel Cost'],
+             ['⏱️', Math.floor(driveHours) + 'h ' + (driveMins % 60) + 'm', 'Drive Time'],
+             ['🛑', stopsNeeded, 'Rest Stops']
+            ].map(function(r) {
+              return h('div', { key: r[2], style: { background: '#020617', borderRadius: '8px', padding: '12px', textAlign: 'center', border: '1px solid #1e293b' } },
+                h('div', { style: { fontSize: '18px' } }, r[0]),
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#34d399', marginTop: '4px' } }, r[1]),
+                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, r[2])
+              );
+            })
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, '💡 Trip Tips'),
+            h('div', null, '• Total trip time with stops: ~' + Math.floor(totalTime) + 'h ' + Math.round((totalTime % 1) * 60) + 'm'),
+            h('div', null, '• Stop every 2 hours — fatigue is as dangerous as alcohol at 17+ hours awake'),
+            h('div', null, '• At ' + tripSpeed + ' mph, drag uses ' + Math.round(tripSpeed > 55 ? (tripSpeed - 55) / 55 * 100 : 0) + '% more fuel than at 55 mph'),
+            h('div', null, '• Cost per mile: $' + (fuelCost / tripDist).toFixed(3)),
+            h('div', null, '• Pro tip: fill up when tank hits 1/4 — never let it run near empty (fuel pump overheats)')
+          )
+        );
+      }
+
+      // ── FORCE DIAGRAM (live physics visualizer) ──
+      if (view === 'forceDiagram') {
+        var fdSpeed = d.fdSpeed || 45;
+        var fdThrottle = d.fdThrottle || 0.3;
+        var fdWeather = d.fdWeather || 'dry';
+        var fdVehicle = d.fdVehicle || 'sedan';
+        var fdVeh = VEHICLES.find(function(v) { return v.id === fdVehicle; }) || VEHICLES[0];
+        var fwfd = fdWeather === 'dry' ? 'clear' : fdWeather;
+        var v_ms = fdSpeed * MPH_TO_MS;
+        var Fd = dragForce(v_ms, fdVeh.cd, fdVeh.area);
+        var Fr = rollingForce(fdVeh.mass, rollingCoef(fwfd, true));
+        var maxThrust = fdVeh.powerKW * 1000 / Math.max(1, v_ms);
+        var thrust = fdThrottle * Math.min(maxThrust, fdVeh.mass * frictionCoef(fwfd) * 9.81 * 0.4);
+        var netF = thrust - Fd - Fr;
+        var accel = netF / fdVeh.mass;
+        var maxF = Math.max(thrust, Fd + Fr, 1);
+
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #312e81, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #818cf8', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '📐'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Live Force Diagram'),
+            h('div', { style: { fontSize: '11px', color: '#c7d2fe' } }, 'See the actual forces on your car RIGHT NOW. Adjust speed and throttle.')
+          ),
+          // Controls
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'SPEED'),
+              h('input', { type: 'range', min: 0, max: 85, step: 5, value: fdSpeed, onChange: function(e) { upd('fdSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, fdSpeed + ' mph')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'THROTTLE'),
+              h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: fdThrottle, onChange: function(e) { upd('fdThrottle', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, Math.round(fdThrottle * 100) + '%')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'SURFACE'),
+              h('div', { style: { display: 'flex', gap: '3px', marginTop: '4px' } },
+                [['dry','☀️'],['rain','🌧'],['snow','❄'],['ice','🧊']].map(function(w) {
+                  return h('button', { key: w[0], onClick: function() { upd('fdWeather', w[0]); },
+                    style: { flex: 1, padding: '4px', borderRadius: '4px', border: '1px solid ' + (fdWeather === w[0] ? '#818cf8' : '#334155'), background: fdWeather === w[0] ? '#312e81' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '14px' } }, w[1]);
+                })
+              )
+            )
+          ),
+          // Force diagram canvas
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '14px' } },
+            h('canvas', {
+              ref: function(c) {
+                if (!c) return;
+                var g = c.getContext('2d');
+                var W = c.width = c.offsetWidth || 600;
+                var H = c.height = 200;
+                g.fillStyle = '#020617'; g.fillRect(0, 0, W, H);
+                var carX = W * 0.45, carY = H * 0.5;
+                var scale = W * 0.35 / maxF;
+                // Car body
+                g.fillStyle = '#334155';
+                g.fillRect(carX - 40, carY - 15, 80, 30);
+                g.fillStyle = '#475569';
+                g.fillRect(carX - 15, carY - 25, 35, 12);
+                // Wheels
+                g.fillStyle = '#111'; g.beginPath(); g.arc(carX - 25, carY + 15, 8, 0, Math.PI * 2); g.fill();
+                g.beginPath(); g.arc(carX + 25, carY + 15, 8, 0, Math.PI * 2); g.fill();
+                // Force arrows
+                function drawArrow(x, y, len, color, label, dir) {
+                  if (Math.abs(len) < 2) return;
+                  var endX = dir === 'right' ? x + len : x - len;
+                  g.strokeStyle = color; g.lineWidth = 3; g.beginPath();
+                  g.moveTo(x, y); g.lineTo(endX, y); g.stroke();
+                  // Arrowhead
+                  g.fillStyle = color; g.beginPath();
+                  if (dir === 'right') { g.moveTo(endX, y - 6); g.lineTo(endX + 8, y); g.lineTo(endX, y + 6); }
+                  else { g.moveTo(endX, y - 6); g.lineTo(endX - 8, y); g.lineTo(endX, y + 6); }
+                  g.fill();
+                  g.fillStyle = color; g.font = 'bold 10px system-ui'; g.textAlign = 'center';
+                  g.fillText(label, (x + endX) / 2, y - 10);
+                }
+                // Thrust arrow (green, right)
+                drawArrow(carX + 42, carY, thrust * scale, '#4ade80', 'Thrust ' + Math.round(thrust) + 'N', 'right');
+                // Drag arrow (red, left)
+                drawArrow(carX - 42, carY - 5, Fd * scale, '#ef4444', 'Drag ' + Math.round(Fd) + 'N', 'left');
+                // Rolling resistance arrow (orange, left)
+                drawArrow(carX - 42, carY + 8, Fr * scale, '#f59e0b', 'Roll ' + Math.round(Fr) + 'N', 'left');
+                // Weight arrow (down)
+                var weightLen = 30;
+                g.strokeStyle = '#94a3b8'; g.lineWidth = 2; g.beginPath();
+                g.moveTo(carX, carY + 15); g.lineTo(carX, carY + 15 + weightLen); g.stroke();
+                g.fillStyle = '#94a3b8'; g.beginPath();
+                g.moveTo(carX - 5, carY + 15 + weightLen); g.lineTo(carX, carY + 23 + weightLen); g.lineTo(carX + 5, carY + 15 + weightLen); g.fill();
+                g.font = '9px system-ui'; g.textAlign = 'center';
+                g.fillText('Weight ' + Math.round(fdVeh.mass * 9.81) + 'N', carX, carY + weightLen + 30);
+                // Net force indicator
+                g.fillStyle = netF > 0 ? '#4ade80' : '#ef4444';
+                g.font = 'bold 12px monospace'; g.textAlign = 'center';
+                g.fillText('Net: ' + (netF > 0 ? '+' : '') + Math.round(netF) + 'N → ' + (accel > 0 ? 'accelerating' : accel < -0.5 ? 'decelerating' : 'steady'), W / 2, H - 10);
+                // Friction coefficient
+                g.fillStyle = '#64748b'; g.font = '9px system-ui'; g.textAlign = 'right';
+                g.fillText('μ = ' + frictionCoef(fwfd).toFixed(2) + ' (' + fdWeather + ')', W - 10, 14);
+                g.fillText('Cd×A = ' + (fdVeh.cd * fdVeh.area).toFixed(2) + ' m²', W - 10, 26);
+              },
+              style: { width: '100%', height: '200px', display: 'block', borderRadius: '6px' }
+            }),
+            // Vehicle selector
+            h('div', { style: { display: 'flex', gap: '4px', marginTop: '8px', justifyContent: 'center' } },
+              VEHICLES.map(function(v) {
+                return h('button', { key: v.id, onClick: function() { upd('fdVehicle', v.id); },
+                  style: { padding: '4px 8px', borderRadius: '4px', border: '1px solid ' + (fdVehicle === v.id ? '#818cf8' : '#334155'), background: fdVehicle === v.id ? '#312e81' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px' } }, v.icon);
+              })
+            )
+          ),
+          // Formulas
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#818cf8', marginBottom: '4px' } }, '📏 The Physics'),
+            h('div', null, 'F_drag = ½ρv²CdA = ½ × 1.225 × ' + v_ms.toFixed(1) + '² × ' + fdVeh.cd + ' × ' + fdVeh.area + ' = ', h('b', null, Math.round(Fd) + ' N')),
+            h('div', null, 'F_roll = Crr × m × g = 0.012 × ' + fdVeh.mass + ' × 9.81 = ', h('b', null, Math.round(Fr) + ' N')),
+            h('div', null, 'Net = Thrust - Drag - Roll = ' + Math.round(thrust) + ' - ' + Math.round(Fd) + ' - ' + Math.round(Fr) + ' = ', h('b', { style: { color: netF > 0 ? '#4ade80' : '#ef4444' } }, Math.round(netF) + ' N')),
+            h('div', null, 'a = F/m = ' + Math.round(netF) + '/' + fdVeh.mass + ' = ', h('b', null, accel.toFixed(2) + ' m/s²'))
           )
         );
       }
