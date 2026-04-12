@@ -816,7 +816,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1' } }, popBadge.desc)
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
               )
             );
           }
@@ -832,7 +832,7 @@ window.SelHub = window.SelHub || {
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
                     h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 4 } }, b.name),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } }, b.desc)
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, b.desc)
                   );
                 })
               )
@@ -854,7 +854,7 @@ window.SelHub = window.SelHub || {
               band === 'middle' ? '\uD83C\uDF0E Understanding Culture' :
               '\uD83C\uDF0F Culture, Power & Identity'
             ),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20 } },
               band === 'elementary' ? 'Tap a topic to learn something new! Every culture has amazing stories.' :
               band === 'middle' ? 'Explore how culture shapes identity, relationships, and society.' :
               'Examine the systems, structures, and intersections that shape cultural experience.'
@@ -903,7 +903,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, cursor: 'pointer', fontWeight: 600 }
                       }, '\uD83D\uDCA1 I didn\'t know that!'),
-                      callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(item.name + '. ' + item.desc); }, style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                      callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(item.name + '. ' + item.desc); }, style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
                     )
                   )
                 );
@@ -926,7 +926,7 @@ window.SelHub = window.SelHub || {
 
           identityContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83E\uDDE9 My Identity Map'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20 } },
               band === 'elementary' ? 'What makes you, YOU? Fill in each piece of your identity puzzle!' :
               band === 'middle' ? 'Your identity is made up of many intersecting parts. Explore how each one shapes your experience.' :
               'Map the intersections of your identity. How do these aspects interact and influence your lived experience?'
@@ -966,7 +966,7 @@ window.SelHub = window.SelHub || {
             ),
             // Progress
             h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, 'Identity Map Progress'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, 'Identity Map Progress'),
               h('div', { style: { height: 6, borderRadius: 3, background: '#334155', overflow: 'hidden' } },
                 h('div', { style: { height: '100%', width: (filledCount / 8 * 100) + '%', background: ACCENT, borderRadius: 3, transition: 'width 0.3s' } })
               ),
@@ -978,7 +978,7 @@ window.SelHub = window.SelHub || {
                 h('span', null, '\u26A1'),
                 'My Cultural Superpower'
               ),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.5 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5 } },
                 band === 'elementary' ? 'What is something special about your culture or background that you\'re proud of? This is your superpower!' :
                 band === 'middle' ? 'What unique strength does your cultural background give you? How does your identity make you uniquely powerful?' :
                 'How do the intersections of your identity create unique perspectives, skills, or forms of resilience that are your strengths?'
@@ -1010,7 +1010,7 @@ window.SelHub = window.SelHub || {
                 h('span', null, '\uD83E\uDD1D'),
                 'Allyship Action Cards'
               ),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 14, lineHeight: 1.5 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Try these real actions to be a great friend to everyone! Check them off as you complete them.' :
                 band === 'middle' ? 'Move from awareness to action. Complete these allyship challenges and reflect on what you learn.' :
                 'Practice tangible allyship. Each action pushes you beyond comfort into genuine solidarity.'
@@ -1023,7 +1023,7 @@ window.SelHub = window.SelHub || {
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22 } }, card.icon),
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9' } }, card.action),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, lineHeight: 1.4 } }, card.detail)
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, card.detail)
                       ),
                       isDone && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, color: '#22c55e' } }, '\u2713')
                     ),
@@ -1061,7 +1061,7 @@ window.SelHub = window.SelHub || {
 
           scenariosContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFAD Cultural Scenarios'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20 } },
               'Scenario ' + ((scIdx % scenarios.length) + 1) + ' of ' + scenarios.length
             ),
             // Scenario card
@@ -1116,7 +1116,7 @@ window.SelHub = window.SelHub || {
                   upd({ scIdx: newIdx, scChoice: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
               }, '\u2190 Previous'),
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b' } }, scCompleted + ' completed'),
               h('button', { 'aria-label': 'Next',
@@ -1144,7 +1144,7 @@ window.SelHub = window.SelHub || {
 
           quizContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC6 Culture Quiz'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 6 } },
               band === 'elementary' ? 'Match cultural practices to their origins! How much do you know?' :
               band === 'middle' ? 'Test your cultural literacy. Can you get them all right?' :
               'Challenge your understanding of culture, power, and identity.'
@@ -1214,7 +1214,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\uD83C\uDF1F' : '\uD83D\uDCA1'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Quiz Complete!'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, color: ACCENT, fontWeight: 600, marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + quizItems.length),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16 } }, quizScore >= 8 ? 'Outstanding cultural knowledge!' : quizScore >= 5 ? 'Great job! Keep exploring to learn more.' : 'Keep learning! Every question you missed is a chance to grow.'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, quizScore >= 8 ? 'Outstanding cultural knowledge!' : quizScore >= 5 ? 'Great job! Keep exploring to learn more.' : 'Keep learning! Every question you missed is a chance to grow.'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + quizBest + '/' + quizItems.length),
               h('button', { 'aria-label': 'Try Again',
                 onClick: function() {
@@ -1239,7 +1239,7 @@ window.SelHub = window.SelHub || {
           privilegeContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCA1 Privilege Walk'),
             h('div', { style: { textAlign: 'center', padding: '10px 16px', borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-              h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 0 } },
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 0 } },
                 'Privilege isn\u2019t about blame \u2014 it\u2019s about understanding different starting points. ',
                 'Read each statement and honestly reflect on whether it applies to your life. ',
                 'This exercise builds awareness of the advantages and challenges that shape people\u2019s experiences.'
@@ -1329,7 +1329,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83D\uDCA1'),
                 h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, 'Walk Complete'),
                 h('div', { style: { fontSize: 14, color: ACCENT, fontWeight: 600, marginBottom: 8 } }, 'Final position: ' + (pwPosition > 0 ? '+' : '') + pwPosition + ' steps'),
-                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, maxWidth: 420, margin: '0 auto 16px' } },
+                h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, maxWidth: 420, margin: '0 auto 16px' } },
                   'Everyone ends up in different places \u2014 and that\u2019s the point. This exercise isn\u2019t about guilt or pride. It\u2019s about recognizing that people start from different places through no choice of their own, and that awareness is the first step toward equity.'
                 )
               ),
@@ -1371,7 +1371,7 @@ window.SelHub = window.SelHub || {
                     upd({ pwIdx: 0, pwAnswers: {}, pwPosition: 0, pwFinished: false, pwReflection: '', pwReflectionSaved: false });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
                 }, '\uD83D\uDD04 Walk Again')
               )
             )
@@ -1388,7 +1388,7 @@ window.SelHub = window.SelHub || {
 
           microaggContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD0D Microaggression Awareness'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.5 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 16, lineHeight: 1.5 } },
               'Microaggressions are brief, everyday exchanges that send demeaning messages to people based on their identity. They\u2019re often unintentional, but their impact is real. Learning to recognize them is the first step to stopping them.'
             ),
             h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#64748b' } },
@@ -1401,7 +1401,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 6 } }, (maIdx + 1) + ' of ' + MICROAGGRESSIONS.length),
                 h('div', { style: { fontSize: 11, color: '#ef4444', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'What was said:'),
                 h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', fontStyle: 'italic', lineHeight: 1.4 } }, '\u201C' + currentMA.said + '\u201D'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8 } }, 'Often directed at: ' + currentMA.target)
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 8 } }, 'Often directed at: ' + currentMA.target)
               ),
               // Body
               h('div', { style: { padding: 20 } },
@@ -1496,7 +1496,7 @@ window.SelHub = window.SelHub || {
 
           heritageContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFDB\uFE0F My Cultural Heritage'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 20, lineHeight: 1.5 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20, lineHeight: 1.5 } },
               band === 'elementary' ? 'Tell the story of YOUR family and culture! Fill in each section to build your Cultural Heritage project.' :
               band === 'middle' ? 'Document the rich tapestry of your cultural heritage. Each section helps you explore and celebrate where you come from.' :
               'Create a record of your cultural heritage. This project is an act of self-knowledge and cultural preservation.'
@@ -1536,7 +1536,7 @@ window.SelHub = window.SelHub || {
             ),
             // Progress
             h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, 'My Cultural Map'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, 'My Cultural Map'),
               h('div', { style: { height: 6, borderRadius: 3, background: '#334155', overflow: 'hidden' } },
                 h('div', { style: { height: '100%', width: (hFilled / HERITAGE_SECTIONS.length * 100) + '%', background: ACCENT, borderRadius: 3, transition: 'width 0.3s' } })
               ),
@@ -1552,7 +1552,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: sec.id, style: { padding: 12, borderRadius: 10, background: filled ? '#0f172a' : '#0f172a55', border: '1px solid ' + (filled ? ACCENT_MED : '#33415555'), textAlign: 'center', opacity: filled ? 1 : 0.4 } },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 24 } }, sec.icon),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 600, color: filled ? '#f1f5f9' : '#64748b', marginTop: 4 } }, sec.label),
-                    filled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.4, maxHeight: 42, overflow: 'hidden', textOverflow: 'ellipsis' } }, val.slice(0, 80) + (val.length > 80 ? '...' : ''))
+                    filled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.4, maxHeight: 42, overflow: 'hidden', textOverflow: 'ellipsis' } }, val.slice(0, 80) + (val.length > 80 ? '...' : ''))
                   );
                 })
               )
@@ -1607,7 +1607,7 @@ window.SelHub = window.SelHub || {
 
           commtipsContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF10 Intercultural Communication'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 20, lineHeight: 1.5 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20, lineHeight: 1.5 } },
               band === 'elementary' ? 'Tips for being a great communicator with people from all backgrounds!' :
               band === 'middle' ? 'Build skills for respectful, thoughtful communication across cultural differences.' :
               'Develop advanced intercultural communication skills grounded in humility and critical self-awareness.'
@@ -1646,7 +1646,7 @@ window.SelHub = window.SelHub || {
             tipsReadCount >= tipItems.length && h('div', { style: { textAlign: 'center', marginTop: 20, padding: 16, borderRadius: 12, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED } },
               h('div', { style: { fontSize: 32, marginBottom: 6 } }, '\uD83C\uDF10'),
               h('div', { style: { fontSize: 14, fontWeight: 700, color: ACCENT } }, 'Cross-Cultural Communicator!'),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4 } }, 'You\u2019ve explored all the intercultural communication tips for your grade level.')
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'You\u2019ve explored all the intercultural communication tips for your grade level.')
             )
           );
         }
@@ -1664,7 +1664,7 @@ window.SelHub = window.SelHub || {
 
           battleContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\u2694\uFE0F Battle Questions'),
-            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 6 } },
               'Quick-fire questions! Answer fast and earn XP.'
             ),
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, fontSize: 12 } },
@@ -1731,7 +1731,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, battleScore >= 4 ? '\u2694\uFE0F' : '\uD83D\uDCA1'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Battle Complete!'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, color: '#ec4899', fontWeight: 600, marginBottom: 4 } }, 'Score: ' + battleScore + ' / ' + battleItems.length),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16 } }, battleScore >= 4 ? 'Battle Victor! Impressive quick thinking!' : 'Keep training! Try again to improve your score.'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, battleScore >= 4 ? 'Battle Victor! Impressive quick thinking!' : 'Keep training! Try again to improve your score.'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + battleBest + '/' + battleItems.length),
               h('button', { 'aria-label': 'Battle Again',
                 onClick: function() {
@@ -1783,14 +1783,14 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
             h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
               h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
-              h('div', { style: { fontSize: 13, color: '#cbd5e1' } }, 'Total Activities Completed')
+              h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 } },
               stats.map(function(s) {
                 return h('div', { key: s.label, style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' } },
                   h('div', { style: { fontSize: 24 } }, s.icon),
                   h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, s.label)
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
                 );
               })
             ),
@@ -1800,7 +1800,7 @@ window.SelHub = window.SelHub || {
                 h('span', null, '\u2728'),
                 'AI Cultural Coach'
               ),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
                 band === 'elementary' ? 'Ask me anything about cultures, traditions, or how to be a good friend to everyone!' :
                 band === 'middle' ? 'Ask about cultural identity, allyship, navigating differences, or any topic you\'re curious about.' :
                 'Explore questions about intersectionality, systemic issues, cultural humility, advocacy strategies, or any cultural topic.'
@@ -1866,7 +1866,7 @@ window.SelHub = window.SelHub || {
                  ['What is intersectionality?', 'How does systemic bias work?', 'What is cultural humility?', 'How can I take action for equity?']).map(function(q) {
                   return h('button', { 'aria-label': 'div',
                     key: q, onClick: function() { upd({ aiPrompt: q }); },
-                    style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#cbd5e1', fontSize: 10, cursor: 'pointer' }
+                    style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 10, cursor: 'pointer' }
                   }, q);
                 })
               )
@@ -1879,7 +1879,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : '#334155'), textAlign: 'center', opacity: earned ? 1 : 0.45 } },
                   h('div', { style: { fontSize: 26 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 4 } }, b.name),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, b.desc)
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, b.desc)
                 );
               })
             ),

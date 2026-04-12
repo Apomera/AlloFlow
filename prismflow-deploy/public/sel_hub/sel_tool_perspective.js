@@ -1076,7 +1076,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: ACCENT, fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -1129,7 +1129,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 28 } }, char.emoji),
               h('div', null,
                 h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 14 } }, char.name),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } }, char.question)
+                h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, char.question)
               )
             ),
             // Feeling tags
@@ -1167,7 +1167,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDFAD How Do They Feel?' : '\uD83C\uDFAD Scenario Theater'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read the story, then explore how each person might feel.' :
             band === 'middle' ? 'Read the scenario and consider each character\'s inner experience.' :
             'Analyze the emotional and social dynamics of each character.'
@@ -1217,7 +1217,7 @@ window.SelHub = window.SelHub || {
 
         swapContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD04 Viewpoint Swap'),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'See the same situation through different eyes!' :
             'Same situation, different perspectives. Notice how the same event means different things to different people.'
           ),
@@ -1300,7 +1300,7 @@ window.SelHub = window.SelHub || {
 
         emContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDDFA\uFE0F Empathy Map'),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'Imagine you are this person. What might they think, feel, say, and do?' :
             'Step into this person\'s experience. Map their inner world across four dimensions.'
           ),
@@ -1308,7 +1308,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
             h('span', { style: { fontSize: 36 } }, curEm.emoji),
             h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 15 } }, curEm.name),
-            h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, curEm.context)
+            h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.5 } }, curEm.context)
           ),
           // Empathy map grid
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 } },
@@ -1382,7 +1382,7 @@ window.SelHub = window.SelHub || {
 
         hfContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD0D Hidden Feelings'),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Sometimes what people say isn\'t what they really feel. Can you spot the hidden feeling?' :
             'What someone says on the surface often masks what they feel underneath. Decode the real emotion.'
           ),
@@ -1401,7 +1401,7 @@ window.SelHub = window.SelHub || {
             )
           ),
           // Options
-          h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8, textAlign: 'center' } },
+          h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8, textAlign: 'center' } },
             band === 'elementary' ? 'What are they REALLY feeling?' : 'What\'s the hidden emotion?'
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
@@ -1469,7 +1469,7 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'coach') {
         coachContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2728 Perspective Coach'),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             'Describe a situation and I\'ll help you see it from different perspectives.'
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
@@ -1534,7 +1534,7 @@ window.SelHub = window.SelHub || {
 
         journalContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCD4 Perspective Journal'),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             'Reflect on how you see the world — and how others see it differently.'
           ),
           // Prompt counter
@@ -1657,7 +1657,7 @@ window.SelHub = window.SelHub || {
 
         respondContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u270D\uFE0F What Would You Do?'),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             'Read the situation, decide your response, and see how it scores on empathy and perspective-awareness.'
           ),
           // Scenario counter
@@ -1670,7 +1670,7 @@ window.SelHub = window.SelHub || {
             h('h4', { style: { color: '#f59e0b', fontSize: 15, marginBottom: 10, fontWeight: 700 } }, curRespond.title),
             h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 12 } }, curRespond.situation),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1', background: '#1e293b', padding: '3px 8px', borderRadius: 6 } }, '\uD83D\uDC65 ' + curRespond.stakeholders)
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', background: '#1e293b', padding: '3px 8px', borderRadius: 6 } }, '\uD83D\uDC65 ' + curRespond.stakeholders)
             ),
             // Skip
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'right', marginTop: 8 } },
@@ -1779,7 +1779,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             '\uD83D\uDCD6 Empathy Stories'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read a story, then see it through different eyes.' :
             band === 'middle' ? 'Every story has more than one side. Explore them all.' :
             'Narrative vignettes told from multiple perspectives. Notice whose story you default to.'
@@ -1898,7 +1898,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16, textAlign: 'center' } },
               h('span', { style: { fontSize: 36 } }, curWalk.emoji),
               h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 15 } }, curWalk.person),
-              h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 } }, curWalk.prompt)
+              h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.6 } }, curWalk.prompt)
             ),
             h('textarea', {
               value: walkText,
@@ -1948,7 +1948,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #3b82f644', marginBottom: 16 } },
               h('h4', { style: { color: '#3b82f6', fontSize: 15, marginBottom: 8, textAlign: 'center' } }, curSE.title),
               h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10, textAlign: 'center' } }, curSE.event),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', textAlign: 'center' } }, gradeHint)
+              h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' } }, gradeHint)
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 } },
               curSE.characters.map(function(charName, ci) {
@@ -2017,7 +2017,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'What You See'),
               h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.surface)
             ),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 12, fontStyle: 'italic' } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12, fontStyle: 'italic' } },
               'What is your first assumption about this person?'
             ),
             !byjRevealed ?
@@ -2062,7 +2062,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             '\uD83D\uDC5F Perspective-Taking Exercises'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             'Practice seeing the world through someone else\u2019s eyes.'
           ),
           exModeBar,
@@ -2084,7 +2084,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             '\uD83E\uDDD0 Cognitive Bias Explorer'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Our brains play tricks on us sometimes! Learn to catch common thinking mistakes.' :
             band === 'middle' ? 'Cognitive biases are shortcuts your brain takes that can lead you astray. Learn to spot them.' :
             'Explore the cognitive biases that shape perception, judgment, and decision-making \u2014 often without awareness.'
@@ -2176,7 +2176,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             '\uD83D\uDCDD Perspective Journal'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
             'Guided reflections on perspective-taking, assumptions, and empathy. Your entries are saved with timestamps.'
           ),
           h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 16 } },
@@ -2260,7 +2260,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 12, fontWeight: 700, color: '#818cf8' } }, entry.prompt),
                     h('span', { style: { fontSize: 10, color: '#64748b' } }, dateStr)
                   ),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: 0 } },
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5, margin: 0 } },
                     entry.text.length > 120 ? entry.text.slice(0, 120) + '...' : entry.text
                   )
                 );
@@ -2293,7 +2293,7 @@ window.SelHub = window.SelHub || {
           // Total
           h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
-            h('div', { style: { fontSize: 13, color: '#cbd5e1' } }, 'Total Activities Completed')
+            h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
           ),
           // Stats grid
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
@@ -2304,7 +2304,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 24 } }, s.icon),
                 h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, s.label)
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
               );
             })
           ),

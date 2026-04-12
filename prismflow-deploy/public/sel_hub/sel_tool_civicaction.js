@@ -58,7 +58,7 @@ window.SelHub = window.SelHub || {
     { id: 'overwhelmed', label: 'Overwhelmed by too much', emoji: '\ud83e\udd2f', color: '#8b5cf6',
       validation: 'The world throws a lot at you \u2014 social media, news, school, relationships. Feeling overwhelmed is not a sign of weakness. It means you are paying attention.',
       reframe: 'You do not have to carry everything at once. Choose one thing. Focus there. The rest will wait.' },
-    { id: 'numb', label: 'Numb or disconnected', emoji: '\ud83d\ude36', color: '#cbd5e1',
+    { id: 'numb', label: 'Numb or disconnected', emoji: '\ud83d\ude36', color: '#94a3b8',
       validation: 'Numbness is often your mind protecting itself from too much pain. It is not apathy \u2014 it is a survival response. The fact that you are here, exploring this, means you have not given up.',
       reframe: 'Reconnecting starts small. One conversation. One walk outside. One moment of noticing something beautiful.' },
     { id: 'hopeful', label: 'Hopeful despite everything', emoji: '\ud83c\udf1f', color: '#22c55e',

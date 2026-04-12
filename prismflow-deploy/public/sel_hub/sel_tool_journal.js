@@ -761,7 +761,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 48, marginBottom: 8 } }, popBadge.icon),
                 h('div', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Badge Earned!'),
                 h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, popBadge.name),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, popBadge.desc)
+                h('div', { style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
               )
             );
           }
@@ -790,7 +790,7 @@ window.SelHub = window.SelHub || {
 
             // Mood selector
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 18 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, fontWeight: 600 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'Pick the face that matches how you feel:' : 'Select your current mood:'
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center', gap: 10 } },
@@ -817,7 +817,7 @@ window.SelHub = window.SelHub || {
 
               // Sub-emotion picker (appears when a mood is selected)
               ciMood != null && SUB_EMOTIONS[ciMood] && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, padding: 12, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
                   band === 'elementary' ? 'Can you pick a more specific feeling? (optional)' : 'More specifically, you feel... (optional)'
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
@@ -847,7 +847,7 @@ window.SelHub = window.SelHub || {
 
                 // ── Emotion Vocabulary Builder (expanded sub-emotions) ──
                 ciSubEmotion && EXPANDED_EMOTIONS[ciMood] && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #334155' } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
                     band === 'elementary' ? '\uD83D\uDCDA Can you get even more specific? Build your feelings vocabulary!' : '\uD83D\uDCDA Expand your emotion vocabulary \u2014 pick a more precise word:'
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' } },
@@ -896,7 +896,7 @@ window.SelHub = window.SelHub || {
 
             // Energy slider
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'How much energy do you have?' : 'Energy level:'
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -914,7 +914,7 @@ window.SelHub = window.SelHub || {
 
             // Thoughts input
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'What\u2019s on your mind right now?' : 'What\u2019s on your mind?'
               ),
               h('textarea', {
@@ -929,7 +929,7 @@ window.SelHub = window.SelHub || {
 
             // Trigger tags
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 18 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, fontWeight: 600 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'What is this about? (pick any that fit)' : 'Context / triggers (select all that apply):'
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
@@ -954,7 +954,7 @@ window.SelHub = window.SelHub || {
 
             // Gratitude prompt
             h('div', { style: { marginBottom: 20 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, fontWeight: 600 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? '\uD83D\uDE4F One thing I\u2019m grateful for today:' : '\uD83D\uDE4F One thing I\u2019m grateful for today...'
               ),
               h('input', {
@@ -1050,7 +1050,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 24, flexShrink: 0 } }, strat.icon),
                     h('div', null,
                       h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, strat.title),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, strat.desc)
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, strat.desc)
                     )
                   );
                 })
@@ -1072,7 +1072,7 @@ window.SelHub = window.SelHub || {
               showCoping <= 1 && h('div', { style: { fontSize: 12, color: '#ef4444', marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: '#ef444422', fontWeight: 600, lineHeight: 1.5 } },
                 '\u26A0\uFE0F If you are in crisis, please reach out to a trusted adult, call 988, or text HOME to 741741. This feeling is temporary.'
               ),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12 } },
                 band === 'elementary' ? 'Try some of these activities to feel even better:' : 'Suggested activities based on your mood:'
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1115,7 +1115,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 20, flexShrink: 0 } }, act.icon),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 12, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9', marginBottom: 2, textDecoration: isDone ? 'line-through' : 'none' } }, act.label),
-                      h('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.4 } }, act.desc)
+                      h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, act.desc)
                     )
                   );
                 })
@@ -1197,12 +1197,12 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 700, color: letterColor, marginBottom: 6 } },
                   isFuture ? 'Letter to Your Future Self' : 'Letter to Your Past Self'
                 ),
-                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, letterPromptText)
+                h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } }, letterPromptText)
               ),
 
               // Date picker for future letters
               isFuture && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16 } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, fontWeight: 600 } }, 'When should future-you read this?'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } }, 'When should future-you read this?'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, justifyContent: 'center' } },
                   LETTER_TIME_OPTIONS.map(function(opt) {
                     var isActive = letterTimePeriod === opt.id;
@@ -1294,7 +1294,7 @@ window.SelHub = window.SelHub || {
                     ? h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 } }, letter.text)
                     : h('div', { style: { padding: 20, textAlign: 'center', borderRadius: 10, background: '#1e293b' } },
                         h('div', { style: { fontSize: 28, marginBottom: 8 } }, '\uD83D\uDD12'),
-                        h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, 'This letter is sealed until ' + readDateStr + '.'),
+                        h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'This letter is sealed until ' + readDateStr + '.'),
                         h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Be patient \u2014 future you will appreciate the wait!')
                       )
                 );
@@ -1326,11 +1326,11 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center', gap: 8 } },
                   h('button', { 'aria-label': 'Prev',
                     onClick: function() { upd('jPromptIdx', (jPromptIdx - 1 + prompts.length) % prompts.length); if (soundEnabled) sfxClick(); },
-                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
                   }, '\u2190 Prev'),
                   h('button', { 'aria-label': 'Next',
                     onClick: function() { upd('jPromptIdx', (jPromptIdx + 1) % prompts.length); if (soundEnabled) sfxClick(); },
-                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
                   }, 'Next \u2192')
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -1394,7 +1394,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 10, color: ACCENT, fontWeight: 600 } }, new Date(entry.timestamp).toLocaleDateString()),
                     h('span', { style: { fontSize: 10, color: '#64748b' } }, new Date(entry.timestamp).toLocaleTimeString())
                   ),
-                  h('p', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 6 } }, 'Prompt: \u201C' + entry.prompt + '\u201D'),
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, 'Prompt: \u201C' + entry.prompt + '\u201D'),
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text)
                 );
               })
@@ -1480,7 +1480,7 @@ window.SelHub = window.SelHub || {
                   upd({ calMonth: nm, calYear: ny });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontSize: 14, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
               }, '\u2190'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, MONTH_NAMES[calMonth] + ' ' + calYear),
               h('button', { 'aria-label': m.label,
@@ -1491,7 +1491,7 @@ window.SelHub = window.SelHub || {
                   upd({ calMonth: nm, calYear: ny });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontSize: 14, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
               }, '\u2192')
             ),
 
@@ -1500,7 +1500,7 @@ window.SelHub = window.SelHub || {
               MOODS.map(function(m) {
                 return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 4 } },
                   h('div', { style: { width: 10, height: 10, borderRadius: '50%', background: m.color } }),
-                  h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, m.label)
+                  h('span', { style: { fontSize: 10, color: '#94a3b8' } }, m.label)
                 );
               })
             ),
@@ -1521,11 +1521,11 @@ window.SelHub = window.SelHub || {
 
             // Monthly Stats
             h('div', { style: { padding: 14, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, marginBottom: 8 } }, 'Monthly Stats'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 8 } }, 'Monthly Stats'),
               h('div', { style: { display: 'flex', justifyContent: 'space-around' } },
                 h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } }, Object.keys(monthMoodMap).length),
-                  h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Days Tracked')
+                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Tracked')
                 ),
                 h('div', { style: { textAlign: 'center' } },
                   (function() {
@@ -1537,7 +1537,7 @@ window.SelHub = window.SelHub || {
                     var avgObj = avgM > 0 ? MOODS.find(function(m) { return m.id === Math.round(avgM); }) : null;
                     return [
                       h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: avgObj ? avgObj.color : '#64748b' } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
-                      h('div', { key: 'lbl', style: { fontSize: 10, color: '#cbd5e1' } }, 'Avg Mood')
+                      h('div', { key: 'lbl', style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Mood')
                     ];
                   })()
                 ),
@@ -1549,7 +1549,7 @@ window.SelHub = window.SelHub || {
                       return c;
                     })()
                   ),
-                  h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Check-Ins')
+                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Check-Ins')
                 )
               )
             ),
@@ -1565,21 +1565,21 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', justifyContent: 'space-around', marginBottom: 12 } },
                   h('div', { style: { textAlign: 'center' } },
                     h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, weeklySummary.avgMood.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Avg Mood')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Mood')
                   ),
                   h('div', { style: { textAlign: 'center' } },
                     h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, weeklySummary.avgEnergy.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Avg Energy')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Energy')
                   ),
                   h('div', { style: { textAlign: 'center' } },
                     h('div', { style: { fontSize: 16, fontWeight: 700, color: weeklySummary.trajectory === 'improving' ? '#22c55e' : weeklySummary.trajectory === 'declining' ? '#f97316' : '#eab308' } },
                       weeklySummary.trajectory === 'improving' ? '\u2197\uFE0F' : weeklySummary.trajectory === 'declining' ? '\u2198\uFE0F' : '\u2192\uFE0F'
                     ),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, weeklySummary.trajectory.charAt(0).toUpperCase() + weeklySummary.trajectory.slice(1))
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, weeklySummary.trajectory.charAt(0).toUpperCase() + weeklySummary.trajectory.slice(1))
                   )
                 ),
                 weeklySummary.topTriggers.length > 0 && h('div', { style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Top triggers:'),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Top triggers:'),
                   h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                     weeklySummary.topTriggers.map(function(t) {
                       return h('span', { key: t, style: { padding: '3px 10px', borderRadius: 12, background: '#1e293b', color: ACCENT, fontSize: 11, fontWeight: 500 } }, t);
@@ -1590,7 +1590,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, weeklySummary.encouragement)
                 )
               ) :
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', textAlign: 'center', padding: 12 } },
+              h('div', { style: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 } },
                 'Check in at least 3 times this week to see your summary!'
               )
             )
@@ -1650,13 +1650,13 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 32, fontWeight: 700, color: streak > 0 ? '#f59e0b' : '#64748b' } },
                   streak > 0 ? '\uD83D\uDD25 ' + streak : '0'
                 ),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Day Streak'),
+                h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'Day Streak'),
                 h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, checkIns.length + ' total check-ins')
               ),
 
               // 7-day mood trend
               h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, marginBottom: 12 } }, 'Last 7 Days'),
+                h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 12 } }, 'Last 7 Days'),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: 100, paddingBottom: 4 } },
                   last7.map(function(day, i) {
                     var barH = day.mood > 0 ? (day.mood / 5 * 80) : 4;
@@ -1673,7 +1673,7 @@ window.SelHub = window.SelHub || {
 
               // Mood distribution
               h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, marginBottom: 10 } }, 'Mood Distribution'),
+                h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } }, 'Mood Distribution'),
                 MOODS.map(function(m) {
                   var count = moodDist[m.id] || 0;
                   var pct = checkIns.length > 0 ? Math.round(count / checkIns.length * 100) : 0;
@@ -1682,14 +1682,14 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { flex: 1, height: 16, borderRadius: 8, background: '#1e293b', overflow: 'hidden' } },
                       h('div', { style: { width: pct + '%', height: '100%', borderRadius: 8, background: m.color, transition: 'width 0.3s' } })
                     ),
-                    h('span', { style: { fontSize: 11, color: '#cbd5e1', minWidth: 40, textAlign: 'right' } }, count + ' (' + pct + '%)')
+                    h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 40, textAlign: 'right' } }, count + ' (' + pct + '%)')
                   );
                 })
               ),
 
               // Trigger frequency
               sortedTriggers.length > 0 && h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, marginBottom: 10 } }, 'Most Common Triggers'),
+                h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } }, 'Most Common Triggers'),
                 sortedTriggers.map(function(tag) {
                   return h('div', { key: tag, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1e293b' } },
                     h('span', { style: { fontSize: 13, color: '#e2e8f0' } }, tag),
@@ -1705,7 +1705,7 @@ window.SelHub = window.SelHub || {
                   var needed = 5 - checkIns.length;
                   if (needed > 0) {
                     return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                      h('div', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, marginBottom: 8 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
+                      h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 8 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
                       h('div', { style: { textAlign: 'center', padding: 12, fontSize: 12, color: '#64748b' } },
                         'Need ' + needed + ' more check-in' + (needed !== 1 ? 's' : '') + ' to unlock pattern analysis!'
                       )
@@ -1738,7 +1738,7 @@ window.SelHub = window.SelHub || {
                 var vocabCount = vocabWords.length;
                 if (vocabCount === 0) return null;
                 return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, marginBottom: 10 } },
+                  h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } },
                     '\uD83D\uDCDA Emotion Vocabulary (' + vocabCount + ' word' + (vocabCount !== 1 ? 's' : '') + ')'
                   ),
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -1815,7 +1815,7 @@ window.SelHub = window.SelHub || {
 
           badgesContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
-            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#cbd5e1' } },
+            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#94a3b8' } },
               earnedCount + ' of ' + BADGES.length + ' earned'
             ),
             h('div', { style: { textAlign: 'center', marginBottom: 20 } },

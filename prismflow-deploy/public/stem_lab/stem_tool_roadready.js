@@ -2619,6 +2619,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '🔙'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Straight Backing'),
               h('div', { style: { fontSize: '10px', color: '#d4d4d4', marginTop: '2px' } }, 'Reverse in a straight line')
+            ),
+            h('button', { onClick: function() { upd('view', 'intersectionGuide'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🚦'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Intersection Guide'),
+              h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, 'Right-of-way rules at every type')
+            ),
+            h('button', { onClick: function() { upd('view', 'dashLights'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #881337, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔧'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Dashboard Lights'),
+              h('div', { style: { fontSize: '10px', color: '#fda4af', marginTop: '2px' } }, 'Warning lights decoded')
+            ),
+            h('button', { onClick: function() { upd('view', 'preTrip'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '✅'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Pre-Trip Check'),
+              h('div', { style: { fontSize: '10px', color: '#d9f99d', marginTop: '2px' } }, 'TIRES, lights, fluids walk-around')
             )
           ),
           // Maine facts strip

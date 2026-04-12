@@ -1232,7 +1232,7 @@ window.SelHub = window.SelHub || {
                   h('button', { 'aria-label': 'Not yet', onClick: function() { logAccountability(false); }, style: { padding: '5px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\u274C Not yet')
                 );
               })(),
-              accountabilityStreak > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1', marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDCAA Accountability streak: ' + accountabilityStreak + ' day' + (accountabilityStreak !== 1 ? 's' : '')) : null,
+              accountabilityStreak > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDCAA Accountability streak: ' + accountabilityStreak + ' day' + (accountabilityStreak !== 1 ? 's' : '')) : null,
               // Add goal button + templates toggle
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginBottom: 16 } },
                 h('button', { 'aria-label': '+ New Goal', onClick: function() { addGoal('', 'personal'); }, style: { flex: 1, padding: '10px 16px', borderRadius: 10, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' } }, '+ New Goal'),
@@ -1254,7 +1254,7 @@ window.SelHub = window.SelHub || {
               activeGoals.length === 0 && completedGoals.length === 0 ?
                 h('div', { style: { textAlign: 'center', padding: 40 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDFAF'),
-                  h('p', { style: { fontSize: 14, color: '#cbd5e1' } }, band === 'elementary' ? 'No goals yet! Tap the button above to set your first goal.' : 'Ready to set meaningful goals? Start above or use a template.'),
+                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, band === 'elementary' ? 'No goals yet! Tap the button above to set your first goal.' : 'Ready to set meaningful goals? Start above or use a template.'),
                   h('p', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Goals with steps are easier to achieve!')
                 ) : null,
               activeGoals.map(function(goal) {
@@ -1270,7 +1270,7 @@ window.SelHub = window.SelHub || {
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 13, fontWeight: 'bold', color: '#e2e8f0', cursor: 'pointer' }, onClick: function() { upd({ editingGoal: goal.id }); } }, goal.text || 'Tap to name your goal...'),
                     // Difficulty indicator (flames)
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
-                    h('select', { value: goal.category, 'aria-label': 'Goal category', onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', fontSize: 10, cursor: 'pointer' } },
+                    h('select', { value: goal.category, 'aria-label': 'Goal category', onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#94a3b8', fontSize: 10, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
                     h('button', { 'aria-label': 'Difficulty:', onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: 12, padding: 4 } }, '\uD83D\uDCE4'),
@@ -1278,7 +1278,7 @@ window.SelHub = window.SelHub || {
                   ),
                   // Difficulty selector (shown when editing)
                   isEditing ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingLeft: 26 } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1', fontWeight: 'bold' } }, 'Difficulty:'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', fontWeight: 'bold' } }, 'Difficulty:'),
                     [1, 2, 3, 4, 5].map(function(lvl) {
                       var info = DIFFICULTY_LABELS[lvl - 1];
                       var active = goalDiff === lvl;
@@ -1337,15 +1337,15 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 14 } },
                     h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#6366f1' } }, String(daysTaken)),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Day' + (daysTaken !== 1 ? 's' : ''))
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Day' + (daysTaken !== 1 ? 's' : ''))
                     ),
                     h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#a855f7' } }, String(stepsCount)),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1' } }, 'Steps Done')
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, 'Steps Done')
                     ),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center' } },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, getDifficultyFlames(celebGoal.difficulty || 1)),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1' } }, diffInfo.label)
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, diffInfo.label)
                     )
                   ),
                   // "What I Learned" textarea
@@ -1386,7 +1386,7 @@ window.SelHub = window.SelHub || {
                       h('button', { 'aria-label': 'Share goal', onClick: function() { shareGoalToClipboard(goal); }, style: { background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: 11, padding: 2 } }, '\uD83D\uDCE4')
                     ),
                     // Completion stats line
-                    (goal.completedAt || goal.completionJournal) ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, paddingLeft: 22, fontSize: 10, color: '#cbd5e1' } },
+                    (goal.completedAt || goal.completionJournal) ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, paddingLeft: 22, fontSize: 10, color: '#94a3b8' } },
                       goal.completedAt ? h('span', null, '\u23F1\uFE0F ' + getTimeToDays(goal.createdAt, goal.completedAt) + ' days') : null,
                       h('span', null, '\uD83D\uDC63 ' + getCompletedStepCount(goal) + ' steps'),
                       goal.completionJournal ? h('span', { style: { color: '#a5b4fc' } }, '\uD83D\uDCA1 Journal saved') : null
@@ -1394,12 +1394,12 @@ window.SelHub = window.SelHub || {
                     // Show completion journal if saved
                     goal.completionJournal && goal.completionJournal.whatLearned ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 6, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, '\uD83D\uDCA1 What I Learned'),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, goal.completionJournal.whatLearned)
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, goal.completionJournal.whatLearned)
                     ) : null,
                     // Reflection form
                     isReflecting ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 8 } }, '\uD83D\uDCDD Goal Reflection Journal'),
-                      h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10 } }, band === 'elementary' ? 'Think about how you reached your goal!' : 'Reflect on your journey to completing this goal.'),
+                      h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, band === 'elementary' ? 'Think about how you reached your goal!' : 'Reflect on your journey to completing this goal.'),
                       ['What worked well?', 'What was the hardest part?', 'What would I do differently?', 'What\'s my next goal?'].map(function(prompt, pi) {
                         return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: pi, style: { marginBottom: 8 } },
                           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, prompt),
@@ -1423,7 +1423,7 @@ window.SelHub = window.SelHub || {
                     hasReflections ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.1)' } },
                       h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 6 } }, '\uD83D\uDCDD Reflection'),
                       goal.reflections.map(function(ref, ri) {
-                        return h('div', { key: ri, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                        return h('div', { key: ri, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } },
                           ref.whatWorked ? h('div', null, h('strong', { style: { color: '#a5b4fc' } }, 'What worked: '), ref.whatWorked) : null,
                           ref.hardestPart ? h('div', null, h('strong', { style: { color: '#a5b4fc' } }, 'Hardest part: '), ref.hardestPart) : null,
                           ref.doDifferently ? h('div', null, h('strong', { style: { color: '#a5b4fc' } }, 'Do differently: '), ref.doDifferently) : null,
@@ -1439,7 +1439,7 @@ window.SelHub = window.SelHub || {
             // ── HABITS TAB ──
             tab === 'habits' ? h('div', null,
               h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83D\uDD01 Daily Habit Tracker'),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 14, lineHeight: 1.5 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Track your daily habits! Check off each one you do every day.' :
                 band === 'middle' ? 'Build consistency by tracking up to 7 daily habits over the week.' :
                 'Atomic habits: track small daily actions that compound over time. Up to 7 habits.'
@@ -1456,7 +1456,7 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, hotw.name),
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 } },
                       h('span', { style: { fontSize: 10 } }, hCat.emoji),
-                      h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, hCat.label),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, hCat.label),
                       h('span', { style: { fontSize: 10, fontWeight: 'bold', color: hotw.pct >= 80 ? '#34d399' : '#fbbf24' } }, hotw.pct + '% this week')
                     )
                   )
@@ -1471,7 +1471,7 @@ window.SelHub = window.SelHub || {
                     addHabit(e.target.value, cat); e.target.value = '';
                   }
                 }, style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
-                h('select', { id: 'habit-cat-select', 'aria-label': 'Habit category', style: { padding: '8px 6px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' } },
+                h('select', { id: 'habit-cat-select', 'aria-label': 'Habit category', style: { padding: '8px 6px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#94a3b8', fontSize: 11, cursor: 'pointer' } },
                   HABIT_CATEGORIES.map(function(hc) { return h('option', { key: hc.id, value: hc.id }, hc.emoji + ' ' + hc.label); })
                 ),
                 h('button', { 'aria-label': '+ Add', onClick: function() {
@@ -1507,7 +1507,7 @@ window.SelHub = window.SelHub || {
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
                   h('caption', { className: 'sr-only' }, 'Read 30 min \uD83D\uDCDA'), h('thead', null,
                     h('tr', null,
-                      h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', color: '#cbd5e1', fontWeight: 'bold', fontSize: 10, borderBottom: '1px solid rgba(99,102,241,0.1)' } }, 'Habit'),
+                      h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', color: '#94a3b8', fontWeight: 'bold', fontSize: 10, borderBottom: '1px solid rgba(99,102,241,0.1)' } }, 'Habit'),
                       weekDates.map(function(wd, wi) {
                         var dt = new Date(wd + 'T12:00:00');
                         var dayName = dayLabels[dt.getDay()];
@@ -1517,7 +1517,7 @@ window.SelHub = window.SelHub || {
                           h('div', { style: { fontSize: 8 } }, wd.slice(5))
                         );
                       }),
-                      h('th', { scope: 'col', style: { padding: '6px 4px', color: '#cbd5e1', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
+                      h('th', { scope: 'col', style: { padding: '6px 4px', color: '#94a3b8', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
                     )
                   ),
                   h('tbody', null,
@@ -1592,7 +1592,7 @@ window.SelHub = window.SelHub || {
                       var totalPct = 0;
                       chartData.forEach(function(cd) { totalPct += cd.pct; });
                       var avgPct = Math.round(totalPct / chartData.length);
-                      return h('div', { style: { textAlign: 'center', marginTop: 8, fontSize: 10, color: '#cbd5e1' } },
+                      return h('div', { style: { textAlign: 'center', marginTop: 8, fontSize: 10, color: '#94a3b8' } },
                         'Weekly average: ',
                         h('span', { style: { fontWeight: 'bold', color: avgPct >= 80 ? '#34d399' : avgPct >= 50 ? '#fbbf24' : '#a5b4fc' } }, avgPct + '%')
                       );
@@ -1601,7 +1601,7 @@ window.SelHub = window.SelHub || {
                 })()
               ) : h('div', { style: { textAlign: 'center', padding: 30 } },
                 h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD01'),
-                h('p', { style: { fontSize: 13, color: '#cbd5e1' } }, band === 'elementary' ? 'Add a habit above to start tracking!' : 'Define your daily habits above to begin tracking consistency.'),
+                h('p', { style: { fontSize: 13, color: '#94a3b8' } }, band === 'elementary' ? 'Add a habit above to start tracking!' : 'Define your daily habits above to begin tracking consistency.'),
                 h('p', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Tip: Start with just 1-2 habits and build up over time.')
               )
             ) : null,
@@ -1609,7 +1609,7 @@ window.SelHub = window.SelHub || {
             // ── VISION BOARD TAB ──
             tab === 'vision' ? h('div', null,
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83C\uDF1F Vision Board'),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 14, lineHeight: 1.5 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Write down your dreams and wishes! What do you want to do or become?' :
                 band === 'middle' ? 'Map out your aspirations across different timeframes. Dream big, then plan small.' :
                 'Clarify your vision across timeframes. Vision without action is a daydream \u2014 action without vision is a nightmare.'
@@ -1654,7 +1654,7 @@ window.SelHub = window.SelHub || {
 
             // ── SMART BUILDER TAB ──
             tab === 'smart' ? h('div', null,
-              h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } },
+              h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } },
                 band === 'elementary' ? 'SMART goals help you think clearly about what you want to do. Fill in each section!' :
                 'SMART goals are Specific, Measurable, Achievable, Relevant, and Time-bound. Select a goal and build it out.'
               ),
@@ -1666,7 +1666,7 @@ window.SelHub = window.SelHub || {
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, opacity: 0.7 } }, showSmartExamples ? '\u25B2' : '\u25BC')
                 ),
                 showSmartExamples ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 10, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.12)' } },
-                  h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.5 } },
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5 } },
                     band === 'elementary' ? 'Pick an example to start with! You can change the words later.' :
                     'Browse fully-filled SMART examples by category. Tap "Use as Template" to pre-fill and customize.'
                   ),
@@ -1692,7 +1692,7 @@ window.SelHub = window.SelHub || {
                         var val = ex.smart[key][band] || ex.smart[key].elementary;
                         return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: key, style: { display: 'flex', gap: 6, marginBottom: 3, fontSize: 10, lineHeight: 1.5 } },
                           h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 'bold', color: '#818cf8', minWidth: 14 } }, key + ':'),
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#cbd5e1' } }, val)
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#94a3b8' } }, val)
                         );
                       })
                     );
@@ -1721,7 +1721,7 @@ window.SelHub = window.SelHub || {
                           h('span', { style: { fontSize: 13, fontWeight: 'bold', color: '#a5b4fc' } }, key + ' \u2014 ' + info.label),
                           val ? h('span', { style: { marginLeft: 'auto', color: '#34d399', fontSize: 10 } }, '\u2713') : null
                         ),
-                        h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6 } }, info.desc),
+                        h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } }, info.desc),
                         h('textarea', { value: val, 'aria-label': key + ' SMART goal field', onChange: function(e) {
                           var newSmart = Object.assign({}, editGoal.smart || {});
                           newSmart[key] = e.target.value;
@@ -1750,7 +1750,7 @@ window.SelHub = window.SelHub || {
             tab === 'coach' ? h('div', null,
               h('div', { style: { textAlign: 'center', padding: 16 } },
                 h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83E\uDD16'),
-                h('p', { style: { fontSize: 12, color: '#cbd5e1', maxWidth: 400, margin: '0 auto 12px', lineHeight: 1.6 } },
+                h('p', { style: { fontSize: 12, color: '#94a3b8', maxWidth: 400, margin: '0 auto 12px', lineHeight: 1.6 } },
                   band === 'elementary' ? 'I\'m your Goal Coach! Ask me for help making plans and staying on track!' :
                   'AI Goal Coach \u2014 get personalized advice on setting, tracking, and achieving your goals.'
                 )
@@ -1775,7 +1775,7 @@ window.SelHub = window.SelHub || {
             // ── WEEKLY CHECK-IN TAB ──
             tab === 'checkin' ? h('div', null,
               h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83D\uDCDD Weekly Check-In'),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 14, lineHeight: 1.5 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Look back at your week! What did you work on? What will you do next?' :
                 band === 'middle' ? 'Take a few minutes to reflect on your week. Honest reflection builds self-awareness.' :
                 'Structured weekly review: assess progress, acknowledge obstacles, and set intentions for next week.'
@@ -1795,7 +1795,7 @@ window.SelHub = window.SelHub || {
                         h('span', { style: { fontSize: 12 } }, '\uD83C\uDFAF'),
                         h('span', { style: { flex: 1, fontSize: 11, color: '#e2e8f0' } }, g.text),
                         h('span', { style: { fontSize: 10, color: '#34d399', fontWeight: 'bold' } }, g.stepsComplete + '/' + g.totalSteps + ' steps'),
-                        h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, g.progress + '%')
+                        h('span', { style: { fontSize: 10, color: '#94a3b8' } }, g.progress + '%')
                       );
                     })
                   );
@@ -1823,7 +1823,7 @@ window.SelHub = window.SelHub || {
                     return h('button', { 'aria-label': 'Rate this week', key: star, onClick: function() { updateWeeklyDraft('rating', star); sfxClick(); }, style: { background: 'none', border: 'none', fontSize: 28, cursor: 'pointer', color: filled ? '#fbbf24' : '#334155', transition: 'transform 0.15s', padding: 2 } }, filled ? '\u2B50' : '\u2606');
                   })
                 ),
-                h('div', { style: { fontSize: 10, color: '#cbd5e1' } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } },
                   (weeklyDraft.rating || 0) === 0 ? 'Tap a star to rate' :
                   (weeklyDraft.rating || 0) <= 2 ? 'Tough week \u2014 that\u2019s okay! Next week is a fresh start.' :
                   (weeklyDraft.rating || 0) <= 3 ? 'Solid week! Room to grow.' :
@@ -1860,7 +1860,7 @@ window.SelHub = window.SelHub || {
 
               // Past check-ins
               weeklyCheckins.length > 0 ? h('div', { style: { marginTop: 8 } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 10 } }, '\uD83D\uDCC5 Past Weekly Check-Ins (' + weeklyCheckins.length + ')'),
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Past Weekly Check-Ins (' + weeklyCheckins.length + ')'),
                 weeklyCheckins.slice().reverse().map(function(ci, idx) {
                   var dateStr = new Date(ci.date).toLocaleDateString();
                   var stars = '';
@@ -1873,16 +1873,16 @@ window.SelHub = window.SelHub || {
                     ci.progressSummary && ci.progressSummary.length > 0 ? h('div', { style: { marginBottom: 6 } },
                       h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#34d399', marginBottom: 3 } }, 'Progress:'),
                       ci.progressSummary.map(function(ps, psi) {
-                        return h('div', { key: psi, style: { fontSize: 10, color: '#cbd5e1', paddingLeft: 8 } }, '\u2022 ' + ps.text + ' (' + ps.progress + '%)');
+                        return h('div', { key: psi, style: { fontSize: 10, color: '#94a3b8', paddingLeft: 8 } }, '\u2022 ' + ps.text + ' (' + ps.progress + '%)');
                       })
                     ) : null,
                     ci.obstacles ? h('div', { style: { marginBottom: 4 } },
                       h('span', { style: { fontSize: 10, fontWeight: 'bold', color: '#f87171' } }, 'Obstacles: '),
-                      h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, ci.obstacles)
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, ci.obstacles)
                     ) : null,
                     ci.focus ? h('div', null,
                       h('span', { style: { fontSize: 10, fontWeight: 'bold', color: '#818cf8' } }, 'Next focus: '),
-                      h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, ci.focus)
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, ci.focus)
                     ) : null
                   );
                 })
@@ -1917,13 +1917,13 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 18 } }, cs.emoji),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 13, fontWeight: 'bold', color: cs.color } }, cs.label),
-                      h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, cs.count + ' goal' + (cs.count !== 1 ? 's' : '') + ' \u2022 ' + cs.completedCount + ' completed')
+                      h('div', { style: { fontSize: 10, color: '#94a3b8' } }, cs.count + ' goal' + (cs.count !== 1 ? 's' : '') + ' \u2022 ' + cs.completedCount + ' completed')
                     )
                   ),
                   // Completion rate bar
                   h('div', { style: { marginBottom: 6 } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
-                      h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Completion Rate'),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Completion Rate'),
                       h('span', { style: { fontSize: 10, fontWeight: 'bold', color: cs.completionRate >= 75 ? '#34d399' : cs.completionRate >= 40 ? '#fbbf24' : cs.color } }, cs.completionRate + '%')
                     ),
                     h('div', { style: { height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
@@ -1933,7 +1933,7 @@ window.SelHub = window.SelHub || {
                   // Avg step completion bar
                   h('div', { style: { marginBottom: 8 } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
-                      h('span', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Avg Step Progress'),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Step Progress'),
                       h('span', { style: { fontSize: 10, fontWeight: 'bold', color: cs.avgStepCompletion >= 75 ? '#34d399' : cs.avgStepCompletion >= 40 ? '#fbbf24' : '#64748b' } }, cs.avgStepCompletion + '%')
                     ),
                     h('div', { style: { height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
@@ -1949,13 +1949,13 @@ window.SelHub = window.SelHub || {
               }),
 
               // Category distribution (simple bar view)
-              h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 8, marginTop: 16 } }, 'Goals by Category'),
+              h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8, marginTop: 16 } }, 'Goals by Category'),
               GOAL_CATEGORIES.map(function(cat) {
                 var count = goals.filter(function(g) { return g.category === cat.id; }).length;
                 if (count === 0) return null;
                 return h('div', { key: cat.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 14, width: 24 } }, cat.emoji),
-                  h('span', { style: { fontSize: 11, color: '#cbd5e1', width: 80 } }, cat.label),
+                  h('span', { style: { fontSize: 11, color: '#94a3b8', width: 80 } }, cat.label),
                   h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)' } },
                     h('div', { style: { width: Math.round(count / Math.max(1, goals.length) * 100) + '%', height: '100%', background: cat.color, borderRadius: 4 } })
                   ),
@@ -1970,7 +1970,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 22 } }, '\uD83D\uDDFC'),
                   h('div', null,
                     h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd' } }, 'Milestones Reached: ' + msCount),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'You earned ' + (msCount * 5) + ' bonus XP from milestones!')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'You earned ' + (msCount * 5) + ' bonus XP from milestones!')
                   )
                 );
               })(),
@@ -1984,14 +1984,14 @@ window.SelHub = window.SelHub || {
                     var totalR = 0;
                     weeklyCheckins.forEach(function(c) { totalR += (c.rating || 0); });
                     var avgR = weeklyCheckins.length > 0 ? (totalR / weeklyCheckins.length).toFixed(1) : '0';
-                    return h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Average rating: ' + avgR + '/5 \u2B50');
+                    return h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Average rating: ' + avgR + '/5 \u2B50');
                   })()
                 )
               ) : null,
 
               // Goal progress list
               goals.length > 0 ? h('div', { style: { marginTop: 16 } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 8 } }, 'Individual Goal Progress'),
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, 'Individual Goal Progress'),
                 goals.map(function(goal) {
                   var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
                   var milestones = getGoalMilestones(goal);

@@ -722,7 +722,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: '#8b5cf6', fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -769,7 +769,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF2C\uFE0F Let\'s Breathe Together!' : '\uD83C\uDF2C\uFE0F Guided Breathing'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'Pick a breathing pattern and follow the circle!' :
             band === 'middle' ? 'Choose a pattern and sync your breath to the visual guide.' :
             'Select a respiratory entrainment pattern. Follow the visual pacer.'
@@ -888,7 +888,7 @@ window.SelHub = window.SelHub || {
                 stopBreathTimer();
                 upd({ breathActive: false, breathPhase: null });
               },
-              style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, '\u25A0 Stop')
           ),
 
@@ -911,7 +911,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83E\uDEC0 Body Check-Up!' : '\uD83E\uDEC0 Body Scan'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'We\'ll check in with each part of your body, from toes to head!' :
             band === 'middle' ? 'Progressive body scan — notice tension and release it, one area at a time.' :
             'Progressive muscle relaxation meets interoceptive awareness. Scan systematically.'
@@ -920,7 +920,7 @@ window.SelHub = window.SelHub || {
           // Not started yet
           scanStep === -1 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center' } },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 64, marginBottom: 16 } }, '\uD83E\uDDD8'),
-            h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 16, lineHeight: 1.5 } },
+            h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 16, lineHeight: 1.5 } },
               band === 'elementary'
                 ? 'Find a comfortable seat. You can close your eyes if you want to. Ready?'
                 : 'Find a comfortable position. Close your eyes when ready. You\'ll spend about ' + scanSteps.reduce(function(s,st) { return s + st.seconds; }, 0) + ' seconds total.'
@@ -1001,7 +1001,7 @@ window.SelHub = window.SelHub || {
                   stopScanTimer();
                   upd({ scanStep: -1, scanActive: false });
                 },
-                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\u25A0 Stop Scan')
             )
           ),
@@ -1022,7 +1022,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF0D Use Your Senses!' : '\uD83C\uDF0D 5-4-3-2-1 Grounding'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'When you feel worried, use your senses to come back to right here, right now!' :
             band === 'middle' ? 'Anchor yourself to the present using your five senses \u2014 a powerful anxiety reduction technique.' :
             'Sensory grounding disrupts anxious rumination by redirecting attentional resources to the present moment.'
@@ -1055,7 +1055,7 @@ window.SelHub = window.SelHub || {
                 h('h4', { style: { margin: '0 0 4px', color: sense.color, fontSize: 20 } },
                   sense.count + ' things you can ' + sense.sense
                 ),
-                h('p', { style: { fontSize: 13, color: '#cbd5e1', margin: '0 0 16px' } }, sense.prompt[band])
+                h('p', { style: { fontSize: 13, color: '#94a3b8', margin: '0 0 16px' } }, sense.prompt[band])
               ),
 
               // Input area
@@ -1115,7 +1115,7 @@ window.SelHub = window.SelHub || {
             h('h4', { style: { color: '#22c55e', fontSize: 20, marginBottom: 8 } },
               band === 'elementary' ? 'You Did It!' : 'Grounding Complete'
             ),
-            h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 20, lineHeight: 1.5 } },
+            h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 20, lineHeight: 1.5 } },
               band === 'elementary' ? 'You used all 5 senses to come back to the present moment. You\'re a grounding superstar!'
               : 'You\'ve re-anchored yourself to the present moment through sensory awareness. Notice how you feel compared to before.'
             ),
@@ -1141,7 +1141,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDE4F What Are You Thankful For?' : '\uD83D\uDE4F Gratitude Journal'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Write down things that make you feel thankful. Even small things count!' :
             band === 'middle' ? 'Regular gratitude practice is scientifically proven to increase happiness.' :
             'Gratitude interventions show robust effects on subjective well-being (Emmons & McCullough, 2003).'
@@ -1155,7 +1155,7 @@ window.SelHub = window.SelHub || {
                 upd('gratPrompt', prompts[idx]);
                 if (soundEnabled) sfxClick();
               },
-              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, margin: '0 auto' }
+              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', cursor: 'pointer', fontSize: 12, margin: '0 auto' }
             }, '\uD83D\uDCA1 Give Me a Prompt'),
             gratPrompt && h('div', { style: { marginTop: 10, padding: 14, borderRadius: 12, background: '#22c55e12', border: '1px solid #22c55e33', textAlign: 'center' } },
               h('p', { style: { fontSize: 14, color: '#e2e8f0', fontStyle: 'italic', margin: 0 } }, '"' + gratPrompt + '"')
@@ -1226,7 +1226,7 @@ window.SelHub = window.SelHub || {
 
           // Past entries
           gratEntries.length > 0 && h('div', null,
-            h('p', { style: { fontSize: 13, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } },
+            h('p', { style: { fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } },
               '\uD83D\uDE4F Past Gratitude (' + gratEntries.length + ')'
             ),
             gratEntries.slice().reverse().slice(0, 5).map(function(entry, i) {
@@ -1256,7 +1256,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF3F Mindful Activities' : '\uD83C\uDF3F Mindful Moments'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Quick activities to help you feel calm and present!' :
             'Short mindfulness exercises you can do anywhere, anytime.'
           ),
@@ -1270,13 +1270,13 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Activities',
                 onClick: function() { upd({ activeActivity: null, activityStep: 0 }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Activities'),
 
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', marginBottom: 16 } },
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48 } }, act.emoji),
                 h('h4', { style: { margin: '8px 0 4px', color: act.color, fontSize: 20 } }, act.name),
-                h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 4 } }, act.desc[band]),
+                h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } }, act.desc[band]),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b' } }, act.duration)
               ),
 
@@ -1353,7 +1353,7 @@ window.SelHub = window.SelHub || {
                   done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
                 ),
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, act.name),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.3, marginBottom: 4 } },
+                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.3, marginBottom: 4 } },
                   act.desc[band].length > 60 ? act.desc[band].substring(0, 60) + '...' : act.desc[band]
                 ),
                 h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, act.duration)
@@ -1425,26 +1425,26 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 } },
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 22, fontWeight: 800, color: '#8b5cf6' } }, streak),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Day Streak')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 22, fontWeight: 800, color: '#22c55e' } }, totalPractices),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Total Practices')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Total Practices')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 22, fontWeight: 800, color: '#f59e0b' } }, totalMinutes),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Est. Minutes')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Est. Minutes')
                   ),
                   h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 22, fontWeight: 800, color: '#ec4899' } }, Object.keys(daySet).length),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Days Active')
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Active')
                   )
                 ),
 
                 // Weekly Goal Tracker
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
-                    h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', margin: 0 } }, '\uD83C\uDFAF Weekly Goal'),
+                    h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: 0 } }, '\uD83C\uDFAF Weekly Goal'),
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Goal:'),
                       h('select', {
@@ -1478,7 +1478,7 @@ window.SelHub = window.SelHub || {
 
                 // Practice calendar (28 days with day labels)
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 } },
                     dayLabels.map(function(lbl, i) {
                       return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 11, color: '#475569', fontWeight: 700, padding: '2px 0' } }, lbl);
@@ -1501,7 +1501,7 @@ window.SelHub = window.SelHub || {
 
                 // Type breakdown (expanded)
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 10 } }, 'Practice Types'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, 'Practice Types'),
                   [
                     { key: 'breathe', label: 'Breathing', emoji: '\uD83C\uDF2C\uFE0F', color: '#3b82f6' },
                     { key: 'meditation', label: 'Meditation', emoji: '\uD83E\uDDD8', color: '#a78bfa' },
@@ -1516,7 +1516,7 @@ window.SelHub = window.SelHub || {
                     var pct = totalPractices > 0 ? (count / totalPractices * 100) : 0;
                     return h('div', { key: typ.key, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                       h('span', { style: { fontSize: 14, width: 22, textAlign: 'center', flexShrink: 0 } }, typ.emoji),
-                      h('span', { style: { fontSize: 10, color: '#cbd5e1', width: 68, flexShrink: 0 } }, typ.label),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8', width: 68, flexShrink: 0 } }, typ.label),
                       h('div', { style: { flex: 1, height: 10, borderRadius: 5, background: '#0f172a', overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: pct + '%', background: typ.color, borderRadius: 5, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
                       ),
@@ -1527,7 +1527,7 @@ window.SelHub = window.SelHub || {
 
                 // Recent practices
                 h('div', null,
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Recent Practices'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Recent Practices'),
                   practiceLog.slice().reverse().slice(0, 10).map(function(entry, i) {
                     var typeLabels = { breathe: '\uD83C\uDF2C\uFE0F Breathing', scan: '\uD83E\uDEC0 Body Scan', grounding: '\uD83C\uDF0D Grounding', gratitude: '\uD83D\uDE4F Gratitude', activity: '\uD83C\uDF3F Activity', meditation: '\uD83E\uDDD8 Meditation', movement: '\uD83D\uDEB6 Movement', technique: '\u2693 Technique' };
                     var time = new Date(entry.timestamp);
@@ -1553,7 +1553,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83E\uDDD8 Guided Meditations' : '\uD83E\uDDD8 Meditation Scripts'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Choose a meditation and listen to the story. Close your eyes and relax!' :
             band === 'middle' ? 'Select a guided meditation. Follow along with the text or use the read-aloud button.' :
             'Evidence-based guided meditation scripts. Use TTS read-aloud or follow the text at your own pace.'
@@ -1571,7 +1571,7 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 32, flexShrink: 0 } }, script.emoji),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, script.name),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, script.desc),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, script.desc),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 6 } },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + script.duration),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } },
@@ -1615,7 +1615,7 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Scripts',
                 onClick: function() { upd({ meditationIdx: -1, meditationPlaying: false }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Scripts'),
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
@@ -1695,7 +1695,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDEB6 Move Your Body Mindfully!' : '\uD83D\uDEB6 Mindful Movement'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Gentle exercises that combine moving with breathing. Fun and calming!' :
             band === 'middle' ? 'Simple exercises that combine physical movement with mindful breathing.' :
             'Somatic mindfulness \u2014 integrating kinesthetic awareness with respiratory entrainment.'
@@ -1711,13 +1711,13 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Exercises',
                 onClick: function() { upd({ movementActiveId: null, movementStep: 0 }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Exercises'),
 
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', marginBottom: 16 } },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48 } }, ex.emoji),
                 h('h4', { style: { margin: '8px 0 4px', color: ex.color, fontSize: 20 } }, ex.name),
-                h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, ex.desc[band]),
+                h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, ex.desc[band]),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b' } }, '\u23F1 ' + ex.duration)
               ),
 
@@ -1798,7 +1798,7 @@ window.SelHub = window.SelHub || {
                   done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
                 ),
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, ex.name),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.3, marginBottom: 4 } },
+                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.3, marginBottom: 4 } },
                   ex.desc[band].length > 55 ? ex.desc[band].substring(0, 55) + '...' : ex.desc[band]
                 ),
                 h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + ex.duration)
@@ -1821,7 +1821,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\u2693 Grounding Toolkit' : '\u2693 Grounding Techniques'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Extra tools to help you feel calm and safe when big feelings come!' :
             band === 'middle' ? 'Advanced grounding techniques for managing stress and anxiety.' :
             'Empirically-supported grounding interventions for acute stress and emotional dysregulation.'
@@ -1834,7 +1834,7 @@ window.SelHub = window.SelHub || {
 
             var backBtn = h('button', { 'aria-label': 'All Techniques',
               onClick: function() { upd({ techActiveId: null, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false }); if (soundEnabled) sfxClick(); },
-              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
             }, '\u2190 All Techniques');
 
             // ── Box Breathing Technique ──
@@ -1850,7 +1850,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
                 ),
 
                 // Box visual
@@ -1928,7 +1928,7 @@ window.SelHub = window.SelHub || {
                   }, '\u25B6 Start Box Breathing'),
                   techBoxActive && h('button', { 'aria-label': 'Stop',
                     onClick: function() { upd({ techBoxActive: false }); },
-                    style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#cbd5e1', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                   }, '\u25A0 Stop')
                 )
               );
@@ -1944,7 +1944,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
                 ),
 
                 // RAIN letter progress
@@ -1968,7 +1968,7 @@ window.SelHub = window.SelHub || {
                 techRainStep < 4 && h('div', { style: { padding: 20, borderRadius: 16, background: tech.color + '10', border: '1px solid ' + tech.color + '33', marginBottom: 16 } },
                   h('h4', { style: { margin: '0 0 4px', color: tech.color, fontSize: 18 } }, currentRainStep.letter + ' \u2014 ' + currentRainStep.title),
                   h('p', { style: { fontSize: 14, color: '#e2e8f0', marginBottom: 12 } }, currentRainStep.prompt[band]),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } }, currentRainStep.guidance[band]),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } }, currentRainStep.guidance[band]),
                   h('textarea', {
                     value: techRainInputs[techRainStep] || '',
                     'aria-label': 'RAIN technique response',
@@ -2007,7 +2007,7 @@ window.SelHub = window.SelHub || {
                 techRainStep >= 4 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 24 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 8 } }, '\uD83C\uDF27\uFE0F'),
                   h('h4', { style: { color: '#22c55e', fontSize: 18, marginBottom: 8 } }, 'RAIN Complete'),
-                  h('p', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, marginBottom: 16 } },
+                  h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6, marginBottom: 16 } },
                     band === 'elementary' ? 'Great job! You used all four steps to work through a big feeling.' :
                     'You have processed an emotional experience using the RAIN framework. This skill strengthens with practice.'
                   ),
@@ -2027,7 +2027,7 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
                 ),
 
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -2094,7 +2094,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
                 ),
 
                 techStep < 5 && (function() {
@@ -2175,7 +2175,7 @@ window.SelHub = window.SelHub || {
                 techStep >= 5 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 24 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 8 } }, '\uD83C\uDF0D'),
                   h('h4', { style: { color: '#22c55e', fontSize: 18, marginBottom: 8 } }, 'Senses Grounding Complete!'),
-                  h('p', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.6 } },
+                  h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6 } },
                     'You brought yourself back to the present moment using all five senses.'
                   ),
                   h('button', { 'aria-label': 'Back to Techniques',
@@ -2211,7 +2211,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, tech.name),
                     done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
                   ),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4, marginTop: 2 } }, tech.desc[band])
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4, marginTop: 2 } }, tech.desc[band])
                 ),
                 h('span', { style: { fontSize: 16, color: '#64748b', flexShrink: 0 } }, '\u2192')
               );

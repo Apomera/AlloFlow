@@ -584,7 +584,7 @@ window.SelHub = window.SelHub || {
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8 } }, 'What teamwork skill did you practice?'),
+            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {
               value: reflectionSkill,
               'aria-label': 'Teamwork skill practiced',
@@ -683,7 +683,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { background: '#1e293b', borderRadius: 20, padding: 32, textAlign: 'center', border: '2px solid ' + ACCENT, maxWidth: 300, boxShadow: '0 0 40px ' + ACCENT + '44' } },
                 h('div', { style: { fontSize: 48, marginBottom: 12 } }, popBadge.icon),
                 h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-                h('div', { style: { fontSize: 13, color: '#cbd5e1' } }, popBadge.desc)
+                h('div', { style: { fontSize: 13, color: '#94a3b8' } }, popBadge.desc)
               )
             );
           }
@@ -726,7 +726,7 @@ window.SelHub = window.SelHub || {
 
           rolesContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDC51 Team Role Discovery'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Every team needs different people! Tap on a role to learn about it, then pick the ones that sound like YOU.' :
               band === 'middle' ? 'Strong teams need diverse skills. Explore each role and identify which ones match your strengths.' :
               'Effective collaboration requires self-awareness about your natural tendencies. Discover your role profile.'
@@ -794,7 +794,7 @@ window.SelHub = window.SelHub || {
                 })
               ),
               // Reflection
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8 } }, '\uD83D\uDCDD My Best Team Role \u2014 Reflection:'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCDD My Best Team Role \u2014 Reflection:'),
               h('textarea', {
                 value: roleReflection,
                 'aria-label': 'Role reflection',
@@ -872,7 +872,7 @@ window.SelHub = window.SelHub || {
 
           challengesContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFD7\uFE0F Collaborative Challenges'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               'Challenge ' + ((challengeIdx % chList.length) + 1) + ' of ' + chList.length
             ),
 
@@ -887,7 +887,7 @@ window.SelHub = window.SelHub || {
               // Skills involved
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
                 curCh.skills.map(function(s) {
-                  return h('span', { key: s, style: { padding: '3px 10px', borderRadius: 20, background: '#334155', color: '#cbd5e1', fontSize: 11 } }, s);
+                  return h('span', { key: s, style: { padding: '3px 10px', borderRadius: 20, background: '#334155', color: '#94a3b8', fontSize: 11 } }, s);
                 })
               ),
 
@@ -979,7 +979,7 @@ window.SelHub = window.SelHub || {
 
           scenariosContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFAD Teamwork Scenarios'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               'Scenario ' + ((scenarioIdx % SCENARIOS.length) + 1) + ' of ' + SCENARIOS.length + ' \u00B7 ' + answeredCount + ' answered'
             ),
 
@@ -1041,7 +1041,7 @@ window.SelHub = window.SelHub || {
                       h('span', null, ch.label),
                       isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
                     ),
-                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } },
                       ch.feedback
                     )
                   );
@@ -1050,7 +1050,7 @@ window.SelHub = window.SelHub || {
 
               // Show all feedback after answering
               revealed && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 } }, 'All response ratings:'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
                 curSc.choices.map(function(ch, ci) {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
                   return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#64748b' } },
@@ -1077,7 +1077,7 @@ window.SelHub = window.SelHub || {
             // AI Team Coach section
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #6366f133' } },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Coach'),
-              h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Ask the AI coach about any teamwork challenge you\'re facing.'),
+              h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Ask the AI coach about any teamwork challenge you\'re facing.'),
               h('textarea', {
                 value: coachPrompt,
                 'aria-label': 'Describe your teamwork challenge',
@@ -1131,7 +1131,7 @@ window.SelHub = window.SelHub || {
 
           quizContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Team Skills Self-Assessment'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Rate yourself on each skill from 1 (I\'m still learning) to 5 (I\'m really good at this!).' :
               band === 'middle' ? 'Honestly rate your ability in each teamwork skill. 1 = needs work, 5 = strong.' :
               'Assess your competency across 8 core teamwork dimensions. Be candid \u2014 self-awareness drives growth.'
@@ -1149,7 +1149,7 @@ window.SelHub = window.SelHub || {
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 20 } }, skill.icon),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9' } }, skill.name),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, skill.desc)
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, skill.desc)
                     )
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, alignItems: 'center' } },
@@ -1267,7 +1267,7 @@ window.SelHub = window.SelHub || {
         if (activeTab === 'contract') {
           contractContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCDC Team Contract Builder'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Make promises with your team about how you\'ll work together!' :
               band === 'middle' ? 'Create a team agreement that sets expectations for how you\'ll collaborate.' :
               'Draft a formal team operating agreement that establishes norms, roles, and accountability structures.'
@@ -1307,7 +1307,7 @@ window.SelHub = window.SelHub || {
             // ── Section 2: Role Assignments ──
             h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
               h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 } }, '\uD83D\uDC65 Role Assignments'),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10 } }, 'Assign team members to roles (e.g., "Alex \u2014 Note-Taker", "Sam \u2014 Facilitator"):'),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, 'Assign team members to roles (e.g., "Alex \u2014 Note-Taker", "Sam \u2014 Facilitator"):'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 contractRoles.map(function(role, idx) {
                   return h('input', {
@@ -1331,7 +1331,7 @@ window.SelHub = window.SelHub || {
             // ── Section 3: Communication Expectations ──
             h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
               h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCAC Communication Plan'),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
                 band === 'elementary' ? 'How will your team talk to each other during the project?' :
                 'How and when will the team communicate? (e.g., daily check-ins, group chat norms, response time expectations)'
               ),
@@ -1352,7 +1352,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } },
                 '\u26A0\uFE0F ' + (band === 'elementary' ? 'What Happens If We Forget?' : 'Accountability Plan')
               ),
-              h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
                 band === 'elementary' ? 'What will your team do if someone doesn\'t follow the promises?' :
                 'What are the agreed-upon consequences if a team member doesn\'t meet expectations?'
               ),
@@ -1446,7 +1446,7 @@ window.SelHub = window.SelHub || {
 
           commStyleContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDDE3\uFE0F Communication Style Discovery'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Find out how you like to talk and work with your team! Answer 10 questions.' :
               band === 'middle' ? 'Discover your natural communication style. There are no wrong answers \u2014 every style has strengths!' :
               'Identify your dominant communication tendencies to leverage strengths and address blind spots in team settings.'
@@ -1513,7 +1513,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { textAlign: 'center', marginBottom: 12 } },
                     h('div', { style: { fontSize: 36 } }, primary.icon),
                     h('div', { style: { fontSize: 18, fontWeight: 700, color: primary.color, marginTop: 4 } }, 'Primary: ' + primary.name),
-                    h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.6 } }, primary.desc)
+                    h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.6 } }, primary.desc)
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
                     h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } },
@@ -1537,7 +1537,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 24 } }, secondary.icon),
                     h('div', null,
                       h('div', { style: { fontSize: 13, fontWeight: 600, color: secondary.color } }, 'Secondary: ' + secondary.name),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, secondary.desc)
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, secondary.desc)
                     )
                   )
                 ),
@@ -1568,7 +1568,7 @@ window.SelHub = window.SelHub || {
                     var s = COMM_STYLES[sk];
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: sk, style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 6, borderLeft: '3px solid ' + s.color } },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.name),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, s.workWith)
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } }, s.workWith)
                     );
                   })
                 ),
@@ -1576,7 +1576,7 @@ window.SelHub = window.SelHub || {
                 // AI team composition advice
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f133', marginBottom: 16 } },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
-                  h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
                   h('button', { 'aria-label': commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice',
                     onClick: function() {
                       if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -1633,7 +1633,7 @@ window.SelHub = window.SelHub || {
 
           virtualTeamContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCBB Virtual Team Simulator'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Practice working with a team when you can\u2019t meet in person!' :
               band === 'middle' ? 'Master the challenges of remote collaboration. 5 realistic scenarios.' :
               'Navigate the complexities of virtual teamwork. Practice async communication, trust-building, and remote conflict resolution.'
@@ -1691,7 +1691,7 @@ window.SelHub = window.SelHub || {
                       h('span', null, ch.text),
                       isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
                     ),
-                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } },
                       ch.feedback
                     )
                   );
@@ -1700,7 +1700,7 @@ window.SelHub = window.SelHub || {
 
               // Show all ratings after answering
               vtReveal && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginBottom: 6 } }, 'All response ratings:'),
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
                 curVt.choices.map(function(ch, ci) {
                   var isChosen = vtAnswers[curVt.id] === ci;
                   return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#64748b' } },
@@ -1742,7 +1742,7 @@ window.SelHub = window.SelHub || {
         if (activeTab === 'conflicttool') {
           conflictToolContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u267B\uFE0F Conflict \u2192 Collaboration Converter'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'When your team has a problem, describe it here and we\u2019ll help you turn it into teamwork!' :
               band === 'middle' ? 'Describe a team conflict and AI will reframe it as a collaboration opportunity with concrete steps.' :
               'Transform team friction into productive collaboration. Describe any conflict and receive actionable reframing strategies.'
@@ -1814,7 +1814,7 @@ window.SelHub = window.SelHub || {
             // Conversion counter
             h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', marginBottom: 16, textAlign: 'center' } },
               h('div', { style: { fontSize: 24, fontWeight: 700, color: '#f59e0b' } }, String(conflictCount)),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
               conflictCount < 3 && h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
             ),
 
@@ -1849,7 +1849,7 @@ window.SelHub = window.SelHub || {
 
           retroContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD04 Team Retrospective'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'After working with your team, think about what happened! Add cards to each section.' :
               band === 'middle' ? 'Run a team retro: reflect on what worked, what didn\u2019t, and what to do differently next time.' :
               'Conduct a structured retrospective to extract actionable insights from your team\u2019s collaboration experience.'
@@ -2057,7 +2057,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 20 } }, s.icon),
                   h('div', { style: { fontSize: 18, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                  h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, s.label)
+                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.label)
                 );
               })
             ),
@@ -2071,7 +2071,7 @@ window.SelHub = window.SelHub || {
                   return r ? h('span', { key: rid, style: { padding: '4px 10px', borderRadius: 20, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600 } }, r.emoji + ' ' + r.name) : null;
                 })
               ),
-              roleReflectionSaved && roleReflection && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: '#0f172a', fontSize: 12, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.6 } },
+              roleReflectionSaved && roleReflection && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: '#0f172a', fontSize: 12, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.6 } },
                 '\uD83D\uDCDD "' + roleReflection + '"'
               )
             ),
@@ -2106,7 +2106,7 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { padding: '2px 8px', borderRadius: 12, background: ACCENT_DIM, color: ACCENT, fontSize: 10, fontWeight: 600 } }, entry.skill),
                       h('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 'auto' } }, entry.activity + ' \u00B7 ' + new Date(entry.timestamp).toLocaleDateString())
                     ),
-                    entry.note && h('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic' } }, '"' + entry.note + '"')
+                    entry.note && h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '"' + entry.note + '"')
                   );
                 })
               )

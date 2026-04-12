@@ -805,7 +805,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#5eead4', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: '#14b8a6', fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -853,7 +853,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? 'Ways to Feel Better!' : 'Coping Strategy Library'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'Tap a card to learn more. Try the ones with a star!' :
             'Browse strategies by type. Expand to see step-by-step instructions.'
           ),
@@ -926,7 +926,7 @@ window.SelHub = window.SelHub || {
                       strat.practiceable && h('span', { style: { fontSize: 10, padding: '1px 6px', borderRadius: 6, background: '#14b8a622', color: '#14b8a6', fontWeight: 600 } }, 'Interactive'),
                       wasViewed && h('span', { style: { fontSize: 10, color: '#64748b' } }, '\u2713')
                     ),
-                    h('p', { style: { margin: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.3 } }, strat.desc[band] || strat.desc.elementary)
+                    h('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', lineHeight: 1.3 } }, strat.desc[band] || strat.desc.elementary)
                   ),
                   h('span', { style: { color: '#64748b', fontSize: 16, flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' } }, '\u25BC')
                 ),
@@ -954,7 +954,7 @@ window.SelHub = window.SelHub || {
                   // Read aloud (elementary)
                   band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
                     onClick: function() { readAloud(strat.name.elementary + '. ' + steps.join('. ')); },
-                    style: { marginBottom: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 12 }
+                    style: { marginBottom: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }
                   }, '\uD83D\uDD0A Read Aloud'),
                   // Practice button (if practiceable)
                   strat.practiceable && h('button', { 'aria-label': 'Practice This Strategy',
@@ -983,7 +983,7 @@ window.SelHub = window.SelHub || {
                       },
                       style: {
                         flex: 1, padding: '8px 0', borderRadius: 8, border: '1px solid #334155',
-                        background: 'transparent', color: '#cbd5e1', fontWeight: 600, fontSize: 12, cursor: 'pointer'
+                        background: 'transparent', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer'
                       }
                     }, '\uD83D\uDCDD Log it'),
                     h('button', { 'aria-label': favorites[strat.id] ? '\u2764\uFE0F' : '\u2661',
@@ -1014,7 +1014,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
               band === 'elementary' ? 'Let\'s Practice!' : 'Interactive Practice'
             ),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
               'Choose a guided activity to practice'
             ),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 12 } },
@@ -1040,7 +1040,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 32 } }, mode.icon),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 15, marginBottom: 2 } }, mode.title),
-                    h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, mode.desc)
+                    h('div', { style: { fontSize: 12, color: '#94a3b8' } }, mode.desc)
                   )
                 );
               })
@@ -1113,7 +1113,7 @@ window.SelHub = window.SelHub || {
                 }, isLastGroup ? '\u2705 Finish' : 'Next Muscle Group \u2192'),
                 h('button', { 'aria-label': 'Back',
                   onClick: function() { upd({ practiceMode: null, pmrStep: 0, pmrPhase: 'tense' }); },
-                  style: { padding: '12px 20px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '12px 20px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
                 }, '\u2190 Back')
               )
             ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 30 } },
@@ -1121,7 +1121,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 18, marginBottom: 8 } },
                 band === 'elementary' ? 'You did it! Your body should feel like jelly!' : 'PMR Complete!'
               ),
-              h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 20 } },
+              h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 20 } },
                 band === 'elementary' ? 'Notice how relaxed your body feels now.' :
                 'Scan your body. Notice the warmth, heaviness, and relaxation. This is your parasympathetic nervous system at work.'
               ),
@@ -1144,7 +1144,7 @@ window.SelHub = window.SelHub || {
 
           practiceContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83C\uDF2C\uFE0F Guided Breathing'),
-            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Follow the circle and breathe along!' : 'Select a pattern and follow the visual guide'
             ),
 
@@ -1163,7 +1163,7 @@ window.SelHub = window.SelHub || {
                     }
                   },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: isSel ? pat.color : '#f1f5f9', fontSize: 13, marginBottom: 2 } }, pat.name),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#cbd5e1' } }, pat.desc),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8' } }, pat.desc),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginTop: 4 } },
                       pat.inhale + 's in / ' + (pat.hold > 0 ? pat.hold + 's hold / ' : '') + pat.exhale + 's out' + (pat.holdOut > 0 ? ' / ' + pat.holdOut + 's hold' : '') + ' \u00D7 ' + pat.cycles
                     )
@@ -1236,7 +1236,7 @@ window.SelHub = window.SelHub || {
               ),
               h('button', { 'aria-label': 'Stop',
                 onClick: function() { stopBreathTimer(); upd({ breathActive: false, breathPhase: null }); },
-                style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
               }, 'Stop')
             ),
 
@@ -1246,7 +1246,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 18, marginBottom: 8 } },
                 band === 'elementary' ? 'Amazing breathing!' : 'Breathing session complete!'
               ),
-              h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12 } },
+              h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 12 } },
                 band === 'elementary' ? 'Your body is so calm right now. Nice job!' :
                 'Notice how your body feels. Your heart rate has slowed and your nervous system is calmer.'
               ),
@@ -1260,7 +1260,7 @@ window.SelHub = window.SelHub || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { stopBreathTimer(); upd({ practiceMode: null, breathActive: false, breathPhase: null }); },
-                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
               }, '\u2190 Back to Practice Menu')
             )
           );
@@ -1276,7 +1276,7 @@ window.SelHub = window.SelHub || {
 
           practiceContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83C\uDFC3 Guided Movement'),
-            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 16 } },
+            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Move your body to feel better!' : 'Follow the guided movement exercise'
             ),
 
@@ -1297,7 +1297,7 @@ window.SelHub = window.SelHub || {
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 28 } }, ex.icon),
                     h('div', null,
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: isSel ? ex.color : '#f1f5f9', fontSize: 14 } }, ex.name),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1' } }, (ex.steps[band] || ex.steps.elementary).length + ' steps')
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, (ex.steps[band] || ex.steps.elementary).length + ' steps')
                     )
                   );
                 })
@@ -1366,7 +1366,7 @@ window.SelHub = window.SelHub || {
                 }, isLastMoveStep ? '\u2705 Finish!' : 'Next Step \u2192'),
                 h('button', { 'aria-label': 'Back',
                   onClick: function() { stopMoveTimer(); upd({ moveActive: false, moveStep: 0, moveTimeLeft: null }); },
-                  style: { padding: '12px 20px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '12px 20px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
                 }, '\u2190 Back')
               )
             ),
@@ -1377,7 +1377,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 18, marginBottom: 8 } },
                 band === 'elementary' ? 'You moved your body! Great job!' : 'Exercise complete!'
               ),
-              h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12 } },
+              h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 12 } },
                 band === 'elementary' ? 'Notice how your body feels different now!' :
                 'Your body has released physical tension. Notice the shift in your energy and focus.'
               ),
@@ -1391,7 +1391,7 @@ window.SelHub = window.SelHub || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { stopMoveTimer(); upd({ practiceMode: null, moveActive: false, moveStep: 0, moveTimeLeft: null }); },
-                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
               }, '\u2190 Back to Practice Menu')
             )
           );
@@ -1410,7 +1410,7 @@ window.SelHub = window.SelHub || {
 
           practiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83D\uDD04 Thought Flipper'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 4 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Turn mean thoughts into kind thoughts!' : 'Identify and restructure negative thinking patterns'
             ),
             h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 20 } }, 'Thoughts flipped: ' + tfFlipCount),
@@ -1495,7 +1495,7 @@ window.SelHub = window.SelHub || {
             ),
             h('button', { 'aria-label': 'Back to Practice Menu',
               onClick: function() { upd('practiceMode', null); },
-              style: { display: 'block', width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+              style: { display: 'block', width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
             }, '\u2190 Back to Practice Menu')
           );
         }
@@ -1508,7 +1508,7 @@ window.SelHub = window.SelHub || {
 
           practiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83D\uDDE3\uFE0F I-Statement Builder'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
               band === 'elementary' ? 'Practice telling people how YOU feel!' : 'Construct assertive, non-blaming statements'
             ),
 
@@ -1600,7 +1600,7 @@ window.SelHub = window.SelHub || {
 
             // History
             iHistory.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, marginBottom: 12 } },
-              h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Your I-Statements (' + iHistory.length + ')'),
+              h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Your I-Statements (' + iHistory.length + ')'),
               iHistory.slice().reverse().slice(0, 5).map(function(entry, i) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 6, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
                   '"' + entry.statement + '"'
@@ -1610,7 +1610,7 @@ window.SelHub = window.SelHub || {
 
             h('button', { 'aria-label': 'Back to Practice Menu',
               onClick: function() { upd('practiceMode', null); },
-              style: { display: 'block', width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+              style: { display: 'block', width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
             }, '\u2190 Back to Practice Menu')
           );
         }
@@ -1619,7 +1619,7 @@ window.SelHub = window.SelHub || {
         if (practiceMode === 'calm_counting') {
           practiceContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83D\uDD22 Calm Counting'),
-            h('p', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
               band === 'elementary' ? 'Count backwards slowly. Take a breath with each number.' :
               band === 'middle' ? 'Count backwards, breathing between each number. Your thinking brain takes over.' :
               'Reverse counting engages prefrontal executive function, interrupting amygdala reactivity.'
@@ -1665,7 +1665,7 @@ window.SelHub = window.SelHub || {
                       countCurrent <= 0 ? '\u2705' : countCurrent
                     )
                   ),
-                  countCurrent > 0 && h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 20 } },
+                  countCurrent > 0 && h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 20 } },
                     band === 'elementary' ? 'Take a breath... then tap the number.' : 'Breathe slowly... tap to count down.'
                   ),
                   countCurrent > 0 && h('button', { 'aria-label': 'Count down',
@@ -1689,7 +1689,7 @@ window.SelHub = window.SelHub || {
                     h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 16, marginBottom: 8 } },
                       band === 'elementary' ? 'You did it!' : 'Countdown complete.'
                     ),
-                    h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 16 } },
+                    h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 16 } },
                       band === 'elementary' ? 'Take 3 more deep breaths. How do you feel?' :
                       'Notice: your heart rate has slowed. Your prefrontal cortex is back in charge.'
                     ),
@@ -1697,14 +1697,14 @@ window.SelHub = window.SelHub || {
                   ),
                   h('button', { 'aria-label': 'Reset',
                     onClick: function() { upd({ countCurrent: null, countActive: false }); },
-                    style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer', marginTop: 8 }
+                    style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', marginTop: 8 }
                   }, '\u2190 Reset')
                 ),
 
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { upd({ practiceMode: null, countCurrent: null, countActive: false }); },
-                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
               }, '\u2190 Back to Practice Menu')
             )
           );
@@ -1714,7 +1714,7 @@ window.SelHub = window.SelHub || {
         if (practiceMode === 'self_talk') {
           practiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83D\uDCAC Positive Self-Talk Generator'),
-            h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
               band === 'elementary' ? 'What is your inner voice saying? Let\'s make it kinder!' :
               'Transform your inner critic into a supportive inner coach.'
             ),
@@ -1772,7 +1772,7 @@ window.SelHub = window.SelHub || {
             ),
             // Saved collection
             stSaved.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16 } },
-              h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Saved Self-Talk (' + stSaved.length + ')'),
+              h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Saved Self-Talk (' + stSaved.length + ')'),
               stSaved.slice().reverse().slice(0, 3).map(function(entry, i) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 6 } },
                   h('p', { style: { fontSize: 11, color: '#ef4444', marginBottom: 4 } }, '\u274C "' + entry.critic + '"'),
@@ -1783,7 +1783,7 @@ window.SelHub = window.SelHub || {
 
             h('button', { 'aria-label': 'Back to Practice Menu',
               onClick: function() { upd('practiceMode', null); },
-              style: { display: 'block', width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontWeight: 600, cursor: 'pointer' }
+              style: { display: 'block', width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
             }, '\u2190 Back to Practice Menu')
           );
         }
@@ -1800,7 +1800,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDCCB My Calm-Down Plan' : '\uD83D\uDCCB My Personal Calm Plan'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Make a plan for when you\'re in the yellow or red zone!' :
             'Build a personal regulation plan you can follow when emotions escalate.'
           ),
@@ -1820,7 +1820,7 @@ window.SelHub = window.SelHub || {
                     var newSigns = (plan.warningSigns || []).filter(function(_, j) { return j !== i; });
                     upd('calmPlan', Object.assign({}, plan, { warningSigns: newSigns }));
                   },
-                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 10 }
+                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 10 }
                 }, '\u2715')
               );
             }),
@@ -1859,7 +1859,7 @@ window.SelHub = window.SelHub || {
                     var newSteps = (plan.steps || []).filter(function(_, j) { return j !== i; });
                     upd('calmPlan', Object.assign({}, plan, { steps: newSteps }));
                   },
-                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 10 }
+                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 10 }
                 }, '\u2715')
               );
             }),
@@ -1896,7 +1896,7 @@ window.SelHub = window.SelHub || {
                     if (soundEnabled) sfxClick();
                     if (newSteps.length >= 3) tryAwardBadge('calm_plan_built');
                   },
-                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer', fontSize: 10 }
+                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', cursor: 'pointer', fontSize: 10 }
                 }, '+ ' + quick);
               })
             )
@@ -1917,7 +1917,7 @@ window.SelHub = window.SelHub || {
                     var newAdults = (plan.trustedAdults || []).filter(function(_, j) { return j !== i; });
                     upd('calmPlan', Object.assign({}, plan, { trustedAdults: newAdults }));
                   },
-                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 10 }
+                  style: { padding: '2px 6px', borderRadius: 4, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 10 }
                 }, '\u2715')
               );
             }),
@@ -1949,7 +1949,7 @@ window.SelHub = window.SelHub || {
                 band === 'elementary' ? 'Need help with your plan?' : 'AI Plan Assistant'
               )
             ),
-            h('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 12 } },
+            h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12 } },
               band === 'elementary' ? 'I can help you think of warning signs and calm-down steps!' :
               'Generate personalized suggestions based on your practice history and preferences.'
             ),
@@ -2014,7 +2014,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? '\u2728 What Should I Try?' : '\u2728 Strategy Matcher'
           ),
-          h('p', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Tell me how you feel and I\'ll help you pick a way to feel better!' :
             'Describe what you\'re experiencing and get personalized strategy recommendations.'
           ),
@@ -2095,16 +2095,16 @@ window.SelHub = window.SelHub || {
                   return h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
                     h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: streak >= 3 ? '#f9731618' : '#1e293b', border: '1px solid ' + (streak >= 3 ? '#f9731644' : '#334155') } },
                       h('div', { style: { fontSize: 24, fontWeight: 800, color: streak >= 3 ? '#f97316' : '#64748b' } }, streak),
-                      h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Day Streak'),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak'),
                       streak >= 3 && h('div', { style: { fontSize: 12, marginTop: 2 } }, '\uD83D\uDD25')
                     ),
                     h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                       h('div', { style: { fontSize: 24, fontWeight: 800, color: '#14b8a6' } }, pLog.length),
-                      h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Total Practices')
+                      h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Total Practices')
                     ),
                     h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: avgRating ? '#eab30818' : '#1e293b', border: '1px solid ' + (avgRating ? '#eab30844' : '#334155') } },
                       h('div', { style: { fontSize: 24, fontWeight: 800, color: avgRating ? '#eab308' : '#64748b' } }, avgRating ? avgRating.toFixed(1) : '-'),
-                      h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Avg Rating'),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Rating'),
                       avgRating && h('div', { style: { display: 'flex', justifyContent: 'center', gap: 1, marginTop: 2 } },
                         Array.from({ length: 5 }, function(_, i) {
                           return h('span', { key: i, style: { fontSize: 8, color: i < Math.round(avgRating) ? '#eab308' : '#334155' } }, '\u2605');
@@ -2125,7 +2125,7 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { flex: 1 } },
                       h('p', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' } }, '\u2B50 Most Effective'),
                       h('p', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, strat.name[band] || strat.name.elementary),
-                      h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: '2px 0 0 0' } }, 'Avg rating: ' + best.avg + '/5')
+                      h('p', { style: { fontSize: 11, color: '#94a3b8', margin: '2px 0 0 0' } }, 'Avg rating: ' + best.avg + '/5')
                     ),
                     typeObj && h('span', { style: { fontSize: 10, padding: '3px 8px', borderRadius: 6, background: typeObj.color + '22', color: typeObj.color } }, typeObj.label)
                   );
@@ -2135,7 +2135,7 @@ window.SelHub = window.SelHub || {
                   var rated = pLog.filter(function(e) { return e.rating; }).slice(-10);
                   if (rated.length < 2) return null;
                   return h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('p', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'Effectiveness Trend (last ' + rated.length + ' rated)'),
+                    h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Effectiveness Trend (last ' + rated.length + ' rated)'),
                     h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 4, height: 60 } },
                       rated.map(function(entry, i) {
                         var pct = (entry.rating / 5) * 100;
@@ -2162,7 +2162,7 @@ window.SelHub = window.SelHub || {
                     },
                       h('div', { style: { fontSize: 18 } }, type.icon),
                       h('div', { style: { fontSize: 14, fontWeight: 700, color: count > 0 ? type.color : '#64748b' } }, count),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, type.label)
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, type.label)
                     );
                   })
                 ),
@@ -2270,7 +2270,7 @@ window.SelHub = window.SelHub || {
                 onMouseLeave: function(e) { e.currentTarget.style.borderColor = '#334155'; }
               },
                 h('span', { style: { fontSize: 22 } }, mood.emoji),
-                h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, mood.label)
+                h('span', { style: { fontSize: 11, color: '#94a3b8' } }, mood.label)
               );
             })
           )
@@ -2290,7 +2290,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0 } }, dailyRec),
               h('button', { 'aria-label': 'Dismiss',
                 onClick: function() { upd({ dailyRec: null }); },
-                style: { marginTop: 6, padding: '3px 10px', borderRadius: 6, border: 'none', background: '#334155', color: '#cbd5e1', cursor: 'pointer', fontSize: 10 }
+                style: { marginTop: 6, padding: '3px 10px', borderRadius: 6, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 10 }
               }, 'Dismiss')
             )
           )
@@ -2300,7 +2300,7 @@ window.SelHub = window.SelHub || {
         dailyRecBanner = h('div', {
           style: { padding: '10px 16px', margin: '10px 12px 0', borderRadius: 12, background: '#14b8a612', border: '1px solid #14b8a633', textAlign: 'center' }
         },
-          h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, '\u2728 Finding a strategy for you...')
+          h('span', { style: { fontSize: 12, color: '#94a3b8' } }, '\u2728 Finding a strategy for you...')
         );
       }
 
