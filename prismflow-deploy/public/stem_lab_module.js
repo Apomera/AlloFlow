@@ -4164,12 +4164,27 @@
           }
 
           // Build context bridge: map hub-local variables to plugin ctx format
+          // Deferred setter: if called during a React render pass, queue via setTimeout(0)
+          // to avoid "Cannot update a component while rendering a different component"
+          var _renderingFlag = { current: false };
+          function _deferSafe(fn) {
+            return function() {
+              var args = arguments;
+              var self = this;
+              if (_renderingFlag.current) {
+                setTimeout(function() { fn.apply(self, args); }, 0);
+              } else {
+                fn.apply(self, args);
+              }
+            };
+          }
+          var _safeSetLabToolData = _deferSafe(setLabToolData);
           var _ctx = {
             React: React,
             toolData: labToolData,
-            setToolData: setLabToolData,
+            setToolData: _safeSetLabToolData,
             update: function(toolId, key, val) {
-              setLabToolData(function(prev) {
+              _safeSetLabToolData(function(prev) {
                 var toolState = Object.assign({}, (prev && prev[toolId]) || {});
                 toolState[key] = val;
                 var patch = {}; patch[toolId] = toolState;
@@ -4177,7 +4192,7 @@
               });
             },
             updateMulti: function(toolId, obj) {
-              setLabToolData(function(prev) {
+              _safeSetLabToolData(function(prev) {
                 var toolState = Object.assign({}, (prev && prev[toolId]) || {}, obj);
                 var patch = {}; patch[toolId] = toolState;
                 return Object.assign({}, prev, patch);
@@ -4273,12 +4288,8 @@
             setMultTableRevealed: typeof setMultTableRevealed === 'function' ? setMultTableRevealed : function() {},
             // ── Shared labToolData ──
             labToolData: labToolData || {},
-            setLabToolData: function(updater) {
-              if (typeof setLabToolData === 'function') {
-                if (_ctx._isRendering) setTimeout(function() { setLabToolData(updater); }, 0);
-                else setLabToolData(updater);
-              }
-            }
+            setLabToolData: _safeSetLabToolData,
+            _renderingFlag: _renderingFlag
           };
 
           try {
@@ -4288,70 +4299,17 @@
             if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
-                return window.StemLab.renderTool(props._toolId, props._ctx);
-              };
-            }
-            // Note: deferred setState bridge was removed — it caused blank renders in some tools.
-            // The React warning "Cannot update a component while rendering" is cosmetic and non-breaking.
-            if (false) {
-              window.__stemPluginComponents['__unused'] = function(props) {
-                var c = props._ctx;
-                var pendingUpdates = React.useRef([]);
-                var renderingRef = React.useRef(false);
-                var originalUpdate = c.update;
-                var originalUpdateMulti = c.updateMulti;
-                var originalAwardXP = c.awardXP;
-                var originalAddToast = c.addToast;
-                var wrappedCtx = Object.assign({}, c, {
-                  update: function(toolId, key, val) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'single', toolId: toolId, key: key, val: val });
-                    } else {
-                      originalUpdate(toolId, key, val);
-                    }
-                  },
-                  updateMulti: function(toolId, obj) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'multi', toolId: toolId, obj: obj });
-                    } else {
-                      originalUpdateMulti(toolId, obj);
-                    }
-                  },
-                  awardXP: function(activityId, pts, reason) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'xp', activityId: activityId, pts: pts, reason: reason });
-                    } else {
-                      originalAwardXP(activityId, pts, reason);
-                    }
-                  },
-                  addToast: function(msg, type) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'toast', msg: msg, toastType: type });
-                    } else {
-                      originalAddToast(msg, type);
-                    }
-                  }
-                });
-                React.useEffect(function() {
-                  if (pendingUpdates.current.length > 0) {
-                    var batch = pendingUpdates.current.slice();
-                    pendingUpdates.current = [];
-                    batch.forEach(function(u) {
-                      if (u.type === 'multi') originalUpdateMulti(u.toolId, u.obj);
-                      else if (u.type === 'xp') originalAwardXP(u.activityId, u.pts, u.reason);
-                      else if (u.type === 'toast') originalAddToast(u.msg, u.toastType);
-                      else originalUpdate(u.toolId, u.key, u.val);
-                    });
-                  }
-                });
-                renderingRef.current = true;
+                // Set rendering flag so any setState calls during render get deferred via setTimeout(0)
+                props._ctx._renderingFlag.current = true;
                 try {
-                  return window.StemLab.renderTool(props._toolId, wrappedCtx);
+                  return window.StemLab.renderTool(props._toolId, props._ctx);
                 } finally {
-                  renderingRef.current = false;
+                  props._ctx._renderingFlag.current = false;
                 }
               };
             }
+            // The deferred setState bridge uses _renderingFlag to queue updates that
+            // would otherwise trigger "Cannot update a component while rendering".
             return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + stemLabTool, _toolId: stemLabTool, _ctx: _ctx });
           } catch(e) {
             console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
