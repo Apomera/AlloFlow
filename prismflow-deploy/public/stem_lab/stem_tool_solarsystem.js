@@ -1609,9 +1609,1429 @@ const d = labToolData.solarSystem;
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, "3D")
+              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, d.orreryMode ? 'Orrery' : '3D'),
+
+              // ── Orrery Mode Toggle ──
+              React.createElement("button", {
+                onClick: function() { upd('orreryMode', !d.orreryMode); if (!d.orreryMode && typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'orrery', { first: 'Orrery Mode: Top-down orbital mechanics laboratory. Explore Kepler\'s Laws, modify orbits, and visualize orbital mechanics.', repeat: 'Orrery Mode active.', terse: 'Orrery.' }, { debounce: 500 }); } },
+                'aria-label': d.orreryMode ? 'Switch to 3D Explorer view' : 'Switch to Orrery orbital mechanics view',
+                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orreryMode ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-700 border border-slate-200')
+              }, d.orreryMode ? '\uD83C\uDF0D 3D Explorer' : '\uD83C\uDF0C Orrery Lab')
 
             ),
+
+            // ══════════════════════════════════════════════════════════════════
+            // ORRERY MODE — Full top-down orbital mechanics laboratory
+            // ══════════════════════════════════════════════════════════════════
+            d.orreryMode && (function() {
+              // ── Real astronomical data for all solar system bodies ──
+              var ORRERY_BODIES = [
+                { id: 'mercury', name: 'Mercury', emoji: '\u2638', color: '#94a3b8', a_au: 0.387, ecc: 0.2056, period_yr: 0.241, incl_deg: 7.0, mass_earth: 0.055, radius_km: 2440, type: 'planet', desc: 'Smallest planet, extreme temperature swings, heavily cratered' },
+                { id: 'venus', name: 'Venus', emoji: '\u2640', color: '#fbbf24', a_au: 0.723, ecc: 0.0068, period_yr: 0.615, incl_deg: 3.4, mass_earth: 0.815, radius_km: 6052, type: 'planet', desc: 'Hottest planet, runaway greenhouse, retrograde rotation' },
+                { id: 'earth', name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', a_au: 1.000, ecc: 0.0167, period_yr: 1.000, incl_deg: 0.0, mass_earth: 1.000, radius_km: 6371, type: 'planet', desc: 'Our home world, liquid water, magnetic field, plate tectonics' },
+                { id: 'mars', name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', a_au: 1.524, ecc: 0.0934, period_yr: 1.881, incl_deg: 1.9, mass_earth: 0.107, radius_km: 3390, type: 'planet', desc: 'Red planet, Olympus Mons, Valles Marineris, polar ice caps' },
+                { id: 'ceres', name: 'Ceres', emoji: '\u26AA', color: '#a1a1aa', a_au: 2.767, ecc: 0.0758, period_yr: 4.600, incl_deg: 10.6, mass_earth: 0.00016, radius_km: 473, type: 'dwarf', desc: 'Largest asteroid belt object, possible subsurface ocean' },
+                { id: 'jupiter', name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', a_au: 5.203, ecc: 0.0489, period_yr: 11.86, incl_deg: 1.3, mass_earth: 317.8, radius_km: 69911, type: 'planet', desc: 'Largest planet, Great Red Spot, 95 known moons' },
+                { id: 'saturn', name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', a_au: 9.537, ecc: 0.0565, period_yr: 29.46, incl_deg: 2.5, mass_earth: 95.16, radius_km: 58232, type: 'planet', desc: 'Iconic ring system, hexagonal polar storm, 146 moons' },
+                { id: 'uranus', name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', a_au: 19.19, ecc: 0.0457, period_yr: 84.01, incl_deg: 0.8, mass_earth: 14.54, radius_km: 25362, type: 'planet', desc: 'Ice giant tilted 98°, diamond rain, faint rings' },
+                { id: 'neptune', name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', a_au: 30.07, ecc: 0.0113, period_yr: 164.8, incl_deg: 1.8, mass_earth: 17.15, radius_km: 24622, type: 'planet', desc: 'Windiest planet (2100 km/h), deep blue, Triton orbits backward' },
+                { id: 'pluto', name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', a_au: 39.48, ecc: 0.2488, period_yr: 247.9, incl_deg: 17.2, mass_earth: 0.0022, radius_km: 1188, type: 'dwarf', desc: 'Heart-shaped glacier, 5 moons, crosses Neptune\'s orbit' },
+                { id: 'haumea', name: 'Haumea', emoji: '\uD83E\uDE78', color: '#e879f9', a_au: 43.13, ecc: 0.1912, period_yr: 283.3, incl_deg: 28.2, mass_earth: 0.00066, radius_km: 816, type: 'dwarf', desc: 'Egg-shaped, fastest rotation (3.9h), has a ring' },
+                { id: 'makemake', name: 'Makemake', emoji: '\uD83D\uDFE4', color: '#fb923c', a_au: 45.79, ecc: 0.1559, period_yr: 309.9, incl_deg: 29.0, mass_earth: 0.00050, radius_km: 715, type: 'dwarf', desc: 'Reddish surface, extremely cold, 1 known moon' },
+                { id: 'eris', name: 'Eris', emoji: '\u26AB', color: '#d4d4d8', a_au: 67.67, ecc: 0.4407, period_yr: 557.0, incl_deg: 44.0, mass_earth: 0.0028, radius_km: 1163, type: 'dwarf', desc: 'Most massive dwarf planet, caused Pluto\'s reclassification' },
+                { id: 'halley', name: "Halley's Comet", emoji: '\u2604', color: '#67e8f9', a_au: 17.83, ecc: 0.9671, period_yr: 75.3, incl_deg: 162.3, mass_earth: 0.0000000000037, radius_km: 5.5, type: 'comet', desc: 'Most famous comet, returns every ~75 years, last seen 1986' },
+                { id: 'encke', name: "Encke's Comet", emoji: '\u2604', color: '#86efac', a_au: 2.215, ecc: 0.8483, period_yr: 3.3, incl_deg: 11.8, mass_earth: 0, radius_km: 2.4, type: 'comet', desc: 'Shortest period comet, source of Taurid meteor shower' },
+                { id: 'sedna', name: 'Sedna', emoji: '\uD83D\uDD3A', color: '#f87171', a_au: 506.0, ecc: 0.8496, period_yr: 11400, incl_deg: 11.9, mass_earth: 0.00015, radius_km: 500, type: 'dwarf', desc: 'Extreme orbit (76-937 AU), reddest object in solar system' }
+              ];
+
+              var orreryTab = d.orreryTab || 'fullOrrery';
+              var orreryPaused = d.orreryPaused || false;
+              var orrerySpeed = d.orrerySpeed || 1;
+              // Per-body parameter overrides (for experimentation)
+              var bodyOverrides = d.bodyOverrides || {};
+              var getBodyParam = function(bodyId, param) {
+                if (bodyOverrides[bodyId] && bodyOverrides[bodyId][param] !== undefined) return bodyOverrides[bodyId][param];
+                var body = ORRERY_BODIES.find(function(b) { return b.id === bodyId; });
+                return body ? body[param] : 0;
+              };
+              var setBodyOverride = function(bodyId, param, val) {
+                var overrides = Object.assign({}, bodyOverrides);
+                overrides[bodyId] = Object.assign({}, overrides[bodyId] || {});
+                overrides[bodyId][param] = val;
+                upd('bodyOverrides', overrides);
+              };
+              var resetOverrides = function() { upd('bodyOverrides', {}); };
+
+              // Visible body filter
+              var visibleTypes = d.orreryVisibleTypes || { planet: true, dwarf: true, comet: true };
+              var toggleType = function(type) {
+                var vt = Object.assign({}, visibleTypes);
+                vt[type] = !vt[type];
+                upd('orreryVisibleTypes', vt);
+              };
+
+              // Selected body for info panel
+              var orrerySelected = d.orrerySelected || null;
+              var selBody = orrerySelected ? ORRERY_BODIES.find(function(b) { return b.id === orrerySelected; }) : null;
+
+              return React.createElement("div", { className: "space-y-3" },
+                // ── Sub-tab navigation ──
+                React.createElement("div", { className: "flex flex-wrap gap-1 p-1.5 rounded-xl " + (isDark ? 'bg-slate-800' : 'bg-gradient-to-r from-indigo-50 to-purple-50') },
+                  [
+                    { id: 'fullOrrery', label: '\uD83C\uDF0C Full Orrery', desc: 'All orbits top-down' },
+                    { id: 'keplerI', label: '\u2160 Ellipses', desc: "Kepler's 1st Law" },
+                    { id: 'keplerII', label: '\u2161 Areas', desc: "Kepler's 2nd Law" },
+                    { id: 'keplerIII', label: '\u2162 Periods', desc: "Kepler's 3rd Law" },
+                    { id: 'workshop', label: '\uD83D\uDD27 Workshop', desc: 'Modify orbits' },
+                    { id: 'transfers', label: '\uD83D\uDE80 Transfers', desc: 'Hohmann orbits' }
+                  ].map(function(tab) {
+                    var active = orreryTab === tab.id;
+                    return React.createElement("button", {
+                      key: tab.id,
+                      onClick: function() { upd('orreryTab', tab.id); },
+                      'aria-label': tab.desc,
+                      className: "px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (active ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md' : (isDark ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-white text-slate-500 hover:bg-indigo-50 border border-slate-200'))
+                    }, tab.label);
+                  })
+                ),
+
+                // ════════════════════════════════════════════════════════
+                // TAB 1: FULL ORRERY — Top-down view of entire solar system
+                // ════════════════════════════════════════════════════════
+                orreryTab === 'fullOrrery' && React.createElement("div", { className: "space-y-3" },
+                  // Body type filter + controls
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("span", { className: "text-[10px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "Show:"),
+                    [{ type: 'planet', label: 'Planets', emoji: '\uD83C\uDF0D' }, { type: 'dwarf', label: 'Dwarf Planets', emoji: '\u26AA' }, { type: 'comet', label: 'Comets', emoji: '\u2604' }].map(function(f) {
+                      var on = visibleTypes[f.type] !== false;
+                      return React.createElement("button", {
+                        key: f.type,
+                        onClick: function() { toggleType(f.type); },
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (on ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-500' : 'bg-slate-200 text-slate-400'))
+                      }, f.emoji + ' ' + f.label);
+                    }),
+                    React.createElement("div", { className: "ml-auto flex items-center gap-2" },
+                      React.createElement("button", {
+                        onClick: function() { upd('orreryPaused', !orreryPaused); },
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (orreryPaused ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600')
+                      }, orreryPaused ? '\u25B6 Play' : '\u23F8 Pause'),
+                      React.createElement("input", {
+                        type: 'range', min: 0.1, max: 50, step: 0.1, value: orrerySpeed,
+                        'aria-label': 'Orrery speed',
+                        onChange: function(e) { upd('orrerySpeed', parseFloat(e.target.value)); },
+                        className: "w-20 h-1.5 accent-purple-500"
+                      }),
+                      React.createElement("span", { className: "text-[10px] font-mono " + (isDark ? 'text-purple-300' : 'text-purple-600') }, orrerySpeed.toFixed(1) + 'x')
+                    )
+                  ),
+                  // ── Main Orrery Canvas ──
+                  React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 " + (isDark ? 'border-indigo-900' : 'border-indigo-800/50') + " shadow-lg" },
+                    React.createElement("canvas", {
+                      'data-orrery-canvas': true,
+                      'aria-label': 'Top-down orrery showing all planetary orbits with real eccentricities. Click any body for details.',
+                      tabIndex: 0,
+                      width: 800, height: 800,
+                      style: { width: '100%', height: 'auto', display: 'block', cursor: 'grab' },
+                      ref: function(cv) {
+                        if (!cv || cv._orreryInit) return;
+                        cv._orreryInit = true;
+                        var oCtx = cv.getContext('2d');
+                        var oW = 800, oH = 800;
+                        var tick = 0;
+                        // View transform (pan/zoom)
+                        var viewZoom = 1.0;
+                        var viewPanX = 0, viewPanY = 0;
+                        var isDragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+                        // Zoom inner vs outer toggle
+                        var zoomMode = 'inner'; // 'inner' (Mercury–Mars) or 'full' (all)
+                        cv._orreryZoomMode = zoomMode;
+                        // Body angles (persistent across frames)
+                        var bodyAngles = {};
+                        ORRERY_BODIES.forEach(function(b) { bodyAngles[b.id] = Math.random() * Math.PI * 2; });
+                        // Hovered body for tooltip
+                        var hoveredBody = null;
+                        var mouseX = 0, mouseY = 0;
+
+                        // AU to pixel conversion
+                        function auToPixel(au) {
+                          var mode = cv._orreryZoomMode || 'inner';
+                          var scale = mode === 'inner' ? 180 : (mode === 'outer' ? 5.5 : 12);
+                          return au * scale * viewZoom;
+                        }
+                        function worldToScreen(wx, wy) {
+                          return { x: oW / 2 + (wx + viewPanX) * viewZoom, y: oH / 2 + (wy + viewPanY) * viewZoom };
+                        }
+
+                        // Mouse interaction
+                        cv.addEventListener('pointerdown', function(e) {
+                          isDragging = true; dragStartX = e.offsetX; dragStartY = e.offsetY;
+                          panStartX = viewPanX; panStartY = viewPanY;
+                          cv.style.cursor = 'grabbing';
+                        });
+                        cv.addEventListener('pointermove', function(e) {
+                          mouseX = e.offsetX; mouseY = e.offsetY;
+                          if (isDragging) {
+                            viewPanX = panStartX + (e.offsetX - dragStartX) / viewZoom;
+                            viewPanY = panStartY + (e.offsetY - dragStartY) / viewZoom;
+                          }
+                          // Hit test for hover
+                          hoveredBody = null;
+                          var rect = cv.getBoundingClientRect();
+                          var scaleX = oW / rect.width;
+                          var mx = e.offsetX * scaleX, my = e.offsetY * scaleX;
+                          ORRERY_BODIES.forEach(function(b) {
+                            if (visibleTypes[b.type] === false) return;
+                            var ecc = getBodyParam(b.id, 'ecc');
+                            var a_au = getBodyParam(b.id, 'a_au');
+                            var a = auToPixel(a_au);
+                            var bAxis = a * Math.sqrt(1 - ecc * ecc);
+                            var focusOff = a * ecc;
+                            var angle = bodyAngles[b.id] || 0;
+                            var r = a * (1 - ecc * ecc) / (1 + ecc * Math.cos(angle));
+                            var wx = r * Math.cos(angle) - focusOff;
+                            var wy = r * Math.sin(angle);
+                            var s = worldToScreen(wx, wy);
+                            var dist = Math.sqrt((mx - s.x) * (mx - s.x) + (my - s.y) * (my - s.y));
+                            if (dist < 12) hoveredBody = b;
+                          });
+                          cv.style.cursor = hoveredBody ? 'pointer' : (isDragging ? 'grabbing' : 'grab');
+                        });
+                        cv.addEventListener('pointerup', function() { isDragging = false; cv.style.cursor = hoveredBody ? 'pointer' : 'grab'; });
+                        cv.addEventListener('click', function(e) {
+                          if (hoveredBody) {
+                            upd('orrerySelected', hoveredBody.id);
+                          }
+                        });
+                        cv.addEventListener('wheel', function(e) {
+                          e.preventDefault();
+                          var factor = e.deltaY > 0 ? 0.9 : 1.1;
+                          viewZoom = Math.max(0.15, Math.min(8, viewZoom * factor));
+                        }, { passive: false });
+
+                        function drawOrrery() {
+                          tick++;
+                          oCtx.clearRect(0, 0, oW, oH);
+                          // Read state from data attributes
+                          var paused = cv.dataset.paused === 'true';
+                          var speed = parseFloat(cv.dataset.speed || '1');
+                          var zm = cv._orreryZoomMode || 'inner';
+
+                          // ── Background ──
+                          oCtx.fillStyle = '#060818';
+                          oCtx.fillRect(0, 0, oW, oH);
+                          // Stars
+                          for (var si = 0; si < 120; si++) {
+                            var sx = (si * 127 + 31) % oW, sy = (si * 191 + 47) % oH;
+                            oCtx.fillStyle = 'rgba(255,255,255,' + (0.05 + 0.12 * Math.sin(tick * 0.015 + si * 0.7)) + ')';
+                            oCtx.fillRect(sx, sy, 1, 1);
+                          }
+
+                          // ── Sun ──
+                          var sunS = worldToScreen(0, 0);
+                          var sunR = Math.max(4, 8 * viewZoom);
+                          var sunGlow = oCtx.createRadialGradient(sunS.x, sunS.y, 0, sunS.x, sunS.y, sunR * 4);
+                          sunGlow.addColorStop(0, 'rgba(255,220,50,0.3)');
+                          sunGlow.addColorStop(0.5, 'rgba(255,180,30,0.08)');
+                          sunGlow.addColorStop(1, 'rgba(255,150,0,0)');
+                          oCtx.fillStyle = sunGlow;
+                          oCtx.fillRect(sunS.x - sunR * 4, sunS.y - sunR * 4, sunR * 8, sunR * 8);
+                          var sunGrad = oCtx.createRadialGradient(sunS.x, sunS.y, 0, sunS.x, sunS.y, sunR);
+                          sunGrad.addColorStop(0, '#fff');
+                          sunGrad.addColorStop(0.3, '#ffe066');
+                          sunGrad.addColorStop(1, '#f59e0b');
+                          oCtx.beginPath(); oCtx.arc(sunS.x, sunS.y, sunR * (1 + 0.02 * Math.sin(tick * 0.05)), 0, Math.PI * 2);
+                          oCtx.fillStyle = sunGrad; oCtx.fill();
+
+                          // ── Asteroid belt (between Mars and Jupiter) ──
+                          if (visibleTypes.dwarf !== false || visibleTypes.planet !== false) {
+                            var beltInner = auToPixel(2.1), beltOuter = auToPixel(3.3);
+                            oCtx.save(); oCtx.globalAlpha = 0.08;
+                            for (var ai = 0; ai < 200; ai++) {
+                              var aAngle = ai * 0.0314 + tick * 0.0001 * (ai % 3 + 1);
+                              var aR = beltInner + (ai * 17 % 100) / 100 * (beltOuter - beltInner);
+                              var as = worldToScreen(Math.cos(aAngle) * aR / viewZoom, Math.sin(aAngle) * aR / viewZoom);
+                              oCtx.fillStyle = '#94a3b8';
+                              oCtx.fillRect(as.x, as.y, 1, 1);
+                            }
+                            oCtx.restore();
+                          }
+
+                          // ── Kuiper Belt hint (30-50 AU) ──
+                          if (zm !== 'inner') {
+                            var kuiperInner = auToPixel(30), kuiperOuter = auToPixel(50);
+                            oCtx.save(); oCtx.globalAlpha = 0.03;
+                            for (var ki = 0; ki < 150; ki++) {
+                              var kAngle = ki * 0.042 + tick * 0.00005;
+                              var kR = kuiperInner + (ki * 23 % 100) / 100 * (kuiperOuter - kuiperInner);
+                              var ks = worldToScreen(Math.cos(kAngle) * kR / viewZoom, Math.sin(kAngle) * kR / viewZoom);
+                              oCtx.fillStyle = '#818cf8';
+                              oCtx.fillRect(ks.x, ks.y, 1, 1);
+                            }
+                            oCtx.restore();
+                          }
+
+                          // ── Draw each body: orbit path + position ──
+                          ORRERY_BODIES.forEach(function(b) {
+                            if (visibleTypes[b.type] === false) return;
+                            // Get possibly-overridden params
+                            var ecc = getBodyParam(b.id, 'ecc');
+                            var a_au = getBodyParam(b.id, 'a_au');
+                            var period = getBodyParam(b.id, 'period_yr');
+                            var a = auToPixel(a_au);
+                            var bAxis = a * Math.sqrt(1 - ecc * ecc);
+                            var focusOff = a * ecc;
+                            var centerS = worldToScreen(-focusOff / viewZoom, 0);
+
+                            // Draw orbit ellipse
+                            oCtx.save();
+                            oCtx.beginPath();
+                            oCtx.ellipse(centerS.x, centerS.y, a, bAxis, 0, 0, Math.PI * 2);
+                            var isSelected = orrerySelected === b.id;
+                            oCtx.strokeStyle = isSelected ? b.color : (b.type === 'comet' ? 'rgba(103,232,249,0.15)' : b.type === 'dwarf' ? 'rgba(167,139,250,0.15)' : 'rgba(148,163,184,0.2)');
+                            oCtx.lineWidth = isSelected ? 1.5 : 0.6;
+                            if (b.type === 'comet') oCtx.setLineDash([4, 4]);
+                            oCtx.stroke();
+                            oCtx.setLineDash([]);
+                            oCtx.restore();
+
+                            // ── Kepler equation: mean anomaly → eccentric anomaly → true anomaly ──
+                            if (!paused) {
+                              var angularRate = (period > 0) ? (0.008 * speed / period) : 0.008;
+                              bodyAngles[b.id] = (bodyAngles[b.id] || 0) + angularRate;
+                            }
+                            var M = bodyAngles[b.id] || 0;
+                            // Newton's method for Kepler's equation
+                            var E = M;
+                            for (var ni = 0; ni < 5; ni++) { E = E - (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E)); }
+                            var trueAnom = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(E / 2), Math.sqrt(1 - ecc) * Math.cos(E / 2));
+                            var r = a * (1 - ecc * ecc) / (1 + ecc * Math.cos(trueAnom));
+                            var wx = r * Math.cos(trueAnom) / viewZoom - focusOff / viewZoom;
+                            var wy = r * Math.sin(trueAnom) / viewZoom;
+                            var bScreen = worldToScreen(wx, wy);
+
+                            // Body size
+                            var bodySize = b.type === 'planet' ? Math.max(3, Math.min(7, Math.log(b.radius_km / 500 + 1) * 2.5)) : b.type === 'comet' ? 2 : 2.5;
+                            if (isSelected) bodySize += 2;
+
+                            // Comet tail
+                            if (b.type === 'comet') {
+                              var tailLen = Math.max(8, 30 / (r / a + 0.3));
+                              var tailAngle = Math.atan2(wy, wx);
+                              oCtx.save(); oCtx.globalAlpha = 0.3;
+                              var tailGrad = oCtx.createLinearGradient(bScreen.x, bScreen.y, bScreen.x + Math.cos(tailAngle) * tailLen, bScreen.y + Math.sin(tailAngle) * tailLen);
+                              tailGrad.addColorStop(0, b.color); tailGrad.addColorStop(1, 'rgba(103,232,249,0)');
+                              oCtx.strokeStyle = tailGrad; oCtx.lineWidth = 2;
+                              oCtx.beginPath(); oCtx.moveTo(bScreen.x, bScreen.y);
+                              oCtx.lineTo(bScreen.x + Math.cos(tailAngle) * tailLen, bScreen.y + Math.sin(tailAngle) * tailLen);
+                              oCtx.stroke(); oCtx.restore();
+                            }
+
+                            // Body dot
+                            oCtx.beginPath(); oCtx.arc(bScreen.x, bScreen.y, bodySize, 0, Math.PI * 2);
+                            var bGrad = oCtx.createRadialGradient(bScreen.x - 1, bScreen.y - 1, 0, bScreen.x, bScreen.y, bodySize);
+                            bGrad.addColorStop(0, '#fff'); bGrad.addColorStop(0.5, b.color); bGrad.addColorStop(1, b.color);
+                            oCtx.fillStyle = bGrad; oCtx.fill();
+                            if (isSelected) { oCtx.strokeStyle = '#fff'; oCtx.lineWidth = 1; oCtx.stroke(); }
+
+                            // Saturn rings
+                            if (b.id === 'saturn' && bodySize > 3) {
+                              oCtx.save(); oCtx.globalAlpha = 0.5;
+                              oCtx.beginPath(); oCtx.ellipse(bScreen.x, bScreen.y, bodySize * 2, bodySize * 0.6, 0, 0, Math.PI * 2);
+                              oCtx.strokeStyle = '#eab308'; oCtx.lineWidth = 1.2; oCtx.stroke();
+                              oCtx.restore();
+                            }
+
+                            // Label
+                            if (bScreen.x > -50 && bScreen.x < oW + 50 && bScreen.y > -50 && bScreen.y < oH + 50) {
+                              oCtx.font = (isSelected ? 'bold ' : '') + '8px Inter, system-ui, sans-serif';
+                              oCtx.fillStyle = isSelected ? '#fff' : 'rgba(255,255,255,0.45)';
+                              oCtx.textAlign = 'center';
+                              oCtx.fillText(b.emoji + ' ' + b.name, bScreen.x, bScreen.y - bodySize - 4);
+                            }
+
+                            // Perihelion/Aphelion markers for selected body
+                            if (isSelected) {
+                              var periR = a * (1 - ecc);
+                              var apoR = a * (1 + ecc);
+                              var periS = worldToScreen((periR - focusOff) / viewZoom, 0);
+                              var apoS = worldToScreen((-apoR - focusOff) / viewZoom, 0);
+                              oCtx.save(); oCtx.globalAlpha = 0.4;
+                              oCtx.font = '7px monospace';
+                              oCtx.fillStyle = '#22c55e'; oCtx.textAlign = 'center';
+                              oCtx.fillText('P', periS.x, periS.y - 6);
+                              oCtx.beginPath(); oCtx.arc(periS.x, periS.y, 2, 0, Math.PI * 2); oCtx.fill();
+                              oCtx.fillStyle = '#ef4444';
+                              oCtx.fillText('A', apoS.x, apoS.y - 6);
+                              oCtx.beginPath(); oCtx.arc(apoS.x, apoS.y, 2, 0, Math.PI * 2); oCtx.fill();
+                              oCtx.restore();
+                            }
+                          });
+
+                          // ── Hover tooltip ──
+                          if (hoveredBody && !isDragging) {
+                            var hb = hoveredBody;
+                            var tt = hb.emoji + ' ' + hb.name + ' (' + hb.type + ')';
+                            var tt2 = 'a=' + hb.a_au.toFixed(2) + ' AU  e=' + hb.ecc.toFixed(4) + '  T=' + hb.period_yr.toFixed(1) + ' yr';
+                            var rect2 = cv.getBoundingClientRect();
+                            var scaleX2 = oW / rect2.width;
+                            var tmx = mouseX * scaleX2, tmy = mouseY * scaleX2;
+                            oCtx.save();
+                            oCtx.fillStyle = 'rgba(15,23,42,0.9)';
+                            oCtx.beginPath(); oCtx.roundRect(tmx + 12, tmy - 30, 190, 36, 4); oCtx.fill();
+                            oCtx.strokeStyle = 'rgba(99,102,241,0.3)'; oCtx.lineWidth = 0.5; oCtx.stroke();
+                            oCtx.font = 'bold 9px Inter, system-ui, sans-serif'; oCtx.fillStyle = '#fff'; oCtx.textAlign = 'left';
+                            oCtx.fillText(tt, tmx + 18, tmy - 16);
+                            oCtx.font = '7px monospace'; oCtx.fillStyle = '#a5b4fc';
+                            oCtx.fillText(tt2, tmx + 18, tmy - 4);
+                            oCtx.restore();
+                          }
+
+                          // ── Title & HUD ──
+                          oCtx.font = 'bold 11px Inter, system-ui, sans-serif'; oCtx.fillStyle = 'rgba(255,255,255,0.6)'; oCtx.textAlign = 'left';
+                          oCtx.fillText('\uD83C\uDF0C Solar System Orrery', 12, 18);
+                          oCtx.font = '8px monospace'; oCtx.fillStyle = 'rgba(255,255,255,0.25)';
+                          oCtx.fillText('Scroll to zoom \u2022 Drag to pan \u2022 Click body for info', 12, 30);
+                          // Zoom mode indicator
+                          oCtx.font = '8px Inter, system-ui, sans-serif'; oCtx.fillStyle = 'rgba(167,139,250,0.5)'; oCtx.textAlign = 'right';
+                          oCtx.fillText('View: ' + (zm === 'inner' ? 'Inner System' : zm === 'outer' ? 'Outer System' : 'Full System') + '  Zoom: ' + viewZoom.toFixed(1) + 'x', oW - 12, 18);
+
+                          // ── Scale bar ──
+                          var scaleAU = zm === 'inner' ? 1 : 10;
+                          var scalePx = auToPixel(scaleAU);
+                          oCtx.save();
+                          oCtx.strokeStyle = 'rgba(255,255,255,0.2)'; oCtx.lineWidth = 1;
+                          oCtx.beginPath(); oCtx.moveTo(oW - 20 - scalePx, oH - 20); oCtx.lineTo(oW - 20, oH - 20); oCtx.stroke();
+                          oCtx.beginPath(); oCtx.moveTo(oW - 20 - scalePx, oH - 24); oCtx.lineTo(oW - 20 - scalePx, oH - 16); oCtx.stroke();
+                          oCtx.beginPath(); oCtx.moveTo(oW - 20, oH - 24); oCtx.lineTo(oW - 20, oH - 16); oCtx.stroke();
+                          oCtx.font = '7px monospace'; oCtx.fillStyle = 'rgba(255,255,255,0.25)'; oCtx.textAlign = 'center';
+                          oCtx.fillText(scaleAU + ' AU', oW - 20 - scalePx / 2, oH - 8);
+                          oCtx.restore();
+
+                          cv._orreryAnim = requestAnimationFrame(drawOrrery);
+                        }
+
+                        // Set initial data attributes
+                        cv.dataset.paused = String(orreryPaused);
+                        cv.dataset.speed = String(orrerySpeed);
+                        drawOrrery();
+                      }
+                    }),
+                    // Update canvas data attrs on re-render
+                    (function() {
+                      var cv = document.querySelector('[data-orrery-canvas]');
+                      if (cv) {
+                        cv.dataset.paused = String(orreryPaused);
+                        cv.dataset.speed = String(orrerySpeed);
+                        cv._orreryZoomMode = d.orreryZoomMode || 'inner';
+                      }
+                      return null;
+                    })()
+                  ),
+                  // Zoom mode selector
+                  React.createElement("div", { className: "flex items-center gap-2 justify-center" },
+                    React.createElement("span", { className: "text-[10px] font-bold " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "View:"),
+                    ['inner', 'full', 'outer'].map(function(mode) {
+                      var labels = { inner: 'Inner Planets', full: 'Full System', outer: 'Outer Planets' };
+                      var active = (d.orreryZoomMode || 'inner') === mode;
+                      return React.createElement("button", {
+                        key: mode,
+                        onClick: function() {
+                          upd('orreryZoomMode', mode);
+                          var cv = document.querySelector('[data-orrery-canvas]');
+                          if (cv) cv._orreryZoomMode = mode;
+                        },
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (active ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'))
+                      }, labels[mode]);
+                    })
+                  ),
+                  // ── Selected body info panel ──
+                  selBody && React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200') + " rounded-xl p-4 border space-y-3" },
+                    React.createElement("div", { className: "flex items-center justify-between" },
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-xl" }, selBody.emoji),
+                        React.createElement("div", null,
+                          React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, selBody.name),
+                          React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " capitalize" }, selBody.type + (selBody.type === 'dwarf' ? ' planet' : ''))
+                        )
+                      ),
+                      React.createElement("button", {
+                        onClick: function() { upd('orrerySelected', null); },
+                        className: "p-1 hover:bg-slate-200 rounded"
+                      }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                    ),
+                    React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, selBody.desc),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                      [
+                        { label: 'Semi-major axis', value: selBody.a_au.toFixed(3) + ' AU', icon: '\uD83D\uDCCF' },
+                        { label: 'Eccentricity', value: selBody.ecc.toFixed(4), icon: '\u2B2D' },
+                        { label: 'Orbital period', value: selBody.period_yr < 1 ? (selBody.period_yr * 365.25).toFixed(0) + ' days' : selBody.period_yr.toFixed(1) + ' yr', icon: '\u23F1' },
+                        { label: 'Inclination', value: selBody.incl_deg.toFixed(1) + '\u00B0', icon: '\uD83D\uDCD0' },
+                        { label: 'Mass', value: selBody.mass_earth >= 1 ? selBody.mass_earth.toFixed(1) + ' M\u2295' : selBody.mass_earth.toFixed(4) + ' M\u2295', icon: '\u2696' },
+                        { label: 'Radius', value: selBody.radius_km.toLocaleString() + ' km', icon: '\u2B55' },
+                        { label: 'Perihelion', value: (selBody.a_au * (1 - selBody.ecc)).toFixed(3) + ' AU', icon: '\uD83D\uDFE2' },
+                        { label: 'Aphelion', value: (selBody.a_au * (1 + selBody.ecc)).toFixed(3) + ' AU', icon: '\uD83D\uDD34' }
+                      ].map(function(stat) {
+                        return React.createElement("div", { key: stat.label, className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2 text-center border " + (isDark ? 'border-slate-600' : 'border-indigo-100') },
+                          React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.icon + ' ' + stat.label),
+                          React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') + " mt-0.5" }, stat.value)
+                        );
+                      })
+                    ),
+                    // Derived orbital mechanics
+                    React.createElement("div", { className: (isDark ? 'bg-slate-900' : 'bg-white') + " rounded-lg p-3 border " + (isDark ? 'border-slate-700' : 'border-indigo-100') },
+                      React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-600') + " mb-2" }, "\uD83D\uDCCA Derived Orbital Mechanics"),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] font-mono " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                        React.createElement("span", null, "v\u209A (perihelion) = " + (29.78 * Math.sqrt((1 + selBody.ecc) / ((1 - selBody.ecc) * selBody.a_au))).toFixed(1) + " km/s"),
+                        React.createElement("span", null, "v\u2090 (aphelion) = " + (29.78 * Math.sqrt((1 - selBody.ecc) / ((1 + selBody.ecc) * selBody.a_au))).toFixed(1) + " km/s"),
+                        React.createElement("span", null, "v\u2092\u2099\u209B = " + (29.78 / Math.sqrt(selBody.a_au)).toFixed(1) + " km/s (circular)"),
+                        React.createElement("span", null, "v\u2091\u209B\u209C = " + (29.78 * Math.sqrt(2 / selBody.a_au)).toFixed(1) + " km/s (escape)"),
+                        React.createElement("span", null, "\u03B5 = -GM/2a = " + (-66.25 / selBody.a_au).toFixed(2) + " km\u00B2/s\u00B2"),
+                        React.createElement("span", null, "L = " + (29.78 * Math.sqrt(selBody.a_au * (1 - selBody.ecc * selBody.ecc))).toFixed(1) + " km\u00B2/s")
+                      )
+                    )
+                  )
+                ),
+
+                // ════════════════════════════════════════════════════════
+                // TAB 2: KEPLER'S FIRST LAW — Elliptical Orbits
+                // ════════════════════════════════════════════════════════
+                orreryTab === 'keplerI' && React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-purple-50 border-purple-200') + " rounded-xl p-3 border" },
+                    React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') + " mb-1" }, "\u2160 Kepler\u2019s First Law: The Law of Ellipses"),
+                    React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mb-2" }, "Every planet moves in an ellipse with the Sun at one focus. An ellipse is defined by its semi-major axis (a) and eccentricity (e). When e=0 the orbit is a perfect circle; as e\u21921 the orbit becomes extremely elongated.")
+                  ),
+                  // Interactive eccentricity explorer
+                  React.createElement("div", { className: "flex flex-col gap-2" },
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-[10px] font-bold w-24 " + (isDark ? 'text-slate-400' : 'text-purple-600') }, "Eccentricity (e):"),
+                      React.createElement("input", {
+                        type: "range", min: 0, max: 0.98, step: 0.005, value: d._k1Ecc !== undefined ? d._k1Ecc : 0.5,
+                        'aria-label': 'Eccentricity for Kepler I demonstration',
+                        onChange: function(e) { upd('_k1Ecc', parseFloat(e.target.value)); },
+                        className: "flex-1 h-1.5 accent-purple-500"
+                      }),
+                      React.createElement("span", { className: "text-[10px] font-mono w-10 text-right " + (isDark ? 'text-purple-300' : 'text-purple-700') }, (d._k1Ecc !== undefined ? d._k1Ecc : 0.5).toFixed(3))
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-[10px] font-bold w-24 " + (isDark ? 'text-slate-400' : 'text-purple-600') }, "Semi-major (a):"),
+                      React.createElement("input", {
+                        type: "range", min: 40, max: 160, step: 1, value: d._k1SemiA || 100,
+                        'aria-label': 'Semi-major axis for Kepler I',
+                        onChange: function(e) { upd('_k1SemiA', parseInt(e.target.value)); },
+                        className: "flex-1 h-1.5 accent-amber-500"
+                      }),
+                      React.createElement("span", { className: "text-[10px] font-mono w-10 text-right " + (isDark ? 'text-amber-300' : 'text-amber-700') }, (d._k1SemiA || 100) + ' px')
+                    )
+                  ),
+                  // Preset eccentricities
+                  React.createElement("div", { className: "flex flex-wrap gap-1" },
+                    React.createElement("span", { className: "text-[10px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "Presets:"),
+                    [
+                      { label: 'Circle (e=0)', ecc: 0 },
+                      { label: '\uD83C\uDF0D Earth (0.017)', ecc: 0.017 },
+                      { label: '\uD83D\uDD34 Mars (0.093)', ecc: 0.093 },
+                      { label: '\u2638 Mercury (0.206)', ecc: 0.206 },
+                      { label: '\u2B50 Pluto (0.249)', ecc: 0.249 },
+                      { label: '\u2604 Halley (0.967)', ecc: 0.967 }
+                    ].map(function(preset) {
+                      return React.createElement("button", {
+                        key: preset.label,
+                        onClick: function() { upd('_k1Ecc', preset.ecc); },
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-purple-50 border border-slate-200')
+                      }, preset.label);
+                    })
+                  ),
+                  // Kepler I Canvas
+                  React.createElement("canvas", {
+                    'data-kepler1-canvas': true,
+                    'aria-label': "Kepler's First Law: elliptical orbit visualization showing both foci, semi-major and semi-minor axes, perihelion and aphelion",
+                    width: 600, height: 420,
+                    style: { width: '100%', height: 'auto', display: 'block', background: '#0f172a', borderRadius: '12px' },
+                    ref: function(cv) {
+                      if (!cv || cv._k1Init) return;
+                      cv._k1Init = true;
+                      var ctx2 = cv.getContext('2d');
+                      var W = 600, H = 420;
+                      var t2 = 0;
+                      function drawK1() {
+                        t2++;
+                        ctx2.clearRect(0, 0, W, H);
+                        ctx2.fillStyle = '#0f172a'; ctx2.fillRect(0, 0, W, H);
+                        // Stars
+                        for (var s = 0; s < 40; s++) { ctx2.fillStyle = 'rgba(255,255,255,' + (0.06 + 0.1 * Math.sin(t2 * 0.02 + s)) + ')'; ctx2.fillRect((s * 137 + 11) % W, (s * 199 + 3) % H, 1, 1); }
+
+                        var ecc = parseFloat(cv.dataset.ecc || '0.5');
+                        var semiA = parseFloat(cv.dataset.semiA || '100');
+                        var semiB = semiA * Math.sqrt(1 - ecc * ecc);
+                        var focusOff = semiA * ecc;
+                        var cx = W * 0.5, cy = H * 0.42;
+                        var sunX = cx + focusOff, sunY = cy;
+                        var emptyX = cx - focusOff;
+
+                        // ── Draw the ellipse ──
+                        ctx2.beginPath(); ctx2.ellipse(cx, cy, semiA, semiB, 0, 0, Math.PI * 2);
+                        ctx2.strokeStyle = 'rgba(168,85,247,0.4)'; ctx2.lineWidth = 1.5; ctx2.stroke();
+
+                        // ── Semi-major axis line (2a) ──
+                        ctx2.save(); ctx2.globalAlpha = 0.3;
+                        ctx2.beginPath(); ctx2.moveTo(cx - semiA, cy); ctx2.lineTo(cx + semiA, cy);
+                        ctx2.strokeStyle = '#a78bfa'; ctx2.lineWidth = 1; ctx2.setLineDash([4, 4]); ctx2.stroke(); ctx2.setLineDash([]);
+                        ctx2.font = '8px monospace'; ctx2.fillStyle = '#a78bfa'; ctx2.textAlign = 'center';
+                        ctx2.fillText('2a = ' + (semiA * 2).toFixed(0), cx, cy + semiB + 25);
+                        ctx2.restore();
+
+                        // ── Semi-minor axis line (2b) ──
+                        ctx2.save(); ctx2.globalAlpha = 0.2;
+                        ctx2.beginPath(); ctx2.moveTo(cx, cy - semiB); ctx2.lineTo(cx, cy + semiB);
+                        ctx2.strokeStyle = '#60a5fa'; ctx2.lineWidth = 1; ctx2.setLineDash([4, 4]); ctx2.stroke(); ctx2.setLineDash([]);
+                        ctx2.font = '8px monospace'; ctx2.fillStyle = '#60a5fa'; ctx2.textAlign = 'left';
+                        ctx2.fillText('b = ' + semiB.toFixed(1), cx + 4, cy - semiB / 2);
+                        ctx2.restore();
+
+                        // ── String construction (sum of distances to both foci = 2a) ──
+                        var M = t2 * 0.012;
+                        var E2 = M;
+                        for (var ni = 0; ni < 5; ni++) { E2 = E2 - (E2 - ecc * Math.sin(E2) - M) / (1 - ecc * Math.cos(E2)); }
+                        var ta = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(E2 / 2), Math.sqrt(1 - ecc) * Math.cos(E2 / 2));
+                        var r = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(ta));
+                        var px = sunX + r * Math.cos(ta + Math.PI);
+                        var py = sunY + r * Math.sin(ta + Math.PI);
+
+                        // Distance lines from planet to both foci (r1 + r2 = 2a)
+                        var r1 = Math.sqrt((px - sunX) * (px - sunX) + (py - sunY) * (py - sunY));
+                        var r2 = Math.sqrt((px - emptyX) * (px - emptyX) + (py - emptyY) * (py - emptyY));
+                        var emptyY = cy;
+                        r2 = Math.sqrt((px - emptyX) * (px - emptyX) + (py - cy) * (py - cy));
+                        ctx2.save(); ctx2.globalAlpha = 0.35;
+                        ctx2.beginPath(); ctx2.moveTo(sunX, sunY); ctx2.lineTo(px, py);
+                        ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 1; ctx2.setLineDash([3, 3]); ctx2.stroke();
+                        ctx2.beginPath(); ctx2.moveTo(emptyX, cy); ctx2.lineTo(px, py);
+                        ctx2.strokeStyle = '#f472b6'; ctx2.lineWidth = 1; ctx2.stroke(); ctx2.setLineDash([]);
+                        ctx2.restore();
+
+                        // Distance labels
+                        ctx2.font = '7px monospace'; ctx2.textAlign = 'center';
+                        ctx2.fillStyle = '#fbbf24'; ctx2.globalAlpha = 0.6;
+                        ctx2.fillText('r\u2081=' + r1.toFixed(0), (sunX + px) / 2 + 12, (sunY + py) / 2 - 5);
+                        ctx2.fillStyle = '#f472b6';
+                        ctx2.fillText('r\u2082=' + r2.toFixed(0), (emptyX + px) / 2 - 12, (cy + py) / 2 - 5);
+                        ctx2.globalAlpha = 1;
+
+                        // r1 + r2 = 2a proof display
+                        ctx2.font = 'bold 10px monospace'; ctx2.fillStyle = '#22c55e'; ctx2.textAlign = 'center';
+                        ctx2.fillText('r\u2081 + r\u2082 = ' + (r1 + r2).toFixed(0) + ' = 2a = ' + (semiA * 2).toFixed(0) + '  \u2713', cx, H - 20);
+
+                        // ── Sun at focus 1 ──
+                        var sGrad = ctx2.createRadialGradient(sunX, sunY, 0, sunX, sunY, 8);
+                        sGrad.addColorStop(0, '#fff'); sGrad.addColorStop(0.4, '#fbbf24'); sGrad.addColorStop(1, '#f59e0b');
+                        ctx2.beginPath(); ctx2.arc(sunX, sunY, 8, 0, Math.PI * 2); ctx2.fillStyle = sGrad; ctx2.fill();
+                        ctx2.font = 'bold 8px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#fbbf24'; ctx2.textAlign = 'center';
+                        ctx2.fillText('\u2609 F\u2081 (Sun)', sunX, sunY + 18);
+
+                        // ── Empty focus 2 ──
+                        ctx2.save(); ctx2.globalAlpha = 0.3;
+                        ctx2.beginPath(); ctx2.arc(emptyX, cy, 4, 0, Math.PI * 2);
+                        ctx2.strokeStyle = '#f472b6'; ctx2.lineWidth = 1; ctx2.stroke();
+                        ctx2.font = '8px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#f472b6'; ctx2.textAlign = 'center';
+                        ctx2.fillText('F\u2082', emptyX, cy + 14);
+                        ctx2.restore();
+
+                        // ── Planet ──
+                        ctx2.beginPath(); ctx2.arc(px, py, 5, 0, Math.PI * 2);
+                        var pGrad = ctx2.createRadialGradient(px - 1, py - 1, 0, px, py, 5);
+                        pGrad.addColorStop(0, '#fff'); pGrad.addColorStop(1, '#a78bfa');
+                        ctx2.fillStyle = pGrad; ctx2.fill();
+
+                        // ── Perihelion / Aphelion labels ──
+                        ctx2.font = 'bold 8px Inter, system-ui, sans-serif';
+                        ctx2.fillStyle = '#22c55e'; ctx2.textAlign = 'center';
+                        ctx2.fillText('Perihelion', cx + semiA, cy - 14);
+                        ctx2.font = '7px monospace'; ctx2.fillText('r\u2098\u2097\u2099 = a(1\u2212e) = ' + (semiA * (1 - ecc)).toFixed(1), cx + semiA, cy - 4);
+                        ctx2.font = 'bold 8px Inter, system-ui, sans-serif';
+                        ctx2.fillStyle = '#ef4444';
+                        ctx2.fillText('Aphelion', cx - semiA, cy - 14);
+                        ctx2.font = '7px monospace'; ctx2.fillText('r\u2098\u2090\u2093 = a(1+e) = ' + (semiA * (1 + ecc)).toFixed(1), cx - semiA, cy - 4);
+
+                        // Center mark
+                        ctx2.save(); ctx2.globalAlpha = 0.15;
+                        ctx2.beginPath(); ctx2.arc(cx, cy, 2, 0, Math.PI * 2);
+                        ctx2.fillStyle = '#fff'; ctx2.fill();
+                        ctx2.font = '6px monospace'; ctx2.fillStyle = '#fff'; ctx2.textAlign = 'center';
+                        ctx2.fillText('center', cx, cy + 10);
+                        ctx2.restore();
+
+                        // ── Equations panel at bottom ──
+                        var eqY = H - 75;
+                        ctx2.fillStyle = 'rgba(15,23,42,0.7)'; ctx2.fillRect(0, eqY, W, 55);
+                        ctx2.font = 'bold 9px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#a78bfa'; ctx2.textAlign = 'left';
+                        ctx2.fillText('Ellipse Equation (polar, focus origin):', 12, eqY + 14);
+                        ctx2.font = '12px monospace'; ctx2.fillStyle = '#e2e8f0';
+                        ctx2.fillText('r(\u03b8) = a(1 \u2212 e\u00B2) / (1 + e\u00B7cos\u03b8)', 12, eqY + 30);
+                        ctx2.font = '9px monospace'; ctx2.fillStyle = '#86efac'; ctx2.textAlign = 'right';
+                        ctx2.fillText('b = a\u221A(1 \u2212 e\u00B2) = ' + semiB.toFixed(1), W - 12, eqY + 14);
+                        ctx2.font = '9px monospace'; ctx2.fillStyle = '#fde68a';
+                        ctx2.fillText('c = ae = ' + focusOff.toFixed(1) + '  (focus distance)', W - 12, eqY + 30);
+                        ctx2.font = '8px monospace'; ctx2.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx2.fillText('Cartesian: x\u00B2/a\u00B2 + y\u00B2/b\u00B2 = 1', W - 12, eqY + 44);
+
+                        // Title
+                        ctx2.font = 'bold 11px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.7)'; ctx2.textAlign = 'center';
+                        ctx2.fillText("Kepler\u2019s First Law: Planets orbit in ellipses with the Sun at one focus", W / 2, 16);
+
+                        cv._k1Anim = requestAnimationFrame(drawK1);
+                      }
+                      cv.dataset.ecc = String(d._k1Ecc !== undefined ? d._k1Ecc : 0.5);
+                      cv.dataset.semiA = String(d._k1SemiA || 100);
+                      drawK1();
+                    }
+                  }),
+                  (function() {
+                    var cv = document.querySelector('[data-kepler1-canvas]');
+                    if (cv) { cv.dataset.ecc = String(d._k1Ecc !== undefined ? d._k1Ecc : 0.5); cv.dataset.semiA = String(d._k1SemiA || 100); }
+                    return null;
+                  })(),
+                  // Explanation
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-purple-100') + " rounded-xl p-3 border space-y-2" },
+                    React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "Key Concepts:"),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                      React.createElement("div", null, "\u2022 e = 0: perfect circle (foci merge at center)"),
+                      React.createElement("div", null, "\u2022 0 < e < 1: ellipse (bound orbit)"),
+                      React.createElement("div", null, "\u2022 e = 1: parabola (escape trajectory)"),
+                      React.createElement("div", null, "\u2022 e > 1: hyperbola (flyby trajectory)"),
+                      React.createElement("div", null, "\u2022 r\u2081 + r\u2082 = 2a always (definition of ellipse)"),
+                      React.createElement("div", null, "\u2022 The Sun sits at F\u2081, not the center")
+                    )
+                  )
+                ),
+
+                // ════════════════════════════════════════════════════════
+                // TAB 3: KEPLER'S SECOND LAW — Equal Areas
+                // ════════════════════════════════════════════════════════
+                orreryTab === 'keplerII' && React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-emerald-50 border-emerald-200') + " rounded-xl p-3 border" },
+                    React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') + " mb-1" }, "\u2161 Kepler\u2019s Second Law: Equal Areas in Equal Times"),
+                    React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mb-2" }, "A line from the Sun to a planet sweeps out equal areas in equal time intervals. This means planets move faster near perihelion and slower near aphelion. This is a direct consequence of conservation of angular momentum: L = mr\u00B2\u03C9 = constant.")
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-[10px] font-bold w-24 " + (isDark ? 'text-slate-400' : 'text-emerald-600') }, "Eccentricity:"),
+                    React.createElement("input", {
+                      type: "range", min: 0.01, max: 0.95, step: 0.01, value: d._k2Ecc || 0.6,
+                      'aria-label': 'Eccentricity for Kepler II demonstration',
+                      onChange: function(e) { upd('_k2Ecc', parseFloat(e.target.value)); },
+                      className: "flex-1 h-1.5 accent-emerald-500"
+                    }),
+                    React.createElement("span", { className: "text-[10px] font-mono w-10 text-right " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, (d._k2Ecc || 0.6).toFixed(2))
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-[10px] font-bold w-24 " + (isDark ? 'text-slate-400' : 'text-emerald-600') }, "Sectors:"),
+                    React.createElement("input", {
+                      type: "range", min: 4, max: 16, step: 1, value: d._k2Sectors || 8,
+                      'aria-label': 'Number of equal-time sectors to display',
+                      onChange: function(e) { upd('_k2Sectors', parseInt(e.target.value)); },
+                      className: "flex-1 h-1.5 accent-emerald-500"
+                    }),
+                    React.createElement("span", { className: "text-[10px] font-mono w-10 text-right " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, (d._k2Sectors || 8) + ' sectors')
+                  ),
+                  // Kepler II Canvas
+                  React.createElement("canvas", {
+                    'data-kepler2-canvas': true,
+                    'aria-label': "Kepler's Second Law: equal area sectors demonstration showing a planet sweeping equal areas in equal time intervals",
+                    width: 600, height: 450,
+                    style: { width: '100%', height: 'auto', display: 'block', background: '#0f172a', borderRadius: '12px' },
+                    ref: function(cv) {
+                      if (!cv || cv._k2Init) return;
+                      cv._k2Init = true;
+                      var ctx2 = cv.getContext('2d');
+                      var W = 600, H = 450;
+                      var t2 = 0;
+                      var sectorColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#a78bfa', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#e879f9', '#fb7185', '#facc15', '#38bdf8', '#a3e635'];
+
+                      function drawK2() {
+                        t2++;
+                        ctx2.clearRect(0, 0, W, H);
+                        ctx2.fillStyle = '#0f172a'; ctx2.fillRect(0, 0, W, H);
+                        for (var s = 0; s < 40; s++) { ctx2.fillStyle = 'rgba(255,255,255,' + (0.06 + 0.1 * Math.sin(t2 * 0.02 + s)) + ')'; ctx2.fillRect((s * 137 + 11) % W, (s * 199 + 3) % H, 1, 1); }
+
+                        var ecc = parseFloat(cv.dataset.ecc || '0.6');
+                        var numSectors = parseInt(cv.dataset.sectors || '8');
+                        var semiA = 140;
+                        var semiB = semiA * Math.sqrt(1 - ecc * ecc);
+                        var focusOff = semiA * ecc;
+                        var cx = W * 0.5, cy = H * 0.42;
+                        var sunX = cx + focusOff, sunY = cy;
+
+                        // Draw orbit
+                        ctx2.beginPath(); ctx2.ellipse(cx, cy, semiA, semiB, 0, 0, Math.PI * 2);
+                        ctx2.strokeStyle = 'rgba(255,255,255,0.15)'; ctx2.lineWidth = 1; ctx2.stroke();
+
+                        // ── Draw equal-TIME sectors (equal \u0394M, different \u0394\u03b8) ──
+                        var sectorAreas = [];
+                        for (var si = 0; si < numSectors; si++) {
+                          var M1 = si * 2 * Math.PI / numSectors;
+                          var M2 = (si + 1) * 2 * Math.PI / numSectors;
+                          // Convert mean anomalies to true anomalies
+                          var E1 = M1; for (var n = 0; n < 5; n++) { E1 = E1 - (E1 - ecc * Math.sin(E1) - M1) / (1 - ecc * Math.cos(E1)); }
+                          var ta1 = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(E1 / 2), Math.sqrt(1 - ecc) * Math.cos(E1 / 2));
+                          var E2 = M2; for (var n2 = 0; n2 < 5; n2++) { E2 = E2 - (E2 - ecc * Math.sin(E2) - M2) / (1 - ecc * Math.cos(E2)); }
+                          var ta2 = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(E2 / 2), Math.sqrt(1 - ecc) * Math.cos(E2 / 2));
+
+                          // Draw sector
+                          ctx2.save(); ctx2.globalAlpha = 0.18;
+                          ctx2.beginPath(); ctx2.moveTo(sunX, sunY);
+                          var steps = 30;
+                          for (var st = 0; st <= steps; st++) {
+                            var frac = st / steps;
+                            var Minterp = M1 + frac * (M2 - M1);
+                            var Ei = Minterp; for (var nI = 0; nI < 5; nI++) { Ei = Ei - (Ei - ecc * Math.sin(Ei) - Minterp) / (1 - ecc * Math.cos(Ei)); }
+                            var tai = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(Ei / 2), Math.sqrt(1 - ecc) * Math.cos(Ei / 2));
+                            var ri = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(tai));
+                            ctx2.lineTo(sunX + ri * Math.cos(tai + Math.PI), sunY + ri * Math.sin(tai + Math.PI));
+                          }
+                          ctx2.closePath();
+                          ctx2.fillStyle = sectorColors[si % sectorColors.length];
+                          ctx2.fill();
+                          ctx2.restore();
+
+                          // Calculate area using shoelace formula
+                          var area = 0;
+                          for (var ast = 0; ast < steps; ast++) {
+                            var fA = ast / steps, fB = (ast + 1) / steps;
+                            var MiA = M1 + fA * (M2 - M1), MiB = M1 + fB * (M2 - M1);
+                            var EiA = MiA; for (var nA = 0; nA < 5; nA++) { EiA = EiA - (EiA - ecc * Math.sin(EiA) - MiA) / (1 - ecc * Math.cos(EiA)); }
+                            var taiA = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(EiA / 2), Math.sqrt(1 - ecc) * Math.cos(EiA / 2));
+                            var riA = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(taiA));
+                            var EiB = MiB; for (var nB = 0; nB < 5; nB++) { EiB = EiB - (EiB - ecc * Math.sin(EiB) - MiB) / (1 - ecc * Math.cos(EiB)); }
+                            var taiB = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(EiB / 2), Math.sqrt(1 - ecc) * Math.cos(EiB / 2));
+                            var riB = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(taiB));
+                            area += 0.5 * riA * riB * Math.abs(Math.sin(taiB - taiA));
+                          }
+                          sectorAreas.push(area);
+                        }
+
+                        // ── Animated planet ──
+                        var M = t2 * 0.012;
+                        var E = M; for (var ni = 0; ni < 5; ni++) { E = E - (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E)); }
+                        var ta = 2 * Math.atan2(Math.sqrt(1 + ecc) * Math.sin(E / 2), Math.sqrt(1 - ecc) * Math.cos(E / 2));
+                        var r = semiA * (1 - ecc * ecc) / (1 + ecc * Math.cos(ta));
+                        var px = sunX + r * Math.cos(ta + Math.PI);
+                        var py = sunY + r * Math.sin(ta + Math.PI);
+
+                        // Sweep line from Sun to planet
+                        ctx2.save(); ctx2.globalAlpha = 0.4;
+                        ctx2.beginPath(); ctx2.moveTo(sunX, sunY); ctx2.lineTo(px, py);
+                        ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 1; ctx2.stroke();
+                        ctx2.restore();
+
+                        // Velocity vector
+                        var speed = Math.sqrt(2 / r - 1 / semiA) * 30;
+                        var vAngle = ta + Math.PI + Math.PI / 2;
+                        ctx2.beginPath(); ctx2.moveTo(px, py);
+                        ctx2.lineTo(px + Math.cos(vAngle) * speed, py + Math.sin(vAngle) * speed);
+                        ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 1.5; ctx2.stroke();
+
+                        // Sun
+                        var sGrad = ctx2.createRadialGradient(sunX, sunY, 0, sunX, sunY, 8);
+                        sGrad.addColorStop(0, '#fff'); sGrad.addColorStop(0.4, '#fbbf24'); sGrad.addColorStop(1, '#f59e0b');
+                        ctx2.beginPath(); ctx2.arc(sunX, sunY, 8, 0, Math.PI * 2); ctx2.fillStyle = sGrad; ctx2.fill();
+
+                        // Planet
+                        ctx2.beginPath(); ctx2.arc(px, py, 5, 0, Math.PI * 2);
+                        var pG = ctx2.createRadialGradient(px - 1, py - 1, 0, px, py, 5);
+                        pG.addColorStop(0, '#fff'); pG.addColorStop(1, '#22c55e');
+                        ctx2.fillStyle = pG; ctx2.fill();
+
+                        // ── Area comparison bar chart (bottom) ──
+                        var barY = H - 95, barH = 50, barW = (W - 40) / numSectors;
+                        ctx2.fillStyle = 'rgba(15,23,42,0.7)'; ctx2.fillRect(0, barY - 15, W, 80);
+                        ctx2.font = 'bold 8px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#22c55e'; ctx2.textAlign = 'left';
+                        ctx2.fillText('\u2261 Sector Areas (should be equal):', 12, barY - 3);
+                        var maxArea = Math.max.apply(null, sectorAreas.length ? sectorAreas : [1]);
+                        for (var bi = 0; bi < sectorAreas.length; bi++) {
+                          var bH = (sectorAreas[bi] / maxArea) * barH;
+                          ctx2.fillStyle = sectorColors[bi % sectorColors.length];
+                          ctx2.globalAlpha = 0.5;
+                          ctx2.fillRect(20 + bi * barW + 1, barY + barH - bH, barW - 2, bH);
+                          ctx2.globalAlpha = 1;
+                        }
+                        // Mean area line
+                        var meanArea = sectorAreas.reduce(function(a, b) { return a + b; }, 0) / (sectorAreas.length || 1);
+                        var meanH = (meanArea / maxArea) * barH;
+                        ctx2.beginPath(); ctx2.moveTo(20, barY + barH - meanH); ctx2.lineTo(W - 20, barY + barH - meanH);
+                        ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 1; ctx2.setLineDash([3, 3]); ctx2.stroke(); ctx2.setLineDash([]);
+                        ctx2.font = '7px monospace'; ctx2.fillStyle = '#fff'; ctx2.textAlign = 'right';
+                        ctx2.fillText('mean', W - 22, barY + barH - meanH - 2);
+
+                        // Equations
+                        ctx2.font = 'bold 9px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#22c55e'; ctx2.textAlign = 'left';
+                        ctx2.fillText('dA/dt = \u00BD r\u00B2 d\u03b8/dt = L/(2m) = constant', 12, H - 8);
+                        ctx2.font = '8px monospace'; ctx2.fillStyle = 'rgba(255,255,255,0.3)'; ctx2.textAlign = 'right';
+                        ctx2.fillText('Angular momentum: L = mr\u00B2\u03C9  |  v\u209A/v\u2090 = (1+e)/(1\u2212e)', W - 12, H - 8);
+
+                        // Title
+                        ctx2.font = 'bold 11px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.7)'; ctx2.textAlign = 'center';
+                        ctx2.fillText("Kepler\u2019s Second Law: Equal areas swept in equal time intervals", W / 2, 16);
+                        ctx2.font = '8px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx2.fillText(numSectors + ' equal-time sectors shown \u2014 notice all colored areas are the same size', W / 2, 28);
+
+                        cv._k2Anim = requestAnimationFrame(drawK2);
+                      }
+                      cv.dataset.ecc = String(d._k2Ecc || 0.6);
+                      cv.dataset.sectors = String(d._k2Sectors || 8);
+                      drawK2();
+                    }
+                  }),
+                  (function() {
+                    var cv = document.querySelector('[data-kepler2-canvas]');
+                    if (cv) { cv.dataset.ecc = String(d._k2Ecc || 0.6); cv.dataset.sectors = String(d._k2Sectors || 8); }
+                    return null;
+                  })()
+                ),
+
+                // ════════════════════════════════════════════════════════
+                // TAB 4: KEPLER'S THIRD LAW — Harmonic Law (T² ∝ a³)
+                // ════════════════════════════════════════════════════════
+                orreryTab === 'keplerIII' && React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-amber-50 border-amber-200') + " rounded-xl p-3 border" },
+                    React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') + " mb-1" }, "\u2162 Kepler\u2019s Third Law: The Harmonic Law"),
+                    React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mb-2" }, "The square of the orbital period is proportional to the cube of the semi-major axis: T\u00B2 = (4\u03C0\u00B2/GM)\u00B7a\u00B3. For solar system bodies, T\u00B2/a\u00B3 = 1 when T is in years and a is in AU. This means a plot of log(T) vs log(a) gives a straight line with slope 3/2.")
+                  ),
+                  // Log scale toggle
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("label", { className: "text-[10px] font-bold " + (isDark ? 'text-slate-400' : 'text-amber-600') + " flex items-center gap-1.5" },
+                      React.createElement("input", { type: "checkbox", checked: d._k3Log !== false, onChange: function() { upd('_k3Log', d._k3Log === false); }, className: "rounded accent-amber-500" }),
+                      "Log-log scale (recommended)"
+                    ),
+                    React.createElement("label", { className: "text-[10px] font-bold " + (isDark ? 'text-slate-400' : 'text-amber-600') + " flex items-center gap-1.5 ml-4" },
+                      React.createElement("input", { type: "checkbox", checked: d._k3ShowLine !== false, onChange: function() { upd('_k3ShowLine', d._k3ShowLine === false); }, className: "rounded accent-amber-500" }),
+                      "Show T\u00B2=a\u00B3 line"
+                    )
+                  ),
+                  // T² vs a³ scatter plot canvas
+                  React.createElement("canvas", {
+                    'data-kepler3-canvas': true,
+                    'aria-label': "Kepler's Third Law scatter plot: orbital period squared versus semi-major axis cubed for all solar system bodies",
+                    width: 640, height: 460,
+                    style: { width: '100%', height: 'auto', display: 'block', background: '#0f172a', borderRadius: '12px' },
+                    ref: function(cv) {
+                      if (!cv || cv._k3Init) return;
+                      cv._k3Init = true;
+                      var ctx2 = cv.getContext('2d');
+                      var W = 640, H = 460;
+                      var t2 = 0;
+
+                      function drawK3() {
+                        t2++;
+                        ctx2.clearRect(0, 0, W, H);
+                        ctx2.fillStyle = '#0f172a'; ctx2.fillRect(0, 0, W, H);
+                        for (var s = 0; s < 30; s++) { ctx2.fillStyle = 'rgba(255,255,255,' + (0.05 + 0.08 * Math.sin(t2 * 0.015 + s)) + ')'; ctx2.fillRect((s * 137 + 11) % W, (s * 199 + 3) % H, 1, 1); }
+
+                        var useLog = cv.dataset.log !== 'false';
+                        var showLine = cv.dataset.showLine !== 'false';
+                        var plotLeft = 65, plotRight = W - 25, plotTop = 45, plotBot = H - 80;
+                        var plotW = plotRight - plotLeft, plotH = plotBot - plotTop;
+
+                        // Plot background
+                        ctx2.fillStyle = 'rgba(15,23,42,0.5)';
+                        ctx2.fillRect(plotLeft, plotTop, plotW, plotH);
+                        ctx2.strokeStyle = 'rgba(255,255,255,0.1)'; ctx2.lineWidth = 0.5;
+                        ctx2.strokeRect(plotLeft, plotTop, plotW, plotH);
+
+                        // Data ranges
+                        var bodies = ORRERY_BODIES.filter(function(b) { return b.period_yr > 0 && b.a_au > 0; });
+                        var maxA, minA, maxT, minT;
+                        if (useLog) {
+                          minA = -0.5; maxA = 2.0; // log10(AU)
+                          minT = -0.7; maxT = 3.2; // log10(years)
+                        } else {
+                          minA = 0; maxA = 80;
+                          minT = 0; maxT = 200;
+                        }
+
+                        // Grid lines
+                        ctx2.save(); ctx2.globalAlpha = 0.08;
+                        for (var gx = 0; gx <= 10; gx++) {
+                          var x = plotLeft + gx * plotW / 10;
+                          ctx2.beginPath(); ctx2.moveTo(x, plotTop); ctx2.lineTo(x, plotBot);
+                          ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 0.5; ctx2.stroke();
+                        }
+                        for (var gy = 0; gy <= 8; gy++) {
+                          var y = plotTop + gy * plotH / 8;
+                          ctx2.beginPath(); ctx2.moveTo(plotLeft, y); ctx2.lineTo(plotRight, y);
+                          ctx2.stroke();
+                        }
+                        ctx2.restore();
+
+                        // Axis labels
+                        ctx2.font = '9px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.5)'; ctx2.textAlign = 'center';
+                        ctx2.fillText(useLog ? 'log\u2081\u2080(a / AU)' : 'Semi-major axis a (AU)', (plotLeft + plotRight) / 2, plotBot + 18);
+                        ctx2.save(); ctx2.translate(15, (plotTop + plotBot) / 2); ctx2.rotate(-Math.PI / 2);
+                        ctx2.fillText(useLog ? 'log\u2081\u2080(T / yr)' : 'Orbital period T (years)', 0, 0);
+                        ctx2.restore();
+
+                        // Tick labels
+                        ctx2.font = '7px monospace'; ctx2.fillStyle = 'rgba(255,255,255,0.3)'; ctx2.textAlign = 'center';
+                        for (var tx = 0; tx <= 5; tx++) {
+                          var val = useLog ? (minA + tx * (maxA - minA) / 5) : (minA + tx * (maxA - minA) / 5);
+                          ctx2.fillText(useLog ? val.toFixed(1) : val.toFixed(0), plotLeft + tx * plotW / 5, plotBot + 10);
+                        }
+                        ctx2.textAlign = 'right';
+                        for (var ty = 0; ty <= 4; ty++) {
+                          var valY = useLog ? (maxT - ty * (maxT - minT) / 4) : (maxT - ty * (maxT - minT) / 4);
+                          ctx2.fillText(useLog ? valY.toFixed(1) : valY.toFixed(0), plotLeft - 5, plotTop + ty * plotH / 4 + 3);
+                        }
+
+                        // ── T² = a³ theoretical line ──
+                        if (showLine) {
+                          ctx2.save(); ctx2.globalAlpha = 0.3;
+                          ctx2.beginPath();
+                          for (var li = 0; li <= plotW; li++) {
+                            var aVal, tVal;
+                            if (useLog) {
+                              var logA = minA + li / plotW * (maxA - minA);
+                              var logT = 1.5 * logA; // T = a^(3/2) => logT = 1.5*logA
+                              var lx = plotLeft + li;
+                              var ly = plotBot - (logT - minT) / (maxT - minT) * plotH;
+                            } else {
+                              aVal = minA + li / plotW * (maxA - minA);
+                              tVal = Math.pow(aVal, 1.5);
+                              var lx = plotLeft + li;
+                              var ly = plotBot - (tVal - minT) / (maxT - minT) * plotH;
+                            }
+                            if (ly < plotTop - 10 || ly > plotBot + 10) continue;
+                            if (li === 0) ctx2.moveTo(lx, ly); else ctx2.lineTo(lx, ly);
+                          }
+                          ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 2; ctx2.stroke();
+                          ctx2.restore();
+                          // Line label
+                          ctx2.font = 'bold 8px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#fbbf24'; ctx2.textAlign = 'left';
+                          var lblX = plotLeft + plotW * 0.6, lblY = plotTop + 20;
+                          ctx2.fillText('T = a\xB3\u02F2  (Kepler III)', lblX, lblY);
+                        }
+
+                        // ── Plot each body ──
+                        bodies.forEach(function(b) {
+                          var aVal2, tVal2, bx, by;
+                          if (useLog) {
+                            var logA2 = Math.log10(b.a_au);
+                            var logT2 = Math.log10(b.period_yr);
+                            bx = plotLeft + (logA2 - minA) / (maxA - minA) * plotW;
+                            by = plotBot - (logT2 - minT) / (maxT - minT) * plotH;
+                          } else {
+                            bx = plotLeft + (b.a_au - minA) / (maxA - minA) * plotW;
+                            by = plotBot - (b.period_yr - minT) / (maxT - minT) * plotH;
+                          }
+                          if (bx < plotLeft - 5 || bx > plotRight + 5 || by < plotTop - 5 || by > plotBot + 5) return;
+                          var dotR = b.type === 'planet' ? 5 : 3.5;
+                          // Glow
+                          ctx2.save(); ctx2.globalAlpha = 0.2;
+                          ctx2.beginPath(); ctx2.arc(bx, by, dotR + 4, 0, Math.PI * 2);
+                          ctx2.fillStyle = b.color; ctx2.fill();
+                          ctx2.restore();
+                          // Dot
+                          ctx2.beginPath(); ctx2.arc(bx, by, dotR, 0, Math.PI * 2);
+                          var dGrad = ctx2.createRadialGradient(bx - 1, by - 1, 0, bx, by, dotR);
+                          dGrad.addColorStop(0, '#fff'); dGrad.addColorStop(1, b.color);
+                          ctx2.fillStyle = dGrad; ctx2.fill();
+                          // Label
+                          ctx2.font = '7px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.6)'; ctx2.textAlign = 'left';
+                          ctx2.fillText(b.emoji + ' ' + b.name, bx + dotR + 3, by + 3);
+                        });
+
+                        // ── T²/a³ ratio table (bottom) ──
+                        var tableY = plotBot + 28;
+                        ctx2.fillStyle = 'rgba(15,23,42,0.7)'; ctx2.fillRect(0, tableY, W, H - tableY);
+                        ctx2.font = 'bold 8px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#f59e0b'; ctx2.textAlign = 'left';
+                        ctx2.fillText('T\u00B2/a\u00B3 ratios (should all \u2248 1.00 for solar system bodies):', 12, tableY + 12);
+                        var planets = ORRERY_BODIES.filter(function(b) { return b.type === 'planet'; });
+                        ctx2.font = '7px monospace'; ctx2.fillStyle = '#e2e8f0';
+                        var colW = (W - 24) / Math.min(planets.length, 9);
+                        planets.forEach(function(p, pi) {
+                          var ratio = (p.period_yr * p.period_yr) / (p.a_au * p.a_au * p.a_au);
+                          var isGood = Math.abs(ratio - 1) < 0.05;
+                          ctx2.fillStyle = isGood ? '#22c55e' : '#fbbf24';
+                          ctx2.fillText(p.emoji + ' ' + ratio.toFixed(3), 12 + pi * colW, tableY + 25);
+                        });
+                        // Verification message
+                        ctx2.font = 'bold 9px monospace'; ctx2.fillStyle = '#22c55e'; ctx2.textAlign = 'center';
+                        ctx2.fillText('\u2713 All T\u00B2/a\u00B3 \u2248 1.000 \u2014 Kepler\'s Third Law confirmed!', W / 2, tableY + 40);
+
+                        // Title
+                        ctx2.font = 'bold 11px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.7)'; ctx2.textAlign = 'center';
+                        ctx2.fillText("Kepler\u2019s Third Law: T\u00B2 = a\u00B3 (period\u00B2 \u221D distance\u00B3)", W / 2, 16);
+                        ctx2.font = '8px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx2.fillText('All solar system bodies fall on the same line \u2014 a universal relationship', W / 2, 28);
+
+                        cv._k3Anim = requestAnimationFrame(drawK3);
+                      }
+                      cv.dataset.log = String(d._k3Log !== false);
+                      cv.dataset.showLine = String(d._k3ShowLine !== false);
+                      drawK3();
+                    }
+                  }),
+                  (function() {
+                    var cv = document.querySelector('[data-kepler3-canvas]');
+                    if (cv) { cv.dataset.log = String(d._k3Log !== false); cv.dataset.showLine = String(d._k3ShowLine !== false); }
+                    return null;
+                  })(),
+                  // Data table
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-amber-100') + " rounded-xl p-3 border overflow-x-auto" },
+                    React.createElement("table", { className: "w-full text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                      React.createElement("thead", null,
+                        React.createElement("tr", { className: "text-left border-b " + (isDark ? 'border-slate-600' : 'border-amber-200') },
+                          ['Body', 'a (AU)', 'T (yr)', 'T\u00B2', 'a\u00B3', 'T\u00B2/a\u00B3'].map(function(h) {
+                            return React.createElement("th", { key: h, className: "py-1 px-2 font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') }, h);
+                          })
+                        )
+                      ),
+                      React.createElement("tbody", null,
+                        ORRERY_BODIES.filter(function(b) { return b.type === 'planet'; }).map(function(b) {
+                          var T2 = b.period_yr * b.period_yr;
+                          var a3 = b.a_au * b.a_au * b.a_au;
+                          var ratio = T2 / a3;
+                          return React.createElement("tr", { key: b.id, className: "border-b " + (isDark ? 'border-slate-700' : 'border-slate-100') },
+                            React.createElement("td", { className: "py-1 px-2 font-bold" }, b.emoji + ' ' + b.name),
+                            React.createElement("td", { className: "py-1 px-2 font-mono" }, b.a_au.toFixed(3)),
+                            React.createElement("td", { className: "py-1 px-2 font-mono" }, b.period_yr.toFixed(2)),
+                            React.createElement("td", { className: "py-1 px-2 font-mono" }, T2.toFixed(2)),
+                            React.createElement("td", { className: "py-1 px-2 font-mono" }, a3.toFixed(2)),
+                            React.createElement("td", { className: "py-1 px-2 font-mono font-bold " + (Math.abs(ratio - 1) < 0.05 ? (isDark ? 'text-emerald-400' : 'text-emerald-600') : (isDark ? 'text-amber-400' : 'text-amber-600')) }, ratio.toFixed(4))
+                          );
+                        })
+                      )
+                    )
+                  )
+                ),
+
+                // ════════════════════════════════════════════════════════
+                // TAB 5: ORBIT WORKSHOP — Modify any body's parameters
+                // ════════════════════════════════════════════════════════
+                orreryTab === 'workshop' && React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-rose-50 border-rose-200') + " rounded-xl p-3 border" },
+                    React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-rose-300' : 'text-rose-700') + " mb-1" }, "\uD83D\uDD27 Orbit Workshop"),
+                    React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "What if Earth had Mercury's eccentricity? What if Jupiter were closer to the Sun? Modify any body\u2019s orbital parameters and watch the orrery update in real time. The workshop recalculates all derived quantities (velocity, period, energy) automatically.")
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("button", {
+                      onClick: resetOverrides,
+                      className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-rose-500 text-white hover:bg-rose-600 transition-all"
+                    }, "\u21BA Reset All to Real Values")
+                  ),
+                  // Body selector
+                  React.createElement("div", { className: "flex flex-wrap gap-1" },
+                    ORRERY_BODIES.filter(function(b) { return b.type === 'planet' || b.type === 'dwarf'; }).map(function(b) {
+                      var isActive = (d._workshopBody || 'earth') === b.id;
+                      var hasOverride = bodyOverrides[b.id] && Object.keys(bodyOverrides[b.id]).length > 0;
+                      return React.createElement("button", {
+                        key: b.id,
+                        onClick: function() { upd('_workshopBody', b.id); },
+                        className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (isActive ? 'bg-rose-600 text-white shadow-md' : hasOverride ? 'bg-amber-100 text-amber-700 border border-amber-300' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-500 border border-slate-200'))
+                      }, b.emoji + ' ' + b.name + (hasOverride ? ' \u2022' : ''));
+                    })
+                  ),
+                  // Parameter sliders for selected workshop body
+                  (function() {
+                    var wbId = d._workshopBody || 'earth';
+                    var wb = ORRERY_BODIES.find(function(b) { return b.id === wbId; });
+                    if (!wb) return null;
+                    var currEcc = getBodyParam(wbId, 'ecc');
+                    var currA = getBodyParam(wbId, 'a_au');
+                    var currIncl = getBodyParam(wbId, 'incl_deg');
+                    var origPeriod = wb.period_yr;
+                    var newPeriod = Math.pow(currA, 1.5); // Kepler III
+                    var perihelion = currA * (1 - currEcc);
+                    var aphelion = currA * (1 + currEcc);
+                    var vPeri = 29.78 * Math.sqrt((1 + currEcc) / ((1 - currEcc) * currA));
+                    var vAph = 29.78 * Math.sqrt((1 - currEcc) / ((1 + currEcc) * currA));
+
+                    return React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-rose-100') + " rounded-xl p-3 border space-y-3" },
+                      React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, wb.emoji + ' ' + wb.name + ' \u2014 Orbital Parameters'),
+                      // Eccentricity
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-[10px] font-bold w-32 " + (isDark ? 'text-slate-400' : 'text-rose-600') }, "Eccentricity (e):"),
+                        React.createElement("input", {
+                          type: "range", min: 0, max: 0.95, step: 0.001, value: currEcc,
+                          'aria-label': 'Override eccentricity for ' + wb.name,
+                          onChange: function(e) { setBodyOverride(wbId, 'ecc', parseFloat(e.target.value)); },
+                          className: "flex-1 h-1.5 accent-rose-500"
+                        }),
+                        React.createElement("span", { className: "text-[10px] font-mono w-12 text-right " + (isDark ? 'text-rose-300' : 'text-rose-700') }, currEcc.toFixed(4)),
+                        React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, '(real: ' + wb.ecc.toFixed(4) + ')')
+                      ),
+                      // Semi-major axis
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-[10px] font-bold w-32 " + (isDark ? 'text-slate-400' : 'text-rose-600') }, "Semi-major axis (AU):"),
+                        React.createElement("input", {
+                          type: "range", min: 0.1, max: 80, step: 0.01, value: currA,
+                          'aria-label': 'Override semi-major axis for ' + wb.name,
+                          onChange: function(e) { setBodyOverride(wbId, 'a_au', parseFloat(e.target.value)); },
+                          className: "flex-1 h-1.5 accent-amber-500"
+                        }),
+                        React.createElement("span", { className: "text-[10px] font-mono w-12 text-right " + (isDark ? 'text-amber-300' : 'text-amber-700') }, currA.toFixed(3)),
+                        React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, '(real: ' + wb.a_au.toFixed(3) + ')')
+                      ),
+                      // Inclination
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-[10px] font-bold w-32 " + (isDark ? 'text-slate-400' : 'text-rose-600') }, "Inclination (\u00B0):"),
+                        React.createElement("input", {
+                          type: "range", min: 0, max: 90, step: 0.1, value: currIncl,
+                          'aria-label': 'Override inclination for ' + wb.name,
+                          onChange: function(e) { setBodyOverride(wbId, 'incl_deg', parseFloat(e.target.value)); },
+                          className: "flex-1 h-1.5 accent-blue-500"
+                        }),
+                        React.createElement("span", { className: "text-[10px] font-mono w-12 text-right " + (isDark ? 'text-blue-300' : 'text-blue-700') }, currIncl.toFixed(1) + '\u00B0'),
+                        React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, '(real: ' + wb.incl_deg.toFixed(1) + '\u00B0)')
+                      ),
+                      // Quick presets
+                      React.createElement("div", { className: "flex flex-wrap gap-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold uppercase tracking-wider self-center " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "What if:"),
+                        [
+                          { label: 'Circular orbit', apply: function() { setBodyOverride(wbId, 'ecc', 0); } },
+                          { label: "Mercury's eccentricity", apply: function() { setBodyOverride(wbId, 'ecc', 0.2056); } },
+                          { label: "Pluto's eccentricity", apply: function() { setBodyOverride(wbId, 'ecc', 0.2488); } },
+                          { label: "Halley's eccentricity", apply: function() { setBodyOverride(wbId, 'ecc', 0.9671); } },
+                          { label: 'At 1 AU', apply: function() { setBodyOverride(wbId, 'a_au', 1.0); } },
+                          { label: 'Double distance', apply: function() { setBodyOverride(wbId, 'a_au', wb.a_au * 2); } },
+                          { label: 'Half distance', apply: function() { setBodyOverride(wbId, 'a_au', wb.a_au * 0.5); } }
+                        ].map(function(preset) {
+                          return React.createElement("button", {
+                            key: preset.label,
+                            onClick: preset.apply,
+                            className: "px-2 py-0.5 rounded text-[10px] font-bold " + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200') + " transition-all"
+                          }, preset.label);
+                        })
+                      ),
+                      // Derived quantities readout
+                      React.createElement("div", { className: (isDark ? 'bg-slate-900 border-slate-700' : 'bg-rose-50 border-rose-100') + " rounded-lg p-2.5 border" },
+                        React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-rose-300' : 'text-rose-600') + " mb-1.5" }, "\uD83D\uDCCA Derived Quantities (auto-calculated):"),
+                        React.createElement("div", { className: "grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] font-mono " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                          React.createElement("span", null, "Period T = " + newPeriod.toFixed(2) + " yr" + (Math.abs(newPeriod - origPeriod) > 0.01 ? ' (\u0394' + (newPeriod - origPeriod > 0 ? '+' : '') + (newPeriod - origPeriod).toFixed(2) + ')' : '')),
+                          React.createElement("span", null, "Perihelion = " + perihelion.toFixed(3) + " AU"),
+                          React.createElement("span", null, "Aphelion = " + aphelion.toFixed(3) + " AU"),
+                          React.createElement("span", null, "v\u209A = " + vPeri.toFixed(1) + " km/s"),
+                          React.createElement("span", null, "v\u2090 = " + vAph.toFixed(1) + " km/s"),
+                          React.createElement("span", null, "\u03B5 = " + (-66.25 / currA).toFixed(2) + " km\u00B2/s\u00B2"),
+                          React.createElement("span", null, "v\u209A/v\u2090 = " + (vPeri / vAph).toFixed(2)),
+                          React.createElement("span", null, "T\u00B2/a\u00B3 = " + (newPeriod * newPeriod / (currA * currA * currA)).toFixed(4))
+                        )
+                      ),
+                      // Habitable zone indicator
+                      React.createElement("div", {
+                        className: "text-[10px] font-bold text-center py-1.5 rounded-lg " + (perihelion >= 0.75 && aphelion <= 1.8 ? 'bg-green-100 text-green-700' : perihelion < 0.75 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')
+                      }, perihelion >= 0.75 && aphelion <= 1.8 ? '\u2600 Orbit passes through the habitable zone! Liquid water possible.' : perihelion < 0.75 ? '\uD83D\uDD25 Too close to the Sun at perihelion \u2014 scorching!' : '\u2744 Too far from the Sun \u2014 frozen world.')
+                    );
+                  })()
+                ),
+
+                // ════════════════════════════════════════════════════════
+                // TAB 6: HOHMANN TRANSFER ORBITS
+                // ════════════════════════════════════════════════════════
+                orreryTab === 'transfers' && React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-cyan-50 border-cyan-200') + " rounded-xl p-3 border" },
+                    React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-700') + " mb-1" }, "\uD83D\uDE80 Hohmann Transfer Orbits"),
+                    React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "A Hohmann transfer is the most fuel-efficient way to move between two circular orbits. It uses two engine burns: one to enter an elliptical transfer orbit, and one to circularize at the destination. This is how real spacecraft travel between planets!")
+                  ),
+                  // Origin / Destination selectors
+                  React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-600') + " mb-1" }, "Origin:"),
+                      React.createElement("div", { className: "flex flex-wrap gap-1" },
+                        ORRERY_BODIES.filter(function(b) { return b.type === 'planet'; }).map(function(b) {
+                          var active = (d._transferOrigin || 'earth') === b.id;
+                          return React.createElement("button", {
+                            key: b.id,
+                            onClick: function() { upd('_transferOrigin', b.id); },
+                            className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-cyan-600 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-500 border border-slate-200'))
+                          }, b.emoji + ' ' + b.name);
+                        })
+                      )
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-600') + " mb-1" }, "Destination:"),
+                      React.createElement("div", { className: "flex flex-wrap gap-1" },
+                        ORRERY_BODIES.filter(function(b) { return b.type === 'planet'; }).map(function(b) {
+                          var active = (d._transferDest || 'mars') === b.id;
+                          return React.createElement("button", {
+                            key: b.id,
+                            onClick: function() { upd('_transferDest', b.id); },
+                            className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-orange-600 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-500 border border-slate-200'))
+                          }, b.emoji + ' ' + b.name);
+                        })
+                      )
+                    )
+                  ),
+                  // Transfer orbit canvas
+                  React.createElement("canvas", {
+                    'data-transfer-canvas': true,
+                    'aria-label': 'Hohmann transfer orbit visualization between two planets',
+                    width: 600, height: 500,
+                    style: { width: '100%', height: 'auto', display: 'block', background: '#0f172a', borderRadius: '12px' },
+                    ref: function(cv) {
+                      if (!cv || cv._trInit) return;
+                      cv._trInit = true;
+                      var ctx2 = cv.getContext('2d');
+                      var W = 600, H = 500;
+                      var t2 = 0;
+
+                      function drawTransfer() {
+                        t2++;
+                        ctx2.clearRect(0, 0, W, H);
+                        ctx2.fillStyle = '#0f172a'; ctx2.fillRect(0, 0, W, H);
+                        for (var s = 0; s < 40; s++) { ctx2.fillStyle = 'rgba(255,255,255,' + (0.05 + 0.08 * Math.sin(t2 * 0.015 + s)) + ')'; ctx2.fillRect((s * 137 + 11) % W, (s * 199 + 3) % H, 1, 1); }
+
+                        var originId = cv.dataset.origin || 'earth';
+                        var destId = cv.dataset.dest || 'mars';
+                        var origin = ORRERY_BODIES.find(function(b) { return b.id === originId; }) || ORRERY_BODIES[2];
+                        var dest = ORRERY_BODIES.find(function(b) { return b.id === destId; }) || ORRERY_BODIES[3];
+
+                        var r1 = origin.a_au, r2 = dest.a_au;
+                        var isOutbound = r2 > r1;
+                        // Transfer orbit semi-major axis
+                        var aT = (r1 + r2) / 2;
+                        // Transfer time (half period of transfer orbit)
+                        var tTransfer = Math.PI * Math.sqrt(aT * aT * aT); // in units where GM=1 (years * some factor)
+                        var tTransferYr = Math.pow(aT, 1.5) * 0.5; // half the period in years
+                        var tTransferDays = tTransferYr * 365.25;
+
+                        // Delta-v calculations (km/s)
+                        var vCirc1 = 29.78 / Math.sqrt(r1); // circular velocity at r1
+                        var vCirc2 = 29.78 / Math.sqrt(r2);
+                        var vT1 = 29.78 * Math.sqrt(2 / r1 - 1 / aT); // velocity at r1 on transfer orbit
+                        var vT2 = 29.78 * Math.sqrt(Math.max(0, 2 / r2 - 1 / aT));
+                        var dv1 = Math.abs(vT1 - vCirc1);
+                        var dv2 = Math.abs(vCirc2 - vT2);
+                        var dvTotal = dv1 + dv2;
+
+                        // Phase angle
+                        var phaseAngle = 180 * (1 - Math.pow((r1 + r2) / (2 * r2), 1.5));
+
+                        // Scale to canvas
+                        var maxR = Math.max(r1, r2);
+                        var scale = (Math.min(W, H) * 0.35) / maxR;
+                        var cx = W * 0.45, cy = H * 0.4;
+
+                        function toScreen(au, angle) { return { x: cx + au * scale * Math.cos(angle), y: cy + au * scale * Math.sin(angle) }; }
+
+                        // ── Draw origin orbit ──
+                        ctx2.beginPath(); ctx2.arc(cx, cy, r1 * scale, 0, Math.PI * 2);
+                        ctx2.strokeStyle = origin.color; ctx2.lineWidth = 1.2; ctx2.globalAlpha = 0.4; ctx2.stroke(); ctx2.globalAlpha = 1;
+
+                        // ── Draw destination orbit ──
+                        ctx2.beginPath(); ctx2.arc(cx, cy, r2 * scale, 0, Math.PI * 2);
+                        ctx2.strokeStyle = dest.color; ctx2.lineWidth = 1.2; ctx2.globalAlpha = 0.4; ctx2.stroke(); ctx2.globalAlpha = 1;
+
+                        // ── Draw transfer ellipse ──
+                        var eT = Math.abs(r2 - r1) / (r1 + r2); // eccentricity of transfer orbit
+                        var bT = aT * Math.sqrt(1 - eT * eT) * scale;
+                        var aTpx = aT * scale;
+                        var transferCx = cx + (isOutbound ? (r1 - aT) : (aT - r1)) * scale * (isOutbound ? 1 : -1);
+                        // Draw only the transfer half
+                        ctx2.save();
+                        ctx2.beginPath();
+                        ctx2.ellipse(cx + (isOutbound ? 1 : -1) * (aT - r1) * scale, cy, aTpx, bT, 0, isOutbound ? Math.PI : 0, isOutbound ? 0 : Math.PI, !isOutbound);
+                        ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 2; ctx2.setLineDash([6, 4]); ctx2.stroke(); ctx2.setLineDash([]);
+                        ctx2.restore();
+
+                        // ── Animated spacecraft position ──
+                        var animPhase = (t2 * 0.005) % 1; // 0-1 through transfer
+                        var scAngle = isOutbound ? (Math.PI + animPhase * Math.PI) : (animPhase * Math.PI);
+                        var scR = aT * (1 - eT * eT) / (1 + eT * Math.cos(scAngle - (isOutbound ? Math.PI : 0)));
+                        var scX = cx + scR * scale * Math.cos(isOutbound ? Math.PI - animPhase * Math.PI : animPhase * Math.PI);
+                        var scY = cy + scR * scale * Math.sin(isOutbound ? Math.PI - animPhase * Math.PI : animPhase * Math.PI);
+
+                        // Spacecraft
+                        ctx2.beginPath(); ctx2.arc(scX, scY, 3, 0, Math.PI * 2);
+                        ctx2.fillStyle = '#fbbf24'; ctx2.fill();
+                        ctx2.font = '10px sans-serif'; ctx2.fillText('\uD83D\uDE80', scX - 5, scY - 6);
+
+                        // ── Sun ──
+                        var sGrad = ctx2.createRadialGradient(cx, cy, 0, cx, cy, 10);
+                        sGrad.addColorStop(0, '#fff'); sGrad.addColorStop(0.4, '#fbbf24'); sGrad.addColorStop(1, '#f59e0b');
+                        ctx2.beginPath(); ctx2.arc(cx, cy, 10, 0, Math.PI * 2); ctx2.fillStyle = sGrad; ctx2.fill();
+
+                        // ── Origin planet ──
+                        var op = toScreen(r1, Math.PI);
+                        ctx2.beginPath(); ctx2.arc(op.x, op.y, 5, 0, Math.PI * 2); ctx2.fillStyle = origin.color; ctx2.fill();
+                        ctx2.font = '8px Inter, system-ui, sans-serif'; ctx2.fillStyle = origin.color; ctx2.textAlign = 'center';
+                        ctx2.fillText(origin.emoji + ' ' + origin.name, op.x, op.y - 10);
+
+                        // ── Destination planet ──
+                        var dp = toScreen(r2, 0);
+                        ctx2.beginPath(); ctx2.arc(dp.x, dp.y, 5, 0, Math.PI * 2); ctx2.fillStyle = dest.color; ctx2.fill();
+                        ctx2.font = '8px Inter, system-ui, sans-serif'; ctx2.fillStyle = dest.color;
+                        ctx2.fillText(dest.emoji + ' ' + dest.name, dp.x, dp.y - 10);
+
+                        // ── Burn arrows ──
+                        // Burn 1 (departure)
+                        ctx2.font = 'bold 8px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#ef4444'; ctx2.textAlign = 'left';
+                        ctx2.fillText('\u0394v\u2081 = ' + dv1.toFixed(2) + ' km/s', op.x + 10, op.y + 15);
+                        // Burn 2 (arrival)
+                        ctx2.fillStyle = '#22c55e'; ctx2.textAlign = 'right';
+                        ctx2.fillText('\u0394v\u2082 = ' + dv2.toFixed(2) + ' km/s', dp.x - 10, dp.y + 15);
+
+                        // ── Info panel (bottom) ──
+                        var infoY = H - 130;
+                        ctx2.fillStyle = 'rgba(15,23,42,0.8)'; ctx2.fillRect(0, infoY, W, H - infoY);
+                        ctx2.font = 'bold 10px Inter, system-ui, sans-serif'; ctx2.fillStyle = '#67e8f9'; ctx2.textAlign = 'left';
+                        ctx2.fillText('Hohmann Transfer: ' + origin.name + ' \u2192 ' + dest.name, 15, infoY + 16);
+
+                        ctx2.font = '9px monospace'; ctx2.fillStyle = '#e2e8f0';
+                        var lines = [
+                          'Transfer semi-major axis: a\u209C = (r\u2081+r\u2082)/2 = ' + aT.toFixed(3) + ' AU',
+                          'Transfer time: \u00BD\u00B7T\u209C = ' + tTransferDays.toFixed(0) + ' days (' + tTransferYr.toFixed(2) + ' yr)',
+                          'Departure \u0394v\u2081 = |v\u209C\u2081 \u2212 v\u2091\u2081| = |' + vT1.toFixed(2) + ' \u2212 ' + vCirc1.toFixed(2) + '| = ' + dv1.toFixed(2) + ' km/s',
+                          'Arrival \u0394v\u2082 = |v\u2091\u2082 \u2212 v\u209C\u2082| = |' + vCirc2.toFixed(2) + ' \u2212 ' + vT2.toFixed(2) + '| = ' + dv2.toFixed(2) + ' km/s',
+                          'Total \u0394v = ' + dvTotal.toFixed(2) + ' km/s     Phase angle: ' + phaseAngle.toFixed(1) + '\u00B0'
+                        ];
+                        for (var li = 0; li < lines.length; li++) {
+                          ctx2.fillText(lines[li], 15, infoY + 32 + li * 14);
+                        }
+                        // Equations
+                        ctx2.font = '8px monospace'; ctx2.fillStyle = 'rgba(255,255,255,0.3)'; ctx2.textAlign = 'right';
+                        ctx2.fillText('v\u209C = \u221A[GM(2/r \u2212 1/a\u209C)]  (vis-viva)', W - 15, infoY + 32);
+                        ctx2.fillText('\u0394t = \u03C0\u221A(a\u209C\u00B3/GM)', W - 15, infoY + 46);
+                        ctx2.fillText('\u03B1 = 180\u00B0[1\u2212((r\u2081+r\u2082)/(2r\u2082))^(3/2)]', W - 15, infoY + 60);
+
+                        // Title
+                        ctx2.font = 'bold 11px Inter, system-ui, sans-serif'; ctx2.fillStyle = 'rgba(255,255,255,0.7)'; ctx2.textAlign = 'center';
+                        ctx2.fillText('Hohmann Transfer Orbit', W / 2, 16);
+
+                        cv._trAnim = requestAnimationFrame(drawTransfer);
+                      }
+                      cv.dataset.origin = d._transferOrigin || 'earth';
+                      cv.dataset.dest = d._transferDest || 'mars';
+                      drawTransfer();
+                    }
+                  }),
+                  (function() {
+                    var cv = document.querySelector('[data-transfer-canvas]');
+                    if (cv) { cv.dataset.origin = d._transferOrigin || 'earth'; cv.dataset.dest = d._transferDest || 'mars'; }
+                    return null;
+                  })(),
+                  // Delta-v comparison table
+                  React.createElement("div", { className: (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-cyan-100') + " rounded-xl p-3 border" },
+                    React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-600') + " mb-2" }, "\uD83D\uDE80 \u0394v Budget for Common Transfers from Earth:"),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                      ORRERY_BODIES.filter(function(b) { return b.type === 'planet' && b.id !== 'earth'; }).map(function(b) {
+                        var r1 = 1.0, r2 = b.a_au;
+                        var aT = (r1 + r2) / 2;
+                        var vT1 = 29.78 * Math.sqrt(2 / r1 - 1 / aT);
+                        var vT2 = 29.78 * Math.sqrt(Math.max(0, 2 / r2 - 1 / aT));
+                        var dv = Math.abs(vT1 - 29.78) + Math.abs(29.78 / Math.sqrt(r2) - vT2);
+                        var days = Math.pow(aT, 1.5) * 0.5 * 365.25;
+                        return React.createElement("div", { key: b.id, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-cyan-50 border-cyan-100') + " rounded-lg p-2 text-center border" },
+                          React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, b.emoji + ' ' + b.name),
+                          React.createElement("div", { className: "text-[10px] font-mono " + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, '\u0394v: ' + dv.toFixed(1) + ' km/s'),
+                          React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, '\u23F1 ' + Math.round(days) + ' days')
+                        );
+                      })
+                    )
+                  )
+                )
+              );
+            })(),
+
+            // ── Conditional: show 3D canvas only when NOT in orrery mode ──
+            !d.orreryMode && React.createElement("div", null,
 
             // 3D Canvas container
 
@@ -10210,7 +11630,8 @@ const d = labToolData.solarSystem;
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
-            )
+            ) // end !orreryMode wrapper div
+            ) // end !orreryMode conditional
 
           );
       })();
