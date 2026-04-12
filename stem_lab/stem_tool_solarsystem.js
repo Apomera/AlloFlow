@@ -4339,22 +4339,22 @@ const d = labToolData.solarSystem;
                 // Visual comparison bars — gravity and size relative to Earth
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
                   // Gravity bar
-                  React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
-                    React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase" }, "\u2696\uFE0F Gravity vs Earth"),
-                      React.createElement("span", { className: "text-[10px] font-bold text-indigo-600" }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
+                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                    React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
+                      React.createElement("span", { className: "text-[10px] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-600') }, "\u2696\uFE0F Gravity vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-500", style: { fontFamily: 'monospace' } }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
                     ),
-                    React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
                       React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg, #6366f1, #818cf8)' } })
                     )
                   ),
                   // Size bar
-                  React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
-                    React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase" }, "\uD83D\uDCCF Radius vs Earth"),
-                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
+                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                    React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
+                      React.createElement("span", { className: "text-[10px] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-600') }, "\uD83D\uDCCF Radius vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500", style: { fontFamily: 'monospace' } }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
-                    React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
                       React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg, #10b981, #34d399)' } })
                     )
                   )
@@ -12327,19 +12327,34 @@ const d = labToolData.solarSystem;
               ),
 
                             // === RESEARCH POINTS BAR ===
-              React.createElement("div", { className: "mt-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-200" },
-                React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                  React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "\u2B50 Research Points: " + researchPoints + " RP"),
-                  React.createElement("span", { className: "text-[10px] text-indigo-400" }, completedChallenges.length + "/" + CHALLENGES.length + " challenges")
+              React.createElement("div", {
+                className: "mt-4 rounded-xl p-4 border " + (isDark ? 'bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-indigo-700/50' : 'bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200'),
+                style: { boxShadow: isDark ? '0 2px 8px rgba(79,70,229,0.15)' : '0 2px 8px rgba(99,102,241,0.1)' }
+              },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { style: { fontSize: '18px' } }, "\u2B50"),
+                    React.createElement("span", { className: "text-sm font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, researchPoints + " RP")
+                  ),
+                  React.createElement("span", {
+                    className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? 'bg-indigo-800/60 text-indigo-300' : 'bg-indigo-100 text-indigo-600')
+                  }, completedChallenges.length + "/" + CHALLENGES.length + " challenges")
                 ),
-                React.createElement("div", { className: "w-full bg-indigo-100 rounded-full h-2" },
-                  React.createElement("div", { className: "bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all", style: { width: Math.min(100, (completedChallenges.length / CHALLENGES.length) * 100) + '%' } })
+                React.createElement("div", { className: "w-full rounded-full h-2.5 " + (isDark ? 'bg-indigo-900/50' : 'bg-indigo-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                  React.createElement("div", {
+                    className: "bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-500",
+                    style: { width: Math.min(100, (completedChallenges.length / CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(99,102,241,0.4)' }
+                  })
                 ),
                 // Challenge badges
-                React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" },
+                React.createElement("div", { className: "flex flex-wrap gap-2 mt-3" },
                   CHALLENGES.map(function(ch) {
                     var done = completedChallenges.indexOf(ch.id) !== -1;
-                    return React.createElement("div", { key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)', className: "text-center cursor-default " + (done ? '' : 'opacity-30 grayscale'), style: { fontSize: '16px' } }, ch.icon);
+                    return React.createElement("div", {
+                      key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                      className: "text-center cursor-default transition-all " + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
+                      style: { fontSize: '18px' }
+                    }, ch.icon);
                   })
                 )
               ),

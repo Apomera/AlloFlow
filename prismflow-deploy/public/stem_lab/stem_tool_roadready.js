@@ -1458,6 +1458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('roadReady', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
       var addToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
       var callTTS = ctx.callTTS || null;
+      var callGemini = ctx.callGemini || null;
       // Voice instructor: speaks coaching tips and scenario intros aloud
       var _lastSpoken = 0;
       var speak = function(text) {
@@ -4733,7 +4734,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '✅'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Pre-Trip Check'),
               h('div', { style: { fontSize: '10px', color: '#d9f99d', marginTop: '2px' } }, 'TIRES, lights, fluids walk-around')
-            )
+            ),
+            h('button', { onClick: function() { upd('view', 'hazardTest'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #9f1239, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '⚡'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Hazard Perception'),
+              h('div', { style: { fontSize: '10px', color: '#fda4af', marginTop: '2px' } }, 'Timed reaction test — spot the danger')
+            ),
+            h('button', { onClick: function() { upd('view', 'insuranceCalc'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🛡️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Insurance Estimator'),
+              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, 'How driving record affects rates')
+            ),
+            h('button', { onClick: function() { upd('view', 'maintenanceGuide'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔧'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Maintenance Schedule'),
+              h('div', { style: { fontSize: '10px', color: '#d4d4d4', marginTop: '2px' } }, 'Oil, tires, brakes by mileage')
+            ),
+            callGemini ? h('button', { onClick: function() { upd('view', 'aiCoach'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🤖'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'AI Driving Coach'),
+              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, 'Gemini analyzes your last drive')
+            ) : null
           ),
           // Maine facts strip
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '16px' } },
@@ -6130,6 +6155,277 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
             style: { display: 'block', width: '100%', marginTop: '12px', padding: '12px', borderRadius: '10px', border: 'none', background: '#fbbf24', color: '#78350f', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }
           }, '🖨 Print Certificate')
+        );
+      }
+
+      // ── HAZARD PERCEPTION TEST ──
+      if (view === 'hazardTest') {
+        var htState = d.htState || { round: 0, score: 0, total: 0, active: false, hazard: null, startTime: 0 };
+        var hazards = [
+          { desc: 'A child runs out from between parked cars chasing a ball.', type: 'child', reactionLimit: 2.5 },
+          { desc: 'The car ahead suddenly brakes hard — their brake lights flash red.', type: 'hardBrake', reactionLimit: 1.5 },
+          { desc: 'A deer appears at the edge of the road in your headlights.', type: 'deer', reactionLimit: 2.0 },
+          { desc: 'An oncoming car drifts across the center line toward you.', type: 'headOn', reactionLimit: 1.5 },
+          { desc: 'A door opens on a parked car just as you approach.', type: 'door', reactionLimit: 2.0 },
+          { desc: 'A cyclist swerves into your lane to avoid a pothole.', type: 'cyclist', reactionLimit: 2.0 },
+          { desc: 'The traffic light ahead turns yellow as you approach at speed.', type: 'yellow', reactionLimit: 2.0 },
+          { desc: 'A pedestrian steps off the curb while looking at their phone.', type: 'distracted', reactionLimit: 2.5 },
+          { desc: 'Black ice — your steering suddenly feels light and unresponsive.', type: 'ice', reactionLimit: 3.0 },
+          { desc: 'A school bus ahead activates its red flashing lights and stop arm extends.', type: 'schoolBus', reactionLimit: 3.0 }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); upd('htState', null); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          !htState.active ? h('div', { style: { textAlign: 'center' } },
+            h('div', { style: { background: 'linear-gradient(135deg, #9f1239, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #f43f5e', marginBottom: '14px' } },
+              h('div', { style: { fontSize: '48px' } }, '⚡'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Hazard Perception Test'),
+              h('div', { style: { fontSize: '12px', color: '#fda4af', marginBottom: '14px' } }, 'You will see driving scenarios. Click/tap as FAST as possible when you spot the hazard. Your reaction time is measured.'),
+              htState.total > 0 ? h('div', { style: { fontSize: '14px', color: '#fbbf24', marginBottom: '10px' } }, 'Score: ' + htState.score + '/' + htState.total + ' (' + Math.round(htState.score / htState.total * 100) + '%)') : null,
+              h('button', { onClick: function() {
+                var hz = hazards[htState.round % hazards.length];
+                upd('htState', Object.assign({}, htState, { active: true, hazard: hz, startTime: Date.now(), responded: false }));
+              },
+                style: { padding: '14px 28px', borderRadius: '10px', border: 'none', background: '#f43f5e', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
+              }, htState.total > 0 ? '⚡ Next Hazard (' + (htState.round + 1) + '/' + hazards.length + ')' : '⚡ Start Test')
+            )
+          ) : h('div', null,
+            h('div', { style: { background: '#0f172a', borderRadius: '14px', padding: '30px', border: '2px solid #f43f5e', textAlign: 'center', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', cursor: 'pointer' },
+              onClick: function() {
+                if (htState.responded) return;
+                var elapsed = (Date.now() - htState.startTime) / 1000;
+                var passed = elapsed <= htState.hazard.reactionLimit;
+                var newState = Object.assign({}, htState, {
+                  responded: true,
+                  reactionTime: elapsed,
+                  passed: passed,
+                  score: htState.score + (passed ? 1 : 0),
+                  total: htState.total + 1,
+                  round: htState.round + 1
+                });
+                upd('htState', newState);
+                if (passed) {
+                  speak('Good reaction. ' + elapsed.toFixed(1) + ' seconds.');
+                } else {
+                  speak('Too slow. You needed ' + htState.hazard.reactionLimit + ' seconds but took ' + elapsed.toFixed(1) + '.');
+                }
+              }
+            },
+              !htState.responded ? h('div', null,
+                h('div', { style: { fontSize: '64px', marginBottom: '10px' } }, '🚨'),
+                h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', marginBottom: '8px' } }, 'HAZARD!'),
+                h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto' } }, htState.hazard.desc),
+                h('div', { style: { fontSize: '14px', color: '#f43f5e', fontWeight: 700, marginTop: '14px', animation: 'pulse 1s infinite' } }, '👆 CLICK / TAP NOW to brake/react!')
+              ) : h('div', null,
+                h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, htState.passed ? '✅' : '⏱️'),
+                h('div', { style: { fontSize: '18px', fontWeight: 800, color: htState.passed ? '#4ade80' : '#ef4444' } }, htState.passed ? 'GOOD — ' + htState.reactionTime.toFixed(2) + 's' : 'TOO SLOW — ' + htState.reactionTime.toFixed(2) + 's'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, 'Required: under ' + htState.hazard.reactionLimit + ' seconds'),
+                h('div', { style: { fontSize: '11px', color: '#cbd5e1', marginTop: '8px', lineHeight: '1.5' } },
+                  htState.hazard.type === 'child' ? 'Children are unpredictable. In residential areas, always scan between parked cars.' :
+                  htState.hazard.type === 'headOn' ? 'Head-on collisions are the deadliest. Move RIGHT immediately — never swerve left.' :
+                  htState.hazard.type === 'ice' ? 'On ice: ease off gas, steer gently, do NOT brake hard. Let the car slow naturally.' :
+                  'At 60 mph you travel 88 feet per second. Every fraction of a second matters.'
+                ),
+                h('button', { onClick: function() {
+                  if (htState.round >= hazards.length) {
+                    upd('htState', Object.assign({}, htState, { active: false }));
+                  } else {
+                    var hz = hazards[htState.round % hazards.length];
+                    upd('htState', Object.assign({}, htState, { active: true, hazard: hz, startTime: Date.now(), responded: false }));
+                  }
+                },
+                  style: { marginTop: '14px', padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#f43f5e', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+                }, htState.round >= hazards.length ? '📊 See Results' : '⚡ Next Hazard')
+              )
+            )
+          )
+        );
+      }
+
+      // ── INSURANCE COST ESTIMATOR ──
+      if (view === 'insuranceCalc') {
+        var insAge = d.insAge || 18;
+        var insRecord = d.insRecord || 'clean';
+        var insVehicle = d.insVehicle || 'sedan';
+        // Simplified insurance rate model
+        var baseRate = 1200;
+        var ageFactor = insAge < 18 ? 2.5 : insAge < 21 ? 2.0 : insAge < 25 ? 1.5 : insAge < 65 ? 1.0 : 1.2;
+        var recordFactor = insRecord === 'clean' ? 1.0 : insRecord === 'speeding' ? 1.35 : insRecord === 'accident' ? 1.7 : insRecord === 'dui' ? 2.8 : 1.0;
+        var vehFactor = insVehicle === 'sedan' ? 1.0 : insVehicle === 'suv' ? 1.15 : insVehicle === 'truck' ? 1.1 : insVehicle === 'ev' ? 1.2 : insVehicle === 'sports' ? 1.6 : 1.0;
+        var annualPremium = Math.round(baseRate * ageFactor * recordFactor * vehFactor);
+        var monthlyPremium = Math.round(annualPremium / 12);
+
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #06b6d4', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🛡️'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Insurance Cost Estimator'),
+            h('div', { style: { fontSize: '11px', color: '#a5f3fc' } }, 'See how age, driving record, and vehicle type affect your premium.')
+          ),
+          // Inputs
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '4px' } }, 'AGE'),
+              h('input', { type: 'range', min: 16, max: 75, value: insAge, onChange: function(e) { upd('insAge', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#06b6d4' } }),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, insAge + ' years old'),
+              h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center' } }, insAge < 25 ? 'Under 25 = higher rates' : insAge > 64 ? 'Senior rate applies' : 'Standard adult rate')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '6px' } }, 'DRIVING RECORD'),
+              [['clean', '✅ Clean'], ['speeding', '⚠️ Speeding ticket'], ['accident', '💥 At-fault accident'], ['dui', '🚨 DUI/DWI']].map(function(r) {
+                var sel = insRecord === r[0];
+                return h('button', { key: r[0], onClick: function() { upd('insRecord', r[0]); },
+                  style: { display: 'block', width: '100%', padding: '6px', marginBottom: '3px', borderRadius: '6px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700, textAlign: 'left' } }, r[1]);
+              })
+            )
+          ),
+          // Vehicle selector
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '6px' } }, 'VEHICLE TYPE'),
+            h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+              [['sedan','🚗 Sedan'],['suv','🚙 SUV'],['truck','🛻 Truck'],['ev','⚡ EV'],['sports','🏎️ Sports']].map(function(v) {
+                var sel = insVehicle === v[0];
+                return h('button', { key: v[0], onClick: function() { upd('insVehicle', v[0]); },
+                  style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, v[1]);
+              })
+            )
+          ),
+          // Result
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '12px', padding: '20px', border: '2px solid #06b6d4', textAlign: 'center', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '4px' } }, 'ESTIMATED ANNUAL PREMIUM'),
+            h('div', { style: { fontSize: '36px', fontWeight: 900, color: annualPremium > 3000 ? '#ef4444' : annualPremium > 2000 ? '#f59e0b' : '#4ade80', fontFamily: 'monospace' } }, '$' + annualPremium.toLocaleString()),
+            h('div', { style: { fontSize: '14px', color: '#94a3b8' } }, '$' + monthlyPremium + '/month'),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '6px' } },
+              'Age factor: ' + ageFactor + '× · Record: ' + recordFactor + '× · Vehicle: ' + vehFactor + '×')
+          ),
+          // Impact comparison
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#06b6d4', marginBottom: '4px' } }, '💡 How your choices affect cost:'),
+            h('div', null, '• Clean record vs DUI: saves $' + Math.round(baseRate * ageFactor * vehFactor * 1.8) + '/year'),
+            h('div', null, '• Turning 25: drops premium by ~$' + Math.round(baseRate * vehFactor * recordFactor * 0.5)),
+            h('div', null, '• One at-fault accident stays on your record for 3-5 years'),
+            h('div', null, '• A DUI can raise rates for 7-10 years and may cause policy cancellation'),
+            h('div', null, '• Good student discount (B average): typically 10-15% off'),
+            h('div', null, '• Completing a driver\'s ed course (like this one!): 5-10% discount in most states')
+          )
+        );
+      }
+
+      // ── MAINTENANCE SCHEDULE ──
+      if (view === 'maintenanceGuide') {
+        var mileage = d.mileage || 30000;
+        var maintenanceItems = [
+          { item: 'Engine Oil + Filter', interval: 5000, cost: '$35-75', icon: '🛢️', critical: true, desc: 'Oil lubricates all moving engine parts. Old oil = friction = engine damage. Synthetic lasts longer.' },
+          { item: 'Tire Rotation', interval: 7500, cost: '$20-50', icon: '🔄', critical: false, desc: 'Front tires wear faster (they steer). Rotating extends life by 20%. Check tread depth at the same time.' },
+          { item: 'Air Filter', interval: 15000, cost: '$15-30', icon: '💨', critical: false, desc: 'A clogged air filter reduces MPG by 2-10% and can reduce engine power.' },
+          { item: 'Brake Pads', interval: 30000, cost: '$150-300', icon: '🛑', critical: true, desc: 'Pads wear down to metal. Squealing = warning. Grinding = too late. Replace ASAP if < 3mm.' },
+          { item: 'Brake Fluid', interval: 30000, cost: '$70-120', icon: '💧', critical: true, desc: 'Brake fluid absorbs moisture over time, lowering its boiling point. Old fluid = soft pedal, longer stops.' },
+          { item: 'Coolant Flush', interval: 30000, cost: '$100-150', icon: '❄️', critical: true, desc: 'Coolant prevents overheating AND freezing. Old coolant loses protection and can corrode the engine.' },
+          { item: 'Transmission Fluid', interval: 60000, cost: '$150-250', icon: '⚙️', critical: true, desc: 'Transmission fluid lubricates gears. Neglect = rough shifting → transmission failure ($3,000+ repair).' },
+          { item: 'Spark Plugs', interval: 60000, cost: '$100-200', icon: '⚡', critical: false, desc: 'Spark plugs ignite the fuel-air mixture. Worn plugs = misfires, rough idle, poor MPG.' },
+          { item: 'Serpentine Belt', interval: 60000, cost: '$75-150', icon: '🔗', critical: true, desc: 'Powers alternator, AC, power steering. If it snaps while driving, you lose all three instantly.' },
+          { item: 'Battery', interval: 50000, cost: '$100-200', icon: '🔋', critical: true, desc: 'Average life: 3-5 years. Maine winters are brutal on batteries. Test annually after year 3.' },
+          { item: 'Tires (Replace)', interval: 50000, cost: '$400-800', icon: '🛞', critical: true, desc: 'Tread wears down. Below 2/32" = unsafe + illegal in Maine. All-season lasts ~50K, winter tires ~40K.' }
+        ];
+
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #404040, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #a3a3a3', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🔧'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Vehicle Maintenance Schedule'),
+            h('div', { style: { fontSize: '11px', color: '#d4d4d4' } }, 'What to service and when. Neglect = expensive breakdowns.')
+          ),
+          // Mileage slider
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a3a3a3', marginBottom: '4px' } }, 'YOUR CURRENT MILEAGE'),
+            h('input', { type: 'range', min: 0, max: 150000, step: 5000, value: mileage, onChange: function(e) { upd('mileage', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a3a3a3' } }),
+            h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, mileage.toLocaleString() + ' miles')
+          ),
+          // Items with due/overdue status
+          maintenanceItems.map(function(mi) {
+            var lastDone = Math.floor(mileage / mi.interval) * mi.interval;
+            var nextDue = lastDone + mi.interval;
+            var milesLeft = nextDue - mileage;
+            var overdue = milesLeft <= 0;
+            var soon = milesLeft > 0 && milesLeft < mi.interval * 0.2;
+            return h('div', { key: mi.item, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid ' + (overdue ? '#ef4444' : soon ? '#f59e0b' : '#334155'), borderLeft: '4px solid ' + (overdue ? '#ef4444' : soon ? '#f59e0b' : '#4ade80'), marginBottom: '6px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                  h('span', { style: { fontSize: '18px' } }, mi.icon),
+                  h('div', null,
+                    h('div', { style: { fontSize: '12px', fontWeight: 700 } }, mi.item),
+                    h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Every ' + mi.interval.toLocaleString() + ' mi · ' + mi.cost)
+                  )
+                ),
+                h('div', { style: { textAlign: 'right' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: overdue ? '#ef4444' : soon ? '#f59e0b' : '#4ade80' } }, overdue ? 'OVERDUE' : soon ? 'DUE SOON' : 'OK'),
+                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, overdue ? 'Was due at ' + nextDue.toLocaleString() + ' mi' : milesLeft.toLocaleString() + ' mi until next')
+                )
+              ),
+              h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px', lineHeight: '1.4' } }, mi.desc)
+            );
+          })
+        );
+      }
+
+      // ── AI DRIVING COACH ──
+      if (view === 'aiCoach') {
+        var coachResponse = d.coachResponse || null;
+        var coachLoading = d.coachLoading || false;
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #a78bfa', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🤖'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'AI Driving Coach'),
+            h('div', { style: { fontSize: '12px', color: '#ddd6fe' } }, 'Gemini AI analyzes your driving data and gives personalized advice.')
+          ),
+          !drivingStats ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '20px', border: '1px solid #334155', textAlign: 'center' } },
+            h('div', { style: { fontSize: '13px', color: '#94a3b8' } }, 'Complete a drive first, then come back for AI analysis.')
+          ) : h('div', null,
+            // Stats summary for AI
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '10px', fontSize: '11px', color: '#94a3b8' } },
+              h('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '4px' } }, 'Your last drive data (sent to AI):'),
+              'Scenario: ' + drivingStats.scenario + ' · Vehicle: ' + drivingStats.vehicle +
+              ' · Safety: ' + drivingStats.safetyScore + ' · Eco: ' + drivingStats.efficiencyScore +
+              ' · MPG: ' + drivingStats.avgMPG + ' · Max speed: ' + drivingStats.maxSpeed + ' mph' +
+              ' · Hard brakes: ' + drivingStats.hardBrakes + ' · Crashes: ' + drivingStats.crashes +
+              ' · Skid: ' + drivingStats.skidSeconds + 's · Unsignaled: ' + drivingStats.unsignaledLaneChanges
+            ),
+            !coachResponse && !coachLoading ? h('button', { onClick: function() {
+              upd('coachLoading', true);
+              var prompt = 'You are RoadReady, an AI driving instructor for a teen learning to drive in Maine. ' +
+                'Analyze this driving session data and give 3-4 specific, encouraging tips for improvement. ' +
+                'Be warm but honest. Reference specific physics where relevant (stopping distance, friction, drag). ' +
+                'Data: Scenario=' + drivingStats.scenario + ', Vehicle=' + drivingStats.vehicle +
+                ', SafetyScore=' + drivingStats.safetyScore + '/100, EcoScore=' + drivingStats.efficiencyScore + '/100' +
+                ', AvgMPG=' + drivingStats.avgMPG + ', MaxSpeed=' + drivingStats.maxSpeed + 'mph' +
+                ', HardBrakes=' + drivingStats.hardBrakes + ', Jackrabbits=' + (drivingStats.jackrabbits || 0) +
+                ', Crashes=' + drivingStats.crashes + ', SkidSeconds=' + drivingStats.skidSeconds +
+                ', UnsignaledLaneChanges=' + drivingStats.unsignaledLaneChanges +
+                ', CyclistClosePass=' + (drivingStats.cyclistClose || 0) +
+                '. Format as short paragraphs, each starting with an emoji.';
+              callGemini(prompt).then(function(response) {
+                upd('coachResponse', response);
+                upd('coachLoading', false);
+                if (response) speak('Your AI driving coach analysis is ready.');
+              }).catch(function() {
+                upd('coachResponse', 'Unable to connect to AI coach. Please try again.');
+                upd('coachLoading', false);
+              });
+            },
+              style: { width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }
+            }, '🤖 Analyze My Drive') : null,
+            coachLoading ? h('div', { style: { textAlign: 'center', padding: '20px', color: '#a78bfa' } },
+              h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '🤖'),
+              'AI coach is analyzing your driving...'
+            ) : null,
+            coachResponse ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '16px', border: '1px solid #a78bfa', marginTop: '10px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, '🤖 Coach\'s Analysis'),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap' } }, coachResponse),
+              h('button', { onClick: function() { upd('coachResponse', null); },
+                style: { marginTop: '10px', padding: '8px 16px', borderRadius: '6px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+              }, '🔄 Re-analyze')
+            ) : null
+          )
         );
       }
 
