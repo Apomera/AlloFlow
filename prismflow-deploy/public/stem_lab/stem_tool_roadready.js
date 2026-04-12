@@ -253,6 +253,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'Before driving, the FIRST thing you should adjust is:', a: ['The radio', 'Your seat and mirrors', 'The AC temperature', 'The GPS destination'], correct: 1, exp: 'Seat position (so you can reach all pedals fully) and mirrors (rearview + both sides) should be adjusted BEFORE you start driving. Never adjust mirrors while the car is moving.' },
     { q: 'The penny test for tire tread measures:', a: ['Tire pressure', 'Tire age', 'Whether tread depth is safe (2/32" minimum)', 'Tire brand quality'], correct: 2, exp: 'Insert a penny head-first into the tread groove. If you can see ALL of Lincoln\'s head, tread is below 2/32" and the tire is unsafe — replace it. Maine requires 2/32" minimum tread depth.' },
     { q: 'Your check engine light is FLASHING (not steady). This means:', a: ['Normal operation', 'Minor issue, schedule service when convenient', 'Active engine misfire — pull over immediately', 'The gas cap is loose'], correct: 2, exp: 'A FLASHING check engine light means active misfire. Unburned fuel is being sent to the catalytic converter, which can overheat and catch fire. Pull over and turn off the engine.' },
+    { q: 'You are at a red light when an ambulance with sirens approaches from behind. You should:', a: ['Wait for the light to turn green', 'Pull forward into the intersection, then move right', 'Stay put — never enter an intersection on red', 'Reverse to make room'], correct: 1, exp: 'You may carefully proceed into the intersection to clear a path if safe. Emergency vehicles need a clear lane. Check cross traffic first, then move forward and right.' },
+    { q: 'After pulling over for an emergency vehicle, how long should you wait before re-entering traffic?', a: ['Immediately after it passes', 'Wait for any additional emergency vehicles, then merge carefully', '60 seconds exactly', 'Until all traffic resumes normal speed'], correct: 1, exp: 'Emergency vehicles often travel in groups (ambulance + fire truck, multiple police). Wait until you are sure no more are coming, then signal left and merge carefully.' },
+    { q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. You must:', a: ['Stop completely', 'Slow down and proceed with caution', 'Move to the right shoulder', 'Speed up to clear the area'], correct: 1, exp: 'On a divided highway (with a median), only traffic on the SAME side as the emergency vehicle must pull over. Opposite side should slow down and proceed with caution.' },
+    { q: 'When driving, you should look:', a: ['Only at the car directly in front', '12-15 seconds ahead down the road', 'Only at the speedometer', 'Only in the mirrors'], correct: 1, exp: 'Scan 12-15 seconds ahead (about 1/4 mile at highway speed). This is called "high visual horizon" — it gives you maximum time to react to hazards, stops, and lane changes.' },
+    { q: 'A white car is in your blind spot. The safest way to check before changing lanes is:', a: ['Just use mirrors', 'Briefly turn your head to look over your shoulder', 'Sound the horn', 'Speed up past them'], correct: 1, exp: 'Mirrors have blind spots where entire vehicles hide. A brief head turn (shoulder check) covers the blind spot. Signal → mirror → shoulder check → move. In that order, every time.' },
+    { q: 'You are driving 55 mph and it starts raining. You should:', a: ['Maintain speed — your car has good tires', 'Slow down by at least 10 mph and increase following distance', 'Pull over immediately', 'Turn on hazard flashers and continue'], correct: 1, exp: 'Rain reduces friction by 30-50%. Slow down, increase following to 4+ seconds, and turn on headlights (Maine law: wipers on = headlights on). The first 10 minutes of rain are worst — oil lifts off the road.' },
     { q: 'You approach a railroad crossing and the gates begin to lower as you arrive. You should:', a: ['Go around the gates quickly', 'Stop and wait — never drive around lowered gates', 'Speed up to beat the train', 'Honk and proceed'], correct: 1, exp: 'NEVER go around lowered gates. Trains can take a mile to stop. A stuck gate means call the number on the crossbuck or 911.' },
     { q: 'The primary purpose of antilock brakes (ABS) is to:', a: ['Stop the car faster on all surfaces', 'Allow you to steer while braking hard', 'Replace the handbrake', 'Prevent tire wear'], correct: 1, exp: 'ABS pulses the brakes so wheels do not lock. Locked wheels cannot steer. ABS may not always stop you faster, but it keeps the steering alive.' },
     { q: 'When driving in heavy fog, you should use:', a: ['High beams', 'Low beams and/or fog lights', 'Hazard lights while moving', 'Parking lights only'], correct: 1, exp: 'High beams reflect off fog and reduce visibility. Use LOW beams and fog lights. Hazards while driving are illegal in most states — reserved for actual hazards.' },
@@ -380,7 +386,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'rain', name: 'Rain', icon: '🌧️', speedLimit: 45, weather: 'rain', time: 'day', traffic: 'medium', difficulty: 3, desc: 'Wet pavement. Friction drops ~40%. Hydroplaning risk above 45 mph. Wipers on = headlights on (Maine law).' },
     { id: 'snow', name: 'Maine Snow', icon: '❄️', speedLimit: 35, weather: 'snow', time: 'day', traffic: 'light', difficulty: 5, desc: 'Snow-covered road. Friction drops to ~0.2. Gentle inputs only. Moose warning active. The test.' },
     { id: 'construction', name: 'Work Zone', icon: '🚧', speedLimit: 35, weather: 'clear', time: 'day', traffic: 'medium', difficulty: 3, desc: 'Lane closure with flagger and cones. Fines double. Workers present — treat like school zone.' },
-    { id: 'school_zone', name: 'School Zone', icon: '🏫', speedLimit: 15, weather: 'clear', time: 'day', traffic: 'light', difficulty: 2, desc: 'Active school zone. Crosswalks, crossing guard, buses. 15 mph limit when children present.' }
+    { id: 'school_zone', name: 'School Zone', icon: '🏫', speedLimit: 15, weather: 'clear', time: 'day', traffic: 'light', difficulty: 2, desc: 'Active school zone. Crosswalks, crossing guard, buses. 15 mph limit when children present.' },
+    { id: 'downtown', name: 'Downtown', icon: '🏙️', speedLimit: 30, weather: 'clear', time: 'day', traffic: 'heavy', difficulty: 4, desc: 'Dense urban grid. One-way streets, heavy pedestrians, tight turns, taxis. Portland Old Port feel.' },
+    { id: 'dawn', name: 'Dawn / Dusk', icon: '🌅', speedLimit: 45, weather: 'clear', time: 'night', traffic: 'medium', difficulty: 3, desc: 'Low-angle sun glare. The most dangerous time for moose + deer. Visibility is tricky.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -605,6 +613,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       carveRoadNS(centerX, cy2 + 10, MAP_SIZE);
       carveRoadEW(cy2, 0, centerX - 10);
       carveRoadEW(cy2, centerX + 10, MAP_SIZE);
+    } else if (scenarioId === 'downtown') {
+      // Dense urban grid — lots of cross streets
+      var crossYs = [10, 18, 26, 34, 42, 50, 58];
+      crossYs.forEach(function(cy3) { carveRoadEW(cy3, 0, MAP_SIZE); });
+      // Second N-S road for one-way pair
+      carveRoadNS(centerX - 10, 0, MAP_SIZE);
+      carveRoadNS(centerX + 10, 0, MAP_SIZE);
+      addSidewalks(centerX);
+      addSidewalks(centerX - 10);
+      addSidewalks(centerX + 10);
+      // Dense buildings in every gap
+      for (var dby = 0; dby < MAP_SIZE; dby++) {
+        for (var dbx = 0; dbx < MAP_SIZE; dbx++) {
+          if (map[dby][dbx] === 2 && Math.random() < 0.15) map[dby][dbx] = 1;
+        }
+      }
+      // Sparse trees
+      for (var dti = 0; dti < 20; dti++) {
+        var dtx = Math.floor(Math.random() * MAP_SIZE);
+        var dty = Math.floor(Math.random() * MAP_SIZE);
+        if (map[dty][dtx] === 4) map[dty][dtx] = 5; // tree on sidewalk
+      }
+    }
+    // Dawn/dusk uses same map as rural but with fewer trees
+    if (scenarioId === 'dawn') {
+      for (var dawnT = 0; dawnT < 80; dawnT++) {
+        var dtx2 = Math.floor(Math.random() * MAP_SIZE);
+        var dty2 = Math.floor(Math.random() * MAP_SIZE);
+        if (map[dty2][dtx2] === 2 && Math.abs(dtx2 - centerX) > 5) map[dty2][dtx2] = 5;
+      }
     }
     return map;
   }
@@ -615,17 +653,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function spawnTraffic(scenario) {
     var traffic = [];
-    var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 6 : 10;
+    var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 7 : 12;
     var centerX = Math.floor(MAP_SIZE / 2);
+    var vehicleTypes = [
+      { type: 'car', weight: 50, colors: ['#ef4444', '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ffffff', '#64748b', '#0ea5e9', '#d946ef', '#14b8a6'] },
+      { type: 'truck', weight: 12, colors: ['#1e293b', '#78350f', '#991b1b', '#1e3a5f'] },
+      { type: 'suv', weight: 18, colors: ['#334155', '#1e40af', '#166534', '#7c2d12', '#ffffff'] },
+      { type: 'van', weight: 8, colors: ['#ffffff', '#fbbf24', '#dc2626'] },
+      { type: 'schoolbus', weight: scenario.id === 'school_zone' ? 15 : 4, colors: ['#f59e0b'] },
+      { type: 'pickup', weight: 10, colors: ['#78350f', '#1e293b', '#991b1b', '#ffffff', '#334155'] }
+    ];
+    var totalWeight = vehicleTypes.reduce(function(s, v) { return s + v.weight; }, 0);
     for (var i = 0; i < count; i++) {
+      // Weighted random vehicle type
+      var roll = Math.random() * totalWeight;
+      var vType = vehicleTypes[0];
+      var acc = 0;
+      for (var vi = 0; vi < vehicleTypes.length; vi++) {
+        acc += vehicleTypes[vi].weight;
+        if (roll < acc) { vType = vehicleTypes[vi]; break; }
+      }
       var direction = Math.random() < 0.5 ? 1 : -1;
+      var color = vType.colors[Math.floor(Math.random() * vType.colors.length)];
       traffic.push({
         x: centerX + (direction === 1 ? -1.5 : 1.5),
         y: Math.random() * MAP_SIZE,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
         speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS,
-        color: ['#ef4444', '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#fff'][i % 6],
-        type: Math.random() < 0.1 ? 'truck' : 'car'
+        color: color,
+        type: vType.type
+      });
+    }
+    // Cross-street traffic (on intersections — only for grid scenarios)
+    if (['residential', 'suburban', 'school_zone', 'night'].indexOf(scenario.id) !== -1) {
+      var crossYs = [16, 32, 48];
+      crossYs.forEach(function(crossY, ci) {
+        if (ci >= (scenario.traffic === 'light' ? 1 : 2)) return;
+        var dir = ci % 2 === 0 ? 1 : -1;
+        var crossVType = vehicleTypes[0]; // cars on cross streets
+        traffic.push({
+          x: dir === 1 ? 5 : MAP_SIZE - 5,
+          y: crossY + (dir === 1 ? -1.5 : 1.5),
+          heading: dir === 1 ? 0 : Math.PI,
+          speed: 20 * MPH_TO_MS,
+          color: crossVType.colors[ci % crossVType.colors.length],
+          type: 'car',
+          crossStreet: true
+        });
       });
     }
     return traffic;
@@ -700,7 +774,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'three_point', icon: '↩️', name: 'K-Turn Pro', desc: 'Complete 3-point turn with score 80+.' },
     { id: 'speed_demon', icon: '🏎️', name: 'Speed Demon', desc: 'Hit 80+ mph (not recommended in real life!).' },
     { id: 'moose_dodge', icon: '🫎', name: 'Moose Dodge', desc: 'Encounter a moose and NOT hit it.' },
-    { id: 'five_scenarios', icon: '🗺️', name: 'Explorer', desc: 'Drive in 5 different scenarios.' }
+    { id: 'five_scenarios', icon: '🗺️', name: 'Explorer', desc: 'Drive in 5 different scenarios.' },
+    { id: 'emergency_yield', icon: '🚑', name: 'First Responder', desc: 'Correctly yield to an emergency vehicle (pull right + stop).' },
+    { id: 'ten_drives', icon: '🔟', name: 'Road Veteran', desc: 'Complete 10 drive sessions.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -708,12 +784,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // ─────────────────────────────────────────────────────────
 
   function maybeSpawnEmergency(scenario, time) {
-    if (time < 15) return null; // give player time to settle
-    if (Math.random() > 0.002) return null; // rare
+    if (time < 12) return null; // give player time to settle
+    if (Math.random() > 0.004) return null; // ~once per 4 min avg
     var types = [
-      { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800 },
-      { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600 },
-      { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000 }
+      { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
+      { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
+      { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 }
     ];
     return types[Math.floor(Math.random() * types.length)];
   }
@@ -732,9 +808,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           greenDur: 8, yellowDur: 3, redDur: 6
         });
       });
+    } else if (scenario.id === 'downtown') {
+      // Traffic lights at every cross street (dense)
+      [10, 18, 26, 34, 42, 50, 58].forEach(function(yPos, idx) {
+        signals.push({
+          x: centerX, y: yPos, type: 'light',
+          state: idx % 3 === 0 ? 'green' : idx % 3 === 1 ? 'red' : 'green',
+          timer: Math.random() * 4, greenDur: 6, yellowDur: 2.5, redDur: 5
+        });
+      });
     } else if (scenario.id === 'residential') {
-      // Stop signs at one intersection
-      signals.push({ x: centerX, y: 32, type: 'stop', state: 'stop' });
+      // Stop signs at intersections
+      [16, 32, 48].forEach(function(yPos) {
+        signals.push({ x: centerX, y: yPos, type: 'stop', state: 'stop' });
+      });
     } else if (scenario.id === 'construction') {
       signals.push({ x: centerX, y: 24, type: 'stop', state: 'stop' });
       signals.push({ x: centerX, y: 40, type: 'flagger', state: 'red', timer: 0, greenDur: 10, yellowDur: 0, redDur: 8 });
@@ -1382,7 +1469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           keysRef.current[e.key.toLowerCase()] = true;
           if (e.key === ' ') { pausedRef.current = !pausedRef.current; e.preventDefault(); }
           if (e.key.toLowerCase() === 'c') {
-            var modes = ['cockpit', 'chase', 'overhead'];
+            var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
             cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
           }
           if (e.key.toLowerCase() === 'h') showHUDRef.current = !showHUDRef.current;
@@ -1437,6 +1524,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (scn.id === 'fog') introMsg = '🌫️ FOG: Low beams only — highs reflect back. Slow to ~half posted speed.';
         else if (scn.id === 'school_zone') introMsg = '🏫 SCHOOL ZONE: 15 mph. Stop for buses with red flashers on both directions.';
         else if (scn.id === 'construction') introMsg = '🚧 WORK ZONE: Fines double. Watch for flaggers. Slow, smooth, patient.';
+        else if (scn.id === 'downtown') introMsg = '🏙️ DOWNTOWN: Dense traffic, many signals, pedestrians everywhere. Patience is the skill here.';
+        else if (scn.id === 'dawn') introMsg = '🌅 DAWN/DUSK: Low sun glare, reduced visibility. Peak moose/deer danger. Scan tree lines.';
         // Free explore gets its own welcome
         if (d.freeExplore && d.freeExploreScenario) {
           var fes = d.freeExploreScenario;
@@ -1526,6 +1615,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if ((s.unsignaledLaneChanges || 0) === 0) newBadges.signal_perfect = true;
         if (Math.round(s.maxSpeed * MS_TO_MPH) >= 80) newBadges.speed_demon = true;
         if (wildlifeRef.current === null && s.distance > 500 && ['rural','snow','fog','night'].indexOf(currentScenario.id) !== -1) newBadges.moose_dodge = true;
+        if (s.emergencyYields > 0) newBadges.emergency_yield = true;
+        // Track total drives for Road Veteran badge
+        var totalDrives = (d.totalDrives || 0) + 1;
+        upd('totalDrives', totalDrives);
+        if (totalDrives >= 10) newBadges.ten_drives = true;
         var newScenarios = Object.assign({}, scenariosDriven);
         newScenarios[currentScenario.id] = true;
         if (Object.keys(newScenarios).length >= 5) newBadges.five_scenarios = true;
@@ -1730,9 +1824,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Move
             t.y += Math.sin(t.heading) * t.speed * dt / 5;
             t.x += Math.cos(t.heading) * t.speed * dt / 5;
-            // Wrap
-            if (t.y < -2) t.y = MAP_SIZE + 2;
-            if (t.y > MAP_SIZE + 2) t.y = -2;
+            // Wrap (different axis for cross-street traffic)
+            if (t.crossStreet) {
+              if (t.x < -2) t.x = MAP_SIZE + 2;
+              if (t.x > MAP_SIZE + 2) t.x = -2;
+            } else {
+              if (t.y < -2) t.y = MAP_SIZE + 2;
+              if (t.y > MAP_SIZE + 2) t.y = -2;
+            }
           });
         };
 
@@ -1790,7 +1889,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var em = emergencyRef.current;
           var car = carRef.current;
           if (!em) {
-            var spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
+            // In drill mode, force-spawn every ~25 seconds
+            var spawn = null;
+            if (d.emergencyDrillMode && timeRef.current > 8 && Math.random() < 0.04) {
+              var drillTypes = [
+                { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
+                { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 },
+                { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 }
+              ];
+              spawn = drillTypes[Math.floor(Math.random() * drillTypes.length)];
+            }
+            if (!spawn) spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
             if (spawn) {
               emergencyRef.current = {
                 kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
@@ -1842,6 +1951,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (pulledRight && stopped) {
               em.responded = true;
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
+              if (!statsRef.current.emergencyYields) statsRef.current.emergencyYields = 0;
+              statsRef.current.emergencyYields++;
               addToast('✓ Good — pulled right and stopped for emergency vehicle. +5');
               eventToastRef.current = { msg: '✓ Correct response: pull RIGHT, STOP until it passes.', until: timeRef.current + 4 };
             } else if (stopped && !pulledRight) {
@@ -2095,10 +2206,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var isFog = currentScenario.weather === 'fog';
           var isSnow = currentScenario.weather === 'snow';
           var isRain = currentScenario.weather === 'rain';
-          scene.background = new T.Color(isNight ? '#0a0f1e' : isFog ? '#94a3b8' : isSnow ? '#cbd5e1' : isRain ? '#475569' : '#87ceeb');
+          var isDawn = currentScenario.id === 'dawn';
+          var skyColor = isNight && !isDawn ? '#0a0f1e' : isDawn ? '#e8875c' : isFog ? '#94a3b8' : isSnow ? '#cbd5e1' : isRain ? '#475569' : '#87ceeb';
+          scene.background = new T.Color(skyColor);
           if (isFog) { scene.fog = new T.Fog(0x94a3b8, 5, 40); }
           else if (isSnow) { scene.fog = new T.Fog(0xcbd5e1, 10, 60); }
           else if (isRain) { scene.fog = new T.Fog(0x475569, 8, 50); }
+          else if (isDawn) { scene.fog = new T.Fog(0xe8875c, 15, 80); }
           else { scene.fog = new T.Fog(scene.background.getHex(), 30, 120); }
 
           var camera = new T.PerspectiveCamera(65, W / H, 0.1, 200);
@@ -2109,10 +2223,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           renderer.shadowMap.type = T.PCFSoftShadowMap;
 
           // ── Lighting ──
-          var ambient = new T.AmbientLight(isNight ? 0x1a1a3a : 0xffffff, isNight ? 0.15 : 0.5);
+          var ambientColor = isNight && !isDawn ? 0x1a1a3a : isDawn ? 0xffa060 : 0xffffff;
+          var ambientInt = isNight && !isDawn ? 0.15 : isDawn ? 0.35 : 0.5;
+          var ambient = new T.AmbientLight(ambientColor, ambientInt);
           scene.add(ambient);
-          var sun = new T.DirectionalLight(isNight ? 0x4466aa : 0xfff5e0, isNight ? 0.3 : 0.9);
-          sun.position.set(20, 30, 10);
+          var sunColor = isNight && !isDawn ? 0x4466aa : isDawn ? 0xff8844 : 0xfff5e0;
+          var sunInt = isNight && !isDawn ? 0.3 : isDawn ? 0.7 : 0.9;
+          var sun = new T.DirectionalLight(sunColor, sunInt);
+          sun.position.set(isDawn ? 60 : 20, isDawn ? 5 : 30, isDawn ? -10 : 10);
           sun.castShadow = true;
           sun.shadow.mapSize.set(1024, 1024);
           sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
@@ -2226,28 +2344,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           });
 
-          // ── 3D Speed Limit Signs ──
-          var speedSignMat = new T.MeshBasicMaterial({ color: 0xffffff });
-          var speedSignBorderMat = new T.MeshBasicMaterial({ color: 0x000000 });
+          // ── 3D Speed Limit Signs (canvas-textured for readable text) ──
           var signPostMat = new T.MeshLambertMaterial({ color: 0x888888 });
-          // Place at regular intervals along the road
+
+          // Helper: create a sign texture from canvas with text
+          function makeSignTexture(lines, bgColor, textColor, w, h) {
+            var c = document.createElement('canvas');
+            c.width = w || 128; c.height = h || 192;
+            var g = c.getContext('2d');
+            // Background
+            g.fillStyle = bgColor || '#ffffff';
+            g.fillRect(0, 0, c.width, c.height);
+            // Border
+            g.strokeStyle = textColor || '#000000'; g.lineWidth = 6;
+            g.strokeRect(3, 3, c.width - 6, c.height - 6);
+            // Text lines
+            g.fillStyle = textColor || '#000000'; g.textAlign = 'center';
+            lines.forEach(function(line, li) {
+              g.font = line.font || 'bold 24px Arial';
+              g.fillText(line.text, c.width / 2, line.y || (40 + li * 50));
+            });
+            var tex = new T.CanvasTexture(c);
+            tex.minFilter = T.LinearFilter;
+            return tex;
+          }
+
+          var speedLimitNum = currentScenario.speedLimit;
           [8, 32, 56].forEach(function(signY) {
             // Post
             var spGeo = new T.CylinderGeometry(0.04, 0.04, 2.2, 6);
             var sp = new T.Mesh(spGeo, signPostMat);
             sp.position.set(centerX - MAP_SIZE / 2 + 4.0, 1.1, signY - MAP_SIZE / 2);
             scene.add(sp);
-            // Sign face (white rectangle)
-            var sfGeo = new T.BoxGeometry(0.04, 0.6, 0.45);
-            var sf = new T.Mesh(sfGeo, speedSignMat);
-            sf.position.set(centerX - MAP_SIZE / 2 + 4.0, 2.1, signY - MAP_SIZE / 2);
+            // Sign face with canvas texture
+            var signTex = makeSignTexture([
+              { text: 'SPEED', font: 'bold 20px Arial', y: 40 },
+              { text: 'LIMIT', font: 'bold 20px Arial', y: 65 },
+              { text: String(speedLimitNum), font: 'bold 60px Arial', y: 140 }
+            ], '#ffffff', '#000000', 128, 192);
+            var signMat = new T.MeshBasicMaterial({ map: signTex });
+            var sfGeo = new T.PlaneGeometry(0.45, 0.65);
+            var sf = new T.Mesh(sfGeo, signMat);
+            sf.position.set(centerX - MAP_SIZE / 2 + 3.97, 2.1, signY - MAP_SIZE / 2);
+            sf.rotation.y = -Math.PI / 2; // face toward road
             scene.add(sf);
-            // Black border
-            var sbGeo = new T.BoxGeometry(0.05, 0.65, 0.5);
-            var sb = new T.Mesh(sbGeo, speedSignBorderMat);
-            sb.position.set(centerX - MAP_SIZE / 2 + 3.99, 2.1, signY - MAP_SIZE / 2);
-            scene.add(sb);
+            // Back of sign (gray)
+            var backMat = new T.MeshLambertMaterial({ color: 0x666666 });
+            var backGeo = new T.PlaneGeometry(0.45, 0.65);
+            var back = new T.Mesh(backGeo, backMat);
+            back.position.set(centerX - MAP_SIZE / 2 + 4.02, 2.1, signY - MAP_SIZE / 2);
+            back.rotation.y = Math.PI / 2;
+            scene.add(back);
           });
+
+          // ── Street name signs at cross streets ──
+          var streetNames = ['OAK ST', 'MAPLE AVE', 'PINE RD'];
+          if (['residential', 'suburban', 'school_zone', 'night'].indexOf(currentScenario.id) !== -1) {
+            [16, 32, 48].forEach(function(crossY, ci) {
+              var nameTex = makeSignTexture([
+                { text: streetNames[ci] || 'CROSS ST', font: 'bold 22px Arial', y: 50 }
+              ], '#166534', '#ffffff', 192, 64);
+              var nameMat = new T.MeshBasicMaterial({ map: nameTex });
+              var nameGeo = new T.PlaneGeometry(0.8, 0.3);
+              var nameMesh = new T.Mesh(nameGeo, nameMat);
+              nameMesh.position.set(centerX - MAP_SIZE / 2 + 4.0, 2.8, crossY - MAP_SIZE / 2);
+              nameMesh.rotation.y = -Math.PI / 2;
+              scene.add(nameMesh);
+            });
+          }
 
           // ── School Zone sign (if school_zone scenario) ──
           if (currentScenario.id === 'school_zone') {
@@ -2281,6 +2445,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var stripe = new T.Mesh(stripeGeo, coneStripeMat);
               stripe.position.set(centerX - MAP_SIZE / 2 + (ci % 2 === 0 ? 2.5 : -2.5), 0.35, coneZ);
               scene.add(stripe);
+            }
+          }
+
+          // ── Turn arrows painted on road at intersections ──
+          if (['residential', 'suburban', 'school_zone', 'night'].indexOf(currentScenario.id) !== -1) {
+            var arrowMat2 = new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
+            [16, 32, 48].forEach(function(crossY) {
+              // Left turn arrow (left lane, before intersection)
+              var ltArrowGeo = new T.PlaneGeometry(0.3, 0.8);
+              var ltArrow = new T.Mesh(ltArrowGeo, arrowMat2);
+              ltArrow.rotation.x = -Math.PI / 2;
+              ltArrow.position.set(centerX - MAP_SIZE / 2 - 1.5, 0.022, crossY - MAP_SIZE / 2 - 4);
+              scene.add(ltArrow);
+              // Arrow head triangle
+              var triShape = new T.Shape();
+              triShape.moveTo(0, 0.15); triShape.lineTo(-0.15, -0.1); triShape.lineTo(0.15, -0.1); triShape.closePath();
+              var triGeo = new T.ShapeGeometry(triShape);
+              var tri = new T.Mesh(triGeo, arrowMat2);
+              tri.rotation.x = -Math.PI / 2;
+              tri.position.set(centerX - MAP_SIZE / 2 - 1.5, 0.023, crossY - MAP_SIZE / 2 - 3.3);
+              scene.add(tri);
+              // Straight arrow (right lane)
+              var stArrowGeo = new T.PlaneGeometry(0.15, 1.0);
+              var stArrow = new T.Mesh(stArrowGeo, arrowMat2);
+              stArrow.rotation.x = -Math.PI / 2;
+              stArrow.position.set(centerX - MAP_SIZE / 2 + 1.5, 0.022, crossY - MAP_SIZE / 2 - 4);
+              scene.add(stArrow);
+              var tri2 = new T.Mesh(triGeo, arrowMat2);
+              tri2.rotation.x = -Math.PI / 2;
+              tri2.position.set(centerX - MAP_SIZE / 2 + 1.5, 0.023, crossY - MAP_SIZE / 2 - 3.2);
+              scene.add(tri2);
+            });
+          }
+
+          // ── Sidewalk furniture: benches, trash cans, newspaper boxes ──
+          if (['residential', 'suburban', 'school_zone', 'night'].indexOf(currentScenario.id) !== -1) {
+            var benchMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
+            var trashMat = new T.MeshLambertMaterial({ color: 0x333333 });
+            for (var fi = 8; fi < MAP_SIZE; fi += 16) {
+              // Bench (right sidewalk)
+              var benchSeatGeo = new T.BoxGeometry(0.8, 0.05, 0.3);
+              var benchSeat = new T.Mesh(benchSeatGeo, benchMat);
+              benchSeat.position.set(centerX - MAP_SIZE / 2 + 4.8, 0.4, fi - MAP_SIZE / 2);
+              benchSeat.castShadow = true;
+              scene.add(benchSeat);
+              // Bench legs
+              [-0.3, 0.3].forEach(function(legOff) {
+                var legGeo = new T.BoxGeometry(0.04, 0.35, 0.25);
+                var leg = new T.Mesh(legGeo, benchMat);
+                leg.position.set(centerX - MAP_SIZE / 2 + 4.8 + legOff, 0.2, fi - MAP_SIZE / 2);
+                scene.add(leg);
+              });
+              // Bench back
+              var backGeo = new T.BoxGeometry(0.8, 0.3, 0.04);
+              var benchBack = new T.Mesh(backGeo, benchMat);
+              benchBack.position.set(centerX - MAP_SIZE / 2 + 4.8, 0.55, fi - MAP_SIZE / 2 + 0.13);
+              scene.add(benchBack);
+              // Trash can (left sidewalk, offset)
+              var trashGeo = new T.CylinderGeometry(0.12, 0.14, 0.5, 8);
+              var trash = new T.Mesh(trashGeo, trashMat);
+              trash.position.set(centerX - MAP_SIZE / 2 - 4.6, 0.25, fi + 5 - MAP_SIZE / 2);
+              trash.castShadow = true;
+              scene.add(trash);
+              // Trash lid
+              var lidGeo = new T.CylinderGeometry(0.14, 0.14, 0.03, 8);
+              var lid = new T.Mesh(lidGeo, trashMat);
+              lid.position.set(centerX - MAP_SIZE / 2 - 4.6, 0.51, fi + 5 - MAP_SIZE / 2);
+              scene.add(lid);
+            }
+            // School zone: flag pole
+            if (currentScenario.id === 'school_zone') {
+              var flagPoleMat = new T.MeshLambertMaterial({ color: 0xaaaaaa });
+              var fpGeo = new T.CylinderGeometry(0.04, 0.06, 6, 8);
+              var fp = new T.Mesh(fpGeo, flagPoleMat);
+              fp.position.set(centerX - MAP_SIZE / 2 - 5.5, 3, -10);
+              fp.castShadow = true;
+              scene.add(fp);
+              // Flag
+              var flagGeo = new T.PlaneGeometry(1.0, 0.6);
+              var flagMat = new T.MeshBasicMaterial({ color: 0x1e3a5f, side: T.DoubleSide });
+              var flag = new T.Mesh(flagGeo, flagMat);
+              flag.position.set(centerX - MAP_SIZE / 2 - 5.0, 5.5, -10);
+              scene.add(flag);
             }
           }
 
@@ -2432,14 +2679,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(moon);
           }
 
-          // ── Sun sphere (daytime, clear/snow) ──
-          if (!isNight && !isFog && !isRain) {
+          // ── Animated clouds (3D puffs drifting across sky) ──
+          var cloudGroup = new T.Group();
+          if (!isFog && !isRain) {
+            var cloudMat = new T.MeshBasicMaterial({ color: isSnow ? 0xb0b8c0 : 0xffffff, transparent: true, opacity: 0.6 });
+            for (var cli = 0; cli < 8; cli++) {
+              var cg2 = new T.Group();
+              var puffCount = 3 + (cli % 3);
+              for (var pi = 0; pi < puffCount; pi++) {
+                var puffR = 2 + Math.random() * 3;
+                var puffGeo = new T.SphereGeometry(puffR, 8, 6);
+                var puff = new T.Mesh(puffGeo, cloudMat);
+                puff.position.set(pi * 3 - puffCount, Math.random() * 1.5, Math.random() * 2 - 1);
+                puff.scale.y = 0.4;
+                cg2.add(puff);
+              }
+              cg2.position.set(
+                (cli * 37 - 100) % 200 - 100,
+                25 + Math.random() * 10,
+                (cli * 53 - 80) % 160 - 80
+              );
+              cg2._drift = 0.3 + Math.random() * 0.5;
+              cloudGroup.add(cg2);
+            }
+          }
+          scene.add(cloudGroup);
+
+          // ── Sun sphere ──
+          if (isDawn) {
+            // Dawn: huge low orange sun
+            var dawnSunGeo = new T.SphereGeometry(8, 16, 16);
+            var dawnSunMat = new T.MeshBasicMaterial({ color: 0xff6633 });
+            var dawnSun = new T.Mesh(dawnSunGeo, dawnSunMat);
+            dawnSun.position.set(80, 6, -15);
+            scene.add(dawnSun);
+            var dawnGlowGeo = new T.SphereGeometry(14, 16, 16);
+            var dawnGlowMat = new T.MeshBasicMaterial({ color: 0xff9955, transparent: true, opacity: 0.12 });
+            var dawnGlow = new T.Mesh(dawnGlowGeo, dawnGlowMat);
+            dawnGlow.position.copy(dawnSun.position);
+            scene.add(dawnGlow);
+            // Horizon glow band
+            var horizGeo = new T.PlaneGeometry(300, 8);
+            var horizMat = new T.MeshBasicMaterial({ color: 0xff7744, transparent: true, opacity: 0.15, side: T.DoubleSide });
+            var horiz = new T.Mesh(horizGeo, horizMat);
+            horiz.position.set(0, 3, -60);
+            scene.add(horiz);
+          } else if (!isNight && !isFog && !isRain) {
+            // Normal daytime sun
             var sunGeo = new T.SphereGeometry(3, 16, 16);
             var sunMat = new T.MeshBasicMaterial({ color: 0xfde047 });
             var sunSphere = new T.Mesh(sunGeo, sunMat);
             sunSphere.position.set(30, 40, 15);
             scene.add(sunSphere);
-            // Sun glow
             var glowGeo = new T.SphereGeometry(5, 16, 16);
             var glowMat = new T.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.15 });
             var sunGlow = new T.Mesh(glowGeo, glowMat);
@@ -2467,6 +2758,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             mh.position.set(centerX - MAP_SIZE / 2 + (mhi % 2 === 0 ? -1.5 : 1.5), 0.02, -MAP_SIZE / 2 + 12 + mhi * 16);
             scene.add(mh);
           }
+
+          // ── Road cracks (thin dark lines for realism) ──
+          var crackMat = new T.MeshBasicMaterial({ color: 0x1a1a1e });
+          for (var cki = 0; cki < 20; cki++) {
+            var ckx = centerX - MAP_SIZE / 2 + (Math.random() - 0.5) * 6;
+            var ckz = (Math.random() - 0.5) * MAP_SIZE * 1.5;
+            var ckLen = 0.3 + Math.random() * 1.5;
+            var ckAng = Math.random() * Math.PI;
+            var ckGeo = new T.PlaneGeometry(0.02, ckLen);
+            var ck = new T.Mesh(ckGeo, crackMat);
+            ck.rotation.x = -Math.PI / 2;
+            ck.rotation.z = ckAng;
+            ck.position.set(ckx, 0.014, ckz);
+            scene.add(ck);
+          }
+
+          // ── Parking lot striping (suburban only) ──
+          if (currentScenario.id === 'suburban') {
+            var stripeMat3 = new T.MeshBasicMaterial({ color: 0xffffff });
+            for (var psi = 0; psi < 8; psi++) {
+              var psGeo = new T.PlaneGeometry(0.06, 1.8);
+              var ps = new T.Mesh(psGeo, stripeMat3);
+              ps.rotation.x = -Math.PI / 2;
+              ps.position.set(centerX - MAP_SIZE / 2 + 9 + psi * 0.9, 0.015, 38 - MAP_SIZE / 2);
+              scene.add(ps);
+            }
+            // "P" parking sign
+            var parkSignTex = makeSignTexture([
+              { text: 'P', font: 'bold 80px Arial', y: 110 }
+            ], '#2563eb', '#ffffff', 128, 128);
+            var parkSignMat = new T.MeshBasicMaterial({ map: parkSignTex });
+            var parkSignGeo = new T.PlaneGeometry(0.5, 0.5);
+            var parkSign = new T.Mesh(parkSignGeo, parkSignMat);
+            parkSign.position.set(centerX - MAP_SIZE / 2 + 8, 2.2, 34 - MAP_SIZE / 2);
+            parkSign.rotation.y = -Math.PI / 2;
+            scene.add(parkSign);
+            // Parking sign post
+            var ppGeo = new T.CylinderGeometry(0.04, 0.04, 2, 6);
+            var pp = new T.Mesh(ppGeo, signPostMat);
+            pp.position.set(centerX - MAP_SIZE / 2 + 8, 1, 34 - MAP_SIZE / 2);
+            scene.add(pp);
+          }
+
+          // ── Stop lines (thick white bar before each stop sign / red light) ──
+          var stopLineMat = new T.MeshBasicMaterial({ color: 0xffffff });
+          signalsRef.current.forEach(function(sig) {
+            var slGeo = new T.PlaneGeometry(6, 0.25);
+            var sl = new T.Mesh(slGeo, stopLineMat);
+            sl.rotation.x = -Math.PI / 2;
+            sl.position.set(centerX - MAP_SIZE / 2, 0.021, sig.y - MAP_SIZE / 2 - 3.5);
+            scene.add(sl);
+          });
 
           // ── Buildings from map (with rooftops + driveways) ──
           var buildingMeshes = [];
@@ -2765,6 +3108,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           scene.add(playerCarGroup);
 
+          // ── 3D Dashboard (attached to camera, visible in cockpit) ──
+          var dashGroup = new T.Group();
+          // Dashboard panel (dark surface)
+          var dashPanelGeo = new T.BoxGeometry(1.6, 0.35, 0.04);
+          var dashPanelMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
+          var dashPanel = new T.Mesh(dashPanelGeo, dashPanelMat);
+          dashPanel.position.set(0, -0.38, -0.7);
+          dashGroup.add(dashPanel);
+          // Gauge cluster background (dark circle behind speedometer)
+          var gaugeBgGeo = new T.CircleGeometry(0.12, 24);
+          var gaugeBgMat = new T.MeshBasicMaterial({ color: 0x0a0a14 });
+          var gaugeBg = new T.Mesh(gaugeBgGeo, gaugeBgMat);
+          gaugeBg.position.set(-0.25, -0.28, -0.68);
+          dashGroup.add(gaugeBg);
+          // Gauge ring (white circle outline)
+          var gaugeRingGeo = new T.RingGeometry(0.10, 0.12, 24);
+          var gaugeRingMat = new T.MeshBasicMaterial({ color: 0x334155, side: T.DoubleSide });
+          var gaugeRing = new T.Mesh(gaugeRingGeo, gaugeRingMat);
+          gaugeRing.position.set(-0.25, -0.28, -0.679);
+          dashGroup.add(gaugeRing);
+          // Speedometer needle (thin red line that rotates)
+          var needleGeo = new T.BoxGeometry(0.005, 0.09, 0.002);
+          var needleMat = new T.MeshBasicMaterial({ color: 0xff3333 });
+          var needleMesh = new T.Mesh(needleGeo, needleMat);
+          needleMesh.position.set(-0.25, -0.28, -0.678);
+          needleMesh.geometry.translate(0, 0.045, 0); // pivot at bottom
+          dashGroup.add(needleMesh);
+          // RPM gauge (smaller, right side)
+          var rpmBgGeo = new T.CircleGeometry(0.08, 20);
+          var rpmBg = new T.Mesh(rpmBgGeo, gaugeBgMat);
+          rpmBg.position.set(0.25, -0.28, -0.68);
+          dashGroup.add(rpmBg);
+          var rpmRingGeo = new T.RingGeometry(0.065, 0.08, 20);
+          var rpmRing = new T.Mesh(rpmRingGeo, gaugeRingMat);
+          rpmRing.position.set(0.25, -0.28, -0.679);
+          dashGroup.add(rpmRing);
+          var rpmNeedleGeo = new T.BoxGeometry(0.004, 0.06, 0.002);
+          var rpmNeedle = new T.Mesh(rpmNeedleGeo, needleMat);
+          rpmNeedle.position.set(0.25, -0.28, -0.678);
+          rpmNeedle.geometry.translate(0, 0.03, 0);
+          dashGroup.add(rpmNeedle);
+          // Steering wheel (3D ring)
+          var swGeo3d = new T.TorusGeometry(0.18, 0.015, 8, 24);
+          var swMat3d = new T.MeshLambertMaterial({ color: 0x333333 });
+          var sw3d = new T.Mesh(swGeo3d, swMat3d);
+          sw3d.position.set(0, -0.45, -0.55);
+          sw3d.rotation.x = -0.35;
+          dashGroup.add(sw3d);
+          // Steering wheel spokes
+          var spokeMat = new T.MeshLambertMaterial({ color: 0x444444 });
+          [0, Math.PI * 2 / 3, Math.PI * 4 / 3].forEach(function(ang) {
+            var spokeGeo = new T.CylinderGeometry(0.008, 0.008, 0.15, 6);
+            var spoke = new T.Mesh(spokeGeo, spokeMat);
+            spoke.position.set(
+              Math.sin(ang) * 0.08,
+              -0.45 + Math.cos(ang) * 0.08,
+              -0.55
+            );
+            spoke.rotation.z = ang;
+            spoke.rotation.x = -0.35;
+            dashGroup.add(spoke);
+          });
+          camera.add(dashGroup);
+          scene.add(camera); // camera must be in scene for children to render
+
           // ── Skid tire marks group ──
           var skidMarksGroup = new T.Group();
           scene.add(skidMarksGroup);
@@ -2784,6 +3192,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var blinkerMeshRR = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), new T.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0 }));
           blinkerMeshRR.position.set(-0.92, 0.42, -0.45);
           playerCarGroup.add(blinkerMeshRR);
+
+          // ── Rain puddles (reflective patches on road surface) ──
+          if (isRain) {
+            var puddleMat = new T.MeshBasicMaterial({ color: 0x334455, transparent: true, opacity: 0.4 });
+            for (var pdi = 0; pdi < 12; pdi++) {
+              var pdx = centerX - MAP_SIZE / 2 + (Math.random() - 0.5) * 5;
+              var pdz = (Math.random() - 0.5) * MAP_SIZE * 1.5;
+              var pdR = 0.4 + Math.random() * 0.8;
+              var pdGeo = new T.CircleGeometry(pdR, 12);
+              var pd = new T.Mesh(pdGeo, puddleMat);
+              pd.rotation.x = -Math.PI / 2;
+              pd.position.set(pdx, 0.016, pdz);
+              scene.add(pd);
+            }
+          }
+
+          // ── Snow drifts on road edges ─��
+          if (isSnow) {
+            var driftMat = new T.MeshLambertMaterial({ color: 0xe8eef4 });
+            for (var sdi = -MAP_SIZE; sdi < MAP_SIZE; sdi += 5) {
+              [-3.8, 3.8].forEach(function(off) {
+                var driftW = 0.4 + Math.random() * 0.3;
+                var driftH = 0.15 + Math.random() * 0.15;
+                var driftGeo = new T.BoxGeometry(driftW, driftH, 2 + Math.random() * 2);
+                var drift = new T.Mesh(driftGeo, driftMat);
+                drift.position.set(centerX - MAP_SIZE / 2 + off, driftH / 2, sdi + Math.random() * 2);
+                scene.add(drift);
+              });
+            }
+          }
 
           // ── Weather particles ──
           var weatherParticles = null;
@@ -2818,7 +3256,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             skidMarksGroup: skidMarksGroup, skidMarkMat: skidMarkMat,
             blinkerMeshL: blinkerMeshL, blinkerMeshR: blinkerMeshR,
             blinkerMeshRL: blinkerMeshRL, blinkerMeshRR: blinkerMeshRR,
-            exhaustParticles: exhaustParticles
+            exhaustParticles: exhaustParticles,
+            dashboardGroup: dashGroup,
+            speedNeedle: needleMesh,
+            rpmNeedle: rpmNeedle,
+            steeringWheel3d: sw3d,
+            cloudGroup: cloudGroup
           };
         }
 
@@ -2861,13 +3304,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             );
             s3.playerCarGroup.visible = false;
           } else if (camMode === 'chase') {
-            s3.camera.position.set(
-              carWorldX - Math.cos(car.heading) * 5,
-              2.5,
-              carWorldZ - Math.sin(car.heading) * 5
-            );
-            s3.camera.lookAt(carWorldX, 0.8, carWorldZ);
+            // Smooth chase camera with lerp
+            var chaseTargetX = carWorldX - Math.cos(car.heading) * 5.5;
+            var chaseTargetZ = carWorldZ - Math.sin(car.heading) * 5.5;
+            var chaseTargetY = 2.8;
+            // Lerp current position toward target for smooth follow
+            s3.camera.position.x += (chaseTargetX - s3.camera.position.x) * 0.08;
+            s3.camera.position.y += (chaseTargetY - s3.camera.position.y) * 0.06;
+            s3.camera.position.z += (chaseTargetZ - s3.camera.position.z) * 0.08;
+            // Look slightly ahead of the car
+            var lookAheadX = carWorldX + Math.cos(car.heading) * 2;
+            var lookAheadZ = carWorldZ + Math.sin(car.heading) * 2;
+            s3.camera.lookAt(lookAheadX, 0.6, lookAheadZ);
             s3.playerCarGroup.visible = true;
+          } else if (camMode === 'rearview') {
+            // Looking backward from driver position
+            s3.camera.position.set(
+              carWorldX - Math.cos(car.heading) * 0.2,
+              1.1,
+              carWorldZ - Math.sin(car.heading) * 0.2
+            );
+            s3.camera.lookAt(
+              carWorldX - Math.cos(car.heading) * 10,
+              1.0,
+              carWorldZ - Math.sin(car.heading) * 10
+            );
+            s3.playerCarGroup.visible = false;
           } else { // overhead
             s3.camera.position.set(carWorldX, 25, carWorldZ + 0.1);
             s3.camera.lookAt(carWorldX, 0, carWorldZ);
@@ -2876,6 +3338,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Brake lights
           s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
+
+          // 3D Dashboard updates
+          if (s3.dashboardGroup) {
+            s3.dashboardGroup.visible = (camMode === 'cockpit');
+            if (camMode === 'cockpit') {
+              // Speed needle: rotate from -135° (0 mph) to +135° (max mph)
+              var maxGauge = Math.max(80, currentScenario.speedLimit + 30);
+              var speedFrac = Math.min(1, (car.speed * MS_TO_MPH) / maxGauge);
+              s3.speedNeedle.rotation.z = (0.75 - speedFrac * 1.5) * Math.PI;
+              // RPM needle: approximate from speed + throttle
+              var rpmFrac = Math.min(1, (car.speed * 0.05 + car.throttle * 0.3));
+              s3.rpmNeedle.rotation.z = (0.75 - rpmFrac * 1.5) * Math.PI;
+              // Steering wheel rotation
+              s3.steeringWheel3d.rotation.z = -car.steering * 1.5;
+            }
+          }
 
           // Turn signal blinkers (3D orange spheres on car)
           var blinkOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
@@ -2918,11 +3396,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (ti < tGroup.children.length) {
               m = tGroup.children[ti];
             } else {
-              // Build a proper low-poly car group
+              // Build a proper low-poly vehicle group
               var cg = new T.Group();
-              var isTruck = t.type === 'truck';
-              var bLen = isTruck ? 2.4 : 1.7;
-              var bH = isTruck ? 0.8 : 0.55;
+              var isTruck = t.type === 'truck' || t.type === 'pickup';
+              var isVan = t.type === 'van';
+              var isBus = t.type === 'schoolbus';
+              var isSUV = t.type === 'suv';
+              var bLen = isBus ? 3.5 : isTruck ? 2.4 : isVan ? 2.2 : isSUV ? 2.0 : 1.7;
+              var bH = isBus ? 1.4 : isTruck ? 0.8 : isVan ? 1.1 : isSUV ? 0.7 : 0.55;
               var tCol = new T.Color(t.color).getHex();
               // Body
               var bGeo = new T.BoxGeometry(bLen, bH, 0.85);
@@ -2931,27 +3412,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               bdy.position.y = bH / 2 + 0.2;
               bdy.castShadow = true;
               cg.add(bdy);
-              // Roof / cabin (cars only, trucks have flat top)
-              if (!isTruck) {
-                var rGeo = new T.BoxGeometry(bLen * 0.5, 0.35, 0.78);
+              // Roof / cabin
+              if (isBus) {
+                // School bus: tall yellow box with black stripe
+                var busRoofGeo = new T.BoxGeometry(bLen * 0.9, 0.15, 0.95);
+                var busRoofMat = new T.MeshLambertMaterial({ color: tCol });
+                var busRoof = new T.Mesh(busRoofGeo, busRoofMat);
+                busRoof.position.set(0, bH + 0.28, 0);
+                cg.add(busRoof);
+                // Black stripe
+                var stripeMat2 = new T.MeshBasicMaterial({ color: 0x111111 });
+                var stripeGeo2 = new T.BoxGeometry(bLen * 0.85, 0.04, 0.97);
+                var stripe2 = new T.Mesh(stripeGeo2, stripeMat2);
+                stripe2.position.set(0, bH * 0.55 + 0.2, 0);
+                cg.add(stripe2);
+                // Stop arm hint (red rectangle on side)
+                var stopArmMat = new T.MeshBasicMaterial({ color: 0xff0000 });
+                var stopArmGeo = new T.BoxGeometry(0.3, 0.08, 0.01);
+                var stopArm = new T.Mesh(stopArmGeo, stopArmMat);
+                stopArm.position.set(-bLen * 0.15, bH * 0.6 + 0.2, 0.51);
+                cg.add(stopArm);
+              } else if (isVan) {
+                // Van: tall boxy roof
+                var vanRoofGeo = new T.BoxGeometry(bLen * 0.75, 0.5, 0.88);
+                var vanRoofMat = new T.MeshLambertMaterial({ color: tCol });
+                var vanRoof = new T.Mesh(vanRoofGeo, vanRoofMat);
+                vanRoof.position.set(-bLen * 0.08, bH + 0.45, 0);
+                cg.add(vanRoof);
+              } else if (!isTruck) {
+                // Car / SUV: normal cabin
+                var cabH = isSUV ? 0.45 : 0.35;
+                var rGeo = new T.BoxGeometry(bLen * 0.5, cabH, 0.78);
                 var rMat = new T.MeshLambertMaterial({ color: tCol });
                 var roof = new T.Mesh(rGeo, rMat);
-                roof.position.set(-bLen * 0.05, bH + 0.35, 0);
+                roof.position.set(-bLen * 0.05, bH + cabH / 2 + 0.18, 0);
                 cg.add(roof);
-                // Windshield + rear window
+              }
+              // Windshield + rear window (all types except bus)
+              if (!isBus) {
                 var glassMat = new T.MeshBasicMaterial({ color: 0x1a2a3a, transparent: true, opacity: 0.6 });
-                var fwGeo = new T.PlaneGeometry(0.32, 0.78);
+                var fwGeo = new T.PlaneGeometry(isVan ? 0.5 : 0.32, 0.78);
                 var fw = new T.Mesh(fwGeo, glassMat);
                 fw.position.set(bLen * 0.2, bH + 0.18, 0);
                 fw.rotation.y = Math.PI / 2;
-                fw.rotation.z = -0.2;
+                fw.rotation.z = isVan ? -0.05 : -0.2;
                 cg.add(fw);
-                var rwGeo = new T.PlaneGeometry(0.28, 0.78);
-                var rw = new T.Mesh(rwGeo, glassMat);
-                rw.position.set(-bLen * 0.3, bH + 0.18, 0);
-                rw.rotation.y = -Math.PI / 2;
-                rw.rotation.z = 0.2;
-                cg.add(rw);
+                if (!isVan) {
+                  var rwGeo = new T.PlaneGeometry(0.28, 0.78);
+                  var rw = new T.Mesh(rwGeo, glassMat);
+                  rw.position.set(-bLen * 0.3, bH + 0.18, 0);
+                  rw.rotation.y = -Math.PI / 2;
+                  rw.rotation.z = 0.2;
+                  cg.add(rw);
+                }
               }
               // Wheels (4)
               var wMat = new T.MeshLambertMaterial({ color: 0x111111 });
@@ -2995,21 +3508,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               m = pGroup.children[pi];
             } else {
               var pg = new T.Group();
+              // Head
               var headGeo = new T.SphereGeometry(0.15, 8, 8);
               var headMat = new T.MeshLambertMaterial({ color: new T.Color(p.color).getHex() });
               var head = new T.Mesh(headGeo, headMat);
-              head.position.y = 1.5;
+              head.position.y = 1.55; head.name = 'head';
               pg.add(head);
-              var bodyGeo2 = new T.CylinderGeometry(0.12, 0.15, 0.8, 8);
-              var bodyMat2 = new T.MeshLambertMaterial({ color: 0x445566 });
-              var bodyMesh = new T.Mesh(bodyGeo2, bodyMat2);
-              bodyMesh.position.y = 1.0;
-              pg.add(bodyMesh);
+              // Torso
+              var torsoGeo = new T.CylinderGeometry(0.12, 0.14, 0.5, 8);
+              var torsoMat = new T.MeshLambertMaterial({ color: 0x445566 });
+              var torso = new T.Mesh(torsoGeo, torsoMat);
+              torso.position.y = 1.15;
+              pg.add(torso);
+              // Arms
+              var armMat = new T.MeshLambertMaterial({ color: new T.Color(p.color).getHex() });
+              var armGeo = new T.CylinderGeometry(0.04, 0.04, 0.4, 6);
+              var armL = new T.Mesh(armGeo, armMat);
+              armL.position.set(0, 1.1, 0.18); armL.name = 'armL';
+              pg.add(armL);
+              var armR = new T.Mesh(armGeo, armMat);
+              armR.position.set(0, 1.1, -0.18); armR.name = 'armR';
+              pg.add(armR);
+              // Legs
+              var legMat = new T.MeshLambertMaterial({ color: 0x2a2a3a });
+              var legGeo = new T.CylinderGeometry(0.05, 0.05, 0.55, 6);
+              var legL = new T.Mesh(legGeo, legMat);
+              legL.position.set(0, 0.45, 0.08); legL.name = 'legL';
+              pg.add(legL);
+              var legR = new T.Mesh(legGeo, legMat);
+              legR.position.set(0, 0.45, -0.08); legR.name = 'legR';
+              pg.add(legR);
               pg.castShadow = true;
               pGroup.add(pg);
               m = pg;
             }
             m.position.set(p.x - MAP_SIZE / 2, 0, p.y - MAP_SIZE / 2);
+            // Walking animation — swing legs and arms
+            var walkPhase = Math.sin(timeRef.current * 4 + pi * 2.5) * 0.3;
+            m.children.forEach(function(child) {
+              if (child.name === 'legL' || child.name === 'armR') child.rotation.x = walkPhase;
+              if (child.name === 'legR' || child.name === 'armL') child.rotation.x = -walkPhase;
+            });
           });
 
           // Update cyclists
@@ -3057,27 +3596,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             wGroup.add(wMesh);
           }
 
-          // Emergency vehicles
+          // Emergency vehicles — detailed 3D with light bar + SpotLights
           var eGroup = s3.emergencyGroup;
           while (eGroup.children.length > 0) eGroup.remove(eGroup.children[0]);
           if (emergencyRef.current) {
             var em = emergencyRef.current;
             var eGrp = new T.Group();
-            var eBGeo = new T.BoxGeometry(2.2, 1.2, 1.0);
-            var eBMat = new T.MeshLambertMaterial({ color: new T.Color(em.color).getHex() });
+            var isTruck = em.kind === 'firetruck';
+            var bodyLen = isTruck ? 3.0 : 2.2;
+            var bodyH = isTruck ? 1.4 : 1.0;
+            var bodyCol = em.bodyColor || new T.Color(em.color).getHex();
+            // Main body
+            var eBGeo = new T.BoxGeometry(bodyLen, bodyH, 1.0);
+            var eBMat = new T.MeshLambertMaterial({ color: bodyCol });
             var eBody = new T.Mesh(eBGeo, eBMat);
-            eBody.position.y = 0.7;
+            eBody.position.y = bodyH / 2 + 0.2;
             eBody.castShadow = true;
             eGrp.add(eBody);
-            // Flashing lights
-            var flashOn = Math.floor(timeRef.current * 6) % 2 === 0;
-            var lCol = flashOn ? 0xef4444 : 0x3b82f6;
-            var rCol = flashOn ? 0x3b82f6 : 0xef4444;
-            var flashMat1 = new T.MeshBasicMaterial({ color: lCol });
-            var flashMat2 = new T.MeshBasicMaterial({ color: rCol });
-            var fGeo = new T.SphereGeometry(0.12, 8, 8);
-            var fL = new T.Mesh(fGeo, flashMat1); fL.position.set(0, 1.4, -0.3); eGrp.add(fL);
-            var fR = new T.Mesh(fGeo, flashMat2); fR.position.set(0, 1.4, 0.3); eGrp.add(fR);
+            // Cabin / roof (lighter)
+            if (!isTruck) {
+              var cabGeo = new T.BoxGeometry(bodyLen * 0.45, 0.4, 0.9);
+              var cabMat = new T.MeshLambertMaterial({ color: bodyCol });
+              var cab = new T.Mesh(cabGeo, cabMat);
+              cab.position.set(-bodyLen * 0.1, bodyH + 0.35, 0);
+              eGrp.add(cab);
+            }
+            // Wheels (4)
+            var ewMat = new T.MeshLambertMaterial({ color: 0x111111 });
+            [[-bodyLen * 0.3, 0.2, 0.52], [-bodyLen * 0.3, 0.2, -0.52], [bodyLen * 0.3, 0.2, 0.52], [bodyLen * 0.3, 0.2, -0.52]].forEach(function(wp) {
+              var ewGeo = new T.CylinderGeometry(0.2, 0.2, 0.12, 10);
+              var ew = new T.Mesh(ewGeo, ewMat);
+              ew.rotation.x = Math.PI / 2;
+              ew.position.set(wp[0], wp[1], wp[2]);
+              eGrp.add(ew);
+            });
+            // ── Light bar on roof ──
+            var barGeo = new T.BoxGeometry(bodyLen * 0.5, 0.12, 0.7);
+            var barMat = new T.MeshLambertMaterial({ color: 0x222222 });
+            var bar = new T.Mesh(barGeo, barMat);
+            var barY = bodyH + (isTruck ? 0.15 : 0.68);
+            bar.position.set(0, barY, 0);
+            eGrp.add(bar);
+            // Alternating flash lights on the light bar
+            var flashPhase = Math.floor(timeRef.current * 8) % 4;
+            var lc1 = em.lightColor1 || 0xff0000;
+            var lc2 = em.lightColor2 || 0x0000ff;
+            // 4 light pods across the bar
+            [-0.25, -0.08, 0.08, 0.25].forEach(function(zOff, idx) {
+              var isOn = (idx % 2 === 0) ? (flashPhase < 2) : (flashPhase >= 2);
+              var podColor = (idx < 2) ? lc1 : lc2;
+              var podMat = new T.MeshBasicMaterial({ color: isOn ? podColor : 0x222222 });
+              var podGeo = new T.BoxGeometry(0.08, 0.1, 0.12);
+              var pod = new T.Mesh(podGeo, podMat);
+              pod.position.set(0, barY + 0.1, zOff);
+              eGrp.add(pod);
+              // Glow sphere when on
+              if (isOn) {
+                var glowMat = new T.MeshBasicMaterial({ color: podColor, transparent: true, opacity: 0.4 });
+                var glowGeo = new T.SphereGeometry(0.2, 6, 6);
+                var glow = new T.Mesh(glowGeo, glowMat);
+                glow.position.set(0, barY + 0.1, zOff);
+                eGrp.add(glow);
+              }
+            });
+            // SpotLights casting colored cones (visible at night, always present for effect)
+            var flashOn = flashPhase < 2;
+            var spotL = new T.SpotLight(flashOn ? lc1 : 0x000000, 2.0, 15, Math.PI / 4, 0.6, 1);
+            spotL.position.set(0, barY + 0.2, -0.3);
+            spotL.target.position.set(flashOn ? -3 : 3, 0, -4);
+            eGrp.add(spotL); eGrp.add(spotL.target);
+            var spotR = new T.SpotLight(!flashOn ? lc2 : 0x000000, 2.0, 15, Math.PI / 4, 0.6, 1);
+            spotR.position.set(0, barY + 0.2, 0.3);
+            spotR.target.position.set(!flashOn ? 3 : -3, 0, 4);
+            eGrp.add(spotR); eGrp.add(spotR.target);
+            // Headlights (always on for emergency)
+            var ehlMat = new T.MeshBasicMaterial({ color: 0xffffff });
+            [-0.35, 0.35].forEach(function(z) {
+              var ehl = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), ehlMat);
+              ehl.position.set(bodyLen / 2 + 0.01, bodyH / 2 + 0.2, z);
+              eGrp.add(ehl);
+            });
+            // Marking stripe (ambulance = red cross, police = stripe, fire = gold)
+            if (em.kind === 'ambulance') {
+              var crossMat = new T.MeshBasicMaterial({ color: 0xff0000 });
+              var crossH = new T.Mesh(new T.BoxGeometry(0.6, 0.05, 0.15), crossMat);
+              crossH.position.set(0, bodyH + 0.05, 0.51);
+              eGrp.add(crossH);
+              var crossV = new T.Mesh(new T.BoxGeometry(0.15, 0.05, 0.6), crossMat);
+              crossV.position.set(0, bodyH + 0.05, 0.51);
+              eGrp.add(crossV);
+            } else if (em.kind === 'police') {
+              var stripeMat = new T.MeshBasicMaterial({ color: 0x3b82f6 });
+              var stripe = new T.Mesh(new T.BoxGeometry(bodyLen * 0.8, 0.04, 0.2), stripeMat);
+              stripe.position.set(0, bodyH * 0.6, 0.51);
+              eGrp.add(stripe);
+            }
             eGrp.position.set(em.x - MAP_SIZE / 2, 0, em.y - MAP_SIZE / 2);
             eGrp.rotation.y = -em.heading + Math.PI / 2;
             eGroup.add(eGrp);
@@ -3119,6 +3732,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             pos.needsUpdate = true;
             s3.weatherParticles.position.set(carWorldX, 0, carWorldZ);
+          }
+
+          // Cloud drift animation
+          if (s3.cloudGroup) {
+            s3.cloudGroup.children.forEach(function(cg) {
+              cg.position.x += (cg._drift || 0.3) * 0.016;
+              if (cg.position.x > 120) cg.position.x = -120;
+            });
+          }
+
+          // Tree wind sway (gentle rocking based on weather)
+          var windStrength = scn.weather === 'rain' ? 0.04 : scn.weather === 'snow' ? 0.02 : scn.weather === 'fog' ? 0.01 : 0.015;
+          s3.scene.children.forEach(function(child) {
+            if (child.isMesh && child.geometry && child.geometry.type === 'ConeGeometry' && child.position.y > 1.5) {
+              child.rotation.z = Math.sin(timeRef.current * 1.5 + child.position.x * 2 + child.position.z) * windStrength;
+              child.rotation.x = Math.cos(timeRef.current * 1.2 + child.position.z * 1.5) * windStrength * 0.5;
+            }
+          });
+
+          // Lightning flash during rain (random bright flash)
+          if (scn.weather === 'rain') {
+            if (!s3._lightningCooldown) s3._lightningCooldown = 0;
+            s3._lightningCooldown -= 0.016;
+            if (s3._lightningCooldown <= 0 && Math.random() < 0.002) {
+              // Flash! Briefly boost ambient light
+              s3.scene.children.forEach(function(child) {
+                if (child.isAmbientLight) child.intensity = 3.0;
+              });
+              s3._lightningCooldown = 0.15; // flash duration
+              // Thunder sound
+              try {
+                var ac = audioRef.current.ctx;
+                if (ac) {
+                  var thunder = ac.createOscillator();
+                  var thGain = ac.createGain();
+                  var thFilter = ac.createBiquadFilter();
+                  thunder.type = 'sawtooth'; thunder.frequency.value = 40;
+                  thFilter.type = 'lowpass'; thFilter.frequency.value = 100;
+                  thGain.gain.value = 0.08;
+                  thunder.connect(thFilter); thFilter.connect(thGain); thGain.connect(ac.destination);
+                  thunder.start();
+                  thGain.gain.setTargetAtTime(0, ac.currentTime + 0.8, 0.3);
+                  thunder.stop(ac.currentTime + 1.5);
+                }
+              } catch (e) {}
+            }
+            if (s3._lightningCooldown > 0 && s3._lightningCooldown < 0.1) {
+              // Restore normal ambient
+              s3.scene.children.forEach(function(child) {
+                if (child.isAmbientLight) child.intensity = 0.5;
+              });
+            }
           }
 
           // Render
@@ -3188,6 +3853,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText(Math.max(0, Math.round(stats.efficiencyScore)), W - 100, H - 50);
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText('ECO', W - 100, H - 35);
+
+          // Odometer / trip meter
+          var distMi = (stats.distance / 1609).toFixed(2);
+          var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
+          var elMin = Math.floor(elapsed / 60);
+          var elSec = elapsed % 60;
+          gfx.fillStyle = '#64748b'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
+          gfx.fillText('TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0'), 130, H - 14);
+
+          // Gear indicator (P/R/D based on speed direction)
+          var gear = car.speed < 0.5 && car.throttle < 0.1 ? 'P' : car.speed < -0.1 ? 'R' : 'D';
+          gfx.fillStyle = gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
+          gfx.font = 'bold 16px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(gear, 130, H - 42);
+          gfx.fillStyle = '#64748b'; gfx.font = '8px system-ui';
+          gfx.fillText('GEAR', 130, H - 28);
 
           // Top-left info
           gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(10, 10, 220, 54);
@@ -3288,6 +3969,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
           gfx.fillStyle = '#475569'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('REARVIEW', W / 2, mirrorY - 4);
+
+          // ── Mini-map radar (bottom-left corner) ──
+          var mmSize = 90;
+          var mmX = 10, mmY = H - 200;
+          var mmScale = 1.4; // world units per pixel
+          gfx.fillStyle = 'rgba(0,0,0,0.7)';
+          gfx.fillRect(mmX, mmY, mmSize, mmSize);
+          gfx.strokeStyle = '#334155'; gfx.lineWidth = 1;
+          gfx.strokeRect(mmX, mmY, mmSize, mmSize);
+          // Draw road on minimap
+          var map = mapRef.current;
+          if (map) {
+            var mmCx = mmX + mmSize / 2;
+            var mmCy = mmY + mmSize / 2;
+            for (var mmy = 0; mmy < MAP_SIZE; mmy += 2) {
+              for (var mmxx = 0; mmxx < MAP_SIZE; mmxx += 2) {
+                var cell = map[mmy][mmxx];
+                if (cell !== 0 && cell !== 3 && cell !== 4) continue;
+                var relX = (mmxx - car.x) / mmScale;
+                var relY = (mmy - car.y) / mmScale;
+                // Rotate relative to car heading
+                var cosH = Math.cos(-car.heading + Math.PI / 2);
+                var sinH = Math.sin(-car.heading + Math.PI / 2);
+                var screenMX = mmCx + relX * cosH - relY * sinH;
+                var screenMY = mmCy + relX * sinH + relY * cosH;
+                if (screenMX < mmX || screenMX > mmX + mmSize || screenMY < mmY || screenMY > mmY + mmSize) continue;
+                gfx.fillStyle = cell === 3 ? '#facc15' : cell === 4 ? '#6b7280' : '#475569';
+                gfx.fillRect(screenMX - 0.5, screenMY - 0.5, 1.5, 1.5);
+              }
+            }
+          }
+          // Draw traffic dots on minimap
+          trafficRef.current.forEach(function(t) {
+            var relX = (t.x - car.x) / mmScale;
+            var relY = (t.y - car.y) / mmScale;
+            var cosH = Math.cos(-car.heading + Math.PI / 2);
+            var sinH = Math.sin(-car.heading + Math.PI / 2);
+            var mx = mmX + mmSize / 2 + relX * cosH - relY * sinH;
+            var my = mmY + mmSize / 2 + relX * sinH + relY * cosH;
+            if (mx < mmX || mx > mmX + mmSize || my < mmY || my > mmY + mmSize) return;
+            gfx.fillStyle = t.color;
+            gfx.fillRect(mx - 1.5, my - 1.5, 3, 3);
+          });
+          // Draw signals on minimap
+          signalsRef.current.forEach(function(s) {
+            var relX = (s.x - car.x) / mmScale;
+            var relY = (s.y - car.y) / mmScale;
+            var cosH = Math.cos(-car.heading + Math.PI / 2);
+            var sinH = Math.sin(-car.heading + Math.PI / 2);
+            var mx = mmX + mmSize / 2 + relX * cosH - relY * sinH;
+            var my = mmY + mmSize / 2 + relX * sinH + relY * cosH;
+            if (mx < mmX || mx > mmX + mmSize || my < mmY || my > mmY + mmSize) return;
+            gfx.fillStyle = s.type === 'stop' ? '#ef4444' : s.state === 'green' ? '#22c55e' : s.state === 'yellow' ? '#fbbf24' : '#ef4444';
+            gfx.beginPath(); gfx.arc(mx, my, 2.5, 0, Math.PI * 2); gfx.fill();
+          });
+          // Player car icon (always center, pointing up)
+          gfx.fillStyle = '#22d3ee';
+          gfx.beginPath();
+          gfx.moveTo(mmX + mmSize / 2, mmY + mmSize / 2 - 4);
+          gfx.lineTo(mmX + mmSize / 2 - 3, mmY + mmSize / 2 + 3);
+          gfx.lineTo(mmX + mmSize / 2 + 3, mmY + mmSize / 2 + 3);
+          gfx.closePath(); gfx.fill();
+          gfx.fillStyle = '#475569'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('MAP', mmX + mmSize / 2, mmY + mmSize + 8);
+
+          // Compass heading indicator (top center)
+          var headingDeg = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
+          var compassDirs = [
+            [0, 'E'], [45, 'NE'], [90, 'N'], [135, 'NW'],
+            [180, 'W'], [225, 'SW'], [270, 'S'], [315, 'SE']
+          ];
+          // Find nearest cardinal
+          var nearestDir = 'N';
+          var nearestDiff = 999;
+          compassDirs.forEach(function(cd) {
+            var diff = Math.abs(((headingDeg - cd[0]) + 180) % 360 - 180);
+            if (diff < nearestDiff) { nearestDiff = diff; nearestDir = cd[1]; }
+          });
+          gfx.fillStyle = 'rgba(0,0,0,0.5)';
+          gfx.fillRect(W / 2 - 40, 2, 80, 18);
+          gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(nearestDir + '  ' + Math.round(headingDeg) + '°', W / 2, 15);
+
+          // Distance to next signal (if approaching)
+          if (nearestSig && nearestSigDist < 10) {
+            var distFt = Math.round(nearestSigDist * 10);
+            gfx.fillStyle = '#94a3b8'; gfx.font = '10px monospace'; gfx.textAlign = 'center';
+            gfx.fillText(distFt + ' ft ahead', W / 2, H - 112);
+          }
 
           // Skid warning
           if (skidRef.current.active) {
@@ -3456,6 +4226,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '🔙'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Straight Backing'),
               h('div', { style: { fontSize: '10px', color: '#d4d4d4', marginTop: '2px' } }, 'Reverse in a straight line')
+            ),
+            h('button', { onClick: function() { upd('view', 'emergencyDrill'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🚨'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Emergency Response'),
+              h('div', { style: { fontSize: '10px', color: '#fca5a5', marginTop: '2px' } }, 'Practice yielding to sirens')
             ),
             h('button', { onClick: function() { upd('view', 'intersectionGuide'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -3664,7 +4440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('button', { onClick: function() { pausedRef.current = !pausedRef.current; },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '⏸ Pause'),
             h('button', { onClick: function() {
-              var modes = ['cockpit', 'chase', 'overhead'];
+              var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
               cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
             },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📷 Camera'),
@@ -4185,6 +4961,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, '• ', h('b', null, 'Mass'), ' determines braking distance (heavier = slower to stop) and rolling resistance. The school bus is 7.6× heavier than the sedan.'),
             h('div', null, '• ', h('b', null, 'Stopping distance'), ' example at 55 mph: sedan ~200 ft, school bus ~480 ft (on dry). Physics is non-negotiable.'),
             h('div', null, '• Hybrid city > highway MPG because regenerative braking recovers energy in stop-and-go. Gas cars do the opposite.')
+          )
+        );
+      }
+
+      // ── EMERGENCY RESPONSE DRILL ──
+      if (view === 'emergencyDrill') {
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '24px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚨'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '6px' } }, 'Emergency Vehicle Response Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fca5a5' } }, 'Sirens will sound frequently. Practice the correct response every time.')
+          ),
+          // The protocol
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '8px' } }, 'The Protocol (all 50 states)'),
+            [
+              { step: '1. CHECK', desc: 'Check mirrors to identify the emergency vehicle\'s position and direction.', icon: '👀' },
+              { step: '2. SIGNAL', desc: 'Signal RIGHT to indicate your intent to move over.', icon: '➡️' },
+              { step: '3. MOVE RIGHT', desc: 'Safely move to the RIGHT shoulder or right lane.', icon: '🚗➡️' },
+              { step: '4. STOP', desc: 'Come to a COMPLETE STOP and wait until the vehicle passes.', icon: '🛑' },
+              { step: '5. WAIT', desc: 'Check for additional emergency vehicles before re-entering traffic.', icon: '⏳' },
+              { step: '6. RESUME', desc: 'Signal left, check blind spot, and merge back carefully.', icon: '🔄' }
+            ].map(function(s, i) {
+              return h('div', { key: i, style: { display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px', paddingLeft: '8px', borderLeft: '2px solid #ef4444' } },
+                h('span', { style: { fontSize: '18px', flexShrink: 0 } }, s.icon),
+                h('div', null,
+                  h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fca5a5' } }, s.step),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1' } }, s.desc)
+                )
+              );
+            })
+          ),
+          // Special rules
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' } }, '⚠️ Special situations'),
+            h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'At an intersection:'), ' Do NOT stop in the intersection. Pull through first, then move right.'),
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'Divided highway:'), ' If the emergency vehicle is on the OTHER side of the median, you do not need to stop (but slow down).'),
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'Cannot move right:'), ' If right shoulder is blocked, stop where you are. The emergency vehicle will go around you.'),
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'Multiple vehicles:'), ' Stay stopped until ALL emergency vehicles have passed. They often travel in convoys.'),
+              h('div', null, '• ', h('b', null, 'Maine Move Over law:'), ' Also applies to stopped tow trucks, utility vehicles, and roadside assistance with lights flashing.')
+            )
+          ),
+          // Consequences
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' } }, 'Why this matters'),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' } },
+              'Every second counts for emergency responders. A 1-minute delay reaching a cardiac arrest patient reduces survival by 10%. Failure to yield is a criminal offense in most states — fines from $250 to $2,500, possible license suspension, and if someone is hurt, potential manslaughter charges.'
+            )
+          ),
+          h('button', { onClick: function() {
+            // Launch suburban scenario with boosted emergency frequency
+            updMulti({ emergencyDrillMode: true });
+            startDriving('suburban', selectedVehicle);
+          },
+            style: { width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
+          }, '🚨 Start Emergency Drill — Sirens Will Be Frequent'),
+          h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#64748b', textAlign: 'center' } },
+            'Emergency vehicles will spawn every 20-30 seconds. Practice until the response is automatic. Earns the "First Responder" achievement.'
           )
         );
       }

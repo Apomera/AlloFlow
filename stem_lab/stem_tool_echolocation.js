@@ -805,9 +805,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var cave3dEngineRef = useRef(null);
       var cave3dAnimRef = useRef(0);
 
-      function renderCave3dTab() {
-        // Initialize Three.js cave on mount
-        useEffect(function() {
+      // Initialize Three.js cave — hoisted to top level to obey Rules of Hooks
+      useEffect(function() {
+          if (tab !== 'cave3d') return;
           var container = cave3dRef.current;
           if (!container || !window.THREE || cave3dEngineRef.current) return;
           var THREE = window.THREE;
@@ -1423,8 +1423,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
             cave3dEngineRef.current = null;
           };
-        }, [tab === 'cave3d']);
+      }, [tab]);
 
+      function renderCave3dTab() {
         var threeReady = window.THREE;
 
         return h('div', { className: 'space-y-3' },
