@@ -1506,12 +1506,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var callTTS = ctx.callTTS || null;
       var callGemini = ctx.callGemini || null;
       // Voice instructor: speaks coaching tips and scenario intros aloud
-      var _lastSpoken = 0;
+      var _lastSpokenRef = useRef(0);
       var speak = function(text) {
         if (!callTTS || !text) return;
         var now = Date.now();
-        if (now - _lastSpoken < 5000) return; // throttle: max once per 5 seconds
-        _lastSpoken = now;
+        if (now - _lastSpokenRef.current < 5000) return; // throttle: max once per 5 seconds
+        _lastSpokenRef.current = now;
         callTTS(text, null, 1.0, { force: true }).catch(function() {});
       };
 
@@ -1686,7 +1686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Place car in RIGHT lane (US: drive on the right, heading north = -PI/2)
         // +1.5 = right lane (positive X from center)
         carRef.current = { x: startCenterX + 1.5, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0 };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
         gearRef.current = 'P'; // start in Park
         blinkerRef.current = 0;
         laneChangeRef.current = { lastLane: null };
@@ -1702,12 +1702,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var exitDriving = useCallback(function() {
         drivingRef.current = false;
         if (animRef.current) cancelAnimationFrame(animRef.current);
-        // Stop audio
+        // Stop ALL audio nodes (prevent memory leak from accumulated oscillators/buffers)
         try {
           var a = audioRef.current;
-          if (a.engineGain) a.engineGain.gain.value = 0;
-          if (a._skidGain) a._skidGain.gain.value = 0;
-          if (a._sirenGain) a._sirenGain.gain.value = 0;
+          // Stop and disconnect all oscillators and buffer sources
+          ['engineOsc', '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode'].forEach(function(key) {
+            if (a[key]) { try { a[key].stop(); } catch(e2){} a[key] = null; }
+          });
+          // Zero all gains
+          ['engineGain', '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain'].forEach(function(key) {
+            if (a[key]) { try { a[key].gain.value = 0; a[key].disconnect(); } catch(e3){} a[key] = null; }
+          });
+          // Reset audio state so next drive creates fresh nodes
+          a.started = false;
         } catch (e) {}
         emergencyRef.current = null;
         var s = statsRef.current;
@@ -3958,7 +3965,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.skidMarksGroup.add(mark);
             // Cap at 200 marks, remove oldest
             while (s3.skidMarksGroup.children.length > 200) {
-              s3.skidMarksGroup.remove(s3.skidMarksGroup.children[0]);
+              var oldMark = s3.skidMarksGroup.children[0];
+              if (oldMark.geometry) oldMark.geometry.dispose();
+              s3.skidMarksGroup.remove(oldMark);
             }
           }
 
@@ -4790,6 +4799,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           drivingRef.current = false;
           if (animRef.current) cancelAnimationFrame(animRef.current);
           if (threeRef.current && threeRef.current.renderer) {
+            // Dispose all geometries and materials in the scene to free GPU memory
+            if (threeRef.current.scene) {
+              threeRef.current.scene.traverse(function(obj) {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                  if (obj.material.map) obj.material.map.dispose();
+                  obj.material.dispose();
+                }
+              });
+            }
             threeRef.current.renderer.dispose();
           }
         };
