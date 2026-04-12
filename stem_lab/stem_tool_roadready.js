@@ -785,7 +785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function maybeSpawnEmergency(scenario, time) {
     if (time < 12) return null; // give player time to settle
-    if (Math.random() > 0.004) return null; // ~once per 4 min avg
+    if (Math.random() > 0.001) return null; // ~once per 15 min avg
     var types = [
       { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
       { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
@@ -1454,6 +1454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
+      var gearRef = useRef('P'); // P = park, R = reverse, D = drive
       var blinkerRef = useRef(0); // -1 left, 0 off, 1 right
       var blinkerTimerRef = useRef(0); // for visual blink
       var laneChangeRef = useRef({ active: false, dir: 0, signaled: false });
@@ -1475,9 +1476,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           if (e.key.toLowerCase() === 'h') showHUDRef.current = !showHUDRef.current;
           if (e.key.toLowerCase() === 'l') upd('highBeams', !d.highBeams);
-          // Turn signals: E = left, R = right, T = cancel
+          // Gear shifting: F = drive, G = reverse, P = park (only when stopped or slow)
+          if (e.key.toLowerCase() === 'f') {
+            if (carRef.current.speed < 2) gearRef.current = 'D';
+          }
+          if (e.key.toLowerCase() === 'g') {
+            if (carRef.current.speed < 2) gearRef.current = 'R';
+          }
+          if (e.key.toLowerCase() === 'p') {
+            if (carRef.current.speed < 1) gearRef.current = 'P';
+          }
+          // Turn signals: E = left, V = right, T = cancel
           if (e.key.toLowerCase() === 'e') blinkerRef.current = blinkerRef.current === -1 ? 0 : -1;
-          if (e.key.toLowerCase() === 'r') blinkerRef.current = blinkerRef.current === 1 ? 0 : 1;
+          if (e.key.toLowerCase() === 'v') blinkerRef.current = blinkerRef.current === 1 ? 0 : 1;
           if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
           // Horn — quick beep on 'q'
           if (e.key.toLowerCase() === 'q') {
@@ -1549,6 +1560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } catch (e) { /* audio unavailable */ }
         carRef.current = { x: 32, y: 55, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0 };
+        gearRef.current = 'P'; // start in Park
         blinkerRef.current = 0;
         laneChangeRef.current = { lastLane: null };
         mpgHistoryRef.current = [];
@@ -1662,29 +1674,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var k = keysRef.current;
           var veh = currentVehicle;
           var scn = currentScenario;
-          // Throttle / brake input
+          var gear = gearRef.current;
+          // Auto-shift to D on first throttle if in P
+          if (gear === 'P' && (k['w'] || k['arrowup'])) gearRef.current = gear = 'D';
+          // Throttle / brake input — depends on gear
           var throttleInput = (k['w'] || k['arrowup']) ? 1 : 0;
           var brakeInput = (k['s'] || k['arrowdown']) ? 1 : 0;
           var steerLeft = (k['a'] || k['arrowleft']) ? 1 : 0;
           var steerRight = (k['d'] || k['arrowright']) ? 1 : 0;
+          // In Park: no movement at all
+          if (gear === 'P') { throttleInput = 0; car.speed *= 0.9; if (car.speed < 0.1) car.speed = 0; }
+          // In Reverse: W = reverse thrust, S = brake
+          var reverseMode = gear === 'R';
           car.throttle = throttleInput;
           car.brake = brakeInput;
+          car.gear = gear;
           // Steering with smoothing
           var steerTarget = (steerRight - steerLeft) * 0.6;
           car.steering += (steerTarget - car.steering) * dt * 5;
           // Forces
           var mu = frictionCoef(scn.weather);
           var crr = rollingCoef(scn.weather, true);
-          var maxThrust = veh.powerKW * 1000 / Math.max(1, car.speed); // P = F·v, cap at low speed
-          if (car.speed < 2) maxThrust = veh.powerKW * 500; // launch
+          var absSpeed = Math.abs(car.speed);
+          var maxThrust = veh.powerKW * 1000 / Math.max(1, absSpeed);
+          if (absSpeed < 2) maxThrust = veh.powerKW * 500;
+          // In reverse, cap thrust to 30% (reverse is slow)
+          if (reverseMode) maxThrust *= 0.3;
           var thrust = throttleInput * Math.min(maxThrust, veh.mass * mu * 9.81 * 0.4);
-          var Fd = dragForce(car.speed, veh.cd, veh.area);
+          // Apply thrust in the correct direction
+          if (reverseMode) thrust = -thrust;
+          var Fd = dragForce(absSpeed, veh.cd, veh.area);
           var Fr = rollingForce(veh.mass, crr);
+          // Drag and rolling resist always oppose motion
+          var resistSign = car.speed >= 0 ? 1 : -1;
           var brakeForce = brakeInput * veh.mass * mu * 9.81 * 0.9;
-          var netForce = thrust - Fd - Fr - brakeForce;
+          var netForce = thrust - (Fd + Fr + brakeForce) * resistSign;
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
-          if (car.speed < 0) car.speed = 0;
+          // Clamp: in D, no going below 0; in R, no going above 0
+          if (gear === 'D' && car.speed < 0) car.speed = 0;
+          if (gear === 'R' && car.speed > 0) car.speed = 0;
+          // Max reverse speed ~15 mph
+          if (gear === 'R' && car.speed < -15 * MPH_TO_MS) car.speed = -15 * MPH_TO_MS;
           // Friction circle: lateral grip needed vs available.
           // If you brake HARD while turning, you exceed the grip budget and skid.
           var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.08;
@@ -1739,7 +1770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (car.speed > statsRef.current.maxSpeed) statsRef.current.maxSpeed = car.speed;
           // MPG sample
           var accelG = Math.max(0, accel / 9.81);
-          var mpg = instantMPG(car.speed * MS_TO_MPH, accelG, veh, scn.weather, true);
+          var mpg = instantMPG(Math.abs(car.speed) * MS_TO_MPH, accelG, veh, scn.weather, true);
           if (car.speed > 1) {
             statsRef.current.mpgSum += mpg;
             statsRef.current.mpgSamples++;
@@ -1757,7 +1788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.safetyScore -= 1;
           }
           // Speed violation
-          var speedMph = car.speed * MS_TO_MPH;
+          var speedMph = Math.abs(car.speed) * MS_TO_MPH;
           if (speedMph > scn.speedLimit + 5) {
             statsRef.current.speedViolations += dt;
             statsRef.current.safetyScore -= dt * 2;
@@ -2165,24 +2196,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var checkCollisions = function() {
           var car = carRef.current;
-          // Following distance check
+          var absSpeed = Math.abs(car.speed);
+          // ── Physical collision with traffic vehicles ──
           var nearest = null;
           var nearestDist = Infinity;
           trafficRef.current.forEach(function(t) {
             var dx = t.x - car.x;
             var dy = t.y - car.y;
+            var dist = Math.hypot(dx, dy);
+            // Track nearest ahead for following distance
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
-            if (dot > 0) {
-              var dist = Math.hypot(dx, dy);
-              if (dist < nearestDist) { nearestDist = dist; nearest = t; }
+            if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
+            // Physical collision: hit radius ~1.2 world units
+            if (dist < 1.2 && absSpeed > 1) {
+              if (!t._hitCooldown || timeRef.current - t._hitCooldown > 3) {
+                t._hitCooldown = timeRef.current;
+                var impactSpeed = Math.abs(car.speed - t.speed) * MS_TO_MPH;
+                statsRef.current.crashes++;
+                if (impactSpeed > 30) {
+                  statsRef.current.safetyScore -= 40;
+                  addToast('💥 HIGH-SPEED COLLISION! -40 safety');
+                  eventToastRef.current = { msg: '💥 Major collision at ' + Math.round(impactSpeed) + ' mph relative speed. In real life, serious injuries.', until: timeRef.current + 5 };
+                } else if (impactSpeed > 10) {
+                  statsRef.current.safetyScore -= 25;
+                  addToast('💥 Collision with vehicle! -25 safety');
+                  eventToastRef.current = { msg: '💥 Vehicle collision. Even low-speed crashes cause whiplash and $3,000+ damage.', until: timeRef.current + 4 };
+                } else {
+                  statsRef.current.safetyScore -= 10;
+                  addToast('💥 Fender bender. -10 safety');
+                }
+                // Physics: both vehicles affected
+                car.speed *= 0.3;
+                t.speed *= 0.5;
+              }
             }
           });
-          if (nearest && car.speed > 5) {
-            var safeFeet = safeFollowingFeet(car.speed * MS_TO_MPH, currentScenario.weather);
-            var actualFeet = nearestDist * 10; // world units -> ft approx
+          // Following distance check (for scoring, not collision)
+          if (nearest && absSpeed > 5) {
+            var safeFeet = safeFollowingFeet(absSpeed * MS_TO_MPH, currentScenario.weather);
+            var actualFeet = nearestDist * 10;
             if (actualFeet < safeFeet * 0.5) {
               statsRef.current.closeFollows++;
               statsRef.current.safetyScore -= 0.1;
+            }
+          }
+          // ── Physical collision with pedestrians ──
+          pedsRef.current.forEach(function(p) {
+            var dist = Math.hypot(p.x - car.x, p.y - car.y);
+            if (dist < 0.8 && absSpeed > 1) {
+              if (!p._hitCooldown || timeRef.current - p._hitCooldown > 5) {
+                p._hitCooldown = timeRef.current;
+                statsRef.current.crashes++;
+                statsRef.current.safetyScore -= 60;
+                addToast('💥 PEDESTRIAN STRUCK! -60 safety');
+                eventToastRef.current = { msg: '💥 You struck a pedestrian. In real life, this is a potential fatality and criminal charges.', until: timeRef.current + 6 };
+                car.speed *= 0.2;
+                // Move ped away
+                p.x += (p.x > car.x ? 2 : -2);
+              }
+            }
+          });
+          // ── Emergency vehicle collision ──
+          if (emergencyRef.current) {
+            var em = emergencyRef.current;
+            var emDist = Math.hypot(em.x - car.x, em.y - car.y);
+            if (emDist < 1.5 && absSpeed > 1 && !em._hitPlayer) {
+              em._hitPlayer = true;
+              statsRef.current.crashes++;
+              statsRef.current.safetyScore -= 50;
+              addToast('💥 STRUCK EMERGENCY VEHICLE! -50 safety');
+              eventToastRef.current = { msg: '💥 You collided with an emergency vehicle. Criminal offense + massive liability.', until: timeRef.current + 5 };
+              car.speed *= 0.1;
             }
           }
         };
@@ -3346,7 +3430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (camMode === 'cockpit') {
               // Speed needle: rotate from -135° (0 mph) to +135° (max mph)
               var maxGauge = Math.max(80, currentScenario.speedLimit + 30);
-              var speedFrac = Math.min(1, (car.speed * MS_TO_MPH) / maxGauge);
+              var speedFrac = Math.min(1, (Math.abs(car.speed) * MS_TO_MPH) / maxGauge);
               s3.speedNeedle.rotation.z = (0.75 - speedFrac * 1.5) * Math.PI;
               // RPM needle: approximate from speed + throttle
               var rpmFrac = Math.min(1, (car.speed * 0.05 + car.throttle * 0.3));
@@ -3798,7 +3882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var car = carRef.current;
           var scn = currentScenario;
           var veh = currentVehicle;
-          var speedMph = Math.round(car.speed * MS_TO_MPH);
+          var speedMph = Math.round(Math.abs(car.speed) * MS_TO_MPH);
           var stats = statsRef.current;
           var avgMpg = stats.mpgSamples > 0 ? (stats.mpgSum / stats.mpgSamples) : 0;
           var isNight = scn.time === 'night';
@@ -3863,13 +3947,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#64748b'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
           gfx.fillText('TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0'), 130, H - 14);
 
-          // Gear indicator (P/R/D based on speed direction)
-          var gear = car.speed < 0.5 && car.throttle < 0.1 ? 'P' : car.speed < -0.1 ? 'R' : 'D';
+          // Gear indicator (actual gear state from gearRef)
+          var gear = gearRef.current;
           gfx.fillStyle = gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
           gfx.font = 'bold 16px monospace'; gfx.textAlign = 'center';
           gfx.fillText(gear, 130, H - 42);
           gfx.fillStyle = '#64748b'; gfx.font = '8px system-ui';
-          gfx.fillText('GEAR', 130, H - 28);
+          gfx.fillText('F=D G=R P=Park', 130, H - 28);
 
           // Top-left info
           gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(10, 10, 220, 54);
@@ -3919,7 +4003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(blink === -1 ? '◄' : '►', W / 2 + blink * 70, H - 55);
           }
           gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText('E=◄  R=►  T=off', W / 2, H - 8);
+          gfx.fillText('E=◄  V=►  T=off', W / 2, H - 8);
 
           // MPG sparkline
           var mHist = mpgHistoryRef.current;
@@ -4449,7 +4533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '6px 10px', borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW')
           ),
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: '#cbd5e1', fontSize: '10px', zIndex: 10 } },
-            'W/↑ Accel · S/↓ Brake · A/← Left · D/→ Right · E/R Signal · C Camera · L Beams · Q Horn · SPACE Pause'
+            'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Camera · L Beams · Q Horn · SPACE Pause'
           ),
           // Free Explore live condition toolbar
           d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 10, minWidth: '160px' } },
