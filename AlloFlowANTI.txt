@@ -4146,6 +4146,12 @@ const useTranslation = (targetLanguage, apiKey) => {
       setLiveChunkSessionActive(true);
       setLiveChunkExpanded({});
       setLiveChunkRejected({});
+      setChunkResumePrompt(null);
+      // Auto-scroll to live remediation panel
+      setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+    };
+    const onResumeAvailable = (e) => {
+      setChunkResumePrompt(e.detail);
     };
     const onChunkStart = (e) => {
       setLiveChunkStream(prev => {
@@ -4176,12 +4182,14 @@ const useTranslation = (targetLanguage, apiKey) => {
     window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
     window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
     window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
+    window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
     return () => {
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
       window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
       window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
       window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
+      window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
     };
   }, []);
 
@@ -7880,27 +7888,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7916,7 +7924,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df2fea0/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b0c2d9f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -12906,6 +12914,7 @@ Return only the corrected version of this exact text:`;
   const [liveChunkSessionActive, setLiveChunkSessionActive] = useState(false);
   const [liveChunkExpanded, setLiveChunkExpanded] = useState({}); // { [index]: bool } for diff expansion
   const [liveChunkRejected, setLiveChunkRejected] = useState({}); // { [index]: bool } for user-rejected chunks
+  const [chunkResumePrompt, setChunkResumePrompt] = useState(null); // { completedChunks, totalChunks, savedAt }
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
@@ -51746,10 +51755,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                   <p className="text-[11px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
 
+                  {/* ── Resume Remediation Prompt ── */}
+                  {chunkResumePrompt && (
+                    <div className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-300 p-5 animate-in fade-in duration-300">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">💾</span>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-amber-800">Saved Progress Found</h4>
+                          <p className="text-xs text-amber-700 mt-1">
+                            {chunkResumePrompt.completedChunks} of {chunkResumePrompt.totalChunks} sections were completed
+                            {chunkResumePrompt.savedAt && <span> ({Math.round((Date.now() - chunkResumePrompt.savedAt) / 60000)} min ago)</span>}.
+                            Resume where you left off or start fresh?
+                          </p>
+                          <div className="flex gap-2 mt-3">
+                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-accept')); }}
+                              className="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors">
+                              ▶ Resume ({chunkResumePrompt.completedChunks}/{chunkResumePrompt.totalChunks})
+                            </button>
+                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-decline')); }}
+                              className="px-4 py-2 bg-white border border-amber-300 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-50 transition-colors">
+                              Start Fresh
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* ── Live Chunk Review Panel ── */}
                   {/* Shows each chunk's fix as it happens in real time, with Accept/Reject/Re-fix per chunk */}
                   {(liveChunkSessionActive || liveChunkStream.length > 0) && (
-                    <div className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in slide-in-from-bottom duration-300" role="region" aria-label="Live chunk remediation review">
+                    <div id="live-remediation-panel" className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in slide-in-from-bottom duration-300" role="region" aria-label="Live chunk remediation review">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-xl" aria-hidden="true">🔬</span>

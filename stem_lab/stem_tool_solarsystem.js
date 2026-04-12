@@ -800,7 +800,13 @@ const d = labToolData.solarSystem;
             planetsVisited = newVisited;
             setTimeout(function() { upd('planetsVisited', newVisited); }, 0);
           }
-          setTimeout(checkChallenges, 100);
+          // Debounced challenge check — avoid scheduling on every render
+          if (!window._solarChalTimer) {
+            window._solarChalTimer = setTimeout(function() {
+              window._solarChalTimer = null;
+              checkChallenges();
+            }, 500);
+          }
 
           const simSpeed = d.simSpeed || 1;
 
@@ -1613,16 +1619,33 @@ const d = labToolData.solarSystem;
           var _orrHoverRef = React.useRef(null);
           var _k1AnimRef = React.useRef(0);
           var _k2AnimRef = React.useRef(0);
+          var _orrDisplayTime = React.useRef(d.orr_time || 0);
           var _orrSpeed = d.orr_speed || 1;
           var _orrPaused = d.orr_paused || false;
+          // Sync ref when state changes externally (e.g. Reset button)
           React.useEffect(function() { _orrTimeRef.current = d.orr_time || 0; }, [d.orr_time]);
+          // Advance simulation time via rAF — NO React state updates during animation.
+          // This prevents 30fps re-renders of the entire component tree.
+          // The canvas reads timeRef.current directly in its own rAF draw loop.
           React.useEffect(function() {
             if (_orrPaused) return;
-            var iv = setInterval(function() {
-              _orrTimeRef.current += _orrSpeed / 30;
+            var running = true;
+            var lastTs = performance.now();
+            function tick(ts) {
+              if (!running) return;
+              var dt = (ts - lastTs) / 1000; // seconds elapsed
+              lastTs = ts;
+              if (dt > 0 && dt < 0.2) { // cap at 200ms to avoid jumps on tab switch
+                _orrTimeRef.current += _orrSpeed * dt;
+              }
+              requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+            // Persist time to state infrequently (every 2s) for Reset and tab-switch recovery
+            var persist = setInterval(function() {
               upd("orr_time", _orrTimeRef.current);
-            }, 33);
-            return function() { clearInterval(iv); };
+            }, 2000);
+            return function() { running = false; clearInterval(persist); };
           }, [_orrPaused, _orrSpeed]);
 
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
@@ -1871,6 +1894,12 @@ const d = labToolData.solarSystem;
     var ref = React.useRef(null);
     var raf = React.useRef(null);
     var stateRef = React.useRef({});
+    // Keep draw/onClick in a ref so the rAF loop always uses the latest closure
+    // without needing to tear down and rebuild the canvas on every re-render.
+    var drawRef = React.useRef(props.draw);
+    var clickRef = React.useRef(props.onClick);
+    drawRef.current = props.draw;
+    clickRef.current = props.onClick;
 
     React.useEffect(function() {
       var cv = ref.current;
@@ -1901,7 +1930,7 @@ const d = labToolData.solarSystem;
 
       function draw(t) {
         if (!running) return;
-        if (props.draw) props.draw(ctx, cv, st, t);
+        if (drawRef.current) drawRef.current(ctx, cv, st, t);
         raf.current = requestAnimationFrame(draw);
       }
       raf.current = requestAnimationFrame(draw);
@@ -1949,10 +1978,10 @@ const d = labToolData.solarSystem;
         window.addEventListener("pointerup", onUp);
       }
 
-      if (props.onClick) {
+      if (props.onClick || clickRef.current) {
         cv.addEventListener("click", function(ev) {
           var rect = cv.getBoundingClientRect();
-          props.onClick(ev.clientX - rect.left, ev.clientY - rect.top, st);
+          if (clickRef.current) clickRef.current(ev.clientX - rect.left, ev.clientY - rect.top, st);
         });
       }
 

@@ -3381,6 +3381,10 @@ HTML section ${chunkNum}/${chunks.length}:
 
         if (currentHtml.length <= MAX_CHUNK) {
           // Small document: single-pass fix
+          // Emit synthetic chunk events so the Live Remediation UI shows for all documents
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: 1, chunkSizes: [currentHtml.length], timestamp: Date.now() } })); } catch(e) {}
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: 0, total: 1, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+
           const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
 
 VIOLATIONS TO FIX:
@@ -3404,6 +3408,9 @@ Return ONLY the complete fixed HTML.`, true);
           } else if (fixedHtml) {
             warnLog(`[Auto-fix] Single-pass rejected: output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
           }
+          // Emit single-pass completion so Live UI updates
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: '', fixedHtml: currentHtml, score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: 1, failedCount: 0, retriedCount: 0, timestamp: Date.now() } })); } catch(e) {}
         } else {
           // ── Large document: chunked remediation ──
           // Strategy: extract <head>, split <body> content into chunks at block-level
@@ -3863,6 +3870,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 window.dispatchEvent(evt);
               }
             } catch(evtErr) { /* non-blocking */ }
+
+            // ── Save progress to IndexedDB after each chunk (survives crashes) ──
+            try {
+              saveChunkProgress(_sessionId, {
+                chunkResults: chunkResults.map(function(cr, i) {
+                  return { index: i, html: cr.html, score: cr.score, integrityCheck: cr.integrityCheck, aiVerified: cr.aiVerified, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixCount: cr.deterministicFixCount || 0, surgicalFixCount: cr.surgicalFixCount || 0, sizeKB: Math.round(cr.html.length / 1000) };
+                }),
+                totalChunks: bodyChunks.length,
+                violationInstructions: violationInstructions,
+                headSection: headSection,
+                timestamp: Date.now(),
+              });
+            } catch(saveErr) { /* non-blocking — progress save is best-effort */ }
           }
 
           // ── Compute weighted average score (weighted by original chunk size) ──
@@ -3931,6 +3951,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             timestamp: Date.now(),
           };
           warnLog(`[AutoFix] Chunk state persisted: ${_chunkState.fixedChunks.length} chunks saved for selective re-fixing`);
+
+          // ── Clear IndexedDB progress — full remediation completed successfully ──
+          try { clearChunkProgress(_sessionId); } catch(e) {}
 
           if (reassembled.length > currentHtml.length * 0.7) {
             currentHtml = reassembled;
