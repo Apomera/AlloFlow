@@ -4177,7 +4177,7 @@ const d = labToolData.solarSystem;
 
             // Planet buttons row
 
-            !d.orreryMode && React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
+            !d.orreryMode && React.createElement("div", { className: "flex gap-1.5 mt-2 flex-wrap justify-center", style: { padding: '4px 8px', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(241,245,249,0.8)', borderRadius: '12px' } },
 
               PLANETS.map(p => React.createElement("button", { "aria-label": "Select planet: " + p.name,
 
@@ -4185,9 +4185,9 @@ const d = labToolData.solarSystem;
 
                 onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
 
-                className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
 
-                style: d.selectedPlanet === p.name ? { backgroundColor: p.color } : {}
+                style: d.selectedPlanet === p.name ? { background: 'linear-gradient(135deg, ' + p.color + ', ' + p.color + 'cc)', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}
 
               }, p.emoji + " " + p.name))
 
