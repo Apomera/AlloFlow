@@ -603,6 +603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var gradeLevel = ctx.gradeLevel;
       var setStemLabTool = ctx.setStemLabTool;
       var theme = ctx.theme;
+      var threeLoaded = (ctx.toolData && ctx.toolData._threeLoaded) || !!window.THREE;
 
       // ── State ──
       var tab = d.tab || 'sonar';
