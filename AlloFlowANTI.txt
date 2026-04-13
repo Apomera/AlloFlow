@@ -4142,16 +4142,17 @@ const useTranslation = (targetLanguage, apiKey) => {
   // ── Live chunk review: listen for events from doc_pipeline during remediation ──
   useEffect(() => {
     const onSessionStart = (e) => {
-      setLiveChunkStream([]);
-      setLiveChunkSessionActive(true);
-      setLiveChunkExpanded({});
-      setLiveChunkRejected({});
-      setChunkResumePrompt(null);
-      // Auto-scroll to live remediation panel
-      setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+      try {
+        setLiveChunkStream([]);
+        setLiveChunkSessionActive(true);
+        setLiveChunkExpanded({});
+        setLiveChunkRejected({});
+        setChunkResumePrompt(null);
+        setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+      } catch(ex) { /* non-blocking */ }
     };
     const onResumeAvailable = (e) => {
-      setChunkResumePrompt(e.detail);
+      try { setChunkResumePrompt(e.detail); } catch(ex) { /* non-blocking */ }
     };
     const onBoringPalette = () => {
       try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking */ }
@@ -4163,31 +4164,33 @@ const useTranslation = (targetLanguage, apiKey) => {
       try { setFixIssuesList(e.detail); } catch(ex) { /* non-blocking */ }
     };
     const onChunkStart = (e) => {
-      setLiveChunkStream(prev => {
-        // Add a placeholder card so users see "working on this chunk" immediately
-        const idx = e.detail.index;
-        if (prev.find(c => c.index === idx)) return prev;
-        return [...prev, { ...e.detail, status: 'working' }];
-      });
+      try {
+        setLiveChunkStream(prev => {
+          const idx = e.detail.index;
+          if (prev.find(c => c.index === idx)) return prev;
+          return [...prev, { ...e.detail, status: 'working' }];
+        });
+      } catch(ex) { /* non-blocking */ }
     };
     const onChunkFixed = (e) => {
-      setLiveChunkStream(prev => {
-        const idx = e.detail.index;
-        const existing = prev.find(c => c.index === idx);
-        if (existing) {
-          return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
-        }
-        return [...prev, { ...e.detail, status: 'complete' }];
-      });
-      // Flash auto-save indicator
-      setChunkSaveFlash(true);
-      setTimeout(() => setChunkSaveFlash(false), 2000);
+      try {
+        setLiveChunkStream(prev => {
+          const idx = e.detail.index;
+          const existing = prev.find(c => c.index === idx);
+          if (existing) {
+            return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
+          }
+          return [...prev, { ...e.detail, status: 'complete' }];
+        });
+        setChunkSaveFlash(true);
+        setTimeout(() => setChunkSaveFlash(false), 2000);
+      } catch(ex) { /* non-blocking */ }
     };
     const onChunkRefixed = (e) => {
-      setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c));
+      try { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); } catch(ex) { /* non-blocking */ }
     };
     const onSessionComplete = (e) => {
-      setLiveChunkSessionActive(false);
+      try { setLiveChunkSessionActive(false); } catch(ex) { /* non-blocking */ }
     };
     window.addEventListener('alloflow:chunk-session-start', onSessionStart);
     window.addEventListener('alloflow:chunk-start', onChunkStart);
