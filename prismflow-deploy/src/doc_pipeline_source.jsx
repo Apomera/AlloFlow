@@ -6210,71 +6210,114 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
       }
 
-      // ── Final HTML cleanup + ground-truth verification against extractedText ──
+      // ── Diff-based semantic cleanup: compare final HTML against extractedText ground truth ──
+      // Instead of blind regex, we identify what changed from the original and classify
+      // each change as intentional (alt text, headings, labels) vs artifact (JSON, escapes)
       {
         const _beforeCleanHtml = accessibleHtml;
-        // 1. Literal escape sequences
+
+        // Phase 1: Always-safe deterministic fixes (no risk of content loss)
         accessibleHtml = accessibleHtml.replace(/\\n\\n/g, '</p>\n<p>').replace(/\\n/g, ' ').replace(/\\t/g, ' ').replace(/\\"/g, '"');
-        // 2. Code fence wrappers
         accessibleHtml = accessibleHtml.replace(/```html\s*/gi, '').replace(/```\s*/g, '');
-        // 3. JSON wrapper artifacts
-        accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section)":\s*"/gm, '');
-        accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
-        // 4. Raw JSON blocks → convert to HTML
-        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:p|paragraph)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
-        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:h[1-6])"\s*,\s*"text"\s*:\s*"([^"]*)"\s*(?:,\s*"id"\s*:\s*"[^"]*"\s*)?\}/g, '<h2>$1</h2>');
-        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
-          var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
-          return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
-        });
-        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:blockquote)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
-        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"hr"\s*\}/g, '<hr>');
-        // 5. Remaining unrecognized JSON blocks — extract text content as paragraphs
-        accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
-        // 6. Empty paragraphs
         accessibleHtml = accessibleHtml.replace(/(<p>\s*<\/p>)+/g, '');
 
-        // 7. If raw JSON STILL remains after regex, use Gemini to clean
-        var _remainingJson = (accessibleHtml.match(/\{"type"\s*:\s*"/g) || []).length;
-        if (_remainingJson > 0 && callGemini) {
-          _pipeLog('Cleanup', _remainingJson + ' raw JSON blocks remain — requesting AI cleanup');
-          try {
-            const _cleaned = await callGemini('This HTML document has raw JSON blocks mixed in. Convert ALL JSON blocks into proper HTML tags. Do NOT remove any content. Return the COMPLETE document.\n\nHTML:\n"""\n' + accessibleHtml + '\n"""', true);
-            if (_cleaned && textCharCount(_cleaned) >= textCharCount(accessibleHtml) * 0.9) {
-              accessibleHtml = stripFence(_cleaned);
-              _pipeLog('Cleanup', 'AI cleanup applied');
-            }
-          } catch(cleanErr) { warnLog('[Cleanup] AI cleanup failed:', cleanErr.message); }
-        }
-
-        // 8. Ground-truth verification: check that original text content survived cleanup
-        // Sample sentences from extractedText and verify they appear in the cleaned HTML
+        // Phase 2: Diff-based artifact detection
         if (extractedText && extractedText.length > 100) {
-          const _htmlTextContent = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-          // Sample 10 sentences from different parts of the original text
-          const _sentences = extractedText.split(/[.!?]\s+/).filter(s => s.length > 30 && s.length < 200);
-          const _sampleSize = Math.min(10, _sentences.length);
-          const _step = Math.max(1, Math.floor(_sentences.length / _sampleSize));
-          let _matchCount = 0;
-          let _totalChecked = 0;
-          for (let si = 0; si < _sentences.length && _totalChecked < _sampleSize; si += _step) {
-            _totalChecked++;
-            // Normalize: lowercase, collapse whitespace
-            const _needle = _sentences[si].toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 80);
-            if (_needle.length > 20 && _htmlTextContent.includes(_needle)) {
-              _matchCount++;
+          const _originalNorm = extractedText.toLowerCase().replace(/\s+/g, ' ').trim();
+          const _htmlText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          const _htmlNorm = _htmlText.toLowerCase();
+
+          // Find text segments in HTML that are NOT in the original (additions)
+          // Split HTML text into sentences and check each against original
+          const _htmlSentences = _htmlText.split(/[.!?]\s+/).filter(s => s.trim().length > 15);
+          const _additions = []; // text that was added (not in original)
+          const _preserved = []; // text from original that survived
+          const _artifacts = []; // suspected artifacts
+
+          _htmlSentences.forEach(function(sent) {
+            const norm = sent.toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 100);
+            if (norm.length < 15) return;
+            if (_originalNorm.includes(norm)) {
+              _preserved.push(norm);
+            } else {
+              // This text was added during remediation — classify it
+              var isArtifact = false;
+              // JSON syntax artifacts
+              if (/\{"type"\s*:|\[\s*\{/.test(sent)) isArtifact = true;
+              // Escaped characters that shouldn't be visible
+              if (/\\n|\\t|\\"|```/.test(sent)) isArtifact = true;
+              // Raw code fence
+              if (/^```|```$/.test(sent.trim())) isArtifact = true;
+
+              if (isArtifact) {
+                _artifacts.push(sent.substring(0, 80));
+              } else {
+                _additions.push(sent.substring(0, 80));
+              }
             }
+          });
+
+          _pipeLog('Diff', 'Semantic diff: ' + _preserved.length + ' original sentences preserved, ' + _additions.length + ' intentional additions (alt text, labels), ' + _artifacts.length + ' artifacts detected');
+
+          // Phase 3: Remove artifacts found by diff analysis
+          // Convert raw JSON blocks to HTML (these are definitely artifacts, not intentional)
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:p|paragraph)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:h[1-6])"\s*,\s*"text"\s*:\s*"([^"]*)"\s*(?:,\s*"id"\s*:\s*"[^"]*"\s*)?\}/g, '<h2>$1</h2>');
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
+            var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
+            return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
+          });
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:blockquote)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"hr"\s*\}/g, '<hr>');
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
+          // Strip JSON wrappers
+          accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section)":\s*"/gm, '');
+          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
+
+          // Phase 4: If artifacts remain, send ONLY the diffs to Gemini (not the whole doc)
+          var _remainingArtifacts = (accessibleHtml.match(/\{"type"\s*:\s*"/g) || []).length;
+          if (_remainingArtifacts > 0 && callGemini && _artifacts.length > 0) {
+            _pipeLog('Diff', _remainingArtifacts + ' artifacts remain — sending diff summary to Gemini for cleanup');
+            try {
+              // Build a compact diff payload with just the problem areas
+              const _artifactSamples = _artifacts.slice(0, 10).map(function(a, i) { return (i + 1) + '. "' + a + '"'; }).join('\n');
+              const _cleaned = await callGemini(
+                'This HTML document has ' + _remainingArtifacts + ' raw JSON artifacts mixed into the content.\n\n' +
+                'ARTIFACT EXAMPLES (text that should NOT be in the document):\n' + _artifactSamples + '\n\n' +
+                'IMPORTANT: The document also has INTENTIONAL additions like alt text for images, ARIA labels, and heading restructuring. Do NOT remove those.\n\n' +
+                'Convert any remaining raw JSON blocks (like {"type":"p","text":"..."}) into proper HTML. Remove escape sequences (\\n, \\t). Preserve ALL other content.\n\n' +
+                'HTML:\n"""\n' + accessibleHtml + '\n"""', true);
+              if (_cleaned && textCharCount(_cleaned) >= textCharCount(accessibleHtml) * 0.95) {
+                accessibleHtml = stripFence(_cleaned);
+                _pipeLog('Diff', 'AI diff-based cleanup applied');
+              }
+            } catch(cleanErr) { warnLog('[Diff Cleanup] AI cleanup failed:', cleanErr.message); }
+          }
+
+          // Phase 5: Ground-truth verification — sample original sentences and verify they survived
+          const _finalHtmlText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const _origSentences = extractedText.split(/[.!?]\s+/).filter(s => s.length > 30 && s.length < 200);
+          const _sampleSize = Math.min(15, _origSentences.length);
+          const _step = Math.max(1, Math.floor(_origSentences.length / _sampleSize));
+          let _matchCount = 0, _totalChecked = 0;
+          for (let si = 0; si < _origSentences.length && _totalChecked < _sampleSize; si += _step) {
+            _totalChecked++;
+            const _needle = _origSentences[si].toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 80);
+            if (_needle.length > 20 && _finalHtmlText.includes(_needle)) _matchCount++;
           }
           const _matchRate = _totalChecked > 0 ? _matchCount / _totalChecked : 1;
-          _pipeLog('Verify', 'Ground-truth text check: ' + _matchCount + '/' + _totalChecked + ' sentences found (' + Math.round(_matchRate * 100) + '% match)');
+          _pipeLog('Verify', 'Ground-truth: ' + _matchCount + '/' + _totalChecked + ' sentences (' + Math.round(_matchRate * 100) + '% match), ' + _additions.length + ' intentional additions preserved');
+
           if (_matchRate < 0.5 && _beforeCleanHtml) {
-            // Cleanup removed too much original content — revert to pre-cleanup HTML
-            warnLog('[Cleanup] Ground-truth match too low (' + Math.round(_matchRate * 100) + '%) — reverting cleanup');
+            warnLog('[Cleanup] Ground-truth match too low (' + Math.round(_matchRate * 100) + '%) — reverting to pre-cleanup HTML');
             accessibleHtml = _beforeCleanHtml;
-            // Still apply safe-only cleanups (literal escapes and empty paragraphs)
             accessibleHtml = accessibleHtml.replace(/\\n\\n/g, '</p>\n<p>').replace(/\\n/g, ' ').replace(/\\t/g, ' ').replace(/\\"/g, '"');
             accessibleHtml = accessibleHtml.replace(/(<p>\s*<\/p>)+/g, '');
           }
+        } else {
+          // No extracted text available — fall back to regex-only cleanup
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"[^"]*"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
         }
       }
 
