@@ -26,6 +26,12 @@ var createDocPipeline = function(deps) {
   var _withRetry = function(fn, initialMs, retryMs, label) {
     return _withTimeout(fn(), initialMs, label).catch(function(err) {
       var isTimeout = err && err.message && err.message.indexOf('Timeout') === 0;
+      var isRecitation = err && err.message && /RECITATION/i.test(err.message);
+      // Skip retry for RECITATION — it's deterministic, same content will always be refused
+      if (isRecitation) {
+        warnLog('[Retry] ' + (label || 'API call') + ' failed (RECITATION) — skipping retry (content filter is deterministic)');
+        throw err;
+      }
       warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
       return _withTimeout(fn(), retryMs || initialMs, label + ' (retry)');
     });
