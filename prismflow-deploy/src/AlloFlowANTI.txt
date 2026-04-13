@@ -4139,80 +4139,8 @@ const useTranslation = (targetLanguage, apiKey) => {
     reader.readAsText(file);
   }, []);
 
-  // ── Live chunk review: listen for events from doc_pipeline during remediation ──
-  useEffect(() => {
-    const onSessionStart = (e) => {
-      try {
-        setLiveChunkStream([]);
-        setLiveChunkSessionActive(true);
-        setLiveChunkExpanded({});
-        setLiveChunkRejected({});
-        setChunkResumePrompt(null);
-        setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
-      } catch(ex) { /* non-blocking */ }
-    };
-    const onResumeAvailable = (e) => {
-      try { setChunkResumePrompt(e.detail); } catch(ex) { /* non-blocking */ }
-    };
-    const onBoringPalette = () => {
-      try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking */ }
-    };
-    const onExtractionComplete = (e) => {
-      try { setExtractionData(e.detail); } catch(ex) { /* non-blocking */ }
-    };
-    const onFixIssuesDetected = (e) => {
-      try { setFixIssuesList(e.detail); } catch(ex) { /* non-blocking */ }
-    };
-    const onChunkStart = (e) => {
-      try {
-        setLiveChunkStream(prev => {
-          const idx = e.detail.index;
-          if (prev.find(c => c.index === idx)) return prev;
-          return [...prev, { ...e.detail, status: 'working' }];
-        });
-      } catch(ex) { /* non-blocking */ }
-    };
-    const onChunkFixed = (e) => {
-      try {
-        setLiveChunkStream(prev => {
-          const idx = e.detail.index;
-          const existing = prev.find(c => c.index === idx);
-          if (existing) {
-            return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
-          }
-          return [...prev, { ...e.detail, status: 'complete' }];
-        });
-        setChunkSaveFlash(true);
-        setTimeout(() => setChunkSaveFlash(false), 2000);
-      } catch(ex) { /* non-blocking */ }
-    };
-    const onChunkRefixed = (e) => {
-      try { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); } catch(ex) { /* non-blocking */ }
-    };
-    const onSessionComplete = (e) => {
-      try { setLiveChunkSessionActive(false); } catch(ex) { /* non-blocking */ }
-    };
-    window.addEventListener('alloflow:chunk-session-start', onSessionStart);
-    window.addEventListener('alloflow:chunk-start', onChunkStart);
-    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
-    window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
-    window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
-    window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
-    window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
-    window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
-    window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
-    return () => {
-      window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
-      window.removeEventListener('alloflow:chunk-start', onChunkStart);
-      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
-      window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
-      window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
-      window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
-      window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
-      window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
-      window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
-    };
-  }, []);
+  // NOTE: Live chunk review event listeners moved to AlloFlowContent (after state declarations)
+  // They were incorrectly placed here inside useTranslation where setLiveChunkStream is not in scope.
 
   useEffect(() => {
     if (!targetLanguage || targetLanguage === 'English') {
@@ -7909,27 +7837,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7945,7 +7873,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e6c162/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -12940,6 +12868,41 @@ Return only the corrected version of this exact text:`;
   const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
   const [fixIssuesList, setFixIssuesList] = useState(null); // specific issues found for display during Step 4
   const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {} } — shown during wait
+
+  // ── Live chunk review: listen for events from doc_pipeline during remediation ──
+  // MUST be in AlloFlowContent (not useTranslation) so setLiveChunkStream etc. are in scope
+  useEffect(() => {
+    const onSessionStart = () => { setLiveChunkStream([]); setLiveChunkSessionActive(true); setLiveChunkExpanded({}); setLiveChunkRejected({}); setChunkResumePrompt(null); setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); };
+    const onResumeAvailable = (e) => { setChunkResumePrompt(e.detail); };
+    const onBoringPalette = () => { setBoringPalettePrompt(true); };
+    const onExtractionComplete = (e) => { setExtractionData(e.detail); };
+    const onFixIssuesDetected = (e) => { setFixIssuesList(e.detail); };
+    const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
+    const onChunkFixed = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; const existing = prev.find(c => c.index === idx); if (existing) { return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c); } return [...prev, { ...e.detail, status: 'complete' }]; }); setChunkSaveFlash(true); setTimeout(() => setChunkSaveFlash(false), 2000); };
+    const onChunkRefixed = (e) => { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); };
+    const onSessionComplete = () => { setLiveChunkSessionActive(false); };
+    window.addEventListener('alloflow:chunk-session-start', onSessionStart);
+    window.addEventListener('alloflow:chunk-start', onChunkStart);
+    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
+    window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
+    window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
+    window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
+    window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
+    window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
+    window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
+    return () => {
+      window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
+      window.removeEventListener('alloflow:chunk-start', onChunkStart);
+      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
+      window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
+      window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
+      window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
+      window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
+      window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
+      window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
+    };
+  }, []);
+
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
