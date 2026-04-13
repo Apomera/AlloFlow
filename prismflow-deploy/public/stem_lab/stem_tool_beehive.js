@@ -1600,6 +1600,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.beginPath(); c.moveTo(halfW - 10, halfH); c.lineTo(halfW + 10, halfH); c.stroke();
             c.beginPath(); c.moveTo(halfW, halfH - 10); c.lineTo(halfW, halfH + 10); c.stroke();
 
+            // ── Compass / Queen bearing indicator (bottom-right) ──
+            var compR = 22, compX = W - 36, compY = H - 36;
+            c.save();
+            c.fillStyle = 'rgba(15,23,42,0.6)';
+            c.beginPath(); c.arc(compX, compY, compR + 4, 0, 6.28); c.fill();
+            // Compass ring
+            c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1.5;
+            c.beginPath(); c.arc(compX, compY, compR, 0, 6.28); c.stroke();
+            // Cardinal directions
+            c.font = 'bold 7px system-ui'; c.fillStyle = 'rgba(255,255,255,0.3)'; c.textAlign = 'center';
+            c.fillText('N', compX, compY - compR + 7);
+            c.fillText('S', compX, compY + compR - 2);
+            c.fillText('E', compX + compR - 4, compY + 3);
+            c.fillText('W', compX - compR + 4, compY + 3);
+            // Drone direction (white triangle)
+            c.fillStyle = 'rgba(255,255,255,0.5)';
+            c.beginPath();
+            c.moveTo(compX + Math.sin(0) * (compR - 6), compY - Math.cos(0) * (compR - 6));
+            c.lineTo(compX + Math.sin(-0.3) * (compR - 12), compY - Math.cos(-0.3) * (compR - 12));
+            c.lineTo(compX + Math.sin(0.3) * (compR - 12), compY - Math.cos(0.3) * (compR - 12));
+            c.closePath(); c.fill();
+            // Queen bearing arrow (golden)
+            ds.nearQueens.forEach(function(q) {
+              if (q.caught) return;
+              var qAngle = Math.atan2(q.x - ds.x, -(q.z - ds.z)) - ds.yaw;
+              var qDist = Math.sqrt((ds.x - q.x) * (ds.x - q.x) + (ds.z - q.z) * (ds.z - q.z));
+              c.save();
+              c.strokeStyle = '#f59e0b'; c.lineWidth = 2.5;
+              c.shadowColor = '#f59e0b'; c.shadowBlur = 4;
+              var arrowLen = compR - 4;
+              var ax = compX + Math.sin(qAngle) * arrowLen;
+              var ay = compY - Math.cos(qAngle) * arrowLen;
+              c.beginPath(); c.moveTo(compX, compY); c.lineTo(ax, ay); c.stroke();
+              // Arrowhead
+              c.fillStyle = '#f59e0b'; c.beginPath();
+              c.moveTo(ax, ay);
+              c.lineTo(ax + Math.sin(qAngle - 2.5) * 5, ay - Math.cos(qAngle - 2.5) * 5);
+              c.lineTo(ax + Math.sin(qAngle + 2.5) * 5, ay - Math.cos(qAngle + 2.5) * 5);
+              c.closePath(); c.fill();
+              // Queen icon at arrow tip
+              c.font = '8px system-ui'; c.textAlign = 'center';
+              c.fillText('👑', ax, ay - 5);
+              // Distance text
+              c.font = 'bold 7px system-ui'; c.fillStyle = '#fef3c7';
+              c.fillText(Math.round(qDist) + 'm', compX, compY + compR + 12);
+              c.restore();
+            });
+            c.restore();
+
             // Top HUD bar
             c.fillStyle = 'rgba(15,23,42,0.7)';
             c.beginPath(); if (c.roundRect) c.roundRect(10, 8, W - 20, 50, 10); else c.rect(10, 8, W - 20, 50); c.fill();
@@ -1700,7 +1749,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ═══════════════════════════════════════════════════════════
         var _queenCvRef = React.useRef(null);
         var _queenAnimId = React.useRef(0);
-        var _queenClick = React.useRef(null);
 
         var queenData = d.queen || {};
         var queenGameActive = queenData.active || false;
@@ -1717,7 +1765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var queenEvents = queenData.events || [];
         var queenScore = queenData.score || 0;
         var queenPhase = queenData.phase || 'build'; // build | defend | swarm
-        var queenSelectedAction = queenData.selectedAction || null;
+        // queenSelectedAction tracked in queenData for UI state
 
         var QUEEN_STRUCTURE_TYPES = {
           brood: { icon: '🥚', label: 'Brood Chamber', desc: 'Lay eggs — produce new workers', cost: { wax: 3, royalJelly: 2 }, produces: 'workers', color: '#fdba74' },
@@ -1971,20 +2019,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           cv.width = W * 2; cv.height = H * 2;
           c.setTransform(2, 0, 0, 2, 0, 0);
 
+          var _qTime = 0;
           function queenFrame() {
+            _qTime++;
             c.clearRect(0, 0, W, H);
 
-            // ── Comb background (hexagonal grid) ──
-            var cSize = 18;
-            c.fillStyle = '#d4aa40';
+            // ── Seasonal background tint ──
+            var qSeason2 = Math.floor(((queenDay || 0) % 120) / 30);
+            var combBase = ['#c9b040', '#d4aa40', '#b89030', '#a0a0b0'][qSeason2] || '#d4aa40';
+            var combCell = ['#c0a530', '#c9a030', '#a87820', '#8090a0'][qSeason2] || '#c9a030';
+            var combStroke = ['#7a5a08', '#8a6508', '#6a4a00', '#606878'][qSeason2] || '#8a6508';
+            c.fillStyle = combBase;
             c.fillRect(0, 0, W, H);
 
-            // Draw hexagonal comb grid
+            // Draw hexagonal comb grid (seasonal tint)
+            var cSize = 18;
             for (var gy = -1; gy < Math.ceil(H / (cSize * 1.6)) + 1; gy++) {
               for (var gx = -1; gx < Math.ceil(W / (cSize * 2)) + 1; gx++) {
                 var hx = gx * cSize * 2 + (gy % 2) * cSize;
                 var hy = gy * cSize * 1.6;
-                c.fillStyle = 'rgba(180,140,40,0.4)';
                 c.beginPath();
                 for (var hh = 0; hh < 6; hh++) {
                   var ha = hh * 1.047 + 0.524;
@@ -1993,10 +2046,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   hh === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
                 }
                 c.closePath();
-                c.fillStyle = '#c9a030';
+                c.fillStyle = combCell;
                 c.fill();
-                c.strokeStyle = '#8a6508'; c.lineWidth = 0.8; c.stroke();
+                c.strokeStyle = combStroke; c.lineWidth = 0.8; c.stroke();
               }
+            }
+
+            // Winter frost overlay
+            if (qSeason2 === 3) {
+              c.fillStyle = 'rgba(200,220,240,0.12)'; c.fillRect(0, 0, W, H);
+              c.fillStyle = '#fff'; c.globalAlpha = 0.3;
+              for (var sn2 = 0; sn2 < 15; sn2++) {
+                c.beginPath(); c.arc((sn2 * 37 + _qTime * 0.15) % W, (sn2 * 29 + _qTime * 0.25) % H, 1 + Math.random(), 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
+            }
+            // Spring bloom overlay
+            if (qSeason2 === 0) {
+              c.globalAlpha = 0.06; c.fillStyle = '#4ade80';
+              for (var sp = 0; sp < 8; sp++) {
+                c.beginPath(); c.arc((sp * 67 + 20) % W, (sp * 53 + 40) % H, 15 + Math.sin(_qTime * 0.01 + sp) * 5, 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
             }
 
             // ── Draw structures ──
@@ -2025,14 +2096,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
             });
 
-            // ── Draw threats ──
+            // ── Draw threats (animated, moving toward queen) ──
+            var qCenterX = W * 0.5, qCenterY = H * 0.5;
             queenThreats.forEach(function(th, ti) {
-              var tx = W * 0.1 + ti * 40, ty = H * 0.1;
-              c.font = '20px system-ui'; c.textAlign = 'center';
-              c.fillText(th.icon, tx, ty);
-              // HP bar
-              c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(tx - 15, ty + 5, 30, 4);
-              c.fillStyle = '#ef4444'; c.fillRect(tx - 15, ty + 5, 30 * (th.hp / th.strength), 4);
+              // Threats orbit and approach from edges
+              var threatAngle = ti * 1.8 + _qTime * 0.008;
+              var approachDist = 0.35 + (th.hp / (th.maxHp || th.strength)) * 0.15; // closer as they weaken
+              var tx = qCenterX + Math.cos(threatAngle) * W * approachDist + Math.sin(_qTime * 0.02 + ti) * 10;
+              var ty = qCenterY + Math.sin(threatAngle) * H * approachDist + Math.cos(_qTime * 0.015 + ti) * 8;
+
+              // Danger aura
+              c.save();
+              var dGlow = c.createRadialGradient(tx, ty, 3, tx, ty, 20);
+              dGlow.addColorStop(0, 'rgba(239,68,68,0.2)');
+              dGlow.addColorStop(1, 'rgba(239,68,68,0)');
+              c.fillStyle = dGlow;
+              c.beginPath(); c.arc(tx, ty, 20, 0, 6.28); c.fill();
+
+              // Threat icon (bobbing)
+              c.font = '18px system-ui'; c.textAlign = 'center';
+              c.fillText(th.icon, tx, ty + 6 + Math.sin(_qTime * 0.06 + ti) * 3);
+
+              // HP bar with background
+              var hpW = 30, hpH = 5;
+              c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(tx - hpW / 2, ty + 12, hpW, hpH);
+              var hpPct = th.hp / (th.maxHp || th.strength);
+              c.fillStyle = hpPct > 0.5 ? '#ef4444' : hpPct > 0.25 ? '#f59e0b' : '#22c55e';
+              c.fillRect(tx - hpW / 2, ty + 12, hpW * hpPct, hpH);
+
+              // Label
+              c.font = 'bold 7px system-ui'; c.fillStyle = '#fca5a5';
+              c.fillText(th.label || th.type, tx, ty + 23);
+              c.restore();
+
+              // Attack line toward queen (pulsing red)
+              if (hpPct > 0.3) {
+                c.save(); c.globalAlpha = 0.15 + Math.sin(_qTime * 0.05) * 0.1;
+                c.strokeStyle = '#ef4444'; c.lineWidth = 1; c.setLineDash([3, 6]);
+                c.beginPath(); c.moveTo(tx, ty); c.lineTo(qCenterX, qCenterY); c.stroke();
+                c.setLineDash([]); c.restore();
+              }
             });
 
             // ── Queen at center ──
@@ -2081,14 +2184,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // ── HUD overlay ──
-            c.fillStyle = 'rgba(15,23,42,0.7)';
-            c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 160, 60, 8); else c.rect(6, 6, 160, 60); c.fill();
+            var qSeasonLabel = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][qSeason2] || '';
+            var phaseLabel2 = queenPhase === 'swarm' ? '🐝 SWARM' : queenPhase === 'defend' ? '⚔️ DEFEND' : '🏗️ BUILD';
+            c.fillStyle = 'rgba(15,23,42,0.75)';
+            c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 180, 72, 8); else c.rect(6, 6, 180, 72); c.fill();
             c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
             c.fillText('👑 QUEEN COMMAND · Day ' + queenDay, 14, 22);
             c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
             var totalPop2 = queenPopulation.nurses + queenPopulation.builders + queenPopulation.guards + queenPopulation.foragers + queenPopulation.scouts;
             c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + queenScore + ' pts', 14, 36);
             c.fillText('🍯 ' + Math.round(queenResources.nectar) + ' · 🌼 ' + Math.round(queenResources.pollen) + ' · 🕯 ' + Math.round(queenResources.wax) + ' · 👑 ' + Math.round(queenResources.royalJelly), 14, 50);
+            // Season + phase indicator
+            c.fillStyle = '#94a3b8'; c.fillText(qSeasonLabel + ' · ' + phaseLabel2, 14, 64);
+            // Phase warning (low QMP in swarm phase)
+            if (queenPhase === 'swarm' && queenPheromones.qmp < 40) {
+              c.fillStyle = 'rgba(239,68,68,0.8)'; c.font = 'bold 8px system-ui';
+              c.fillText('⚠ QMP LOW — SWARM RISK!', 14, 74);
+            }
 
             // Pheromone bars (top-right)
             c.fillStyle = 'rgba(15,23,42,0.7)';
@@ -2227,6 +2339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Queen Command: Hive RTS'),
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
                     'You ARE the queen. Control your colony through pheromones — the chemical language of the hive. Lay eggs, allocate workers, build comb structures, and defend against invaders. You don\'t give orders directly — you emit pheromone signals that influence 50,000 workers.'),
+                  // Pheromone cards
                   h('div', { className: 'grid grid-cols-4 gap-2 max-w-lg mx-auto text-center' },
                     [['💜', 'QMP', 'Suppress rebellion'], ['🚨', 'Alarm', 'Mobilize guards'], ['🏠', 'Nasonov', 'Rally foragers'], ['🥚', 'Brood', 'Stimulate nurses']].map(function(p) {
                       return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
@@ -2234,11 +2347,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
                         h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
                     })),
+                  // Phase progression explanation
+                  h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '📋 Three Phases of Your Reign'),
+                  h('div', { className: 'grid grid-cols-3 gap-2 max-w-lg mx-auto' },
+                    [
+                      { icon: '🏗️', phase: 'BUILD', days: 'Days 1–10', desc: 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.', col: 'amber' },
+                      { icon: '⚔️', phase: 'DEFEND', days: 'Days 11–24', desc: 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.', col: 'red' },
+                      { icon: '🐝', phase: 'SWARM', days: 'Day 25+', desc: 'Colony wants to split! Keep QMP above 40 or half your workers leave. Survive the swarm impulse.', col: 'purple' }
+                    ].map(function(ph) {
+                      return h('div', { key: ph.phase, className: 'rounded-lg p-2.5 border text-left ' + (dk ? 'bg-slate-800 border-' + ph.col + '-700/30' : 'bg-white border-' + ph.col + '-200') },
+                        h('div', { className: 'flex items-center gap-1 mb-1' },
+                          h('span', null, ph.icon),
+                          h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-' + ph.col + '-300' : 'text-' + ph.col + '-700') }, ph.phase)),
+                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, ph.days),
+                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') }, ph.desc));
+                    })),
                   h('button', { onClick: startQueenGame,
                     className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
                     style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
                   }, '👑 Begin Your Reign'))
               : h('div', { className: 'space-y-3' },
+                  // Phase banner
+                  h('div', { role: 'status', 'aria-live': 'assertive', className: 'flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold ' +
+                    (queenPhase === 'swarm' ? (dk ? 'bg-purple-900/40 text-purple-300 border border-purple-600/40' : 'bg-purple-50 text-purple-800 border border-purple-300') :
+                     queenPhase === 'defend' ? (dk ? 'bg-red-900/30 text-red-300 border border-red-600/40' : 'bg-red-50 text-red-800 border border-red-300') :
+                     (dk ? 'bg-amber-900/30 text-amber-300 border border-amber-600/40' : 'bg-amber-50 text-amber-800 border border-amber-300')) },
+                    h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM PHASE' : queenPhase === 'defend' ? '⚔️ DEFEND PHASE' : '🏗️ BUILD PHASE') + ' · Day ' + queenDay),
+                    h('span', null, ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][Math.floor(((queenDay || 0) % 120) / 30)] || ''),
+                    queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
                   // Queen canvas
                   h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '350px', boxShadow: '0 0 20px rgba(147,51,234,0.1)' } },
                     h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen RTS hive view — manage your colony through pheromone commands', style: { width: '100%', height: '100%', display: 'block' } })),
@@ -2274,12 +2410,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md ' + (dk ? 'bg-gradient-to-r from-purple-700 to-amber-600' : 'bg-gradient-to-r from-purple-600 to-amber-500') }, '⏩ Next Day'),
                     h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
                       className: 'px-4 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, 'End Game')),
-                  // Event log
-                  queenEvents.length > 0 && h('div', { className: 'rounded-xl border p-3 max-h-32 overflow-y-auto ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
+                  // Event log (ARIA live region for screen readers)
+                  queenEvents.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Hive events log — latest colony events and alerts', className: 'rounded-xl border p-3 max-h-32 overflow-y-auto ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
                     h('div', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '📋 Hive Events'),
                     h('div', { className: 'space-y-1' },
                       queenEvents.slice().reverse().map(function(ev, ei) {
-                        return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 text-slate-400' : 'border-slate-100 text-slate-500') }, ev.text);
+                        var evColor = ev.type === 'threat' || ev.type === 'rebellion' || ev.type === 'swarm' || ev.type === 'starve' ? (dk ? 'text-red-400' : 'text-red-600') :
+                                     ev.type === 'victory' ? (dk ? 'text-green-400' : 'text-green-600') :
+                                     ev.type === 'phase' || ev.type === 'season' ? (dk ? 'text-amber-400' : 'text-amber-700') :
+                                     (dk ? 'text-slate-400' : 'text-slate-500');
+                        return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 ' : 'border-slate-100 ') + evColor }, ev.text);
                       }))))),
 
           // ═══ TUTORIAL OVERLAY ═══

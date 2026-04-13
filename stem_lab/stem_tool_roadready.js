@@ -2169,12 +2169,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var moveY = Math.sin(car.heading) * car.speed * dt / 5;
           var newX = car.x + moveX;
           var newY = car.y + moveY;
-          // Wall collision (bounce + penalty)
-          if (mapRef.current) {
-            var cellX = Math.floor(newX);
-            var cellY = Math.floor(newY);
-            if (cellY >= 0 && cellY < MAP_SIZE && cellX >= 0 && cellX < MAP_SIZE) {
-              var cell = mapRef.current[cellY][cellX];
+          // Wall collision (bounce + penalty) — supports both finite map and infinite world
+          var cellX = Math.floor(newX);
+          var cellY = Math.floor(newY);
+          var cell = 2; // default: grass (drivable)
+          if (infiniteWorldRef.current) {
+            cell = infiniteWorldRef.current.getCell(cellX, cellY);
+          } else if (mapRef.current && cellY >= 0 && cellY < MAP_SIZE && cellX >= 0 && cellX < MAP_SIZE) {
+            cell = mapRef.current[cellY][cellX];
+          }
+          if (cell !== undefined) {
               if (cell === 1 || cell === 5 || cell === 6) {
                 var impactMph = Math.abs(car.speed) * MS_TO_MPH;
                 if (impactMph > 5) {
@@ -2196,16 +2200,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 car.x = newX;
                 car.y = newY;
               }
-            }
-            // Wrap Y to loop the road (only for non-infinite worlds)
-            if (!infiniteWorldRef.current) {
-              if (car.y < 2) { car.y += MAP_SIZE - 5; }
-              if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; }
-            }
-            // Infinite world: cleanup distant chunks periodically
-            if (infiniteWorldRef.current && Math.floor(timeRef.current) % 5 === 0) {
-              infiniteWorldRef.current.cleanup(Math.floor(car.y / CHUNK_SIZE));
-            }
+          }
+          // Wrap Y to loop the road (only for non-infinite worlds)
+          if (!infiniteWorldRef.current) {
+            if (car.y < 2) { car.y += MAP_SIZE - 5; }
+            if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; }
+          }
+          // Infinite world: cleanup distant chunks periodically
+          if (infiniteWorldRef.current && Math.floor(timeRef.current) % 5 === 0) {
+            infiniteWorldRef.current.cleanup(Math.floor(car.y / CHUNK_SIZE));
           }
           // Update stats
           var deltaDist = car.speed * dt;
