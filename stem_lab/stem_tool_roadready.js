@@ -4940,19 +4940,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               s3._loadedChunks[ci] = chunkGroup;
             }
             // Add traffic signals at chunk intersections (for physics compliance)
-            if (chunk.hasIntersection && !chunk._signalAdded) {
-              chunk._signalAdded = true;
-              var sigWorldY = ci * CHUNK_SIZE + chunk.intersectionY;
-              var sigX = chunk.roadCenter;
-              // Alternate between stop signs and traffic lights
-              var isLight = ci % 2 === 0;
-              signalsRef.current.push({
-                x: sigX, y: sigWorldY, type: isLight ? 'light' : 'stop',
-                state: isLight ? 'green' : 'stop',
-                timer: Math.random() * 4, greenDur: 8, yellowDur: 3, redDur: 6,
-                _lastY: null, _stopped: false, _violated: false,
-                _chunk: ci // track which chunk this signal belongs to
-              });
+            for (var sci = currentChunk - 2; sci <= currentChunk + 4; sci++) {
+              var sigChunk = iw.getChunk(sci);
+              if (sigChunk && sigChunk.hasIntersection && !sigChunk._signalAdded) {
+                sigChunk._signalAdded = true;
+                var sigWorldY = sci * CHUNK_SIZE + sigChunk.intersectionY;
+                var sigX = sigChunk.roadCenter;
+                var isLight = sci % 2 === 0;
+                signalsRef.current.push({
+                  x: sigX, y: sigWorldY, type: isLight ? 'light' : 'stop',
+                  state: isLight ? 'green' : 'stop',
+                  timer: Math.random() * 4, greenDur: 8, yellowDur: 3, redDur: 6,
+                  _lastY: null, _stopped: false, _violated: false,
+                  _chunk: sci
+                });
+              }
             }
 
             // Unload distant chunks

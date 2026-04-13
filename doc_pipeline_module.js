@@ -5247,17 +5247,9 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             const fallbackEnd = Math.floor(((i + 1) / transformChunks) * extractedText.length);
             const chunkText = extractedText.substring(fallbackStart, fallbackEnd);
 
-            // ── Fallback Layer 1: Heuristic structuring from pre-extracted text ──
-            // Detects headings, lists, paragraphs from formatting patterns. No API calls.
-            const heuristicBlocks = structureTextHeuristic(chunkText, startPg, endPg);
-            if (heuristicBlocks.length > 2) {
-              warnLog(`[PDF Fix] Chunk ${i + 1}: heuristic fallback produced ${heuristicBlocks.length} blocks from extracted text`);
-              return heuristicBlocks;
-            }
-
-            // ── Fallback Layer 2: Structure-only Vision prompt ──
-            // Ask Vision for block types/boundaries WITHOUT reproducing text content.
-            // This avoids RECITATION because Vision doesn't output copyrighted text.
+            // ── Fallback Layer 1 (for RECITATION): Structure-only Vision retry ──
+            // Retry with a modified prompt that asks for structure WITHOUT reproducing text.
+            // This often works because RECITATION only triggers when the model outputs copyrighted text.
             if (isRecitation) {
               try {
                 warnLog(`[PDF Fix] Chunk ${i + 1}: trying structure-only Vision prompt (no text reproduction)`);
@@ -5344,8 +5336,12 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               }
             }
 
-            // ── Final fallback: return heuristic blocks or raw text ──
-            if (heuristicBlocks.length > 0) return heuristicBlocks;
+            // ── Final fallback: heuristic structuring from pre-extracted text ──
+            const heuristicBlocks = structureTextHeuristic(chunkText, startPg, endPg);
+            if (heuristicBlocks.length > 2) {
+              warnLog(`[PDF Fix] Chunk ${i + 1}: heuristic fallback produced ${heuristicBlocks.length} blocks from extracted text`);
+              return heuristicBlocks;
+            }
             return [{ type: 'p', text: chunkText.substring(0, 5000) }];
           }
           return [];
