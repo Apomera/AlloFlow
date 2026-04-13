@@ -296,7 +296,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = 6000; // reduced from 10000 — gemini-3-flash-preview truncates even 5KB chunks when HTML has heavy inline styles
+  const HTML_FIX_CHUNK = 8000; // safe with maxOutputTokens=32768 — gives model more context per chunk
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     const chunks = [];
@@ -5386,7 +5386,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
           if (pdfPolishPasses > 0) {
-            const POLISH_CHUNK = 2000;
+            const POLISH_CHUNK = 8000; // safe with maxOutputTokens=32768
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
             for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
