@@ -12918,6 +12918,7 @@ Return only the corrected version of this exact text:`;
   const [liveChunkExpanded, setLiveChunkExpanded] = useState({}); // { [index]: bool } for diff expansion
   const [liveChunkRejected, setLiveChunkRejected] = useState({}); // { [index]: bool } for user-rejected chunks
   const [chunkResumePrompt, setChunkResumePrompt] = useState(null); // { completedChunks, totalChunks, savedAt }
+  const [boringPalettePrompt, setBoringPalettePrompt] = useState(false); // show theme suggestion when boring palette detected
   const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);

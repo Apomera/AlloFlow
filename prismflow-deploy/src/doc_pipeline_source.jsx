@@ -4829,22 +4829,72 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       updateProgress(2, 'Analyzing document structure...');
       let bodyContent = '';
 
-      // ── Step 2a: Extract document style metadata ──
-      let docStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1', sectionBorderColor: '#e2e8f0' };
-      try {
-        updateProgress(2, 'Extracting color scheme...');
-        const styleResult = await callGeminiVision(
-          `Analyze the visual design of this PDF. Extract the exact color scheme and typography.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex for links/accents","bgColor":"hex background","headerBg":"hex or CSS gradient for header area","headerText":"hex","bodyFont":"CSS font-family","tableBg":"hex for table headers","tableBorder":"hex","sectionBorderColor":"hex for section dividers","hasHeaderBanner":true/false,"hasSidebarAccents":true/false,"accentBorderSide":"left|top|none"}`,
-          _base64, _mimeType
-        );
-        if (styleResult) {
-          let sc = styleResult.trim();
-          if (sc.indexOf('```') !== -1) { const ps = sc.split('```'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('```') !== -1) sc = sc.substring(0, sc.lastIndexOf('```')); }
-          const parsed = JSON.parse(sc);
-          docStyle = { ...docStyle, ...parsed };
-          warnLog('[PDF Fix] Extracted doc style:', docStyle);
-        }
-      } catch(styleErr) { warnLog('[PDF Fix] Style extraction failed (using defaults):', styleErr); }
+      // ── Step 2a: Determine document styling ──
+      // If user selected a preset theme (not "Match Original"), use the theme's colors directly
+      // and skip the Vision style extraction call entirely (saves 1 API call + 10-30s)
+      const _defaultDocStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1', sectionBorderColor: '#e2e8f0' };
+      const _selectedSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
+      const _selectedSeed = _selectedSeedId && STYLE_SEEDS[_selectedSeedId] ? STYLE_SEEDS[_selectedSeedId] : null;
+      const _useExtractedStyle = !_selectedSeed || _selectedSeedId === 'matchOriginal' || !_selectedSeed.cssVars;
+      let docStyle = { ..._defaultDocStyle };
+
+      if (_useExtractedStyle) {
+        // Match Original or no theme selected — extract colors from the PDF
+        try {
+          updateProgress(2, 'Extracting color scheme...');
+          _pipeLog('Style', 'Extracting original document colors (Match Original / auto)');
+          const styleResult = await callGeminiVision(
+            `Analyze the visual design of this PDF. Extract the exact color scheme and typography.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex for links/accents","bgColor":"hex background","headerBg":"hex or CSS gradient for header area","headerText":"hex","bodyFont":"CSS font-family","tableBg":"hex for table headers","tableBorder":"hex","sectionBorderColor":"hex for section dividers","hasHeaderBanner":true/false,"hasSidebarAccents":true/false,"accentBorderSide":"left|top|none"}`,
+            _base64, _mimeType
+          );
+          if (styleResult) {
+            let sc = styleResult.trim();
+            if (sc.indexOf('```') !== -1) { const ps = sc.split('```'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('```') !== -1) sc = sc.substring(0, sc.lastIndexOf('```')); }
+            const parsed = JSON.parse(sc);
+            docStyle = { ...docStyle, ...parsed };
+            warnLog('[PDF Fix] Extracted doc style:', docStyle);
+          }
+
+          // Detect boring/grayscale palette and offer theme suggestion
+          const _colors = [docStyle.headingColor, docStyle.accentColor, docStyle.bgColor, docStyle.headerBg].filter(c => typeof c === 'string' && c.startsWith('#'));
+          const _isGrayscale = _colors.every(function(c) {
+            if (c.length < 7) return true;
+            var r = parseInt(c.slice(1,3), 16), g = parseInt(c.slice(3,5), 16), b = parseInt(c.slice(5,7), 16);
+            return Math.max(r,g,b) - Math.min(r,g,b) < 30;
+          });
+          if (_isGrayscale && _colors.length >= 2) {
+            _pipeLog('Style', 'Detected boring/grayscale palette — offering theme suggestion');
+            // Emit event for UI to show theme suggestion prompt
+            try {
+              const _themePromise = new Promise(function(resolve) {
+                var _onChoice = function(e) { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(e.detail ? e.detail.seedId : null); };
+                window.addEventListener('alloflow:boring-palette-choice', _onChoice);
+                setTimeout(function() { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(null); }, 10000);
+              });
+              setTimeout(function() {
+                window.dispatchEvent(new CustomEvent('alloflow:boring-palette-detected', {
+                  detail: { extractedColors: docStyle, seedId: _selectedSeedId }
+                }));
+              }, 0);
+              updateProgress(2, 'Original styling is minimal — you can keep it or choose a theme...');
+              const _chosenSeedId = await _themePromise;
+              if (_chosenSeedId && STYLE_SEEDS[_chosenSeedId] && STYLE_SEEDS[_chosenSeedId].cssVars) {
+                const _chosenCss = STYLE_SEEDS[_chosenSeedId].cssVars;
+                docStyle = { ...docStyle, headingColor: _chosenCss.headingColor, accentColor: _chosenCss.accentColor, bgColor: _chosenCss.bgColor || '#ffffff', headerBg: _chosenCss.headerBg || _chosenCss.headingColor, headerText: _chosenCss.headerText || '#ffffff', bodyFont: _chosenCss.bodyFont || docStyle.bodyFont };
+                _pipeLog('Style', 'User chose theme: ' + STYLE_SEEDS[_chosenSeedId].name);
+              } else {
+                _pipeLog('Style', 'User kept original styling (or timed out)');
+              }
+            } catch(e) { /* non-blocking */ }
+          }
+        } catch(styleErr) { warnLog('[PDF Fix] Style extraction failed (using defaults):', styleErr); }
+      } else {
+        // Preset theme selected — use its CSS vars directly, skip Vision call
+        const _css = _selectedSeed.cssVars;
+        docStyle = { ...docStyle, headingColor: _css.headingColor, accentColor: _css.accentColor, bgColor: _css.bgColor || '#ffffff', headerBg: _css.headerBg || _css.headingColor, headerText: _css.headerText || '#ffffff', bodyFont: _css.bodyFont || 'system-ui, sans-serif', tableBg: _css.cardBg || docStyle.tableBg, tableBorder: _css.cardBorder || docStyle.tableBorder };
+        _pipeLog('Style', 'Using preset theme: ' + _selectedSeed.name + ' (skipped Vision extraction)');
+        updateProgress(2, 'Using ' + _selectedSeed.name + ' theme...');
+      }
 
       // ── Deterministic HTML renderer from JSON content blocks ──
       const renderJsonToHtml = (blocks) => {

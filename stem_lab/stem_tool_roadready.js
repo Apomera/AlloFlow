@@ -4744,6 +4744,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.weatherParticles.position.set(carWorldX, 0, carWorldZ);
           }
 
+          // ── Dynamic chunk 3D generation for infinite world ──
+          if (infiniteWorldRef.current) {
+            var iw = infiniteWorldRef.current;
+            var currentChunk = Math.floor(car.y / CHUNK_SIZE);
+            if (!s3._loadedChunks) s3._loadedChunks = {};
+            // Load chunks within range (-2 to +2 from current)
+            for (var ci = currentChunk - 2; ci <= currentChunk + 2; ci++) {
+              if (s3._loadedChunks[ci]) continue;
+              var chunk = iw.getChunk(ci);
+              var chunkGroup = new T.Group();
+              chunkGroup.name = 'chunk_' + ci;
+              var chunkWorldZ = ci * CHUNK_SIZE - MAP_SIZE / 2;
+              // Build 3D objects for this chunk
+              var buildMats = [new T.MeshLambertMaterial({ color: 0xb08c64 }), new T.MeshLambertMaterial({ color: 0xa09078 }), new T.MeshLambertMaterial({ color: 0x8c7a62 })];
+              var treeTMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
+              var treeLMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xc8d0d8 : 0x2a7e2a });
+              for (var cy = 0; cy < CHUNK_SIZE; cy++) {
+                for (var cx = 0; cx < MAP_SIZE; cx++) {
+                  var cellVal = chunk.cells[cy][cx];
+                  var wx = cx - MAP_SIZE / 2;
+                  var wz = chunkWorldZ + cy;
+                  if (cellVal === 1) {
+                    // Building
+                    var bH = 3 + ((cx * 37 + cy * 73) % 5);
+                    var bGeo = new T.BoxGeometry(1, bH, 1);
+                    var bMesh = new T.Mesh(bGeo, buildMats[(cx + cy) % 3]);
+                    bMesh.position.set(wx, bH / 2, wz);
+                    bMesh.castShadow = true;
+                    chunkGroup.add(bMesh);
+                  } else if (cellVal === 5) {
+                    // Tree
+                    var tH = 2 + ((cx * 47 + cy * 83) % 3);
+                    var trGeo = new T.CylinderGeometry(0.1, 0.15, tH * 0.5, 5);
+                    var tr = new T.Mesh(trGeo, treeTMat);
+                    tr.position.set(wx, tH * 0.25, wz);
+                    chunkGroup.add(tr);
+                    var lfGeo = new T.ConeGeometry(0.7, tH * 0.6, 5);
+                    var lf = new T.Mesh(lfGeo, treeLMat);
+                    lf.position.set(wx, tH * 0.55 + tH * 0.3, wz);
+                    lf.castShadow = true;
+                    chunkGroup.add(lfGeo);
+                    chunkGroup.add(lf);
+                  }
+                }
+              }
+              // Road surface for this chunk
+              var roadGeo = new T.PlaneGeometry(7, CHUNK_SIZE);
+              var roadMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
+              var road = new T.Mesh(roadGeo, roadMat);
+              road.rotation.x = -Math.PI / 2;
+              road.position.set(0, 0.011, chunkWorldZ + CHUNK_SIZE / 2);
+              road.receiveShadow = true;
+              chunkGroup.add(road);
+              // Biome label (debug — can remove later)
+              s3.scene.add(chunkGroup);
+              s3._loadedChunks[ci] = chunkGroup;
+            }
+            // Unload distant chunks
+            Object.keys(s3._loadedChunks).forEach(function(key) {
+              var ki = parseInt(key);
+              if (Math.abs(ki - currentChunk) > 3) {
+                var cg = s3._loadedChunks[ki];
+                if (cg) {
+                  cg.traverse(function(obj) { if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
+                  s3.scene.remove(cg);
+                }
+                delete s3._loadedChunks[ki];
+              }
+            });
+          }
+
           // Cloud drift animation
           if (s3.cloudGroup) {
             s3.cloudGroup.children.forEach(function(cg) {
@@ -5624,6 +5695,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
             style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
           }, '🌎 Start Exploring'),
+          // Seed input
+          h('div', { style: { marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' } },
+            h('label', { style: { fontSize: '11px', color: '#94a3b8' } }, 'World Seed:'),
+            h('input', { type: 'number', value: d.worldSeed || '', placeholder: 'Random',
+              onChange: function(e) { upd('worldSeed', e.target.value ? parseInt(e.target.value) : null); },
+              style: { width: '100px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#fff', fontSize: '12px', fontFamily: 'monospace', textAlign: 'center' }
+            }),
+            h('button', { onClick: function() { upd('worldSeed', Math.floor(Math.random() * 100000)); },
+              style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+            }, '🎲 Random')
+          ),
           h('div', { style: { marginTop: '10px', fontSize: '10px', color: '#64748b', textAlign: 'center' } },
             'Achievements still count in Free Explore. Practice stop signs, lane changes, moose dodging, and more — without the score stress.'
           )
@@ -5798,7 +5880,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Speed limit display
             h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center' } }, 'Limit: ' + currentScenario.speedLimit + ' mph'),
             // Distance driven
-            h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi')
+            h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi'),
+            // Infinite world info
+            infiniteWorldRef.current ? h('div', { style: { fontSize: '8px', color: '#a78bfa', textAlign: 'center', marginTop: '3px' } },
+              '🌍 Seed: ' + (d.worldSeed || '?') + (infiniteWorldRef.current.chunks[Math.floor(carRef.current.y / CHUNK_SIZE)] ? ' · ' + infiniteWorldRef.current.chunks[Math.floor(carRef.current.y / CHUNK_SIZE)].biome : '')
+            ) : null
           ) : null
         );
       }
