@@ -1662,30 +1662,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Start position: right lane, heading north, away from intersections
         var startY = Math.floor(MAP_SIZE * 0.85);
         var startCenterX = Math.floor(MAP_SIZE / 2);
-        // For curved roads, find the actual CENTERLINE (cell type 3) at the start Y
+        var startOffset = 1.5; // default right-lane offset from center
+        var isHighway = scn.id === 'highway';
         if (mapRef.current && mapRef.current[startY]) {
-          // First try to find the centerline marker
-          var foundCenter = false;
-          for (var findX = startCenterX - 10; findX <= startCenterX + 10; findX++) {
-            if (findX >= 0 && findX < MAP_SIZE && mapRef.current[startY][findX] === 3) {
-              startCenterX = findX; foundCenter = true; break;
-            }
-          }
-          // Fallback: find the middle of the road surface
-          if (!foundCenter) {
-            var roadLeft = -1, roadRight = -1;
-            for (var sx = 0; sx < MAP_SIZE; sx++) {
-              if (mapRef.current[startY][sx] === 0 || mapRef.current[startY][sx] === 3) {
-                if (roadLeft === -1) roadLeft = sx;
-                roadRight = sx;
+          if (isHighway) {
+            // Highway: find the MEDIAN (cell type 6), then place car in right lanes (+3 from median)
+            var medianX = -1;
+            for (var findM = startCenterX - 10; findM <= startCenterX + 10; findM++) {
+              if (findM >= 0 && findM < MAP_SIZE && mapRef.current[startY][findM] === 6) {
+                medianX = findM; break;
               }
             }
-            if (roadLeft !== -1) startCenterX = Math.floor((roadLeft + roadRight) / 2);
+            if (medianX !== -1) {
+              startCenterX = medianX;
+              startOffset = 3.5; // well into the right lanes (away from median)
+            } else {
+              // No median found — use road midpoint
+              var hwLeft = -1, hwRight = -1;
+              for (var hsx = 0; hsx < MAP_SIZE; hsx++) {
+                if (mapRef.current[startY][hsx] === 0) { if (hwLeft === -1) hwLeft = hsx; hwRight = hsx; }
+              }
+              if (hwLeft !== -1) { startCenterX = Math.floor((hwLeft + hwRight) / 2); startOffset = 3; }
+            }
+          } else {
+            // Non-highway: find centerline marker (cell type 3)
+            var foundCenter = false;
+            for (var findX = startCenterX - 10; findX <= startCenterX + 10; findX++) {
+              if (findX >= 0 && findX < MAP_SIZE && mapRef.current[startY][findX] === 3) {
+                startCenterX = findX; foundCenter = true; break;
+              }
+            }
+            if (!foundCenter) {
+              var roadLeft = -1, roadRight = -1;
+              for (var sx = 0; sx < MAP_SIZE; sx++) {
+                if (mapRef.current[startY][sx] === 0 || mapRef.current[startY][sx] === 3) {
+                  if (roadLeft === -1) roadLeft = sx;
+                  roadRight = sx;
+                }
+              }
+              if (roadLeft !== -1) startCenterX = Math.floor((roadLeft + roadRight) / 2);
+            }
           }
         }
-        // Place car in RIGHT lane (US: drive on the right, heading north = -PI/2)
-        // +1.5 = right lane (positive X from center)
-        carRef.current = { x: startCenterX + 1.5, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
+        // Verify the start position is on drivable road (not a wall/median/tree)
+        var startX = startCenterX + startOffset;
+        if (mapRef.current && mapRef.current[startY]) {
+          var startCell = mapRef.current[startY][Math.floor(startX)];
+          if (startCell === 1 || startCell === 5 || startCell === 6) {
+            // Stuck in a wall! Scan nearby for open road
+            for (var scanX = startCenterX - 6; scanX <= startCenterX + 6; scanX++) {
+              if (scanX >= 0 && scanX < MAP_SIZE && mapRef.current[startY][scanX] === 0) {
+                startX = scanX + 0.5; break;
+              }
+            }
+          }
+        }
+        carRef.current = { x: startX, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
         gearRef.current = 'P'; // start in Park
         blinkerRef.current = 0;

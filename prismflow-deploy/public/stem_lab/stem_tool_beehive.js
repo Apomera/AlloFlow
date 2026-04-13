@@ -1131,6 +1131,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           };
         }, []);
 
+        // ── Keyboard shortcuts (ref-based to read latest state) ──
+        var _keyState = React.useRef({});
+        _keyState.current = { colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect, showBadges: showBadges, soundOn: soundOn };
+        React.useEffect(function() {
+          function onKey(e) {
+            // Don't capture when typing in inputs
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+            var ks = _keyState.current;
+            if (ks.quizOpen) return; // Don't capture shortcuts during quiz
+            var key = e.key.toLowerCase();
+            if (key === 'n') { e.preventDefault(); if (ks.colonySurvived) advanceDay(); }
+            else if (key === 't') { e.preventDefault(); treatVarroa(); }
+            else if (key === 's') { e.preventDefault(); addSuper(); }
+            else if (key === 'h') { e.preventDefault(); harvestHoney(); }
+            else if (key === 'f') { e.preventDefault(); feedBees(); }
+            else if (key === 'i') { e.preventDefault(); upd('showInspect', !ks.showInspect); }
+            else if (key === 'q') { e.preventDefault(); startQuiz(); }
+            else if (key === 'b') { e.preventDefault(); upd('showBadges', !ks.showBadges); }
+            else if (key === 'm') { e.preventDefault(); upd('soundOn', !ks.soundOn); }
+            else if (key === '5') { e.preventDefault(); if (ks.colonySurvived) advanceDays(5); }
+            else if (key === '3') { e.preventDefault(); if (ks.colonySurvived) advanceDays(30); }
+            else if (key === '?') { e.preventDefault(); upd('showKeys', true); }
+          }
+          document.addEventListener('keydown', onKey);
+          return function() { document.removeEventListener('keydown', onKey); };
+        }, []);
+
         // ── Render ──
         var dk = isDark; // shorthand
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
@@ -1167,6 +1194,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               style: { width: '100%', height: '100%', display: 'block' }
             })
           ),
+
+          // ═══ TUTORIAL OVERLAY ═══
+          tutorialStep >= 0 && !tutorialDone && h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'dialog', 'aria-label': 'Tutorial step ' + (tutorialStep + 1) + ' of ' + TUTORIAL_STEPS.length },
+            h('div', { className: 'flex items-center justify-between' },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { className: 'text-2xl' }, TUTORIAL_STEPS[tutorialStep].icon),
+                h('div', null,
+                  h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, 'Getting Started · Step ' + (tutorialStep + 1) + '/' + TUTORIAL_STEPS.length),
+                  h('div', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, TUTORIAL_STEPS[tutorialStep].title))),
+              h('button', { onClick: function() { updAll({ tutorialStep: -1, tutorialDone: true }); }, 'aria-label': 'Skip tutorial', className: 'text-[11px] px-2 py-1 rounded-lg ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100') }, 'Skip')),
+            h('p', { className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, TUTORIAL_STEPS[tutorialStep].text),
+            // Progress dots
+            h('div', { className: 'flex items-center justify-between' },
+              h('div', { className: 'flex gap-1' },
+                TUTORIAL_STEPS.map(function(_, si) {
+                  return h('div', { key: si, className: 'w-2 h-2 rounded-full transition-all ' + (si === tutorialStep ? (dk ? 'bg-amber-400' : 'bg-amber-500') : si < tutorialStep ? (dk ? 'bg-amber-600' : 'bg-amber-300') : (dk ? 'bg-slate-600' : 'bg-slate-300')) });
+                })),
+              h('div', { className: 'flex gap-2' },
+                tutorialStep > 0 && h('button', { onClick: function() { upd('tutorialStep', tutorialStep - 1); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '← Back'),
+                h('button', { onClick: function() {
+                  if (tutorialStep + 1 >= TUTORIAL_STEPS.length) { updAll({ tutorialStep: -1, tutorialDone: true }); }
+                  else { upd('tutorialStep', tutorialStep + 1); }
+                }, className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white ' + (dk ? 'bg-amber-600 hover:bg-amber-500' : 'bg-amber-500 hover:bg-amber-600') },
+                  tutorialStep + 1 >= TUTORIAL_STEPS.length ? '✓ Start Beekeeping!' : 'Next →')))),
+
+          // ═══ KEYBOARD SHORTCUTS OVERLAY ═══
+          d.showKeys && h('div', { className: 'rounded-xl border p-4 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), role: 'dialog', 'aria-label': 'Keyboard shortcuts' },
+            h('div', { className: 'flex items-center justify-between mb-1' },
+              h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, '⌨️ Keyboard Shortcuts'),
+              h('button', { onClick: function() { upd('showKeys', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': 'Close shortcuts' }, '✕')),
+            h('div', { className: 'grid grid-cols-2 gap-1' },
+              [
+                ['N', 'Next Day'], ['T', 'Treat Varroa'], ['S', 'Add Super'],
+                ['H', 'Harvest Honey'], ['F', 'Feed Bees'], ['I', 'Inspect Hive'],
+                ['Q', 'Take Quiz'], ['B', 'View Badges'], ['M', 'Toggle Sound'],
+                ['5', 'Advance +5 Days'], ['3', 'Advance +30 Days'], ['?', 'This Help']
+              ].map(function(pair) {
+                return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[11px] py-0.5' },
+                  h('kbd', { className: 'inline-flex items-center justify-center w-6 h-6 rounded font-mono font-bold text-[11px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-200') }, pair[0]),
+                  h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
+              }))),
+
+          // ═══ BADGES PANEL ═══
+          showBadges && h('div', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), role: 'region', 'aria-label': 'Achievement badges' },
+            h('div', { className: 'flex items-center justify-between mb-1' },
+              h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🏅 Badges · ' + badgeCount + '/' + BADGE_DEFS.length),
+              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': 'Close badges' }, '✕')),
+            // Progress bar
+            h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
+              h('div', { style: { width: Math.round(badgeCount / BADGE_DEFS.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all' })),
+            h('div', { className: 'grid grid-cols-3 gap-2' },
+              BADGE_DEFS.map(function(bd) {
+                var earned = !!(newBadges[bd.id]);
+                return h('div', { key: bd.id, className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' + (earned ? (dk ? 'bg-amber-900/30 border-amber-600/40' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-slate-800/50 border-slate-700/50 opacity-50' : 'bg-slate-50 border-slate-200 opacity-50')), title: bd.desc },
+                  h('span', { className: 'text-xl ' + (earned ? '' : 'grayscale') }, bd.icon),
+                  h('div', null,
+                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-500' : 'text-slate-400')) }, bd.label),
+                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, bd.desc),
+                    earned && newBadges[bd.id].day !== undefined && h('div', { className: 'text-[10px] ' + (dk ? 'text-amber-500' : 'text-amber-600') }, '✓ Day ' + newBadges[bd.id].day)));
+              }))),
+
+          // ═══ QUIZ OVERLAY ═══
+          quizOpen && (function() {
+            var qs = d.quizQuestions || QUIZ_QUESTIONS;
+            var current = qs[quizIdx];
+            if (!current) return null;
+            return h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-500/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300'), role: 'dialog', 'aria-label': 'Bee Knowledge Quiz' },
+              h('div', { className: 'flex items-center justify-between' },
+                h('div', { className: 'text-sm font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, '🎓 Bee Knowledge Quiz'),
+                h('div', { className: 'flex items-center gap-3' },
+                  h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-400' : 'text-indigo-600') }, 'Q' + (quizIdx + 1) + '/' + qs.length + ' · Score: ' + quizScore),
+                  h('button', { onClick: function() { upd('quizOpen', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100'), 'aria-label': 'Close quiz' }, '✕'))),
+              // Progress bar
+              h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-indigo-100') },
+                h('div', { style: { width: Math.round((quizIdx + 1) / qs.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all' })),
+              // Question
+              h('p', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, current.q),
+              // Options
+              !quizFeedback && h('div', { className: 'grid grid-cols-2 gap-2' },
+                current.opts.map(function(opt, oi) {
+                  return h('button', { key: oi, onClick: function() { answerQuiz(oi); },
+                    className: 'text-left p-3 rounded-xl border text-xs font-medium transition-all ' + (dk ? 'bg-slate-800 border-indigo-700/40 text-slate-200 hover:border-indigo-400 hover:bg-slate-700' : 'bg-white border-indigo-200 text-slate-700 hover:border-indigo-500 hover:shadow-md'),
+                    'aria-label': 'Answer: ' + opt
+                  }, String.fromCharCode(65 + oi) + '. ' + opt);
+                })),
+              // Feedback
+              quizFeedback && h('div', { className: 'rounded-xl p-4 border ' + (quizFeedback.correct ? (dk ? 'bg-green-900/30 border-green-600/50' : 'bg-green-50 border-green-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('span', { className: 'text-xl' }, quizFeedback.correct ? '✅' : '❌'),
+                  h('span', { className: 'text-sm font-bold ' + (quizFeedback.correct ? (dk ? 'text-green-300' : 'text-green-800') : (dk ? 'text-red-300' : 'text-red-800')) }, quizFeedback.correct ? 'Correct!' : 'Not quite.')),
+                h('p', { className: 'text-xs leading-relaxed mb-3 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, quizFeedback.explanation),
+                h('button', { onClick: nextQuizQuestion, className: 'px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-indigo-500 hover:bg-indigo-600') },
+                  quizIdx + 1 >= qs.length ? '🏁 See Results' : 'Next Question →')));
+          })(),
 
           // Event popup
           activeEvent && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
