@@ -6196,6 +6196,42 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
       }
 
+      // ── Final HTML cleanup: strip JSON artifacts, literal escapes, malformed output ──
+      {
+        const _beforeClean = accessibleHtml.length;
+        // 1. Literal escape sequences from AI output
+        accessibleHtml = accessibleHtml.replace(/\\n\\n/g, '</p>\n<p>').replace(/\\n/g, ' ').replace(/\\t/g, ' ').replace(/\\"/g, '"');
+        // 2. Code fence wrappers
+        accessibleHtml = accessibleHtml.replace(/```html\s*/gi, '').replace(/```\s*/g, '');
+        // 3. JSON wrapper artifacts: [{"html":"..."}] or {"content":"..."}
+        accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section)":\s*"/gm, '');
+        accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
+        accessibleHtml = accessibleHtml.replace(/^\s*\{\s*"(?:html|content)":\s*"/gm, '');
+        accessibleHtml = accessibleHtml.replace(/"\s*\}\s*$/gm, '');
+        // 4. Raw JSON blocks embedded in HTML (e.g., {"type":"p","text":"..."})
+        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"[^"]*"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
+        accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"[^"]*"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
+          var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
+          return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
+        });
+        // 5. Empty paragraphs and stray closing tags
+        accessibleHtml = accessibleHtml.replace(/(<p>\s*<\/p>)+/g, '');
+        // 6. Check if raw JSON still present — if so, attempt Gemini cleanup
+        const _hasRawJson = /\{"type"\s*:\s*"/.test(accessibleHtml) || /\[\s*\{\s*"type"/.test(accessibleHtml);
+        if (_hasRawJson && callGemini) {
+          _pipeLog('Cleanup', 'Raw JSON detected in final HTML — requesting AI cleanup');
+          try {
+            const _cleaned = await callGemini('This HTML document has raw JSON blocks mixed in that should be converted to proper HTML. Convert any JSON blocks like {"type":"p","text":"..."} into proper HTML tags. Preserve all existing HTML. Return the complete cleaned document.\n\nHTML:\n' + accessibleHtml.substring(0, 30000), true);
+            if (_cleaned && _cleaned.length >= accessibleHtml.length * 0.8 && textCharCount(_cleaned) >= textCharCount(accessibleHtml) * 0.9) {
+              accessibleHtml = stripFence(_cleaned);
+              _pipeLog('Cleanup', 'AI cleanup applied');
+            }
+          } catch(cleanErr) { warnLog('[Cleanup] AI cleanup failed:', cleanErr.message); }
+        }
+        const _cleanedChars = _beforeClean - accessibleHtml.length;
+        if (_cleanedChars > 100) _pipeLog('Cleanup', 'Removed ' + _cleanedChars + ' chars of artifacts from final HTML');
+      }
+
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
