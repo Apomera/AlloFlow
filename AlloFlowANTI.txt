@@ -7891,27 +7891,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7927,7 +7927,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@697772b/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51544,36 +51544,36 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             { step: 3, label: 'Audit', icon: '🔍' },
                             { step: 4, label: 'Fix & Verify', icon: '🔧' },
                           ];
-                          // Contextual explanations keyed to what pdfFixStep contains — no API calls
+                          // Contextual accessibility explanations in layman terms — zero API calls
                           const getContextNote = (stepText) => {
                             if (!stepText) return null;
-                            // Step 1 sub-phases
-                            if (/Reading document|Extract/i.test(stepText) && /Step 1/i.test(stepText)) {
-                              if (/deterministic|text layer/i.test(stepText)) return { note: 'Using pdf.js to extract text directly from the PDF structure — faster and free compared to Vision AI.', why: 'Text-layer PDFs can be read programmatically without OCR, saving API calls.' };
-                              if (/Vision|OCR|chunk/i.test(stepText)) return { note: 'This PDF appears to be scanned. Using Gemini Vision to read text from page images.', why: 'Scanned PDFs have no text layer — the content exists only as images that need OCR.' };
-                              if (/image/i.test(stepText)) return { note: 'Detecting and describing images so they can receive meaningful alt text.', why: 'WCAG 1.1.1 requires all non-decorative images to have text alternatives for screen reader users.' };
-                              return { note: 'Reading the full document content so nothing is lost during transformation.', why: 'Accurate extraction prevents content loss — every word must survive the conversion.' };
+                            // Step 1: Reading the document
+                            if (/Step 1/i.test(stepText)) {
+                              if (/image/i.test(stepText)) return { what: 'Finding images in your document and preparing descriptions for them.', why: 'People who are blind or have low vision use screen readers that read aloud. When an image has no description, the screen reader says nothing — the student misses the content entirely.' };
+                              if (/Vision|OCR|scanned/i.test(stepText)) return { what: 'Your PDF appears to be a scan — reading the text from the page images.', why: 'Scanned documents are essentially photographs of text. They look normal to sighted readers, but a screen reader sees a blank page. We need to recover the actual text.' };
+                              if (/Extract|text layer|deterministic/i.test(stepText)) return { what: 'Reading all the text, headings, and tables from your document.', why: 'Every word needs to be captured accurately. If a heading or table label is lost, students using assistive technology won\'t be able to navigate or understand the document\'s organization.' };
+                              return { what: 'Carefully reading your document to preserve every word and detail.', why: 'The first step in making a document accessible is understanding exactly what it contains — text, images, tables, and how they relate to each other.' };
                             }
-                            // Step 2 sub-phases
+                            // Step 2: Building accessible structure
                             if (/Step 2/i.test(stepText)) {
-                              if (/style|color/i.test(stepText)) return { note: 'Extracting the original document\'s colors and typography to preserve its visual identity.', why: 'Accessible documents should look professional — matching the original style builds trust.' };
-                              if (/structure|JSON|block/i.test(stepText)) return { note: 'Converting flat PDF content into semantic HTML structure (headings, lists, tables).', why: 'Screen readers navigate by structure. Without semantic tags, a document is a wall of undifferentiated text.' };
-                              if (/[Pp]olish|table.*unif|style.*unif/i.test(stepText)) return { note: 'Unifying styles and merging table fragments that were split during chunked processing.', why: 'Large documents are processed in sections — polish ensures consistent styling across boundaries.' };
-                              if (/spell|grammar/i.test(stepText)) return { note: 'Checking for OCR artifacts and typos introduced during text extraction.', why: 'Garbled text from scanning (e.g., "rn" instead of "m") is inaccessible to everyone.' };
-                              return { note: 'Building semantic HTML with proper headings, landmarks, and ARIA attributes.', why: 'HTML structure is the foundation of accessibility — it\'s what assistive technology reads.' };
+                              if (/style|color/i.test(stepText)) return { what: 'Matching the original look of your document — colors, fonts, and layout.', why: 'Accessible doesn\'t mean ugly. Students with and without disabilities should see the same professional-looking document. We preserve the original design while fixing what\'s underneath.' };
+                              if (/structure|JSON|block/i.test(stepText)) return { what: 'Organizing your content with proper headings, labeled tables, and clear sections.', why: 'Imagine reading a textbook with no chapter titles, no bold headings, and no numbered lists — just one long paragraph. That\'s what an unstructured PDF feels like to a screen reader user.' };
+                              if (/[Pp]olish|table.*unif|style.*unif/i.test(stepText)) return { what: 'Making sure tables aren\'t broken across pages and headings are consistent throughout.', why: 'Long documents are processed in sections. This step stitches them together so a student navigating by headings won\'t hit gaps or repeated content at section boundaries.' };
+                              if (/spell|grammar/i.test(stepText)) return { what: 'Checking for garbled text that may have been introduced during conversion.', why: 'Sometimes converting a PDF creates odd artifacts — like "rn" appearing instead of "m." These confuse everyone, but especially text-to-speech tools that try to pronounce nonsense.' };
+                              return { what: 'Converting your document into a format that assistive technology can understand.', why: 'PDFs are designed for printing — they tell a printer where to put ink, not what the content means. We\'re rebuilding it with meaning: this is a heading, this is a data table, this image shows a diagram.' };
                             }
-                            // Step 3
+                            // Step 3: Checking for problems
                             if (/Step 3/i.test(stepText)) {
-                              if (/axe/i.test(stepText)) return { note: 'Running axe-core — the same engine used by accessibility professionals worldwide.', why: 'axe-core tests against WCAG 2.1 AA rules deterministically. It catches issues AI might miss.' };
-                              if (/verif/i.test(stepText)) return { note: 'AI auditor evaluating the HTML for accessibility issues axe-core can\'t detect.', why: 'Some issues (poor alt text quality, confusing heading hierarchy) require judgment, not just rules.' };
-                              return { note: 'Measuring accessibility before fixes to establish a baseline score.', why: 'The before/after comparison shows exactly how much the remediation improved the document.' };
+                              if (/axe/i.test(stepText)) return { what: 'Running an automated accessibility checker used by professionals worldwide.', why: 'This checker (axe-core by Deque) tests for things like missing image descriptions, unlabeled form fields, and insufficient color contrast — the same issues that cause real barriers for students with disabilities.' };
+                              if (/verif/i.test(stepText)) return { what: 'An AI reviewer is checking for issues the automated tool can\'t catch.', why: 'Some accessibility problems require human-like judgment. For example: an image labeled "image1.png" technically has alt text, but it\'s useless. The AI checks whether descriptions actually describe.' };
+                              return { what: 'Measuring how accessible your document is before we start fixing issues.', why: 'This establishes a starting point so you can see exactly what improved. The score reflects how well a student using a screen reader, magnifier, or other assistive technology could use this document.' };
                             }
-                            // Step 4
+                            // Step 4: Fixing issues
                             if (/Step 4|Auto-fix|Improv|pass \d/i.test(stepText)) {
-                              if (/Verif|check/i.test(stepText)) return { note: 'Two independent AI auditors verify each fix pass to catch false positives.', why: 'Averaging multiple audits prevents a single bad score from triggering unnecessary extra passes.' };
-                              if (/surg|micro/i.test(stepText)) return { note: 'Applying targeted micro-tool fixes: each fix addresses one specific WCAG violation.', why: 'Surgical tools (alt text, heading fix, label add) are precise — they fix the issue without touching other content.' };
-                              if (/axe.*0|zero issue|clean/i.test(stepText)) return { note: 'Both axe-core and AI agree: no remaining violations detected!', why: 'When deterministic and AI engines both report clean, the document meets WCAG 2.1 AA.' };
-                              return { note: 'AI fixes remaining violations while deterministic rules catch AI-introduced errors.', why: 'The loop alternates AI fixes with rule-based cleanup — each catches what the other misses.' };
+                              if (/Verif|check/i.test(stepText)) return { what: 'Checking that each round of fixes actually improved the document.', why: 'After every fix pass, we verify the changes helped and didn\'t accidentally break something else. If a fix made things worse, it gets automatically rolled back.' };
+                              if (/surg|micro/i.test(stepText)) return { what: 'Making precise, targeted fixes — adding image descriptions, fixing heading order, labeling form fields.', why: 'Each fix addresses one specific barrier. Adding alt text to an image means a blind student now knows what the picture shows. Fixing heading order means they can jump between sections like sighted students flip through pages.' };
+                              if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'No remaining accessibility barriers detected!', why: 'Your document now meets WCAG 2.1 AA — the standard required by the ADA and used by schools, universities, and government agencies. A student using any assistive technology should be able to read and navigate it.' };
+                              return { what: 'Fixing remaining accessibility barriers — missing labels, broken headings, low contrast text.', why: 'Each pass addresses issues like: images without descriptions (blind students can\'t see them), headings out of order (confusing navigation), text too light to read (affects students with low vision), and form fields without labels (unusable for screen reader users).' };
                             }
                             return null;
                           };
@@ -51596,9 +51596,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 })}
                               </div>
                               {context && (
-                                <div className="text-[10px] bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 space-y-0.5">
-                                  <div className="text-slate-700 font-medium">{context.note}</div>
-                                  <div className="text-slate-500 italic">Why: {context.why}</div>
+                                <div className="text-[10px] bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl px-4 py-3 border border-slate-200 space-y-1.5">
+                                  <div className="text-slate-800 font-semibold leading-relaxed">🔄 {context.what}</div>
+                                  <div className="text-slate-600 leading-relaxed border-t border-slate-200 pt-1.5">💡 <span className="font-medium">Why this matters:</span> {context.why}</div>
                                 </div>
                               )}
                             </div>

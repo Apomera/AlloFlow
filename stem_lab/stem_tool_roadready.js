@@ -4188,22 +4188,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 roof.position.set(-bLen * 0.05, bH + cabH / 2 + 0.18, 0);
                 cg.add(roof);
               }
-              // Windshield + rear window (all types except bus)
+              // Windshield + rear window (all types except bus) — improved glass
               if (!isBus) {
-                var glassMat = new T.MeshBasicMaterial({ color: 0x1a2a3a, transparent: true, opacity: 0.6 });
-                var fwGeo = new T.PlaneGeometry(isVan ? 0.5 : 0.32, 0.78);
-                var fw = new T.Mesh(fwGeo, glassMat);
-                fw.position.set(bLen * 0.2, bH + 0.18, 0);
-                fw.rotation.y = Math.PI / 2;
+                var tGlassMat = new T.MeshBasicMaterial({ color: 0x4488aa, transparent: true, opacity: 0.4, side: T.DoubleSide });
+                // Front windshield (thin box for thickness)
+                var fwGeo = new T.BoxGeometry(0.02, isVan ? 0.45 : 0.3, 0.72);
+                var fw = new T.Mesh(fwGeo, tGlassMat);
+                fw.position.set(bLen * 0.22, bH + 0.18, 0);
                 fw.rotation.z = isVan ? -0.05 : -0.2;
                 cg.add(fw);
                 if (!isVan) {
-                  var rwGeo = new T.PlaneGeometry(0.28, 0.78);
-                  var rw = new T.Mesh(rwGeo, glassMat);
-                  rw.position.set(-bLen * 0.3, bH + 0.18, 0);
-                  rw.rotation.y = -Math.PI / 2;
-                  rw.rotation.z = 0.2;
+                  // Rear windshield
+                  var rwGeo = new T.BoxGeometry(0.02, 0.25, 0.68);
+                  var rw = new T.Mesh(rwGeo, tGlassMat);
+                  rw.position.set(-bLen * 0.28, bH + 0.18, 0);
+                  rw.rotation.z = 0.15;
                   cg.add(rw);
+                  // Side windows
+                  var tsideGeo = new T.BoxGeometry(bLen * 0.3, 0.2, 0.02);
+                  var tsideL = new T.Mesh(tsideGeo, tGlassMat);
+                  tsideL.position.set(-bLen * 0.05, bH + 0.15, 0.44);
+                  cg.add(tsideL);
+                  var tsideR = new T.Mesh(tsideGeo, tGlassMat);
+                  tsideR.position.set(-bLen * 0.05, bH + 0.15, -0.44);
+                  cg.add(tsideR);
                 }
               }
               // Wheels (4)
