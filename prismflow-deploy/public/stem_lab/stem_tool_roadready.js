@@ -2846,25 +2846,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           road.receiveShadow = true;
           scene.add(road);
 
-          // ── Center line dashes ──
+          // ── Center line dashes (follow road curve) ──
           var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+          var isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
+          var isHwyCurve = currentScenario.id === 'highway';
           for (var di = -MAP_SIZE; di < MAP_SIZE; di += 3) {
             var dashGeo = new T.PlaneGeometry(0.15, 1.5);
             var dash = new T.Mesh(dashGeo, dashMat);
             dash.rotation.x = -Math.PI / 2;
-            dash.position.set(centerX - MAP_SIZE / 2, 0.02, di);
+            // Calculate road center at this Y position (accounting for curves)
+            var dashCenterX = centerX;
+            var mapY = di + MAP_SIZE / 2; // convert world Z back to map Y
+            if (isRuralCurve) dashCenterX = centerX + Math.round(Math.sin(mapY * 0.12) * 5);
+            else if (isHwyCurve) dashCenterX = centerX + Math.round(Math.sin(mapY * 0.06) * 3);
+            dash.position.set(dashCenterX - MAP_SIZE / 2, 0.02, di);
+            // Rotate dash to align with curve direction
+            if (isRuralCurve || isHwyCurve) {
+              var nextY = mapY + 1;
+              var nextCX = isRuralCurve ? centerX + Math.sin(nextY * 0.12) * 5 : centerX + Math.sin(nextY * 0.06) * 3;
+              var curCX = isRuralCurve ? centerX + Math.sin(mapY * 0.12) * 5 : centerX + Math.sin(mapY * 0.06) * 3;
+              dash.rotation.z = Math.atan2(nextCX - curCX, 1); // angle to follow curve
+            }
             scene.add(dash);
           }
 
-          // ── Edge lines (white solid) ──
+          // ── Edge lines (white solid, follow curves) ──
           var edgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
-          [-3.3, 3.3].forEach(function(offset) {
-            var edgeGeo = new T.PlaneGeometry(0.12, MAP_SIZE * 2);
-            var edge = new T.Mesh(edgeGeo, edgeMat);
-            edge.rotation.x = -Math.PI / 2;
-            edge.position.set(centerX - MAP_SIZE / 2 + offset, 0.02, 0);
-            scene.add(edge);
-          });
+          if (isRuralCurve || isHwyCurve) {
+            // Segmented edge lines that follow the curve
+            [-3.3, 3.3].forEach(function(offset) {
+              for (var ei = -MAP_SIZE; ei < MAP_SIZE; ei += 2) {
+                var edgeGeo = new T.PlaneGeometry(0.1, 2.1);
+                var edge = new T.Mesh(edgeGeo, edgeMat);
+                edge.rotation.x = -Math.PI / 2;
+                var emapY = ei + MAP_SIZE / 2;
+                var eCX = isRuralCurve ? centerX + Math.sin(emapY * 0.12) * 5 : centerX + Math.sin(emapY * 0.06) * 3;
+                edge.position.set(eCX - MAP_SIZE / 2 + offset, 0.02, ei);
+                scene.add(edge);
+              }
+            });
+          } else {
+            // Straight roads: single long edge line
+            [-3.3, 3.3].forEach(function(offset) {
+              var edgeGeo = new T.PlaneGeometry(0.12, MAP_SIZE * 2);
+              var edge = new T.Mesh(edgeGeo, edgeMat);
+              edge.rotation.x = -Math.PI / 2;
+              edge.position.set(centerX - MAP_SIZE / 2 + offset, 0.02, 0);
+              scene.add(edge);
+            });
+          }
 
           // ── Sidewalks (concrete strips between road and grass) ──
           var sidewalkMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc0c8d0 : 0xb0a890 });
@@ -3783,12 +3813,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           needleMesh.geometry.translate(0, 0.045, 0); // pivot at bottom
           dashGroup.add(needleMesh);
           // RPM gauge (smaller, right side)
+          // RPM gauge materials (separate from speedometer canvas)
+          var rpmBgMat = new T.MeshBasicMaterial({ color: 0x0a0a14 });
+          var rpmRingMat2 = new T.MeshBasicMaterial({ color: 0x334155, side: T.DoubleSide });
           var rpmBgGeo = new T.CircleGeometry(0.08, 20);
-          var rpmBg = new T.Mesh(rpmBgGeo, gaugeBgMat);
+          var rpmBg = new T.Mesh(rpmBgGeo, rpmBgMat);
           rpmBg.position.set(0.25, -0.28, -0.68);
           dashGroup.add(rpmBg);
           var rpmRingGeo = new T.RingGeometry(0.065, 0.08, 20);
-          var rpmRing = new T.Mesh(rpmRingGeo, gaugeRingMat);
+          var rpmRing = new T.Mesh(rpmRingGeo, rpmRingMat2);
           rpmRing.position.set(0.25, -0.28, -0.679);
           dashGroup.add(rpmRing);
           var rpmNeedleGeo = new T.BoxGeometry(0.004, 0.06, 0.002);
@@ -4073,7 +4106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
 
-          // High beam toggle — adjust SpotLight range + intensity
+          // High beam toggle + headlight direction tracking
           if (s3.headlightL && s3.headlightR) {
             var highBeams = d.highBeams;
             var hlDist = highBeams ? 50 : 25;
@@ -4085,6 +4118,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.headlightR.distance = hlDist;
             s3.headlightR.angle = hlAngle;
             s3.headlightR.intensity = hlInt;
+            // Rotate headlight targets to match car heading (so light follows the road)
+            var hlTargetDist = 15;
+            s3.headlightL.target.position.set(
+              carWorldX + Math.cos(car.heading) * hlTargetDist + Math.sin(car.heading) * 0.3,
+              0,
+              carWorldZ + Math.sin(car.heading) * hlTargetDist - Math.cos(car.heading) * 0.3
+            );
+            s3.headlightR.target.position.set(
+              carWorldX + Math.cos(car.heading) * hlTargetDist - Math.sin(car.heading) * 0.3,
+              0,
+              carWorldZ + Math.sin(car.heading) * hlTargetDist + Math.cos(car.heading) * 0.3
+            );
           }
 
           // 3D Dashboard updates
@@ -5546,7 +5591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             className: 'touch-controls' },
             h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, '⚙ ' + (gearRef.current || 'D')),
+            }, '⚙ Shift Gear'),
             h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; },
               style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '◄ Signal'),
