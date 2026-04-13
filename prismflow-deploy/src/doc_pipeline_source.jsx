@@ -350,11 +350,9 @@ var createDocPipeline = function(deps) {
         return html;
       }
     }
-    // Multi-chunk: fix each fragment with strict per-chunk integrity
-    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks`);
-    const fixed = new Array(chunks.length);
-    for (let ci = 0; ci < chunks.length; ci++) {
-      const part = chunks[ci];
+    // Multi-chunk: fix ALL fragments in PARALLEL for speed
+    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (parallel)`);
+    const fixed = await Promise.all(chunks.map(async (part, ci) => {
       const isFirst = ci === 0, isLast = ci === chunks.length - 1;
       const fragNote = isFirst
         ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
@@ -364,38 +362,32 @@ var createDocPipeline = function(deps) {
       const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
       try {
         const out = stripFence(await callGemini(prompt, true));
-        // Per-chunk integrity: output must not shrink by more than 5% text content
         if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
-          fixed[ci] = out;
+          return out;
         } else if (part.length > 5000) {
-          // Truncation likely (MAX_TOKENS) — auto-split this chunk and retry with halves
-          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} truncated (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — splitting in half and retrying`);
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} truncated — splitting in half and retrying`);
           const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
-          const halfFixed = [];
-          for (let hi = 0; hi < halfChunks.length; hi++) {
+          const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
             try {
-              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${halfChunks[hi]}\n"""\n\nReturn ONLY the fixed fragment.`;
+              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment.`;
               const halfOut = stripFence(await callGemini(halfPrompt, true));
-              if (halfOut && halfOut.length >= halfChunks[hi].length * 0.85 && textCharCount(halfOut) >= textCharCount(halfChunks[hi]) * 0.9) {
-                halfFixed.push(halfOut);
-              } else {
-                warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} also rejected — keeping original half`);
-                halfFixed.push(halfChunks[hi]);
+              if (halfOut && halfOut.length >= half.length * 0.85 && textCharCount(halfOut) >= textCharCount(half) * 0.9) {
+                return halfOut;
               }
-            } catch (he) {
-              halfFixed.push(halfChunks[hi]);
-            }
-          }
-          fixed[ci] = halfFixed.join('');
+              warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} also rejected — keeping original half`);
+              return half;
+            } catch (he) { return half; }
+          }));
+          return halfResults.join('');
         } else {
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
-          fixed[ci] = part;
+          return part;
         }
       } catch (e) {
         warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} failed:`, e?.message);
-        fixed[ci] = part;
+        return part;
       }
-    }
+    }));
     return fixed.join('');
   };
 
@@ -2656,7 +2648,7 @@ Return ONLY JSON:
   const auditOutputAccessibility = async (htmlContent) => {
     if (!callGemini || !htmlContent) return null;
     try {
-      const CHUNK_SIZE = 8000;
+      const CHUNK_SIZE = 16000; // increased with maxOutputTokens=65536
       const OVERLAP = 400;
       // Short documents: single audit pass
       if (htmlContent.length <= CHUNK_SIZE) {
