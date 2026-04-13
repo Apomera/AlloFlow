@@ -4822,6 +4822,40 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       _pipeStepEnd(1, extractedText.length + ' chars extracted');
+
+      // ── Listen for user alt text edits from the image review panel ──
+      var _userAltTextEdits = {};
+      var _onAltTextEdit = function(e) {
+        if (e.detail && typeof e.detail.index === 'number') {
+          _userAltTextEdits[e.detail.index] = e.detail.altText;
+          if (extractedImages[e.detail.index]) extractedImages[e.detail.index].description = e.detail.altText;
+        }
+      };
+      window.addEventListener('alloflow:alt-text-edited', _onAltTextEdit);
+
+      // ── Emit extracted data for UI to show during wait ──
+      // Images + metadata are available now; user can review/edit alt text while Steps 2-4 run
+      try {
+        setTimeout(function() {
+          window.dispatchEvent(new CustomEvent('alloflow:extraction-complete', {
+            detail: {
+              images: extractedImages.map(function(img, i) {
+                return { index: i, description: img.description || '', src: img.generatedSrc || null, type: img.type || 'content', educationalPurpose: img.educationalPurpose || '', isRegenerated: !!img.isRegenerated, cropData: img.cropData || null };
+              }),
+              metadata: {
+                fileName: _fileName,
+                pageCount: pageCount,
+                extractedChars: extractedText.length,
+                hasImages: extractedImages.length > 0,
+                hasTables: /\btable\b/i.test(extractedText),
+                language: /[\u0600-\u06FF]/.test(extractedText) ? 'ar' : /[\u4E00-\u9FFF]/.test(extractedText) ? 'zh' : /[\u0400-\u04FF]/.test(extractedText) ? 'ru' : 'en',
+              },
+              timestamp: Date.now(),
+            }
+          }));
+        }, 0);
+      } catch(e) { /* non-blocking */ }
+
       // ── Step 2: Transform to accessible HTML via JSON data pipeline ──
       _pipeStepStart(2);
       // Strategy: AI extracts structured JSON (content + style metadata), then

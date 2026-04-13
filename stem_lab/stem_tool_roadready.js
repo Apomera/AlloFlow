@@ -548,10 +548,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Chunks generate on-the-fly as the player drives north or south.
   var CHUNK_SIZE = 32;
   var BIOMES = ['residential', 'commercial', 'rural', 'suburban', 'industrial'];
+  // Logical biome progression: creates neighborhoods that make geographic sense
+  // Pattern repeats every ~12 chunks: highway → suburban → residential → commercial → residential → rural → ...
+  var BIOME_PROGRESSION = ['suburban', 'suburban', 'residential', 'residential', 'commercial', 'residential', 'residential', 'suburban', 'rural', 'rural', 'rural', 'industrial'];
 
   function generateChunk(chunkIndex, seed, centerX) {
     var rng = seededRandom(seed + chunkIndex * 7919);
-    var biome = BIOMES[Math.floor(rng() * BIOMES.length)];
+    // Use progression for coherent neighborhoods, with seed-based variation
+    var progIndex = ((chunkIndex % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
+    var biome = BIOME_PROGRESSION[progIndex];
+    // 20% chance to override with a random biome for variety
+    if (rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
     var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null };
     // Generate cell grid for this chunk
     for (var y = 0; y < CHUNK_SIZE; y++) {
@@ -562,7 +569,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Road through center with possible curve
     var curveAmp = biome === 'rural' ? 5 : biome === 'suburban' ? 2 : 0;
     var curveFreq = biome === 'rural' ? 0.12 : 0.06;
-    var hasIntersection = rng() < 0.6; // 60% chance of a cross street (more explorable)
+    // Intersections: ~40% chance but never two in a row (guaranteed gap)
+    var hasIntersection = rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3);
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
       var curveOffset = Math.round(Math.sin((chunkIndex * CHUNK_SIZE + cy) * curveFreq) * curveAmp);
@@ -2126,12 +2134,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Low-speed brake clamping (works for analog gamepad triggers too)
           if (brakeInput > 0.2 && Math.abs(car.speed) < 1.5) car.speed *= 0.82;
           if (brakeInput > 0.2 && Math.abs(car.speed) < 0.3) car.speed = 0;
-          // Engine braking / coast deceleration (lift off gas = gradual slow)
+          // Engine braking / coast deceleration
+          // Real cars: drag + rolling resistance already slow the car naturally.
+          // This adds a small engine compression drag when off-throttle (much less than before).
+          // A real car at 60 mph with foot off gas coasts for ~30+ seconds before stopping.
           if (gear === 'D' && throttleInput === 0 && brakeInput === 0 && car.speed > 0.5) {
-            car.speed *= (1 - dt * 0.3); // gentle coast deceleration
+            car.speed *= (1 - dt * 0.05); // very gentle — mostly physics drag handles deceleration
           }
           if (gear === 'R' && throttleInput === 0 && brakeInput === 0 && car.speed < -0.5) {
-            car.speed *= (1 - dt * 0.4); // reverse coasts to stop faster
+            car.speed *= (1 - dt * 0.1); // reverse coasts a bit faster
           }
           // Clamp: in D, no going below 0; in R, no going above 0
           if (gear === 'D' && car.speed < 0) car.speed = 0;
@@ -2388,10 +2399,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Move
             t.y += Math.sin(t.heading) * t.speed * dt / 5;
             t.x += Math.cos(t.heading) * t.speed * dt / 5;
-            // Wrap (different axis for cross-street traffic)
+            // Wrap / respawn traffic relative to player position
+            var playerY = carRef.current.y;
             if (t.crossStreet) {
               if (t.x < -2) t.x = MAP_SIZE + 2;
               if (t.x > MAP_SIZE + 2) t.x = -2;
+            } else if (infiniteWorldRef.current) {
+              // Infinite world: respawn traffic that gets too far from player
+              if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
+                // Respawn ahead or behind the player
+                var newDir = Math.random() < 0.5 ? 1 : -1;
+                t.y = playerY + newDir * (10 + Math.random() * MAP_SIZE * 0.4);
+                t.x = Math.floor(MAP_SIZE / 2) + (t.heading > 0 ? -1.5 : 1.5);
+                t.speed = (scn.speedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
+              }
             } else {
               if (t.y < -2) t.y = MAP_SIZE + 2;
               if (t.y > MAP_SIZE + 2) t.y = -2;
@@ -4760,7 +4781,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var currentChunk = Math.floor(car.y / CHUNK_SIZE);
             if (!s3._loadedChunks) s3._loadedChunks = {};
             // Load chunks within range (-2 to +2 from current)
-            for (var ci = currentChunk - 2; ci <= currentChunk + 2; ci++) {
+            // Load chunks 4 ahead and 2 behind (seamless — you never see them pop in)
+            for (var ci = currentChunk - 2; ci <= currentChunk + 4; ci++) {
               if (s3._loadedChunks[ci]) continue;
               var chunk = iw.getChunk(ci);
               var chunkGroup = new T.Group();
@@ -4877,7 +4899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Unload distant chunks
             Object.keys(s3._loadedChunks).forEach(function(key) {
               var ki = parseInt(key);
-              if (Math.abs(ki - currentChunk) > 3) {
+              if (ki < currentChunk - 3 || ki > currentChunk + 5) {
                 var cg = s3._loadedChunks[ki];
                 if (cg) {
                   cg.traverse(function(obj) { if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
