@@ -395,6 +395,81 @@ var createDocPipeline = function(deps) {
     return fixed.join('');
   };
 
+  // ── Heuristic text structuring (RECITATION fallback) ──
+  // When Vision refuses to process copyrighted content, structure the pre-extracted text
+  // using formatting heuristics. Not as accurate as Vision, but preserves all content.
+  const structureTextHeuristic = (rawText, startPage, endPage) => {
+    if (!rawText || rawText.trim().length < 10) return [];
+    const blocks = [];
+    const lines = rawText.split(/\n/);
+    let currentParagraph = [];
+
+    const flushParagraph = () => {
+      if (currentParagraph.length > 0) {
+        const text = currentParagraph.join(' ').trim();
+        if (text.length > 0) blocks.push({ type: 'p', text: text });
+        currentParagraph = [];
+      }
+    };
+
+    for (let li = 0; li < lines.length; li++) {
+      const line = lines[li].trim();
+      if (!line) { flushParagraph(); continue; }
+
+      // Detect headings: short lines (< 80 chars), often ALL CAPS or Title Case, followed by content
+      const isShort = line.length < 80;
+      const isAllCaps = line === line.toUpperCase() && /[A-Z]/.test(line) && line.length > 3;
+      const isTitleCase = /^[A-Z][a-z]/.test(line) && line.split(' ').filter(w => /^[A-Z]/.test(w)).length >= Math.ceil(line.split(' ').length * 0.6);
+      const nextLine = li + 1 < lines.length ? lines[li + 1].trim() : '';
+      const nextIsContent = nextLine.length > 80 || (nextLine.length > 20 && /^[a-z]/.test(nextLine));
+      const hasNumber = /^(?:Chapter|Section|Part|Unit|\d+[\.\):])\s/i.test(line);
+
+      if (isShort && (isAllCaps || hasNumber) && line.length > 3) {
+        flushParagraph();
+        blocks.push({ type: isAllCaps && line.length < 40 ? 'h2' : 'h3', text: line, id: line.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 40) });
+        continue;
+      }
+      if (isShort && isTitleCase && nextIsContent && !line.endsWith('.') && line.length > 5) {
+        flushParagraph();
+        blocks.push({ type: 'h3', text: line, id: line.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 40) });
+        continue;
+      }
+
+      // Detect list items: lines starting with bullets, dashes, numbers, or letters
+      if (/^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s/.test(line) || /^[a-z]\)\s/i.test(line)) {
+        flushParagraph();
+        // Collect consecutive list items
+        const items = [line.replace(/^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s*/, '').replace(/^[a-z]\)\s*/i, '')];
+        while (li + 1 < lines.length && /^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s|^[a-z]\)\s/i.test(lines[li + 1].trim())) {
+          li++;
+          items.push(lines[li].trim().replace(/^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s*/, '').replace(/^[a-z]\)\s*/i, ''));
+        }
+        blocks.push({ type: 'ul', items: items });
+        continue;
+      }
+      if (/^\d+[\.\)]\s/.test(line)) {
+        flushParagraph();
+        const items = [line.replace(/^\d+[\.\)]\s*/, '')];
+        while (li + 1 < lines.length && /^\d+[\.\)]\s/.test(lines[li + 1].trim())) {
+          li++;
+          items.push(lines[li].trim().replace(/^\d+[\.\)]\s*/, ''));
+        }
+        blocks.push({ type: 'ol', items: items });
+        continue;
+      }
+
+      // Everything else is paragraph text
+      currentParagraph.push(line);
+    }
+    flushParagraph();
+
+    // If we got blocks, add a note that this section used heuristic structuring
+    if (blocks.length > 0) {
+      blocks.unshift({ type: 'rawhtml', html: '<!-- Pages ' + startPage + '-' + endPage + ': structured from extracted text (Vision unavailable) -->' });
+    }
+    return blocks;
+  };
+
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
   const ensurePdfJsLoaded = async () => {
@@ -5038,10 +5113,114 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               }
             }
           } catch (chunkErr) {
-            warnLog(`[PDF Fix] Chunk ${i + 1} failed:`, chunkErr);
+            const isRecitation = chunkErr && chunkErr.message && /RECITATION/i.test(chunkErr.message);
+            warnLog(`[PDF Fix] Chunk ${i + 1} failed${isRecitation ? ' (RECITATION — copyrighted content detected)' : ''}:`, chunkErr.message);
+
+            // Extract the pre-extracted text for these pages
             const fallbackStart = Math.floor((i / transformChunks) * extractedText.length);
             const fallbackEnd = Math.floor(((i + 1) / transformChunks) * extractedText.length);
-            return [{ type: 'p', text: `[Pages ${startPg}-${endPg}] ` + extractedText.substring(fallbackStart, fallbackEnd).substring(0, 3000) }];
+            const chunkText = extractedText.substring(fallbackStart, fallbackEnd);
+
+            // ── Fallback Layer 1: Heuristic structuring from pre-extracted text ──
+            // Detects headings, lists, paragraphs from formatting patterns. No API calls.
+            const heuristicBlocks = structureTextHeuristic(chunkText, startPg, endPg);
+            if (heuristicBlocks.length > 2) {
+              warnLog(`[PDF Fix] Chunk ${i + 1}: heuristic fallback produced ${heuristicBlocks.length} blocks from extracted text`);
+              return heuristicBlocks;
+            }
+
+            // ── Fallback Layer 2: Structure-only Vision prompt ──
+            // Ask Vision for block types/boundaries WITHOUT reproducing text content.
+            // This avoids RECITATION because Vision doesn't output copyrighted text.
+            if (isRecitation) {
+              try {
+                warnLog(`[PDF Fix] Chunk ${i + 1}: trying structure-only Vision prompt (no text reproduction)`);
+                const structureMap = await callGeminiVision(
+                  `Look at pages ${startPg}-${endPg} of this PDF. DO NOT reproduce any text content.\n\n` +
+                  `Instead, return a JSON array describing the STRUCTURE ONLY:\n` +
+                  `[{"type":"h2","lineStart":"first 5 words...","lineEnd":"last 3 words"},\n` +
+                  ` {"type":"p","lineStart":"first 5 words...","lineEnd":"last 3 words"},\n` +
+                  ` {"type":"table","caption":"brief description","cols":4,"rows":10},\n` +
+                  ` {"type":"ul","count":5},\n` +
+                  ` {"type":"image","description":"what the image shows"}]\n\n` +
+                  `For each block, include only the first few words and last few words so we can match it to text we already have. DO NOT include full text content.\n\n` +
+                  `Return ONLY the JSON array.`,
+                  _base64, _mimeType
+                );
+                if (structureMap) {
+                  // Parse structure map and merge with extracted text
+                  let structBlocks = [];
+                  try {
+                    let cleaned = structureMap.trim();
+                    if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); }
+                    const fi = cleaned.indexOf('['); if (fi >= 0) cleaned = cleaned.substring(fi);
+                    const li = cleaned.lastIndexOf(']'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
+                    const parsed = JSON.parse(cleaned);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                      // Use structure types from Vision but fill text from extracted content
+                      let textPos = 0;
+                      const textLines = chunkText.split(/\n/).filter(l => l.trim());
+                      parsed.forEach(block => {
+                        if (block.type === 'image') {
+                          structBlocks.push({ type: 'image', description: block.description || 'Image', alt: block.description || 'Image' });
+                        } else if (block.type === 'table') {
+                          structBlocks.push({ type: 'p', text: '[Table: ' + (block.caption || 'Data table') + ']' });
+                        } else if ((block.type === 'ul' || block.type === 'ol') && block.count) {
+                          const items = [];
+                          for (let ti = 0; ti < block.count && textPos < textLines.length; ti++) {
+                            items.push(textLines[textPos++] || '');
+                          }
+                          structBlocks.push({ type: block.type, items: items });
+                        } else {
+                          // Match by lineStart if available
+                          if (block.lineStart && textPos < textLines.length) {
+                            const startWords = block.lineStart.toLowerCase();
+                            // Find the line that starts with these words
+                            let matched = false;
+                            for (let si = textPos; si < Math.min(textPos + 10, textLines.length); si++) {
+                              if (textLines[si].toLowerCase().startsWith(startWords.substring(0, 15))) {
+                                // Collect lines until lineEnd or next heading
+                                let blockText = textLines[si];
+                                textPos = si + 1;
+                                if (block.type === 'p') {
+                                  while (textPos < textLines.length && textLines[textPos].length > 30 && !/^[A-Z][A-Z\s]{3,}$/.test(textLines[textPos])) {
+                                    blockText += ' ' + textLines[textPos++];
+                                  }
+                                }
+                                structBlocks.push({ type: block.type || 'p', text: blockText, id: block.type && block.type.startsWith('h') ? blockText.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 40) : undefined });
+                                matched = true;
+                                break;
+                              }
+                            }
+                            if (!matched) {
+                              structBlocks.push({ type: block.type || 'p', text: textLines[textPos++] || '' });
+                            }
+                          } else if (textPos < textLines.length) {
+                            structBlocks.push({ type: block.type || 'p', text: textLines[textPos++] || '' });
+                          }
+                        }
+                      });
+                      // Add remaining text as paragraphs
+                      while (textPos < textLines.length) {
+                        structBlocks.push({ type: 'p', text: textLines[textPos++] });
+                      }
+                    }
+                  } catch(parseErr) {
+                    warnLog('[PDF Fix] Structure map parse failed:', parseErr.message);
+                  }
+                  if (structBlocks.length > 2) {
+                    warnLog(`[PDF Fix] Chunk ${i + 1}: structure-only Vision fallback produced ${structBlocks.length} blocks`);
+                    return structBlocks;
+                  }
+                }
+              } catch(structErr) {
+                warnLog(`[PDF Fix] Structure-only Vision also failed for chunk ${i + 1}:`, structErr.message);
+              }
+            }
+
+            // ── Final fallback: return heuristic blocks or raw text ──
+            if (heuristicBlocks.length > 0) return heuristicBlocks;
+            return [{ type: 'p', text: chunkText.substring(0, 5000) }];
           }
           return [];
         };

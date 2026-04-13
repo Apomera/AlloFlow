@@ -2846,13 +2846,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           road.receiveShadow = true;
           scene.add(road);
 
-          // ── Center line dashes ──
+          // ── Center line dashes (follow road curve) ──
           var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+          var isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
+          var isHwyCurve = currentScenario.id === 'highway';
           for (var di = -MAP_SIZE; di < MAP_SIZE; di += 3) {
             var dashGeo = new T.PlaneGeometry(0.15, 1.5);
             var dash = new T.Mesh(dashGeo, dashMat);
             dash.rotation.x = -Math.PI / 2;
-            dash.position.set(centerX - MAP_SIZE / 2, 0.02, di);
+            // Calculate road center at this Y position (accounting for curves)
+            var dashCenterX = centerX;
+            var mapY = di + MAP_SIZE / 2; // convert world Z back to map Y
+            if (isRuralCurve) dashCenterX = centerX + Math.round(Math.sin(mapY * 0.12) * 5);
+            else if (isHwyCurve) dashCenterX = centerX + Math.round(Math.sin(mapY * 0.06) * 3);
+            dash.position.set(dashCenterX - MAP_SIZE / 2, 0.02, di);
+            // Rotate dash to align with curve direction
+            if (isRuralCurve || isHwyCurve) {
+              var nextY = mapY + 1;
+              var nextCX = isRuralCurve ? centerX + Math.sin(nextY * 0.12) * 5 : centerX + Math.sin(nextY * 0.06) * 3;
+              var curCX = isRuralCurve ? centerX + Math.sin(mapY * 0.12) * 5 : centerX + Math.sin(mapY * 0.06) * 3;
+              dash.rotation.z = Math.atan2(nextCX - curCX, 1); // angle to follow curve
+            }
             scene.add(dash);
           }
 
