@@ -562,7 +562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Road through center with possible curve
     var curveAmp = biome === 'rural' ? 5 : biome === 'suburban' ? 2 : 0;
     var curveFreq = biome === 'rural' ? 0.12 : 0.06;
-    var hasIntersection = rng() < 0.4; // 40% chance of a cross street
+    var hasIntersection = rng() < 0.6; // 60% chance of a cross street (more explorable)
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
       var curveOffset = Math.round(Math.sin((chunkIndex * CHUNK_SIZE + cy) * curveFreq) * curveAmp);
@@ -573,18 +573,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (rx >= 0 && rx < MAP_SIZE) chunk.cells[cy][rx] = 0;
       }
       if (roadCenter >= 0 && roadCenter < MAP_SIZE) chunk.cells[cy][roadCenter] = 3;
-      // Cross street at intersection
-      if (hasIntersection && Math.abs(cy - intersectionY) < 4) {
+      // Cross street at intersection — proper road with centerline
+      if (hasIntersection && Math.abs(cy - intersectionY) < 3) {
         for (var cx = 0; cx < MAP_SIZE; cx++) {
-          if (Math.abs(cx - roadCenter) > roadWidth + 1) {
-            if (chunk.cells[cy][cx] === 2) chunk.cells[cy][cx] = 0;
+          // Road surface across the full width
+          if (chunk.cells[cy][cx] === 2) chunk.cells[cy][cx] = 0;
+        }
+        // Center line for cross street (at the intersection Y middle)
+        if (cy === intersectionY) {
+          for (var clx = 0; clx < MAP_SIZE; clx++) {
+            if (Math.abs(clx - roadCenter) > roadWidth + 2) {
+              chunk.cells[cy][clx] = 3; // center line on cross street
+            }
           }
         }
       }
     }
-    // Buildings based on biome
+    // Buildings based on biome — avoid placing on/near cross streets
     var buildingDensity = biome === 'commercial' ? 0.2 : biome === 'residential' ? 0.08 : biome === 'suburban' ? 0.06 : biome === 'industrial' ? 0.12 : 0.02;
     for (var by = 2; by < CHUNK_SIZE - 2; by++) {
+      // Skip rows near the cross street intersection
+      if (hasIntersection && Math.abs(by - intersectionY) < 5) continue;
       for (var bx = 0; bx < MAP_SIZE; bx++) {
         if (chunk.cells[by][bx] === 2 && rng() < buildingDensity) {
           var nearRoad = false;
@@ -602,9 +611,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (chunk.cells[ty][tx] === 2 && rng() < treeDensity) chunk.cells[ty][tx] = 5;
       }
     }
-    // Store metadata
+    // Store metadata for 3D rendering and signal placement
     chunk.hasIntersection = hasIntersection;
     chunk.intersectionY = intersectionY;
+    chunk.roadCenter = centerX; // base center (curves added per-row)
     chunk.curveAmp = curveAmp;
     chunk.curveFreq = curveFreq;
     return chunk;
@@ -4789,7 +4799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               }
-              // Road surface for this chunk
+              // Road surface for this chunk (main N-S road)
               var roadGeo = new T.PlaneGeometry(7, CHUNK_SIZE);
               var roadMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
               var road = new T.Mesh(roadGeo, roadMat);
@@ -4797,10 +4807,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               road.position.set(0, 0.011, chunkWorldZ + CHUNK_SIZE / 2);
               road.receiveShadow = true;
               chunkGroup.add(road);
-              // Biome label (debug — can remove later)
+              // Cross street road surface (if intersection)
+              if (chunk.hasIntersection) {
+                var crossZ = chunkWorldZ + chunk.intersectionY;
+                var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, 6);
+                var crossRoad = new T.Mesh(crossRoadGeo, roadMat);
+                crossRoad.rotation.x = -Math.PI / 2;
+                crossRoad.position.set(0, 0.012, crossZ);
+                crossRoad.receiveShadow = true;
+                chunkGroup.add(crossRoad);
+                // Cross street center dashes
+                var crossDashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                for (var cdx = -MAP_SIZE / 2; cdx < MAP_SIZE / 2; cdx += 3) {
+                  if (Math.abs(cdx) < 5) continue; // skip over main road intersection
+                  var cdGeo = new T.PlaneGeometry(1.5, 0.12);
+                  var cd = new T.Mesh(cdGeo, crossDashMat);
+                  cd.rotation.x = -Math.PI / 2;
+                  cd.position.set(cdx, 0.02, crossZ);
+                  chunkGroup.add(cd);
+                }
+                // Traffic light or stop sign at the intersection
+                var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
+                // Overhead traffic light on the cross street
+                var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
+                sigPole.position.set(4.0, 2.1, crossZ);
+                chunkGroup.add(sigPole);
+                var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
+                sigArm.position.set(1.8, 4.0, crossZ);
+                sigArm.rotation.z = Math.PI / 2;
+                chunkGroup.add(sigArm);
+                var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
+                sigHousing.position.set(0, 3.5, crossZ);
+                chunkGroup.add(sigHousing);
+                // Crosswalk stripes
+                var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                for (var cwi = -3; cwi <= 3; cwi++) {
+                  var cwGeo = new T.PlaneGeometry(0.25, 0.7);
+                  var cw = new T.Mesh(cwGeo, cwMat);
+                  cw.rotation.x = -Math.PI / 2;
+                  cw.position.set(cwi * 0.7, 0.022, crossZ - 3.5);
+                  chunkGroup.add(cw);
+                }
+                // Stop line
+                var slGeo = new T.PlaneGeometry(6, 0.2);
+                var sl = new T.Mesh(slGeo, cwMat);
+                sl.rotation.x = -Math.PI / 2;
+                sl.position.set(0, 0.021, crossZ - 4);
+                chunkGroup.add(sl);
+              }
               s3.scene.add(chunkGroup);
               s3._loadedChunks[ci] = chunkGroup;
             }
+            // Add traffic signals at chunk intersections (for physics compliance)
+            if (chunk.hasIntersection && !chunk._signalAdded) {
+              chunk._signalAdded = true;
+              var sigWorldY = ci * CHUNK_SIZE + chunk.intersectionY;
+              var sigX = chunk.roadCenter;
+              // Alternate between stop signs and traffic lights
+              var isLight = ci % 2 === 0;
+              signalsRef.current.push({
+                x: sigX, y: sigWorldY, type: isLight ? 'light' : 'stop',
+                state: isLight ? 'green' : 'stop',
+                timer: Math.random() * 4, greenDur: 8, yellowDur: 3, redDur: 6,
+                _lastY: null, _stopped: false, _violated: false,
+                _chunk: ci // track which chunk this signal belongs to
+              });
+            }
+
             // Unload distant chunks
             Object.keys(s3._loadedChunks).forEach(function(key) {
               var ki = parseInt(key);
@@ -4811,6 +4884,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   s3.scene.remove(cg);
                 }
                 delete s3._loadedChunks[ki];
+                // Remove signals from this chunk
+                signalsRef.current = signalsRef.current.filter(function(sig) { return sig._chunk !== ki; });
               }
             });
           }
