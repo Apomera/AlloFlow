@@ -298,7 +298,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = 8000; // safe with maxOutputTokens=32768 — gives model more context per chunk
+  const HTML_FIX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     const chunks = [];
@@ -455,6 +455,50 @@ var createDocPipeline = function(deps) {
           items.push(lines[li].trim().replace(/^\d+[\.\)]\s*/, ''));
         }
         blocks.push({ type: 'ol', items: items });
+        continue;
+      }
+
+      // Detect table-like content: lines with multiple tabs or pipes (data rows)
+      if ((line.split('\t').length >= 3 || line.split('|').length >= 3) && line.length > 10) {
+        flushParagraph();
+        var sep = line.split('\t').length >= 3 ? '\t' : '|';
+        var headerCells = line.split(sep).map(function(c) { return c.trim(); }).filter(Boolean);
+        var dataRows = [];
+        while (li + 1 < lines.length) {
+          var nextL = lines[li + 1].trim();
+          if (nextL.split(sep).length >= headerCells.length - 1 && nextL.length > 5 && !/^[-=\s|+]+$/.test(nextL)) {
+            li++;
+            dataRows.push(nextL.split(sep).map(function(c) { return c.trim(); }));
+          } else if (/^[-=\s|+]+$/.test(nextL)) {
+            li++; // skip separator lines
+          } else {
+            break;
+          }
+        }
+        if (dataRows.length > 0) {
+          blocks.push({ type: 'table', caption: '', headers: headerCells, rows: dataRows });
+        } else {
+          blocks.push({ type: 'p', text: line });
+        }
+        continue;
+      }
+
+      // Detect blockquotes: indented lines (4+ spaces or tab at start)
+      if (/^(\s{4,}|\t)/.test(lines[li]) && line.length > 20) {
+        flushParagraph();
+        var quoteLines = [line];
+        while (li + 1 < lines.length && /^(\s{4,}|\t)/.test(lines[li + 1]) && lines[li + 1].trim().length > 0) {
+          li++;
+          quoteLines.push(lines[li].trim());
+        }
+        blocks.push({ type: 'blockquote', text: quoteLines.join(' ') });
+        continue;
+      }
+
+      // Detect figure/image references: "Figure X", "Fig. X", "Image X"
+      if (/^(?:Figure|Fig\.|Image|Illustration|Diagram|Chart|Table)\s+\d/i.test(line) && line.length < 200) {
+        flushParagraph();
+        blocks.push({ type: 'image', description: line, alt: line });
         continue;
       }
 
@@ -3560,7 +3604,7 @@ HTML section ${chunkNum}/${chunks.length}:
         // ── Chunked remediation: split large documents into sections, fix each, reassemble ──
         // This prevents truncation from Gemini's output token limit (~8K tokens).
         {
-        const MAX_CHUNK = 12000; // chars per chunk (leaves room for prompt + output)
+        const MAX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
 
         if (currentHtml.length <= MAX_CHUNK) {
           // Small document: single-pass fix
@@ -5422,7 +5466,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
           if (pdfPolishPasses > 0) {
-            const POLISH_CHUNK = 8000; // safe with maxOutputTokens=32768
+            const POLISH_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
             for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
