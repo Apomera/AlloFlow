@@ -4104,7 +4104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             h('button', { 'aria-label': 'Snapshot',
               onClick: takeSnapshot,
-              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all',
+              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all',
               title: 'Save snapshot'
             }, '\uD83D\uDCF8 Snapshot')
           ),
@@ -4149,7 +4149,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               onClick: function() { upd('_activeTab', 'flashcards'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200')
             }, '\uD83C\uDCCF Cards'),
-            h('span', { className: 'ml-auto text-[10px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
+            h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
           ),
 
           // ── AI Tutor Tab ──
@@ -4176,7 +4176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 return h('button', { 'aria-label': 'Ask question',
                   key: qi,
                   onClick: function() { sendAiQuestion(q); },
-                  className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200 transition-all'
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200 transition-all'
                 }, q);
               })
             ),
@@ -4238,8 +4238,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-amber-800 text-sm' }, '\uD83C\uDFAF Anatomy Spotter Test'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2705 ' + spotterScore + '/' + spotterTotal),
-                spotterBestTime < 999 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2705 ' + spotterScore + '/' + spotterTotal),
+                spotterBestTime < 999 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
               )
             ),
             h('p', { className: 'text-xs text-slate-600 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
@@ -4255,11 +4255,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 },
                 className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm'
               }, '\uD83C\uDFAF Start Spotter Test'),
-              spotterTotal > 0 ? h('p', { className: 'text-[10px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
+              spotterTotal > 0 ? h('p', { className: 'text-[11px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
             ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
                 h('p', { className: 'text-sm font-bold text-amber-900 mb-1' }, 'What structure is marked on the figure?'),
-                h('p', { className: 'text-[10px] text-amber-600' }, 'Look for the pulsing amber crosshair on the canvas')
+                h('p', { className: 'text-[11px] text-amber-600' }, 'Look for the pulsing amber crosshair on the canvas')
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
                 spotterOptions.map(function(opt) {
@@ -4307,7 +4307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 }, 'Next Structure \u2192'),
                 h('button', { 'aria-label': 'End Test',
                   onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
-                  className: 'w-full py-1.5 rounded-lg text-[10px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all'
+                  className: 'w-full py-1.5 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all'
                 }, 'End Test')
               ) : null
             )
@@ -4317,7 +4317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           activeTab === 'pathways' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-rose-800 text-sm' }, '\uD83D\uDEE4 Physiological Pathways'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
             ),
             h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
             !activePathwayId ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
@@ -4331,9 +4331,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-lg' }, pw.icon),
                     h('span', { className: 'text-xs font-black', style: { color: pw.color } }, pw.title),
-                    isDone ? h('span', { className: 'ml-auto text-[10px] text-emerald-500 font-bold' }, '\u2713') : null
+                    isDone ? h('span', { className: 'ml-auto text-[11px] text-emerald-500 font-bold' }, '\u2713') : null
                   ),
-                  h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, pw.desc)
+                  h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, pw.desc)
                 );
               })
             ) : (function() {
@@ -4347,7 +4347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
                   h('button', { 'aria-label': 'Back',
                     onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0 }); },
-                    className: 'ml-auto text-[10px] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
+                    className: 'ml-auto text-[11px] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
                   }, '\u2190 Back')
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
@@ -4398,7 +4398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           activeTab === 'connections' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-sky-800 text-sm' }, '\uD83D\uDD17 How Body Systems Connect'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
             ),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 max-h-[500px] overflow-y-auto' },
               CONNECTIONS.map(function(conn) {
@@ -4419,14 +4419,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-base' }, conn.icon),
                     h('span', { className: 'text-xs font-black text-sky-800' }, conn.title),
-                    h('span', { className: 'ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600' },
+                    h('span', { className: 'ml-auto text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600' },
                       SYSTEMS[conn.systems[0]].icon + ' + ' + SYSTEMS[conn.systems[1]].icon
                     ),
-                    isViewed ? h('span', { className: 'text-[10px] text-emerald-500 font-bold' }, '\u2713') : null
+                    isViewed ? h('span', { className: 'text-[11px] text-emerald-500 font-bold' }, '\u2713') : null
                   ),
-                  h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, conn.desc),
+                  h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, conn.desc),
                   d._expandedConn === conn.id ? h('div', { className: 'mt-2 pt-2 border-t border-sky-200' },
-                    h('p', { className: 'text-[10px] text-sky-700 italic leading-relaxed' }, '\uD83D\uDCA1 Example: ' + conn.example)
+                    h('p', { className: 'text-[11px] text-sky-700 italic leading-relaxed' }, '\uD83D\uDCA1 Example: ' + conn.example)
                   ) : null
                 );
               })
@@ -4437,7 +4437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           activeTab === 'flashcards' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-teal-800 text-sm' }, '\uD83C\uDCCF Anatomy Flashcards'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
             ),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
             flashcardPool.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
@@ -4448,16 +4448,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
               },
                 !flashcardFlipped ? h('div', null,
-                  h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-3' }, 'STRUCTURE NAME'),
+                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, 'STRUCTURE NAME'),
                   h('h3', { className: 'text-xl font-black text-slate-800 mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
                   PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
-                  h('p', { className: 'text-[10px] text-slate-600 mt-4' }, 'Tap to reveal function \u2192')
+                  h('p', { className: 'text-[11px] text-slate-600 mt-4' }, 'Tap to reveal function \u2192')
                 ) : h('div', null,
-                  h('p', { className: 'text-[10px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
+                  h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
                   flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 pt-2 border-t border-teal-200' },
-                    h('p', { className: 'text-[10px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical'),
-                    h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
+                    h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical'),
+                    h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
                   ) : null,
                   ttsBtn(flashcardPool[flashcardIdx % flashcardPool.length].fn)
                 )
@@ -4506,12 +4506,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             currentFact ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-700 uppercase' }, 'Did you know?'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Did you know?'),
                 h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
               ),
               h('button', { 'aria-label': 'Next',
                 onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
-                className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all flex-shrink-0'
+                className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all flex-shrink-0'
               }, 'Next \u2192')
             ) : null,
 
@@ -4521,8 +4521,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
                 className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-all'
               },
-                h('span', { className: 'text-[10px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
-                h('span', { className: 'text-[10px] text-purple-500' }, d._showMnemonics ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
+                h('span', { className: 'text-[11px] text-purple-500' }, d._showMnemonics ? '\u25B2' : '\u25BC')
               ),
               d._showMnemonics ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-1 space-y-1.5' },
                 MNEMONICS[sysKey].map(function(mn) {
@@ -4531,10 +4531,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     key: mn.id,
                     className: 'rounded-lg p-2.5 border transition-all ' + (isRevealed ? 'border-purple-300 bg-purple-50' : 'border-slate-200 bg-white')
                   },
-                    h('p', { className: 'text-[10px] font-bold text-purple-800 mb-0.5' }, mn.title),
+                    h('p', { className: 'text-[11px] font-bold text-purple-800 mb-0.5' }, mn.title),
                     h('p', { className: 'text-xs font-black text-purple-600 mb-1 italic' }, '"' + mn.phrase + '"'),
                     isRevealed ? h('div', null,
-                      h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, mn.meaning),
+                      h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, mn.meaning),
                       ttsBtn(mn.phrase + '. ' + mn.meaning)
                     ) : h('button', { 'aria-label': 'Reveal meaning',
                       onClick: function() {
@@ -4543,7 +4543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         upd('_mnemonicsViewed', newMV);
                         playSound('mnemonicReveal');
                       },
-                      className: 'text-[10px] font-bold text-purple-600 hover:text-purple-800 transition-all'
+                      className: 'text-[11px] font-bold text-purple-600 hover:text-purple-800 transition-all'
                     }, 'Reveal meaning \u2192')
                   );
                 })
@@ -4552,16 +4552,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Progress tracker
             h('div', { className: 'mb-3 flex items-center gap-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold', style: { color: sys.accent } }, progressPct + '%')
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold', style: { color: sys.accent } }, progressPct + '%')
             ),
 
             // Layer toggle bar
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
               LAYER_DEFS.map(function(ld) {
                 var isOn = layers[ld.id] || ld.id === autoLayerId;
                 return h('button', { 'aria-label': 'Toggle layer',
@@ -4573,7 +4573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     upd('_layersToggled', newLT);
                   },
                   title: (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
-                  className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' +
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
                     (isOn ? 'text-white shadow-sm border-transparent' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
                   style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
                 }, ld.icon + ' ' + ld.name);
@@ -4581,7 +4581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('button', { 'aria-label': 'Reset',
                 onClick: function() { upd('visibleLayers', { skin: true }); },
                 title: 'Reset all layers to default (skin only)',
-                className: 'ml-auto px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200'
+                className: 'ml-auto px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200'
               }, '\u21BA Reset')
             ),
 
@@ -4614,24 +4614,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   return h('button', { 'aria-label': 'Change complexity',
                     key: lv.v, title: lv.tip + ' level',
                     onClick: function() { upd('complexity', lv.v); upd('selectedStructure', null); },
-                    className: 'px-2 py-1 text-[10px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
+                    className: 'px-2 py-1 text-[11px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
                   }, lv.label);
                 })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 font-bold' }, filtered.length + ' structures'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 font-bold' }, filtered.length + ' structures'),
               h('button', { 'aria-label': 'Regions',
                 onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
                 title: 'Toggle body region labels',
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
               }, '\uD83C\uDFF7 Regions'),
               h('button', { 'aria-label': 'X-ray',
                 onClick: function() { upd('_xrayMode', !xrayMode); },
                 title: 'Toggle X-ray radiograph mode',
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
               }, '\u2622 X-ray'),
               // Skin tone selector (representation & inclusion)
               h('div', { className: 'flex items-center gap-1 ml-1', title: 'Skin tone (representation)' },
-                h('span', { className: 'text-[10px] text-slate-500 font-bold' }, '\uD83C\uDFA8'),
+                h('span', { className: 'text-[11px] text-slate-500 font-bold' }, '\uD83C\uDFA8'),
                 SKIN_TONES.map(function(tone) {
                   return h('button', {
                     key: tone.id,
@@ -4646,7 +4646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               sysKey === 'reproductive' ? h('button', {
                 'aria-label': 'Toggle male/female anatomy',
                 onClick: function() { upd('_maleAnatomy', !d._maleAnatomy); },
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ml-1 ' + (d._maleAnatomy ? 'bg-violet-600 text-white border-violet-600' : 'bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100'),
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ml-1 ' + (d._maleAnatomy ? 'bg-violet-600 text-white border-violet-600' : 'bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100'),
                 title: 'Switch between male and female reproductive anatomy'
               }, d._maleAnatomy ? '\u2642 Male' : '\u2640 Female') : null
             ),
@@ -4673,7 +4673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('h4', { className: 'font-bold text-green-800 text-sm' }, '\uD83E\uDDEA Anatomy Quiz'),
                       h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2B50 ' + (d.quizScore || 0) + '/' + Math.min((d.quizIdx || 0) + 1, quizPool.length))
                     ),
-                    h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 mb-1' },
+                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 mb-1' },
                       quizType === 0 ? 'Function \u2192 Structure' :
                       quizType === 1 ? 'True or False' :
                       quizType === 2 ? 'System ID' : 'Clinical Challenge'
@@ -4739,7 +4739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start justify-between' },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                           h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
-                          PRONUNCIATION[sel.id] ? h('p', { className: 'text-[10px] text-indigo-500 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
+                          PRONUNCIATION[sel.id] ? h('p', { className: 'text-[11px] text-indigo-500 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
@@ -4749,69 +4749,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                               else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); }
                             },
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
-                            className: 'p-1 rounded text-[10px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
+                            className: 'p-1 rounded text-[11px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
                           }, '\u2696'),
                           h('button', { 'aria-label': 'Function', onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
                         )
                       ),
                       h('div', { className: 'space-y-2.5' },
                         h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
+                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
                           h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
                         ),
                         sel.origin && h('div', { className: 'grid grid-cols-2 gap-2' },
                           h('div', null,
-                            h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Origin'),
+                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Origin'),
                             h('p', { className: 'text-xs text-slate-600' }, sel.origin)
                           ),
                           h('div', null,
-                            h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Insertion'),
+                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Insertion'),
                             h('p', { className: 'text-xs text-slate-600' }, sel.insertion)
                           )
                         ),
                         h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical Significance', ttsBtn(sel.clinical)),
+                          h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical Significance', ttsBtn(sel.clinical)),
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
                         ),
                         sel.detail && h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-0.5' }, 'Detail'),
+                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Detail'),
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, sel.detail)
                         ),
                         // Brain Waves Section
                         sel.brainWaves && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
-                          h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase mb-2' }, '\u26A1 Brain Wave Types (EEG)'),
+                          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase mb-2' }, '\u26A1 Brain Wave Types (EEG)'),
                           h('div', { className: 'space-y-2' },
                             sel.brainWaves.map(function(w) {
                               return h('div', { key: w.type, className: 'rounded-lg p-2.5 border', style: { borderColor: w.color + '40', background: w.color + '08' } },
                                 h('div', { className: 'flex items-center gap-2 mb-1' },
                                   h('span', { className: 'text-base' }, w.emoji),
                                   h('span', { className: 'text-xs font-black', style: { color: w.color } }, w.type),
-                                  h('span', { className: 'ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full', style: { background: w.color + '18', color: w.color } }, w.freq)
+                                  h('span', { className: 'ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full', style: { background: w.color + '18', color: w.color } }, w.freq)
                                 ),
-                                h('p', { className: 'text-[10px] font-bold text-slate-600 mb-0.5' }, 'State: ', h('span', { className: 'text-slate-700' }, w.state)),
-                                h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, w.characteristics),
-                                h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', w.clinical)
+                                h('p', { className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, 'State: ', h('span', { className: 'text-slate-700' }, w.state)),
+                                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-1' }, w.characteristics),
+                                h('p', { className: 'text-[11px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', w.clinical)
                               );
                             })
                           )
                         ),
                         // Sleep Stages Section
                         sel.sleepStages && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
-                          h('p', { className: 'text-[10px] font-bold text-indigo-600 uppercase mb-2' }, '\uD83D\uDCA4 Sleep Architecture'),
+                          h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase mb-2' }, '\uD83D\uDCA4 Sleep Architecture'),
                           h('div', { className: 'space-y-2' },
                             sel.sleepStages.map(function(s) {
                               return h('div', { key: s.stage, className: 'rounded-lg p-2.5 border border-indigo-100 bg-indigo-50/30' },
                                 h('div', { className: 'flex items-center gap-2 mb-1' },
                                   h('span', { className: 'text-base' }, s.emoji),
                                   h('span', { className: 'text-xs font-black text-indigo-700' }, s.stage),
-                                  h('span', { className: 'ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, s.pct + ' of night')
+                                  h('span', { className: 'ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, s.pct + ' of night')
                                 ),
                                 h('div', { className: 'flex gap-3 mb-1' },
-                                  h('span', { className: 'text-[10px] text-slate-600' }, '\u23F1 ', h('span', { className: 'font-bold' }, s.duration)),
-                                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, '\uD83C\uDF0A ', h('span', { className: 'font-bold' }, s.waves))
+                                  h('span', { className: 'text-[11px] text-slate-600' }, '\u23F1 ', h('span', { className: 'font-bold' }, s.duration)),
+                                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, '\uD83C\uDF0A ', h('span', { className: 'font-bold' }, s.waves))
                                 ),
-                                h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, s.desc),
-                                h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', s.clinical)
+                                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-1' }, s.desc),
+                                h('p', { className: 'text-[11px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', s.clinical)
                               );
                             })
                           )
@@ -4820,18 +4820,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       // ── Compare Panel ──
                       compareSel && compareSel.id !== sel.id ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 pt-3 border-t-2 border-violet-200' },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-                          h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
+                          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
                           h('button', { 'aria-label': 'Clear',
                             onClick: function() { upd('_compareStructure', null); },
-                            className: 'text-[10px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
+                            className: 'text-[11px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
                           }, '\u2715 Clear')
                         ),
                         h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
                           h('h5', { className: 'text-sm font-black text-violet-800 mb-1' }, compareSel.name),
-                          h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, compareSel.fn.substring(0, 200) + (compareSel.fn.length > 200 ? '...' : '')),
-                          compareSel.clinical ? h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ' + compareSel.clinical.substring(0, 150) + (compareSel.clinical.length > 150 ? '...' : '')) : null
+                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-1' }, compareSel.fn.substring(0, 200) + (compareSel.fn.length > 200 ? '...' : '')),
+                          compareSel.clinical ? h('p', { className: 'text-[11px] text-rose-600 italic leading-relaxed' }, '\u26A0 ' + compareSel.clinical.substring(0, 150) + (compareSel.clinical.length > 150 ? '...' : '')) : null
                         ),
-                        h('table', { className: 'w-full mt-2 text-[10px]' },
+                        h('table', { className: 'w-full mt-2 text-[11px]' },
                           h('caption', { className: 'sr-only' }, 'anatomy data table'), h('thead', null,
                             h('tr', { className: 'border-b border-violet-200' },
                               h('th', { scope: 'col', className: 'text-left py-1 text-violet-600 font-bold' }, ''),
@@ -4877,7 +4877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                         },
                           h('div', { className: 'font-bold text-slate-800' }, st.name),
-                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
                         );
                       })
                     )
@@ -4889,10 +4889,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // Clinical Cases section (advanced only)
             complexity >= 3 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-[10px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
+                h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
                 h('button', { 'aria-label': 'Select option',
                   onClick: function() { upd('_showClinical', !d._showClinical); },
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
+                  className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
                 }, d._showClinical ? 'Hide' : 'Show Cases')
               ),
               d._showClinical ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
@@ -4900,11 +4900,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   var isActive = activeCaseIdx === ci;
                   return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: cs.id, className: 'bg-white rounded-lg p-3 border border-rose-200' },
                     h('p', { className: 'text-xs font-bold text-rose-800 mb-1' }, cs.title + ' (' + cs.difficulty + ')'),
-                    h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-2' }, cs.presentation),
-                    h('p', { className: 'text-[10px] font-bold text-slate-700 mb-1' }, cs.question),
+                    h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-2' }, cs.presentation),
+                    h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, cs.question),
                     isActive && activeCaseFeedback ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 rounded-lg p-2 ' + (activeCaseFeedback === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                      h('p', { className: 'text-[10px] font-bold ' + (activeCaseFeedback === 'correct' ? 'text-green-800' : 'text-amber-800') }, activeCaseFeedback === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
-                      h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mt-1' }, cs.explanation)
+                      h('p', { className: 'text-[11px] font-bold ' + (activeCaseFeedback === 'correct' ? 'text-green-800' : 'text-amber-800') }, activeCaseFeedback === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
+                      h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mt-1' }, cs.explanation)
                     ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
                       h('button', { 'aria-label': 'I got it!',
                         onClick: function() {
@@ -4913,14 +4913,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           upd('_clinicalSolved', (d._clinicalSolved || 0) + 1);
                           playSound('clinicalCase');
                         },
-                        className: 'px-2 py-1 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all'
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all'
                       }, '\u2705 I got it!'),
                       h('button', { 'aria-label': 'Reveal Answer',
                         onClick: function() {
                           upd('_activeCaseIdx', ci);
                           upd('_activeCaseFeedback', 'reveal');
                         },
-                        className: 'px-2 py-1 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all'
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all'
                       }, '\uD83D\uDC41 Reveal Answer')
                     )
                   );
@@ -4930,14 +4930,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Badge section
             h('div', { className: 'mt-4 bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 BADGE_DEFS.map(function(bd) {
                   var earned = badges[bd.id];
                   return h('div', {
                     key: bd.id,
                     title: bd.name + ': ' + bd.desc + ' (' + bd.xp + ' XP)',
-                    className: 'px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
+                    className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
                       (earned ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-slate-100 border-slate-200 text-slate-500')
                   }, bd.icon + ' ' + bd.name);
                 })
@@ -4946,7 +4946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // ── Stats Dashboard ──
             h('div', { className: 'mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Exploration Stats'),
+              h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Exploration Stats'),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 // Structures Viewed
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },

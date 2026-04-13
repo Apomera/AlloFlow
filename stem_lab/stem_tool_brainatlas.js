@@ -3486,7 +3486,7 @@ var d = labToolData.brainAtlas || {};
 
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
 
-              React.createElement("span", { className: "text-[10px] text-slate-600 font-bold" }, filtered.length + ' regions')
+              React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, filtered.length + ' regions')
 
             ),
 
@@ -3576,7 +3576,7 @@ var d = labToolData.brainAtlas || {};
 
                     },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase mb-0.5" }, "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase mb-0.5" }, "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization"),
 
                       React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
 
@@ -3600,19 +3600,19 @@ var d = labToolData.brainAtlas || {};
                 React.createElement("h4", { className: "text-sm font-black text-purple-800 flex items-center gap-2" }, "\u26A1 How Neurons Fire: The Action Potential"),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-purple-600 uppercase mb-1" }, "\uD83E\uDDEA Ion Chemistry"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-purple-600 uppercase mb-1" }, "\uD83E\uDDEA Ion Chemistry"),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "At rest, the neuron is polarized at -70mV. Na\u207A (sodium) is concentrated outside; K\u207A (potassium) inside. The Na\u207A/K\u207A pump maintains this gradient using ATP energy (3 Na\u207A out, 2 K\u207A in).")
                   ),
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-orange-600 uppercase mb-1" }, "\u26A1 All-or-Nothing Firing"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-orange-600 uppercase mb-1" }, "\u26A1 All-or-Nothing Firing"),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "When stimulation reaches threshold (-55mV), voltage-gated Na\u207A channels open and the neuron fires at FULL strength. There is no \u201Chalf\u201D signal \u2014 it either fires completely or not at all. Stronger stimuli increase firing RATE, not intensity.")
                   ),
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-green-600 uppercase mb-1" }, "\uD83D\uDD04 Recovery Cycle"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "\uD83D\uDD04 Recovery Cycle"),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "After firing: Na\u207A channels close, K\u207A channels open \u2192 repolarization. The membrane briefly overshoots to -80mV (hyperpolarization), creating a refractory period where the neuron cannot fire again. This ensures one-way signal travel.")
                   )
                 ),
-                React.createElement("p", { className: "text-[10px] text-purple-500 italic text-center" }, "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s.")
+                React.createElement("p", { className: "text-[11px] text-purple-500 italic text-center" }, "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s.")
               ),
 
               // ─── Detail panel (below canvas) ───
@@ -3741,7 +3741,7 @@ var d = labToolData.brainAtlas || {};
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
-                          className: "px-2 py-1 rounded-md text-[10px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/50 hover:text-white/80'),
+                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/50 hover:text-white/80'),
 
                           style: isActive ? { background: meta.color } : {}
 
@@ -3791,7 +3791,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Frequency"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Frequency"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.freq)
 
@@ -3799,7 +3799,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Amplitude"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Amplitude"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.amp)
 
@@ -3807,7 +3807,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Mental States"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Mental States"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.states)
 
@@ -3815,7 +3815,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "EEG Location"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "EEG Location"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.eeg)
 
@@ -3825,7 +3825,7 @@ var d = labToolData.brainAtlas || {};
 
                   })(),
 
-                  React.createElement("p", { className: "text-[10px] text-white/40 mt-2 italic text-center" }, (function () {
+                  React.createElement("p", { className: "text-[11px] text-white/40 mt-2 italic text-center" }, (function () {
 
                     var WAVE_META = {
 
@@ -4029,7 +4029,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "Function"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "Function"),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
@@ -4037,7 +4037,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.brodmann && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "Brodmann Areas"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "Brodmann Areas"),
 
                         React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
 
@@ -4045,7 +4045,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.blood && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "Blood Supply"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "Blood Supply"),
 
                         React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
 
@@ -4053,7 +4053,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.category && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
 
                         React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
 
@@ -4061,7 +4061,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.synthesis && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
 
@@ -4069,7 +4069,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.receptors && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
 
@@ -4077,7 +4077,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.pathways && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
 
@@ -4085,7 +4085,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.drugs && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
 
                         React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
 
@@ -4093,7 +4093,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.conditions && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
 
@@ -4101,7 +4101,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.damage && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
 
@@ -4133,7 +4133,7 @@ var d = labToolData.brainAtlas || {};
 
                         React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
 
-                        React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
 
                       );
 

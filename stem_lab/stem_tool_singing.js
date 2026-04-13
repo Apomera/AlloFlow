@@ -3712,7 +3712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                           h('span', { className: 'text-lg' }, tip.icon),
                           h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, tip.title),
                           tip.priority === 'critical' && h('span', {
-                            className: 'text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ' +
+                            className: 'text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ' +
                               (isDark ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700')
                           }, 'Critical')),
                         h('p', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, tip.tip));
@@ -3744,7 +3744,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                             h('span', { className: 'text-lg' }, injury.emoji),
                             h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, injury.name),
                             h('span', {
-                              className: 'text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ml-1 ' +
+                              className: 'text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ml-1 ' +
                                 (injury.severity === 'serious' ? (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700')
                                   : injury.severity === 'moderate' ? (isDark ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700')
                                     : (isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'))

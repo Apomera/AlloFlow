@@ -3365,7 +3365,7 @@ var d = labToolData.cell;
 
               // Zoom overlay
 
-              React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
+              React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600" },
 
                 "\uD83D\uDD2C",
 
@@ -3385,7 +3385,7 @@ var d = labToolData.cell;
 
               // Speed controls
 
-              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-600" },
+              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-600" },
 
                 "\u23E9",
 
@@ -3499,13 +3499,13 @@ var d = labToolData.cell;
 
                             ["W/\u2191", "A/\u2190", "S/\u2193", "D/\u2192"].map(function (k) {
 
-                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono font-bold text-slate-600 border border-slate-200" }, k);
+                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-200" }, k);
 
                             })
 
                           ),
 
-                          React.createElement("p", { className: "text-[10px] text-slate-600 mt-0.5" }, "Move your organism to interact with the environment")
+                          React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, "Move your organism to interact with the environment")
 
                         )
 
@@ -3687,7 +3687,7 @@ var d = labToolData.cell;
 
                   var discovered = (d.discoveries || []).indexOf(selDef.id + '_' + i) !== -1;
 
-                  return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[10px] py-0.5" },
+                  return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[11px] py-0.5" },
 
                     React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-600 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
 
@@ -3703,13 +3703,13 @@ var d = labToolData.cell;
 
               selDef.anatomy && React.createElement("div", { className: "mt-2 border-t border-slate-100 pt-2" },
 
-                React.createElement("p", { className: "text-[10px] font-black text-slate-600 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
+                React.createElement("p", { className: "text-[11px] font-black text-slate-600 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 
                   selDef.anatomy.map(function (a, i) {
 
-                    return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[10px]" },
+                    return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px]" },
 
                       React.createElement("span", { className: "flex-shrink-0", style: { color: selDef.color } }, a.icon || "\u25CF"),
 

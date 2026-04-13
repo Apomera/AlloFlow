@@ -433,12 +433,12 @@ window.StemLab = window.StemLab || {
         return h(React.Fragment, { key: 'ln' + li },
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '6,3', opacity: 0.8 }),
           h('line', { x1: toSvg(ln.to.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
-          ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[10px] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
+          ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[11px] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.from.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
-          ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[10px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
+          ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[11px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
           h('rect', { x: midX - 24, y: midY - 10, width: 48, height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
           h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '11px', fontWeight: 'bold' } }, 'm=' + ln.slope.display),
-          h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[10px] fill-indigo-400 font-mono' }, eq)
+          h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[11px] fill-indigo-400 font-mono' }, eq)
         );
       });
 
@@ -470,7 +470,7 @@ window.StemLab = window.StemLab || {
               h('circle', { cx: toSvg(p1.x, 'x'), cy: toSvg(p1.y, 'y'), r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(p2.x, 'x'), cy: toSvg(p2.y, 'y'), r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(mid.x, 'x'), cy: toSvg(mid.y, 'y'), r: 3, fill: '#a855f7', stroke: '#fff', strokeWidth: 1 }),
-              h('text', { x: toSvg(mid.x, 'x'), y: toSvg(mid.y, 'y') - 8, textAnchor: 'middle', className: 'text-[10px] fill-purple-500 font-bold' }, 'M(' + mid.x + ',' + mid.y + ')')
+              h('text', { x: toSvg(mid.x, 'x'), y: toSvg(mid.y, 'y') - 8, textAnchor: 'middle', className: 'text-[11px] fill-purple-500 font-bold' }, 'M(' + mid.x + ',' + mid.y + ')')
             );
           })()
         : null;
@@ -480,7 +480,7 @@ window.StemLab = window.StemLab || {
         return h('circle', { key: 'pt' + i, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: 5, fill: connectFirst === i ? '#6366f1' : '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'cursor-pointer' });
       });
       var labelElements = gridPoints.map(function(p, i) {
-        return h('text', { key: 'lb' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[10px] fill-cyan-700 font-bold' }, '(' + p.x + ',' + p.y + ')');
+        return h('text', { key: 'lb' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[11px] fill-cyan-700 font-bold' }, '(' + p.x + ',' + p.y + ')');
       });
 
       // ═══ BADGES PANEL ═══
@@ -488,7 +488,7 @@ window.StemLab = window.StemLab || {
         var earned = Object.keys(badges).length;
         if (earned === 0) return null;
         return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-          h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'),
+          h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             BADGES.map(function(b) {
               var has = badges[b.id];
@@ -527,7 +527,7 @@ window.StemLab = window.StemLab || {
             ['What is slope?', 'How to find distance?', 'What is a midpoint?', 'What are quadrants?'].map(function(q) {
               return h('button', { 'aria-label': 'Ask question',
                 key: q, onClick: function() { updCG({ aiQuestion: q }); },
-                className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
               }, q);
             })
           ),
@@ -544,7 +544,7 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-cyan-800' }, '\uD83D\uDCCD Coordinate Grid'),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Best: ' + bestStreak),
+            bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             h('button', { 'aria-label': 'Handle Grid Click',
               onClick: function() {
@@ -553,7 +553,7 @@ window.StemLab = window.StemLab || {
                 sfxClick();
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
               },
-              className: 'text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all'
+              className: 'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8')
           )
         ),
@@ -588,7 +588,7 @@ window.StemLab = window.StemLab || {
 
         // Challenge Modes
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
-          h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83C\uDFAF Challenges'),
+          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83C\uDFAF Challenges'),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': 'Plot a Point',
               onClick: function() {
@@ -631,24 +631,24 @@ window.StemLab = window.StemLab || {
         // Slope challenge UI
         slopeChallenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
           h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83D\uDCCF Find the slope: (' + gridChallenge.p1.x + ',' + gridChallenge.p1.y + ') \u2192 (' + gridChallenge.p2.x + ',' + gridChallenge.p2.y + ')'),
-          h('p', { className: 'text-[10px] text-amber-600 mb-2 italic' }, 'Fill in rise (\u0394y), run (\u0394x), then slope (m = rise/run)'),
+          h('p', { className: 'text-[11px] text-amber-600 mb-2 italic' }, 'Fill in rise (\u0394y), run (\u0394x), then slope (m = rise/run)'),
           h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
             h('div', { className: 'flex flex-col gap-1' },
-              h('label', { className: 'text-[10px] font-bold text-red-600 uppercase' }, 'Rise (\u0394y)'),
+              h('label', { className: 'text-[11px] font-bold text-red-600 uppercase' }, 'Rise (\u0394y)'),
               h('input', { type: 'number', placeholder: '?', value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-red-200 rounded-lg text-sm font-bold text-center focus:border-red-400 focus:outline-none' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-400' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
-              h('label', { className: 'text-[10px] font-bold text-blue-600 uppercase' }, 'Run (\u0394x)'),
+              h('label', { className: 'text-[11px] font-bold text-blue-600 uppercase' }, 'Run (\u0394x)'),
               h('input', { type: 'number', placeholder: '?', value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-blue-200 rounded-lg text-sm font-bold text-center focus:border-blue-400 focus:outline-none' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-400' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
-              h('label', { className: 'text-[10px] font-bold text-amber-700 uppercase' }, 'Slope (m)'),
+              h('label', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Slope (m)'),
               h('input', { type: 'text', placeholder: 'e.g. 2/3', value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, className: 'px-2 py-1.5 border-2 border-amber-300 rounded-lg text-sm font-bold text-center focus:border-amber-500 focus:outline-none' })
             )
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
             !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': 'Hint', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300' }, '\uD83D\uDCA1 Hint'),
-            (gridFeedback && gridFeedback.hinted) && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500 italic' }, '\uD83D\uDCA1 Hint used'),
+            (gridFeedback && gridFeedback.hinted) && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-500 italic' }, '\uD83D\uDCA1 Hint used'),
             h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, '\u2714 Check')
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
@@ -657,7 +657,7 @@ window.StemLab = window.StemLab || {
         // Distance challenge UI
         distanceChallenge && h('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
           h('p', { className: 'text-sm font-bold text-green-800 mb-2' }, '\uD83D\uDCCF Find the distance: (' + gridChallenge.p1.x + ',' + gridChallenge.p1.y + ') to (' + gridChallenge.p2.x + ',' + gridChallenge.p2.y + ')'),
-          h('p', { className: 'text-[10px] text-green-600 mb-2 italic' }, '\uD83D\uDCA1 d = \u221A((x\u2082\u2212x\u2081)\u00B2 + (y\u2082\u2212y\u2081)\u00B2)  \u2014 Round to 1 decimal place'),
+          h('p', { className: 'text-[11px] text-green-600 mb-2 italic' }, '\uD83D\uDCA1 d = \u221A((x\u2082\u2212x\u2081)\u00B2 + (y\u2082\u2212y\u2081)\u00B2)  \u2014 Round to 1 decimal place'),
           h('div', { className: 'flex gap-2 items-center' },
             h('input', {
               type: 'number', step: '0.1', placeholder: 'Distance = ?',
@@ -695,7 +695,7 @@ window.StemLab = window.StemLab || {
               var eq = calcLineEq(ln.from, ln.slope);
               var dist = calcDistance(ln.from, ln.to);
               var mid = calcMidpoint(ln.from, ln.to);
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: li, className: 'flex items-center gap-2 text-[10px] bg-white rounded px-2 py-1 border flex-wrap' },
+              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: li, className: 'flex items-center gap-2 text-[11px] bg-white rounded px-2 py-1 border flex-wrap' },
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-indigo-600' }, '(' + ln.from.x + ',' + ln.from.y + ') \u2192 (' + ln.to.x + ',' + ln.to.y + ')'),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-indigo-800' }, 'm=' + ln.slope.display),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, 'd=' + dist.toFixed(1)),
@@ -704,7 +704,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('button', { 'aria-label': 'Clear Lines', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200' }, '\uD83D\uDDD1 Clear Lines')
+          h('button', { 'aria-label': 'Clear Lines', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200' }, '\uD83D\uDDD1 Clear Lines')
         ),
 
         // Stats

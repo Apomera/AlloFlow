@@ -5594,7 +5594,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   },
 
-                  className: "text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
+                  className: "text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
 
                 }, "\uD83D\uDCF8 Snapshot")
 
@@ -5645,7 +5645,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                 React.createElement("span", { className: "text-lg" }, "\uD83D\uDCA1"),
                 React.createElement("span", { className: "font-bold text-sm" }, TUTORIAL_STEPS[tutorialStep].title),
-                React.createElement("span", { className: "ml-auto text-[10px] opacity-70" }, (tutorialStep + 1) + "/" + TUTORIAL_STEPS.length)
+                React.createElement("span", { className: "ml-auto text-[11px] opacity-70" }, (tutorialStep + 1) + "/" + TUTORIAL_STEPS.length)
               ),
               React.createElement("p", { className: "text-xs opacity-90 mb-2" }, TUTORIAL_STEPS[tutorialStep].msg),
               React.createElement("div", { className: "flex gap-2" },
@@ -5655,7 +5655,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 }, tutorialStep < TUTORIAL_STEPS.length - 1 ? "Next \u2192" : "Got it!"),
                 React.createElement("button", { "aria-label": "Skip tutorial",
                   onClick: dismissTutorial,
-                  className: "px-3 py-1 hover:bg-white/10 rounded-lg text-[10px] opacity-70 transition-all"
+                  className: "px-3 py-1 hover:bg-white/10 rounded-lg text-[11px] opacity-70 transition-all"
                 }, "Skip tutorial")
               )
             ),
@@ -5832,7 +5832,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                               React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, part.name),
 
-                              React.createElement("p", { className: "text-[10px] text-slate-300 leading-relaxed" }, part.desc)
+                              React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, part.desc)
 
                             )
 
@@ -5870,7 +5870,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "w-4 h-4 flex items-center justify-center rounded-full text-[11px] font-bold flex-shrink-0 " + (isHighlighted ? "bg-cyan-400 text-slate-900" : "bg-slate-600 text-slate-300") }, String(i + 1)),
 
-                      React.createElement("span", { className: "text-[10px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-400") }, part.name)
+                      React.createElement("span", { className: "text-[11px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-400") }, part.name)
 
                     );
 
@@ -5888,7 +5888,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   sp.fact && React.createElement("div", { className: "bg-indigo-500/10 rounded-xl p-3 border border-indigo-400/20" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-indigo-300 mb-0.5" }, "\uD83D\uDCA1 Did You Know?"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-indigo-300 mb-0.5" }, "\uD83D\uDCA1 Did You Know?"),
 
                     React.createElement("p", { className: "text-[11px] text-indigo-200/80 leading-relaxed" }, sp.fact)
 
@@ -5898,7 +5898,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   extraInfo.override && React.createElement("div", { className: "bg-cyan-500/10 rounded-xl p-3 border border-cyan-400/20" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-cyan-300 mb-0.5" }, "\uD83E\uDDAC Unique Anatomy"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, "\uD83E\uDDAC Unique Anatomy"),
 
                     React.createElement("p", { className: "text-[11px] text-cyan-200/80 leading-relaxed" }, extraInfo.override)
 
@@ -5908,7 +5908,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   extraInfo.locomotion && React.createElement("div", { className: "bg-emerald-500/10 rounded-xl p-3 border border-emerald-400/20" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-emerald-300 mb-0.5" }, "\uD83C\uDFCA How It Moves"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-300 mb-0.5" }, "\uD83C\uDFCA How It Moves"),
 
                     React.createElement("p", { className: "text-[11px] text-emerald-200/80 leading-relaxed" }, extraInfo.locomotion)
 
@@ -5918,11 +5918,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   sp.habitat && React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
-                    React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
+                    React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
 
-                    sp.diet && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                    sp.diet && React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
 
-                    sp.status && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
+                    sp.status && React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
 
                       "\uD83D\uDEE1\uFE0F " + ({ LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' }[sp.status] || sp.status))
 
@@ -5982,13 +5982,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-cyan-800" }, tank.name.split(' ').slice(1).join(' ')),
 
-                      React.createElement("span", { className: "ml-auto text-[10px] text-amber-600 font-bold" }, '\u2B50'.repeat(tank.diff))
+                      React.createElement("span", { className: "ml-auto text-[11px] text-amber-600 font-bold" }, '\u2B50'.repeat(tank.diff))
 
                     ),
 
                     React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, tank.desc),
 
-                    React.createElement("div", { className: "flex gap-2 text-[10px] text-cyan-600" },
+                    React.createElement("div", { className: "flex gap-2 text-[11px] text-cyan-600" },
 
                       React.createElement("span", null, tank.size + " gal"),
 
@@ -6066,7 +6066,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex items-center gap-1.5" },
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-slate-600 mr-1" }, "\u23F1 Speed:"),
+                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "\u23F1 Speed:"),
 
                     [
 
@@ -6110,13 +6110,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     }),
 
-                    React.createElement("span", { className: "ml-auto text-[10px] text-slate-600 font-mono" }, "T:" + simTick)
+                    React.createElement("span", { className: "ml-auto text-[11px] text-slate-600 font-mono" }, "T:" + simTick)
 
                   ),
 
                   // Tank lighting toggle — day/moonlight/night
                   React.createElement("div", { className: "flex items-center gap-1.5 mt-2" },
-                    React.createElement("span", { className: "text-[10px] font-bold text-slate-600 mr-1" }, "\uD83D\uDCA1 Light:"),
+                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "\uD83D\uDCA1 Light:"),
                     [
                       { id: 'day', label: '\u2600\uFE0F Day', color: 'bg-amber-100 text-amber-700 border-amber-300' },
                       { id: 'blue', label: '\uD83D\uDD35 Moonlight', color: 'bg-blue-100 text-blue-700 border-blue-300' },
@@ -6126,7 +6126,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       return React.createElement("button", {
                         key: lm.id,
                         onClick: function() { upd('tankLight', lm.id); sfxClick(); },
-                        className: "px-2 py-1 text-[10px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-100')
+                        className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-100')
                       }, lm.label);
                     })
                   )
@@ -6183,7 +6183,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       },
 
-                        React.createElement("div", { className: "text-[10px] text-slate-600 font-bold" }, (CHEM_INFO[p.key] || {}).icon || '', ' ', p.label),
+                        React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, (CHEM_INFO[p.key] || {}).icon || '', ' ', p.label),
 
                         React.createElement("div", { className: "text-sm font-bold " + statusColor(st) }, statusIcon(st) + " " + p.val)
 
@@ -6211,7 +6211,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
 
-                        React.createElement("button", { "aria-label": "Change chem tooltip", onClick: function () { upd('chemTooltip', null); }, className: "text-[10px] text-slate-600 hover:text-slate-600" }, "\u2715")
+                        React.createElement("button", { "aria-label": "Change chem tooltip", onClick: function () { upd('chemTooltip', null); }, className: "text-[11px] text-slate-600 hover:text-slate-600" }, "\u2715")
 
                       ),
 
@@ -6245,7 +6245,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           React.createElement("p", { className: "font-bold text-indigo-700 mb-0.5" }, "\uD83E\uDDEE Current Math"),
 
-                          React.createElement("pre", { className: "text-[10px] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
+                          React.createElement("pre", { className: "text-[11px] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
 
                         ),
 
@@ -6265,7 +6265,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Nitrogen cycle mini-diagram
 
-                  !chemTooltip && React.createElement("div", { className: "mt-3 flex items-center justify-center gap-1 text-[10px] text-slate-600 bg-gradient-to-r from-red-50/50 via-orange-50/50 to-green-50/50 rounded-xl p-2.5 border border-slate-100" },
+                  !chemTooltip && React.createElement("div", { className: "mt-3 flex items-center justify-center gap-1 text-[11px] text-slate-600 bg-gradient-to-r from-red-50/50 via-orange-50/50 to-green-50/50 rounded-xl p-2.5 border border-slate-100" },
 
                     React.createElement("span", { className: "font-bold text-red-500" }, "NH\u2083"),
 
@@ -6369,7 +6369,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             onClick: function () { removePlant(idx); },
 
-                            className: "text-[10px] text-red-400 hover:text-red-600 font-bold px-1",
+                            className: "text-[11px] text-red-400 hover:text-red-600 font-bold px-1",
 
                             title: "Remove plant"
 
@@ -6385,7 +6385,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   tankPlants.length < 8 && React.createElement("div", { className: "mt-2" },
 
-                    React.createElement("div", { className: "text-[10px] font-bold text-emerald-600 mb-1" }, "\u2795 Add a Plant:"),
+                    React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 mb-1" }, "\u2795 Add a Plant:"),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto" },
 
@@ -6401,7 +6401,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           disabled: alreadyAdded,
 
-                          className: "text-left rounded-lg p-1.5 text-[10px] transition-all " +
+                          className: "text-left rounded-lg p-1.5 text-[11px] transition-all " +
 
                             (alreadyAdded
 
@@ -6413,7 +6413,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           React.createElement("span", { className: "font-bold" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
 
-                          React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5 leading-tight" },
+                          React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 leading-tight" },
 
                             "O\u2082:" + (ps.o2 > 0 ? '+' : '') + ps.o2.toFixed(2) +
 
@@ -6555,9 +6555,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("div", { className: "flex justify-between mt-0.5" },
 
-                              React.createElement("span", { className: "text-[10px] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
+                              React.createElement("span", { className: "text-[11px] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
 
-                              React.createElement("span", { className: "text-[10px] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
+                              React.createElement("span", { className: "text-[11px] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
 
                             )
 
@@ -6567,11 +6567,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
 
-                            React.createElement("span", { className: "text-[10px] rounded px-1 " + (popOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
+                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (popOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
 
-                            React.createElement("span", { className: "text-[10px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
+                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
 
-                            React.createElement("span", { className: "text-[10px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
 
                           )
 
@@ -7245,7 +7245,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         onClick: function () { removeFish(idx); },
 
-                        className: "px-2 py-0.5 text-[10px] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
+                        className: "px-2 py-0.5 text-[11px] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
 
                         title: "Click to remove"
 
@@ -7367,7 +7367,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Feeding Report"),
 
-                      React.createElement("button", { "aria-label": "Change feeding log", onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[10px] text-slate-600" }, "\u2715")
+                      React.createElement("button", { "aria-label": "Change feeding log", onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
 
                     ),
 
@@ -7399,13 +7399,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ),
 
-                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[10px] text-red-700 font-bold mb-1" },
+                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[11px] text-red-700 font-bold mb-1" },
 
                       "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
 
                     ),
 
-                    React.createElement("p", { className: "text-[10px] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
+                    React.createElement("p", { className: "text-[11px] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
 
                   )
 
@@ -7447,7 +7447,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       health.tips.map(function (tip, i) {
 
-                        return React.createElement("p", { key: i, className: "text-[10px] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
+                        return React.createElement("p", { key: i, className: "text-[11px] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
 
                       })
 
@@ -7553,7 +7553,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
 
-                        React.createElement("p", { className: "text-[10px] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
+                        React.createElement("p", { className: "text-[11px] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
 
                       )
 
@@ -7563,7 +7563,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "space-y-2" },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider" }, '\u2696\uFE0F What do you do?'),
+                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, '\u2696\uFE0F What do you do?'),
 
                       (aiEvent.choices || []).map(function (choice, idx) {
 
@@ -7643,7 +7643,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
 
-                  React.createElement("h4", { className: "text-[10px] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
+                  React.createElement("h4", { className: "text-[11px] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
 
                     React.createElement("span", null, '\uD83D\uDCD3'),
 
@@ -7661,9 +7661,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("div", { className: "flex items-center gap-1" },
 
-                          React.createElement("span", { className: "text-[10px] font-bold text-slate-600 truncate" }, entry.title),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, entry.title),
 
-                          React.createElement("span", { className: "text-[10px] text-slate-600 flex-shrink-0" }, 'Day ' + entry.day)
+                          React.createElement("span", { className: "text-[11px] text-slate-600 flex-shrink-0" }, 'Day ' + entry.day)
 
                         ),
 
@@ -7671,7 +7671,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       ),
 
-                      entry.xp > 0 ? React.createElement("span", { className: "text-[10px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
+                      entry.xp > 0 ? React.createElement("span", { className: "text-[11px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
 
                     );
 
@@ -7685,11 +7685,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200 max-h-32 overflow-y-auto" },
 
-                  React.createElement("h4", { className: "text-[10px] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
+                  React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
 
                   eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
 
-                    return React.createElement("p", { key: i, className: "text-[10px] text-slate-600" }, "[T" + evt.tick + "] " + evt.msg);
+                    return React.createElement("p", { key: i, className: "text-[11px] text-slate-600" }, "[T" + evt.tick + "] " + evt.msg);
 
                   })
 
@@ -7811,7 +7811,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[10px] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
+                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
 
                 React.createElement("div", { className: "relative", style: { height: '96px' } },
 
@@ -7879,7 +7879,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 ),
 
-                React.createElement("div", { className: "flex gap-3 mt-4 text-[10px]" },
+                React.createElement("div", { className: "flex gap-3 mt-4 text-[11px]" },
 
                   React.createElement("span", { className: "font-bold", style: { color: '#0ea5e9' } }, "\u25CF Sardines"),
 
@@ -7975,7 +7975,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   }),
 
-                  React.createElement("span", { className: "text-[10px] text-slate-600 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
+                  React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
 
                 ),
 
@@ -8097,9 +8097,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-white drop-shadow-sm" }, zone.name),
 
-                      React.createElement("span", { className: "text-[10px] text-white/70 ml-auto font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.depth),
+                      React.createElement("span", { className: "text-[11px] text-white/70 ml-auto font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.depth),
 
-                      React.createElement("span", { className: "text-[10px] text-white/60 font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.temp)
+                      React.createElement("span", { className: "text-[11px] text-white/60 font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.temp)
 
                     ),
 
@@ -8119,7 +8119,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       }),
 
-                      zoneSpecies.length === 0 && React.createElement("span", { className: "text-[10px] text-white/50 italic" }, "Few species survive here")
+                      zoneSpecies.length === 0 && React.createElement("span", { className: "text-[11px] text-white/50 italic" }, "Few species survive here")
 
                     )
 
@@ -8155,11 +8155,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "flex gap-2 mt-1 flex-wrap" },
 
-                        React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold" }, "\uD83C\uDF0A " + sp.habitat),
+                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold" }, "\uD83C\uDF0A " + sp.habitat),
 
-                        React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
 
-                        React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (statusColors[sp.status] || '') }, "\uD83D\uDEE1\uFE0F " + (statusLabels[sp.status] || sp.status))
+                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold " + (statusColors[sp.status] || '') }, "\uD83D\uDEE1\uFE0F " + (statusLabels[sp.status] || sp.status))
 
                       )
 
@@ -8249,7 +8249,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     onClick: generateQuiz,
 
-                    className: "mt-1 px-3 py-1 text-[10px] font-bold bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
+                    className: "mt-1 px-3 py-1 text-[11px] font-bold bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
 
                   }, "Next Question \u2192")
 

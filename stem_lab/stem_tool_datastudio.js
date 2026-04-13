@@ -430,7 +430,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   React.createElement("div", { className: "text-lg" }, ct.icon),
 
-                  React.createElement("div", { className: "text-[10px] font-bold" }, ct.label)
+                  React.createElement("div", { className: "text-[11px] font-bold" }, ct.label)
 
                 );
 
@@ -859,7 +859,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Sort controls
 
-              React.createElement("span", { className: "text-[10px] font-bold", style: { color: _muted } }, "SORT:"),
+              React.createElement("span", { className: "text-[11px] font-bold", style: { color: _muted } }, "SORT:"),
 
               ['none', 'asc', 'desc'].map(function (s) {
 
@@ -871,7 +871,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () { updDS('sortOrder', s); },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all",
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all",
 
                   style: { background: sortOrder === s ? _btnBg : _card, color: sortOrder === s ? '#fff' : _text, border: '1px solid ' + _border }
 
@@ -881,7 +881,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Filter controls
 
-              React.createElement("span", { className: "text-[10px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
+              React.createElement("span", { className: "text-[11px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
 
               React.createElement("input", {
 
@@ -889,14 +889,14 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono",
 
                 style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
 
-              React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "to"),
+              React.createElement("span", { className: "text-[11px]", style: { color: _muted } }, "to"),
 
               React.createElement("input", {
 
@@ -904,7 +904,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono",
 
                 style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
@@ -915,13 +915,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
 
-                className: "px-2 py-1 rounded-lg text-[10px] font-bold",
+                className: "px-2 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
               }, "✕ Clear"),
 
-              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[10px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
+              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[11px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
 
               // Trendline toggle (for line/scatter)
 
@@ -929,7 +929,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('showTrendline', !showTrendline); },
 
-                className: "px-2.5 py-1 rounded-lg text-[10px] font-bold ml-auto transition-all",
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
 
                 style: { background: showTrendline ? '#ef4444' : _card, color: showTrendline ? '#fff' : _text, border: '1px solid ' + (showTrendline ? '#ef4444' : _border) }
 
@@ -943,7 +943,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
-              React.createElement("span", { className: "text-[10px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
+              React.createElement("span", { className: "text-[11px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
 
               PRESETS.map(function (p, i) {
 
@@ -953,7 +953,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:scale-105",
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105",
 
                   style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
@@ -1141,7 +1141,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('dataRows', []); },
 
-                className: "mt-2 px-3 py-1 rounded-lg text-[10px] font-bold",
+                className: "mt-2 px-3 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 

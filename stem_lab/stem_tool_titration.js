@@ -1442,15 +1442,15 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
     style: { background: 'linear-gradient(90deg, rgba(16,185,129,0.12) 0%, rgba(6,182,212,0.08) 100%)', borderColor: 'rgba(16,185,129,0.3)' }
   },
     React.createElement("div", { className: "flex items-center gap-1 text-base" }, "\uD83E\uDD7D\uD83E\uDDE4\uD83E\uDD7C"),
-    React.createElement("span", { className: "text-[10px] font-bold text-amber-400/80 flex-1" }, "PPE Active \u2022 Lab Safety Verified"),
+    React.createElement("span", { className: "text-[11px] font-bold text-amber-400/80 flex-1" }, "PPE Active \u2022 Lab Safety Verified"),
     React.createElement("button", { "aria-label": "Safety Info",
       onClick: function () { upd('showSafetyRef', !showSafetyRef); },
-      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " +
+      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " +
         (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10")
     }, "\u26A0\uFE0F Safety Info"),
     React.createElement("button", { "aria-label": "Hazards",
       onClick: function () { upd('showHazards', !showHazards); },
-      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " +
+      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " +
         (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "text-red-500/60 hover:text-red-400 hover:bg-red-500/10")
     }, "\u2623\uFE0F Hazards")
   ),
@@ -1463,12 +1463,12 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
     React.createElement("div", { className: "text-xs font-black text-amber-400 mb-2" }, "\u26A0\uFE0F Quick Safety Reference"),
     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
       safetyItems.slice(0, 4).map(function (item) {
-        return React.createElement("div", { key: item.id, className: "flex items-center gap-2 text-[10px] text-amber-200/70" },
+        return React.createElement("div", { key: item.id, className: "flex items-center gap-2 text-[11px] text-amber-200/70" },
           React.createElement("span", null, item.icon), React.createElement("span", null, item.label)
         );
       })
     ),
-    React.createElement("div", { className: "text-[10px] text-amber-300/50 mt-1" },
+    React.createElement("div", { className: "text-[11px] text-amber-300/50 mt-1" },
       "\uD83D\uDEBF Eyewash: 10-second rule \u2022 \uD83E\uDDEF Fire extinguisher located \u2022 \uD83D\uDCCB SDS reviewed")
   ),
 
@@ -1487,9 +1487,9 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
       },
         React.createElement("div", { className: "flex items-center justify-between mb-1" },
           React.createElement("span", { className: "text-sm font-black", style: { color: h.color } }, h.name),
-          React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full", style: { background: h.signal === 'Danger' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', color: h.signal === 'Danger' ? '#fca5a5' : '#fcd34d' } }, h.signal)
+          React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full", style: { background: h.signal === 'Danger' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', color: h.signal === 'Danger' ? '#fca5a5' : '#fcd34d' } }, h.signal)
         ),
-        React.createElement("div", { className: "text-[10px] font-bold text-red-300/80 mb-1" }, h.ghs.join('  \u2022  ')),
+        React.createElement("div", { className: "text-[11px] font-bold text-red-300/80 mb-1" }, h.ghs.join('  \u2022  ')),
         React.createElement("div", { className: "space-y-0.5" },
           h.hazards.map(function (hz) { return React.createElement("div", { key: hz, className: "text-[11px] text-slate-400" }, hz); })
         ),
@@ -1512,7 +1512,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
   },
     React.createElement("span", { className: "text-lg shrink-0" }, activeTip.icon),
     React.createElement("div", null,
-      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider mb-0.5", style: { color: activeTip.color } }, "Safety Tip"),
+      React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider mb-0.5", style: { color: activeTip.color } }, "Safety Tip"),
       React.createElement("div", { className: "text-[11px] text-slate-300 leading-relaxed" }, activeTip.text)
     )
   ),
@@ -1539,7 +1539,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
       }, "\u2190 Back"),
 
       React.createElement("h3", { className: "text-lg font-black text-white" }, "\uD83E\uDDEA Virtual Titration Lab"),
-      React.createElement("span", { className: "text-[10px] text-slate-600 ml-1" }, "v2.0")
+      React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "v2.0")
 
     ),
 
@@ -1566,7 +1566,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
         role: "tab",
         'aria-selected': active,
         onClick: function() { upd('labTab', tab.id); },
-        className: "px-3 py-1.5 rounded-full text-[10px] font-bold transition-all " +
+        className: "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all " +
           (active ? "text-white shadow-lg scale-105" : "text-slate-500 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700"),
         style: active ? { background: tab.color, boxShadow: '0 0 12px ' + tab.color + '40' } : {}
       }, tab.label);
@@ -1613,7 +1613,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
   labTab === 'titrate' && React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
 
-    React.createElement("span", { className: "text-[10px] text-slate-500 font-bold self-center mr-1" }, "INDICATOR:"),
+    React.createElement("span", { className: "text-[11px] text-slate-500 font-bold self-center mr-1" }, "INDICATOR:"),
 
     indicators.map(function (ind) {
 
@@ -1625,7 +1625,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
         onClick: function () { upd('indicator', ind.id); },
 
-        className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all " +
+        className: "px-2.5 py-1 rounded-full text-[11px] font-bold transition-all " +
 
           (active ? "text-white bg-slate-700 ring-2 ring-cyan-400" : "text-slate-400 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700")
 
@@ -1649,7 +1649,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
     React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-      React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, "TITRANT VOLUME:"),
+      React.createElement("span", { className: "text-[11px] text-slate-500 font-bold" }, "TITRANT VOLUME:"),
 
       React.createElement("input", {
 
@@ -1680,14 +1680,14 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
         return React.createElement("button", { "aria-label": "Add " + amt + " milliliters of titrant",
           key: amt,
           onClick: function () { updMulti({ volumeAdded: Math.min(maxVol, Math.round((volumeAdded + amt) * 10) / 10), _prevVolume: volumeAdded }); },
-          className: "px-2 py-1 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105",
+          className: "px-2 py-1 rounded-lg text-[11px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105",
           title: amt <= 0.5 ? 'Drop-by-drop (precise)' : 'Stream (fast)'
         }, dropIcon + " +" + amt);
       }),
 
       React.createElement("button", { "aria-label": "Reset titration volume to zero",
         onClick: function () { updMulti({ volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0 }); if (addToast) addToast('♻️ ' + safetyTips.reset.text, 'info'); },
-        className: "px-2 py-1 rounded-lg text-[10px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105"
+        className: "px-2 py-1 rounded-lg text-[11px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105"
       }, "↺ Reset")
 
     )
@@ -1712,7 +1712,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
     },
 
-      React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mb-2" }, "BURETTE & FLASK"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-2" }, "BURETTE & FLASK"),
 
 
 
@@ -1863,7 +1863,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
       },
 
-        React.createElement("span", { className: "text-[10px] text-slate-500 font-bold block" }, "CURRENT pH"),
+        React.createElement("span", { className: "text-[11px] text-slate-500 font-bold block" }, "CURRENT pH"),
 
         React.createElement("span", {
 
@@ -1889,7 +1889,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
     },
 
-      React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mb-2" }, "TITRATION CURVE"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-2" }, "TITRATION CURVE"),
 
       React.createElement("svg", {
 
@@ -2115,7 +2115,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
       React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400" }, volumeAdded.toFixed(1) + " mL"),
 
-      React.createElement("div", { className: "text-[10px] text-slate-600 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
+      React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
 
     ),
 
@@ -2137,7 +2137,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
       ),
 
-      React.createElement("div", { className: "text-[10px] mt-1 " + (pastEquivalence ? 'text-red-400' : 'text-slate-500') },
+      React.createElement("div", { className: "text-[11px] mt-1 " + (pastEquivalence ? 'text-red-400' : 'text-slate-500') },
 
         pastEquivalence ? '\u2714 Reached!' : 'Not yet reached'
 
@@ -2165,7 +2165,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
       }),
 
-      React.createElement("div", { className: "text-[10px] font-bold text-slate-300" }, indicator.label),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-300" }, indicator.label),
 
       React.createElement("div", { className: "text-[11px] text-slate-500" }, indicatorStatus)
 
@@ -2305,8 +2305,8 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
     React.createElement("div", { className: "flex items-center justify-between" },
       React.createElement("h3", { className: "text-sm font-black text-amber-400" }, "\uD83C\uDFC6 Lab Safety & Chemistry Challenge"),
       React.createElement("div", { className: "flex gap-2" },
-        React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400" }, "Score: " + challengeScore),
-        challengeStreak >= 3 && React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "\uD83D\uDD25 Streak: " + challengeStreak)
+        React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400" }, "Score: " + challengeScore),
+        challengeStreak >= 3 && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "\uD83D\uDD25 Streak: " + challengeStreak)
       )
     ),
     // Current question
@@ -2318,7 +2318,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
             className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
               (cq.category === 'safety' ? 'bg-red-900/30 text-red-400' : cq.category === 'technique' ? 'bg-cyan-900/30 text-cyan-400' : 'bg-indigo-900/30 text-indigo-400')
           }, cq.category),
-          React.createElement("span", { className: "text-[10px] text-slate-600" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
+          React.createElement("span", { className: "text-[11px] text-slate-600" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
         ),
         React.createElement("p", { className: "text-sm font-semibold text-white mb-3" }, cq.q),
         React.createElement("div", { className: "flex flex-col gap-2" },
@@ -2375,9 +2375,9 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
     React.createElement("div", { className: "flex items-center justify-between" },
       React.createElement("h3", { className: "text-sm font-black text-red-400" }, "\uD83D\uDEA8 Lab Safety Incident Simulator"),
       React.createElement("div", { className: "flex gap-2" },
-        React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400" },
+        React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400" },
           Object.keys(incidentCompleted).filter(function(k) { return incidentCompleted[k]; }).length + "/" + incidentScenarios.length + " completed"),
-        React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "Score: " + incidentScore)
+        React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "Score: " + incidentScore)
       )
     ),
     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" },
@@ -2415,7 +2415,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
           )
         ),
         React.createElement("p", { className: "text-xs text-slate-300 mb-3 leading-relaxed" }, scenario.desc),
-        React.createElement("div", { className: "text-[10px] font-bold text-red-400 mb-2" }, "What do you do?"),
+        React.createElement("div", { className: "text-[11px] font-bold text-red-400 mb-2" }, "What do you do?"),
         React.createElement("div", { className: "flex flex-col gap-2" },
           scenario.options.map(function(opt) {
             var showResult = incidentAnswer !== null;
@@ -2486,7 +2486,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
             React.createElement("span", { className: "text-lg" }, eq.icon),
             React.createElement("span", { className: "text-xs font-bold " + (isSelected ? "text-emerald-400" : "text-white") }, eq.name)
           ),
-          React.createElement("p", { className: "text-[10px] text-slate-500" }, eq.desc)
+          React.createElement("p", { className: "text-[11px] text-slate-500" }, eq.desc)
         );
       })
     ),
@@ -2505,7 +2505,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
           React.createElement("h5", { className: "text-xs font-bold text-amber-400 mb-2" }, "\u26A0\uFE0F Common Errors"),
           React.createElement("ul", { className: "space-y-1" },
             eq.errors.map(function(err, i) {
-              return React.createElement("li", { key: i, className: "text-[10px] text-slate-300 flex items-start gap-1.5" },
+              return React.createElement("li", { key: i, className: "text-[11px] text-slate-300 flex items-start gap-1.5" },
                 React.createElement("span", { className: "text-red-400 shrink-0" }, "\u2022"),
                 err
               );
@@ -2538,8 +2538,8 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
     },
       React.createElement("span", { className: "text-base shrink-0" }, "\u26A0\uFE0F"),
       React.createElement("div", null,
-        React.createElement("p", { className: "text-[10px] font-bold text-red-400" }, "CRITICAL SAFETY REMINDER"),
-        React.createElement("p", { className: "text-[10px] text-red-300/70" }, "Always add acid TO water, never water to acid. Exothermic mixing can cause violent boiling and splash concentrated acid.")
+        React.createElement("p", { className: "text-[11px] font-bold text-red-400" }, "CRITICAL SAFETY REMINDER"),
+        React.createElement("p", { className: "text-[11px] text-red-300/70" }, "Always add acid TO water, never water to acid. Exothermic mixing can cause violent boiling and splash concentrated acid.")
       )
     ),
 
@@ -2549,7 +2549,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
       React.createElement("div", { className: "rounded-xl p-3 border border-violet-800/30 bg-violet-950/20" },
         React.createElement("div", { className: "text-[11px] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, "Stock Solution"),
         React.createElement("label", { className: "block mb-2" },
-          React.createElement("span", { className: "text-[10px] text-slate-500" }, "C\u2081 (Concentration)"),
+          React.createElement("span", { className: "text-[11px] text-slate-500" }, "C\u2081 (Concentration)"),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 0.01, max: 18, step: 0.01, value: molarityCalcC1,
@@ -2561,7 +2561,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
           )
         ),
         React.createElement("label", { className: "block" },
-          React.createElement("span", { className: "text-[10px] text-slate-500" }, "V\u2081 (Volume needed)"),
+          React.createElement("span", { className: "text-[11px] text-slate-500" }, "V\u2081 (Volume needed)"),
           React.createElement("div", { className: "text-lg font-black text-violet-300 mt-1" },
             (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL"
           ),
@@ -2572,7 +2572,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
       React.createElement("div", { className: "rounded-xl p-3 border border-cyan-800/30 bg-cyan-950/20" },
         React.createElement("div", { className: "text-[11px] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, "Desired Solution"),
         React.createElement("label", { className: "block mb-2" },
-          React.createElement("span", { className: "text-[10px] text-slate-500" }, "C\u2082 (Target concentration)"),
+          React.createElement("span", { className: "text-[11px] text-slate-500" }, "C\u2082 (Target concentration)"),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 0.001, max: molarityCalcC1, step: 0.001, value: Math.min(molarityCalcC2, molarityCalcC1),
@@ -2584,7 +2584,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
           )
         ),
         React.createElement("label", { className: "block" },
-          React.createElement("span", { className: "text-[10px] text-slate-500" }, "V\u2082 (Final volume)"),
+          React.createElement("span", { className: "text-[11px] text-slate-500" }, "V\u2082 (Final volume)"),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 1, max: 1000, step: 1, value: molarityCalcV1,
@@ -2600,7 +2600,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
     // Dilution procedure
     React.createElement("div", { className: "rounded-xl p-4 border border-slate-700 bg-slate-800/40" },
-      React.createElement("div", { className: "text-[10px] font-bold text-white mb-2" }, "\uD83D\uDCD0 Dilution Procedure"),
+      React.createElement("div", { className: "text-[11px] font-bold text-white mb-2" }, "\uD83D\uDCD0 Dilution Procedure"),
       React.createElement("div", { className: "space-y-2" },
         [
           { step: 1, text: "Calculate V\u2081 = C\u2082 \u00D7 V\u2082 / C\u2081 = " + molarityCalcC2.toFixed(3) + " \u00D7 " + molarityCalcV1.toFixed(0) + " / " + molarityCalcC1.toFixed(2) + " = " + (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL", icon: "\uD83E\uDDEE" },
@@ -2612,7 +2612,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
         ].map(function(s) {
           return React.createElement("div", { key: s.step, className: "flex items-start gap-2" },
             React.createElement("span", { className: "text-xs shrink-0" }, s.icon),
-            React.createElement("span", { className: "text-[10px] text-slate-300" },
+            React.createElement("span", { className: "text-[11px] text-slate-300" },
               React.createElement("span", { className: "font-bold text-white" }, "Step " + s.step + ": "), s.text
             )
           );

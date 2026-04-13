@@ -1496,7 +1496,7 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'text-[11px] font-bold text-amber-800 mt-1' }, a.title),
 
-                    React.createElement('div', { className: 'text-[10px] text-amber-600' }, a.desc)
+                    React.createElement('div', { className: 'text-[11px] text-amber-600' }, a.desc)
 
                   );
 
@@ -1530,7 +1530,7 @@ var d = labToolData || {};
 
                         React.createElement('span', { className: 'text-[11px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-bold' }, g.tab),
 
-                        React.createElement('span', { className: 'text-[10px] font-bold text-slate-700' }, g.concept)
+                        React.createElement('span', { className: 'text-[11px] font-bold text-slate-700' }, g.concept)
 
                       ),
 
@@ -1793,9 +1793,9 @@ var d = labToolData || {};
                 var isCorrect = econScenarioAnswer === sc.correct;
                 return React.createElement('div', null,
                   React.createElement('div', { className: 'bg-white rounded-xl p-3 mb-2 border border-rose-100' },
-                    React.createElement('div', { className: 'text-[10px] text-slate-700 leading-relaxed' }, sc.scenario)
+                    React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, sc.scenario)
                   ),
-                  React.createElement('div', { className: 'text-[10px] font-bold text-slate-800 mb-2' }, sc.question),
+                  React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 mb-2' }, sc.question),
                   React.createElement('div', { className: 'space-y-1.5 mb-2' },
                     sc.options.map(function(opt, oi) {
                       var isSelected = econScenarioAnswer === oi;
@@ -1830,7 +1830,7 @@ var d = labToolData || {};
                     })
                   ),
                   answered && React.createElement('div', { className: 'space-y-2' },
-                    React.createElement('div', { className: 'rounded-xl p-2.5 text-[10px] ' + (isCorrect ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') },
+                    React.createElement('div', { className: 'rounded-xl p-2.5 text-[11px] ' + (isCorrect ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') },
                       (isCorrect ? '\u2705 ' : '\u274C ') + sc.explain
                     ),
                     React.createElement('div', { className: 'rounded-xl p-2 text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700' },
@@ -1854,7 +1854,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, '\uD83D\uDCC5 Economic History Timeline'),
                 React.createElement('button', {
                   onClick: function() { upd('showEconTimeline', !(d.showEconTimeline)); },
-                  className: 'text-[10px] text-slate-600 hover:text-slate-700 font-bold'
+                  className: 'text-[11px] text-slate-600 hover:text-slate-700 font-bold'
                 }, d.showEconTimeline ? 'Hide' : 'Explore \u2192')
               ),
               d.showEconTimeline && React.createElement('div', { className: 'relative ml-3 max-h-80 overflow-y-auto' },
@@ -1870,8 +1870,8 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'rounded-xl p-2.5 border transition-all ' + (isActive ? 'border-slate-400 bg-white shadow-md' : 'border-slate-100 bg-slate-50 hover:bg-white') },
                         React.createElement('div', { className: 'flex items-center gap-1.5' },
                           React.createElement('span', { className: 'text-lg' }, ev.icon),
-                          React.createElement('span', { className: 'text-[10px] font-black text-amber-600 font-mono' }, ev.year),
-                          React.createElement('span', { className: 'text-[10px] text-slate-700 font-bold flex-1' }, ev.event)
+                          React.createElement('span', { className: 'text-[11px] font-black text-amber-600 font-mono' }, ev.year),
+                          React.createElement('span', { className: 'text-[11px] text-slate-700 font-bold flex-1' }, ev.event)
                         ),
                         isActive && React.createElement('div', { className: 'mt-2 space-y-1.5 pl-7' },
                           React.createElement('div', { className: 'text-[11px] text-slate-600' },
@@ -1896,7 +1896,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83D\uDCCB Quick Reference Cards'),
                 React.createElement('button', {
                   onClick: function() { upd('showEconQuickRef', !(d.showEconQuickRef)); },
-                  className: 'text-[10px] text-amber-500 hover:text-amber-700 font-bold'
+                  className: 'text-[11px] text-amber-500 hover:text-amber-700 font-bold'
                 }, d.showEconQuickRef ? 'Hide' : 'View \u2192')
               ),
               d.showEconQuickRef && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
@@ -1907,7 +1907,7 @@ var d = labToolData || {};
                   },
                     React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, card.icon),
-                      React.createElement('span', { className: 'text-[10px] font-black', style: { color: card.color } }, card.title)
+                      React.createElement('span', { className: 'text-[11px] font-black', style: { color: card.color } }, card.title)
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' }, card.content)
                   );
@@ -1922,11 +1922,11 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-red-800' }, '\uD83D\uDCB2 Inflation Calculator'),
                 React.createElement('button', {
                   onClick: function() { upd('showInflationCalc', !(d.showInflationCalc)); },
-                  className: 'text-[10px] text-red-500 hover:text-red-700 font-bold'
+                  className: 'text-[11px] text-red-500 hover:text-red-700 font-bold'
                 }, d.showInflationCalc ? 'Hide' : 'Calculate \u2192')
               ),
               d.showInflationCalc && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-3' }, 'See how inflation erodes purchasing power over time. A dollar today is worth more than a dollar tomorrow!'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'See how inflation erodes purchasing power over time. A dollar today is worth more than a dollar tomorrow!'),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Amount ($)'),
@@ -1960,8 +1960,8 @@ var d = labToolData || {};
                   var lostPct = ((1 - futureValue / amt) * 100).toFixed(1);
                   return React.createElement('div', { className: 'bg-white rounded-xl p-3 border border-red-100 text-center' },
                     React.createElement('div', { className: 'text-2xl font-black text-red-600' }, '$' + futureValue.toFixed(2)),
-                    React.createElement('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, 'Your $' + amt + ' will only buy $' + futureValue.toFixed(2) + ' worth of today\'s goods in ' + yrs + ' years'),
-                    React.createElement('div', { className: 'text-[10px] font-bold text-red-500 mt-1' }, '\uD83D\uDCC9 ' + lostPct + '% of purchasing power lost!'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Your $' + amt + ' will only buy $' + futureValue.toFixed(2) + ' worth of today\'s goods in ' + yrs + ' years'),
+                    React.createElement('div', { className: 'text-[11px] font-bold text-red-500 mt-1' }, '\uD83D\uDCC9 ' + lostPct + '% of purchasing power lost!'),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 italic' }, 'Rule of 72: Money loses half its value in ~' + Math.round(72 / ((d.inflationRate || 3))) + ' years at ' + (d.inflationRate || 3) + '% inflation')
                   );
                 })()
@@ -1974,11 +1974,11 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-green-800' }, '\uD83D\uDD04 Business Cycle'),
                 React.createElement('button', {
                   onClick: function() { upd('showBizCycle', !(d.showBizCycle)); },
-                  className: 'text-[10px] text-green-500 hover:text-green-700 font-bold'
+                  className: 'text-[11px] text-green-500 hover:text-green-700 font-bold'
                 }, d.showBizCycle ? 'Hide' : 'Explore \u2192')
               ),
               d.showBizCycle && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-3' }, 'The economy moves through repeating cycles of expansion and contraction. Understanding where we are in the cycle helps predict what comes next.'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'The economy moves through repeating cycles of expansion and contraction. Understanding where we are in the cycle helps predict what comes next.'),
                 // Visual cycle
                 React.createElement('div', { className: 'flex items-center justify-center gap-1 mb-3' },
                   BUSINESS_CYCLE_PHASES.map(function(phase, pi) {
@@ -2007,7 +2007,7 @@ var d = labToolData || {};
                       React.createElement('span', { className: 'text-2xl' }, phase.icon),
                       React.createElement('div', null,
                         React.createElement('div', { className: 'text-[11px] font-black', style: { color: phase.color } }, phase.name),
-                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Duration: ' + phase.duration)
+                        React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Duration: ' + phase.duration)
                       )
                     ),
                     React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
@@ -2020,7 +2020,7 @@ var d = labToolData || {};
                       React.createElement('span', { className: 'font-bold' }, '\uD83C\uDFDB\uFE0F Policy Response: '),
                       phase.policy
                     ),
-                    React.createElement('div', { className: 'text-[10px] text-amber-600 italic' }, '\uD83D\uDCCA Indicators: ' + phase.indicators)
+                    React.createElement('div', { className: 'text-[11px] text-amber-600 italic' }, '\uD83D\uDCCA Indicators: ' + phase.indicators)
                   );
                 })()
               )
@@ -2032,7 +2032,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, '\uD83D\uDCCA Compound Interest Calculator'),
                 React.createElement('button', {
                   onClick: function() { upd('showCompoundCalc', !(d.showCompoundCalc)); },
-                  className: 'text-[10px] text-emerald-500 hover:text-emerald-700 font-bold'
+                  className: 'text-[11px] text-emerald-500 hover:text-emerald-700 font-bold'
                 }, d.showCompoundCalc ? 'Hide' : 'Calculate \u2192')
               ),
               d.showCompoundCalc && React.createElement('div', null,
@@ -2067,8 +2067,8 @@ var d = labToolData || {};
                   var earned = fv - p;
                   return React.createElement('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center' },
                     React.createElement('div', { className: 'text-2xl font-black text-emerald-600' }, '$' + Math.round(fv).toLocaleString()),
-                    React.createElement('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, 'From $' + p.toLocaleString() + ' invested at ' + (d.pfRate || 7) + '% for ' + y + ' years'),
-                    React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 mt-1' }, '\uD83D\uDCC8 $' + Math.round(earned).toLocaleString() + ' earned through compound interest!'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'From $' + p.toLocaleString() + ' invested at ' + (d.pfRate || 7) + '% for ' + y + ' years'),
+                    React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 mt-1' }, '\uD83D\uDCC8 $' + Math.round(earned).toLocaleString() + ' earned through compound interest!'),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 italic' }, '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)')
                   );
                 })()
@@ -2081,7 +2081,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83D\uDCB0 Budget Rules'),
                 React.createElement('button', {
                   onClick: function() { upd('showBudgetRules', !(d.showBudgetRules)); },
-                  className: 'text-[10px] text-blue-500 hover:text-blue-700 font-bold'
+                  className: 'text-[11px] text-blue-500 hover:text-blue-700 font-bold'
                 }, d.showBudgetRules ? 'Hide' : 'Learn \u2192')
               ),
               d.showBudgetRules && React.createElement('div', { className: 'space-y-3' },
@@ -2101,7 +2101,7 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'flex rounded-full overflow-hidden h-6 mb-2' },
                         rule.parts.map(function(part) {
                           return React.createElement('div', { key: part.label,
-                            className: 'flex items-center justify-center text-[10px] font-bold text-white',
+                            className: 'flex items-center justify-center text-[11px] font-bold text-white',
                             style: { background: part.color, width: part.pct + '%' }
                           }, part.label + ' ' + part.pct + '%');
                         })
@@ -2115,9 +2115,9 @@ var d = labToolData || {};
                             className: 'rounded-lg p-2 text-center border',
                             style: { borderColor: part.color + '40' }
                           },
-                            React.createElement('div', { className: 'text-[10px] font-bold', style: { color: part.color } }, part.label + ' (' + part.pct + '%)'),
+                            React.createElement('div', { className: 'text-[11px] font-bold', style: { color: part.color } }, part.label + ' (' + part.pct + '%)'),
                             React.createElement('div', { className: 'text-[11px] font-black text-slate-800' }, '$' + allocated.toLocaleString() + '/mo'),
-                            React.createElement('div', { className: 'text-[10px] text-slate-600' }, part.items)
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, part.items)
                           );
                         })
                       )
@@ -2133,15 +2133,15 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, '\uD83C\uDFDB\uFE0F Schools of Economic Thought'),
                 React.createElement('button', {
                   onClick: function() { upd('showEconSchools', !(d.showEconSchools)); },
-                  className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold'
+                  className: 'text-[11px] text-purple-500 hover:text-purple-700 font-bold'
                 }, d.showEconSchools ? 'Hide' : 'Compare \u2192')
               ),
               d.showEconSchools && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-3' }, 'Economists disagree! Different schools of thought offer different answers to the same questions. Understanding these perspectives helps you think critically about economic policy.'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'Economists disagree! Different schools of thought offer different answers to the same questions. Understanding these perspectives helps you think critically about economic policy.'),
                 // Comparison table
                 React.createElement('div', { className: 'rounded-xl overflow-hidden border border-purple-200' },
                   // Header
-                  React.createElement('div', { className: 'grid grid-cols-4 bg-purple-100 text-[10px] font-bold text-purple-800 uppercase' },
+                  React.createElement('div', { className: 'grid grid-cols-4 bg-purple-100 text-[11px] font-bold text-purple-800 uppercase' },
                     React.createElement('div', { className: 'p-1.5' }, 'School'),
                     React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, 'Gov\'t Role'),
                     React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, 'On Recession'),
@@ -2157,7 +2157,7 @@ var d = labToolData || {};
                       },
                         React.createElement('div', { className: 'p-1.5 text-[11px]' },
                           React.createElement('span', { className: 'font-bold', style: { color: school.color } }, school.icon + ' ' + school.name),
-                          React.createElement('div', { className: 'text-[7px] text-slate-600' }, school.era)
+                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, school.era)
                         ),
                         React.createElement('div', { className: 'p-1.5 text-[11px] text-slate-600 border-l border-slate-100' }, school.govRole),
                         React.createElement('div', { className: 'p-1.5 text-[11px] text-slate-600 border-l border-slate-100' }, school.onRecession),
@@ -2168,7 +2168,7 @@ var d = labToolData || {};
                           React.createElement('span', { className: 'font-bold', style: { color: school.color } }, '\uD83D\uDCA1 Key Idea: '),
                           school.key
                         ),
-                        React.createElement('div', { className: 'text-[10px] text-slate-600' },
+                        React.createElement('div', { className: 'text-[11px] text-slate-600' },
                           React.createElement('span', { className: 'font-bold' }, '\uD83C\uDF93 Famous: '),
                           school.famous
                         )
@@ -2186,7 +2186,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-indigo-800' }, '\uD83D\uDCDA Economics Concept Library (' + ECON_CONCEPTS.length + ')'),
                 React.createElement('button', {
                   onClick: function() { upd('showConceptLib', !(d.showConceptLib)); },
-                  className: 'text-[10px] text-indigo-500 hover:text-indigo-700 font-bold'
+                  className: 'text-[11px] text-indigo-500 hover:text-indigo-700 font-bold'
                 }, d.showConceptLib ? 'Hide' : 'Explore \u2192')
               ),
               d.showConceptLib && React.createElement('div', null,
@@ -2209,8 +2209,8 @@ var d = labToolData || {};
                     },
                       React.createElement('div', { className: 'flex items-center gap-1.5 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, concept.icon),
-                        React.createElement('span', { className: 'text-[10px] font-black text-slate-800' }, concept.name),
-                        React.createElement('span', { className: 'text-[10px] px-1 py-0.5 rounded bg-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-100 text-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-700 font-bold' }, concept.category)
+                        React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, concept.name),
+                        React.createElement('span', { className: 'text-[11px] px-1 py-0.5 rounded bg-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-100 text-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-700 font-bold' }, concept.category)
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, concept.def),
                       isActive && React.createElement('div', { className: 'mt-1.5 text-[11px] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
@@ -2229,22 +2229,22 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, '\uD83C\uDFEA Market Structures'),
                 React.createElement('button', {
                   onClick: function() { upd('showMarketStructures', !(d.showMarketStructures)); },
-                  className: 'text-[10px] text-emerald-500 hover:text-emerald-700 font-bold'
+                  className: 'text-[11px] text-emerald-500 hover:text-emerald-700 font-bold'
                 }, d.showMarketStructures ? 'Hide' : 'Compare \u2192')
               ),
               d.showMarketStructures && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-2' }, 'Markets range from perfect competition (many sellers, identical products) to monopoly (one seller, unique product). Click each to learn more:'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-2' }, 'Markets range from perfect competition (many sellers, identical products) to monopoly (one seller, unique product). Click each to learn more:'),
                 // Spectrum bar
                 React.createElement('div', { className: 'flex mb-3 rounded-full overflow-hidden h-4' },
                   MARKET_STRUCTURES.map(function(ms) {
                     return React.createElement('div', { key: ms.id,
-                      className: 'flex-1 flex items-center justify-center text-[7px] font-bold text-white',
+                      className: 'flex-1 flex items-center justify-center text-[11px] font-bold text-white',
                       style: { background: ms.color },
                       title: ms.name
                     }, ms.name.split(' ')[0]);
                   })
                 ),
-                React.createElement('div', { className: 'flex items-center justify-between text-[10px] text-slate-600 mb-3' },
+                React.createElement('div', { className: 'flex items-center justify-between text-[11px] text-slate-600 mb-3' },
                   React.createElement('span', null, '\u2190 More Competition'),
                   React.createElement('span', null, 'More Market Power \u2192')
                 ),
@@ -2259,7 +2259,7 @@ var d = labToolData || {};
                     },
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, ms.icon),
-                        React.createElement('div', { className: 'text-[10px] font-black', style: { color: ms.color } }, ms.name)
+                        React.createElement('div', { className: 'text-[11px] font-black', style: { color: ms.color } }, ms.name)
                       ),
                       isActive && React.createElement('div', { className: 'space-y-1 mt-1' },
                         React.createElement('div', { className: 'grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]' },
@@ -2274,7 +2274,7 @@ var d = labToolData || {};
                           React.createElement('span', { className: 'text-slate-600 font-bold' }, 'Long-run Profit:'),
                           React.createElement('span', { className: 'text-slate-700' }, ms.profit)
                         ),
-                        React.createElement('div', { className: 'text-[10px] text-amber-600 font-medium mt-1' }, '\uD83D\uDCA1 Examples: ' + ms.examples)
+                        React.createElement('div', { className: 'text-[11px] text-amber-600 font-medium mt-1' }, '\uD83D\uDCA1 Examples: ' + ms.examples)
                       )
                     );
                   })
@@ -2288,11 +2288,11 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFDB\uFE0F GDP = C + I + G + (X\u2212M)'),
                 React.createElement('button', {
                   onClick: function() { upd('showGdpBreakdown', !(d.showGdpBreakdown)); },
-                  className: 'text-[10px] text-amber-500 hover:text-amber-700 font-bold'
+                  className: 'text-[11px] text-amber-500 hover:text-amber-700 font-bold'
                 }, d.showGdpBreakdown ? 'Hide' : 'Explore \u2192')
               ),
               d.showGdpBreakdown && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-3' }, 'Gross Domestic Product measures the total value of all final goods and services produced within a country\'s borders in a given year. Here\'s how it breaks down for the United States:'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'Gross Domestic Product measures the total value of all final goods and services produced within a country\'s borders in a given year. Here\'s how it breaks down for the United States:'),
                 // Bar chart visualization
                 React.createElement('div', { className: 'flex items-end gap-1 h-24 mb-2 px-4' },
                   GDP_COMPONENTS.map(function(comp) {
@@ -2304,7 +2304,7 @@ var d = labToolData || {};
                         style: { background: comp.color, height: barH + '%', minHeight: 8, opacity: 0.8 }
                       }),
                       React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mt-1' }, comp.id),
-                      React.createElement('div', { className: 'text-[7px] text-slate-600' }, comp.name)
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, comp.name)
                     );
                   })
                 ),
@@ -2317,11 +2317,11 @@ var d = labToolData || {};
                     },
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, comp.icon),
-                        React.createElement('span', { className: 'text-[10px] font-black', style: { color: comp.color } }, comp.id + ' \u2014 ' + comp.name),
+                        React.createElement('span', { className: 'text-[11px] font-black', style: { color: comp.color } }, comp.id + ' \u2014 ' + comp.name),
                         React.createElement('span', { className: 'text-[11px] font-bold ml-auto', style: { color: comp.color } }, comp.pct + '%')
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, comp.desc),
-                      React.createElement('div', { className: 'text-[10px] text-amber-600 mt-0.5 italic' }, '\uD83D\uDCA1 ' + comp.examples)
+                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5 italic' }, '\uD83D\uDCA1 ' + comp.examples)
                     );
                   })
                 )
@@ -2334,7 +2334,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, '\uD83C\uDF93 Famous Economists'),
                 React.createElement('button', {
                   onClick: function() { upd('showEconomists', !(d.showEconomists)); },
-                  className: 'text-[10px] text-violet-500 hover:text-violet-700 font-bold'
+                  className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold'
                 }, d.showEconomists ? 'Hide' : 'Meet Them \u2192')
               ),
               d.showEconomists && React.createElement('div', { className: 'space-y-2 max-h-72 overflow-y-auto' },
@@ -2349,11 +2349,11 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'flex-1' },
                         React.createElement('div', { className: 'flex items-center gap-2' },
                           React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, econ.name),
-                          React.createElement('span', { className: 'text-[10px] text-slate-600 font-mono' }, econ.years)
+                          React.createElement('span', { className: 'text-[11px] text-slate-600 font-mono' }, econ.years)
                         ),
                         React.createElement('div', { className: 'text-[11px] text-violet-600 font-bold' }, econ.contribution)
                       ),
-                      React.createElement('span', { className: 'text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600 font-bold' }, econ.school)
+                      React.createElement('span', { className: 'text-[11px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600 font-bold' }, econ.school)
                     ),
                     isActive && React.createElement('div', { className: 'mt-2 space-y-1 pl-8' },
                       React.createElement('div', { className: 'text-[11px] text-slate-600' },
@@ -2376,7 +2376,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-cyan-800' }, '\uD83D\uDCCA Key Economic Indicators (' + ECONOMIC_INDICATORS.length + ')'),
                 React.createElement('button', {
                   onClick: function() { upd('showIndicators', !(d.showIndicators)); },
-                  className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold'
+                  className: 'text-[11px] text-cyan-500 hover:text-cyan-700 font-bold'
                 }, d.showIndicators ? 'Hide' : 'View \u2192')
               ),
               d.showIndicators && React.createElement('div', { className: 'grid grid-cols-2 gap-1.5 max-h-60 overflow-y-auto' },
@@ -2384,12 +2384,12 @@ var d = labToolData || {};
                   return React.createElement('div', { key: ii, className: 'rounded-lg p-2 bg-white border border-cyan-100' },
                     React.createElement('div', { className: 'flex items-center gap-1 mb-0.5' },
                       React.createElement('span', null, ind.icon),
-                      React.createElement('span', { className: 'text-[10px] font-bold text-slate-700' }, ind.name)
+                      React.createElement('span', { className: 'text-[11px] font-bold text-slate-700' }, ind.name)
                     ),
-                    React.createElement('div', { className: 'text-[10px] text-slate-600' }, ind.desc),
+                    React.createElement('div', { className: 'text-[11px] text-slate-600' }, ind.desc),
                     React.createElement('div', { className: 'flex gap-2 mt-0.5' },
-                      React.createElement('span', { className: 'text-[10px] text-green-600 font-bold' }, '\u2705 ' + ind.good),
-                      React.createElement('span', { className: 'text-[10px] text-red-500 font-bold' }, '\u26A0 ' + ind.bad)
+                      React.createElement('span', { className: 'text-[11px] text-green-600 font-bold' }, '\u2705 ' + ind.good),
+                      React.createElement('span', { className: 'text-[11px] text-red-500 font-bold' }, '\u26A0 ' + ind.bad)
                     )
                   );
                 })
@@ -2439,7 +2439,7 @@ var d = labToolData || {};
 
                 React.createElement('h4', { className: 'text-sm font-bold text-blue-800 mb-2' }, '\uD83D\uDCDA Key Concepts'),
 
-                React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-[10px] text-slate-600 leading-relaxed' },
+                React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-[11px] text-slate-600 leading-relaxed' },
 
                   React.createElement('div', null,
 
@@ -2479,9 +2479,9 @@ var d = labToolData || {};
 
                 (sdPriceFloor > 0 || sdPriceCeiling > 0 || sdTax > 0 || sdDemandShift !== 0 || sdSupplyShift !== 0) && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-blue-100' },
 
-                  React.createElement('h5', { className: 'text-[10px] font-bold text-indigo-700 mb-1' }, '\uD83D\uDCA1 What\'s Happening Right Now:'),
+                  React.createElement('h5', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, '\uD83D\uDCA1 What\'s Happening Right Now:'),
 
-                  React.createElement('div', { className: 'text-[10px] text-slate-600 space-y-1' },
+                  React.createElement('div', { className: 'text-[11px] text-slate-600 space-y-1' },
 
                     sdDemandShift > 0 && React.createElement('p', null, '\u25B6 Demand shifted RIGHT \u2014 More people want this product (maybe income rose, or a trend made it popular). This raises both equilibrium price AND quantity.'),
 
@@ -2583,7 +2583,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'col-span-2 bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 mb-2' },
 
-                React.createElement('h4', { className: 'text-[10px] font-bold text-cyan-700 mb-1' }, '\uD83D\uDCCF Price Elasticity of Demand'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-cyan-700 mb-1' }, '\uD83D\uDCCF Price Elasticity of Demand'),
 
                 React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' },
 
@@ -2605,7 +2605,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, 'Elastic (>1)'),
 
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Luxury goods, restaurants, vacations')
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Luxury goods, restaurants, vacations')
 
                     ),
 
@@ -2615,7 +2615,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, 'Unit Elastic (=1)'),
 
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Revenue unchanged by price')
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Revenue unchanged by price')
 
                     ),
 
@@ -2625,7 +2625,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, 'Inelastic (<1)'),
 
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Medicine, gasoline, utilities')
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Medicine, gasoline, utilities')
 
                     )
 
@@ -2647,9 +2647,9 @@ var d = labToolData || {};
 
                     React.createElement('h5', { className: 'text-xs font-bold text-slate-800' }, d.sdScenario.title),
 
-                    React.createElement('p', { className: 'text-[10px] text-slate-600 mt-1' }, d.sdScenario.explanation),
+                    React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, d.sdScenario.explanation),
 
-                    React.createElement('div', { className: 'flex gap-2 mt-2 text-[10px]' },
+                    React.createElement('div', { className: 'flex gap-2 mt-2 text-[11px]' },
 
                       React.createElement('span', { className: 'text-blue-600 font-bold' }, 'Demand: ' + (d.sdScenario.demandShift > 0 ? '+' : '') + d.sdScenario.demandShift),
 
@@ -2657,7 +2657,7 @@ var d = labToolData || {};
 
                     ),
 
-                    d.sdScenario.lesson && React.createElement('div', { className: 'mt-2 bg-violet-100 rounded-lg px-3 py-2 text-[10px] text-violet-800 border border-violet-200' },
+                    d.sdScenario.lesson && React.createElement('div', { className: 'mt-2 bg-violet-100 rounded-lg px-3 py-2 text-[11px] text-violet-800 border border-violet-200' },
 
                       React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Concept: '),
 
@@ -2704,7 +2704,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('sdScenario', null); },
 
-                    className: 'w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-500'
+                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-500'
 
                   }, 'Dismiss')
 
@@ -2764,7 +2764,7 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, d.lifeEvent.description),
 
-                    d.lifeEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-100 rounded-lg px-3 py-2 text-[10px] text-indigo-800 border border-indigo-200' },
+                    d.lifeEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-100 rounded-lg px-3 py-2 text-[11px] text-indigo-800 border border-indigo-200' },
 
                       React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Economics Concept: '),
 
@@ -2914,7 +2914,7 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'text-lg' }, s.icon),
 
-                    React.createElement('div', { className: 'text-[10px] text-slate-600 font-bold uppercase tracking-wide' }, s.label),
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 font-bold uppercase tracking-wide' }, s.label),
 
                     React.createElement('div', { className: 'text-sm font-bold text-' + s.color + '-600' }, s.val)
 
@@ -2980,7 +2980,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200 mt-3 mb-1' },
 
-                React.createElement('h4', { className: 'text-[10px] font-bold text-orange-700 mb-2' }, '\uD83C\uDFE0 Housing Strategy'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-orange-700 mb-2' }, '\uD83C\uDFE0 Housing Strategy'),
 
                 React.createElement('div', { className: 'flex gap-2' },
 
@@ -3006,9 +3006,9 @@ var d = labToolData || {};
 
                     },
 
-                      React.createElement('div', { className: 'text-[10px] font-bold text-slate-700' }, h.label),
+                      React.createElement('div', { className: 'text-[11px] font-bold text-slate-700' }, h.label),
 
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, h.desc),
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, h.desc),
 
                       React.createElement('div', { className: 'text-[11px] font-bold text-orange-600 mt-1' }, h.cost)
 
@@ -3034,7 +3034,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200 mt-3 mb-3' },
 
-                React.createElement('h4', { className: 'text-[10px] font-bold text-green-700 mb-2' }, '\uD83D\uDCCA Investment Allocation (% of annual salary invested)'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-green-700 mb-2' }, '\uD83D\uDCCA Investment Allocation (% of annual salary invested)'),
 
                 React.createElement('div', { className: 'flex items-center gap-3' },
 
@@ -3050,7 +3050,7 @@ var d = labToolData || {};
 
                   React.createElement('span', { className: 'text-xs font-bold text-green-700 w-12 text-right' }, (d.pfInvestPct || 0) + '%'),
 
-                  React.createElement('span', { className: 'text-[10px] text-slate-600' }, '$' + Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100).toLocaleString() + '/yr')
+                  React.createElement('span', { className: 'text-[11px] text-slate-600' }, '$' + Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100).toLocaleString() + '/yr')
 
                 ),
 
@@ -3098,7 +3098,7 @@ var d = labToolData || {};
 
                 (d.pfHistory || []).slice().reverse().map(function (h, hi) {
 
-                  return React.createElement('div', { key: hi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
+                  return React.createElement('div', { key: hi, className: 'flex justify-between text-[11px] py-1 border-b border-slate-50' },
 
                     React.createElement('span', { className: 'text-slate-600' }, 'Age ' + h.age),
 
@@ -3245,7 +3245,7 @@ var d = labToolData || {};
 
                         React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, smCompanies[smSelected].name + ' (' + smCompanies[smSelected].ticker + ')'),
 
-                        React.createElement('span', { className: 'text-[10px] text-slate-600' }, smCompanies[smSelected].sector + (smCompanies[smSelected].description ? ' \u2014 ' + smCompanies[smSelected].description : ''))
+                        React.createElement('span', { className: 'text-[11px] text-slate-600' }, smCompanies[smSelected].sector + (smCompanies[smSelected].description ? ' \u2014 ' + smCompanies[smSelected].description : ''))
 
                       ),
 
@@ -3255,7 +3255,7 @@ var d = labToolData || {};
 
                         smCompanies[smSelected].history && smCompanies[smSelected].history.length > 1 && React.createElement('div', {
 
-                          className: 'text-[10px] font-bold ' + (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? 'text-green-600' : 'text-red-500')
+                          className: 'text-[11px] font-bold ' + (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? 'text-green-600' : 'text-red-500')
 
                         }, (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? '\u25B2 +' : '\u25BC ') +
 
@@ -3277,9 +3277,9 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-amber-700 mt-1' }, d.smNewsEvent.analysis || ''),
 
-                    React.createElement('div', { className: 'text-[10px] text-amber-600 mt-2 font-bold' }, 'Impact: ' + (d.smNewsEvent.impact > 0 ? '\u25B2 +' : '\u25BC ') + (d.smNewsEvent.impact * 100).toFixed(1) + '%'),
+                    React.createElement('div', { className: 'text-[11px] text-amber-600 mt-2 font-bold' }, 'Impact: ' + (d.smNewsEvent.impact > 0 ? '\u25B2 +' : '\u25BC ') + (d.smNewsEvent.impact * 100).toFixed(1) + '%'),
 
-                    d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[10px] text-amber-800 border border-amber-200' },
+                    d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[11px] text-amber-800 border border-amber-200' },
 
                       React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Investing Concept: '),
 
@@ -3345,7 +3345,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'py-3 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white'
+                      className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white'
 
                     }, '\u25B2\u25B2 Buy 10'),
 
@@ -3405,7 +3405,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'py-3 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
+                      className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
 
                     }, '\u25BC\u25BC Sell ' + Math.min(smPortfolio[smCompanies[smSelected] ? smCompanies[smSelected].ticker : ''] || 0, 10)),
 
@@ -3527,7 +3527,7 @@ var d = labToolData || {};
 
                         var c = smCompanies.find(function (x) { return x.ticker === ticker; });
 
-                        return smPortfolio[ticker] > 0 ? React.createElement('span', { key: ticker, className: 'bg-slate-100 px-2 py-1 rounded text-[10px] font-bold' }, ticker + ': ' + smPortfolio[ticker] + ' ($' + (smPortfolio[ticker] * c.price).toFixed(0) + ')') : null;
+                        return smPortfolio[ticker] > 0 ? React.createElement('span', { key: ticker, className: 'bg-slate-100 px-2 py-1 rounded text-[11px] font-bold' }, ticker + ': ' + smPortfolio[ticker] + ' ($' + (smPortfolio[ticker] * c.price).toFixed(0) + ')') : null;
 
                       })
 
@@ -3537,7 +3537,7 @@ var d = labToolData || {};
 
                     smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200' },
 
-                      React.createElement('h4', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
+                      React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
 
                       React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
 
@@ -3691,7 +3691,7 @@ var d = labToolData || {};
 
                       React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, d.enBusiness.businessName),
 
-                      React.createElement('p', { className: 'text-[10px] text-amber-600' }, d.enBusiness.description)
+                      React.createElement('p', { className: 'text-[11px] text-amber-600' }, d.enBusiness.description)
 
                     ),
 
@@ -3699,7 +3699,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg font-bold ' + ((d.enBizCash || 0) >= 0 ? 'text-green-600' : 'text-red-500') }, '$' + (d.enBizCash || 0).toLocaleString()),
 
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
 
                     )
 
@@ -3711,7 +3711,7 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
 
-                      React.createElement('label', { className: 'block text-[10px] font-bold text-amber-700 mb-1' }, '\uD83D\uDCB2 Price per ' + (d.enBusiness.unitName || 'unit') + ': $' + (d.enBizPrice || d.enBusiness.suggestedPrice || 10).toFixed(2)),
+                      React.createElement('label', { className: 'block text-[11px] font-bold text-amber-700 mb-1' }, '\uD83D\uDCB2 Price per ' + (d.enBusiness.unitName || 'unit') + ': $' + (d.enBizPrice || d.enBusiness.suggestedPrice || 10).toFixed(2)),
 
                       React.createElement('input', {
 
@@ -3771,7 +3771,7 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-purple-600 mt-1' }, d.enBizEvent.description),
 
-                    d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[10px] text-purple-800 border border-purple-200' },
+                    d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[11px] text-purple-800 border border-purple-200' },
 
                       React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Business Concept: '),
 
@@ -3903,7 +3903,7 @@ var d = labToolData || {};
 
                 (d.enBizHistory || []).slice(-7).reverse().map(function (dh, dhi) {
 
-                  return React.createElement('div', { key: dhi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
+                  return React.createElement('div', { key: dhi, className: 'flex justify-between text-[11px] py-1 border-b border-slate-50' },
 
                     React.createElement('span', { className: 'text-slate-600' }, 'Day ' + dh.day),
 

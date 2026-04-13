@@ -1355,7 +1355,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[11px] font-bold rounded-full" }, "CREATIVE"),
 
               React.createElement("button", { "aria-label": "3D Builder", onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
 
@@ -1387,14 +1387,14 @@ const d = labToolData.artStudio || {};
                 ].map(function(tool) {
                   return React.createElement("div", { key: tool.name, className: "bg-white rounded-lg p-2 border border-slate-100 text-center shadow-sm hover:shadow-md transition-shadow cursor-default" },
                     React.createElement("div", { className: "text-lg" }, tool.icon),
-                    React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mt-0.5" }, tool.name),
-                    React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5 leading-tight" }, tool.desc)
+                    React.createElement("div", { className: "text-[11px] font-bold text-slate-700 mt-0.5" }, tool.name),
+                    React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 leading-tight" }, tool.desc)
                   );
                 })
               ),
               React.createElement("div", { className: "bg-white rounded-lg p-3 border border-pink-100" },
-                React.createElement("h5", { className: "text-[10px] font-bold text-pink-700 uppercase mb-1" }, "\uD83D\uDCA1 Educational Concepts"),
-                React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" },
+                React.createElement("h5", { className: "text-[11px] font-bold text-pink-700 uppercase mb-1" }, "\uD83D\uDCA1 Educational Concepts"),
+                React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
                   "Color theory (additive vs subtractive mixing, complementary colors, HSL/RGB), mathematical curves (hypotrochoids, Lissajous), fractals & self-similarity, cellular automata & emergence, tessellation geometry, op art visual perception, WCAG accessibility standards, and computational art. Every tool teaches the math behind the beauty."
                 )
               ),
@@ -1431,7 +1431,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat || 100) + "%, " + (d.lit || 50) + "%)"),
 
-                        React.createElement("p", { className: "text-[10px] text-slate-600" }, "Click the wheel to pick a hue")
+                        React.createElement("p", { className: "text-[11px] text-slate-600" }, "Click the wheel to pick a hue")
 
                       )
 
@@ -1441,7 +1441,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
+                        React.createElement("label", { className: "text-[11px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
 
@@ -1453,13 +1453,13 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-pink-600 mb-2" }, "\uD83D\uDD17 Color Harmony"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-pink-600 mb-2" }, "\uD83D\uDD17 Color Harmony"),
 
                     React.createElement("div", { className: "flex gap-1" },
 
                       ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
 
-                        return React.createElement("button", { "aria-label": "Change harmony", key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
+                        return React.createElement("button", { "aria-label": "Change harmony", key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
 
                       })
 
@@ -1499,7 +1499,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), 'aria-label': 'Color mix ratio', onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-600" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
+                  React.createElement("p", { className: "text-[11px] text-slate-600" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
 
                 ),
 
@@ -1527,7 +1527,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
 
-                React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "Current color"),
+                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Current color"),
 
                 React.createElement("div", { className: "ml-auto flex gap-1 flex-wrap" },
 
@@ -1555,7 +1555,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
 
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro', colors: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]] },
 
@@ -1567,7 +1567,7 @@ const d = labToolData.artStudio || {};
 
                    { id: 'neon', label: '\uD83D\uDCA5 Neon', colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
 
-                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -1615,11 +1615,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
 
-                React.createElement("button", { "aria-label": "Solid", onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
+                React.createElement("button", { "aria-label": "Solid", onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
 
-                React.createElement("button", { "aria-label": "Rainbow", onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
+                React.createElement("button", { "aria-label": "Rainbow", onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
+                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
 
                 React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
@@ -1635,11 +1635,11 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
 
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
 
-                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -1711,7 +1711,7 @@ const d = labToolData.artStudio || {};
 
                     return React.createElement("div", { key: s.k, className: "mb-1" },
 
-                      React.createElement("label", { className: "text-[10px] text-slate-600 font-bold" }, s.label + ': ' + s.val),
+                      React.createElement("label", { className: "text-[11px] text-slate-600 font-bold" }, s.label + ': ' + s.val),
 
                       React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.label || s.k, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
 
@@ -1731,7 +1731,7 @@ const d = labToolData.artStudio || {};
 
                     return React.createElement("div", { key: s.k, className: "mb-1" },
 
-                      React.createElement("label", { className: "text-[10px] text-slate-600 font-bold" }, s.label + ': ' + s.val),
+                      React.createElement("label", { className: "text-[11px] text-slate-600 font-bold" }, s.label + ': ' + s.val),
 
                       React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.label || s.k, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
 
@@ -1793,7 +1793,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { className: "text-[11px] font-bold text-indigo-600 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
 
@@ -1813,11 +1813,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-indigo-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Star', R: 120, r: 45, p: 55 }, { label: 'Flower', R: 150, r: 50, p: 25 }, { label: 'Lace', R: 100, r: 73, p: 80 }, { label: 'Atom', R: 180, r: 25, p: 90 }, { label: 'Spiral', R: 140, r: 91, p: 60 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change spiro r", key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Change spiro r", key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition-all" }, pr.label);
 
                       })
 
@@ -1827,9 +1827,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-violet-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" }, "Spirographs draw ", React.createElement("strong", null, "hypotrochoid curves"), " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the ", React.createElement("strong", null, "GCD"), " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths.")
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "Spirographs draw ", React.createElement("strong", null, "hypotrochoid curves"), " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the ", React.createElement("strong", null, "GCD"), " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths.")
 
                   )
 
@@ -1949,11 +1949,11 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-2 mb-2" },
 
-                React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "Density:"),
+                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Density:"),
 
                 React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, 'aria-label': 'Particle density', onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-600" }, (d.genDensity || 100) + ' particles')
+                React.createElement("span", { className: "text-[11px] text-slate-600" }, (d.genDensity || 100) + ' particles')
 
               ),
 
@@ -2189,7 +2189,7 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[10px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Click or drag on the canvas to create particle bursts")
+              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Click or drag on the canvas to create particle bursts")
 
             ),
 
@@ -2203,15 +2203,15 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, 'aria-label': 'Spin speed RPM', onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
+                React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
 
                 React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': 'Spin brush size', onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
                 React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
@@ -2223,11 +2223,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
 
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
 
-                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50') }, pal.label);
+                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50') }, pal.label);
 
                   })
 
@@ -2412,7 +2412,7 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[10px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas"),
+              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas"),
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
@@ -2452,13 +2452,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-1" }, "Shape"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, "Shape"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'circle', label: '\u25CB Circle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'triangle', label: '\u25B3 Triangle' }, { id: 'star', label: '\u2606 Star' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change str shape", key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change str shape", key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -2476,7 +2476,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
 
@@ -2496,11 +2496,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-rose-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-rose-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Cardioid', nails: 100, mult: 2 }, { label: 'Nephroid', nails: 100, mult: 3 }, { label: 'Star Burst', nails: 72, mult: 37 }, { label: 'Lace', nails: 150, mult: 71 }, { label: 'Weave', nails: 60, mult: 23 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change str nails", key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Change str nails", key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
 
                       })
 
@@ -2510,9 +2510,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-pink-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-pink-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" }, "String art creates ", React.createElement("strong", null, "envelope curves"), " from straight lines. With a circle and multiplier of 2, you get a ", React.createElement("strong", null, "cardioid"), " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a ", React.createElement("strong", null, "nephroid"), ". Higher multipliers create intricate patterns governed by ", React.createElement("strong", null, "modular arithmetic"), ": nail N connects to nail (N \u00D7 M) mod total.")
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "String art creates ", React.createElement("strong", null, "envelope curves"), " from straight lines. With a circle and multiplier of 2, you get a ", React.createElement("strong", null, "cardioid"), " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a ", React.createElement("strong", null, "nephroid"), ". Higher multipliers create intricate patterns governed by ", React.createElement("strong", null, "modular arithmetic"), ": nail N connects to nail (N \u00D7 M) mod total.")
 
                   )
 
@@ -2696,13 +2696,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-fuchsia-600 block mb-1" }, "Style"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-fuchsia-600 block mb-1" }, "Style"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'concentric', label: '\u25CE Rings' }, { id: 'checkerboard', label: '\u2593 Checker' }, { id: 'moire', label: '\u2261 Moir\u00E9' }, { id: 'vibrating', label: '\u2248 Vibrate' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change op style", key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-fuchsia-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change op style", key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-fuchsia-50') }, s.label);
 
                         })
 
@@ -2722,7 +2722,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-fuchsia-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { className: "text-[11px] font-bold text-fuchsia-600 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
 
@@ -2740,7 +2740,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-fuchsia-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Classic B&W', style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
 
@@ -2750,7 +2750,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Wave Grid', style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change op style", key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Change op style", key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all" }, pr.label);
 
                       })
 
@@ -3046,13 +3046,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-1" }, "Base Shape"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, "Base Shape"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'triangle', label: '\u25B3 Triangle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'hexagon', label: '\u2B21 Hexagon' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change tess shape", key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change tess shape", key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -3070,7 +3070,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
 
@@ -3080,13 +3080,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-1" }, "Color Scheme"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, "Color Scheme"),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
                         [{ id: 'rainbow', label: '\uD83C\uDF08 Rainbow' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'mono', label: '\u25AB Mono' }, { id: 'custom', label: '\uD83C\uDFA8 Custom' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change tess scheme", key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change tess scheme", key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -3104,7 +3104,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-teal-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-teal-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Honeycomb', shape: 'hexagon', grid: 6, rot: 0, warp: 0, scheme: 'warm' },
 
@@ -3114,7 +3114,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Escher Fish', shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change tess shape", key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Change tess shape", key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all" }, pr.label);
 
                       })
 
@@ -3146,7 +3146,7 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-[10px] text-center text-slate-600 italic" }, "\uD83D\uDC46 Click tiles to cycle their colors")
+                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, "\uD83D\uDC46 Click tiles to cycle their colors")
 
                 ),
 
@@ -3484,13 +3484,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-1" }, "Fractal Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "Fractal Type"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'mandelbrot', label: '\uD83C\uDF00 Mandelbrot' }, { id: 'julia', label: '\u2728 Julia' }, { id: 'burningShip', label: '\uD83D\uDD25 Burning Ship' }, { id: 'sierpinski', label: '\u25B3 Sierpinski' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change fractal type", key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change fractal type", key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -3506,7 +3506,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
 
@@ -3516,7 +3516,7 @@ const d = labToolData.artStudio || {};
 
                     (d.fractalType || 'mandelbrot') === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "Julia Constant (c)"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, "Julia Constant (c)"),
 
                       [{ k: 'juliaReal', label: 'c real', min: -200, max: 200, def: -70 },
 
@@ -3526,7 +3526,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("div", { key: s.k },
 
-                          React.createElement("label", { className: "text-[10px] font-bold text-violet-600" }, s.label + ': ' + (val / 100).toFixed(2)),
+                          React.createElement("label", { className: "text-[11px] font-bold text-violet-600" }, s.label + ': ' + (val / 100).toFixed(2)),
 
                           React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-500" })
 
@@ -3538,13 +3538,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3 mt-2" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-1" }, "Color Scheme"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "Color Scheme"),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
                         [{ id: 'classic', label: '\uD83C\uDF08 Classic' }, { id: 'fire', label: '\uD83D\uDD25 Fire' }, { id: 'ocean', label: '\uD83C\uDF0A Ocean' }, { id: 'psychedelic', label: '\uD83D\uDC9C Psychedelic' }, { id: 'grayscale', label: '\u25AB Grayscale' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change fractal color", key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change fractal color", key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -3562,7 +3562,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-violet-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-violet-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Seahorse Valley', type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
 
@@ -3572,7 +3572,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Spiral Arm', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change fractal type", key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Change fractal type", key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
 
                       })
 
@@ -3902,7 +3902,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("p", { className: "text-[10px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out")
+              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out")
 
             ),
 
@@ -3920,13 +3920,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-1" }, "Gradient Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, "Gradient Type"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'linear', label: '\u2194 Linear' }, { id: 'radial', label: '\u25CE Radial' }, { id: 'conic', label: '\uD83C\uDF00 Conic' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change grad type", key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change grad type", key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -3936,7 +3936,7 @@ const d = labToolData.artStudio || {};
 
                     (d.gradType || 'linear') === 'linear' && React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
 
                       React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, 'aria-label': 'Gradient angle', onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
 
@@ -3944,13 +3944,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-1" }, "Blend Mode"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, "Blend Mode"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'smooth', label: 'Smooth' }, { id: 'hard', label: 'Hard Edge' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change grad blend", key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change grad blend", key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -3964,7 +3964,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-rose-600" }, "Color Stops"),
+                        React.createElement("label", { className: "text-[11px] font-bold text-rose-600" }, "Color Stops"),
 
                         React.createElement("button", { "aria-label": "+ Add Stop", onClick: function () {
 
@@ -3982,7 +3982,7 @@ const d = labToolData.artStudio || {};
 
                           }
 
-                        }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200" }, "+ Add Stop")
+                        }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200" }, "+ Add Stop")
 
                       ),
 
@@ -4036,7 +4036,7 @@ const d = labToolData.artStudio || {};
 
                               upd('gradStops', newStops3);
 
-                            }, className: "text-[10px] font-bold text-red-400 hover:text-red-600 flex-shrink-0 px-1" }, "\u00D7")
+                            }, className: "text-[11px] font-bold text-red-400 hover:text-red-600 flex-shrink-0 px-1" }, "\u00D7")
 
                           );
 
@@ -4054,7 +4054,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-rose-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-rose-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Sunset', stops: [{ hue: 270, pos: 0 }, { hue: 330, pos: 30 }, { hue: 20, pos: 60 }, { hue: 45, pos: 100 }], type: 'linear', angle: 180 },
 
@@ -4066,7 +4066,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Deep Space', stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change grad stops", key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Change grad stops", key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
 
                       })
 
@@ -4080,7 +4080,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\uD83D\uDCCB CSS Output"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "\uD83D\uDCCB CSS Output"),
 
                       React.createElement("button", { "aria-label": "Copy", onClick: function () {
 
@@ -4102,7 +4102,7 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    React.createElement("code", { className: "text-[10px] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
+                    React.createElement("code", { className: "text-[11px] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
 
                       var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -4422,13 +4422,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Depth Brush"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, "Depth Brush"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'near', label: '\u2B1C Near' }, { id: 'mid', label: '\uD83D\uDD18 Mid' }, { id: 'far', label: '\u2B1B Far' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change stereo depth", key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change stereo depth", key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -4438,7 +4438,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
+                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
 
                       React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, 'aria-label': 'Stereogram brush size', onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
@@ -4446,13 +4446,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Pattern Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, "Pattern Type"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }, { id: 'ai', label: '\u2728 AI' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change stereo pattern", key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change stereo pattern", key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -4468,7 +4468,7 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-0.5" }, s.label + ': ' + val),
 
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
@@ -4484,7 +4484,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-700" }, "\u2728 AI Stereogram Creator"),
+                        React.createElement("label", { className: "text-[11px] font-bold text-indigo-700" }, "\u2728 AI Stereogram Creator"),
 
                         d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-500 animate-pulse font-bold" }, "Generating " + d.stereoAiGen + "...")
 
@@ -4554,7 +4554,7 @@ const d = labToolData.artStudio || {};
 
                           disabled: !!d.stereoAiGen || !d.stereoAiStr,
 
-                          className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm"
+                          className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm"
 
                         }, "\u2B1C Generate Depth Map"),
 
@@ -4604,7 +4604,7 @@ const d = labToolData.artStudio || {};
 
                           disabled: !!d.stereoAiGen || !d.stereoAiStr,
 
-                          className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm"
+                          className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm"
 
                         }, "\uD83C\uDFA8 Generate AI Base Tile")
 
@@ -4624,11 +4624,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-cyan-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-cyan-500 mr-1" }, "Presets:"),
 
                       [{ label: 'Sphere', id: 'sphere' }, { label: 'Pyramid', id: 'pyramid' }, { label: 'Heart', id: 'heart' }, { label: 'HI Text', id: 'text' }, { label: 'Rings', id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Export Stereogram", key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Export Stereogram", key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
@@ -4640,9 +4640,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", null,
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600 mb-1" }, "White = pops out \u2022 Gray = middle \u2022 Black = far"),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, "White = pops out \u2022 Gray = middle \u2022 Black = far"),
 
                     React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
 
@@ -4806,7 +4806,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("p", { className: "text-xs font-bold text-teal-700" }, "\uD83D\uDC53 Stereogram Output"),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-600 mb-1" }, "Relax your eyes and look \u2018through\u2019 the image to see 3D"),
+                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, "Relax your eyes and look \u2018through\u2019 the image to see 3D"),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
 
@@ -4958,9 +4958,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 How to View"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 How to View"),
 
-                    React.createElement("ol", { className: "text-[10px] text-slate-600 leading-relaxed list-decimal ml-4 space-y-0.5" },
+                    React.createElement("ol", { className: "text-[11px] text-slate-600 leading-relaxed list-decimal ml-4 space-y-0.5" },
 
                       React.createElement("li", null, "Hold your face close to the screen"),
 
@@ -4986,7 +4986,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("h4", { className: "text-xs font-bold text-purple-700 mb-3" }, "\uD83C\uDFAC Animated Stereogram Studio"),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-600 mb-3" }, "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!"),
+                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" }, "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!"),
 
 
 
@@ -4994,7 +4994,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDCE1 Animation Source"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDCE1 Animation Source"),
 
                     React.createElement("div", { className: "grid grid-cols-5 gap-1" },
 
@@ -5002,7 +5002,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { "aria-label": "Change stereo anim source", key: s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[10px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
 
                         }, s.icon + ' ' + s.label);
 
@@ -5018,7 +5018,7 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource || 'preset') === 'preset' && React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\u2728 Animation Presets"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\u2728 Animation Presets"),
 
                     React.createElement("div", { className: "grid grid-cols-5 gap-1" },
 
@@ -5026,7 +5026,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { "aria-label": "Change stereo anim preset", key: p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[10px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
 
                         }, p.icon + ' ' + p.label);
 
@@ -5042,9 +5042,9 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'draw' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\u270F\uFE0F Draw Depth Keyframes"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\u270F\uFE0F Draw Depth Keyframes"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600" }, "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them."),
 
                     React.createElement("div", { className: "flex gap-1 mb-2" },
 
@@ -5052,7 +5052,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { "aria-label": "Change stereo anim draw brush", key: s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s2.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s2.label);
 
                       })
 
@@ -5060,7 +5060,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
 
                       React.createElement("input", { type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, 'aria-label': 'Draw size', onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
 
@@ -5204,7 +5204,7 @@ const d = labToolData.artStudio || {};
 
                     (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length > 0) && React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-purple-600 mb-1" }, "\uD83C\uDFAC Keyframes: " + d.stereoAnimKeyframes.length),
+                      React.createElement("p", { className: "text-[11px] font-bold text-purple-600 mb-1" }, "\uD83C\uDFAC Keyframes: " + d.stereoAnimKeyframes.length),
 
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
 
@@ -5234,7 +5234,7 @@ const d = labToolData.artStudio || {};
 
                               var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs);
 
-                            }, className: "absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-700 text-white text-[10px] font-bold flex items-center justify-center hover:bg-red-600", style: { lineHeight: '1' } }, "\u00D7")
+                            }, className: "absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-700 text-white text-[11px] font-bold flex items-center justify-center hover:bg-red-600", style: { lineHeight: '1' } }, "\u00D7")
 
                           );
 
@@ -5252,9 +5252,9 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'upload' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDCC2 Upload Depth Map Image"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\uD83D\uDCC2 Upload Depth Map Image"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600" }, "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform."),
 
                     React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
 
@@ -5322,13 +5322,13 @@ const d = labToolData.artStudio || {};
 
                       } }),
 
-                      React.createElement("span", { className: "text-[10px] text-green-600 font-bold" }, "\u2705 Depth map loaded (400\u00D7400)")
+                      React.createElement("span", { className: "text-[11px] text-green-600 font-bold" }, "\u2705 Depth map loaded (400\u00D7400)")
 
                     ),
 
                     React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
@@ -5336,7 +5336,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("button", { "aria-label": "Change stereo anim transform", key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -5352,13 +5352,13 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'transform' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDD04 Transform Depth Map"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\uD83D\uDD04 Transform Depth Map"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600" }, "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map."),
 
                     React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
 
                       React.createElement("div", { className: "flex gap-1" },
 
@@ -5366,7 +5366,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("button", { "aria-label": "Change stereo anim transform", key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -5376,7 +5376,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 mt-2 border border-amber-200" },
 
-                      React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform.")
+                      React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform.")
 
                     )
 
@@ -5388,9 +5388,9 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'ai' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83E\uDD16 AI-Generated Depth Map"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, "\uD83E\uDD16 AI-Generated Depth Map"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600" }, "Describe a 3D scene and AI will generate a depth map, then animate it with a transform."),
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Describe a 3D scene and AI will generate a depth map, then animate it with a transform."),
 
                     callImagen ? React.createElement("div", null,
 
@@ -5478,13 +5478,13 @@ const d = labToolData.artStudio || {};
 
                         } }),
 
-                        React.createElement("span", { className: "text-[10px] text-green-600 font-bold" }, "\u2705 AI depth map ready!")
+                        React.createElement("span", { className: "text-[11px] text-green-600 font-bold" }, "\u2705 AI depth map ready!")
 
                       ),
 
                       React.createElement("div", { className: "mt-2" },
 
-                        React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                        React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
 
                         React.createElement("div", { className: "flex gap-1" },
 
@@ -5492,7 +5492,7 @@ const d = labToolData.artStudio || {};
 
                             return React.createElement("button", { "aria-label": "Change stereo anim transform", key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                              className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                              className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
 
                           })
 
@@ -5502,7 +5502,7 @@ const d = labToolData.artStudio || {};
 
                     ) : React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
 
-                      React.createElement("p", { className: "text-[10px] text-amber-700 font-bold" }, "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead.")
+                      React.createElement("p", { className: "text-[11px] text-amber-700 font-bold" }, "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead.")
 
                     )
 
@@ -5516,7 +5516,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
 
                       React.createElement("input", { type: "range", min: 6, max: 24, value: d.stereoAnimFrameCount || 12, 'aria-label': 'Frame count', onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
@@ -5524,7 +5524,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
 
                       React.createElement("input", { type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, 'aria-label': 'Animation speed', onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
@@ -5534,7 +5534,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "mb-3" },
 
-                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "Pattern Type"),
+                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "Pattern Type"),
 
                     React.createElement("div", { className: "flex gap-1" },
 
@@ -5542,7 +5542,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { "aria-label": "Change stereo pattern", key: s.id, onClick: function() { upd('stereoPattern', s.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s.label);
 
                       })
 
@@ -5558,7 +5558,7 @@ const d = labToolData.artStudio || {};
 
                     return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, s.label + ': ' + val),
+                      React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-0.5" }, s.label + ': ' + val),
 
                       React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function(e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
@@ -5810,11 +5810,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83D\uDC53 Animated Stereogram Output"),
 
-                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
+                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
 
                   ),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-600 mb-2" }, "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move"),
+                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move"),
 
                   React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
 
@@ -5876,9 +5876,9 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-3" },
 
-                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Tips for Animated Stereograms"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Tips for Animated Stereograms"),
 
-                    React.createElement("ul", { className: "text-[10px] text-slate-600 leading-relaxed list-disc ml-4 space-y-0.5" },
+                    React.createElement("ul", { className: "text-[11px] text-slate-600 leading-relaxed list-disc ml-4 space-y-0.5" },
 
                       React.createElement("li", null, "Lock your eyes into the 3D view before clicking Play"),
 
@@ -5926,7 +5926,7 @@ const d = labToolData.artStudio || {};
 
                     // Stats
 
-                    React.createElement("div", { className: "flex gap-3 mb-3 text-[10px] font-bold" },
+                    React.createElement("div", { className: "flex gap-3 mb-3 text-[11px] font-bold" },
 
                       React.createElement("span", { className: "px-2 py-1 rounded-full bg-emerald-100 text-emerald-700" }, '\uD83D\uDD04 Gen: ' + (d.lifeGen || 0)),
 
@@ -5940,7 +5940,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-2" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-0.5" }, 'Speed: ' + (typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10) + ' fps'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-0.5" }, 'Speed: ' + (typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10) + ' fps'),
 
                       React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, 'aria-label': 'Simulation speed', onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
 
@@ -5950,13 +5950,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Grid Size'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, 'Grid Size'),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 40, label: '40\u00D740' }, { id: 60, label: '60\u00D760' }, { id: 80, label: '80\u00D780' }, { id: 120, label: '120\u00D7120' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change life size", key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change life size", key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
 
                         })
 
@@ -5968,13 +5968,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Draw Tool'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, 'Draw Tool'),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'draw', label: '\u270F Draw' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change life tool", key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                          return React.createElement("button", { "aria-label": "Change life tool", key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
 
                         })
 
@@ -5986,7 +5986,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-3" },
 
-                      React.createElement("button", { "aria-label": "Change life wrap", onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
+                      React.createElement("button", { "aria-label": "Change life wrap", onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
 
                       React.createElement("button", { "aria-label": "Random", onClick: function () {
 
@@ -5998,7 +5998,7 @@ const d = labToolData.artStudio || {};
 
                         upd('lifeGrid', newGrid); upd('lifeSeed', Date.now()); upd('lifeGen', 0);
 
-                      }, className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, '\uD83C\uDFB2 Random')
+                      }, className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, '\uD83C\uDFB2 Random')
 
                     ),
 
@@ -6006,13 +6006,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, '\uD83D\uDD0D Visualization'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, '\uD83D\uDD0D Visualization'),
 
                       React.createElement("div", { className: "flex gap-1" },
 
                         [{ id: 'normal', label: '\uD83D\uDFE2 Normal' }, { id: 'heatmap', label: '\uD83C\uDF21 Age Map' }, { id: 'xray', label: '\uD83D\uDD2C X-Ray' }].map(function (v) {
 
-                          return React.createElement("button", { "aria-label": "Change life viz mode", key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, v.label);
+                          return React.createElement("button", { "aria-label": "Change life viz mode", key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, v.label);
 
                         })
 
@@ -6026,7 +6026,7 @@ const d = labToolData.artStudio || {};
 
                     (d.lifeVizMode || 'normal') === 'normal' && React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Cell Color'),
+                      React.createElement("label", { className: "text-[11px] font-bold text-emerald-600 block mb-1" }, 'Cell Color'),
 
                       React.createElement("div", { className: "flex gap-1" },
 
@@ -6048,7 +6048,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mt-3" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-500 block mb-1" }, '\uD83D\uDCDA Pattern Library'),
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500 block mb-1" }, '\uD83D\uDCDA Pattern Library'),
 
                       [
 
@@ -6134,7 +6134,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("h4", { className: "text-[10px] font-bold text-purple-700 mb-2" }, '\uD83E\uDDEC Rule Editor (B/S Notation)'),
+                    React.createElement("h4", { className: "text-[11px] font-bold text-purple-700 mb-2" }, '\uD83E\uDDEC Rule Editor (B/S Notation)'),
 
                     React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.'),
 
@@ -6190,7 +6190,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200" },
 
-                    React.createElement("h4", { className: "text-[10px] font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF Pattern Challenges (+10 XP each)'),
+                    React.createElement("h4", { className: "text-[11px] font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF Pattern Challenges (+10 XP each)'),
 
                     React.createElement("div", { className: "flex gap-1 flex-wrap mb-2" },
 
@@ -6230,7 +6230,7 @@ const d = labToolData.artStudio || {};
 
                     d.lifeChallenge && d.lifeChallengeStatus === 'active' && React.createElement("div", { className: "space-y-1" },
 
-                      React.createElement("p", { className: "text-[10px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
+                      React.createElement("p", { className: "text-[11px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
 
                       React.createElement("p", { className: "text-[11px] text-slate-500" }, 'Draw your pattern, then press \u25B6 Run to test!'),
 
@@ -6246,7 +6246,7 @@ const d = labToolData.artStudio || {};
 
                     d.lifeChallengeStatus === 'fail' && React.createElement("div", { className: "mt-1 px-3 py-2 bg-red-50 rounded-lg border border-red-200" },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-red-500" }, '\u274C ' + (d.lifeChallengeMsg || 'Not quite \u2014 try again!'))
+                      React.createElement("p", { className: "text-[11px] font-bold text-red-500" }, '\u274C ' + (d.lifeChallengeMsg || 'Not quite \u2014 try again!'))
 
                     )
 
@@ -6282,7 +6282,7 @@ const d = labToolData.artStudio || {};
 
                         ),
 
-                        React.createElement("p", { className: "text-[10px] italic mt-1 text-slate-500" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
+                        React.createElement("p", { className: "text-[11px] italic mt-1 text-slate-500" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
 
                       ),
 
@@ -6316,7 +6316,7 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-[10px] text-center text-slate-600 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
+                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
 
                 ),
 
@@ -7560,7 +7560,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   React.createElement("div", { className: "text-lg" }, ct.icon),
 
-                  React.createElement("div", { className: "text-[10px] font-bold" }, ct.label)
+                  React.createElement("div", { className: "text-[11px] font-bold" }, ct.label)
 
                 );
 
@@ -7990,7 +7990,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Sort controls
 
-              React.createElement("span", { className: "text-[10px] font-bold", style: { color: _muted } }, "SORT:"),
+              React.createElement("span", { className: "text-[11px] font-bold", style: { color: _muted } }, "SORT:"),
 
               ['none', 'asc', 'desc'].map(function (s) {
 
@@ -8002,7 +8002,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () { updDS('sortOrder', s); },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all",
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all",
 
                   style: { background: sortOrder === s ? _btnBg : _card, color: sortOrder === s ? '#fff' : _text, border: '1px solid ' + _border }
 
@@ -8012,7 +8012,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Filter controls
 
-              React.createElement("span", { className: "text-[10px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
+              React.createElement("span", { className: "text-[11px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
 
               React.createElement("input", {
 
@@ -8022,13 +8022,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono focus:ring-2 focus:ring-indigo-400",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono focus:ring-2 focus:ring-indigo-400",
 
                 style: { background: _card, border: '1px solid ' + _border, color: _text }
 
               }),
 
-              React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "to"),
+              React.createElement("span", { className: "text-[11px]", style: { color: _muted } }, "to"),
 
               React.createElement("input", {
 
@@ -8038,7 +8038,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono focus:ring-2 focus:ring-indigo-400",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono focus:ring-2 focus:ring-indigo-400",
 
                 style: { background: _card, border: '1px solid ' + _border, color: _text }
 
@@ -8048,13 +8048,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
 
-                className: "px-2 py-1 rounded-lg text-[10px] font-bold",
+                className: "px-2 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
               }, "✕ Clear"),
 
-              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[10px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
+              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[11px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
 
               // Trendline toggle (for line/scatter)
 
@@ -8062,7 +8062,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('showTrendline', !showTrendline); },
 
-                className: "px-2.5 py-1 rounded-lg text-[10px] font-bold ml-auto transition-all",
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
 
                 style: { background: showTrendline ? '#ef4444' : _card, color: showTrendline ? '#fff' : _text, border: '1px solid ' + (showTrendline ? '#ef4444' : _border) }
 
@@ -8076,7 +8076,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
-              React.createElement("span", { className: "text-[10px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
+              React.createElement("span", { className: "text-[11px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
 
               PRESETS.map(function (p, i) {
 
@@ -8086,7 +8086,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:scale-105",
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105",
 
                   style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
@@ -8276,7 +8276,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('dataRows', []); },
 
-                className: "mt-2 px-3 py-1 rounded-lg text-[10px] font-bold",
+                className: "mt-2 px-3 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 

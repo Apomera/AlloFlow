@@ -861,7 +861,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("span", { className: "text-sm font-black" }, sym),
 
-                    React.createElement("span", { className: "text-[10px] opacity-70" }, el?.n || '')
+                    React.createElement("span", { className: "text-[11px] opacity-70" }, el?.n || '')
 
                   );
 
@@ -1259,7 +1259,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     onClick: () => { upd('buildBondFrom', i); },
 
-                    className: "w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
+                    className: "w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
 
                     style: { backgroundColor: a.color },
 
@@ -1303,13 +1303,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("div", null,
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider" }, "Formula: "),
+                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "Formula: "),
 
                     React.createElement("span", { className: "text-lg font-black text-slate-800 font-mono" }, formulaStr)
 
                   ),
 
-                  React.createElement("div", { className: "flex items-center gap-1 text-[10px] text-slate-600" },
+                  React.createElement("div", { className: "flex items-center gap-1 text-[11px] text-slate-600" },
 
                     React.createElement("span", null, (d.buildAtoms || []).length + " atoms"),
 
@@ -1411,7 +1411,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("p", { className: "text-xs text-amber-600" }, d.buildTarget.formula + " \u2014 " + d.buildTarget.desc),
 
-                  React.createElement("p", { className: "text-[10px] text-amber-500 mt-0.5" }, "Recipe: " + Object.entries(d.buildTarget.recipe).map(([el, n]) => el + (n > 1 ? '\u00D7' + n : '')).join(' + '))
+                  React.createElement("p", { className: "text-[11px] text-amber-500 mt-0.5" }, "Recipe: " + Object.entries(d.buildTarget.recipe).map(([el, n]) => el + (n > 1 ? '\u00D7' + n : '')).join(' + '))
 
                 )
 
@@ -1437,7 +1437,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\u{1F914} No known compound matches. Keep experimenting!"),
 
-                    React.createElement("p", { className: "text-[10px] text-amber-500 mt-1" }, "Tip: Click bonds to cycle between single, double, and triple bonds")
+                    React.createElement("p", { className: "text-[11px] text-amber-500 mt-1" }, "Tip: Click bonds to cycle between single, double, and triple bonds")
 
                   )
 
@@ -1487,7 +1487,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("div", { className: "w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white font-bold shadow-md flex-shrink-0", style: { backgroundColor: d.selectedElement.c } },
 
-                      React.createElement("span", { className: "text-[10px] opacity-80" }, d.selectedElement.n),
+                      React.createElement("span", { className: "text-[11px] opacity-80" }, d.selectedElement.n),
 
                       React.createElement("span", { className: "text-xl font-black" }, d.selectedElement.s)
 
@@ -1518,11 +1518,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDD27 Common Uses"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDD27 Common Uses"),
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[10px] font-medium text-slate-700 border border-slate-200/80" }, use))
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-200/80" }, use))
 
                         )
 
@@ -1530,11 +1530,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83E\uDDEA Key Compounds"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83E\uDDEA Key Compounds"),
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[10px] font-medium text-slate-700 border border-slate-200/80" }, comp))
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-200/80" }, comp))
 
                         )
 
@@ -1544,11 +1544,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     relatedCompounds.length > 0 && React.createElement("div", { className: "mt-2" },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
 
                       )
 
@@ -1558,7 +1558,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200/50" },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
 
                       React.createElement("span", { className: "ml-2 text-[11px] text-slate-600 font-normal" },
                         "Config: " + getElectronConfig(d.selectedElement.n) +
@@ -1816,7 +1816,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         }),
 
-                        React.createElement("div", { className: "text-[10px] text-slate-600 space-y-1 leading-relaxed" },
+                        React.createElement("div", { className: "text-[11px] text-slate-600 space-y-1 leading-relaxed" },
 
                           React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Protons: "), "" + d.selectedElement.n),
 
@@ -1878,9 +1878,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       if (!el) return React.createElement("div", { key: ri + '-' + ci });
 
-                      return React.createElement("button", { "aria-label": "Select element: " + el.name + " (" + el.s + ")", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[10px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
+                      return React.createElement("button", { "aria-label": "Select element: " + el.name + " (" + el.s + ")", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[11px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
 
-                        React.createElement("span", { className: "font-black text-[10px] leading-none" }, el.s),
+                        React.createElement("span", { className: "font-black text-[11px] leading-none" }, el.s),
 
                         React.createElement("span", { className: "opacity-60 leading-none" }, el.n)
 
@@ -2073,7 +2073,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   // Atom count table
                   React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border mb-3" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "Atom Count"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "Atom Count"),
                     React.createElement("div", { className: "grid grid-cols-3 gap-1 text-xs" },
                       React.createElement("span", { className: "font-bold text-slate-600 text-center" }, "Element"),
                       React.createElement("span", { className: "font-bold text-slate-600 text-center" }, "Left"),
@@ -2109,7 +2109,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   ),
 
                   // Progress
-                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[10px] text-slate-600" },
+                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[11px] text-slate-600" },
                     React.createElement("span", null, "⚖️ " + reactionsBalanced + " balanced"),
                     React.createElement("span", null, "Reaction " + (currentReactionIdx + 1) + "/" + REACTIONS.length)
                   )
@@ -2133,9 +2133,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg" }, done ? '✅' : ch.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold " + (done ? 'text-emerald-700 line-through' : 'text-slate-700') }, ch.name),
-                        React.createElement("p", { className: "text-[10px] " + (done ? 'text-emerald-500' : 'text-slate-500') }, ch.desc)
+                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-500') }, ch.desc)
                       ),
-                      React.createElement("span", { className: "text-[10px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
+                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
                     );
                   })
                 )
@@ -2170,7 +2170,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("button", { "aria-label": "Ask: " + q,
                         key: q,
                         onClick: () => { upd('aiQuestion', q); askChemTutor(q); },
-                        className: "px-2 py-1 rounded text-[10px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                        className: "px-2 py-1 rounded text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                       }, q)
                     )
                   ),
@@ -2181,7 +2181,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                         React.createElement("p", { className: "text-xs text-indigo-700 leading-relaxed" }, aiAnswer),
                         React.createElement("button", { "aria-label": "Read Aloud",
                           onClick: () => speakText(aiAnswer),
-                          className: "mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+                          className: "mt-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
                         }, "🔊 Read Aloud")
                       )
                     )
