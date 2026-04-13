@@ -8,7 +8,7 @@
   function sfxTectErupt() { tectTone(60, 0.4, 'sawtooth', 0.09); setTimeout(function() { tectTone(100, 0.3, 'sawtooth', 0.07); }, 150); if (window._alloHaptic) window._alloHaptic('launch'); }
   function sfxTectClick() { tectTone(600, 0.03, 'sine', 0.04); }
   function sfxTectCorrect() { tectTone(523, 0.08, 'sine', 0.07); setTimeout(function() { tectTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { tectTone(784, 0.1, 'sine', 0.08); }, 140); }
-  if (!document.getElementById('tect-a11y')) { var _s = document.createElement('style'); _s.id = 'tect-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('tect-a11y')) { var _s = document.createElement('style'); _s.id = 'tect-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
   // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',
@@ -1410,7 +1410,7 @@ var d = labToolData.plateTectonics || {};
                       style: { background: isActive ? 'linear-gradient(135deg, #fecaca, #fca5a5)' : 'white', border: '2px solid ' + (isActive ? '#ef4444' : '#fecaca') }
                     },
                       React.createElement('div', { className: 'text-lg' }, era.icon || '\uD83C\uDF0D'),
-                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-500') }, era.name),
+                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-600') }, era.name),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, era.mya)
                     );
                   })
@@ -1916,7 +1916,7 @@ var d = labToolData.plateTectonics || {};
 
                         key: oi,
 
-                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-400")
+                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-600")
 
                       }, (isCorrect ? "\u2705 " : wasSelected ? "\u274C " : "") + String.fromCharCode(65 + oi) + ". " + opt);
 
@@ -2000,7 +2000,7 @@ var d = labToolData.plateTectonics || {};
 
                           React.createElement("td", { className: "py-1.5 text-slate-600 w-32" }, r[1]),
 
-                          React.createElement("td", { className: "py-1.5 text-slate-500" }, r[2])
+                          React.createElement("td", { className: "py-1.5 text-slate-600" }, r[2])
 
                         );
 

@@ -3594,24 +3594,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var roofMesh = new T.Mesh(roofGeo, roofMat);
           roofMesh.position.set(-0.1, 0.97, 0);
           playerCarGroup.add(roofMesh);
-          // Windshield (angled glass)
-          var wsGeo = new T.PlaneGeometry(0.45, 0.38);
-          var wsMat = new T.MeshBasicMaterial({ color: 0x0c4a6e, transparent: true, opacity: 0.65, side: T.DoubleSide });
-          var ws = new T.Mesh(wsGeo, wsMat);
-          ws.position.set(0.38, 0.9, 0); ws.rotation.y = Math.PI / 2; ws.rotation.z = -0.2;
+          // Glass material — tinted, semi-transparent, both sides visible
+          var glassMat = new T.MeshPhysicalMaterial ? new T.MeshPhysicalMaterial({
+            color: 0x88bbdd, transparent: true, opacity: 0.35,
+            roughness: 0.1, metalness: 0.1, side: T.DoubleSide
+          }) : new T.MeshBasicMaterial({ color: 0x88bbdd, transparent: true, opacity: 0.35, side: T.DoubleSide });
+          // Windshield (angled, box-like for thickness)
+          var wsGeo = new T.BoxGeometry(0.03, 0.34, 0.78);
+          var ws = new T.Mesh(wsGeo, glassMat);
+          ws.position.set(0.4, 0.92, 0);
+          ws.rotation.z = -0.25; // slight rake angle
           playerCarGroup.add(ws);
           // Rear windshield
-          var rwsGeo = new T.PlaneGeometry(0.35, 0.34);
-          var rws = new T.Mesh(rwsGeo, wsMat);
-          rws.position.set(-0.57, 0.88, 0); rws.rotation.y = -Math.PI / 2; rws.rotation.z = 0.15;
+          var rwsGeo = new T.BoxGeometry(0.03, 0.3, 0.72);
+          var rws = new T.Mesh(rwsGeo, glassMat);
+          rws.position.set(-0.55, 0.9, 0);
+          rws.rotation.z = 0.2;
           playerCarGroup.add(rws);
-          // Side windows (left + right)
-          var sideWinGeo = new T.PlaneGeometry(0.6, 0.28);
-          var sideWinMatL = new T.Mesh(sideWinGeo, wsMat);
-          sideWinMatL.position.set(-0.1, 0.92, 0.42); sideWinMatL.rotation.y = 0;
-          playerCarGroup.add(sideWinMatL);
-          var sideWinR = new T.Mesh(sideWinGeo, wsMat);
-          sideWinR.position.set(-0.1, 0.92, -0.42); sideWinR.rotation.y = Math.PI;
+          // Side windows (left + right) — properly inset into the body
+          var sideWinGeo = new T.BoxGeometry(0.55, 0.24, 0.02);
+          var sideWinL = new T.Mesh(sideWinGeo, glassMat);
+          sideWinL.position.set(-0.08, 0.93, 0.44);
+          playerCarGroup.add(sideWinL);
+          var sideWinR = new T.Mesh(sideWinGeo, glassMat);
+          sideWinR.position.set(-0.08, 0.93, -0.44);
           playerCarGroup.add(sideWinR);
           // Front bumper
           var bumperGeo = new T.BoxGeometry(0.1, 0.2, 0.98);

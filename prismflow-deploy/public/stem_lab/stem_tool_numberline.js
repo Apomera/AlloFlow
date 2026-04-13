@@ -653,7 +653,7 @@ window.StemLab = window.StemLab || {
               // Toggle
               h('button', { 'aria-label': 'Sfx Click',
                 onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
-                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-500') + ' hover:text-violet-800 transition-colors'
+                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-600') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
             );
           };

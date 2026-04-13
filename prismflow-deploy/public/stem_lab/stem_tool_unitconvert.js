@@ -371,7 +371,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   title: badge.desc
                 },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.label)
                 );
               })
             )
@@ -851,7 +851,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             d.loadingWP && h('div', { className: 'text-center py-12' },
               h('div', { className: 'inline-block w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full', style: { animation: 'spin 1s linear infinite' } }),
-              h('p', { className: 'text-sm text-slate-500 mt-3' }, 'Crafting your word problem...')
+              h('p', { className: 'text-sm text-slate-600 mt-3' }, 'Crafting your word problem...')
             ),
 
             !d.wordProblem && !d.loadingWP && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },

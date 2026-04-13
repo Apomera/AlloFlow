@@ -3327,7 +3327,7 @@ var d = labToolData.cell;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
 
@@ -3479,7 +3479,7 @@ var d = labToolData.cell;
 
                           React.createElement("p", { className: "text-xs font-black text-slate-700" }, "Goal: " + org.activity),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-500" }, org.activityDesc + " Earn +" + org.xp + " XP per success!")
+                          React.createElement("p", { className: "text-[11px] text-slate-600" }, org.activityDesc + " Earn +" + org.xp + " XP per success!")
 
                         )
 
@@ -3673,7 +3673,7 @@ var d = labToolData.cell;
 
                 React.createElement("span", { className: "font-bold text-slate-700" }, "\u{1F3AF} " + selDef.activity + ": "),
 
-                React.createElement("span", { className: "text-slate-500" }, selDef.activityDesc),
+                React.createElement("span", { className: "text-slate-600" }, selDef.activityDesc),
 
                 React.createElement("span", { className: "ml-2 font-bold", style: { color: selDef.color } }, "+" + selDef.xp + " XP")
 
@@ -3717,7 +3717,7 @@ var d = labToolData.cell;
 
                         React.createElement("span", { className: "font-bold text-slate-700" }, a.name + ": "),
 
-                        React.createElement("span", { className: "text-slate-500" }, a.fn)
+                        React.createElement("span", { className: "text-slate-600" }, a.fn)
 
                       )
 

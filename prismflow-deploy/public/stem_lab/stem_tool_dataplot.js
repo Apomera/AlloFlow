@@ -794,8 +794,8 @@ window.StemLab = window.StemLab || {
           h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
           n >= 2 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex gap-1.5' },
-            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
-            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\u2328\uFE0F'),
+            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
             h('button', { 'aria-label': 'Select option', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             h('button', { 'aria-label': 'Set Tool Snapshots', onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[11px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
           )
@@ -828,8 +828,8 @@ window.StemLab = window.StemLab || {
               return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] ' + (earned ? 'text-amber-600' : 'text-slate-600') }, badge.desc)
                 )
               );
             })
@@ -1307,7 +1307,7 @@ window.StemLab = window.StemLab || {
 
               // Stem-and-Leaf Display
               h('div', null,
-                h('button', { 'aria-label': 'Stem', onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[11px] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-500') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
+                h('button', { 'aria-label': 'Stem', onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[11px] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-600') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
                 showStemLeaf && stemLeafData.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 mt-1.5 font-mono text-sm' },
                   h('div', { className: 'flex gap-1 mb-2' },
                     h('span', { className: 'text-[11px] font-bold text-teal-600 font-sans' }, 'Stem'),
@@ -1317,7 +1317,7 @@ window.StemLab = window.StemLab || {
                   stemLeafData.map(function(row) {
                     return h('div', { key: row.stem, className: 'flex gap-1 items-center py-0.5' },
                       h('span', { className: 'text-right w-8 font-bold text-teal-700' }, row.stem),
-                      h('span', { className: 'text-slate-400' }, '|'),
+                      h('span', { className: 'text-slate-600' }, '|'),
                       h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
                     );
                   }),

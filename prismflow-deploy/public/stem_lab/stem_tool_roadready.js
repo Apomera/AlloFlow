@@ -3688,18 +3688,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var dashPanel = new T.Mesh(dashPanelGeo, dashPanelMat);
           dashPanel.position.set(0, -0.38, -0.7);
           dashGroup.add(dashPanel);
-          // Gauge cluster background (dark circle behind speedometer)
-          var gaugeBgGeo = new T.CircleGeometry(0.12, 24);
-          var gaugeBgMat = new T.MeshBasicMaterial({ color: 0x0a0a14 });
-          var gaugeBg = new T.Mesh(gaugeBgGeo, gaugeBgMat);
-          gaugeBg.position.set(-0.25, -0.28, -0.68);
-          dashGroup.add(gaugeBg);
-          // Gauge ring (white circle outline)
-          var gaugeRingGeo = new T.RingGeometry(0.10, 0.12, 24);
-          var gaugeRingMat = new T.MeshBasicMaterial({ color: 0x334155, side: T.DoubleSide });
-          var gaugeRing = new T.Mesh(gaugeRingGeo, gaugeRingMat);
-          gaugeRing.position.set(-0.25, -0.28, -0.679);
-          dashGroup.add(gaugeRing);
+          // Speedometer gauge face with mph numbers (canvas-textured)
+          var gaugeMaxMph = Math.max(80, currentScenario.speedLimit + 30);
+          var gaugeFaceCanvas = document.createElement('canvas');
+          gaugeFaceCanvas.width = 256; gaugeFaceCanvas.height = 256;
+          var gCtx = gaugeFaceCanvas.getContext('2d');
+          // Dark background
+          gCtx.fillStyle = '#0a0a14';
+          gCtx.beginPath(); gCtx.arc(128, 128, 120, 0, Math.PI * 2); gCtx.fill();
+          // Outer ring
+          gCtx.strokeStyle = '#334155'; gCtx.lineWidth = 4;
+          gCtx.beginPath(); gCtx.arc(128, 128, 118, 0, Math.PI * 2); gCtx.stroke();
+          // Speed zone arcs (green, yellow, red)
+          var limitAngle3d = Math.PI + (currentScenario.speedLimit / gaugeMaxMph) * Math.PI;
+          var overAngle3d = Math.PI + (Math.min(gaugeMaxMph, currentScenario.speedLimit + 10) / gaugeMaxMph) * Math.PI;
+          gCtx.strokeStyle = '#22c55e'; gCtx.lineWidth = 8;
+          gCtx.beginPath(); gCtx.arc(128, 128, 105, Math.PI, limitAngle3d); gCtx.stroke();
+          gCtx.strokeStyle = '#f59e0b';
+          gCtx.beginPath(); gCtx.arc(128, 128, 105, limitAngle3d, overAngle3d); gCtx.stroke();
+          gCtx.strokeStyle = '#ef4444';
+          gCtx.beginPath(); gCtx.arc(128, 128, 105, overAngle3d, 2 * Math.PI); gCtx.stroke();
+          // Tick marks + numbers
+          gCtx.fillStyle = '#94a3b8'; gCtx.font = 'bold 16px monospace'; gCtx.textAlign = 'center'; gCtx.textBaseline = 'middle';
+          for (var gti = 0; gti <= gaugeMaxMph; gti += 10) {
+            var gAngle = Math.PI + (gti / gaugeMaxMph) * Math.PI;
+            var innerR = 90, outerR = 98, numR = 80;
+            gCtx.strokeStyle = '#64748b'; gCtx.lineWidth = gti % 20 === 0 ? 3 : 1;
+            gCtx.beginPath();
+            gCtx.moveTo(128 + Math.cos(gAngle) * innerR, 128 + Math.sin(gAngle) * innerR);
+            gCtx.lineTo(128 + Math.cos(gAngle) * outerR, 128 + Math.sin(gAngle) * outerR);
+            gCtx.stroke();
+            // Numbers every 20 mph
+            if (gti % 20 === 0) {
+              gCtx.fillStyle = gti > currentScenario.speedLimit + 10 ? '#ef4444' : '#e2e8f0';
+              gCtx.fillText(String(gti), 128 + Math.cos(gAngle) * numR, 128 + Math.sin(gAngle) * numR);
+            }
+          }
+          // "MPH" label
+          gCtx.fillStyle = '#64748b'; gCtx.font = 'bold 14px system-ui';
+          gCtx.fillText('MPH', 128, 155);
+          // Center dot
+          gCtx.fillStyle = '#ffffff';
+          gCtx.beginPath(); gCtx.arc(128, 128, 5, 0, Math.PI * 2); gCtx.fill();
+          var gaugeFaceTex = new T.CanvasTexture(gaugeFaceCanvas);
+          gaugeFaceTex.minFilter = T.LinearFilter;
+          var gaugeFaceMat = new T.MeshBasicMaterial({ map: gaugeFaceTex, transparent: true });
+          var gaugeFaceGeo = new T.CircleGeometry(0.12, 32);
+          var gaugeFace = new T.Mesh(gaugeFaceGeo, gaugeFaceMat);
+          gaugeFace.position.set(-0.25, -0.28, -0.679);
+          dashGroup.add(gaugeFace);
           // Speedometer needle (thin red line that rotates)
           var needleGeo = new T.BoxGeometry(0.005, 0.09, 0.002);
           var needleMat = new T.MeshBasicMaterial({ color: 0xff3333 });
@@ -3860,6 +3897,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             speedNeedle: needleMesh,
             rpmNeedle: rpmNeedle,
             steeringWheel3d: sw3d,
+            gaugeMaxMph: gaugeMaxMph,
+            digitalSpeedCanvas: null, // will be created on first update
+            digitalSpeedMesh: null,
             cloudGroup: cloudGroup,
             tireSprayParticles: tireSprayParticles
           };
@@ -4014,9 +4054,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.dashboardGroup.visible = (camMode === 'cockpit');
             if (camMode === 'cockpit') {
               // Speed needle: rotate from -135° (0 mph) to +135° (max mph)
-              var maxGauge = Math.max(80, currentScenario.speedLimit + 30);
-              var speedFrac = Math.min(1, (Math.abs(car.speed) * MS_TO_MPH) / maxGauge);
+              var maxGauge = s3.gaugeMaxMph || 80;
+              var curSpeedMph = Math.round(Math.abs(car.speed) * MS_TO_MPH);
+              var speedFrac = Math.min(1, curSpeedMph / maxGauge);
               s3.speedNeedle.rotation.z = (0.75 - speedFrac * 1.5) * Math.PI;
+              // Digital speed readout on dashboard (updated canvas texture)
+              if (!s3.digitalSpeedCanvas) {
+                s3.digitalSpeedCanvas = document.createElement('canvas');
+                s3.digitalSpeedCanvas.width = 128; s3.digitalSpeedCanvas.height = 48;
+                var dsTex = new window.THREE.CanvasTexture(s3.digitalSpeedCanvas);
+                dsTex.minFilter = window.THREE.LinearFilter;
+                var dsMat = new window.THREE.MeshBasicMaterial({ map: dsTex, transparent: true });
+                var dsGeo = new window.THREE.PlaneGeometry(0.08, 0.03);
+                s3.digitalSpeedMesh = new window.THREE.Mesh(dsGeo, dsMat);
+                s3.digitalSpeedMesh.position.set(-0.25, -0.33, -0.677);
+                s3.dashboardGroup.add(s3.digitalSpeedMesh);
+              }
+              // Update the digital readout every few frames
+              if (Math.floor(timeRef.current * 10) % 3 === 0) {
+                var dsCtx = s3.digitalSpeedCanvas.getContext('2d');
+                dsCtx.fillStyle = '#000'; dsCtx.fillRect(0, 0, 128, 48);
+                dsCtx.fillStyle = curSpeedMph > currentScenario.speedLimit + 5 ? '#ef4444' : '#4ade80';
+                dsCtx.font = 'bold 32px monospace'; dsCtx.textAlign = 'center';
+                dsCtx.fillText(curSpeedMph, 64, 36);
+                s3.digitalSpeedMesh.material.map.needsUpdate = true;
+              }
               // RPM needle: approximate from speed + throttle
               var rpmFrac = Math.min(1, (car.speed * 0.05 + car.throttle * 0.3));
               s3.rpmNeedle.rotation.z = (0.75 - rpmFrac * 1.5) * Math.PI;
@@ -5376,7 +5438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             role: 'application',
             'aria-label': 'RoadReady driving simulator. W/S throttle and brake, A/D steering, C camera toggle, Space pause.',
             tabIndex: 0,
-            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', outline: 'none', pointerEvents: 'none' }
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', outline: 'none', pointerEvents: 'none', zIndex: 2 }
           }),
           // Controls legend
           h('div', { style: { position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },
@@ -5396,7 +5458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · Q Horn · SPACE Pause'
           ),
           // ── Touch controls for mobile/tablet ──
-          h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 15 },
+          h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
             className: 'touch-controls' },
             // Throttle (big green button)
             h('button', {
@@ -5434,7 +5496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, '▼')
           ),
           // Left side touch: gear + signals
-          h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 15 },
+          h('div', { style: { position: 'absolute', bottom: '110px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
             className: 'touch-controls' },
             h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
@@ -5447,7 +5509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, 'Signal ►')
           ),
           // Free Explore live condition toolbar
-          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 10, minWidth: '160px' } },
+          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '110px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 15, minWidth: '160px' } },
             h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '6px', textAlign: 'center' } }, '🌎 FREE EXPLORE'),
             // Weather row
             h('div', { style: { display: 'flex', gap: '3px', marginBottom: '4px', justifyContent: 'center' } },
