@@ -5123,11 +5123,13 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           bodyContent = bodyContent.replace(/(<\/(?:section|article|div)>)\s*<hr\s*\/?>\s*(<(?:section|article|div))/gi, '$1\n$2');
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
-          // Uses 4KB chunks to stay well within Gemini's output token limit
+          // Uses 2KB chunks — gemini-3-flash-preview truncates at ~1KB output, so chunks must be small
+          // Only 1 pass — if >50% of chunks fail, a second pass won't help
           if (pdfPolishPasses > 0) {
-            const POLISH_CHUNK = 4000;
-            const polishViolations = 'TABLE CONTINUITY: Merge table fragments split across sections — combine <thead>/<tbody> that were separated.\nSTYLE CONSISTENCY: Unify inline CSS — if similar headings or paragraphs use different colors/fonts, match them to the dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries — orphaned closing tags, repeated introductory text, or awkward breaks.\nPRESERVE ALL CONTENT AND INLINE STYLES. Do NOT summarize, shorten, or remove any unique text.';
-            for (let polishIdx = 0; polishIdx < pdfPolishPasses; polishIdx++) {
+            const POLISH_CHUNK = 2000;
+            const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
+            const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
+            for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
               updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses} (style + table unification)...`);
               _pipeLog('Polish', 'Phase 2: AI polish pass ' + (polishIdx + 1) + ' (' + POLISH_CHUNK + ' char chunks)');
               try {
