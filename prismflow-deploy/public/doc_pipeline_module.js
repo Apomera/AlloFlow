@@ -72,7 +72,7 @@ var createDocPipeline = function(deps) {
     var callNum = ++_pipelineStats.apiCalls;
     _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
     var t0 = performance.now();
-    return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 120000, 90000, 'callGemini').then(function(result) {
+    return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini').then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;

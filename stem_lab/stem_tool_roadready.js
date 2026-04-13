@@ -5297,6 +5297,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillStyle = s.type === 'stop' ? '#ef4444' : s.state === 'green' ? '#22c55e' : s.state === 'yellow' ? '#fbbf24' : '#ef4444';
             gfx.beginPath(); gfx.arc(mx, my, 2.5, 0, Math.PI * 2); gfx.fill();
           });
+          // Quest destination marker on minimap
+          if (questRef.current && !questRef.current.completed && d.freeExplore) {
+            var qm = questRef.current;
+            var qRelX = (qm.x - car.x) / mmScale;
+            var qRelY = (qm.y - car.y) / mmScale;
+            var qCosH = Math.cos(-car.heading + Math.PI / 2);
+            var qSinH = Math.sin(-car.heading + Math.PI / 2);
+            var qmx = mmX + mmSize / 2 + qRelX * qCosH - qRelY * qSinH;
+            var qmy = mmY + mmSize / 2 + qRelX * qSinH + qRelY * qCosH;
+            // Clamp to minimap edge if destination is far
+            qmx = Math.max(mmX + 4, Math.min(mmX + mmSize - 4, qmx));
+            qmy = Math.max(mmY + 4, Math.min(mmY + mmSize - 4, qmy));
+            gfx.fillStyle = '#fbbf24';
+            gfx.beginPath(); gfx.arc(qmx, qmy, 3, 0, Math.PI * 2); gfx.fill();
+            gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.arc(qmx, qmy, 5, 0, Math.PI * 2); gfx.stroke();
+          }
           // Player car icon (always center, pointing up)
           gfx.fillStyle = '#22d3ee';
           gfx.beginPath();

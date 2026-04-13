@@ -4139,80 +4139,8 @@ const useTranslation = (targetLanguage, apiKey) => {
     reader.readAsText(file);
   }, []);
 
-  // ── Live chunk review: listen for events from doc_pipeline during remediation ──
-  useEffect(() => {
-    const onSessionStart = (e) => {
-      try {
-        setLiveChunkStream([]);
-        setLiveChunkSessionActive(true);
-        setLiveChunkExpanded({});
-        setLiveChunkRejected({});
-        setChunkResumePrompt(null);
-        setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
-      } catch(ex) { /* non-blocking */ }
-    };
-    const onResumeAvailable = (e) => {
-      try { setChunkResumePrompt(e.detail); } catch(ex) { /* non-blocking */ }
-    };
-    const onBoringPalette = () => {
-      try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking */ }
-    };
-    const onExtractionComplete = (e) => {
-      try { setExtractionData(e.detail); } catch(ex) { /* non-blocking */ }
-    };
-    const onFixIssuesDetected = (e) => {
-      try { setFixIssuesList(e.detail); } catch(ex) { /* non-blocking */ }
-    };
-    const onChunkStart = (e) => {
-      try {
-        setLiveChunkStream(prev => {
-          const idx = e.detail.index;
-          if (prev.find(c => c.index === idx)) return prev;
-          return [...prev, { ...e.detail, status: 'working' }];
-        });
-      } catch(ex) { /* non-blocking */ }
-    };
-    const onChunkFixed = (e) => {
-      try {
-        setLiveChunkStream(prev => {
-          const idx = e.detail.index;
-          const existing = prev.find(c => c.index === idx);
-          if (existing) {
-            return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
-          }
-          return [...prev, { ...e.detail, status: 'complete' }];
-        });
-        setChunkSaveFlash(true);
-        setTimeout(() => setChunkSaveFlash(false), 2000);
-      } catch(ex) { /* non-blocking */ }
-    };
-    const onChunkRefixed = (e) => {
-      try { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); } catch(ex) { /* non-blocking */ }
-    };
-    const onSessionComplete = (e) => {
-      try { setLiveChunkSessionActive(false); } catch(ex) { /* non-blocking */ }
-    };
-    window.addEventListener('alloflow:chunk-session-start', onSessionStart);
-    window.addEventListener('alloflow:chunk-start', onChunkStart);
-    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
-    window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
-    window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
-    window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
-    window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
-    window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
-    window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
-    return () => {
-      window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
-      window.removeEventListener('alloflow:chunk-start', onChunkStart);
-      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
-      window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
-      window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
-      window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
-      window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
-      window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
-      window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
-    };
-  }, []);
+  // NOTE: Live chunk review event listeners moved to AlloFlowContent (after state declarations)
+  // They were incorrectly placed here inside useTranslation where setLiveChunkStream is not in scope.
 
   useEffect(() => {
     if (!targetLanguage || targetLanguage === 'English') {
@@ -12940,6 +12868,41 @@ Return only the corrected version of this exact text:`;
   const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
   const [fixIssuesList, setFixIssuesList] = useState(null); // specific issues found for display during Step 4
   const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {} } — shown during wait
+
+  // ── Live chunk review: listen for events from doc_pipeline during remediation ──
+  // MUST be in AlloFlowContent (not useTranslation) so setLiveChunkStream etc. are in scope
+  useEffect(() => {
+    const onSessionStart = () => { setLiveChunkStream([]); setLiveChunkSessionActive(true); setLiveChunkExpanded({}); setLiveChunkRejected({}); setChunkResumePrompt(null); setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); };
+    const onResumeAvailable = (e) => { setChunkResumePrompt(e.detail); };
+    const onBoringPalette = () => { setBoringPalettePrompt(true); };
+    const onExtractionComplete = (e) => { setExtractionData(e.detail); };
+    const onFixIssuesDetected = (e) => { setFixIssuesList(e.detail); };
+    const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
+    const onChunkFixed = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; const existing = prev.find(c => c.index === idx); if (existing) { return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c); } return [...prev, { ...e.detail, status: 'complete' }]; }); setChunkSaveFlash(true); setTimeout(() => setChunkSaveFlash(false), 2000); };
+    const onChunkRefixed = (e) => { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); };
+    const onSessionComplete = () => { setLiveChunkSessionActive(false); };
+    window.addEventListener('alloflow:chunk-session-start', onSessionStart);
+    window.addEventListener('alloflow:chunk-start', onChunkStart);
+    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
+    window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
+    window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
+    window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
+    window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
+    window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
+    window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
+    return () => {
+      window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
+      window.removeEventListener('alloflow:chunk-start', onChunkStart);
+      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
+      window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
+      window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
+      window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
+      window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
+      window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
+      window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
+    };
+  }, []);
+
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
