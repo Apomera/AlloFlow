@@ -4876,7 +4876,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var lf = new T.Mesh(lfGeo, treeLMat);
                     lf.position.set(wx, tH * 0.55 + tH * 0.3, wz);
                     lf.castShadow = true;
-                    chunkGroup.add(lfGeo);
                     chunkGroup.add(lf);
                   }
                 }
