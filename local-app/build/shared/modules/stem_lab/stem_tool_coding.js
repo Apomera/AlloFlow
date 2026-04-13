@@ -1,11 +1,3 @@
-  // ── Coding Playground Audio ──
-  var _codeAC = null;
-  function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
-  function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
-  function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
-  function sfxCodeError() { codeTone(220, 0.15, 'sawtooth', 0.06); setTimeout(function() { codeTone(180, 0.12, 'sawtooth', 0.05); }, 80); }
-  function sfxCodeSuccess() { codeTone(523, 0.08, 'sine', 0.07); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { codeTone(784, 0.1, 'sine', 0.08); }, 140); setTimeout(function() { codeTone(1047, 0.15, 'sine', 0.09); }, 210); }
-
   window.StemLab.registerTool('codingPlayground', {
     icon: '🔬',
     label: 'codingPlayground',
@@ -1137,7 +1129,6 @@
 
           // ── Run handler ──
           function handleRun() {
-            sfxCodeRun();
             var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
             var startTurtle, startLines;
             if (cumulativeMode) {
@@ -1165,10 +1156,9 @@
                       var newCompleted = completed.concat([ch.id]);
                       upd('completed', newCompleted);
                       awardStemXP('codingPlayground', 15, 'Completed: ' + ch.title);
-                      // Victory sound effect (uses shared audio context)
-                      sfxCodeSuccess();
+                      // Victory sound effect
                       try {
-                        var actx = getCodeAC();
+                        var actx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
                         var notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
                         notes.forEach(function(freq, ni) {
                           var o = actx.createOscillator(); var g = actx.createGain();
@@ -2096,7 +2086,7 @@
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
                     )
                   ),

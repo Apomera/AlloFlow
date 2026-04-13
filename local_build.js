@@ -71,7 +71,7 @@ const SECTION_ORDER = [
     'CAST_LOBBY',
     'READ_THIS_PAGE',
     'BILINGUAL_RENDERER',
-    '__main_app__',
+    'ESCAPE_ROOM_ENGINE',
 ];
 
 function sectionFilename(name) {
