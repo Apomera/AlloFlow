@@ -1686,6 +1686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var blackBoxRef = useRef([]); // last 5 seconds of car state for crash replay
       var drivePathRef = useRef([]); // full drive path for debrief map (sampled every 0.5s)
       var infiniteWorldRef = useRef(null); // procedural infinite world (Free Explore only)
+      var questRef = useRef(null); // { destination: {name, x, y, icon}, distanceMi, completed, reward }
       var rearviewRef = useRef(null); // canvas ref for mirror
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
       var earnedBadges = d.badges || {};
@@ -2028,6 +2029,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             checkSignalCompliance();
             checkCyclistPassing();
             checkCollisions();
+            // ── Quest / destination system (Free Explore) ──
+            if (d.freeExplore) {
+              var q = questRef.current;
+              // Generate a new quest if none active
+              if (!q || q.completed) {
+                var destinations = [
+                  { name: 'Gas Station', icon: '⛽', dist: 40 + Math.random() * 60 },
+                  { name: 'School', icon: '🏫', dist: 30 + Math.random() * 50 },
+                  { name: 'Hospital', icon: '🏥', dist: 50 + Math.random() * 80 },
+                  { name: 'Grocery Store', icon: '🛒', dist: 25 + Math.random() * 40 },
+                  { name: 'Park', icon: '🌳', dist: 20 + Math.random() * 30 },
+                  { name: 'Library', icon: '📚', dist: 35 + Math.random() * 45 },
+                  { name: 'Fire Station', icon: '🚒', dist: 40 + Math.random() * 50 },
+                  { name: 'Post Office', icon: '📮', dist: 30 + Math.random() * 40 },
+                  { name: 'Pizza Place', icon: '🍕', dist: 15 + Math.random() * 25 },
+                  { name: 'Friend\'s House', icon: '🏠', dist: 20 + Math.random() * 35 }
+                ];
+                var dest = destinations[Math.floor(Math.random() * destinations.length)];
+                // Place destination along the road, ahead of the player
+                questRef.current = {
+                  name: dest.name,
+                  icon: dest.icon,
+                  y: carRef.current.y - dest.dist, // north (negative Y = ahead when heading -PI/2)
+                  x: Math.floor(MAP_SIZE / 2) + 1.5, // on the road
+                  startDist: dest.dist,
+                  completed: false,
+                  announced: false,
+                  questsCompleted: (q ? q.questsCompleted || 0 : 0)
+                };
+                if (q && q.completed) {
+                  addToast('🗺️ New destination: ' + dest.icon + ' ' + dest.name + ' — ' + Math.round(dest.dist * 10) + ' ft ahead');
+                  speak('New destination: ' + dest.name + '. Drive north to reach it.');
+                }
+              }
+              // Check if player reached the destination
+              q = questRef.current;
+              if (q && !q.completed) {
+                var qdist = Math.hypot(carRef.current.x - q.x, carRef.current.y - q.y);
+                if (qdist < 5) {
+                  q.completed = true;
+                  q.questsCompleted = (q.questsCompleted || 0) + 1;
+                  addToast('✅ Arrived at ' + q.icon + ' ' + q.name + '! Quest #' + q.questsCompleted + ' complete.');
+                  speak('You arrived at ' + q.name + '. Nice driving!');
+                  statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 3);
+                }
+                // Announce when getting close
+                if (!q.announced && qdist < 15) {
+                  q.announced = true;
+                  addToast(q.icon + ' ' + q.name + ' is just ahead!');
+                }
+              }
+            }
+
             // Contextual driving tips (gentle coaching, not penalties)
             if (!statsRef.current._lastTip) statsRef.current._lastTip = 0;
             if (timeRef.current - statsRef.current._lastTip > 20) {
@@ -2223,9 +2277,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
           }
           // Wrap Y to loop the road (only for non-infinite worlds)
-          if (!infiniteWorldRef.current) {
+          // d.freeExplore is checked as backup in case infiniteWorldRef hasn't been set yet
+          if (!infiniteWorldRef.current && !d.freeExplore) {
             if (car.y < 2) { car.y += MAP_SIZE - 5; }
             if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; }
+          }
+          // Auto-create infinite world if free explore but ref is missing (safety net)
+          if (d.freeExplore && !infiniteWorldRef.current) {
+            infiniteWorldRef.current = createInfiniteWorld(d.worldSeed || 12345);
           }
           // Infinite world: cleanup distant chunks periodically
           if (infiniteWorldRef.current && Math.floor(timeRef.current) % 5 === 0) {
@@ -2491,10 +2550,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (spawn) {
               emergencyRef.current = {
                 kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
-                x: car.x + (Math.random() < 0.5 ? -1 : 1),
-                y: car.y + 15 + Math.random() * 5,
+                // Spawn in the same lane as the player (slightly offset), BEHIND them
+                x: car.x + (Math.random() - 0.5) * 0.5,
+                y: car.y + 15 + Math.random() * 8,
                 heading: car.heading,
-                speed: car.speed + 10,
+                speed: Math.abs(car.speed) + 12,
                 life: 20,
                 responded: false,
                 checked: false

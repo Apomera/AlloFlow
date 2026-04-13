@@ -4159,6 +4159,9 @@ const useTranslation = (targetLanguage, apiKey) => {
     const onExtractionComplete = (e) => {
       try { setExtractionData(e.detail); } catch(ex) { /* non-blocking */ }
     };
+    const onFixIssuesDetected = (e) => {
+      try { setFixIssuesList(e.detail); } catch(ex) { /* non-blocking */ }
+    };
     const onChunkStart = (e) => {
       setLiveChunkStream(prev => {
         // Add a placeholder card so users see "working on this chunk" immediately
@@ -4194,6 +4197,7 @@ const useTranslation = (targetLanguage, apiKey) => {
     window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
     window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
     window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
+    window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
     return () => {
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
@@ -4203,6 +4207,7 @@ const useTranslation = (targetLanguage, apiKey) => {
       window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
       window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
       window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
+      window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
     };
   }, []);
 
@@ -12930,6 +12935,7 @@ Return only the corrected version of this exact text:`;
   const [chunkResumePrompt, setChunkResumePrompt] = useState(null); // { completedChunks, totalChunks, savedAt }
   const [boringPalettePrompt, setBoringPalettePrompt] = useState(false); // show theme suggestion when boring palette detected
   const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
+  const [fixIssuesList, setFixIssuesList] = useState(null); // specific issues found for display during Step 4
   const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {} } — shown during wait
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
@@ -51586,8 +51592,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (/Verif|check/i.test(stepText)) return { what: 'Verifying that each round of fixes actually improved accessibility without introducing new problems.', why: 'After fixing issues, we re-check the entire document. For example, fixing one heading level might affect the navigation hierarchy elsewhere, or adding alt text to one image might create a duplicate ID. If any fix accidentally made the document less accessible, it\'s automatically rolled back. This verify-then-accept approach ensures the document only gets better, never worse — because an accessibility regression could leave a student more confused than before.' };
                               if (/surg|micro/i.test(stepText)) return { what: 'Applying targeted accessibility fixes — each one addresses a single specific barrier in your document.', why: 'These are precise repairs: adding a meaningful description to a specific image (so a blind student knows what it shows instead of hearing silence), correcting a heading that jumped from "Chapter" to "Subsection" with no "Section" in between (so keyboard navigation makes logical sense), adding a label to a form field (so a screen reader announces "Student Name" instead of just "edit text"), and adding scope attributes to table headers (so a screen reader can say "Column: Grade, Row: Student A, Value: 92" instead of just "92" with no context).' };
                               if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'Your document passed! No remaining accessibility barriers were detected by either the automated checker or AI reviewer.', why: 'Your document now meets WCAG 2.1 Level AA — the standard required by the ADA for all public educational institutions as of April 2026. This means: a student using a screen reader can navigate by headings and read all content including image descriptions; a student with low vision can zoom to 200% without losing content; a student who can\'t use a mouse can reach every element by keyboard; data tables announce their headers so values have context; and the document has proper reading order, sufficient color contrast, and labeled form fields.' };
-                              if (/\d+ issue|\d+ axe.*\d+ AI/i.test(stepText)) { const m = stepText.match(/(\d+)\s*issue/); const count = m ? m[1] : 'several'; return { what: 'Fixing ' + count + ' remaining accessibility barriers found in your document.', why: 'Common fixes being applied include: adding alt text to images (a blind student hears "Diagram of the water cycle" instead of silence), repairing heading hierarchy (so pressing "H" on a screen reader jumps logically from Chapter to Section to Subsection), increasing color contrast (so light gray text on white becomes readable for students with low vision), adding labels to form inputs (so "Enter your answer" is announced instead of a blank box), and adding table header markup (so a screen reader says "Math Score: 92" instead of just "92").' }; }
-                              return { what: 'Making accessibility fixes — repairing headings, adding image descriptions, improving contrast, and labeling interactive elements.', why: 'The most common barriers in educational documents are: images without descriptions (affects blind and low-vision students who rely on screen readers), missing or incorrect heading structure (makes navigation impossible — a screen reader user can\'t "skim" without headings), insufficient color contrast (affects the 1 in 12 males with color vision differences, plus anyone reading in bright sunlight), unlabeled data tables (numbers without column headers are meaningless), and missing form labels (makes worksheets and quizzes unusable with assistive technology). Each fix pass addresses these systematically.' };
+                              if (/\d+ issue|\d+ axe.*\d+ AI/i.test(stepText)) {
+                                const m = stepText.match(/(\d+)\s*issue/); const count = m ? m[1] : 'several';
+                                // Show specific issues if available
+                                if (fixIssuesList && fixIssuesList.issues && fixIssuesList.issues.length > 0) {
+                                  const issueLines = fixIssuesList.issues.slice(0, 8).map(function(iss) { return '• ' + iss; }).join('\n');
+                                  // Generate specific "why" based on what issues were found
+                                  const issueText = fixIssuesList.issues.join(' ').toLowerCase();
+                                  const whyParts = [];
+                                  if (/alt|image|img/i.test(issueText)) whyParts.push('Images without descriptions mean a blind student hears silence where sighted students see diagrams, charts, or photographs — they miss educational content entirely.');
+                                  if (/heading|h1|h2|h3|hierarchy/i.test(issueText)) whyParts.push('Broken heading hierarchy means a screen reader user can\'t navigate by section — they have to listen to the entire document linearly instead of jumping to the chapter they need.');
+                                  if (/contrast|color/i.test(issueText)) whyParts.push('Low contrast text is unreadable for students with low vision, color vision differences, or anyone viewing on a screen in bright light.');
+                                  if (/table|scope|header/i.test(issueText)) whyParts.push('Tables without header markup mean a screen reader announces cell values with no context — "92" instead of "Math Score for Student A: 92."');
+                                  if (/label|input|form/i.test(issueText)) whyParts.push('Unlabeled form fields make worksheets and quizzes impossible to complete with a screen reader — the student hears "edit text" with no idea what to type.');
+                                  if (/lang|language/i.test(issueText)) whyParts.push('Missing language attributes mean screen readers pronounce text with the wrong accent and phonetics, making content incomprehensible.');
+                                  if (/link|anchor/i.test(issueText)) whyParts.push('Non-descriptive links ("click here") give screen reader users no idea where the link goes — they hear a list of identical "click here" links with no context.');
+                                  if (/landmark|main|nav|region/i.test(issueText)) whyParts.push('Missing landmarks mean screen reader users can\'t quickly jump to the main content, navigation, or footer — they have to tab through everything sequentially.');
+                                  if (whyParts.length === 0) whyParts.push('Each of these barriers prevents a student with a disability from accessing content that sighted, hearing, and motor-able students take for granted.');
+                                  return { what: 'Fixing ' + count + ' specific accessibility barriers found in your document:\n' + issueLines, why: whyParts.join(' ') };
+                                }
+                                return { what: 'Fixing ' + count + ' remaining accessibility barriers found in your document.', why: 'Common fixes include: adding alt text to images, repairing heading hierarchy, increasing color contrast, adding labels to form inputs, and adding table header markup — each removes a barrier for students using assistive technology.' };
+                              }
+                              return { what: 'Making accessibility fixes — repairing headings, adding image descriptions, improving contrast, and labeling interactive elements.', why: 'The most common barriers in educational documents are: images without descriptions (affects blind and low-vision students), missing heading structure (makes navigation impossible for screen reader users), insufficient color contrast (affects students with low vision), unlabeled data tables (numbers without context), and missing form labels (makes worksheets unusable with assistive technology).' };
                             }
                             return null;
                           };
@@ -51611,7 +51637,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </div>
                               {context && (
                                 <div className="text-[11px] bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl px-4 py-3 border border-slate-200 space-y-1.5">
-                                  <div className="text-slate-800 font-semibold leading-relaxed">🔄 {context.what}</div>
+                                  <div className="text-slate-800 font-semibold leading-relaxed whitespace-pre-line">🔄 {context.what}</div>
                                   <div className="text-slate-600 leading-relaxed border-t border-slate-200 pt-1.5">💡 <span className="font-medium">Why this matters:</span> {context.why}</div>
                                 </div>
                               )}

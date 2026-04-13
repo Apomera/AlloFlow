@@ -6046,6 +6046,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
         // Emit live remediation session start so UI shows progress panel
         warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
+        // Emit specific issues list for UI to display during fix passes
+        var _issuesList = [];
+        if (verification && verification.issues) {
+          _issuesList = verification.issues.map(function(iss) { return typeof iss === 'string' ? iss : (iss.issue || iss.description || String(iss)); }).slice(0, 12);
+        }
+        if (axeResults) {
+          (axeResults.critical || []).forEach(function(v) { _issuesList.push('🔴 ' + v.description + ' (' + v.id + ')'); });
+          (axeResults.serious || []).forEach(function(v) { _issuesList.push('🟠 ' + v.description + ' (' + v.id + ')'); });
+          (axeResults.moderate || []).forEach(function(v) { _issuesList.push('🟡 ' + v.description); });
+        }
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, target: _targetScore } })); }, 0); } catch(e) {}
         try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); }, 0); } catch(e) {}
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
