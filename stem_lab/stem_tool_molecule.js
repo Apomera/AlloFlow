@@ -788,7 +788,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Molecule Lab"),
 
@@ -935,7 +935,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
+                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-200') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
 
                 )
 
@@ -2133,9 +2133,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg" }, done ? '✅' : ch.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold " + (done ? 'text-emerald-700 line-through' : 'text-slate-700') }, ch.name),
-                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-500') }, ch.desc)
+                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-200') }, ch.desc)
                       ),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
+                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-200') }, "+" + ch.reward + " RP")
                     );
                   })
                 )

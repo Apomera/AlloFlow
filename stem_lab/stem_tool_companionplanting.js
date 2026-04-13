@@ -40,7 +40,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
   function plantTone(f,d,tp,v) { var ac=getPlantAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxPlantClick() { plantTone(600,0.03,"sine",0.04); }
   function sfxPlantSuccess() { plantTone(523,0.08,"sine",0.07); setTimeout(function(){plantTone(659,0.08,"sine",0.07);},70); setTimeout(function(){plantTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("plant-a11y")){var _s=document.createElement("style");_s.id="plant-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("plant-a11y")){var _s=document.createElement("style");_s.id="plant-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -3560,7 +3560,7 @@ var d = (labToolData.companionPlanting) || {};
                         // Net carbon
                         h('div', { className: 'text-center text-[11px] font-bold ' + (netCarbon > 0 ? 'text-green-400' : 'text-red-400') },
                           'Net carbon: ' + (netCarbon > 0 ? '+' + netCarbon + '% → Growth!' : netCarbon + '% → Using stored energy')),
-                        h('p', { className: 'text-[11px] text-slate-500 mt-1' },
+                        h('p', { className: 'text-[11px] text-slate-200 mt-1' },
                           cgSeason === 3 ? '❄️ Winter: minimal sunlight. Plant relies on stored sugars. Photosynthesis nearly stopped.'
                           : cgSeason === 1 ? '☀️ Summer: peak sunlight drives maximum photosynthesis. Watch water — transpiration is high.'
                           : cgSeason === 0 ? '🌱 Spring: increasing daylight ramps up photosynthesis. Growth accelerating.'
@@ -3603,10 +3603,10 @@ var d = (labToolData.companionPlanting) || {};
 
               // Current cell stats
               h('div', { className: 'bg-slate-700/50 rounded-lg p-3 grid grid-cols-4 gap-2 text-center text-[11px]' },
-                h('div', null, h('div', { className: 'text-lg font-black text-emerald-400' }, growthPct + '%'), h('div', { className: 'text-slate-400' }, 'Growth')),
-                h('div', null, h('div', { className: 'text-lg font-black ' + (cell.health > 70 ? 'text-green-400' : cell.health > 40 ? 'text-yellow-400' : 'text-red-400') }, Math.round(cell.health)), h('div', { className: 'text-slate-400' }, 'Health')),
-                h('div', null, h('div', { className: 'text-lg font-black ' + (bonus.total > 0 ? 'text-emerald-400' : bonus.total < 0 ? 'text-red-400' : 'text-slate-400') }, (bonus.total > 0 ? '+' : '') + bonus.total + '%'), h('div', { className: 'text-slate-400' }, 'Companion')),
-                h('div', null, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(cell.pests)), h('div', { className: 'text-slate-400' }, 'Pests'))));
+                h('div', null, h('div', { className: 'text-lg font-black text-emerald-400' }, growthPct + '%'), h('div', { className: 'text-slate-200' }, 'Growth')),
+                h('div', null, h('div', { className: 'text-lg font-black ' + (cell.health > 70 ? 'text-green-400' : cell.health > 40 ? 'text-yellow-400' : 'text-red-400') }, Math.round(cell.health)), h('div', { className: 'text-slate-200' }, 'Health')),
+                h('div', null, h('div', { className: 'text-lg font-black ' + (bonus.total > 0 ? 'text-emerald-400' : bonus.total < 0 ? 'text-red-400' : 'text-slate-200') }, (bonus.total > 0 ? '+' : '') + bonus.total + '%'), h('div', { className: 'text-slate-200' }, 'Companion')),
+                h('div', null, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(cell.pests)), h('div', { className: 'text-slate-200' }, 'Pests'))));
           }
 
           function renderCommunityGarden() {
@@ -3722,7 +3722,7 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'grid grid-cols-2 gap-2' },
                     grades.map(function(g, i) {
                       return h('div', { key: i, className: 'bg-slate-700/50 rounded-lg p-2 flex items-center gap-2' },
-                        h('div', { className: 'text-xl font-black ' + (gradeColors[g.mark] || 'text-slate-400') }, g.mark),
+                        h('div', { className: 'text-xl font-black ' + (gradeColors[g.mark] || 'text-slate-200') }, g.mark),
                         h('div', null,
                           h('div', { className: 'text-[11px] font-bold text-slate-300' }, g.area),
                           h('div', { className: 'text-[11px] text-slate-600' }, g.note)));
@@ -4354,7 +4354,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'text-xs font-bold text-indigo-800' }, '🎯 ' + ch.title + (isComplete ? ' — ✅ COMPLETE!' : '')),
                       h('div', { className: 'text-[11px] text-indigo-600' }, ch.goal)),
-                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-500 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
+                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-200 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
                   !isComplete && h('div', { className: 'text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-1' }, '💡 Hint: ' + ch.hint));
               })(),
 
@@ -4440,7 +4440,7 @@ var d = (labToolData.companionPlanting) || {};
                 callGemini && h('button', {
                   onClick: cgAskAdvisor,
                   disabled: cgAdvisorCooldown > 0,
-                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-400' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300')
+                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300')
                 }, cgAdvisorCooldown > 0 ? '\uD83E\uDDD1\u200D\uD83C\uDF3E Advisor (wait ' + cgAdvisorCooldown + ' days)' : '\uD83E\uDDD1\u200D\uD83C\uDF3E Ask Garden Advisor')
               ),
 
@@ -4448,7 +4448,7 @@ var d = (labToolData.companionPlanting) || {};
               cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { className: 'text-[11px] font-bold text-emerald-700' }, '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor'),
-                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[11px] text-slate-500 hover:text-slate-600' }, '\u2715')
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[11px] text-slate-200 hover:text-slate-600' }, '\u2715')
                 ),
                 h('p', { className: 'text-[11px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
               ),
@@ -4462,7 +4462,7 @@ var d = (labToolData.companionPlanting) || {};
                     return h('div', {
                       key: ach.id,
                       title: ach.desc + (earned ? ' ✅ Earned!' : ''),
-                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold ' + (earned ? 'bg-amber-200 text-amber-900 ring-1 ring-amber-400' : 'bg-white text-slate-400 opacity-60')
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold ' + (earned ? 'bg-amber-200 text-amber-900 ring-1 ring-amber-400' : 'bg-white text-slate-200 opacity-60')
                     }, h('span', null, ach.emoji), ach.label);
                   }))),
 
@@ -4519,7 +4519,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": "Back to tools"
 
-                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
                 React.createElement("div", null,
 
@@ -5020,7 +5020,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     return React.createElement("div", { key: syn.label, className: "text-center space-y-1" },
 
-                      React.createElement("div", { className: "text-[11px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-500') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
+                      React.createElement("div", { className: "text-[11px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-200') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
 
                       React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
 
@@ -5028,7 +5028,7 @@ var d = (labToolData.companionPlanting) || {};
 
                       ),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-500" }, syn.desc),
+                      React.createElement("div", { className: "text-[11px] text-slate-200" }, syn.desc),
 
                       React.createElement("div", { className: "text-[11px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
 
@@ -5560,7 +5560,7 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("div", { className: "flex items-center gap-1.5 mb-0.5" },
                         React.createElement("span", { className: "text-lg" }, food.icon),
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-700 w-16" }, food.food),
-                        React.createElement("span", { className: "text-[11px] text-slate-500" }, food.season)
+                        React.createElement("span", { className: "text-[11px] text-slate-200" }, food.season)
                       ),
                       React.createElement("div", { className: "flex gap-0.5" },
                         // Homegrown bar
@@ -5701,7 +5701,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
                 gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[11px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + gardenStreak + ' streak!') : null,
-                React.createElement("span", { className: "text-[11px] text-slate-500" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
+                React.createElement("span", { className: "text-[11px] text-slate-200" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
               ),
               (function() {
                 var sc = GARDEN_SCENARIOS[gardenScenarioIdx];
@@ -5739,7 +5739,7 @@ var d = (labToolData.companionPlanting) || {};
                         className: "w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all " + cls,
                         disabled: answered
                       },
-                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-500') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-200') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement("span", { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
@@ -5833,7 +5833,7 @@ var d = (labToolData.companionPlanting) || {};
                         React.createElement("span", { className: "text-lg" }, step.icon),
                         React.createElement("span", { className: "text-[11px] font-bold", style: { color: step.color } }, step.name)
                       ),
-                      si < 5 && React.createElement("span", { className: "text-slate-500 mx-0.5" }, '\u2192')
+                      si < 5 && React.createElement("span", { className: "text-slate-200 mx-0.5" }, '\u2192')
                     );
                   })
                 ),
@@ -5962,7 +5962,7 @@ var d = (labToolData.companionPlanting) || {};
                           className: "absolute h-full rounded-full",
                           style: { left: left + '%', width: Math.max(width, 2) + '%', background: 'linear-gradient(to right, #22c55e, #10b981)', opacity: 0.7 }
                         }),
-                        React.createElement("span", { className: "absolute text-[11px] font-mono text-slate-500", style: { left: (left + width / 2) + '%', top: '-1px', transform: 'translateX(-50%)' } }, plant.ph[0] + '-' + plant.ph[1])
+                        React.createElement("span", { className: "absolute text-[11px] font-mono text-slate-200", style: { left: (left + width / 2) + '%', top: '-1px', transform: 'translateX(-50%)' } }, plant.ph[0] + '-' + plant.ph[1])
                       )
                     );
                   })

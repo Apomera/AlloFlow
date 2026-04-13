@@ -1731,7 +1731,7 @@
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
                 React.createElement("button", { "aria-label": "Close templates panel",
                   onClick: function () { upd('showTemplates', false); },
-                  className: "text-slate-500 hover:text-white text-lg px-2"
+                  className: "text-slate-200 hover:text-white text-lg px-2"
                 }, "×")
               ),
               React.createElement("div", {
@@ -1746,7 +1746,7 @@
                   },
                     React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
                     React.createElement("span", { className: "text-xs font-bold text-white text-center" }, tmpl.name),
-                    React.createElement("span", { className: "text-[11px] text-slate-500 text-center leading-tight" }, tmpl.desc),
+                    React.createElement("span", { className: "text-[11px] text-slate-200 text-center leading-tight" }, tmpl.desc),
                     React.createElement("span", { className: "text-[11px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
                   );
                 })
@@ -2080,7 +2080,7 @@
                       React.createElement("button", { "aria-label": "Clear",
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
-                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-500 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
                       React.createElement("button", { "aria-label": "Reset robot grid",
                         onClick: function() {
@@ -2090,7 +2090,7 @@
                             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
                           }
                         },
-                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-500 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
                       React.createElement("button", { "aria-label": "Handle Robot Run",
                         onClick: handleRobotRun,
@@ -2202,7 +2202,7 @@
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
                   React.createElement("div", { className: "flex items-center justify-between text-[11px]" },
-                    React.createElement("span", { className: "text-slate-500 font-bold" }, "Progress"),
+                    React.createElement("span", { className: "text-slate-200 font-bold" }, "Progress"),
                     React.createElement("span", { className: "text-emerald-400 font-bold" }, robotCompleted.length + "/" + ROBOT_CHALLENGES.length)
                   ),
                   React.createElement("div", { className: "w-full h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden" },
@@ -2239,7 +2239,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
                   "📋 Program (" + blocks.length + " blocks)"
                 ),
-                blocks.length === 0 && React.createElement("p", { className: "text-slate-400 text-xs italic text-center py-4" },
+                blocks.length === 0 && React.createElement("p", { className: "text-slate-200 text-xs italic text-center py-4" },
                   'Click blocks above or load a template to start'
                 ),
                 React.createElement("div", { className: "flex flex-col gap-1" },
@@ -2415,7 +2415,7 @@
                     }
                   })
                 ),
-                React.createElement("p", { className: "text-slate-500 text-[11px] mt-1" },
+                React.createElement("p", { className: "text-slate-200 text-[11px] mt-1" },
                   "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
                 )
               )
@@ -2496,7 +2496,7 @@
                       ),
                       React.createElement("span", {
                         className: "text-[11px] px-1.5 py-0.5 rounded-full " +
-                          (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-400')
+                          (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-200')
                       }, ch.concept)
                     );
                   })
@@ -2586,7 +2586,7 @@
               ),
               // ── Animation Timeline ──
               timelineFrames.length > 0 && React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/40" },
-                React.createElement("h4", { className: "text-xs font-bold text-slate-500 mb-2 flex items-center gap-1" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-200 mb-2 flex items-center gap-1" },
                   React.createElement("span", null, "⏱️"), " Timeline (" + timelineFrames.length + " frames)"
                 ),
                 React.createElement("input", {
@@ -2629,7 +2629,7 @@
                 React.createElement("button", { "aria-label": "Toggle high contrast mode",
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " +
-                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-500 hover:text-white")
+                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-200 hover:text-white")
                 }, highContrastMode ? "◐ Standard Mode" : "◑ High Contrast")
               ),
               // ── AI Assistant Panel ──
@@ -2640,7 +2640,7 @@
                   ),
                   React.createElement("button", { "aria-label": "Close AI assistant panel",
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
-                    className: "text-slate-500 hover:text-white text-sm px-1"
+                    className: "text-slate-200 hover:text-white text-sm px-1"
                   }, "×")
                 ),
                 aiLoading ?

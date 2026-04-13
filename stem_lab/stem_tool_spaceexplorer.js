@@ -46,7 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   function sfxSEClick() { seTone(600, 0.03, 'sine', 0.04); }
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }'; document.head.appendChild(_s); }
 
 
   // WCAG live region
@@ -738,7 +738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 !locked && (function() {
                   var stats = (d.destStats || {})[dest.id];
                   if (!stats) return null;
-                  return h('div', { className: 'flex gap-2 mt-1 text-[11px] text-slate-500', 'aria-label': 'Stats: ' + stats.wins + ' wins, best ' + stats.bestPct + '%, ' + stats.totalScience + ' science' },
+                  return h('div', { className: 'flex gap-2 mt-1 text-[11px] text-slate-200', 'aria-label': 'Stats: ' + stats.wins + ' wins, best ' + stats.bestPct + '%, ' + stats.totalScience + ' science' },
                     stats.wins > 0 && h('span', null, '\u2705 ' + stats.wins + 'x'),
                     stats.bestPct > 0 && h('span', null, '\u2B50 ' + stats.bestPct + '%'),
                     stats.totalScience > 0 && h('span', null, '\uD83D\uDD2C ' + stats.totalScience)
@@ -885,7 +885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   })
                 )
               ),
-              h('span', { className: 'text-[11px] font-mono text-slate-400' }, 'Turn ' + turn + '/' + maxTurns)
+              h('span', { className: 'text-[11px] font-mono text-slate-200' }, 'Turn ' + turn + '/' + maxTurns)
             ),
             h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Ship resources' },
               Object.keys(RESOURCES).map(function(k) {

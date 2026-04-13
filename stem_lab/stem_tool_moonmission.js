@@ -170,7 +170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   if (!document.getElementById('mm-a11y-css')) {
     var mmStyle = document.createElement('style');
     mmStyle.id = 'mm-a11y-css';
-    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }';
+    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }';
     document.head.appendChild(mmStyle);
   }
 
@@ -689,7 +689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           h('div', { className: 'text-right' },
-            h('div', { className: 'text-[11px] text-slate-500 font-mono' }, 'MET ' + getMissionElapsed()),
+            h('div', { className: 'text-[11px] text-slate-200 font-mono' }, 'MET ' + getMissionElapsed()),
             h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
         ),
@@ -736,7 +736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('details', { className: 'mt-3' },
-            h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer hover:text-slate-500 transition-colors' }, '\uD83D\uDCDA What really happened?'),
+            h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer hover:text-slate-200 transition-colors' }, '\uD83D\uDCDA What really happened?'),
             h('p', { className: 'text-[11px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
           )
         ),
@@ -751,7 +751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               d.eventOutcome.quality === 'optimal' ? 'Excellent Decision!' : d.eventOutcome.quality === 'adequate' ? 'Acceptable Solution' : 'Suboptimal Choice'
             )
           ),
-          h('p', { className: 'text-[11px] text-slate-500 mb-1' }, '\u201C' + d.eventOutcome.label + '\u201D'),
+          h('p', { className: 'text-[11px] text-slate-200 mb-1' }, '\u201C' + d.eventOutcome.label + '\u201D'),
           h('div', { className: 'bg-sky-500/10 rounded-lg p-3 border border-sky-500/20' },
             h('p', { className: 'text-[11px] text-sky-200 leading-relaxed' }, '\uD83D\uDD2C ' + d.eventOutcome.outcome)
           ),
@@ -853,7 +853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('p', { className: 'text-xs text-slate-600' }, 'Apollo-style lunar landing mission')
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 mb-3 border border-white/10' },
-              h('p', { className: 'text-[11px] text-slate-500 font-bold mb-1' }, '\uD83C\uDFAF MISSION OBJECTIVES'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-1' }, '\uD83C\uDFAF MISSION OBJECTIVES'),
               h('div', { className: 'space-y-1' },
                 [
                   'Launch from Kennedy Space Center aboard Saturn V',
@@ -869,21 +869,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             ),
             h('div', { className: 'mb-3' },
-              h('p', { className: 'text-[11px] text-slate-500 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 CREW_ROLES.map(function(crew, i) {
                   return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border border-white/10 text-center' },
                     h('div', { className: 'text-lg mb-0.5' }, i === 0 ? '\uD83E\uDDD1\u200D\uD83D\uDE80' : i === 1 ? '\uD83D\uDC68\u200D\uD83D\uDE80' : '\uD83D\uDC69\u200D\uD83D\uDE80'),
                     h('p', { className: 'text-[11px] font-bold text-indigo-300' }, crew.role),
                     h('p', { className: 'text-[11px] text-slate-600' }, crew.name),
-                    h('p', { className: 'text-[11px] text-slate-500 mt-1' }, crew.tasks)
+                    h('p', { className: 'text-[11px] text-slate-200 mt-1' }, crew.tasks)
                   );
                 })
               )
             ),
             // Difficulty selector
             h('div', { className: 'mb-3', role: 'radiogroup', 'aria-label': 'Mission difficulty selection' },
-              h('p', { className: 'text-[11px] text-slate-500 font-bold mb-2', id: 'difficulty-label' }, '\uD83C\uDFAE MISSION DIFFICULTY'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2', id: 'difficulty-label' }, '\uD83C\uDFAE MISSION DIFFICULTY'),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 Object.keys(DIFFICULTIES).map(function(key) {
                   var diff = DIFFICULTIES[key];
@@ -1499,7 +1499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
             h('h4', { className: 'text-lg font-black mb-2' }, 'Powered Descent'),
-            h('p', { className: 'text-xs text-slate-500 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
+            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto' },
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
@@ -2628,7 +2628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-orange-900/30' },
-              h('p', { className: 'text-[11px] text-slate-500 mb-2' }, 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.'),
+              h('p', { className: 'text-[11px] text-slate-200 mb-2' }, 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.'),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20' },
                 h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
               )
@@ -2736,7 +2736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ),
                   h('details', { className: 'mt-1' },
                     h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer' }, 'Historical context'),
-                    h('p', { className: 'text-[11px] text-slate-500 mt-1 pl-2' }, dec.historical)
+                    h('p', { className: 'text-[11px] text-slate-200 mt-1 pl-2' }, dec.historical)
                   )
                 );
               }),
@@ -2749,7 +2749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 return h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mt-2 text-center' },
                   h('p', { className: 'text-xs font-bold ' + (pct >= 80 ? 'text-green-300' : pct >= 50 ? 'text-yellow-300' : 'text-orange-300') },
                     'Decision Score: ' + optCount + '/' + total + ' optimal (' + pct + '%)'),
-                  h('p', { className: 'text-[11px] text-slate-500 mt-0.5' },
+                  h('p', { className: 'text-[11px] text-slate-200 mt-0.5' },
                     pct >= 80 ? 'Outstanding problem-solving! You think like a real mission commander.' :
                     pct >= 50 ? 'Solid decisions. Review the notes above to learn what real astronauts did.' :
                     'Room for improvement \u2014 but every astronaut learns from experience. Try again!')
@@ -2783,7 +2783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             missionLog.slice(-8).reverse().map(function(entry, i) {
               return h('div', { key: i, className: 'flex justify-between text-[11px]' },
                 h('span', { className: 'text-slate-600' }, entry.text),
-                h('span', { className: 'text-slate-500 font-mono' }, entry.time)
+                h('span', { className: 'text-slate-200 font-mono' }, entry.time)
               );
             })
           )

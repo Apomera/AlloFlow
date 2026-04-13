@@ -1364,7 +1364,7 @@ var d = labToolData || {};
 
                 onClick: function () { setStemLabTool(null); },
 
-                className: 'text-slate-500 hover:text-white transition-colors text-lg'
+                className: 'text-slate-200 hover:text-white transition-colors text-lg'
 
               }, '\u2190'),
 
@@ -1594,7 +1594,7 @@ var d = labToolData || {};
 
                           isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
 
-                            isAnswered ? 'border-slate-200 bg-white text-slate-500' :
+                            isAnswered ? 'border-slate-200 bg-white text-slate-200' :
 
                               'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
 
@@ -1664,7 +1664,7 @@ var d = labToolData || {};
 
                     disabled: d.quizLoading,
 
-                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
+                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
 
                   }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
 
@@ -1746,7 +1746,7 @@ var d = labToolData || {};
 
                   disabled: d.advisorLoading || !(d.advisorInput || '').trim(),
 
-                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-500' : 'bg-sky-500 text-white')
+                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-200' : 'bg-sky-500 text-white')
 
                 }, d.advisorLoading ? '\u23F3' : '\uD83D\uDCAC Ask')
 
@@ -1824,7 +1824,7 @@ var d = labToolData || {};
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
                         disabled: answered
                       },
-                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-500') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-200') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement('span', { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
@@ -1992,7 +1992,7 @@ var d = labToolData || {};
                         React.createElement('span', { className: 'text-xl' }, phase.icon),
                         React.createElement('span', { className: 'text-[11px] font-black', style: { color: phase.color } }, phase.name)
                       ),
-                      pi < 3 && React.createElement('span', { className: 'text-slate-400 text-lg mx-0.5' }, '\u2192')
+                      pi < 3 && React.createElement('span', { className: 'text-slate-200 text-lg mx-0.5' }, '\u2192')
                     );
                   })
                 ),
@@ -2013,7 +2013,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
                     React.createElement('ul', { className: 'space-y-0.5 ml-3 mb-2' },
                       phase.characteristics.map(function(ch, chi) {
-                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-500 list-disc' }, ch);
+                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-200 list-disc' }, ch);
                       })
                     ),
                     React.createElement('div', { className: 'text-[11px] text-blue-600 bg-blue-50 rounded-lg p-2 border border-blue-100 mb-1' },
@@ -2704,7 +2704,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('sdScenario', null); },
 
-                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-500'
+                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-200'
 
                   }, 'Dismiss')
 
@@ -2738,7 +2738,7 @@ var d = labToolData || {};
 
                   disabled: d.sdLoading,
 
-                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
+                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
 
                 }, d.sdLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Random Scenario')
 
@@ -2870,7 +2870,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'font-bold text-slate-700 group-hover:text-indigo-700' }, choice.label),
 
-                      React.createElement('div', { className: 'text-slate-500 mt-0.5 flex gap-3 flex-wrap' },
+                      React.createElement('div', { className: 'text-slate-200 mt-0.5 flex gap-3 flex-wrap' },
 
                         choice.effect && choice.effect.cash ? React.createElement('span', { className: choice.effect.cash >= 0 ? 'text-green-600' : 'text-red-500' }, (choice.effect.cash >= 0 ? '+' : '') + '$' + choice.effect.cash.toLocaleString()) : null,
 
@@ -2972,7 +2972,7 @@ var d = labToolData || {};
 
                 disabled: d.pfLoading,
 
-                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
 
               }, d.pfLoading ? '\u23F3 Generating life event...' : '\u2728 Next Year (Age ' + ((d.pfAge || 22) + 1) + ')'),
 
@@ -3203,7 +3203,7 @@ var d = labToolData || {};
 
                   disabled: d.smLoading,
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
 
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
 
@@ -3501,7 +3501,7 @@ var d = labToolData || {};
 
                       disabled: d.smLoading,
 
-                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
+                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
 
                     }, d.smLoading ? '\u23F3...' : '\u23ED Day ' + (smDay + 1))
 
@@ -3671,7 +3671,7 @@ var d = labToolData || {};
 
                   disabled: d.enLoading || !(d.enInput || '').trim(),
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
 
                 }, d.enLoading ? '\u23F3 AI is building your business...' : '\uD83D\uDE80 Launch Business')
 
@@ -3813,7 +3813,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'font-bold text-slate-700' }, ch.label),
 
-                      React.createElement('div', { className: 'text-slate-500 mt-0.5 flex gap-3' },
+                      React.createElement('div', { className: 'text-slate-200 mt-0.5 flex gap-3' },
 
                         ch.effect && ch.effect.cash ? React.createElement('span', { className: ch.effect.cash >= 0 ? 'text-green-500' : 'text-red-500' }, (ch.effect.cash >= 0 ? '+' : '') + '$' + ch.effect.cash) : null,
 
@@ -3891,7 +3891,7 @@ var d = labToolData || {};
 
                 disabled: d.enBizLoading,
 
-                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
 
               }, d.enBizLoading ? '\u23F3 Simulating day...' : '\u2600\uFE0F Open for Business! (Day ' + (d.enBizDay || 1) + ')'),
 

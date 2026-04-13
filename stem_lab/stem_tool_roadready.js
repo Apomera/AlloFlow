@@ -5376,7 +5376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             role: 'application',
             'aria-label': 'RoadReady driving simulator. W/S throttle and brake, A/D steering, C camera toggle, Space pause.',
             tabIndex: 0,
-            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', outline: 'none', pointerEvents: 'none' }
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', outline: 'none', pointerEvents: 'none', zIndex: 2 }
           }),
           // Controls legend
           h('div', { style: { position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },
@@ -5396,7 +5396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · Q Horn · SPACE Pause'
           ),
           // ── Touch controls for mobile/tablet ──
-          h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 15 },
+          h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
             className: 'touch-controls' },
             // Throttle (big green button)
             h('button', {
@@ -5434,7 +5434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, '▼')
           ),
           // Left side touch: gear + signals
-          h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 15 },
+          h('div', { style: { position: 'absolute', bottom: '110px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
             className: 'touch-controls' },
             h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
@@ -5447,7 +5447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, 'Signal ►')
           ),
           // Free Explore live condition toolbar
-          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '100px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 10, minWidth: '160px' } },
+          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '110px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 15, minWidth: '160px' } },
             h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '6px', textAlign: 'center' } }, '🌎 FREE EXPLORE'),
             // Weather row
             h('div', { style: { display: 'flex', gap: '3px', marginBottom: '4px', justifyContent: 'center' } },

@@ -1292,8 +1292,8 @@ window.StemLab = window.StemLab || {
                   },
                     h('span', { className: 'text-lg' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', null,
-                      h('p', { className: 'font-bold ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name),
-                      h('p', { className: 'text-[11px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, b.desc)
+                      h('p', { className: 'font-bold ' + (earned ? 'text-amber-700' : 'text-slate-200') }, b.name),
+                      h('p', { className: 'text-[11px] ' + (earned ? 'text-amber-600' : 'text-slate-200') }, b.desc)
                     )
                   );
                 })

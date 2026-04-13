@@ -25,7 +25,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   function migrTone(f,d,tp,v) { var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxMigrClick() { migrTone(600,0.03,"sine",0.04); }
   function sfxMigrSuccess() { migrTone(523,0.08,"sine",0.07); setTimeout(function(){migrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){migrTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
 
 
   // ── Module-scoped bird drawing ──
@@ -261,7 +261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var borderCol = isDark ? 'border-slate-700' : 'border-slate-200';
       var textPrimary = isDark ? 'text-white' : 'text-slate-900';
       var textSecondary = isDark ? 'text-slate-300' : 'text-slate-600';
-      var textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+      var textMuted = isDark ? 'text-slate-200' : 'text-slate-200';
       var accent = 'text-sky-500';
       var accentBg = isDark ? 'bg-sky-900/40' : 'bg-sky-50';
       var btnPrimary = 'bg-sky-600 hover:bg-sky-700 text-white';
@@ -931,7 +931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 // V-formation toggle
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', {
-                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (ebVForm ? 'bg-green-500 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500')),
+                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (ebVForm ? 'bg-green-500 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-200')),
                     'aria-pressed': ebVForm ? 'true' : 'false',
                     'aria-label': 'V-formation: ' + (ebVForm ? 'on, saving 35% energy' : 'off'),
                     onClick: function() { upd('ebVFormation', !ebVForm); }

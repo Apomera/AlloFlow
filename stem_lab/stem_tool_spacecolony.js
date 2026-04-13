@@ -1035,7 +1035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
             React.createElement('div', { className: 'flex items-center justify-between mb-4' },
               React.createElement('div', { className: 'flex items-center gap-2' },
-                React.createElement('button', { onClick: function () { upd('selectedTool', null); }, className: 'text-slate-500 hover:text-white text-lg' }, '\u2190'),
+                React.createElement('button', { onClick: function () { upd('selectedTool', null); }, className: 'text-slate-200 hover:text-white text-lg' }, '\u2190'),
                 React.createElement('h2', { className: 'text-xl font-bold text-white' }, '\uD83D\uDE80 Kepler Colony'),
                 React.createElement('span', { className: 'text-[11px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, 'Turn-Based Strategy')
               ),
@@ -1067,7 +1067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             colonyPhase === 'setup' && React.createElement('div', { className: 'text-center py-10' },
               React.createElement('div', { className: 'text-7xl mb-4', style: { animation: 'kp-float 3s ease-in-out infinite', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.4))' } }, '\uD83D\uDE80'),
               React.createElement('h3', { className: 'text-3xl font-black mb-2', style: { background: 'linear-gradient(135deg, #e0e7ff, #c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Welcome to Kepler-442b'),
-              React.createElement('p', { className: 'text-slate-400 text-sm max-w-lg mx-auto mb-6' },
+              React.createElement('p', { className: 'text-slate-200 text-sm max-w-lg mx-auto mb-6' },
                 'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!'
               ),
               React.createElement('div', { className: 'grid grid-cols-3 gap-3 max-w-md mx-auto mb-6 text-slate-300 text-[11px]' },
@@ -1085,7 +1085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
                   // Grade Level
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[11px] text-slate-500 mb-1' }, '\uD83C\uDF93 Grade Level'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, '\uD83C\uDF93 Grade Level'),
                     React.createElement('div', { className: 'flex flex-col gap-1' },
                       ['K-2', '3-5', '6-8', '9-12', 'College'].map(function (gl) {
                         return React.createElement('button', {
@@ -1099,17 +1099,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'Adjusts question difficulty')
                   ),
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[11px] text-slate-500 mb-1' }, 'Science Challenge Mode'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, 'Science Challenge Mode'),
                     React.createElement('div', { className: 'flex gap-1' },
                       React.createElement('button', {
                         onClick: function () { upd('colonyMode', 'mcq'); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
-                          ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                          ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-200')
                       }, '\uD83D\uDCCB MCQ'),
                       React.createElement('button', {
                         onClick: function () { upd('colonyMode', 'freeResponse'); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
-                          ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                          ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-200')
                       }, '\u270D\uFE0F Free Response')
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' },
@@ -1117,12 +1117,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     )
                   ),
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[11px] text-slate-500 mb-1' }, 'Audio Narration'),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, 'Audio Narration'),
                     React.createElement('div', { className: 'flex gap-1' },
                       React.createElement('button', {
                         onClick: function () { upd('colonyTTS', !(d.colonyTTS)); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
-                          (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                          (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-200')
                       }, d.colonyTTS ? '\uD83D\uDD0A ON' : '\uD83D\uDD07 OFF')
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'Characters speak with TTS voices')
@@ -1179,7 +1179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   dawnData && !dawnData.isFirst && React.createElement('div', { className: 'bg-black/20 rounded-xl p-3 mb-3 border border-amber-900/30' },
                     React.createElement('div', { className: 'text-[11px] font-bold text-amber-300/80 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Income This Turn'),
                     React.createElement('div', { className: 'grid grid-cols-5 gap-2' },
-                      [['\uD83C\uDF3E','Food',(dawnData.income||{}).food||0,'#4ade80'],['\u26A1','Energy',(dawnData.income||{}).energy||0,'#facc15'],['\uD83D\uDCA7','Water',(dawnData.income||{}).water||0,'#38bdf8'],['\uD83E\uDEA8','Mats',(dawnData.income||{}).materials||0,'#94a3b8'],['\uD83D\uDD2C','Sci',(dawnData.income||{}).science||0,'#a78bfa']].map(function(rd){return React.createElement('div',{key:rd[1],className:'text-center p-1.5 rounded-lg',style:{backgroundColor:rd[3]+'15',border:'1px solid '+rd[3]+'25'}},React.createElement('div',{className:'text-lg'},rd[0]),React.createElement('div',{className:'text-sm font-bold',style:{color:rd[3]}},(rd[2]>=0?'+':'')+rd[2]),React.createElement('div',{className:'text-[11px] text-slate-500'},rd[1]))})
+                      [['\uD83C\uDF3E','Food',(dawnData.income||{}).food||0,'#4ade80'],['\u26A1','Energy',(dawnData.income||{}).energy||0,'#facc15'],['\uD83D\uDCA7','Water',(dawnData.income||{}).water||0,'#38bdf8'],['\uD83E\uDEA8','Mats',(dawnData.income||{}).materials||0,'#94a3b8'],['\uD83D\uDD2C','Sci',(dawnData.income||{}).science||0,'#a78bfa']].map(function(rd){return React.createElement('div',{key:rd[1],className:'text-center p-1.5 rounded-lg',style:{backgroundColor:rd[3]+'15',border:'1px solid '+rd[3]+'25'}},React.createElement('div',{className:'text-lg'},rd[0]),React.createElement('div',{className:'text-sm font-bold',style:{color:rd[3]}},(rd[2]>=0?'+':'')+rd[2]),React.createElement('div',{className:'text-[11px] text-slate-200'},rd[1]))})
                     )
                   ),
                   dawnData && dawnData.discovery && React.createElement('div', { className: 'bg-purple-900/30 rounded-xl p-3 mb-3 border border-purple-700/30', style: { animation: 'kp-fadeIn 0.8s ease-out' } },
@@ -1389,11 +1389,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 React.createElement('div', { className: 'px-3 pb-3 grid grid-cols-4 gap-1.5' },
                   React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} if(!selectedTile||selectedTile.tile.explored){if(addToast)addToast('Select an unexplored tile!','info');return;} spendAP(1); var nm=JSON.parse(JSON.stringify(mapData)); var er2=1+(researchQueue.indexOf('gravimetrics')>=0?1:0); for(var dy2=-er2;dy2<=er2;dy2++)for(var dx2=-er2;dx2<=er2;dx2++){var ni2=(selectedTile.y+dy2)*mapSize+(selectedTile.x+dx2);if(ni2>=0&&ni2<nm.tiles.length)nm.tiles[ni2].explored=true;} upd('colonyMap',nm); var nr=Object.assign({},resources); var ec2=(activePolicy==='militarist')?0:2; nr.energy=Math.max(0,nr.energy-ec2); var tb={plains:'food',mountain:'materials',volcanic:'energy',ice:'water',desert:'materials',ocean:'water',radiation:'science'}; var br=tb[selectedTile.tile.type]; if(br&&nr[br]!==undefined)nr[br]+=2; var pkK=selectedTile.x+','+selectedTile.y; var pkp=mapPickups[pkK]; if(pkp){nr[pkp.res]=(nr[pkp.res]||0)+pkp.amt;var npk=Object.assign({},mapPickups);delete npk[pkK];upd('mapPickups',npk);if(addToast)addToast((pkp.rarity==='epic'?'\u2B50 EPIC: ':pkp.rarity==='rare'?'\u2728 RARE: ':'')+pkp.label,'info');} upd('colonyRes',nr); if(addToast)addToast('Explored '+selectedTile.tile.name+'!'+(br?' +2 '+br:''),'info'); }, disabled: actionPoints<1||turnPhase!=='day', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'hover:bg-indigo-900/50 hover:scale-105':'opacity-40'), style:{background:'#1e293b',border:'1px solid #33415560'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDDFA\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-slate-300'},'Explore'), React.createElement('span',{className:'text-[11px] text-indigo-400'},'1 AP')),
-                  React.createElement('button', { onClick: function() { if(builtThisTurn){if(addToast)addToast('1 build per turn!','info');return;} if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showBuild',!d.showBuild); }, disabled: actionPoints<1||builtThisTurn, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1&&!builtThisTurn?'hover:bg-amber-900/30 hover:scale-105':'opacity-40'), style:{background:'#1e293b',border:'1px solid #92400e40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFD7\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-300'},'Build'), React.createElement('span',{className:'text-[11px] text-amber-500'},builtThisTurn?'Done':'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-500'},buildings.length+'/'+buildingDefs.length)),
-                  React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showResearch',!d.showResearch); }, disabled: actionPoints<1, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'hover:bg-violet-900/30 hover:scale-105':'opacity-40'), style:{background:'#1e293b',border:'1px solid #4c1d9540'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDDEC'), React.createElement('span',{className:'text-[11px] font-bold text-violet-300'},'Research'), React.createElement('span',{className:'text-[11px] text-violet-500'},'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-500'},researchQueue.length+'/10')),
-                  React.createElement('button', { onClick: function() { upd('showSettlers',!d.showSettlers); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-teal-900/30 hover:scale-105', style:{background:'#1e293b',border:'1px solid #0d948440'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDC65'), React.createElement('span',{className:'text-[11px] font-bold text-teal-300'},'Crew'), React.createElement('span',{className:'text-[11px] text-teal-500'},'Free'), React.createElement('span',{className:'text-[11px] text-slate-500'},settlers.length+' pop')),
+                  React.createElement('button', { onClick: function() { if(builtThisTurn){if(addToast)addToast('1 build per turn!','info');return;} if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showBuild',!d.showBuild); }, disabled: actionPoints<1||builtThisTurn, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1&&!builtThisTurn?'hover:bg-amber-900/30 hover:scale-105':'opacity-40'), style:{background:'#1e293b',border:'1px solid #92400e40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFD7\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-300'},'Build'), React.createElement('span',{className:'text-[11px] text-amber-500'},builtThisTurn?'Done':'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-200'},buildings.length+'/'+buildingDefs.length)),
+                  React.createElement('button', { onClick: function() { if(actionPoints<1){if(addToast)addToast('No AP!','error');return;} upd('showResearch',!d.showResearch); }, disabled: actionPoints<1, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=1?'hover:bg-violet-900/30 hover:scale-105':'opacity-40'), style:{background:'#1e293b',border:'1px solid #4c1d9540'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDDEC'), React.createElement('span',{className:'text-[11px] font-bold text-violet-300'},'Research'), React.createElement('span',{className:'text-[11px] text-violet-500'},'1 AP'), React.createElement('span',{className:'text-[11px] text-slate-200'},researchQueue.length+'/10')),
+                  React.createElement('button', { onClick: function() { upd('showSettlers',!d.showSettlers); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-teal-900/30 hover:scale-105', style:{background:'#1e293b',border:'1px solid #0d948440'} }, React.createElement('span',{className:'text-lg'},'\uD83D\uDC65'), React.createElement('span',{className:'text-[11px] font-bold text-teal-300'},'Crew'), React.createElement('span',{className:'text-[11px] text-teal-500'},'Free'), React.createElement('span',{className:'text-[11px] text-slate-200'},settlers.length+' pop')),
                   (buildings.length>=2||activePolicy)&&React.createElement('button', { onClick: function() { upd('showPolicy',!d.showPolicy); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-emerald-900/30 hover:scale-105', style:{background:'#1e293b',border:'1px solid #16a34a40'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFDB\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-emerald-300'},'Gov'), React.createElement('span',{className:'text-[11px] text-emerald-500'},'Free')),
-                  (greatScientists.length>0||buildings.length>=5)&&React.createElement('button', { onClick: function() { upd('showGreatSci',!d.showGreatSci); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-yellow-900/30 hover:scale-105', style:{background:'#1e293b',border:'1px solid #ca8a0440'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDD16'), React.createElement('span',{className:'text-[11px] font-bold text-yellow-300'},'Mentors'), React.createElement('span',{className:'text-[11px] text-slate-500'},greatScientists.length+'/'+greatSciDefs.length)),
+                  (greatScientists.length>0||buildings.length>=5)&&React.createElement('button', { onClick: function() { upd('showGreatSci',!d.showGreatSci); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-yellow-900/30 hover:scale-105', style:{background:'#1e293b',border:'1px solid #ca8a0440'} }, React.createElement('span',{className:'text-lg'},'\uD83E\uDD16'), React.createElement('span',{className:'text-[11px] font-bold text-yellow-300'},'Mentors'), React.createElement('span',{className:'text-[11px] text-slate-200'},greatScientists.length+'/'+greatSciDefs.length)),
                   (era!=='survival')&&React.createElement('button', { onClick: function() { if(actionPoints<2){if(addToast)addToast('Expeditions cost 2 AP!','error');return;} upd('showExpeditions',!d.showExpeditions); }, disabled:actionPoints<2, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all '+(actionPoints>=2?'hover:bg-cyan-900/30 hover:scale-105':'opacity-40'), style:{background:'#1e293b',border:'1px solid #06b6d440'} }, React.createElement('span',{className:'text-lg'},'\u26F5'), React.createElement('span',{className:'text-[11px] font-bold text-cyan-300'},'Expedition'), React.createElement('span',{className:'text-[11px] text-cyan-500'},'2 AP')),
                   (era!=='survival')&&React.createElement('button', { onClick: function() { upd('showWonders',!d.showWonders); }, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all hover:bg-amber-900/30 hover:scale-105', style:{background:'#1e293b',border:'1px solid #b4540040'} }, React.createElement('span',{className:'text-lg'},'\uD83C\uDFDB\uFE0F'), React.createElement('span',{className:'text-[11px] font-bold text-amber-200'},'Wonders'), React.createElement('span',{className:'text-[11px] text-amber-500'},'Free'))
                 ),
@@ -1995,7 +1995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
                   },
                   disabled: !selectedTile || tileImprovements[selectedTile.x + ',' + selectedTile.y] || resources.materials < 8,
-                  className: 'py-2 rounded-xl text-[11px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-500')
+                  className: 'py-2 rounded-xl text-[11px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-200')
                 }, '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)')
               ),
               // Terraforming Progress
@@ -2007,7 +2007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('div', { className: 'w-full rounded-full h-4 overflow-hidden', style: { background: '#1e293b', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' } },
                   React.createElement('div', { className: 'h-4 rounded-full transition-all', style: { width: terraform + '%', background: terraform >= 100 ? 'linear-gradient(90deg, #4ade80, #22d3ee)' : terraform >= 50 ? 'linear-gradient(90deg, #10b981, #14b8a6)' : 'linear-gradient(90deg, #6366f1, #10b981)', boxShadow: '0 0 12px rgba(16,185,129,0.4)', animation: 'kp-barFill 1.5s ease-out' } })
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-500 mt-1' },
+                React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1' },
                   terraform >= 100 ? '\uD83C\uDF89 VICTORY! The planet is habitable! Your colony is self-sustaining!' :
                     terraform >= 75 ? 'Atmosphere thickening, water cycles forming. Almost habitable!' :
                       terraform >= 50 ? 'Microorganisms detected in soil. Oxygen levels rising.' :
@@ -2016,13 +2016,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 // Victory Paths
                 React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[11px]' },
-                  React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500') },
+                  React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-200') },
                     '\uD83C\uDF0D Terraform: ' + terraform + '/100%'
                   ),
-                  React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 50 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-500') },
+                  React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 50 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-200') },
                     '\uD83D\uDC65 Population: ' + settlers.length + '/50'
                   ),
-                  React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 10 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-500') },
+                  React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 10 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-200') },
                     '\uD83E\uDDEC Research: ' + researchQueue.length + '/10'
                   )
                 ),
@@ -2080,7 +2080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }, className: 'w-full text-left p-3 rounded-xl border-2 border-slate-600 hover:border-indigo-400 transition-all text-xs text-slate-200 hover:scale-[1.02]', style: { background: 'linear-gradient(135deg, #1e293b, #312e81)' }
                   },
                     React.createElement('div', { className: 'font-bold text-white' }, ch.label),
-                    React.createElement('div', { className: 'text-[11px] text-slate-500 mt-1 flex gap-2 flex-wrap' },
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1 flex gap-2 flex-wrap' },
                       Object.keys(ch.effects || {}).filter(function (ek) { return ch.effects[ek] !== 0; }).map(function (ek) { return React.createElement('span', { key: ek, className: ch.effects[ek] > 0 ? 'text-green-400' : 'text-red-400' }, ek + ':' + (ch.effects[ek] > 0 ? '+' : '') + ch.effects[ek]); })
                     )
                   );
@@ -2350,7 +2350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         }, className: 'px-2 py-1 bg-amber-500 text-slate-900 rounded-lg text-[11px] font-bold'
                       }, '\uD83D\uDD13 Build')
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-500 mt-1' }, bd.desc),
+                    React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1' }, bd.desc),
                     React.createElement('div', { className: 'flex gap-1 mt-1 text-[11px] flex-wrap' },
                       Object.keys(bd.cost).map(function (ck) { return React.createElement('span', { key: ck, className: resources[ck] >= bd.cost[ck] ? 'text-green-400' : 'text-red-400' }, ck + ':' + bd.cost[ck]); }),
                       React.createElement('span', { className: 'text-slate-600' }, '|'),
@@ -2618,7 +2618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           }
                         },
                         disabled: !canAdopt,
-                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-500')
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-200')
                       }, '\uD83D\uDD2C 10 sci')
                     );
                   })
@@ -2646,7 +2646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     var icons = { collectivism: '\uD83E\uDD1D', innovation: '\uD83D\uDCA1', ecology: '\uD83C\uDF3F', tradition: '\uD83C\uDFDB\uFE0F', openness: '\uD83C\uDF10' };
                     return React.createElement('div', { key: vk3 },
                       React.createElement('div', { className: 'text-lg' }, icons[vk3] || '\u2022'),
-                      React.createElement('div', { className: 'text-[11px] text-slate-500 capitalize' }, vk3),
+                      React.createElement('div', { className: 'text-[11px] text-slate-200 capitalize' }, vk3),
                       React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1.5 mt-1' },
                         React.createElement('div', {
                           className: 'h-1.5 rounded-full transition-all ' + (val > 60 ? 'bg-green-500' : val > 40 ? 'bg-amber-500' : 'bg-red-500'),
@@ -2713,7 +2713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           }
                         },
                         disabled: !canResearch,
-                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (canResearch ? 'bg-violet-700 text-white' : 'bg-slate-700 text-slate-500')
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (canResearch ? 'bg-violet-700 text-white' : 'bg-slate-700 text-slate-200')
                       }, '\uD83D\uDD2C ' + rd2.cost + ' sci')
                     );
                   })
@@ -2731,7 +2731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('div', { className: 'text-[11px] font-bold mt-1', style: { color: '#fde68a', textShadow: '0 0 6px rgba(253,230,138,0.3)' } }, gs4.name),
                       React.createElement('div', { className: 'text-[11px] text-cyan-400' }, '\uD83E\uDD16 AI Simulation'),
                       React.createElement('div', { className: 'text-[11px] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
-                      React.createElement('div', { className: 'text-[11px] text-slate-500 mt-1 italic' }, gs4.fact),
+                      React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1 italic' }, gs4.fact),
                       React.createElement('button', {
                         onClick: function () {
                           upd('mentorChatLoading', gs4.name);
@@ -2844,7 +2844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         React.createElement('span', { className: 'text-lg' }, exp.icon),
                         React.createElement('span', { className: 'text-[11px] font-bold', style: { color: exp.color } }, exp.type)
                       ),
-                      React.createElement('div', { className: 'text-[11px] text-slate-500 mb-1' }, exp.desc),
+                      React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, exp.desc),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, Object.keys(exp.cost).map(function(k) { return exp.cost[k] + ' ' + k; }).join(', ') + ' \u2022 ' + exp.turns + ' turns')
                     );
                   })

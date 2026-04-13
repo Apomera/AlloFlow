@@ -2211,7 +2211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         ),
 
         // ── Grade intro ──
-        h('p', { className: 'text-xs text-slate-600 dark:text-slate-500 italic' }, getGradeIntro(gradeBand)),
+        h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 italic' }, getGradeIntro(gradeBand)),
 
 
         // ── Biome Selector ──
@@ -2303,7 +2303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Start/stop ambient on pause/resume — first button triggers on click above
             !simPaused && !_ecoAmbient && (function() { startEcoAmbient(true, 30); return null; })(),
             h('div', { className: 'flex items-center gap-2 flex-1' },
-              h('span', { className: 'text-[11px] font-semibold text-slate-500 dark:text-slate-400' }, 'Speed:'),
+              h('span', { className: 'text-[11px] font-semibold text-slate-200 dark:text-slate-200' }, 'Speed:'),
               h('input', {
                 type: 'range', 'aria-label': 'sim speed', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Simulation speed',
@@ -2353,7 +2353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var timeLabel = timeAgo < 60 ? timeAgo + 's ago' : Math.round(timeAgo / 60) + 'm ago';
                 return h('div', {
                   key: 'eh' + idx,
-                  className: 'flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400'
+                  className: 'flex items-center gap-2 text-[11px] text-slate-200 dark:text-slate-200'
                 },
                   h('span', null, eventIcons[ev.name] || '\u26A1'),
                   h('span', { className: 'font-semibold' }, ev.name),
@@ -2567,7 +2567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Description ──
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
-            h('p', { className: 'text-xs text-slate-600 dark:text-slate-400 flex-1' },
+            h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 flex-1' },
               'Model predator\u2013prey dynamics using the Lotka\u2013Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'
             ),
             callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -2736,7 +2736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     h('span', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-200') }, ch.name),
                     done && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-green-500 font-bold ml-auto' }, '\u2714')
                   ),
-                  h('p', { className: 'text-[11px] text-slate-500 dark:text-slate-500 mb-1' }, ch.desc),
+                  h('p', { className: 'text-[11px] text-slate-200 dark:text-slate-200 mb-1' }, ch.desc),
                   h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
                     done ? '\u2714 Completed!' : '\u2B50 +' + ch.reward + ' RP')
                 );
@@ -2854,7 +2854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               }
             }, simPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
             h('div', { className: 'flex items-center gap-2 flex-1' },
-              h('span', { className: 'text-[11px] font-semibold text-slate-500 dark:text-slate-400' }, 'Speed:'),
+              h('span', { className: 'text-[11px] font-semibold text-slate-200 dark:text-slate-200' }, 'Speed:'),
               h('input', {
                 type: 'range', 'aria-label': 'sim speed', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Sandbox simulation speed',
@@ -2943,7 +2943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Sandbox experiment suggestions ──
           h('div', { className: 'bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-teal-200 dark:border-teal-700 space-y-1' },
             h('p', { className: 'text-[11px] font-bold text-teal-700 dark:text-teal-300' }, '\uD83E\uDD14 Experiment Ideas'),
-            h('ul', { className: 'list-disc pl-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-0.5' },
+            h('ul', { className: 'list-disc pl-4 text-[11px] text-slate-600 dark:text-slate-200 space-y-0.5' },
               h('li', null, 'Remove all predators and watch what happens to prey and vegetation'),
               h('li', null, 'Create a "wall" of trees and see if it affects hunting patterns'),
               h('li', null, 'Add many foxes at once, then trigger a Food Boom to save the rabbits'),
@@ -3051,7 +3051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               },
                 h('span', { className: 'text-lg', style: { filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 h('div', null,
-                  h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-500') }, b.label),
+                  h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-200') }, b.label),
                   h('p', { className: 'text-[11px] text-slate-600' }, b.desc),
                   earned && h('span', { className: 'text-[11px] text-emerald-500 font-bold' }, '\u2714 EARNED')
                 )

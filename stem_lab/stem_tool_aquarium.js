@@ -5576,7 +5576,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools'
 
-              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
               React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, "\uD83D\uDC20 Aquaculture & Ocean Lab"),
 
@@ -5870,7 +5870,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "w-4 h-4 flex items-center justify-center rounded-full text-[11px] font-bold flex-shrink-0 " + (isHighlighted ? "bg-cyan-400 text-slate-900" : "bg-slate-600 text-slate-300") }, String(i + 1)),
 
-                      React.createElement("span", { className: "text-[11px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-400") }, part.name)
+                      React.createElement("span", { className: "text-[11px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-200") }, part.name)
 
                     );
 
@@ -6054,7 +6054,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", { className: "text-sm font-bold text-cyan-800" }, tank.name),
 
-                    React.createElement("span", { className: "ml-auto text-xs font-mono text-slate-500" },
+                    React.createElement("span", { className: "ml-auto text-xs font-mono text-slate-200" },
 
                       "\uD83D\uDCC5 Day " + simDay + ", " + (simHour < 10 ? '0' : '') + simHour + ":00" + (simHour >= 20 || simHour < 6 ? ' \uD83C\uDF19' : ' \u2600\uFE0F')
 
@@ -6126,7 +6126,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       return React.createElement("button", {
                         key: lm.id,
                         onClick: function() { upd('tankLight', lm.id); sfxClick(); },
-                        className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-100')
+                        className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-200 border-slate-200 hover:bg-slate-100')
                       }, lm.label);
                     })
                   )
@@ -6271,7 +6271,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500" }, "Nitrosomonas"),
+                    React.createElement("span", { className: "text-[11px] text-slate-200" }, "Nitrosomonas"),
 
                     React.createElement("span", null, " \u2192 "),
 
@@ -6279,13 +6279,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500" }, "Nitrobacter"),
+                    React.createElement("span", { className: "text-[11px] text-slate-200" }, "Nitrobacter"),
 
                     React.createElement("span", null, " \u2192 "),
 
                     React.createElement("span", { className: "font-bold text-green-500" }, "NO\u2083"),
 
-                    React.createElement("span", { className: "ml-1 text-slate-500" }, "(Nitrogen Cycle)")
+                    React.createElement("span", { className: "ml-1 text-slate-200" }, "(Nitrogen Cycle)")
 
                   )
 
@@ -6359,7 +6359,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                               React.createElement("span", { className: "text-[11px] font-mono " + hpTextColor }, hp.toFixed(0) + '%'),
 
-                              React.createElement("span", { className: "text-[11px] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1))
+                              React.createElement("span", { className: "text-[11px] text-slate-200" }, '\uD83C\uDF3F' + bm.toFixed(1))
 
                             )
 
@@ -7375,7 +7375,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-500" }, "Fish Fed"),
+                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Fish Fed"),
 
                         React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
 
@@ -7383,7 +7383,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-500" }, "Hunger \u2193"),
+                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Hunger \u2193"),
 
                         React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
 
@@ -7391,7 +7391,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-500" }, "NH\u2083 \u2191"),
+                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "NH\u2083 \u2191"),
 
                         React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
 
@@ -8169,7 +8169,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: function () { upd('selectedSpecies', null); },
 
-                      className: "text-slate-500 hover:text-slate-600 text-lg"
+                      className: "text-slate-200 hover:text-slate-600 text-lg"
 
                     }, "\u2715")
 

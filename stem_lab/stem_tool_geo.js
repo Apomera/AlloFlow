@@ -2425,13 +2425,13 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-xs text-slate-600 mb-2'},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
             React.createElement('div',{className:'space-y-2'}, MISSIONS.map(m=>React.createElement('button',{key:m.id,onClick:()=>startMission(m.id),className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-violet-100 rounded-xl hover:border-violet-400 hover:bg-violet-50 text-left transition-all'},
               React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},m.icon),
-              React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-500'},'Discover the rule yourself through measurement & prediction'))
+              React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-200'},'Discover the rule yourself through measurement & prediction'))
             ))),
             React.createElement('div',{className:'mt-3 pt-3 border-t-2 border-violet-100'},
               React.createElement('p',{className:'text-sm font-bold text-orange-700 mb-2'},'🎲 Quick Activities'),
               React.createElement('button',{onClick:function(){gpUpd('mission',{id:'angle_sorter',step:0,data:{}});startAngleSorter();},className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-orange-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 text-left transition-all'},
                 React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},'📐'),
-                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[11px] text-slate-500'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
+                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[11px] text-slate-200'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
               )
             )
           );
@@ -2473,7 +2473,7 @@ var d = labToolData || {};
         return React.createElement('div',{className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200'},
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
-            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-500'})),
+            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-200'})),
             React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-600'},exploreScore.correct+'/'+exploreScore.total),

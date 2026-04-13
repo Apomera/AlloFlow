@@ -1585,7 +1585,7 @@ window.StemLab = window.StemLab || {
                   results.map(function(r, ri) {
                     return h('div', {
                       key: ri,
-                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-500')
+                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-200')
                     },
                       h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ' +
                         (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500')

@@ -4217,7 +4217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     if (prev >= 0) { upd('_tourStepIdx', prev); upd('selectedStructure', tourSteps[prev].structureId); playSound('guidedStep'); }
                   },
                   disabled: tourStepIdx === 0,
-                  className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (tourStepIdx === 0 ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
+                  className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (tourStepIdx === 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
                 }, '\u2190 Previous'),
                 tourStepIdx < tourSteps.length - 1 ? h('button', { 'aria-label': 'Next',
                   onClick: function() {
@@ -4370,7 +4370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       }
                     },
                     disabled: pathwayStepIdx === 0,
-                    className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-500' : 'bg-rose-100 text-rose-700 hover:bg-rose-200')
+                    className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200')
                   }, '\u2190 Previous'),
                   pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': 'Next',
                     onClick: function() {
@@ -4631,7 +4631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               }, '\u2622 X-ray'),
               // Skin tone selector (representation & inclusion)
               h('div', { className: 'flex items-center gap-1 ml-1', title: 'Skin tone (representation)' },
-                h('span', { className: 'text-[11px] text-slate-500 font-bold' }, '\uD83C\uDFA8'),
+                h('span', { className: 'text-[11px] text-slate-200 font-bold' }, '\uD83C\uDFA8'),
                 SKIN_TONES.map(function(tone) {
                   return h('button', {
                     key: tone.id,
@@ -4938,7 +4938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     key: bd.id,
                     title: bd.name + ': ' + bd.desc + ' (' + bd.xp + ' XP)',
                     className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                      (earned ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-slate-100 border-slate-200 text-slate-500')
+                      (earned ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-slate-100 border-slate-200 text-slate-200')
                   }, bd.icon + ' ' + bd.name);
                 })
               )

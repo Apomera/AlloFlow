@@ -956,7 +956,7 @@ window.StemLab = window.StemLab || {
         h("div", { className: "flex items-center justify-between" },
           h("div", { className: "flex items-center gap-3" },
             h("button", { onClick: function() { setStemLabTool(null); announceToSR('Returned to tool grid'); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools' },
-              h(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              h(ArrowLeft, { size: 18, className: "text-slate-200" })),
             h("div", null,
               h("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDEC DNA / Genetics Lab"),
               h("p", { className: "text-xs text-slate-600" }, "Build \u2022 Replicate \u2022 Transcribe \u2022 Translate \u2022 Mutate \u2022 CRISPR \u2022 Forensics"))
@@ -1056,7 +1056,7 @@ window.StemLab = window.StemLab || {
             h("button", { onClick: function() { updMulti({ replStep: 0, replPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, '\u21BA Reset'),
             h("div", { className: "flex items-center gap-2 ml-auto" },
               h("span", { className: "text-xs text-slate-600" }, 'Speed:'),
-              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-500') }, s + 'x'); })
+              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-200') }, s + 'x'); })
             )
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-3" },
@@ -1243,7 +1243,7 @@ window.StemLab = window.StemLab || {
                   h("p", { className: "text-slate-600" }, '\uD83C\uDFAF Target: pos ' + (selectedPAMSite.cutSite - crisprGuideLen + 1) + '-' + selectedPAMSite.cutSite + ' | PAM: ' + dnaSeq.substring(selectedPAMSite.pamStart, selectedPAMSite.pamStart + 3) + ' at pos ' + (selectedPAMSite.pamStart + 1)),
                   h("p", { className: "text-blue-600 font-mono mt-0.5" }, 'gRNA: ' + dnaSeq.substring(selectedPAMSite.cutSite - crisprGuideLen, selectedPAMSite.cutSite).split('').map(function(b) { return DNA_TO_RNA[b] || b; }).join(''))
                 ),
-                h("button", { onClick: startCRISPRScan, disabled: !selectedPAMSite, className: "mt-2 px-4 py-2 text-sm font-bold rounded-xl transition-all " + (selectedPAMSite ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed') }, '\uD83D\uDE80 Deploy Cas9')
+                h("button", { onClick: startCRISPRScan, disabled: !selectedPAMSite, className: "mt-2 px-4 py-2 text-sm font-bold rounded-xl transition-all " + (selectedPAMSite ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-md' : 'bg-slate-200 text-slate-200 cursor-not-allowed') }, '\uD83D\uDE80 Deploy Cas9')
               )
             ),
 
@@ -1255,7 +1255,7 @@ window.StemLab = window.StemLab || {
               ),
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-xs text-slate-600" }, 'Speed:'),
-                [1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-0.5 text-[11px] font-bold rounded " + (speed === s ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500') }, s + 'x'); })
+                [1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-0.5 text-[11px] font-bold rounded " + (speed === s ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-200') }, s + 'x'); })
               )
             ),
 
@@ -1380,7 +1380,7 @@ window.StemLab = window.StemLab || {
                   d.aiProtein
                 )
               )
-            ) : h("div", { className: "text-center py-8 text-slate-400" }, h("div", { className: "text-4xl mb-2" }, "\uD83E\uDDEA"), h("p", null, "Run Transcription and Translation first!"))
+            ) : h("div", { className: "text-center py-8 text-slate-200" }, h("div", { className: "text-4xl mb-2" }, "\uD83E\uDDEA"), h("p", null, "Run Transcription and Translation first!"))
           ),
           h("details", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, '\uD83E\uDDA0 Genetic Disorders Reference'),
@@ -1480,7 +1480,7 @@ window.StemLab = window.StemLab || {
                     }, s.label);
                   })
                 ),
-                h("button", { onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'bg-cyan-700 text-white hover:bg-cyan-700 shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed') }, '\u2713 Submit Answer')
+                h("button", { onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'bg-cyan-700 text-white hover:bg-cyan-700 shadow-md' : 'bg-slate-200 text-slate-200 cursor-not-allowed') }, '\u2713 Submit Answer')
               ),
 
               // Result
@@ -1584,7 +1584,7 @@ window.StemLab = window.StemLab || {
           h("details", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, "\uD83D\uDCD6 Codon Reference Table"),
             h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[11px] font-mono max-h-60 overflow-y-auto" },
-              Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-500" }, "\u2192 " + aa2)); })
+              Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-200" }, "\u2192 " + aa2)); })
             )
           )
         ),
