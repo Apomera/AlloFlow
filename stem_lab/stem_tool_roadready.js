@@ -3842,6 +3842,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Camera follows car
           var camMode = cameraModeRef.current;
+          // Dynamic weather update (for Free Explore weather toggle)
+          var isNightNow = scn.time === 'night';
+          var isFogNow = scn.weather === 'fog';
+          var isSnowNow = scn.weather === 'snow';
+          var isRainNow = scn.weather === 'rain';
+          // Update fog dynamically
+          if (isFogNow && (!s3.scene.fog || s3.scene.fog.far !== 40)) {
+            s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
+            s3.scene.background = new T.Color(0x94a3b8);
+          } else if (isSnowNow && (!s3.scene.fog || s3.scene.fog.far !== 60)) {
+            s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
+            s3.scene.background = new T.Color(0xcbd5e1);
+          } else if (isRainNow && (!s3.scene.fog || s3.scene.fog.far !== 50)) {
+            s3.scene.fog = new T.Fog(0x475569, 8, 50);
+            s3.scene.background = new T.Color(0x475569);
+          } else if (isNightNow && (!s3.scene.fog || s3.scene.fog.far !== 120)) {
+            s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
+            s3.scene.background = new T.Color(0x0a0f1e);
+          } else if (!isFogNow && !isSnowNow && !isRainNow && !isNightNow && s3.scene.fog && s3.scene.fog.far !== 120) {
+            s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
+            s3.scene.background = new T.Color(0x87ceeb);
+          }
+          // Update ambient light intensity for time-of-day
+          s3.scene.children.forEach(function(child) {
+            if (child.isAmbientLight) {
+              child.intensity = isNightNow ? 0.15 : 0.5;
+              child.color.setHex(isNightNow ? 0x1a1a3a : 0xffffff);
+            }
+          });
+
           // Speed-dependent FOV (faster = wider, like real peripheral vision)
           var baseFOV = 65;
           var speedFOV = baseFOV + Math.min(15, Math.abs(car.speed) * 0.8);
@@ -4760,6 +4790,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
 
         // ── Main render loop: init Three.js then loop ──
+        // Handle window resize for Three.js canvas
+        var onResize = function() {
+          if (scn3d && scn3d.renderer && canvas3dRef.current) {
+            var w = canvas3dRef.current.clientWidth;
+            var h = canvas3dRef.current.clientHeight;
+            if (w && h) {
+              scn3d.renderer.setSize(w, h);
+              scn3d.camera.aspect = w / h;
+              scn3d.camera.updateProjectionMatrix();
+            }
+          }
+        };
+        window.addEventListener('resize', onResize);
+
         function ensureThreeAndStart() {
           if (window.THREE) {
             scn3d = initThreeScene();
@@ -4798,6 +4842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return function() {
           drivingRef.current = false;
           if (animRef.current) cancelAnimationFrame(animRef.current);
+          window.removeEventListener('resize', onResize);
           if (threeRef.current && threeRef.current.renderer) {
             // Dispose all geometries and materials in the scene to free GPU memory
             if (threeRef.current.scene) {
@@ -5548,6 +5593,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           lastAns ? h('button', { onClick: function() {
             if (permitState.index + 1 >= permitState.questions.length) {
               upd('permit', Object.assign({}, permitState, { done: true }));
+              // Award permit_pass badge if 80%+ (16/20)
+              if (permitState.score >= 16) {
+                var b = Object.assign({}, earnedBadges);
+                b.permit_pass = true;
+                upd('badges', b);
+                addToast('🏅 Permit Pass badge earned!');
+              }
             } else {
               upd('permit', Object.assign({}, permitState, { index: permitState.index + 1 }));
             }
@@ -6115,12 +6167,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── PARALLEL PARKING (2D) ──
       if (view === 'parking') {
-        return h(ParkingMode, { ctx: ctx, h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+        return h(ParkingMode, { key: 'parking-mode', ctx: ctx, h: h, React: React, onExit: function() { upd('view', 'menu'); } });
       }
 
       // ── 3-POINT TURN (2D) ──
       if (view === 'threePoint') {
-        return h(ThreePointMode, { h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+        return h(ThreePointMode, { key: 'threepoint-mode', h: h, React: React, onExit: function() { upd('view', 'menu'); } });
       }
 
       // ── BACKING DRILL (2D) ──
@@ -6516,6 +6568,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('button', { onClick: function() {
                   if (htState.round >= hazards.length) {
                     upd('htState', Object.assign({}, htState, { active: false }));
+                    // Award hazard_ace badge if 8/10+
+                    if (htState.score >= 8) {
+                      var hb = Object.assign({}, earnedBadges);
+                      hb.hazard_ace = true;
+                      upd('badges', hb);
+                      addToast('🏅 Hazard Ace badge earned!');
+                    }
                   } else {
                     var hz = hazards[htState.round % hazards.length];
                     upd('htState', Object.assign({}, htState, { active: true, hazard: hz, startTime: Date.now(), responded: false }));
