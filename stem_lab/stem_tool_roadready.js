@@ -6177,7 +6177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── BACKING DRILL (2D) ──
       if (view === 'backingDrill') {
-        return h(BackingDrillMode, { h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+        return h(BackingDrillMode, { key: 'backing-mode', h: h, React: React, onExit: function() { upd('view', 'menu'); } });
       }
 
       // ── FUEL COST CALCULATOR ──
@@ -7512,7 +7512,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var headlightRange = nvBeams === 'high' ? 500 : 350;
         var fwNv = 'clear';
         var nvSD = stoppingDistance(nvSpeed, fwNv, 1.5);
-        var canStop = nvSD.total_ft <= headlightRange;
         var overdriving = nvSD.total_ft > headlightRange;
         // Find max safe speed (where stopping distance = headlight range)
         var maxSafeSpeed = nvSpeed;

@@ -7891,27 +7891,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7927,7 +7927,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4963eda/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7519631/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51536,28 +51536,53 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
 
                         {/* ── Pipeline Step Tracker — always visible during processing ── */}
-                        <div className="mt-3 bg-white rounded-xl border border-slate-200 p-3" role="region" aria-label="Pipeline progress tracker">
-                          <div className="flex items-center gap-1.5 text-[11px]">
-                            {[
-                              { step: 1, label: 'Extract', icon: '📄' },
-                              { step: 2, label: 'Build HTML', icon: '🏗️' },
-                              { step: 3, label: 'Audit', icon: '🔍' },
-                              { step: 4, label: 'Fix & Verify', icon: '🔧' },
-                            ].map((s, i) => {
-                              const currentStep = pdfFixStep.includes('Step ' + s.step) || pdfFixStep.includes('step ' + s.step);
-                              const completedStep = [1,2,3,4].some(later => later > s.step && (pdfFixStep.includes('Step ' + later) || pdfFixStep.includes('step ' + later)));
-                              return (
-                                <React.Fragment key={s.step}>
-                                  {i > 0 && <div className={`flex-1 h-0.5 rounded ${completedStep ? 'bg-green-400' : currentStep ? 'bg-indigo-300' : 'bg-slate-200'}`}></div>}
-                                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg font-bold whitespace-nowrap ${completedStep ? 'bg-green-50 text-green-700 border border-green-200' : currentStep ? 'bg-indigo-50 text-indigo-700 border border-indigo-300 animate-pulse' : 'text-slate-400'}`}>
-                                    <span>{completedStep ? '✅' : s.icon}</span>
-                                    <span>{s.label}</span>
-                                  </div>
-                                </React.Fragment>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        {/* ── Pipeline Step Tracker with sub-progress ── */}
+                        {(() => {
+                          const steps = [
+                            { step: 1, label: 'Extract', icon: '📄' },
+                            { step: 2, label: 'Build HTML', icon: '🏗️' },
+                            { step: 3, label: 'Audit', icon: '🔍' },
+                            { step: 4, label: 'Fix & Verify', icon: '🔧' },
+                          ];
+                          // Parse sub-progress from pdfFixStep text
+                          const parseSubProgress = (stepText) => {
+                            if (!stepText) return null;
+                            // Extract the detail after the step label: "Step 2/4 🏗️ Building... — Polish pass 1/2..."
+                            const dashIdx = stepText.indexOf('—');
+                            if (dashIdx > 0) return stepText.substring(dashIdx + 1).trim().replace(/\s*\(typically.*$/, '').trim();
+                            // Fallback: extract after emoji
+                            const parts = stepText.split(/[📄🏗️🔍🔧]/);
+                            if (parts.length > 1) return parts[parts.length - 1].trim().replace(/\s*\(typically.*$/, '').trim();
+                            return null;
+                          };
+                          const subProgress = parseSubProgress(pdfFixStep);
+                          return (
+                            <div className="mt-3 bg-white rounded-xl border border-slate-200 p-3 space-y-2" role="region" aria-label="Pipeline progress tracker">
+                              <div className="flex items-center gap-1.5 text-[11px]">
+                                {steps.map((s, i) => {
+                                  const currentStep = pdfFixStep.includes('Step ' + s.step) || pdfFixStep.includes('step ' + s.step);
+                                  const completedStep = steps.some(later => later.step > s.step && (pdfFixStep.includes('Step ' + later.step) || pdfFixStep.includes('step ' + later.step)));
+                                  return (
+                                    <React.Fragment key={s.step}>
+                                      {i > 0 && <div className={`flex-1 h-0.5 rounded ${completedStep ? 'bg-green-400' : currentStep ? 'bg-indigo-300' : 'bg-slate-200'}`}></div>}
+                                      <div className={`flex flex-col items-center gap-0.5 ${completedStep ? '' : currentStep ? '' : ''}`}>
+                                        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg font-bold whitespace-nowrap ${completedStep ? 'bg-green-50 text-green-700 border border-green-200' : currentStep ? 'bg-indigo-50 text-indigo-700 border border-indigo-300 animate-pulse' : 'text-slate-400'}`}>
+                                          <span>{completedStep ? '✅' : s.icon}</span>
+                                          <span>{s.label}</span>
+                                        </div>
+                                      </div>
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </div>
+                              {subProgress && (
+                                <div className="text-[10px] text-indigo-600 font-medium text-center bg-indigo-50 rounded-lg px-3 py-1.5 border border-indigo-100">
+                                  <span className="animate-pulse inline-block mr-1">⏳</span> {subProgress}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         {/* ── Live Chunk Review — inline during processing so user sees it immediately ── */}
                         {(liveChunkSessionActive || liveChunkStream.length > 0) && (
