@@ -4142,16 +4142,17 @@ const useTranslation = (targetLanguage, apiKey) => {
   // ── Live chunk review: listen for events from doc_pipeline during remediation ──
   useEffect(() => {
     const onSessionStart = (e) => {
-      setLiveChunkStream([]);
-      setLiveChunkSessionActive(true);
-      setLiveChunkExpanded({});
-      setLiveChunkRejected({});
-      setChunkResumePrompt(null);
-      // Auto-scroll to live remediation panel
-      setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+      try {
+        setLiveChunkStream([]);
+        setLiveChunkSessionActive(true);
+        setLiveChunkExpanded({});
+        setLiveChunkRejected({});
+        setChunkResumePrompt(null);
+        setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+      } catch(ex) { /* non-blocking */ }
     };
     const onResumeAvailable = (e) => {
-      setChunkResumePrompt(e.detail);
+      try { setChunkResumePrompt(e.detail); } catch(ex) { /* non-blocking */ }
     };
     const onBoringPalette = () => {
       try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking */ }
@@ -4163,31 +4164,33 @@ const useTranslation = (targetLanguage, apiKey) => {
       try { setFixIssuesList(e.detail); } catch(ex) { /* non-blocking */ }
     };
     const onChunkStart = (e) => {
-      setLiveChunkStream(prev => {
-        // Add a placeholder card so users see "working on this chunk" immediately
-        const idx = e.detail.index;
-        if (prev.find(c => c.index === idx)) return prev;
-        return [...prev, { ...e.detail, status: 'working' }];
-      });
+      try {
+        setLiveChunkStream(prev => {
+          const idx = e.detail.index;
+          if (prev.find(c => c.index === idx)) return prev;
+          return [...prev, { ...e.detail, status: 'working' }];
+        });
+      } catch(ex) { /* non-blocking */ }
     };
     const onChunkFixed = (e) => {
-      setLiveChunkStream(prev => {
-        const idx = e.detail.index;
-        const existing = prev.find(c => c.index === idx);
-        if (existing) {
-          return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
-        }
-        return [...prev, { ...e.detail, status: 'complete' }];
-      });
-      // Flash auto-save indicator
-      setChunkSaveFlash(true);
-      setTimeout(() => setChunkSaveFlash(false), 2000);
+      try {
+        setLiveChunkStream(prev => {
+          const idx = e.detail.index;
+          const existing = prev.find(c => c.index === idx);
+          if (existing) {
+            return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
+          }
+          return [...prev, { ...e.detail, status: 'complete' }];
+        });
+        setChunkSaveFlash(true);
+        setTimeout(() => setChunkSaveFlash(false), 2000);
+      } catch(ex) { /* non-blocking */ }
     };
     const onChunkRefixed = (e) => {
-      setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c));
+      try { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); } catch(ex) { /* non-blocking */ }
     };
     const onSessionComplete = (e) => {
-      setLiveChunkSessionActive(false);
+      try { setLiveChunkSessionActive(false); } catch(ex) { /* non-blocking */ }
     };
     window.addEventListener('alloflow:chunk-session-start', onSessionStart);
     window.addEventListener('alloflow:chunk-start', onChunkStart);
@@ -7906,27 +7909,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7942,7 +7945,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e6ba8ea/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ad2a97f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
