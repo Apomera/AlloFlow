@@ -1971,20 +1971,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           cv.width = W * 2; cv.height = H * 2;
           c.setTransform(2, 0, 0, 2, 0, 0);
 
+          var _qTime = 0;
           function queenFrame() {
+            _qTime++;
             c.clearRect(0, 0, W, H);
 
-            // ── Comb background (hexagonal grid) ──
-            var cSize = 18;
-            c.fillStyle = '#d4aa40';
+            // ── Seasonal background tint ──
+            var qSeason2 = Math.floor(((queenDay || 0) % 120) / 30);
+            var combBase = ['#c9b040', '#d4aa40', '#b89030', '#a0a0b0'][qSeason2] || '#d4aa40';
+            var combCell = ['#c0a530', '#c9a030', '#a87820', '#8090a0'][qSeason2] || '#c9a030';
+            var combStroke = ['#7a5a08', '#8a6508', '#6a4a00', '#606878'][qSeason2] || '#8a6508';
+            c.fillStyle = combBase;
             c.fillRect(0, 0, W, H);
 
-            // Draw hexagonal comb grid
+            // Draw hexagonal comb grid (seasonal tint)
+            var cSize = 18;
             for (var gy = -1; gy < Math.ceil(H / (cSize * 1.6)) + 1; gy++) {
               for (var gx = -1; gx < Math.ceil(W / (cSize * 2)) + 1; gx++) {
                 var hx = gx * cSize * 2 + (gy % 2) * cSize;
                 var hy = gy * cSize * 1.6;
-                c.fillStyle = 'rgba(180,140,40,0.4)';
                 c.beginPath();
                 for (var hh = 0; hh < 6; hh++) {
                   var ha = hh * 1.047 + 0.524;
@@ -1993,10 +1998,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   hh === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
                 }
                 c.closePath();
-                c.fillStyle = '#c9a030';
+                c.fillStyle = combCell;
                 c.fill();
-                c.strokeStyle = '#8a6508'; c.lineWidth = 0.8; c.stroke();
+                c.strokeStyle = combStroke; c.lineWidth = 0.8; c.stroke();
               }
+            }
+
+            // Winter frost overlay
+            if (qSeason2 === 3) {
+              c.fillStyle = 'rgba(200,220,240,0.12)'; c.fillRect(0, 0, W, H);
+              c.fillStyle = '#fff'; c.globalAlpha = 0.3;
+              for (var sn2 = 0; sn2 < 15; sn2++) {
+                c.beginPath(); c.arc((sn2 * 37 + _qTime * 0.15) % W, (sn2 * 29 + _qTime * 0.25) % H, 1 + Math.random(), 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
+            }
+            // Spring bloom overlay
+            if (qSeason2 === 0) {
+              c.globalAlpha = 0.06; c.fillStyle = '#4ade80';
+              for (var sp = 0; sp < 8; sp++) {
+                c.beginPath(); c.arc((sp * 67 + 20) % W, (sp * 53 + 40) % H, 15 + Math.sin(_qTime * 0.01 + sp) * 5, 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
             }
 
             // ── Draw structures ──
@@ -2025,14 +2048,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
             });
 
-            // ── Draw threats ──
+            // ── Draw threats (animated, moving toward queen) ──
+            var qCenterX = W * 0.5, qCenterY = H * 0.5;
             queenThreats.forEach(function(th, ti) {
-              var tx = W * 0.1 + ti * 40, ty = H * 0.1;
-              c.font = '20px system-ui'; c.textAlign = 'center';
-              c.fillText(th.icon, tx, ty);
-              // HP bar
-              c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(tx - 15, ty + 5, 30, 4);
-              c.fillStyle = '#ef4444'; c.fillRect(tx - 15, ty + 5, 30 * (th.hp / th.strength), 4);
+              // Threats orbit and approach from edges
+              var threatAngle = ti * 1.8 + _qTime * 0.008;
+              var approachDist = 0.35 + (th.hp / (th.maxHp || th.strength)) * 0.15; // closer as they weaken
+              var tx = qCenterX + Math.cos(threatAngle) * W * approachDist + Math.sin(_qTime * 0.02 + ti) * 10;
+              var ty = qCenterY + Math.sin(threatAngle) * H * approachDist + Math.cos(_qTime * 0.015 + ti) * 8;
+
+              // Danger aura
+              c.save();
+              var dGlow = c.createRadialGradient(tx, ty, 3, tx, ty, 20);
+              dGlow.addColorStop(0, 'rgba(239,68,68,0.2)');
+              dGlow.addColorStop(1, 'rgba(239,68,68,0)');
+              c.fillStyle = dGlow;
+              c.beginPath(); c.arc(tx, ty, 20, 0, 6.28); c.fill();
+
+              // Threat icon (bobbing)
+              c.font = '18px system-ui'; c.textAlign = 'center';
+              c.fillText(th.icon, tx, ty + 6 + Math.sin(_qTime * 0.06 + ti) * 3);
+
+              // HP bar with background
+              var hpW = 30, hpH = 5;
+              c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(tx - hpW / 2, ty + 12, hpW, hpH);
+              var hpPct = th.hp / (th.maxHp || th.strength);
+              c.fillStyle = hpPct > 0.5 ? '#ef4444' : hpPct > 0.25 ? '#f59e0b' : '#22c55e';
+              c.fillRect(tx - hpW / 2, ty + 12, hpW * hpPct, hpH);
+
+              // Label
+              c.font = 'bold 7px system-ui'; c.fillStyle = '#fca5a5';
+              c.fillText(th.label || th.type, tx, ty + 23);
+              c.restore();
+
+              // Attack line toward queen (pulsing red)
+              if (hpPct > 0.3) {
+                c.save(); c.globalAlpha = 0.15 + Math.sin(_qTime * 0.05) * 0.1;
+                c.strokeStyle = '#ef4444'; c.lineWidth = 1; c.setLineDash([3, 6]);
+                c.beginPath(); c.moveTo(tx, ty); c.lineTo(qCenterX, qCenterY); c.stroke();
+                c.setLineDash([]); c.restore();
+              }
             });
 
             // ── Queen at center ──
