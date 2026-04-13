@@ -5747,11 +5747,17 @@ ${bodyContent}
       warnLog(`[PDF Fix] Final HTML: ${accessibleHtml.length} chars from ${extractedLength} chars extracted text`);
 
       // ── Step 2c: Spelling & grammar correction pass (on extracted text, not HTML) ──
-      // Uses the clean text from Step 1 — much smaller than the CSS-bloated HTML
-      updateProgress(2, 'Checking spelling & grammar...');
+      // Skip when text was extracted deterministically (pdf.js text layer) — no OCR artifacts
+      const _wasOcrExtracted = window.__lastGroundTruthMethod === 'vision-ocr';
+      if (!_wasOcrExtracted) {
+        _pipeLog('Grammar', 'Skipping grammar check — text was extracted deterministically (no OCR artifacts)');
+      }
+      if (_wasOcrExtracted) {
+      updateProgress(2, 'Checking spelling & grammar (OCR text)...');
       try {
         const textForCheck = (extractedText || '').trim();
-        const GRAMMAR_CHUNK = 5000;
+        // With 65K output, we can send much larger chunks — 20KB instead of 5KB
+        const GRAMMAR_CHUNK = 20000;
         const grammarChunks = [];
         for (let gi = 0; gi < textForCheck.length; gi += GRAMMAR_CHUNK) {
           grammarChunks.push(textForCheck.slice(gi, Math.min(gi + GRAMMAR_CHUNK, textForCheck.length)));
@@ -5778,6 +5784,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             if (grammarResult) {
               let gc = grammarResult.trim();
               if (gc.indexOf('```') !== -1) { const ps = gc.split('```'); gc = ps[1] || ps[0]; if (gc.indexOf('\n') !== -1) gc = gc.split('\n').slice(1).join('\n'); if (gc.lastIndexOf('```') !== -1) gc = gc.substring(0, gc.lastIndexOf('```')); }
+              // Self-repair: strip anything after the last } to handle trailing garbage
+              const lastBrace = gc.lastIndexOf('}');
+              if (lastBrace > 0) gc = gc.substring(0, lastBrace + 1);
               const parsed = JSON.parse(gc);
               if (parsed.corrections && parsed.corrections.length > 0) {
                 parsed.corrections.forEach(c => {
@@ -5801,6 +5810,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
       } catch(gramErr) { warnLog('[PDF Fix] Grammar check failed (non-blocking):', gramErr); }
+      } // end if (_wasOcrExtracted)
 
       _pipeStepEnd(2, accessibleHtml.length + ' chars HTML generated');
       // ── Step 3a: Baseline axe-core on raw HTML (before any fixes) for consistent "before" score ──
