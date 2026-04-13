@@ -3696,7 +3696,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                 }]
             }],
             tools: [{ urlContext: {} }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 32768 }
+            generationConfig: { temperature: 0.1, maxOutputTokens: 65536 }
         };
         try {
             const controller = new AbortController();
@@ -4154,7 +4154,10 @@ const useTranslation = (targetLanguage, apiKey) => {
       setChunkResumePrompt(e.detail);
     };
     const onBoringPalette = () => {
-      try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking — old build may not have this setter */ }
+      try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking */ }
+    };
+    const onExtractionComplete = (e) => {
+      try { setExtractionData(e.detail); } catch(ex) { /* non-blocking */ }
     };
     const onChunkStart = (e) => {
       setLiveChunkStream(prev => {
@@ -4190,6 +4193,7 @@ const useTranslation = (targetLanguage, apiKey) => {
     window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
     window.addEventListener('alloflow:chunk-resume-available', onResumeAvailable);
     window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
+    window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
     return () => {
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
@@ -4198,6 +4202,7 @@ const useTranslation = (targetLanguage, apiKey) => {
       window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
       window.removeEventListener('alloflow:chunk-resume-available', onResumeAvailable);
       window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
+      window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
     };
   }, []);
 
@@ -7896,27 +7901,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7932,7 +7937,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9547ea6/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@893bfb0/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -12925,6 +12930,7 @@ Return only the corrected version of this exact text:`;
   const [chunkResumePrompt, setChunkResumePrompt] = useState(null); // { completedChunks, totalChunks, savedAt }
   const [boringPalettePrompt, setBoringPalettePrompt] = useState(false); // show theme suggestion when boring palette detected
   const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
+  const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {} } — shown during wait
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
@@ -15800,7 +15806,7 @@ const parseTaggedContent = (text) => {
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-          maxOutputTokens: 32768,
+          maxOutputTokens: 65536,
           ...(jsonMode ? { responseMimeType: "application/json" } : {}),
           ...(temperature !== null ? { temperature: temperature } : {})
       },
@@ -16474,7 +16480,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } }
         ]
       }],
-      generationConfig: { maxOutputTokens: 32768 }
+      generationConfig: { maxOutputTokens: 65536 }
     };
     try {
       const response = await fetch(url, {
@@ -51765,6 +51771,75 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </a>
                           </div>
                         </div>
+
+                        {/* ── Image Review + Metadata Panel — shown during processing wait ── */}
+                        {extractionData && (extractionData.images.length > 0 || extractionData.metadata) && (
+                          <div className="mt-4 bg-gradient-to-b from-white to-slate-50 rounded-2xl border-2 border-slate-200 p-5 space-y-4" style={{ animation: 'fadeInUp 0.5s ease' }}>
+                            {/* Document Info */}
+                            {extractionData.metadata && (
+                              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                                <span className="text-2xl">📋</span>
+                                <div className="flex-1">
+                                  <h4 className="text-sm font-bold text-slate-800">Document Details</h4>
+                                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-600">
+                                    <span>📄 {extractionData.metadata.pageCount} pages</span>
+                                    <span>📝 {Math.round(extractionData.metadata.extractedChars / 1000)}K characters</span>
+                                    {extractionData.metadata.hasImages && <span>🖼️ {extractionData.images.length} images</span>}
+                                    {extractionData.metadata.hasTables && <span>📊 Contains tables</span>}
+                                    <span>🌐 Language: {extractionData.metadata.language === 'en' ? 'English' : extractionData.metadata.language === 'ar' ? 'Arabic' : extractionData.metadata.language === 'zh' ? 'Chinese' : extractionData.metadata.language === 'ru' ? 'Russian' : extractionData.metadata.language}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Image Review */}
+                            {extractionData.images.length > 0 && (
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-lg">🖼️</span>
+                                  <h4 className="text-sm font-bold text-slate-800">Review Image Descriptions</h4>
+                                  <span className="text-[10px] text-slate-500 ml-auto">Edit alt text below — changes apply to the final document</span>
+                                </div>
+                                <div className="space-y-3">
+                                  {extractionData.images.map((img, imgIdx) => (
+                                    <div key={imgIdx} className="flex gap-3 bg-white rounded-xl border border-slate-200 p-3">
+                                      {img.src && (
+                                        <div className="shrink-0">
+                                          <img src={img.src} alt={img.description || 'Extracted image'} className="w-24 h-20 object-cover rounded-lg border border-slate-200" />
+                                        </div>
+                                      )}
+                                      <div className="flex-1 space-y-1.5">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-[10px] font-bold text-slate-500 uppercase">Image {imgIdx + 1}</span>
+                                          {img.isRegenerated && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">AI Generated</span>}
+                                          {img.type === 'decorative' && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">Decorative</span>}
+                                        </div>
+                                        <textarea
+                                          defaultValue={img.description || ''}
+                                          onChange={(e) => {
+                                            window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: imgIdx, altText: e.target.value } }));
+                                            setExtractionData(prev => {
+                                              if (!prev) return prev;
+                                              const updated = { ...prev, images: prev.images.map((im, i) => i === imgIdx ? { ...im, description: e.target.value } : im) };
+                                              return updated;
+                                            });
+                                          }}
+                                          placeholder="Describe this image for screen reader users..."
+                                          rows={2}
+                                          className="w-full text-[11px] p-2 border border-slate-200 rounded-lg resize-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none"
+                                          aria-label={`Alt text for image ${imgIdx + 1}`}
+                                        />
+                                        {img.educationalPurpose && (
+                                          <div className="text-[10px] text-slate-500 italic">Purpose: {img.educationalPurpose}</div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* ── Knowbility Partner Panel — shown during processing wait time ── */}
                         <div className="mt-3 bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-50/30 border border-indigo-200/60 rounded-2xl p-5 space-y-3" style={{ animation: 'fadeInUp 0.9s ease-out 7s both' }}>
