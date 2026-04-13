@@ -3586,9 +3586,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else {
               // Overhead traffic light: pole on right side + horizontal arm + hanging light box
               // Vertical pole (on right sidewalk)
-              var vPoleGeo = new T.CylinderGeometry(0.08, 0.1, 5.5, 8);
+              var vPoleGeo = new T.CylinderGeometry(0.08, 0.1, 4.5, 8);
               var vPole = new T.Mesh(vPoleGeo, sigPoleMat);
-              vPole.position.set(sx + 4.5, 2.75, sz);
+              vPole.position.set(sx + 4.5, 2.25, sz);
               scene.add(vPole);
               // Horizontal arm extending over the road (lowered for cockpit visibility)
               var armGeo = new T.CylinderGeometry(0.05, 0.05, 5.0, 6);
