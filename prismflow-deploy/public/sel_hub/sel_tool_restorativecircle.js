@@ -21,7 +21,7 @@ window.SelHub = window.SelHub || {
   function restorTone(f,d,tp,v) { var ac=getRestorAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxRestorClick() { restorTone(600,0.03,"sine",0.04); }
   function sfxRestorSuccess() { restorTone(523,0.08,"sine",0.07); setTimeout(function(){restorTone(659,0.08,"sine",0.07);},70); setTimeout(function(){restorTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("restor-a11y")){var _s=document.createElement("style");_s.id="restor-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-600{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("restor-a11y")){var _s=document.createElement("style");_s.id="restor-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
 
 
   // ── Circle process data ──
@@ -1087,7 +1087,7 @@ window.SelHub = window.SelHub || {
               key: t,
               role: 'tab', 'aria-selected': tab === t,
               onClick: function() { upd('tab', t); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
+              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
                 (tab === t ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700')
             }, labels[t]);
           })
@@ -1161,7 +1161,7 @@ window.SelHub = window.SelHub || {
 
           // Current prompt
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, prompts[currentPromptIdx] || 'Circle complete \u2014 thank you for sharing.'),
 
             // Navigation
@@ -1190,7 +1190,7 @@ window.SelHub = window.SelHub || {
             // Speak prompt aloud
             callTTS && h('button', { 'aria-label': 'Read Aloud',
               onClick: function() { callTTS(prompts[currentPromptIdx] || ''); },
-              className: 'mt-3 text-[11px] text-amber-500 hover:text-amber-700 font-bold'
+              className: 'mt-3 text-[10px] text-amber-500 hover:text-amber-700 font-bold'
             }, '\uD83D\uDD0A Read Aloud')
           ),
 
@@ -1262,7 +1262,7 @@ window.SelHub = window.SelHub || {
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, prompt),
                     callTTS && h('button', { 'aria-label': 'Mark Discussion Prompts as Used',
                       onClick: function() { callTTS(prompt); },
-                      className: 'text-[11px] text-amber-400 hover:text-amber-600 shrink-0'
+                      className: 'text-[10px] text-amber-400 hover:text-amber-600 shrink-0'
                     }, '\uD83D\uDD0A')
                   );
                 }),
@@ -1330,7 +1330,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, className: 'flex items-center' },
                 h('div', {
                   className: 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ' +
-                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-600')
+                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-500')
                 }, isComplete ? '\u2713' : (i + 1)),
                 i < HARM_REPAIR_STEPS.length - 1 && h('div', { className: 'w-4 h-0.5 ' + (isComplete ? 'bg-emerald-400' : 'bg-slate-200') })
               );
@@ -1366,7 +1366,7 @@ window.SelHub = window.SelHub || {
               }),
               callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
                 onClick: function() { callTTS(guidance); },
-                className: 'mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold'
+                className: 'mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold'
               }, '\uD83D\uDD0A Read Guidance Aloud'),
 
               // Navigation
@@ -1401,7 +1401,7 @@ window.SelHub = window.SelHub || {
               HARM_REPAIR_STEPS.slice(0, harmStep).map(function(step, i) {
                 var response = harmResponses[step.id];
                 return h('div', { key: i, className: 'bg-white rounded-lg p-3 border border-slate-100' },
-                  h('div', { className: 'text-[11px] font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
+                  h('div', { className: 'text-[10px] font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
                   response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-600 italic mt-1' }, '(No response recorded)')
                 );
               })
@@ -1430,7 +1430,7 @@ window.SelHub = window.SelHub || {
                   return h('button', { 'aria-label': sc.emoji + ' ' + sc.title,
                     key: i,
                     onClick: function() { updMulti({ scenarioIdx: i, scenarioChoice: undefined, scenarioOutcome: null }); },
-                    className: 'px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ' +
+                    className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
                       (scenarioIdx === i ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                   }, sc.emoji + ' ' + sc.title);
                 })
@@ -1524,7 +1524,7 @@ window.SelHub = window.SelHub || {
                     }
                   },
                   disabled: isAdded,
-                  className: 'px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ' +
+                  className: 'px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ' +
                     (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-400 hover:bg-amber-50')
                 }, (isAdded ? '\u2713 ' : '+ ') + sug);
               })
@@ -1577,7 +1577,7 @@ window.SelHub = window.SelHub || {
                       var newAg = agreements.filter(function(_, idx) { return idx !== i; });
                       upd('communityAgreements', newAg);
                     },
-                    className: 'text-[11px] text-red-400 hover:text-red-600 font-bold shrink-0',
+                    className: 'text-[10px] text-red-400 hover:text-red-600 font-bold shrink-0',
                     'aria-label': 'Remove agreement'
                   }, '\u2715')
                 );
@@ -1612,7 +1612,7 @@ window.SelHub = window.SelHub || {
             )
           ),
 
-          agreements.length === 0 && h('div', { className: 'text-center py-8 text-slate-600' },
+          agreements.length === 0 && h('div', { className: 'text-center py-8 text-slate-400' },
             h('p', { className: 'text-sm' }, 'No agreements yet. Select from suggestions above or write your own to get started!')
           )
         ),
@@ -1640,11 +1640,11 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl' }, piece.emoji),
                   h('div', null,
                     h('div', { className: 'font-bold text-sm text-slate-800' }, piece.name),
-                    h('div', { className: 'text-[11px] text-amber-600 font-medium' }, piece.origin)
+                    h('div', { className: 'text-[10px] text-amber-600 font-medium' }, piece.origin)
                   )
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, piece.significance),
-                isSelected && h('div', { className: 'mt-2 text-[11px] font-bold text-amber-600 flex items-center gap-1' }, '\u2713 Selected as your talking piece')
+                isSelected && h('div', { className: 'mt-2 text-[10px] font-bold text-amber-600 flex items-center gap-1' }, '\u2713 Selected as your talking piece')
               );
             })
           ),
@@ -1747,7 +1747,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, catData.emoji),
                 h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 ml-auto' }, catData.questions.length + ' questions')
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 ml-auto' }, catData.questions.length + ' questions')
               ),
               catData.questions.map(function(q, i) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
@@ -1756,7 +1756,7 @@ window.SelHub = window.SelHub || {
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-1 shrink-0' },
                     callTTS && h('button', {
                       onClick: function() { callTTS(q); incrementBadgeStat('questionsUsed', 1); },
-                      className: 'text-[11px] text-amber-400 hover:text-amber-600',
+                      className: 'text-[10px] text-amber-400 hover:text-amber-600',
                       'aria-label': 'Read question aloud'
                     }, '\uD83D\uDD0A'),
                     h('button', {
@@ -1767,7 +1767,7 @@ window.SelHub = window.SelHub || {
                           incrementBadgeStat('questionsUsed', 1);
                         }
                       },
-                      className: 'text-[11px] text-slate-600 hover:text-slate-600',
+                      className: 'text-[10px] text-slate-600 hover:text-slate-600',
                       'aria-label': 'Copy question to clipboard'
                     }, '\uD83D\uDCCB')
                   )
@@ -1792,7 +1792,7 @@ window.SelHub = window.SelHub || {
 
           // Display random question
           d.randomQuestion && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 p-5 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
+            h('p', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, d.randomQuestion),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-3' },
               callTTS && h('button', { 'aria-label': 'Read Aloud',
@@ -1843,7 +1843,7 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, role.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, role.title),
-                  h('div', { className: 'text-[11px] text-amber-600 font-medium' }, role.subtitle)
+                  h('div', { className: 'text-[10px] text-amber-600 font-medium' }, role.subtitle)
                 ),
                 h('span', { className: 'text-xs text-amber-500' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
@@ -1892,7 +1892,7 @@ window.SelHub = window.SelHub || {
                         h('p', { className: 'text-xs text-indigo-800 italic leading-relaxed flex-1' }, '"' + phrase + '"'),
                         callTTS && h('button', { 'aria-label': 'Read aloud',
                           onClick: function() { callTTS(phrase); },
-                          className: 'text-[11px] text-indigo-400 hover:text-indigo-600 shrink-0'
+                          className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
                         h('button', { 'aria-label': 'div',
                           onClick: function() {
@@ -1901,7 +1901,7 @@ window.SelHub = window.SelHub || {
                               addToast('Phrase copied!', 'success');
                             }
                           },
-                          className: 'text-[11px] text-indigo-400 hover:text-indigo-600 shrink-0'
+                          className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDCCB')
                       );
                     })
@@ -2051,7 +2051,7 @@ window.SelHub = window.SelHub || {
           // Reset button
           h('button', { 'aria-label': 'Start New Empathy Map',
             onClick: function() { updMulti({ empathyData: {}, empathyAnalysis: null, personAName: '', personBName: '', empathyPerson: 'personA' }); addToast('Empathy map cleared', 'info'); },
-            className: 'w-full px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
+            className: 'w-full px-4 py-2 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
           }, '\uD83D\uDD04 Start New Empathy Map')
         ),
 
@@ -2077,13 +2077,13 @@ window.SelHub = window.SelHub || {
               RESTORATIVE_VS_PUNITIVE.principles.map(function(p, i) {
                 return h('div', { key: i, className: 'grid grid-cols-2 gap-2' },
                   h('div', { className: 'bg-red-50 rounded-lg p-3 border border-red-200' },
-                    i === 0 && h('div', { className: 'text-[11px] font-bold text-red-500 uppercase tracking-widest mb-1' },
+                    i === 0 && h('div', { className: 'text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1' },
                       gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment Way' : '\uD83D\uDEAB Punitive Approach'
                     ),
                     h('p', { className: 'text-xs text-red-800 leading-relaxed' }, p.punitive)
                   ),
                   h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-                    i === 0 && h('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase tracking-widest mb-1' },
+                    i === 0 && h('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1' },
                       gradeBand === 'elementary' ? '\uD83D\uDC9A Making-It-Right Way' : '\uD83D\uDC9A Restorative Approach'
                     ),
                     h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, p.restorative)
@@ -2114,7 +2114,7 @@ window.SelHub = window.SelHub || {
                     return h('button', { 'aria-label': sc.emoji + ' ' + (i + 1),
                       key: i,
                       onClick: function() { upd('compareScenarioIdx', i); },
-                      className: 'px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ' +
+                      className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
                         (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                     }, sc.emoji + ' ' + (i + 1));
                   })
@@ -2130,13 +2130,13 @@ window.SelHub = window.SelHub || {
                   // Side by side
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4' },
                     h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4' },
-                      h('h6', { className: 'text-[11px] font-bold text-red-500 uppercase tracking-widest mb-2' },
+                      h('h6', { className: 'text-[10px] font-bold text-red-500 uppercase tracking-widest mb-2' },
                         gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive Response'
                       ),
                       h('p', { className: 'text-xs text-red-800 leading-relaxed' }, scenario.punitive)
                     ),
                     h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4' },
-                      h('h6', { className: 'text-[11px] font-bold text-emerald-500 uppercase tracking-widest mb-2' },
+                      h('h6', { className: 'text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2' },
                         gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative Response'
                       ),
                       h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, scenario.restorative)
@@ -2231,8 +2231,8 @@ window.SelHub = window.SelHub || {
                 'You have rated ' + totalRated + ' of ' + totalScenarios + ' scenarios'
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-4 justify-center mt-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
               ),
               totalRated >= totalScenarios && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 text-center' },
                 h('button', { 'aria-label': 'Complete Comparison Study',
@@ -2271,7 +2271,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl ' + (isEarned ? '' : 'grayscale opacity-40') }, badge.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'font-bold text-sm ' + (isEarned ? 'text-amber-700' : 'text-slate-600') }, badge.name),
-                    h('p', { className: 'text-[11px] text-slate-600' }, badge.desc)
+                    h('p', { className: 'text-[10px] text-slate-600' }, badge.desc)
                   )
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-1' },
@@ -2280,7 +2280,7 @@ window.SelHub = window.SelHub || {
                     style: { width: pct + '%' }
                   })
                 ),
-                h('p', { className: 'text-[11px] text-slate-600 mt-1 text-right' },
+                h('p', { className: 'text-[10px] text-slate-600 mt-1 text-right' },
                   isEarned ? '\u2713 Earned!' : progress + ' / ' + badge.threshold
                 )
               );
@@ -2301,11 +2301,11 @@ window.SelHub = window.SelHub || {
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
             h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
             h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'Circle Facilitator'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'Circle Facilitator'),
               h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, aiResponse)
             )
           ),
-          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[11px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
+          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
         )
       );
     }

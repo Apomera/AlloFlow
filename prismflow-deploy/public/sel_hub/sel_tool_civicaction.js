@@ -21,7 +21,7 @@ window.SelHub = window.SelHub || {
   function civicTone(f,d,tp,v) { var ac=getCivicAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCivicClick() { civicTone(600,0.03,"sine",0.04); }
   function sfxCivicSuccess() { civicTone(523,0.08,"sine",0.07); setTimeout(function(){civicTone(659,0.08,"sine",0.07);},70); setTimeout(function(){civicTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("civic-a11y")){var _s=document.createElement("style");_s.id="civic-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-600{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("civic-a11y")){var _s=document.createElement("style");_s.id="civic-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
 
 
   // ── Data ──
@@ -742,11 +742,11 @@ window.SelHub = window.SelHub || {
 
         // ── Badges ribbon ──
         earnedBadges.length > 0 && h('div', { className: 'flex gap-2 flex-wrap bg-amber-50 border border-amber-200 rounded-xl p-2' },
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-600 uppercase self-center' }, 'Badges:'),
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-600 uppercase self-center' }, 'Badges:'),
           earnedBadges.map(function(bid) {
             var badge = BADGES.find(function(b) { return b.id === bid; });
             if (!badge) return null;
-            return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: bid, className: 'inline-flex items-center gap-1 bg-white border border-amber-300 rounded-full px-2 py-0.5 text-[11px] font-bold text-amber-700', title: badge.desc }, badge.icon, ' ', badge.label);
+            return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: bid, className: 'inline-flex items-center gap-1 bg-white border border-amber-300 rounded-full px-2 py-0.5 text-[10px] font-bold text-amber-700', title: badge.desc }, badge.icon, ' ', badge.label);
           })
         ),
 
@@ -757,7 +757,7 @@ window.SelHub = window.SelHub || {
               key: t.id,
               role: 'tab', 'aria-selected': tab === t.id,
               onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ' +
+              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ' +
                 (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
             }, t.label);
           })
@@ -801,7 +801,7 @@ window.SelHub = window.SelHub || {
                 ),
                 callTTS && h('button', { 'aria-label': 'Hear this read aloud',
                   onClick: function() { callTTS(f.validation + ' ' + f.reframe); },
-                  className: 'text-[11px] text-teal-500 hover:text-teal-700 font-bold'
+                  className: 'text-[10px] text-teal-500 hover:text-teal-700 font-bold'
                 }, '\ud83d\udd0a Hear this read aloud')
               );
             })()
@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
                   className: 'w-full p-4 text-left'
                 },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, strategy.label),
-                  h('div', { className: 'text-[11px] text-slate-600 mt-0.5 uppercase font-bold' }, strategy.category)
+                  h('div', { className: 'text-[10px] text-slate-600 mt-0.5 uppercase font-bold' }, strategy.category)
                 ),
                 isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
                   strategy.steps.map(function(step, si) {
@@ -970,7 +970,7 @@ window.SelHub = window.SelHub || {
                 ),
                 callTTS && h('button', { 'aria-label': 'Hear this read aloud',
                   onClick: function() { callTTS(issue.title + '. ' + issue.why + ' ' + issue.act); },
-                  className: 'text-[11px] text-teal-500 hover:text-teal-700 font-bold'
+                  className: 'text-[10px] text-teal-500 hover:text-teal-700 font-bold'
                 }, '\ud83d\udd0a Hear this read aloud')
               )
             );
@@ -988,10 +988,10 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'space-y-2' },
             actions.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-200 p-4 flex items-start gap-3 hover:border-teal-300 transition-colors' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[11px] font-bold shrink-0' }, a.impact),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[10px] font-bold shrink-0' }, a.impact),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                   h('p', { className: 'text-sm text-slate-800 font-medium' }, a.action),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-500' }, a.difficulty)
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500' }, a.difficulty)
                 )
               );
             })
@@ -1036,7 +1036,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
             h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((plannerStep + 1) / PLANNER_STEPS.length * 100) + '%' } })
           ),
-          h('div', { className: 'flex justify-between text-[11px] text-slate-600 font-bold' },
+          h('div', { className: 'flex justify-between text-[10px] text-slate-600 font-bold' },
             h('span', null, 'Step ' + (plannerStep + 1) + ' of ' + PLANNER_STEPS.length),
             h('span', null, PLANNER_STEPS[plannerStep].label)
           ),
@@ -1098,7 +1098,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'text-sm font-bold text-slate-700' }, tmpl.title),
                 h('div', { className: 'text-xs text-slate-600 italic' }, tmpl.greeting),
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed mt-2 bg-slate-50 rounded-lg p-3 border border-slate-100' }, tmpl.body),
-                h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Tip: Copy this template and customize the parts in [brackets] with your own words.')
+                h('p', { className: 'text-[10px] text-slate-600 mt-1' }, 'Tip: Copy this template and customize the parts in [brackets] with your own words.')
               );
             })()
           ),
@@ -1176,7 +1176,7 @@ window.SelHub = window.SelHub || {
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
                     if (showResult && isChosen) btnClass += 'border-teal-400 bg-teal-50 font-bold';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-600';
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-400';
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: oi },
                       h('button', { 'aria-label': opt.text,
                         disabled: showResult,
@@ -1193,9 +1193,9 @@ window.SelHub = window.SelHub || {
                         h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\ud83d\udcca Outcome:'),
                         h('p', { className: 'text-xs text-blue-800 leading-relaxed' }, opt.outcome),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 mt-2' },
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-600') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-600') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-600') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
                         )
                       )
                     );
@@ -1243,7 +1243,7 @@ window.SelHub = window.SelHub || {
                       h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
                       h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
                     ),
-                    h('p', { className: 'text-[11px] text-slate-600' }, cat.desc),
+                    h('p', { className: 'text-[10px] text-slate-600' }, cat.desc),
                     h('input', {
                       type: 'range',
                       min: 0,
@@ -1301,8 +1301,8 @@ window.SelHub = window.SelHub || {
                     },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, bill.title),
                       h('p', { className: 'text-xs text-slate-600 mt-1' }, bill.desc),
-                      h('p', { className: 'text-[11px] text-amber-600 mt-1' }, '\u26a0\ufe0f Opposition: ' + bill.opposition),
-                      h('p', { className: 'text-[11px] text-teal-600 font-bold mt-1' }, 'Base support: ' + bill.support_base + '%')
+                      h('p', { className: 'text-[10px] text-amber-600 mt-1' }, '\u26a0\ufe0f Opposition: ' + bill.opposition),
+                      h('p', { className: 'text-[10px] text-teal-600 font-bold mt-1' }, 'Base support: ' + bill.support_base + '%')
                     );
                   }),
                   legBill && h('button', { 'aria-label': 'Next: Build Coalition',
@@ -1320,7 +1320,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
                 h('div', { className: 'flex justify-between text-xs font-bold' },
-                  h('span', { className: 'text-slate-600' }, currentStep.title),
+                  h('span', { className: 'text-slate-500' }, currentStep.title),
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
@@ -1330,7 +1330,7 @@ window.SelHub = window.SelHub || {
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ally.id, className: 'p-3 rounded-xl border-2 ' + (isRecruited ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between items-center' },
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, ally.label),
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
                       ),
                       h('p', { className: 'text-xs text-slate-600 mt-1' }, ally.ask),
                       !isRecruited && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
@@ -1340,16 +1340,16 @@ window.SelHub = window.SelHub || {
                             updMulti({ legAllies: newAllies, legSupport: legSupport + ally.bonus });
                             ctx.awardXP(3);
                           },
-                          className: 'px-3 py-1 bg-emerald-700 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700'
+                          className: 'px-3 py-1 bg-emerald-700 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
                         }, '\u2705 Accept & Recruit'),
                         h('button', { 'aria-label': 'Decline',
                           onClick: function() {
                             addToast(ally.label + ' declined to support your bill.', 'info');
                           },
-                          className: 'px-3 py-1 bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-300'
+                          className: 'px-3 py-1 bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-300'
                         }, '\u274c Decline')
                       ),
-                      isRecruited && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-emerald-600 font-bold mt-1 block' }, '\u2705 Recruited')
+                      isRecruited && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-emerald-600 font-bold mt-1 block' }, '\u2705 Recruited')
                     );
                   }),
                   h('button', { 'aria-label': 'Next: Committee Hearing',
@@ -1367,7 +1367,7 @@ window.SelHub = window.SelHub || {
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between text-xs font-bold' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, currentStep.title),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, currentStep.title),
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
@@ -1386,7 +1386,7 @@ window.SelHub = window.SelHub || {
                             ctx.awardXP(5);
                             addToast('Strong answer! Support increased.', 'success');
                           },
-                          className: 'flex-1 px-3 py-2 bg-emerald-700 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700'
+                          className: 'flex-1 px-3 py-2 bg-emerald-700 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
                         }, '\u2705 ' + cq.good),
                         h('button', { 'aria-label': '\u274c ' + cq.bad,
                           onClick: function() {
@@ -1396,10 +1396,10 @@ window.SelHub = window.SelHub || {
                             updMulti({ legAnswers: newAnswers, legSupport: Math.max(0, legSupport + cq.badPenalty) });
                             addToast('Weak answer. Support decreased.', 'warning');
                           },
-                          className: 'flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-[11px] font-bold hover:bg-red-200'
+                          className: 'flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-[10px] font-bold hover:bg-red-200'
                         }, '\u274c ' + cq.bad)
                       ),
-                      answered && h('p', { className: 'text-[11px] mt-1 font-bold ' + (legAnswers[qi] === 'good' ? 'text-emerald-600' : 'text-red-500') }, legAnswers[qi] === 'good' ? '\u2705 Strong response \u2014 committee impressed' : '\u274c Weak response \u2014 committee skeptical')
+                      answered && h('p', { className: 'text-[10px] mt-1 font-bold ' + (legAnswers[qi] === 'good' ? 'text-emerald-600' : 'text-red-500') }, legAnswers[qi] === 'good' ? '\u2705 Strong response \u2014 committee impressed' : '\u274c Weak response \u2014 committee skeptical')
                     );
                   }),
                   Object.keys(legAnswers).length >= currentStep.questions.length && h('button', { 'aria-label': 'Next: Floor Vote',
@@ -1463,9 +1463,9 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
                 h('h4', { className: 'text-lg font-black text-slate-800' }, 'School Council Results!'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-6' },
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[11px] text-slate-600' }, 'Happiness')),
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[11px] text-slate-600' }, 'Learning')),
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[11px] text-slate-600' }, 'Health'))
+                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-600' }, 'Happiness')),
+                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-600' }, 'Learning')),
+                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-600' }, 'Health'))
                 ),
                 h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', { 'aria-label': 'Try Again',
@@ -1546,7 +1546,7 @@ window.SelHub = window.SelHub || {
           // Template questions
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest' }, '\ud83d\udccb Template Questions (' + gradeBand + ')'),
-            h('p', { className: 'text-[11px] text-slate-600' }, 'Click to add a template question to your survey.'),
+            h('p', { className: 'text-[10px] text-slate-600' }, 'Click to add a template question to your survey.'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
               surveyTemplates.map(function(tmpl, ti) {
                 var alreadyAdded = surveyQuestions.some(function(sq) { return sq.q === tmpl.q; });
@@ -1562,9 +1562,9 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { className: 'flex justify-between items-center' },
                     h('span', null, tmpl.q),
-                    alreadyAdded ? h('span', { className: 'text-[11px] font-bold text-emerald-600' }, '\u2705 Added') : h('span', { className: 'text-[11px] font-bold text-teal-500' }, '+ Add')
+                    alreadyAdded ? h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '\u2705 Added') : h('span', { className: 'text-[10px] font-bold text-teal-500' }, '+ Add')
                   ),
-                  h('span', { className: 'text-[11px] text-slate-600 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
+                  h('span', { className: 'text-[10px] text-slate-600 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
                 );
               })
             )
@@ -1584,15 +1584,15 @@ window.SelHub = window.SelHub || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
               h('button', { 'aria-label': 'Open-ended',
                 onClick: function() { upd('surveyCustomType', 'open'); },
-                className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border ' + (surveyCustomType === 'open' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
+                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'open' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
               }, 'Open-ended'),
               h('button', { 'aria-label': 'Multiple Choice',
                 onClick: function() { upd('surveyCustomType', 'choice'); },
-                className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border ' + (surveyCustomType === 'choice' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
+                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'choice' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
               }, 'Multiple Choice')
             ),
             surveyCustomType === 'choice' && h('div', null,
-              h('label', { className: 'text-[11px] text-slate-600 block mb-1' }, 'Answer options (comma-separated)'),
+              h('label', { className: 'text-[10px] text-slate-600 block mb-1' }, 'Answer options (comma-separated)'),
               h('input', {
                 type: 'text',
                 value: surveyCustomOpts,
@@ -1620,8 +1620,8 @@ window.SelHub = window.SelHub || {
               return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: si, className: 'bg-white rounded-xl border border-teal-200 p-3 flex justify-between items-start' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold text-slate-800' }, (si + 1) + '. ' + sq.q),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
-                  sq.custom && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-500 ml-2 font-bold' }, '(custom)')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
+                  sq.custom && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500 ml-2 font-bold' }, '(custom)')
                 ),
                 h('button', {
                   onClick: function() {
@@ -1663,7 +1663,7 @@ window.SelHub = window.SelHub || {
                 },
                 className: 'flex-1 px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, '\ud83d\udccb Export Survey as Text'),
-              surveyExported && h('span', { className: 'self-center text-[11px] font-bold text-emerald-600' }, '\u2705 Exported!')
+              surveyExported && h('span', { className: 'self-center text-[10px] font-bold text-emerald-600' }, '\u2705 Exported!')
             )
           ),
 
@@ -1705,8 +1705,8 @@ window.SelHub = window.SelHub || {
                     }
                   }
                 },
-                className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap ' +
-                  (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-600/70' : 'text-slate-600/60 hover:text-slate-700')
+                className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
+                  (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-600/70' : 'text-slate-500/60 hover:text-slate-700')
               }, r.icon + ' ' + (ri + 1));
             })
           ),
@@ -1723,16 +1723,16 @@ window.SelHub = window.SelHub || {
                   h('h4', { className: 'text-sm font-bold text-indigo-700' }, right.right)
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 rounded-xl p-4 border border-indigo-200' },
-                  h('h5', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'What This Means'),
+                  h('h5', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'What This Means'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.explain)
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
-                  h('h5', { className: 'text-[11px] font-bold text-emerald-600 uppercase tracking-widest mb-1' }, 'Your Responsibility'),
+                  h('h5', { className: 'text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1' }, 'Your Responsibility'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.responsibility)
                 ),
                 callTTS && h('button', { 'aria-label': 'Hear this read aloud',
                   onClick: function() { callTTS(right.right + '. ' + right.explain + '. Your responsibility: ' + right.responsibility); },
-                  className: 'text-[11px] text-indigo-500 hover:text-indigo-700 font-bold'
+                  className: 'text-[10px] text-indigo-500 hover:text-indigo-700 font-bold'
                 }, '\ud83d\udd0a Hear this read aloud')
               ),
 
@@ -1835,8 +1835,8 @@ window.SelHub = window.SelHub || {
                   var isDone = pi < servicePhase;
                   return h('div', {
                     key: pi,
-                    className: 'flex-1 text-center py-2 rounded-lg text-[11px] font-bold ' +
-                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600')
+                    className: 'flex-1 text-center py-2 rounded-lg text-[10px] font-bold ' +
+                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')
                   }, phase.label);
                 })
               ),
@@ -1876,7 +1876,7 @@ window.SelHub = window.SelHub || {
                       }, '+')
                     )
                   ),
-                  h('p', { className: 'text-[11px] text-amber-500 mt-1' }, 'Track the hours you spend on each phase of your project.')
+                  h('p', { className: 'text-[10px] text-amber-500 mt-1' }, 'Track the hours you spend on each phase of your project.')
                 ),
 
                 // Navigation
@@ -1913,11 +1913,11 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex justify-center gap-6' },
                 h('div', null,
                   h('div', { className: 'text-2xl font-bold text-teal-700' }, serviceHours.toFixed(1)),
-                  h('div', { className: 'text-[11px] text-slate-600' }, 'Hours Logged')
+                  h('div', { className: 'text-[10px] text-slate-600' }, 'Hours Logged')
                 ),
                 h('div', null,
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-bold text-teal-700' }, Object.keys(serviceNotes).length),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Phases Documented')
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Phases Documented')
                 )
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-3 border border-teal-200 text-left' },
@@ -1968,7 +1968,7 @@ window.SelHub = window.SelHub || {
                     if (showResult && isCorrect) btnClass += 'border-emerald-400 bg-emerald-50 text-emerald-800 font-bold';
                     else if (showResult && isChosen && !isCorrect) btnClass += 'border-red-400 bg-red-50 text-red-800';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50 text-slate-700';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-600';
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-500';
                     return h('button', { 'aria-label': '\ud83d\udca1 ' + question.explain,
                       key: oi,
                       disabled: quizAnswered,
@@ -1981,8 +1981,8 @@ window.SelHub = window.SelHub || {
                       className: btnClass
                     },
                       h('span', null, String.fromCharCode(65 + oi) + '. ' + opt),
-                      showResult && isCorrect && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] ml-1 font-bold' }, ' \u2714'),
-                      showResult && isChosen && !isCorrect && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] ml-1 font-bold' }, ' \u2718')
+                      showResult && isCorrect && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] ml-1 font-bold' }, ' \u2714'),
+                      showResult && isChosen && !isCorrect && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] ml-1 font-bold' }, ' \u2718')
                     );
                   })
                 ),
@@ -2057,7 +2057,7 @@ window.SelHub = window.SelHub || {
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
                     if (showResult && isChosen) btnClass += choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-300 bg-red-50';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-600';
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-500';
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci },
                       h('button', { 'aria-label': choice.text,
                         disabled: scenarioChosen,
@@ -2122,7 +2122,7 @@ window.SelHub = window.SelHub || {
             HOPE_ANCHORS.map(function(anchor, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-200 p-4 hover:border-teal-300 transition-colors' },
                 h('div', { className: 'flex items-start gap-3' },
-                  h('div', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[11px] font-bold shrink-0' }, anchor.theme),
+                  h('div', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[10px] font-bold shrink-0' }, anchor.theme),
                   h('div', null,
                     h('div', { className: 'font-bold text-sm text-slate-800' }, anchor.person),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mt-1' }, anchor.story)
@@ -2142,11 +2142,11 @@ window.SelHub = window.SelHub || {
                   h('div', null,
                     h('div', { className: 'flex items-center gap-2 flex-wrap' },
                       h('span', { className: 'font-bold text-sm text-slate-800' }, cm.name),
-                      h('span', { className: 'text-[11px] text-slate-600' }, cm.years),
-                      h('span', { className: 'bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[11px] font-bold' }, cm.theme)
+                      h('span', { className: 'text-[10px] text-slate-600' }, cm.years),
+                      h('span', { className: 'bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[10px] font-bold' }, cm.theme)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mt-1' }, cm.bio),
-                    h('p', { className: 'text-[11px] text-purple-500 font-bold mt-1' }, '\u23f0 ' + cm.age)
+                    h('p', { className: 'text-[10px] text-purple-500 font-bold mt-1' }, '\u23f0 ' + cm.age)
                   )
                 )
               );
@@ -2180,7 +2180,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-teal-800 italic leading-relaxed' },
               '"You are not obligated to complete the work, but neither are you free to abandon it."'
             ),
-            h('p', { className: 'text-[11px] text-teal-500 mt-1 font-bold' }, '\u2014 Rabbi Tarfon, Pirkei Avot 2:16')
+            h('p', { className: 'text-[10px] text-teal-500 mt-1 font-bold' }, '\u2014 Rabbi Tarfon, Pirkei Avot 2:16')
           )
         ),
 
@@ -2189,11 +2189,11 @@ window.SelHub = window.SelHub || {
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
             h(Heart, { size: 14, className: 'text-teal-500 mt-0.5 shrink-0' }),
             h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-teal-600 uppercase tracking-widest mb-1' }, 'Counselor'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-teal-600 uppercase tracking-widest mb-1' }, 'Counselor'),
               h('p', { className: 'text-sm text-teal-800 leading-relaxed' }, aiResponse)
             )
           ),
-          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[11px] text-teal-400 hover:text-teal-600 font-bold' }, 'Dismiss')
+          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-teal-400 hover:text-teal-600 font-bold' }, 'Dismiss')
         )
       );
     }

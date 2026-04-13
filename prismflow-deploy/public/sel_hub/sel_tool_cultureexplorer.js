@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
           ].map(function(t) {
             return h('button', { 'aria-label': 'aria-selected', key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
+              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[10px] font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
             }, t.label);
           })
         ),
@@ -970,7 +970,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl mb-2' }, reg.emoji),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, reg.label),
-                visited && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-cyan-600 font-bold mt-1' }, '\u2713 Visited')
+                visited && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-cyan-600 font-bold mt-1' }, '\u2713 Visited')
               );
             })
           ),
@@ -994,36 +994,36 @@ window.SelHub = window.SelHub || {
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm shrink-0' }, '\uD83D\uDC4B'),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Greeting'),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Greeting'),
                       h('p', { className: 'text-sm font-bold text-slate-800' }, hl.greeting),
-                      callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[11px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
+                      callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDF72'),
                     h('div', null,
-                      h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Traditional Food'),
+                      h('span', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Traditional Food'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.food)
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDFB6'),
                     h('div', null,
-                      h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Music & Dance'),
+                      h('span', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Music & Dance'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.music)
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm shrink-0' }, '\uD83C\uDF89'),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Festival'),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Festival'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.festival)
                     )
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2 bg-amber-50 rounded-lg p-2' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm shrink-0' }, '\u2728'),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-600 uppercase' }, depthLabel),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-600 uppercase' }, depthLabel),
                       h('p', { className: 'text-sm text-amber-800' }, hl.funFact)
                     )
                   ),
@@ -1064,10 +1064,10 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, recipe.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-sm font-bold text-slate-800' }, recipe.name),
-                  h('div', { className: 'text-[11px] text-slate-600' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
+                  h('div', { className: 'text-[10px] text-slate-600' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
                 ),
                 wantToTry && h('span', { className: 'text-amber-500 text-sm' }, '\u2764\uFE0F'),
-                h('span', { className: 'text-slate-600 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1128,10 +1128,10 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, trad.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-sm font-bold text-slate-800' }, trad.name),
-                  h('div', { className: 'text-[11px] text-slate-600' }, trad.origin)
+                  h('div', { className: 'text-[10px] text-slate-600' }, trad.origin)
                 ),
-                explored && h('span', { className: 'text-[11px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
-                h('span', { className: 'text-slate-600 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                explored && h('span', { className: 'text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
+                h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1172,7 +1172,7 @@ window.SelHub = window.SelHub || {
                       (rhythmPlaying && rhythmId === trad.id ? 'bg-purple-300 text-purple-700' : 'bg-purple-600 text-white hover:bg-purple-700') +
                       (rhythmPlaying ? ' opacity-70' : '')
                   }, rhythmPlaying && rhythmId === trad.id ? '\uD83C\uDFB5 Playing...' : '\u25B6 Play This Beat'),
-                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
+                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
                 ),
 
                 // TTS button
@@ -1217,10 +1217,10 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-2xl' }, story.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, story.name),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, story.origin)
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, story.origin)
                   ),
-                  isRead && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                  isRead && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
                 ),
 
                 // Expanded content
@@ -1231,7 +1231,7 @@ window.SelHub = window.SelHub || {
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, story.summary),
                     // TTS narration
                     callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(story.summary); },
-                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-lg text-[11px] font-bold text-amber-700 hover:bg-amber-200 transition-colors'
+                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-lg text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors'
                     }, '\uD83D\uDD0A Listen to This Story')
                   ),
 
@@ -1308,8 +1308,8 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 mt-0.5' }, m.celebrations.length + ' events'),
-                isCurrent && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
-                isViewed && !isCurrent && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
+                isCurrent && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
+                isViewed && !isCurrent && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
               );
             })
           ),
@@ -1333,14 +1333,14 @@ window.SelHub = window.SelHub || {
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, event.name),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, event.origin)
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, event.origin)
                   ),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
                 ),
                 isEventExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, event.desc),
                   callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(event.name + '. ' + event.desc); },
-                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-[11px] font-bold text-rose-700 hover:bg-rose-100 transition-colors'
+                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition-colors'
                   }, '\uD83D\uDD0A Hear about this celebration')
                 )
               );
@@ -1362,23 +1362,23 @@ window.SelHub = window.SelHub || {
               return h('div', { key: lang.language, className: 'bg-white rounded-xl border border-slate-200 p-3 ' + (practiced ? 'ring-2 ring-cyan-300' : '') },
                 h('div', { className: 'flex items-center justify-between mb-2' },
                   h('span', { className: 'text-sm font-bold text-slate-800' }, lang.language),
-                  practiced && h('span', { className: 'text-[11px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Practiced')
+                  practiced && h('span', { className: 'text-[10px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Practiced')
                 ),
                 h('div', { className: 'space-y-1' },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 w-14' }, 'Hello:'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Hello:'),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-cyan-700' }, lang.hello)
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 w-14' }, 'Thanks:'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Thanks:'),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-700' }, lang.thanks)
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 w-14' }, 'Friend:'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Friend:'),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-700' }, lang.friend)
                   )
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 text-[11px] text-slate-600 italic' }, '\uD83D\uDD09 ' + lang.pronunciation),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 text-[10px] text-slate-600 italic' }, '\uD83D\uDD09 ' + lang.pronunciation),
                 callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() {
                     callTTS(lang.hello + '. ' + lang.thanks + '. ' + lang.friend);
                     if (langPracticed.indexOf(lang.language) < 0) {
@@ -1445,14 +1445,14 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', null,
-                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
+                h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
                 h('input', { type: 'text', value: compCulture1, onChange: function(e) { upd('compCulture1', e.target.value); },
                   placeholder: 'e.g., Japanese', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'First culture to compare'
                 })
               ),
               h('div', null,
-                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
+                h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
                 h('input', { type: 'text', value: compCulture2, onChange: function(e) { upd('compCulture2', e.target.value); },
                   placeholder: 'e.g., Mexican', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Second culture to compare'
@@ -1462,7 +1462,7 @@ window.SelHub = window.SelHub || {
 
             // Topic selector
             h('div', null,
-              h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, 'Topic'),
+              h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Topic'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
                 COMPARISON_TOPICS.map(function(topic) {
                   return h('button', { 'aria-label': 'compTopic', key: topic.id, onClick: function() { upd('compTopic', topic.id); },
@@ -1497,7 +1497,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'grid grid-cols-3 gap-2' },
               // Culture 1 unique
               h('div', { className: 'bg-blue-50 border border-blue-200 rounded-xl p-3' },
-                h('h5', { className: 'text-[11px] font-bold text-blue-700 uppercase text-center mb-2' }, compResult.culture1Name),
+                h('h5', { className: 'text-[10px] font-bold text-blue-700 uppercase text-center mb-2' }, compResult.culture1Name),
                 (compResult.culture1Points || []).map(function(pt, i) {
                   return h('div', { key: i, className: 'text-xs text-blue-800 mb-1.5 flex items-start gap-1' },
                     h('span', { className: 'text-blue-400 shrink-0' }, '\u25CF'),
@@ -1507,7 +1507,7 @@ window.SelHub = window.SelHub || {
               ),
               // Similarities (middle)
               h('div', { className: 'bg-green-50 border border-green-200 rounded-xl p-3' },
-                h('h5', { className: 'text-[11px] font-bold text-green-700 uppercase text-center mb-2' }, 'Shared'),
+                h('h5', { className: 'text-[10px] font-bold text-green-700 uppercase text-center mb-2' }, 'Shared'),
                 (compResult.similarities || []).map(function(sim, i) {
                   return h('div', { key: i, className: 'text-xs text-green-800 mb-1.5 flex items-start gap-1' },
                     h('span', { className: 'text-green-400 shrink-0' }, '\u25CF'),
@@ -1517,7 +1517,7 @@ window.SelHub = window.SelHub || {
               ),
               // Culture 2 unique
               h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
-                h('h5', { className: 'text-[11px] font-bold text-purple-700 uppercase text-center mb-2' }, compResult.culture2Name),
+                h('h5', { className: 'text-[10px] font-bold text-purple-700 uppercase text-center mb-2' }, compResult.culture2Name),
                 (compResult.culture2Points || []).map(function(pt, i) {
                   return h('div', { key: i, className: 'text-xs text-purple-800 mb-1.5 flex items-start gap-1' },
                     h('span', { className: 'text-purple-400 shrink-0' }, '\u25CF'),
@@ -1583,7 +1583,7 @@ window.SelHub = window.SelHub || {
             greeting && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1' }, 'Greeting'),
               h('p', { className: 'text-lg font-black text-slate-800' }, greeting),
-              callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-[11px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
+              callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
             ),
 
             // Image + Overview
@@ -1614,7 +1614,7 @@ window.SelHub = window.SelHub || {
             // Voice from the culture
             cultureData.voices && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
               h('p', { className: 'text-sm text-amber-800 italic leading-relaxed' }, '\uD83D\uDCAC ', cultureData.voices),
-              callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-[11px] text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
+              callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
             ),
 
             // Reflection
@@ -1659,7 +1659,7 @@ window.SelHub = window.SelHub || {
               upd('imageLoading', true);
               var newPrompt = 'Beautiful illustration representing ' + selectedCulture + ' culture, ' + (EXPLORE_ASPECTS.find(function(a) { return a.id === selectedAspect; }) || {}).label + '. Respectful, accurate, fine art quality, warm lighting. NO text, NO stereotypes.';
               callImagen(newPrompt, 400, 0.8).then(function(img) { updMulti({ cultureImage: img, imageLoading: false }); }).catch(function() { upd('imageLoading', false); });
-            }, disabled: imageLoading, className: 'text-[11px] text-cyan-500 hover:text-cyan-700 font-bold disabled:opacity-40' }, imageLoading ? '\uD83C\uDFA8 Generating...' : '\uD83C\uDFA8 Generate new illustration')
+            }, disabled: imageLoading, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold disabled:opacity-40' }, imageLoading ? '\uD83C\uDFA8 Generating...' : '\uD83C\uDFA8 Generate new illustration')
           )
         ),
 
@@ -1709,7 +1709,7 @@ window.SelHub = window.SelHub || {
                   } else if (answered && isChosen && !isCorrect) {
                     btnClass += 'bg-red-100 border-red-400 text-red-800';
                   } else if (answered) {
-                    btnClass += 'bg-slate-50 border-slate-200 text-slate-600';
+                    btnClass += 'bg-slate-50 border-slate-200 text-slate-400';
                   } else {
                     btnClass += 'bg-white border-slate-200 text-slate-700 hover:border-cyan-300 hover:bg-cyan-50';
                   }
@@ -1759,15 +1759,15 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'grid grid-cols-3 gap-3' },
             h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-3 text-center' },
               h('div', { className: 'text-2xl font-black text-cyan-600' }, exploredCultures.length),
-              h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Cultures Explored')
+              h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Cultures Explored')
             ),
             h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-3 text-center' },
               h('div', { className: 'text-2xl font-black text-teal-600' }, questionsAsked),
-              h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Questions Asked')
+              h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Questions Asked')
             ),
             h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
               h('div', { className: 'text-2xl font-black text-amber-600' }, comparisonsCompleted),
-              h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Comparisons')
+              h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Comparisons')
             )
           ),
 
@@ -1783,7 +1783,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', null, jp.emoji),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 flex-1' }, jp.prompt),
-                    completed && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-600 font-bold' }, '\u2713')
+                    completed && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-600 font-bold' }, '\u2713')
                   ),
                   h('textarea', { value: entryVal, onChange: function(e) {
                       var newEntries = {};
@@ -1804,7 +1804,7 @@ window.SelHub = window.SelHub || {
                       addToast('Reflection saved!', 'success');
                       checkBadges({ journalPromptsCompleted: newCompleted, journalCount: newCount });
                     },
-                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-[11px] font-bold hover:bg-amber-600 transition-colors'
+                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-[10px] font-bold hover:bg-amber-600 transition-colors'
                   }, '\uD83D\uDCBE Save Reflection')
                 );
               })
@@ -1851,7 +1851,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-slate-600 italic leading-relaxed' },
               '"The beauty of the world lies in the diversity of its people." \u2014 Unknown'
             ),
-            h('p', { className: 'text-[11px] text-slate-600 mt-1' },
+            h('p', { className: 'text-[10px] text-slate-600 mt-1' },
               'Every culture on this list represents millions of unique individuals. Learning about cultures is a beginning, not an end.'
             )
           )
@@ -1877,8 +1877,8 @@ window.SelHub = window.SelHub || {
                 },
                 h('div', { className: 'text-2xl' }, earned ? badge.emoji : '\uD83D\uDD12'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-600') }, badge.label),
-                  h('div', { className: 'text-[11px] ' + (earned ? 'text-amber-700' : 'text-slate-600') }, badge.desc)
+                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-500') }, badge.label),
+                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-500') }, badge.desc)
                 ),
                 earned && h('span', { className: 'text-green-500 text-lg font-bold' }, '\u2713')
               );
