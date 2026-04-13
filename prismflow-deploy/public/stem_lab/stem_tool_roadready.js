@@ -2143,7 +2143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 else if (s.state === 'yellow') slowFor = Math.max(slowFor, 1);
               }
             });
-            // Follow car ahead
+            // Follow car ahead (other traffic)
             traffic.forEach(function(other, j) {
               if (j === idx) return;
               if (Math.abs(other.x - t.x) > 2) return;
@@ -2151,6 +2151,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ahead > 0 && ahead < 4) slowFor = Math.max(slowFor, 2);
               else if (ahead > 0 && ahead < 7) slowFor = Math.max(slowFor, 1);
             });
+            // React to PLAYER car — slow down, honk, or rear-end
+            var playerCar = carRef.current;
+            if (Math.abs(playerCar.x - t.x) < 2) {
+              var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);
+              if (playerAhead > 0 && playerAhead < 3) {
+                // Very close behind player — emergency stop or crash
+                slowFor = Math.max(slowFor, 2);
+                // If traffic was going fast and player stopped suddenly → rear-end collision
+                if (t.speed > 5 && Math.abs(playerCar.speed) < 2 && playerAhead < 1.5) {
+                  if (!t._rearEndCooldown || timeRef.current - t._rearEndCooldown > 8) {
+                    t._rearEndCooldown = timeRef.current;
+                    statsRef.current.crashes++;
+                    statsRef.current.safetyScore -= 15;
+                    addToast('💥 Rear-ended! The car behind couldn\'t stop in time. -15');
+                    eventToastRef.current = { msg: '💥 You were rear-ended. Sudden stops on fast roads cause chain reactions.', until: timeRef.current + 4 };
+                    speak('You were rear-ended. Avoid sudden stops when traffic is close behind.');
+                    t.speed *= 0.3;
+                    playerCar.speed += t.speed * 0.2; // push player forward
+                  }
+                }
+              } else if (playerAhead > 0 && playerAhead < 6) {
+                // Approaching player — slow down
+                slowFor = Math.max(slowFor, 1);
+                // Honk if player is going much slower than the speed limit
+                if (Math.abs(playerCar.speed) < scn.speedLimit * MPH_TO_MS * 0.3 && Math.abs(playerCar.speed) > 0.5) {
+                  if (!t._honkCooldown || timeRef.current - t._honkCooldown > 10) {
+                    t._honkCooldown = timeRef.current;
+                    addToast('📢 Car behind you is honking — you\'re going too slow!');
+                    // Play honk sound
+                    try {
+                      var ac = audioRef.current.ctx;
+                      if (ac) {
+                        var honk = ac.createOscillator();
+                        var hg = ac.createGain();
+                        honk.type = 'square'; honk.frequency.value = 350;
+                        hg.gain.value = 0.04;
+                        honk.connect(hg); hg.connect(ac.destination);
+                        honk.start();
+                        hg.gain.setTargetAtTime(0, ac.currentTime + 0.4, 0.08);
+                        honk.stop(ac.currentTime + 0.5);
+                      }
+                    } catch(e) {}
+                  }
+                }
+              } else if (playerAhead > 0 && playerAhead < 10) {
+                // Far behind player — just match speed if player is slower
+                if (Math.abs(playerCar.speed) < t.speed * 0.7) slowFor = Math.max(slowFor, 1);
+              }
+            }
             // Adjust speed
             var targetSpeed;
             if (slowFor === 2) targetSpeed = 0;
