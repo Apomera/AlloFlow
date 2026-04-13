@@ -18869,6 +18869,7 @@ Return ONLY valid JSON:
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
+  const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};

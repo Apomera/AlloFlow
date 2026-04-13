@@ -336,13 +336,33 @@ var createDocPipeline = function(deps) {
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
   const aiFixChunked = async (html, violationsText, label) => {
     if (!html) return html;
-    const chunks = splitHtmlOnTagBoundary(html, HTML_FIX_CHUNK);
+    // Strip base64 image data URLs before sending to AI — too large for model to reproduce
+    // Replace with short placeholders, then restore after AI fixes
+    const _imgDataMap = {};
+    let _imgCounter = 0;
+    let strippedHtml = html.replace(/src="(data:image\/[^"]{100,})"/gi, function(m, dataUrl) {
+      const key = '__IMG_DATA_' + (++_imgCounter) + '__';
+      _imgDataMap[key] = dataUrl;
+      return 'src="' + key + '"';
+    });
+    const _hasImages = _imgCounter > 0;
+    if (_hasImages) warnLog(`[aiFixChunked:${label}] stripped ${_imgCounter} base64 image data URLs before AI processing`);
+    const _restoreImages = function(fixedHtml) {
+      if (!_hasImages) return fixedHtml;
+      var restored = fixedHtml;
+      for (var key in _imgDataMap) {
+        restored = restored.split(key).join(_imgDataMap[key]);
+      }
+      return restored;
+    };
+    const chunks = splitHtmlOnTagBoundary(_hasImages ? strippedHtml : html, HTML_FIX_CHUNK);
     if (chunks.length === 1) {
-      // Short doc: single call with full document
+      // Short doc: single call with full document (use stripped html without base64 images)
       try {
-        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${html}\n"""\n\nReturn the COMPLETE fixed HTML.`;
+        const _singleHtml = _hasImages ? strippedHtml : html;
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${_singleHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
         const fixed = stripFence(await callGemini(prompt, true));
-        if (acceptFixedHtml(fixed, html)) return fixed;
+        if (acceptFixedHtml(fixed, _singleHtml)) return _restoreImages(fixed);
         warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
         return html;
       } catch (e) {
@@ -388,7 +408,7 @@ var createDocPipeline = function(deps) {
         return part;
       }
     }));
-    return fixed.join('');
+    return _restoreImages(fixed.join(''));
   };
 
   // ── Heuristic text structuring (RECITATION fallback) ──
@@ -6258,6 +6278,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       }
 
+      // ── Final contrast + WCAG revalidation (catches AI-introduced color violations) ──
+      try {
+        const _finalContrast = fixContrastViolations(accessibleHtml);
+        if (_finalContrast.fixCount > 0) {
+          accessibleHtml = _finalContrast.html;
+          _pipeLog('Cleanup', 'Final contrast revalidation: fixed ' + _finalContrast.fixCount + ' color issues');
+        }
+        const _finalSanitize = sanitizeStyleForWCAG(accessibleHtml);
+        if (_finalSanitize.fixCount > 0) {
+          accessibleHtml = _finalSanitize.html;
+          _pipeLog('Cleanup', 'Final WCAG sanitization: fixed ' + _finalSanitize.fixCount + ' issues');
+        }
+        // Also re-run deterministic list/ARIA fixes
+        accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
+      } catch(finalFixErr) { warnLog('[Final Fix] Revalidation failed:', finalFixErr.message); }
+
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
@@ -8081,6 +8117,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
+    getPdfPreviewHtml: _wrap(getPdfPreviewHtml),
     updatePdfPreview: _wrap(updatePdfPreview),
     generateCustomExportStyle: _wrapAsync(generateCustomExportStyle),
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
