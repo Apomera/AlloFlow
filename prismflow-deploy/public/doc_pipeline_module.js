@@ -5345,7 +5345,16 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses} (style + table unification)...`);
               _pipeLog('Polish', 'Phase 2: AI polish pass ' + (polishIdx + 1) + ' (' + POLISH_CHUNK + ' char chunks)');
               try {
-                const polishChunks = splitHtmlOnTagBoundary(bodyContent, POLISH_CHUNK);
+                // Strip <style> block before chunking — CSS classes don't need polishing
+                // and they inflate early chunks causing MAX_TOKENS truncation
+                let _polishStyleBlock = '';
+                let _polishBody = bodyContent;
+                const _styleMatch = bodyContent.match(/^(<style[\s\S]*?<\/style>\s*)/i);
+                if (_styleMatch) {
+                  _polishStyleBlock = _styleMatch[1];
+                  _polishBody = bodyContent.substring(_polishStyleBlock.length);
+                }
+                const polishChunks = splitHtmlOnTagBoundary(_polishBody, POLISH_CHUNK);
                 const polishedParts = [];
                 let polishSkipped = 0;
                 for (let pci = 0; pci < polishChunks.length; pci++) {
@@ -5357,7 +5366,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                   }
                   const pc = polishChunks[pci];
                   try {
-                    const pPrompt = `Fix these issues in this HTML fragment. Preserve ALL content.\n\n${polishViolations}\n\nHTML (${pci + 1}/${polishChunks.length}):\n"""\n${pc}\n"""\n\nReturn ONLY the fixed fragment.`;
+                    const pPrompt = `Fix: merge split tables, smooth section transitions, remove duplicated headings. Preserve ALL text and class attributes.\n\nHTML:\n${pc}\n\nReturn ONLY the fixed fragment.`;
                     const pOut = stripFence(await callGemini(pPrompt, true));
                     if (pOut && pOut.length >= pc.length * 0.85 && textCharCount(pOut) >= textCharCount(pc) * 0.9) {
                       polishedParts.push(pOut);
@@ -5370,8 +5379,8 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                     polishedParts.push(pc);
                   }
                 }
-                const polished = polishedParts.join('');
-                if (polished.length >= bodyContent.length * 0.9) {
+                const polished = _polishStyleBlock + polishedParts.join('');
+                if (polished.length >= bodyContent.length * 0.85) {
                   bodyContent = polished;
                   _pipeLog('Polish', 'Pass ' + (polishIdx + 1) + ' applied (' + polishChunks.length + ' chunks, ' + polishSkipped + ' kept original)');
                 } else {

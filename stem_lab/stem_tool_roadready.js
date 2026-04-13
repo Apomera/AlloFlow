@@ -531,6 +531,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   var MAP_SIZE = 96;
 
+  // ─────────────────────────────────────────────────────────
+  // SECTION 8b: PROCEDURAL INFINITE WORLD (Free Explore)
+  // ────────────────────────────────────���────────────────────
+  // Seeded PRNG for deterministic procedural generation.
+  // Same seed → same world every time. Different seed → different world.
+  function seededRandom(seed) {
+    var s = seed;
+    return function() {
+      s = (s * 1103515245 + 12345) & 0x7fffffff;
+      return (s >>> 16) / 32768;
+    };
+  }
+
+  // Chunk-based world: each chunk is CHUNK_SIZE cells tall, road runs through center.
+  // Chunks generate on-the-fly as the player drives north or south.
+  var CHUNK_SIZE = 32;
+  var BIOMES = ['residential', 'commercial', 'rural', 'suburban', 'industrial'];
+
+  function generateChunk(chunkIndex, seed, centerX) {
+    var rng = seededRandom(seed + chunkIndex * 7919);
+    var biome = BIOMES[Math.floor(rng() * BIOMES.length)];
+    var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null };
+    // Generate cell grid for this chunk
+    for (var y = 0; y < CHUNK_SIZE; y++) {
+      var row = [];
+      for (var x = 0; x < MAP_SIZE; x++) row.push(2); // grass
+      chunk.cells.push(row);
+    }
+    // Road through center with possible curve
+    var curveAmp = biome === 'rural' ? 5 : biome === 'suburban' ? 2 : 0;
+    var curveFreq = biome === 'rural' ? 0.12 : 0.06;
+    var hasIntersection = rng() < 0.4; // 40% chance of a cross street
+    var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
+    for (var cy = 0; cy < CHUNK_SIZE; cy++) {
+      var curveOffset = Math.round(Math.sin((chunkIndex * CHUNK_SIZE + cy) * curveFreq) * curveAmp);
+      var roadCenter = centerX + curveOffset;
+      var roadWidth = biome === 'commercial' || biome === 'suburban' ? 4 : 3;
+      for (var dx = -roadWidth; dx <= roadWidth; dx++) {
+        var rx = roadCenter + dx;
+        if (rx >= 0 && rx < MAP_SIZE) chunk.cells[cy][rx] = 0;
+      }
+      if (roadCenter >= 0 && roadCenter < MAP_SIZE) chunk.cells[cy][roadCenter] = 3;
+      // Cross street at intersection
+      if (hasIntersection && Math.abs(cy - intersectionY) < 4) {
+        for (var cx = 0; cx < MAP_SIZE; cx++) {
+          if (Math.abs(cx - roadCenter) > roadWidth + 1) {
+            if (chunk.cells[cy][cx] === 2) chunk.cells[cy][cx] = 0;
+          }
+        }
+      }
+    }
+    // Buildings based on biome
+    var buildingDensity = biome === 'commercial' ? 0.2 : biome === 'residential' ? 0.08 : biome === 'suburban' ? 0.06 : biome === 'industrial' ? 0.12 : 0.02;
+    for (var by = 2; by < CHUNK_SIZE - 2; by++) {
+      for (var bx = 0; bx < MAP_SIZE; bx++) {
+        if (chunk.cells[by][bx] === 2 && rng() < buildingDensity) {
+          var nearRoad = false;
+          for (var checkDx = -2; checkDx <= 2; checkDx++) {
+            if (bx + checkDx >= 0 && bx + checkDx < MAP_SIZE && (chunk.cells[by][bx + checkDx] === 0 || chunk.cells[by][bx + checkDx] === 3)) nearRoad = true;
+          }
+          if (nearRoad) chunk.cells[by][bx] = 1;
+        }
+      }
+    }
+    // Trees
+    var treeDensity = biome === 'rural' ? 0.15 : biome === 'residential' ? 0.04 : biome === 'suburban' ? 0.03 : 0.01;
+    for (var ty = 0; ty < CHUNK_SIZE; ty++) {
+      for (var tx = 0; tx < MAP_SIZE; tx++) {
+        if (chunk.cells[ty][tx] === 2 && rng() < treeDensity) chunk.cells[ty][tx] = 5;
+      }
+    }
+    // Store metadata
+    chunk.hasIntersection = hasIntersection;
+    chunk.intersectionY = intersectionY;
+    chunk.curveAmp = curveAmp;
+    chunk.curveFreq = curveFreq;
+    return chunk;
+  }
+
+  // Infinite world state
+  function createInfiniteWorld(seed) {
+    return {
+      seed: seed,
+      chunks: {}, // chunkIndex → chunk data
+      centerX: Math.floor(MAP_SIZE / 2),
+      getChunk: function(chunkIndex) {
+        if (!this.chunks[chunkIndex]) {
+          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX);
+        }
+        return this.chunks[chunkIndex];
+      },
+      // Get cell at world position (y can be any value, positive or negative)
+      getCell: function(worldX, worldY) {
+        var ci = Math.floor(worldY / CHUNK_SIZE);
+        var localY = ((worldY % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+        var chunk = this.getChunk(ci);
+        if (worldX < 0 || worldX >= MAP_SIZE || localY < 0 || localY >= CHUNK_SIZE) return 2;
+        return chunk.cells[localY][worldX];
+      },
+      // Cleanup distant chunks to free memory
+      cleanup: function(currentChunkIndex) {
+        var self = this;
+        Object.keys(this.chunks).forEach(function(key) {
+          if (Math.abs(parseInt(key) - currentChunkIndex) > 4) {
+            delete self.chunks[key];
+          }
+        });
+      }
+    };
+  }
+
   function buildMap(scenarioId) {
     var map = [];
     for (var y = 0; y < MAP_SIZE; y++) {
@@ -1556,6 +1667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var mpgHistoryRef = useRef([]); // last 60 MPG readings for sparkline
       var blackBoxRef = useRef([]); // last 5 seconds of car state for crash replay
       var drivePathRef = useRef([]); // full drive path for debrief map (sampled every 0.5s)
+      var infiniteWorldRef = useRef(null); // procedural infinite world (Free Explore only)
       var rearviewRef = useRef(null); // canvas ref for mirror
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
       var earnedBadges = d.badges || {};
@@ -1645,7 +1757,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           scn.speedLimit = fes.speedLimit || scn.speedLimit;
           scn.name = 'Free Explore';
           scn.icon = '🌎';
-          introMsg = '🌎 FREE EXPLORE — No objectives. Toggle conditions on the right panel. Achievements still count. Enjoy the drive!';
+          // Create infinite procedural world with seed
+          var worldSeed = d.worldSeed || Math.floor(Math.random() * 100000);
+          if (!d.worldSeed) upd('worldSeed', worldSeed);
+          infiniteWorldRef.current = createInfiniteWorld(worldSeed);
+          introMsg = '🌎 FREE EXPLORE — Infinite world (seed: ' + worldSeed + '). Drive forever. Toggle conditions on the right panel.';
         }
         eventToastRef.current = introMsg ? { msg: introMsg, until: 10 } : { msg: null, until: 0 };
         // Speak the intro aloud after a short delay
@@ -2081,9 +2197,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 car.y = newY;
               }
             }
-            // Wrap Y to loop the road — track wrap count for seamless 3D rendering
-            if (car.y < 2) { car.y += MAP_SIZE - 5; if (!car._wrapCount) car._wrapCount = 0; car._wrapCount--; }
-            if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; if (!car._wrapCount) car._wrapCount = 0; car._wrapCount++; }
+            // Wrap Y to loop the road (only for non-infinite worlds)
+            if (!infiniteWorldRef.current) {
+              if (car.y < 2) { car.y += MAP_SIZE - 5; }
+              if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; }
+            }
+            // Infinite world: cleanup distant chunks periodically
+            if (infiniteWorldRef.current && Math.floor(timeRef.current) % 5 === 0) {
+              infiniteWorldRef.current.cleanup(Math.floor(car.y / CHUNK_SIZE));
+            }
           }
           // Update stats
           var deltaDist = car.speed * dt;
