@@ -5304,12 +5304,38 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           bodyContent = bodyContent.replace(/<(h[1-6])[^>]*>([^<]{3,})<\/\1>\s*<\1[^>]*>\2<\/\1>/gi, '<$1>$2</$1>');
           bodyContent = bodyContent.replace(/(<\/(?:section|article|div)>)\s*<hr\s*\/?>\s*(<(?:section|article|div))/gi, '$1\n$2');
 
+          // Phase 1b: Deduplicate inline styles into CSS classes
+          // This shrinks CSS-heavy HTML (e.g., 1.5MB → ~150KB) so AI passes can process it
+          const _beforeDedup = bodyContent.length;
+          const _styleMap = {};
+          let _classCounter = 0;
+          // Extract all unique style="" values and assign class names
+          bodyContent.replace(/\sstyle="([^"]*)"/gi, function(m, styleVal) {
+            if (!_styleMap[styleVal]) {
+              _classCounter++;
+              _styleMap[styleVal] = 'ds' + _classCounter;
+            }
+            return m;
+          });
+          // Only deduplicate if there are repeated styles (>5 unique styles used >1 time)
+          const _styleEntries = Object.entries(_styleMap);
+          if (_styleEntries.length > 0 && _classCounter < bodyContent.split(/style="/gi).length - 1) {
+            // Replace inline styles with class references
+            bodyContent = bodyContent.replace(/\sstyle="([^"]*)"/gi, function(m, styleVal) {
+              var cls = _styleMap[styleVal];
+              return cls ? ' class="' + cls + '"' : m;
+            });
+            // Build CSS block from the style map
+            var _cssBlock = '<style>\n' + _styleEntries.map(function(entry) {
+              return '.' + entry[1] + '{' + entry[0] + '}';
+            }).join('\n') + '\n</style>\n';
+            // Insert CSS block at the beginning of the body content
+            bodyContent = _cssBlock + bodyContent;
+            _pipeLog('Polish', 'Deduplicated ' + (bodyContent.split('class="ds').length - 1) + ' inline styles into ' + _styleEntries.length + ' CSS classes (' + Math.round(_beforeDedup / 1000) + 'KB → ' + Math.round(bodyContent.length / 1000) + 'KB)');
+          }
+
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
-          // Skip when HTML is CSS-bloated (>10:1 ratio) — model can't reproduce heavy inline styles
-          const _htmlToTextRatio = bodyContent.length / Math.max(1, textCharCount(bodyContent));
-          if (_htmlToTextRatio > 10) {
-            _pipeLog('Polish', 'Skipping AI polish — HTML is CSS-heavy (' + Math.round(_htmlToTextRatio) + ':1 HTML:text ratio). Inline styles will be deduplicated deterministically instead.');
-          } else if (pdfPolishPasses > 0) {
+          if (pdfPolishPasses > 0) {
             const POLISH_CHUNK = 2000;
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
