@@ -5307,9 +5307,11 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           bodyContent = bodyContent.replace(/(<\/(?:section|article|div)>)\s*<hr\s*\/?>\s*(<(?:section|article|div))/gi, '$1\n$2');
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
-          // Uses 2KB chunks — gemini-3-flash-preview truncates at ~1KB output, so chunks must be small
-          // Only 1 pass — if >50% of chunks fail, a second pass won't help
-          if (pdfPolishPasses > 0) {
+          // Skip when HTML is CSS-bloated (>10:1 ratio) — model can't reproduce heavy inline styles
+          const _htmlToTextRatio = bodyContent.length / Math.max(1, textCharCount(bodyContent));
+          if (_htmlToTextRatio > 10) {
+            _pipeLog('Polish', 'Skipping AI polish — HTML is CSS-heavy (' + Math.round(_htmlToTextRatio) + ':1 HTML:text ratio). Inline styles will be deduplicated deterministically instead.');
+          } else if (pdfPolishPasses > 0) {
             const POLISH_CHUNK = 2000;
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
@@ -5575,10 +5577,11 @@ ${bodyContent}
 
       warnLog(`[PDF Fix] Final HTML: ${accessibleHtml.length} chars from ${extractedLength} chars extracted text`);
 
-      // ── Step 2c: Spelling & grammar correction pass (chunked to cover full document) ──
+      // ── Step 2c: Spelling & grammar correction pass (on extracted text, not HTML) ──
+      // Uses the clean text from Step 1 — much smaller than the CSS-bloated HTML
       updateProgress(2, 'Checking spelling & grammar...');
       try {
-        const textForCheck = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const textForCheck = (extractedText || '').trim();
         const GRAMMAR_CHUNK = 5000;
         const grammarChunks = [];
         for (let gi = 0; gi < textForCheck.length; gi += GRAMMAR_CHUNK) {

@@ -1030,6 +1030,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.globalAlpha = 1;
               }
 
+              // ── Waggle dance figure-8 at hive entrance (when foragers return) ──
+              if (season !== 3) {
+                var wagT = t2 * 0.04;
+                var wagX = hiveX + hiveW * 0.5, wagY = hiveY + hiveH * 0.75;
+                c.save(); c.globalAlpha = 0.15;
+                c.strokeStyle = '#fbbf24'; c.lineWidth = 1;
+                c.beginPath();
+                for (var wt = 0; wt < 60; wt++) {
+                  var wAngle = (wt / 60) * 6.28 + wagT;
+                  var wx = wagX + Math.sin(wAngle) * 6;
+                  var wy2 = wagY + Math.sin(wAngle * 2) * 4;
+                  wt === 0 ? c.moveTo(wx, wy2) : c.lineTo(wx, wy2);
+                }
+                c.stroke();
+                // Dancing bee dot
+                c.globalAlpha = 0.6; c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(wagX + Math.sin(wagT * 2) * 6, wagY + Math.sin(wagT * 4) * 4, 2, 0, 6.28); c.fill();
+                c.restore();
+              }
+
+              // ── Pollen trail from flowers to hive (pollination feedback) ──
+              if (gardenBonus > 0 && season !== 3) {
+                var numParticles = Math.min(15, Math.floor(gardenBonus / 3));
+                c.fillStyle = '#facc15'; c.globalAlpha = 0.4;
+                for (var pt = 0; pt < numParticles; pt++) {
+                  var ptProgress = ((t2 * 0.01 + pt * 0.07) % 1);
+                  var ptX = W * 0.65 + (hiveX + hiveW * 0.5 - W * 0.65) * ptProgress + Math.sin(t2 * 0.02 + pt * 2) * 8;
+                  var ptY = H * 0.6 + (hiveY + hiveH * 0.3 - H * 0.6) * ptProgress + Math.cos(t2 * 0.03 + pt * 1.5) * 5;
+                  var ptSz = 1 + Math.sin(ptProgress * 3.14) * 1.5;
+                  c.beginPath(); c.arc(ptX, ptY, ptSz, 0, 6.28); c.fill();
+                }
+                c.globalAlpha = 1;
+              }
+
               // ── Flying bees (physics-based, with waggle dance trail) ──
               bees.forEach(function(b) {
                 var tX = b.toFlower ? (W * 0.6 + Math.sin(b.ph) * W * 0.15) : (hiveX + hiveW * 0.5);
@@ -1044,6 +1078,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
                 b.wp += 0.45;
                 var angle = Math.atan2(b.vy, b.vx);
+
+                // Flight trail (fading dots behind bee)
+                if (b.speed > 0.5 || Math.abs(b.vx) > 0.3) {
+                  c.fillStyle = 'rgba(251,191,36,0.12)';
+                  c.beginPath(); c.arc(b.x - b.vx * 3, b.y - b.vy * 3, 1.2, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(b.x - b.vx * 6, b.y - b.vy * 6, 0.8, 0, 6.28); c.fill();
+                }
 
                 // Body glow
                 c.save();
@@ -1062,10 +1103,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(b.x - Math.sin(angle) * 2, b.y - b.sz * 0.4 + wy, b.sz * 0.55, b.sz * 0.25, angle - 0.4, 0, 6.28); c.fill();
                 c.beginPath(); c.ellipse(b.x + Math.sin(angle) * 1, b.y - b.sz * 0.5 - wy * 0.5, b.sz * 0.4, b.sz * 0.2, angle + 0.3, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
-                // Pollen sacs
+                // Pollen sacs (larger when garden bonus active)
                 if (b.carry) {
+                  var pollenSz = gardenBonus > 10 ? 2.4 : 1.8;
                   c.fillStyle = '#f59e0b'; c.beginPath();
-                  c.arc(b.x + Math.cos(angle + 1.5) * b.sz * 0.5, b.y + Math.sin(angle + 1.5) * b.sz * 0.5, 1.8, 0, 6.28); c.fill();
+                  c.arc(b.x + Math.cos(angle + 1.5) * b.sz * 0.5, b.y + Math.sin(angle + 1.5) * b.sz * 0.5, pollenSz, 0, 6.28); c.fill();
                 }
               });
 

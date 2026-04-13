@@ -1030,6 +1030,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.globalAlpha = 1;
               }
 
+              // ── Waggle dance figure-8 at hive entrance (when foragers return) ──
+              if (season !== 3) {
+                var wagT = t2 * 0.04;
+                var wagX = hiveX + hiveW * 0.5, wagY = hiveY + hiveH * 0.75;
+                c.save(); c.globalAlpha = 0.15;
+                c.strokeStyle = '#fbbf24'; c.lineWidth = 1;
+                c.beginPath();
+                for (var wt = 0; wt < 60; wt++) {
+                  var wAngle = (wt / 60) * 6.28 + wagT;
+                  var wx = wagX + Math.sin(wAngle) * 6;
+                  var wy2 = wagY + Math.sin(wAngle * 2) * 4;
+                  wt === 0 ? c.moveTo(wx, wy2) : c.lineTo(wx, wy2);
+                }
+                c.stroke();
+                // Dancing bee dot
+                c.globalAlpha = 0.6; c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(wagX + Math.sin(wagT * 2) * 6, wagY + Math.sin(wagT * 4) * 4, 2, 0, 6.28); c.fill();
+                c.restore();
+              }
+
+              // ── Pollen trail from flowers to hive (pollination feedback) ──
+              if (gardenBonus > 0 && season !== 3) {
+                var numParticles = Math.min(15, Math.floor(gardenBonus / 3));
+                c.fillStyle = '#facc15'; c.globalAlpha = 0.4;
+                for (var pt = 0; pt < numParticles; pt++) {
+                  var ptProgress = ((t2 * 0.01 + pt * 0.07) % 1);
+                  var ptX = W * 0.65 + (hiveX + hiveW * 0.5 - W * 0.65) * ptProgress + Math.sin(t2 * 0.02 + pt * 2) * 8;
+                  var ptY = H * 0.6 + (hiveY + hiveH * 0.3 - H * 0.6) * ptProgress + Math.cos(t2 * 0.03 + pt * 1.5) * 5;
+                  var ptSz = 1 + Math.sin(ptProgress * 3.14) * 1.5;
+                  c.beginPath(); c.arc(ptX, ptY, ptSz, 0, 6.28); c.fill();
+                }
+                c.globalAlpha = 1;
+              }
+
               // ── Flying bees (physics-based, with waggle dance trail) ──
               bees.forEach(function(b) {
                 var tX = b.toFlower ? (W * 0.6 + Math.sin(b.ph) * W * 0.15) : (hiveX + hiveW * 0.5);
@@ -1044,6 +1078,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
                 b.wp += 0.45;
                 var angle = Math.atan2(b.vy, b.vx);
+
+                // Flight trail (fading dots behind bee)
+                if (b.speed > 0.5 || Math.abs(b.vx) > 0.3) {
+                  c.fillStyle = 'rgba(251,191,36,0.12)';
+                  c.beginPath(); c.arc(b.x - b.vx * 3, b.y - b.vy * 3, 1.2, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(b.x - b.vx * 6, b.y - b.vy * 6, 0.8, 0, 6.28); c.fill();
+                }
 
                 // Body glow
                 c.save();
@@ -1062,10 +1103,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(b.x - Math.sin(angle) * 2, b.y - b.sz * 0.4 + wy, b.sz * 0.55, b.sz * 0.25, angle - 0.4, 0, 6.28); c.fill();
                 c.beginPath(); c.ellipse(b.x + Math.sin(angle) * 1, b.y - b.sz * 0.5 - wy * 0.5, b.sz * 0.4, b.sz * 0.2, angle + 0.3, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
-                // Pollen sacs
+                // Pollen sacs (larger when garden bonus active)
                 if (b.carry) {
+                  var pollenSz = gardenBonus > 10 ? 2.4 : 1.8;
                   c.fillStyle = '#f59e0b'; c.beginPath();
-                  c.arc(b.x + Math.cos(angle + 1.5) * b.sz * 0.5, b.y + Math.sin(angle + 1.5) * b.sz * 0.5, 1.8, 0, 6.28); c.fill();
+                  c.arc(b.x + Math.cos(angle + 1.5) * b.sz * 0.5, b.y + Math.sin(angle + 1.5) * b.sz * 0.5, pollenSz, 0, 6.28); c.fill();
                 }
               });
 
@@ -1616,14 +1658,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // End screen
             if (ds.phase === 'end') {
-              c.fillStyle = 'rgba(15,23,42,0.7)'; c.fillRect(0, 0, W, H);
-              c.textAlign = 'center'; c.fillStyle = '#fbbf24'; c.font = 'bold 20px system-ui';
-              c.fillText('Flight Complete', halfW, halfH - 40);
-              c.font = '11px system-ui'; c.fillStyle = '#e2e8f0';
-              c.fillText('Score: ' + ds.score + ' · Max Alt: ' + Math.round(ds.maxAlt) + 'ft · Distance: ' + Math.round(ds.distance) + 'm', halfW, halfH - 10);
-              c.fillText('Facts learned: ' + ds.facts.length + '/' + DRONE_FACTS.length, halfW, halfH + 10);
+              c.fillStyle = 'rgba(15,23,42,0.8)'; c.fillRect(0, 0, W, H);
+              c.textAlign = 'center'; c.fillStyle = '#fbbf24'; c.font = 'bold 22px system-ui';
+              c.fillText('Flight Complete', halfW, halfH - 55);
+              c.font = 'bold 11px system-ui'; c.fillStyle = '#e2e8f0';
+              c.fillText('🏆 Score: ' + ds.score + ' · Max Alt: ' + Math.round(ds.maxAlt) + 'ft · Distance: ' + Math.round(ds.distance) + 'm', halfW, halfH - 28);
+              c.fillText('🌼 Pollen: ' + (ds.pollenCollected || 0) + '/' + (ds.pollenGoal || 5) + ' · 📚 Facts: ' + ds.facts.length + '/' + DRONE_FACTS.length, halfW, halfH - 10);
+              // Performance rating
+              var rating = ds.score >= 250 ? '🌟 LEGENDARY' : ds.score >= 150 ? '🥇 EXCELLENT' : ds.score >= 80 ? '🥈 GOOD' : '🥉 KEEP TRYING';
+              c.fillStyle = ds.score >= 150 ? '#fbbf24' : '#94a3b8'; c.font = 'bold 14px system-ui';
+              c.fillText(rating, halfW, halfH + 15);
               c.fillStyle = '#94a3b8'; c.font = '10px system-ui';
-              c.fillText('Click "Start Flight" to try again', halfW, halfH + 40);
+              c.fillText('Click "Start Flight" to try again · Try a harder difficulty!', halfW, halfH + 42);
               // Save high score
               if (ds.score > droneHighScore) {
                 setTimeout(function() { updAll({ drone: Object.assign({}, droneData, { highScore: ds.score, active: false }) }); }, 100);
@@ -1740,19 +1786,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var pop = Object.assign({}, queenPopulation);
           var threats = (queenThreats || []).slice();
           var evts = (queenEvents || []).slice();
+          var structs = (queenStructures || []).slice();
+          var newPhase = queenPhase;
+          var newDay = queenDay + 1;
 
-          // Foragers bring resources
-          res.nectar = Math.round((res.nectar + pop.foragers * 0.02) * 10) / 10;
-          res.pollen = Math.round((res.pollen + pop.foragers * 0.008) * 10) / 10;
+          // ── Seasonal modifiers (30-day seasons) ──
+          var qSeason = Math.floor((newDay % 120) / 30); // 0=spring 1=summer 2=autumn 3=winter
+          var qSeasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+          var forageMult = [0.8, 1.4, 0.5, 0.0][qSeason];
+          var broodMult = [1.2, 1.5, 0.4, 0.0][qSeason];
+          var consumeMult = [0.9, 1.1, 0.8, 0.7][qSeason];
+
+          // Foragers bring resources (season-dependent)
+          res.nectar = Math.round((res.nectar + pop.foragers * 0.02 * forageMult) * 10) / 10;
+          res.pollen = Math.round((res.pollen + pop.foragers * 0.008 * forageMult) * 10) / 10;
           // Builders produce wax
           res.wax = Math.round((res.wax + pop.builders * 0.005) * 10) / 10;
           // Nurses produce royal jelly
           res.royalJelly = Math.round((res.royalJelly + pop.nurses * 0.003) * 10) / 10;
 
-          // Consumption
+          // Structure production bonuses
+          structs.forEach(function(st) {
+            if (st.type === 'brood') { pop.nurses += Math.round(5 * st.level * broodMult); pop.foragers += Math.round(3 * st.level * broodMult); }
+            else if (st.type === 'honey') { res.nectar += 0.5 * st.level; } // better storage = less waste
+            else if (st.type === 'pollen') { res.pollen += 0.3 * st.level; }
+            else if (st.type === 'guard') { pop.guards += 2 * st.level; }
+            else if (st.type === 'nursery') { res.royalJelly += 0.2 * st.level; }
+            else if (st.type === 'fan') { /* thermoreg — reduces winter loss below */ }
+          });
+
+          // Consumption (season-dependent)
           var totalPop = pop.nurses + pop.builders + pop.guards + pop.foragers + pop.scouts;
-          res.nectar = Math.max(0, res.nectar - totalPop * 0.004);
-          res.pollen = Math.max(0, res.pollen - totalPop * 0.001);
+          res.nectar = Math.max(0, res.nectar - totalPop * 0.004 * consumeMult);
+          res.pollen = Math.max(0, res.pollen - totalPop * 0.001 * consumeMult);
+
+          // Winter losses (reduced by fan stations)
+          if (qSeason === 3) {
+            var fanCount = structs.filter(function(s) { return s.type === 'fan'; }).length;
+            var winterLoss = Math.max(0.01, 0.04 - fanCount * 0.008);
+            pop.foragers = Math.max(10, Math.round(pop.foragers * (1 - winterLoss)));
+            pop.nurses = Math.max(5, Math.round(pop.nurses * (1 - winterLoss * 0.5)));
+            if (fanCount === 0 && Math.random() < 0.3) {
+              evts.push({ type: 'cold', text: '❄️ No fanning stations! Brood temperature dropping — larvae at risk.' });
+            }
+          }
 
           // Pheromone decay
           ph.qmp = Math.max(0, ph.qmp - 3);
@@ -1760,50 +1837,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           ph.nasonov = Math.max(0, ph.nasonov - 2);
           ph.brood = Math.max(0, ph.brood - 1);
 
-          // Low QMP = worker rebellion risk
-          if (ph.qmp < 20 && Math.random() < 0.3) {
-            evts.push({ type: 'rebellion', text: '⚠️ QMP too low — workers becoming restless! Some are developing ovaries.' });
-            pop.foragers = Math.max(0, pop.foragers - 30);
+          // ── Phase Progression ──
+          // Build phase: days 1-10, low threat frequency
+          // Defend phase: days 11-25, higher threat frequency, bigger threats
+          // Swarm phase: day 25+, must manage swarming impulse or colony splits
+          if (newDay >= 25 && newPhase !== 'swarm') {
+            newPhase = 'swarm';
+            evts.push({ type: 'phase', text: '🐝 SWARM PHASE — Colony is crowded! Manage pheromones carefully or half the workers leave with a new queen.' });
+          } else if (newDay >= 10 && newPhase === 'build') {
+            newPhase = 'defend';
+            evts.push({ type: 'phase', text: '⚔️ DEFEND PHASE — Threats are increasing. Build guard posts and keep alarm pheromone ready.' });
           }
 
-          // Random threats
-          if (Math.random() < 0.08 && queenDay > 3) {
+          // Low QMP = worker rebellion risk (worse in swarm phase)
+          var rebellionChance = newPhase === 'swarm' ? 0.5 : 0.25;
+          if (ph.qmp < 20 && Math.random() < rebellionChance) {
+            evts.push({ type: 'rebellion', text: '⚠️ QMP too low — workers becoming restless! Some are developing ovaries.' });
+            pop.foragers = Math.max(0, pop.foragers - 30);
+            if (newPhase === 'swarm') pop.nurses = Math.max(0, pop.nurses - 20);
+          }
+
+          // Swarming impulse (swarm phase only)
+          if (newPhase === 'swarm' && totalPop > 800 && ph.qmp < 40 && Math.random() < 0.2) {
+            evts.push({ type: 'swarm', text: '🐝🐝🐝 SWARM! QMP couldn\'t hold them — half your workers left with a rebel queen! Rebuild with stronger pheromones.' });
+            pop.foragers = Math.round(pop.foragers * 0.5);
+            pop.nurses = Math.round(pop.nurses * 0.5);
+            pop.builders = Math.round(pop.builders * 0.5);
+            pop.scouts = Math.round(pop.scouts * 0.6);
+            playSfx(sfxAlert);
+          }
+
+          // Supersedure: if QMP stays very low, workers may raise a new queen (game over)
+          if (ph.qmp < 5 && queenDay > 15 && Math.random() < 0.15) {
+            evts.push({ type: 'supersedure', text: '👑❌ SUPERSEDURE — Workers have raised a replacement queen. Your reign is over. Final score: ' + (queenScore + 10) });
+            updAll({ queen: Object.assign({}, queenData, { active: false, events: evts, score: queenScore + 10 }) });
+            return;
+          }
+
+          // Random threats (frequency increases by phase)
+          var threatChance = newPhase === 'defend' ? 0.15 : newPhase === 'swarm' ? 0.12 : 0.06;
+          if (Math.random() < threatChance && queenDay > 2) {
             var threatTypes = [
               { type: 'wasp', icon: '🐝', label: 'Wasp Raider', strength: 30, desc: 'A hornet is probing the entrance!' },
               { type: 'robber', icon: '⚔️', label: 'Robber Bees', strength: 50, desc: 'Foreign bees are trying to steal honey!' },
               { type: 'mouse', icon: '🐭', label: 'Mouse Intruder', strength: 40, desc: 'A mouse is trying to nest inside the hive!' },
-              { type: 'mites', icon: '🦟', label: 'Varroa Spike', strength: 60, desc: 'Varroa mites are multiplying on brood!' }
+              { type: 'mites', icon: '🦟', label: 'Varroa Spike', strength: 60, desc: 'Varroa mites are multiplying on brood!' },
+              { type: 'beetle', icon: '🪲', label: 'Hive Beetle', strength: 35, desc: 'Small hive beetles are tunneling through comb!' }
             ];
+            // Harder threats in later phases
+            if (newPhase === 'defend' || newPhase === 'swarm') {
+              threatTypes.push({ type: 'hornet', icon: '🐻', label: 'Giant Hornet', strength: 80, desc: 'A giant hornet — one can kill 40 bees per minute!' });
+            }
             var nt = threatTypes[Math.floor(Math.random() * threatTypes.length)];
-            threats.push(Object.assign({}, nt, { hp: nt.strength }));
+            threats.push(Object.assign({}, nt, { hp: nt.strength, maxHp: nt.strength }));
             evts.push({ type: 'threat', text: nt.icon + ' ' + nt.label + ': ' + nt.desc });
+            playSfx(sfxAlert);
           }
 
-          // Guards auto-fight threats
+          // Guards auto-fight threats (alarm pheromone doubles effectiveness)
           threats.forEach(function(th) {
-            th.hp -= pop.guards * 0.5 * (ph.alarm > 30 ? 2 : 1);
+            th.hp -= pop.guards * 0.5 * (ph.alarm > 30 ? 2.5 : 1);
           });
+          var defeatedThreats = threats.filter(function(th) { return th.hp <= 0; });
           threats = threats.filter(function(th) { return th.hp > 0; });
+          defeatedThreats.forEach(function(th) {
+            evts.push({ type: 'victory', text: '✅ ' + th.label + ' defeated! Guards held the line.' });
+          });
           // Undefended threats cause damage
           threats.forEach(function(th) {
             res.nectar = Math.max(0, res.nectar - th.strength * 0.05);
             pop.nurses = Math.max(0, pop.nurses - Math.floor(th.strength * 0.1));
           });
 
-          // Natural attrition & growth from structures
-          queenStructures.forEach(function(st) {
-            if (st.type === 'brood') { pop.nurses += 5 * st.level; pop.foragers += 3 * st.level; }
-          });
+          // Season transition announcement
+          if (newDay > 0 && newDay % 30 === 0) {
+            evts.push({ type: 'season', text: qSeasonNames[qSeason] + ' has arrived! Adjust your strategy for the new season.' });
+          }
+
+          // Nasonov bonus: high nasonov attracts more foragers
+          if (ph.nasonov > 60) {
+            pop.foragers += 5;
+            pop.scouts += 2;
+          }
+
           // Age-based losses
           pop.foragers = Math.max(0, pop.foragers - Math.round(pop.foragers * 0.008));
           pop.guards = Math.max(0, pop.guards - Math.round(pop.guards * 0.005));
 
-          if (evts.length > 10) evts = evts.slice(-10);
+          // Starvation check
+          if (res.nectar <= 0) {
+            evts.push({ type: 'starve', text: '🚨 STARVATION — No nectar! Workers are dying.' });
+            pop.foragers = Math.max(0, pop.foragers - 20);
+            pop.nurses = Math.max(0, pop.nurses - 10);
+          }
+
+          if (evts.length > 15) evts = evts.slice(-15);
 
           playSfx(sfxDayChime);
           updAll({ queen: Object.assign({}, queenData, {
-            day: queenDay + 1, resources: res, pheromones: ph, population: pop,
-            threats: threats, events: evts, score: queenScore + 10
+            day: newDay, resources: res, pheromones: ph, population: pop,
+            threats: threats, events: evts, score: queenScore + 10,
+            phase: newPhase, structures: structs
           })});
         }
 
@@ -2053,11 +2187,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, g[2]));
                     })),
                   droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
-                  h('button', { onClick: startDroneFlight,
-                    className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'),
-                    style: { boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }
-                  }, '🚀 Launch Nuptial Flight'),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Controls: Arrow keys / WASD = steer · Space = climb · Shift = descend'))
+                  // Difficulty selector
+                  h('div', { className: 'flex gap-2 justify-center' },
+                    [
+                      { id: 'easy', label: '🌱 Easy', desc: '150s, fewer birds, closer queen', col: 'green' },
+                      { id: 'normal', label: '🐝 Normal', desc: '110s, balanced challenge', col: 'amber' },
+                      { id: 'hard', label: '🔥 Hard', desc: '75s, more birds, distant queen', col: 'red' }
+                    ].map(function(diff) {
+                      return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
+                        className: 'px-4 py-3 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105 ' +
+                          (dk ? 'bg-gradient-to-b from-' + diff.col + '-800 to-' + diff.col + '-900 text-' + diff.col + '-200 border border-' + diff.col + '-700/50 hover:from-' + diff.col + '-700 hover:to-' + diff.col + '-800'
+                               : 'bg-gradient-to-b from-' + diff.col + '-50 to-' + diff.col + '-100 text-' + diff.col + '-800 border border-' + diff.col + '-300 hover:from-' + diff.col + '-100 hover:to-' + diff.col + '-200'),
+                        title: diff.desc
+                      },
+                        h('div', null, diff.label),
+                        h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
+                    })),
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!'))
               : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
                   h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': 'Drone flight simulation — use arrow keys to fly', style: { width: '100%', height: '100%', display: 'block' } }),
                   // Stop button overlay

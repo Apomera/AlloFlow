@@ -3590,17 +3590,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var vPole = new T.Mesh(vPoleGeo, sigPoleMat);
               vPole.position.set(sx + 4.5, 2.75, sz);
               scene.add(vPole);
-              // Horizontal arm extending over the road
+              // Horizontal arm extending over the road (lowered for cockpit visibility)
               var armGeo = new T.CylinderGeometry(0.05, 0.05, 5.0, 6);
               var arm = new T.Mesh(armGeo, sigPoleMat);
-              arm.position.set(sx + 2.0, 5.3, sz);
+              arm.position.set(sx + 2.0, 4.2, sz);
               arm.rotation.z = Math.PI / 2; // horizontal
               scene.add(arm);
               // Light housing — hanging from the arm over the road
               var housingMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
               var housingGeo = new T.BoxGeometry(0.35, 0.9, 0.25);
               var housing = new T.Mesh(housingGeo, housingMat);
-              housing.position.set(sx, 4.8, sz);
+              housing.position.set(sx, 3.7, sz);
               scene.add(housing);
               // Three lamp spheres (red top, yellow middle, green bottom)
               var lampColors = [0xef4444, 0xfbbf24, 0x22c55e];
@@ -3609,13 +3609,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lMat = new T.MeshBasicMaterial({ color: 0x111111 });
                 var lGeo = new T.SphereGeometry(0.09, 8, 8);
                 var lMesh = new T.Mesh(lGeo, lMat);
-                lMesh.position.set(sx, 5.05 - li * 0.28, sz + 0.14);
+                lMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.14);
                 scene.add(lMesh);
                 lamps.push({ mesh: lMesh, onColor: lc });
               });
               // Also add a second light housing on the other side for cross-street visibility
               var housing2 = new T.Mesh(housingGeo.clone(), housingMat);
-              housing2.position.set(sx, 4.8, sz - 0.5);
+              housing2.position.set(sx, 3.7, sz - 0.5);
               housing2.rotation.y = Math.PI; // face opposite direction
               scene.add(housing2);
               signalObjs.push({ ref: s, lamps: lamps, type: 'light' });
@@ -4763,17 +4763,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText(veh.icon + ' ' + veh.name, 20, 44);
           gfx.fillText(cameraModeRef.current.toUpperCase() + ' — C to switch', 20, 58);
 
-          // Signal ahead
+          // Signal ahead — prominent mini traffic light HUD indicator
           var nearestSig = null, nearestSigDist = Infinity;
           signalsRef.current.forEach(function(s) {
             var ahead = Math.abs(s.y - car.y);
-            if (ahead < 10 && ahead < nearestSigDist && Math.abs(s.x - car.x) < 4) { nearestSigDist = ahead; nearestSig = s; }
+            if (ahead < 12 && ahead < nearestSigDist && Math.abs(s.x - car.x) < 5) { nearestSigDist = ahead; nearestSig = s; }
           });
-          if (nearestSig && nearestSigDist < 10) {
-            var sigLabel = nearestSig.type === 'stop' ? 'STOP SIGN' : nearestSig.state.toUpperCase();
-            var sigCol = nearestSig.type === 'stop' ? '#ef4444' : nearestSig.state === 'green' ? '#22c55e' : nearestSig.state === 'yellow' ? '#fbbf24' : '#ef4444';
-            gfx.fillStyle = sigCol; gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center';
-            gfx.fillText('● ' + sigLabel + ' AHEAD', W / 2, H - 100);
+          if (nearestSig && nearestSigDist < 12) {
+            var sigIsStop = nearestSig.type === 'stop';
+            // Draw a mini traffic light icon (top-center, always visible even when light is overhead)
+            var tlX = W / 2 + 50, tlY = 30;
+            if (sigIsStop) {
+              // Mini stop sign (red octagon)
+              gfx.fillStyle = '#dc2626';
+              gfx.beginPath();
+              for (var oi = 0; oi < 8; oi++) {
+                var oa = oi * Math.PI / 4 + Math.PI / 8;
+                var ox2 = tlX + Math.cos(oa) * 14;
+                var oy2 = tlY + Math.sin(oa) * 14;
+                if (oi === 0) gfx.moveTo(ox2, oy2); else gfx.lineTo(ox2, oy2);
+              }
+              gfx.closePath(); gfx.fill();
+              gfx.fillStyle = '#fff'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+              gfx.fillText('STOP', tlX, tlY + 3);
+            } else {
+              // Mini traffic light (3 circles)
+              gfx.fillStyle = 'rgba(0,0,0,0.8)';
+              gfx.fillRect(tlX - 8, tlY - 16, 16, 36);
+              gfx.strokeStyle = '#475569'; gfx.lineWidth = 1;
+              gfx.strokeRect(tlX - 8, tlY - 16, 16, 36);
+              // Red lamp
+              gfx.fillStyle = nearestSig.state === 'red' ? '#ef4444' : '#1e293b';
+              gfx.beginPath(); gfx.arc(tlX, tlY - 9, 5, 0, Math.PI * 2); gfx.fill();
+              if (nearestSig.state === 'red') { gfx.fillStyle = 'rgba(239,68,68,0.3)'; gfx.beginPath(); gfx.arc(tlX, tlY - 9, 8, 0, Math.PI * 2); gfx.fill(); }
+              // Yellow lamp
+              gfx.fillStyle = nearestSig.state === 'yellow' ? '#fbbf24' : '#1e293b';
+              gfx.beginPath(); gfx.arc(tlX, tlY + 1, 5, 0, Math.PI * 2); gfx.fill();
+              if (nearestSig.state === 'yellow') { gfx.fillStyle = 'rgba(251,191,36,0.3)'; gfx.beginPath(); gfx.arc(tlX, tlY + 1, 8, 0, Math.PI * 2); gfx.fill(); }
+              // Green lamp
+              gfx.fillStyle = nearestSig.state === 'green' ? '#22c55e' : '#1e293b';
+              gfx.beginPath(); gfx.arc(tlX, tlY + 11, 5, 0, Math.PI * 2); gfx.fill();
+              if (nearestSig.state === 'green') { gfx.fillStyle = 'rgba(34,197,94,0.3)'; gfx.beginPath(); gfx.arc(tlX, tlY + 11, 8, 0, Math.PI * 2); gfx.fill(); }
+            }
+            // Distance label
+            var distFtSig = Math.round(nearestSigDist * 10);
+            gfx.fillStyle = '#94a3b8'; gfx.font = '9px monospace'; gfx.textAlign = 'center';
+            gfx.fillText(distFtSig + ' ft', tlX, tlY + 26);
           }
 
           // Event toast
@@ -4944,12 +4979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText('🎮 Gamepad', W - 10, 70);
           }
 
-          // Distance to next signal (if approaching)
-          if (nearestSig && nearestSigDist < 10) {
-            var distFt = Math.round(nearestSigDist * 10);
-            gfx.fillStyle = '#94a3b8'; gfx.font = '10px monospace'; gfx.textAlign = 'center';
-            gfx.fillText(distFt + ' ft ahead', W / 2, H - 112);
-          }
+          // (Signal distance now shown in the mini traffic light above)
 
           // Phone distraction notification (if active)
           var dd = distractRef.current;
