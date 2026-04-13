@@ -1205,23 +1205,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var droneData = d.drone || {};
         var droneHighScore = droneData.highScore || 0;
         var droneFlightActive = droneData.active || false;
+        var droneDifficulty = droneData.difficulty || 'normal'; // easy | normal | hard
 
-        function startDroneFlight() {
+        function startDroneFlight(diff) {
+          var difficulty = diff || droneDifficulty;
+          var timerByDiff = { easy: 150, normal: 110, hard: 75 };
+          var queenDistByDiff = { easy: 800, normal: 1200, hard: 1800 };
+          var energyByDiff = { easy: 120, normal: 100, hard: 80 };
           // Generate world
-          var obs = [], fls = [], clds = [], otherDrones = [];
-          for (var oi = 0; oi < 30; oi++) obs.push({ x: (Math.random() - 0.5) * 600, z: -200 - Math.random() * 2000, type: ['tree', 'pole', 'building'][Math.floor(Math.random() * 3)], h: 30 + Math.random() * 80 });
-          for (var fi = 0; fi < 50; fi++) fls.push({ x: (Math.random() - 0.5) * 500, z: -100 - Math.random() * 1500, col: ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399'][fi % 5] });
-          for (var ci = 0; ci < 15; ci++) clds.push({ x: (Math.random() - 0.5) * 800, y: 160 + Math.random() * 80, z: -300 - Math.random() * 2000, w: 40 + Math.random() * 60 });
-          for (var di = 0; di < 12; di++) otherDrones.push({ x: (Math.random() - 0.5) * 200, y: 80 + Math.random() * 120, z: -600 - Math.random() * 800, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5), vz: -1 - Math.random() * 2 });
+          var obs = [], fls = [], clds = [], otherDrones = [], thermals = [], birds = [];
+          for (var oi = 0; oi < 40; oi++) obs.push({ x: (Math.random() - 0.5) * 800, z: -200 - Math.random() * 2500, type: ['tree', 'pole', 'building', 'tree', 'tree'][Math.floor(Math.random() * 5)], h: 30 + Math.random() * 80 });
+          for (var fi = 0; fi < 60; fi++) fls.push({ x: (Math.random() - 0.5) * 600, z: -100 - Math.random() * 2000, col: ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa'][fi % 7], hasPollen: Math.random() > 0.6, collected: false });
+          for (var ci = 0; ci < 20; ci++) clds.push({ x: (Math.random() - 0.5) * 1000, y: 140 + Math.random() * 100, z: -300 - Math.random() * 2500, w: 40 + Math.random() * 70 });
+          for (var di = 0; di < 18; di++) otherDrones.push({ x: (Math.random() - 0.5) * 300, y: 80 + Math.random() * 120, z: -600 - Math.random() * 1000, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5), vz: -1.5 - Math.random() * 2.5 });
+          // Thermal updrafts — rising air columns that give free altitude
+          for (var ti = 0; ti < 8; ti++) thermals.push({ x: (Math.random() - 0.5) * 600, z: -300 - Math.random() * 1800, radius: 25 + Math.random() * 30, strength: 3 + Math.random() * 4 });
+          // Predator birds — avoid these!
+          var numBirds = difficulty === 'hard' ? 5 : difficulty === 'normal' ? 3 : 1;
+          for (var bi = 0; bi < numBirds; bi++) birds.push({ x: (Math.random() - 0.5) * 400, y: 60 + Math.random() * 100, z: -400 - Math.random() * 1200, vx: (Math.random() - 0.5) * 3, vy: Math.sin(bi) * 0.5, vz: -1 - Math.random() * 2, wingPhase: Math.random() * 6.28 });
+          var qDist = queenDistByDiff[difficulty] || 1200;
           _droneState.current = {
             x: 0, y: 10, z: 0, vx: 0, vy: 2, vz: -2, yaw: 0, pitch: -0.1,
-            speed: 0, energy: 100, phase: 'launch',
+            speed: 0, energy: energyByDiff[difficulty] || 100, phase: 'launch',
             matingTarget: null,
-            nearQueens: [{ x: (Math.random() - 0.5) * 100, y: 150 + Math.random() * 50, z: -1200 - Math.random() * 400, caught: false }],
+            nearQueens: [{ x: (Math.random() - 0.5) * 150, y: 150 + Math.random() * 50, z: -qDist - Math.random() * 400, caught: false }],
             obstacles: obs, flowers: fls, clouds: clds, drones: otherDrones,
-            score: 0, distance: 0, maxAlt: 10, timer: 90, facts: [], factIdx: 0
+            thermals: thermals, birds: birds,
+            pollenCollected: 0, pollenGoal: 5,
+            score: 0, distance: 0, maxAlt: 10,
+            timer: timerByDiff[difficulty] || 110,
+            facts: [], factIdx: 0, difficulty: difficulty,
+            hitFlash: 0 // red flash when hit by bird
           };
-          updAll({ drone: Object.assign({}, droneData, { active: true }) });
+          updAll({ drone: Object.assign({}, droneData, { active: true, difficulty: difficulty }) });
         }
 
         // Drone flight canvas
@@ -1282,6 +1298,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Energy drain
               ds.energy = Math.max(0, ds.energy - (thrust > 0 ? 0.8 : 0.15) * dt);
               if (ds.energy <= 0) ds.phase = 'end';
+
+              // Thermal updrafts — free altitude boost
+              (ds.thermals || []).forEach(function(th) {
+                var tdx = ds.x - th.x, tdz = ds.z - th.z;
+                var tDist = Math.sqrt(tdx * tdx + tdz * tdz);
+                if (tDist < th.radius && ds.y < 250) {
+                  ds.vy += th.strength * dt * (1 - tDist / th.radius);
+                  ds.energy = Math.min(ds.energy + 0.3 * dt, (ds.difficulty === 'easy' ? 120 : ds.difficulty === 'hard' ? 80 : 100)); // thermals restore a little energy
+                }
+              });
+
+              // Bird predators — drain energy on collision
+              if (ds.hitFlash > 0) ds.hitFlash -= dt;
+              (ds.birds || []).forEach(function(bird) {
+                bird.x += bird.vx + Math.sin(now * 0.0008 + bird.z * 0.01) * 1.5;
+                bird.y += bird.vy + Math.cos(now * 0.001 + bird.x * 0.01) * 0.8;
+                bird.z += bird.vz;
+                bird.wingPhase += dt * 8;
+                // Recycle birds that fall behind
+                if (bird.z > ds.z + 300) { bird.z = ds.z - 900; bird.x = ds.x + (Math.random() - 0.5) * 400; }
+                // Collision check
+                var bdx = ds.x - bird.x, bdy = ds.y - bird.y, bdz = ds.z - bird.z;
+                var bDist = Math.sqrt(bdx * bdx + bdy * bdy + bdz * bdz);
+                if (bDist < 20) {
+                  ds.energy -= 15;
+                  ds.hitFlash = 0.5;
+                  ds.score = Math.max(0, ds.score - 10);
+                  // Scatter bird away
+                  bird.x += (Math.random() - 0.5) * 100;
+                  bird.y += 30;
+                  bird.z -= 100;
+                  playSfx(sfxAlert);
+                }
+              });
+
+              // Pollen collection — fly near flowers with pollen
+              (ds.flowers || []).forEach(function(fl) {
+                if (!fl.hasPollen || fl.collected) return;
+                if (ds.y > 15) return; // must be low altitude
+                var fdx = ds.x - fl.x, fdz = ds.z - fl.z;
+                if (Math.sqrt(fdx * fdx + fdz * fdz) < 20) {
+                  fl.collected = true;
+                  ds.pollenCollected = (ds.pollenCollected || 0) + 1;
+                  ds.score += 15;
+                  playSfx(sfxBeeCollect);
+                }
+              });
 
               // Phase transitions
               if (ds.phase === 'launch' && ds.y > 40) ds.phase = 'flight';
@@ -1368,7 +1431,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.globalAlpha = 1;
             });
 
-            // Render flowers on ground
+            // Render thermal updraft columns (shimmering heat distortion)
+            (ds.thermals || []).forEach(function(th) {
+              var p = project(th.x, 30, th.z);
+              if (!p || p.d > 500) return;
+              c.save();
+              c.globalAlpha = 0.12 + Math.sin(now * 0.003 + th.x) * 0.06;
+              var thG = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, th.radius * p.s);
+              thG.addColorStop(0, 'rgba(255,200,50,0.3)');
+              thG.addColorStop(0.7, 'rgba(255,150,30,0.1)');
+              thG.addColorStop(1, 'rgba(255,100,0,0)');
+              c.fillStyle = thG;
+              c.beginPath(); c.arc(p.x, p.y, th.radius * p.s, 0, 6.28); c.fill();
+              // Rising particle lines
+              c.strokeStyle = 'rgba(255,200,80,0.2)'; c.lineWidth = 1;
+              for (var tl = 0; tl < 4; tl++) {
+                var tlx = p.x + Math.sin(now * 0.002 + tl * 1.57) * th.radius * p.s * 0.5;
+                var tly = p.y + Math.cos(now * 0.004 + tl) * 8 * p.s;
+                c.beginPath(); c.moveTo(tlx, tly); c.lineTo(tlx + Math.sin(now * 0.005 + tl) * 3, tly - 15 * p.s); c.stroke();
+              }
+              c.restore();
+            });
+
+            // Render flowers on ground (with pollen glow for collectible ones)
             ds.flowers.forEach(function(fl) {
               var p = project(fl.x, 0, fl.z);
               if (!p || p.d > 400 || p.s < 0.3) return;
@@ -1378,6 +1463,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(p.x + Math.cos(pa) * 3 * p.s, p.y + Math.sin(pa) * 3 * p.s, 2.5 * p.s, 1.5 * p.s, pa, 0, 6.28); c.fill();
               }
               c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(p.x, p.y, 1.5 * p.s, 0, 6.28); c.fill();
+              // Pollen glow indicator
+              if (fl.hasPollen && !fl.collected && p.s > 0.8) {
+                c.save(); c.shadowColor = '#facc15'; c.shadowBlur = 8;
+                c.fillStyle = '#facc15'; c.globalAlpha = 0.5 + Math.sin(now * 0.005 + fl.x) * 0.3;
+                c.beginPath(); c.arc(p.x, p.y - 4 * p.s, 2 * p.s, 0, 6.28); c.fill();
+                c.restore();
+              }
               c.globalAlpha = 1;
             });
 
@@ -1414,6 +1506,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.globalAlpha = 1; c.restore();
             });
 
+            // Render predator birds
+            (ds.birds || []).forEach(function(bird) {
+              var p = project(bird.x, bird.y, bird.z);
+              if (!p || p.d > 400) return;
+              c.save();
+              c.fillStyle = '#1e293b';
+              // Bird body
+              c.beginPath(); c.ellipse(p.x, p.y, 5 * p.s, 2.5 * p.s, 0, 0, 6.28); c.fill();
+              // Wings (animated flapping)
+              var wingUp = Math.sin(bird.wingPhase) * 6 * p.s;
+              c.strokeStyle = '#334155'; c.lineWidth = 2 * p.s;
+              c.beginPath(); c.moveTo(p.x - 5 * p.s, p.y); c.quadraticCurveTo(p.x - 10 * p.s, p.y + wingUp, p.x - 14 * p.s, p.y + wingUp * 0.5); c.stroke();
+              c.beginPath(); c.moveTo(p.x + 5 * p.s, p.y); c.quadraticCurveTo(p.x + 10 * p.s, p.y + wingUp, p.x + 14 * p.s, p.y + wingUp * 0.5); c.stroke();
+              // Eye
+              c.fillStyle = '#ef4444'; c.beginPath(); c.arc(p.x + 3 * p.s, p.y - 1 * p.s, 1 * p.s, 0, 6.28); c.fill();
+              // Danger label
+              if (p.d < 100) {
+                c.fillStyle = 'rgba(239,68,68,0.7)'; c.font = 'bold 8px system-ui'; c.textAlign = 'center';
+                c.fillText('⚠ BIRD', p.x, p.y - 8 * p.s);
+              }
+              c.restore();
+            });
+
             // Render queen (golden glow target)
             ds.nearQueens.forEach(function(q) {
               if (q.caught) return;
@@ -1431,6 +1546,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.restore();
             });
 
+            // ── Bird hit flash ──
+            if (ds.hitFlash > 0) {
+              c.fillStyle = 'rgba(239,68,68,' + (ds.hitFlash * 0.4) + ')';
+              c.fillRect(0, 0, W, H);
+            }
+
             // ── HUD ──
             // Crosshair
             c.strokeStyle = 'rgba(255,255,255,0.3)'; c.lineWidth = 1;
@@ -1439,21 +1560,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // Top HUD bar
             c.fillStyle = 'rgba(15,23,42,0.7)';
-            c.beginPath(); if (c.roundRect) c.roundRect(10, 8, W - 20, 40, 10); else c.rect(10, 8, W - 20, 40); c.fill();
+            c.beginPath(); if (c.roundRect) c.roundRect(10, 8, W - 20, 50, 10); else c.rect(10, 8, W - 20, 50); c.fill();
             c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#fbbf24';
-            c.fillText('🚀 DRONE NUPTIAL FLIGHT', 20, 24);
+            var diffLabel = (ds.difficulty || 'normal').toUpperCase();
+            c.fillText('🚀 DRONE NUPTIAL FLIGHT · ' + diffLabel, 20, 24);
             c.font = '9px system-ui'; c.fillStyle = '#e2e8f0';
-            c.fillText('Alt: ' + Math.round(ds.y) + 'ft · Spd: ' + ds.speed.toFixed(1) + ' · Dist: ' + Math.round(ds.distance) + 'm', 20, 40);
+            c.fillText('Alt: ' + Math.round(ds.y) + 'ft · Spd: ' + ds.speed.toFixed(1) + ' · Dist: ' + Math.round(ds.distance) + 'm', 20, 38);
+            c.fillText('🌼 Pollen: ' + (ds.pollenCollected || 0) + '/' + (ds.pollenGoal || 5) + ' · 🐦 Avoid birds!', 20, 51);
 
             c.textAlign = 'right'; c.fillStyle = '#fbbf24';
             c.fillText('⚡ ' + Math.round(ds.energy) + '%', W - 20, 24);
             c.fillStyle = ds.timer < 20 ? '#ef4444' : '#e2e8f0';
-            c.fillText('⏱ ' + Math.round(ds.timer) + 's · 🏆 ' + ds.score, W - 20, 40);
+            c.fillText('⏱ ' + Math.round(ds.timer) + 's · 🏆 ' + ds.score, W - 20, 38);
 
             // Energy bar
+            var maxEnergy = ds.difficulty === 'easy' ? 120 : ds.difficulty === 'hard' ? 80 : 100;
             c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(W - 130, 12, 70, 6);
             c.fillStyle = ds.energy > 30 ? '#22c55e' : ds.energy > 10 ? '#eab308' : '#ef4444';
-            c.fillRect(W - 130, 12, 70 * (ds.energy / 100), 6);
+            c.fillRect(W - 130, 12, 70 * (ds.energy / maxEnergy), 6);
 
             // Phase indicator
             var phaseLabel = { launch: '🚀 LAUNCHING...', flight: '✈️ FLYING TO DCA', congregation: '🎯 DRONE CONGREGATION AREA — FIND THE QUEEN!', mating: '❤️ MATING SUCCESS!', end: '🏁 FLIGHT OVER' }[ds.phase] || '';
