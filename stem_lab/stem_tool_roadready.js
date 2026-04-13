@@ -2870,15 +2870,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(dash);
           }
 
-          // ── Edge lines (white solid) ──
+          // ── Edge lines (white solid, follow curves) ──
           var edgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
-          [-3.3, 3.3].forEach(function(offset) {
-            var edgeGeo = new T.PlaneGeometry(0.12, MAP_SIZE * 2);
-            var edge = new T.Mesh(edgeGeo, edgeMat);
-            edge.rotation.x = -Math.PI / 2;
-            edge.position.set(centerX - MAP_SIZE / 2 + offset, 0.02, 0);
-            scene.add(edge);
-          });
+          if (isRuralCurve || isHwyCurve) {
+            // Segmented edge lines that follow the curve
+            [-3.3, 3.3].forEach(function(offset) {
+              for (var ei = -MAP_SIZE; ei < MAP_SIZE; ei += 2) {
+                var edgeGeo = new T.PlaneGeometry(0.1, 2.1);
+                var edge = new T.Mesh(edgeGeo, edgeMat);
+                edge.rotation.x = -Math.PI / 2;
+                var emapY = ei + MAP_SIZE / 2;
+                var eCX = isRuralCurve ? centerX + Math.sin(emapY * 0.12) * 5 : centerX + Math.sin(emapY * 0.06) * 3;
+                edge.position.set(eCX - MAP_SIZE / 2 + offset, 0.02, ei);
+                scene.add(edge);
+              }
+            });
+          } else {
+            // Straight roads: single long edge line
+            [-3.3, 3.3].forEach(function(offset) {
+              var edgeGeo = new T.PlaneGeometry(0.12, MAP_SIZE * 2);
+              var edge = new T.Mesh(edgeGeo, edgeMat);
+              edge.rotation.x = -Math.PI / 2;
+              edge.position.set(centerX - MAP_SIZE / 2 + offset, 0.02, 0);
+              scene.add(edge);
+            });
+          }
 
           // ── Sidewalks (concrete strips between road and grass) ──
           var sidewalkMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc0c8d0 : 0xb0a890 });
