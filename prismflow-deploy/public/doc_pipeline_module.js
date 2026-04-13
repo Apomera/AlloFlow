@@ -298,7 +298,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = 10000; // reduced from 18000 — Gemini's ~8K output token limit truncates chunks >12K
+  const HTML_FIX_CHUNK = 6000; // reduced from 10000 — gemini-3-flash-preview truncates even 5KB chunks when HTML has heavy inline styles
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     const chunks = [];
@@ -2715,8 +2715,11 @@ HTML section ${chunkNum}/${chunks.length}:
       let results;
       try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      // Strip <script> tags before writing — they can break document.write() parsing
+      // and aren't needed for accessibility auditing (axe-core only checks DOM structure)
+      const _safeHtml = htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '');
       iframeDoc.open();
-      iframeDoc.write(htmlContent);
+      iframeDoc.write(_safeHtml);
       iframeDoc.close();
 
       // Wait for iframe content to render
@@ -5694,10 +5697,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
         // Emit live remediation session start so UI shows progress panel
         warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
-        try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); } catch(e) {}
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); }, 0); } catch(e) {}
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
-          // Emit per-pass start event for live UI
-          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: fixPass, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
+          try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
           const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
           const _passAiCount = verification && verification.issues ? verification.issues.length : 0;
           const _passTotal = _passAxeCount + _passAiCount;
@@ -5800,7 +5803,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
           // Emit per-pass completion for live UI
-          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
 
           // If BOTH engines report 0 actionable issues, stop regardless of score
           if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
@@ -5826,7 +5829,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
         // Emit session complete for live UI
-        try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: autoFixPasses, timestamp: Date.now() } })); } catch(e) {}
+        try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
       }
 
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
