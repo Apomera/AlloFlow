@@ -108,6 +108,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var phase = d.phase || 'manage'; // 'manage' | 'inspect'
         var history = d.history || []; // [{day, workers, honey, varroa, morale}]
 
+        // ── Sound toggle ──
+        var soundOn = d.soundOn !== false; // default on
+
+        // ── Tutorial state ──
+        var tutorialStep = typeof d.tutorialStep === 'number' ? d.tutorialStep : (d.tutorialDone ? -1 : 0);
+        var tutorialDone = d.tutorialDone || false;
+
+        // ── Quiz state ──
+        var quizOpen = d.quizOpen || false;
+        var quizIdx = d.quizIdx || 0;
+        var quizScore = d.quizScore || 0;
+        var quizAnswered = d.quizAnswered || 0;
+        var quizFeedback = d.quizFeedback || null; // {correct: bool, explanation: str}
+
+        // ── Achievements / Badges ──
+        var badges = d.badges || {};
+        var BADGE_DEFS = [
+          { id: 'first_day', icon: '🌅', label: 'First Dawn', desc: 'Advance your first day', check: function() { return day >= 1; } },
+          { id: 'survive_30', icon: '📅', label: 'Month One', desc: 'Colony survives 30 days', check: function() { return day >= 30 && colonySurvived; } },
+          { id: 'survive_120', icon: '🏆', label: 'Full Year', desc: 'Survive a complete year (120 days)', check: function() { return day >= 120 && colonySurvived; } },
+          { id: 'honey_harvest', icon: '🍯', label: 'Sweet Reward', desc: 'Harvest honey for the first time', check: function() { return (d.totalHarvested || 0) > 0; } },
+          { id: 'varroa_fighter', icon: '🛡️', label: 'Mite Slayer', desc: 'Treat varroa mites 3 times', check: function() { return (d.varroaTreats || 0) >= 3; } },
+          { id: 'conservationist', icon: '🌍', label: 'Eco Warrior', desc: 'Complete 5 conservation actions', check: function() { return (d.conservationsDone || 0) >= 5; } },
+          { id: 'garden_friend', icon: '🌱', label: 'Garden Friend', desc: 'Have 3+ pollinator plants in Companion Planting', check: function() { return gardenPollinators >= 3; } },
+          { id: 'thriving', icon: '✨', label: 'Thriving Colony', desc: 'Reach 80+ colony health', check: function() { return colonyHealth >= 80; } },
+          { id: 'big_colony', icon: '🐝', label: 'Mega Hive', desc: 'Grow colony to 25,000+ workers', check: function() { return workers >= 25000; } },
+          { id: 'quiz_master', icon: '🎓', label: 'Bee Scholar', desc: 'Score 8+ on the Bee Knowledge Quiz', check: function() { return (d.bestQuizScore || 0) >= 8; } },
+          { id: 'inspector', icon: '🔬', label: 'Hive Inspector', desc: 'View all 6 inspection layers', check: function() { return (d.layersViewed || []).length >= 6; } },
+          { id: 'event_handler', icon: '⚡', label: 'Crisis Manager', desc: 'Handle 5 colony events', check: function() { return (d.eventsHandled || 0) >= 5; } }
+        ];
+        // Check & award new badges
+        var newBadges = Object.assign({}, badges);
+        var badgeJustEarned = null;
+        BADGE_DEFS.forEach(function(bd) {
+          if (!newBadges[bd.id] && bd.check()) {
+            newBadges[bd.id] = { earned: true, day: day };
+            badgeJustEarned = bd;
+          }
+        });
+        if (badgeJustEarned && JSON.stringify(newBadges) !== JSON.stringify(badges)) {
+          // Defer badge update to avoid render-during-render
+          setTimeout(function() {
+            updAll({ badges: newBadges });
+            if (addToast) addToast(badgeJustEarned.icon + ' Badge earned: ' + badgeJustEarned.label + '!', 'success');
+            if (awardStemXP) awardStemXP('beehive', 10, 'Badge: ' + badgeJustEarned.label);
+            if (soundOn) sfxSuccess();
+          }, 0);
+        }
+        var badgeCount = Object.keys(newBadges).length;
+        var showBadges = d.showBadges || false;
+
+        // ── Bee Knowledge Quiz Questions ──
+        var QUIZ_QUESTIONS = [
+          { q: 'How many times does a queen bee mate in her lifetime?', opts: ['Once (on a nuptial flight)', 'Every spring', 'Monthly', 'Continuously'], ans: 0, explain: 'A queen mates once during a nuptial flight at 200+ ft altitude with 10-20 drones, storing millions of sperm for her entire life.' },
+          { q: 'What does the waggle dance communicate?', opts: ['Danger level', 'Direction and distance to food', 'Colony mood', 'Queen health'], ans: 1, explain: 'The waggle run angle (relative to vertical) encodes direction relative to the sun. Duration encodes distance (~1 sec = 1 km). Karl von Frisch won the 1973 Nobel Prize for this discovery.' },
+          { q: 'At what temperature do bees maintain the brood nest?', opts: ['25°C (77°F)', '30°C (86°F)', '35°C (95°F)', '40°C (104°F)'], ans: 2, explain: 'The brood nest is maintained at exactly 35°C ± 0.5°C through shivering (heating) and water evaporation (cooling) — more precise than most mammals.' },
+          { q: 'Why does honey never spoil?', opts: ['Too cold inside the hive', 'Low moisture + enzymes produce hydrogen peroxide', 'Beeswax is airtight', 'It ferments instead'], ans: 1, explain: 'Glucose oxidase converts glucose into gluconic acid + H₂O₂ (hydrogen peroxide). Combined with low water activity (<18.6%), this makes honey permanently antimicrobial. Edible honey was found in 3,000-year-old Egyptian tombs.' },
+          { q: 'What is the primary threat to honeybee colonies worldwide?', opts: ['Bears', 'Varroa destructor mites', 'Cold weather', 'Other bee species'], ans: 1, explain: 'Varroa destructor mites feed on bee fat body tissue and transmit deadly viruses (DWV, ABPV). They arrived from Asian honeybees in the 1970s and are now present on every continent except Australia.' },
+          { q: 'How many flowers must bees visit to produce 1 pound of honey?', opts: ['About 2,000', 'About 20,000', 'About 200,000', 'About 2 million'], ans: 3, explain: 'It takes roughly 2 million flower visits and 556 worker bees flying 55,000 miles to produce a single pound of honey. A single forager produces about 1/12 of a teaspoon in her lifetime.' },
+          { q: 'What chemical does the alarm pheromone smell like?', opts: ['Honey', 'Bananas', 'Roses', 'Smoke'], ans: 1, explain: 'The alarm pheromone isopentyl acetate (isoamyl acetate) smells like bananas. This is why beekeepers avoid eating bananas before inspecting hives — the scent can trigger defensive behavior.' },
+          { q: 'Why do beekeepers use smoke?', opts: ['To kill mites', 'To mask alarm pheromone and trigger bees to gorge on honey', 'To warm the hive', 'To attract the queen'], ans: 1, explain: 'Smoke masks alarm pheromone and triggers a "fire evacuation" response — bees gorge on honey to prepare for potentially abandoning the hive, which makes them calmer and less likely to sting.' },
+          { q: 'How do bees cool the hive when it gets too hot?', opts: ['Open more entrances', 'Fan wings + spread water for evaporative cooling', 'Move brood outside', 'Stop foraging'], ans: 1, explain: 'Water foragers collect droplets and spread them on comb. Fanner bees beat wings at 230 beats/sec to create airflow, evaporating water and cooling by ~10°C. If still too hot, bees "beard" outside the entrance.' },
+          { q: 'What determines whether a larva becomes a queen or a worker?', opts: ['Genetics', 'Diet — queens get royal jelly exclusively', 'Temperature of the cell', 'The queen decides'], ans: 1, explain: 'All female larvae start identical. Workers get royal jelly for 3 days then bee bread. Queen-destined larvae get royal jelly exclusively for their entire development, triggering epigenetic changes that produce a larger, fertile queen.' },
+          { q: 'What happens to drones in autumn?', opts: ['They migrate south', 'They hibernate', 'They are evicted from the hive by workers', 'They become workers'], ans: 2, explain: 'Drones (males) serve only to mate. In autumn, workers drag drones out of the hive and refuse them re-entry — drones cannot forage or sting, making them a resource drain during winter scarcity.' },
+          { q: 'How many odorant receptors does a honeybee have?', opts: ['About 10', 'About 50', 'About 170', 'About 1,000'], ans: 2, explain: 'Honeybees have 170+ odorant receptors. While humans have ~400, bees are 50× more sensitive to floral scents. Their antennae are sophisticated chemical sensors that read the colony\'s pheromone "language".' }
+        ];
+
         // ── Garden Bridge: Read pollinator plants from companion planting ──
         var gardenPollinators = 0;
         try {
@@ -173,7 +240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function advanceDay() {
           if (!colonySurvived) return;
           if (actionPoints <= 0) { if (addToast) addToast('No action points left today. Advance to next day first.', 'info'); return; }
-          sfxDayChime();
+          playSfx(sfxDayChime);
           var sf = [
             { broodRate: 1.2, forageMult: 0.8, consumeRate: 0.8 },  // spring — building up
             { broodRate: 1.5, forageMult: 1.3, consumeRate: 1.2 },  // summer — peak
@@ -235,7 +302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!activeEvent && day > 3 && Math.random() < 0.12) {
             var ev = HIVE_EVENTS[Math.floor(Math.random() * HIVE_EVENTS.length)];
             newEvent = ev;
-            sfxAlert();
+            playSfx(sfxAlert);
             // Apply effects
             if (ev.effect) {
               if (ev.effect.varroaLevel) newVarroa = Math.max(0, Math.min(100, newVarroa + ev.effect.varroaLevel));
@@ -366,32 +433,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         // ── Actions ──
+        // Sound-gated wrappers
+        function playSfx(fn) { if (soundOn) fn(); }
+
         function treatVarroa() {
-          updAll({ varroaLevel: Math.max(0, varroaLevel - 25), morale: Math.max(0, morale - 5) });
-          sfxTreat(); if (addToast) addToast('🧪 Varroa treatment applied (oxalic acid). Mite count reduced.', 'success');
+          updAll({ varroaLevel: Math.max(0, varroaLevel - 25), morale: Math.max(0, morale - 5), varroaTreats: (d.varroaTreats || 0) + 1 });
+          playSfx(sfxTreat); if (addToast) addToast('🧪 Varroa treatment applied (oxalic acid). Mite count reduced.', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Treated varroa');
         }
         function addSuper() {
           updAll({ morale: Math.min(100, morale + 10), wax: wax + 2 });
-          sfxBeeBuzz(); if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
+          playSfx(sfxBeeBuzz); if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
         }
         function harvestHoney() {
-          if (honey < 15) { sfxBeeWaggle(); if (addToast) addToast('⚠️ Not enough surplus honey to harvest safely. Leave 15+ lbs for the bees.', 'info'); return; }
+          if (honey < 15) { playSfx(sfxBeeWaggle); if (addToast) addToast('⚠️ Not enough surplus honey to harvest safely. Leave 15+ lbs for the bees.', 'info'); return; }
           var harvested = Math.round((honey - 15) * 10) / 10;
-          updAll({ honey: 15, score: score + Math.round(harvested * 20) });
-          sfxBeeCollect(); if (addToast) addToast('🍯 Harvested ' + harvested + ' lbs of honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
+          updAll({ honey: 15, score: score + Math.round(harvested * 20), totalHarvested: (d.totalHarvested || 0) + harvested });
+          playSfx(sfxBeeCollect); if (addToast) addToast('🍯 Harvested ' + harvested + ' lbs of honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
           if (awardStemXP) awardStemXP('beehive', 15, 'Harvested honey');
         }
         function feedBees() {
           updAll({ honey: honey + 5, morale: Math.min(100, morale + 5) });
-          sfxSuccess(); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
+          playSfx(sfxSuccess); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
           if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
         }
         function dismissEvent() {
           updAll({ activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 });
-          if (awardStemXP) awardStemXP('beehive', 5, 'Handled event');
+          playSfx(sfxSuccess); if (awardStemXP) awardStemXP('beehive', 5, 'Handled event');
         }
+
+        // ── Quiz Functions ──
+        function startQuiz() {
+          // Shuffle questions — pick 10
+          var shuffled = QUIZ_QUESTIONS.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 10);
+          updAll({ quizOpen: true, quizIdx: 0, quizScore: 0, quizAnswered: 0, quizFeedback: null, quizQuestions: shuffled });
+        }
+        function answerQuiz(optIdx) {
+          var qs = d.quizQuestions || QUIZ_QUESTIONS;
+          var current = qs[quizIdx];
+          if (!current) return;
+          var correct = optIdx === current.ans;
+          var newScore = quizScore + (correct ? 1 : 0);
+          if (correct) playSfx(sfxBeeCollect); else playSfx(sfxAlert);
+          updAll({ quizFeedback: { correct: correct, explanation: current.explain }, quizScore: newScore, quizAnswered: quizAnswered + 1 });
+        }
+        function nextQuizQuestion() {
+          var qs = d.quizQuestions || QUIZ_QUESTIONS;
+          if (quizIdx + 1 >= qs.length) {
+            // Quiz complete
+            var best = Math.max(d.bestQuizScore || 0, quizScore);
+            updAll({ quizOpen: false, quizFeedback: null, bestQuizScore: best });
+            playSfx(sfxSuccess);
+            if (addToast) addToast('🎓 Quiz complete! Score: ' + quizScore + '/' + (d.quizQuestions || QUIZ_QUESTIONS).length + (quizScore >= 8 ? ' — Outstanding!' : quizScore >= 5 ? ' — Good job!' : ' — Keep studying!'), 'success');
+            if (awardStemXP) awardStemXP('beehive', quizScore * 3, 'Quiz score');
+          } else {
+            updAll({ quizIdx: quizIdx + 1, quizFeedback: null });
+          }
+        }
+
+        // ── Tutorial Steps ──
+        var TUTORIAL_STEPS = [
+          { title: 'Welcome, Beekeeper!', text: 'You\'re managing a honeybee colony — a superorganism of 10,000 workers, a queen, and hundreds of drones. Your goal: keep the colony alive and thriving through all four seasons.', icon: '🐝' },
+          { title: 'Advance Days', text: 'Click "Next Day" to simulate one day. Watch the seasonal cycle — spring builds workers, summer brings nectar, autumn prepares for winter, and winter tests your reserves.', icon: '⏩' },
+          { title: 'Manage Your Hive', text: 'Use Treat, Super, Harvest, Feed, and Inspect to manage the colony. Treat varroa mites before they get above 20%. Harvest honey only when surplus exceeds 15 lbs.', icon: '🔧' },
+          { title: 'Conservation Matters', text: 'Spend action points on conservation actions — plant wildflowers, build bee hotels, and advocate for pesticide-free zones. These improve habitat and foraging for all pollinators.', icon: '🌍' },
+          { title: 'Explore & Learn', text: 'Open the Hive Inspector to explore bee biology — roles, chemistry, lifecycle, waggle dance, thermoregulation, and pheromones. Take the quiz to test your knowledge. Earn all 12 badges!', icon: '🎓' }
+        ];
 
         // ── Hive Inspection View ──
         var inspectLayer = d.inspectLayer || 'roles'; // 'roles' | 'honey_chem' | 'lifecycle' | 'waggle' | 'temperature'
@@ -430,13 +538,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var active = inspectLayer === l.id;
                 return h('button', { key: l.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
                   'aria-label': l.label + ' inspection layer',
-                  onClick: function() { upd('inspectLayer', l.id); },
+                  onClick: function() {
+                    var viewed = (d.layersViewed || []).slice();
+                    if (viewed.indexOf(l.id) === -1) viewed.push(l.id);
+                    updAll({ inspectLayer: l.id, layersViewed: viewed });
+                  },
                   onKeyDown: function(ev) {
                     var nextIdx = li;
                     if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { ev.preventDefault(); nextIdx = (li + 1) % layers.length; }
                     else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { ev.preventDefault(); nextIdx = (li - 1 + layers.length) % layers.length; }
                     else return;
-                    upd('inspectLayer', layers[nextIdx].id);
+                    var viewed2 = (d.layersViewed || []).slice();
+                    if (viewed2.indexOf(layers[nextIdx].id) === -1) viewed2.push(layers[nextIdx].id);
+                    updAll({ inspectLayer: layers[nextIdx].id, layersViewed: viewed2 });
                   },
                   className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-amber-700 text-white' : 'bg-amber-800/50 text-amber-300 hover:bg-amber-700/50')
                 }, h('span', { 'aria-hidden': 'true' }, l.emoji), l.label);
@@ -1026,7 +1140,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
               h('div', null,
                 h('h3', { className: 'text-lg font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, '🐝 Beehive Colony Simulator'),
-                h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
+                h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose'))),
+            // Header action buttons
+            h('div', { className: 'flex items-center gap-1' },
+              // Sound toggle
+              h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, soundOn ? '🔊' : '🔇'),
+              // Quiz button
+              h('button', { onClick: startQuiz, 'aria-label': 'Take the Bee Knowledge Quiz', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '🎓'),
+              // Badges button
+              h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
+                className: 'p-1.5 rounded-lg text-sm transition-all relative ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') },
+                '🏅',
+                badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-500' }, badgeCount)),
+              // Keyboard help
+              h('button', { onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': 'Keyboard shortcuts', title: 'Keyboard shortcuts',
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '⌨️'))),
 
           // ═══ ANIMATED CANVAS SIMULATION ═══
           h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
@@ -1307,7 +1437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('button', { key: action.id, 'aria-label': action.label + ': ' + action.desc + '. Cost: ' + action.cost + ' action points.' + (actionPoints < action.cost ? ' Not enough action points.' : ''),
                     onClick: function() {
                       if (actionPoints < action.cost) { if (addToast) addToast('Need ' + action.cost + ' action points (have ' + actionPoints + '). Advance to next day for more.', 'info'); return; }
-                      var patch = { actionPoints: actionPoints - action.cost };
+                      var patch = { actionPoints: actionPoints - action.cost, conservationsDone: (d.conservationsDone || 0) + 1 };
                       if (action.effect.habitat) patch.habitat = Math.min(100, habitat + action.effect.habitat);
                       if (action.effect.foragingEfficiency) patch.foragingEfficiency = Math.min(100, foragingEfficiency + action.effect.foragingEfficiency);
                       if (action.effect.morale) patch.morale = Math.min(100, morale + action.effect.morale);
