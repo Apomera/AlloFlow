@@ -1902,15 +1902,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
             })),
 
-          // ═══ ANIMATED CANVAS SIMULATION ═══
-          h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
-            h('canvas', { 'aria-label': 'Beehive colony visualization',
+          // ═══ BEEKEEPER CANVAS (only in beekeeper mode) ═══
+          viewMode === 'beekeeper' && h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
+            h('canvas', {
               ref: _cvRef,
               role: 'img',
               'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
               style: { width: '100%', height: '100%', display: 'block' }
             })
           ),
+
+          // ═══ DRONE FLIGHT MODE UI ═══
+          viewMode === 'drone' && h('div', { className: 'space-y-3' },
+            // Drone canvas (or launch screen)
+            !droneFlightActive
+              ? h('div', { className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-600/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300') },
+                  h('div', { className: 'text-5xl mb-2' }, '🚀'),
+                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Drone Nuptial Flight'),
+                  h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
+                    'Experience life as a drone bee. Your sole purpose: fly to the Drone Congregation Area (DCA) at 200+ feet altitude and find a queen to mate with. You have 90 seconds of flight energy. Only 1 in 1,000 drones succeeds — can you?'),
+                  h('div', { className: 'grid grid-cols-3 gap-3 max-w-sm mx-auto text-center' },
+                    [['🎯', 'Find the DCA', 'Fly high and far'], ['👑', 'Locate Queen', 'Follow the golden glow'], ['📚', 'Learn Facts', 'Science appears as you fly']].map(function(g) {
+                      return h('div', { key: g[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-indigo-700/30' : 'bg-white border-indigo-200') },
+                        h('div', { className: 'text-lg' }, g[0]),
+                        h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, g[1]),
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, g[2]));
+                    })),
+                  droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
+                  h('button', { onClick: startDroneFlight,
+                    className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'),
+                    style: { boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }
+                  }, '🚀 Launch Nuptial Flight'),
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Controls: Arrow keys / WASD = steer · Space = climb · Shift = descend'))
+              : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
+                  h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': 'Drone flight simulation — use arrow keys to fly', style: { width: '100%', height: '100%', display: 'block' } }),
+                  // Stop button overlay
+                  h('button', { onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); }, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10 },
+                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-600/80 text-white hover:bg-red-600 backdrop-blur-sm transition-all', 'aria-label': 'End flight' }, '✕ End Flight')),
+            // Drone science sidebar
+            droneFlightActive && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
+              h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, '📚 Drone Science Facts Discovered'),
+              (_droneState.current.facts || []).length === 0
+                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Keep flying to discover facts...')
+                : h('div', { className: 'space-y-1' },
+                    (_droneState.current.facts || []).map(function(fact, fi) {
+                      return h('div', { key: fi, className: 'text-[11px] p-2 rounded-lg border ' + (dk ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-indigo-50 border-indigo-100 text-slate-600') }, fact);
+                    })))),
+
+          // ═══ QUEEN RTS MODE UI ═══
+          viewMode === 'queen' && h('div', { className: 'space-y-3' },
+            !queenGameActive
+              ? h('div', { className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-purple-900/40 to-amber-900/30 border-purple-600/50' : 'bg-gradient-to-b from-purple-50 to-amber-50 border-purple-300') },
+                  h('div', { className: 'text-5xl mb-2' }, '👑'),
+                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Queen Command: Hive RTS'),
+                  h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
+                    'You ARE the queen. Control your colony through pheromones — the chemical language of the hive. Lay eggs, allocate workers, build comb structures, and defend against invaders. You don\'t give orders directly — you emit pheromone signals that influence 50,000 workers.'),
+                  h('div', { className: 'grid grid-cols-4 gap-2 max-w-lg mx-auto text-center' },
+                    [['💜', 'QMP', 'Suppress rebellion'], ['🚨', 'Alarm', 'Mobilize guards'], ['🏠', 'Nasonov', 'Rally foragers'], ['🥚', 'Brood', 'Stimulate nurses']].map(function(p) {
+                      return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
+                        h('div', { className: 'text-lg' }, p[0]),
+                        h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
+                    })),
+                  h('button', { onClick: startQueenGame,
+                    className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
+                    style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
+                  }, '👑 Begin Your Reign'))
+              : h('div', { className: 'space-y-3' },
+                  // Queen canvas
+                  h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '350px', boxShadow: '0 0 20px rgba(147,51,234,0.1)' } },
+                    h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen RTS hive view — manage your colony through pheromone commands', style: { width: '100%', height: '100%', display: 'block' } })),
+                  // Queen Actions bar
+                  h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
+                    h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '👑 Pheromone Commands'),
+                    h('div', { className: 'grid grid-cols-3 gap-1.5' },
+                      QUEEN_ACTIONS.map(function(qa) {
+                        return h('button', { key: qa.id, onClick: function() { queenAction(qa.id); }, title: qa.desc,
+                          className: 'text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') },
+                          h('div', { className: 'flex items-center gap-1' },
+                            h('span', null, qa.icon),
+                            h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, qa.desc));
+                      }))),
+                  // Build structures
+                  h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
+                    h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🏗️ Build Comb Structures'),
+                    h('div', { className: 'grid grid-cols-3 gap-1.5' },
+                      Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
+                        var st = QUEEN_STRUCTURE_TYPES[stId];
+                        var costStr = Object.keys(st.cost).map(function(k) { return k + ': ' + st.cost[k]; }).join(', ');
+                        return h('button', { key: stId, onClick: function() { buildQueenStructure(stId); }, title: st.desc + ' (Cost: ' + costStr + ')',
+                          className: 'text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') },
+                          h('div', { className: 'flex items-center gap-1' },
+                            h('span', null, st.icon),
+                            h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, st.label)),
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, costStr || 'Free'));
+                      }))),
+                  // Advance day + events
+                  h('div', { className: 'flex gap-2' },
+                    h('button', { onClick: advanceQueenDay,
+                      className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md ' + (dk ? 'bg-gradient-to-r from-purple-700 to-amber-600' : 'bg-gradient-to-r from-purple-600 to-amber-500') }, '⏩ Next Day'),
+                    h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
+                      className: 'px-4 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, 'End Game')),
+                  // Event log
+                  queenEvents.length > 0 && h('div', { className: 'rounded-xl border p-3 max-h-32 overflow-y-auto ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
+                    h('div', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '📋 Hive Events'),
+                    h('div', { className: 'space-y-1' },
+                      queenEvents.slice().reverse().map(function(ev, ei) {
+                        return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 text-slate-400' : 'border-slate-100 text-slate-500') }, ev.text);
+                      }))))),
 
           // ═══ TUTORIAL OVERLAY ═══
           tutorialStep >= 0 && !tutorialDone && h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'dialog', 'aria-label': 'Tutorial step ' + (tutorialStep + 1) + ' of ' + TUTORIAL_STEPS.length },
@@ -2006,8 +2106,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   quizIdx + 1 >= qs.length ? '🏁 See Results' : 'Next Question →')));
           })(),
 
-          // Event popup
-          activeEvent && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
+          // Event popup (beekeeper mode only)
+          viewMode === 'beekeeper' && activeEvent && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
             h('div', { className: 'flex items-center gap-2' },
               h('span', { className: 'text-2xl' }, activeEvent.emoji),
               h('div', null,
@@ -2017,16 +2117,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('strong', null, '🔬 Science: '), activeEvent.lesson),
             h('button', { onClick: dismissEvent, 'aria-label': 'Acknowledge event', className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, '✓ Acknowledge')),
 
-          // Status bar
-          h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'status', 'aria-live': 'polite', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
+          // Status bar (beekeeper mode only)
+          viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'status', 'aria-live': 'polite', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-800') }, seasonNames[season] + ' Day ' + ((day % 30) + 1)),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-800') }, '🍯 ' + honey + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-yellow-900/40 text-yellow-300' : 'bg-yellow-100 text-yellow-800') }, '🌼 ' + pollen + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-100 text-purple-800') }, '⭐ ' + score + ' pts'),
             gardenBonus > 0 && h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800') }, '🌱 Garden +' + gardenBonus + '%')),
 
-          // Colony Dashboard
-          h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
+          // Colony Dashboard (beekeeper mode only)
+          viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
@@ -2059,8 +2159,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                   h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))))),
 
-          // ── Colony History Sparkline Chart ──
-          history.length > 2 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+          // ── Colony History Sparkline Chart ── (beekeeper only)
+          viewMode === 'beekeeper' && history.length > 2 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
             h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '\uD83D\uDCCA Colony History (' + history.length + ' days)'),
             h('canvas', {
               ref: function(cv) {
@@ -2121,8 +2221,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })
           ),
 
-          // ── Hive Cross-Section Visual ──
-          h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
+          // ── Hive Cross-Section Visual ── (beekeeper only)
+          viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
             role: 'img', 'aria-label': 'Hive cross-section: honey stores on outer edges (' + Math.round(honey) + ' lbs), pollen ring (' + Math.round(pollen) + ' lbs), brood nest in center (' + fmtPop(brood) + ' larvae), queen health ' + queenHealth + '%. Bees organize comb concentrically for thermal efficiency.' },
             h('div', { className: 'text-xs font-bold mb-2 text-center ' + (dk ? 'text-amber-300' : 'text-amber-900'), role: 'heading', 'aria-level': '3' }, '🏠 Hive Cross-Section'),
             h('div', { className: 'flex gap-0.5 justify-center', 'aria-hidden': 'true', style: { height: '80px' } },
@@ -2153,15 +2253,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('span', null, 'Honey stores →')),
             h('p', { className: 'text-[11px] text-center mt-1 italic ' + (dk ? 'text-amber-400/70' : 'text-amber-600') }, 'Bees organize the comb concentrically: brood in the warm center, pollen ring around it, honey stores on the outer edges. This pattern is universal across all Apis mellifera colonies.')),
 
-          // Garden connection
-          gardenBonus > 0 && h('div', { className: 'rounded-xl border p-3 flex items-start gap-2 ' + (dk ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200') },
+          // Garden connection (beekeeper only)
+          viewMode === 'beekeeper' && gardenBonus > 0 && h('div', { className: 'rounded-xl border p-3 flex items-start gap-2 ' + (dk ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200') },
             h('span', { className: 'text-lg' }, '🌱'),
             h('div', { className: 'text-xs ' + (dk ? 'text-emerald-300' : 'text-emerald-700') },
               h('strong', null, 'Garden Connection Active! '),
               gardenPollinators + ' pollinator plant' + (gardenPollinators !== 1 ? 's' : '') + ' detected in your Companion Planting garden. Your bees have ' + gardenBonus + '% better foraging. Plant more flowers to strengthen the connection!')),
 
-          // Colony collapsed state
-          !colonySurvived && h('div', { className: 'rounded-xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-orange-900/20 border-red-700/50' : 'bg-gradient-to-b from-red-50 to-orange-50 border-red-300'), role: 'alert' },
+          // Colony collapsed state (beekeeper only)
+          viewMode === 'beekeeper' && !colonySurvived && h('div', { className: 'rounded-xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-orange-900/20 border-red-700/50' : 'bg-gradient-to-b from-red-50 to-orange-50 border-red-300'), role: 'alert' },
             h('div', { className: 'text-center' },
               h('div', { className: 'text-4xl mb-1' }, '\uD83D\uDC1D\uD83D\uDE22'),
               h('h3', { className: 'text-lg font-black ' + (dk ? 'text-red-300' : 'text-red-800') }, 'Colony Collapse'),
@@ -2213,8 +2313,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             )
           ),
 
-          // Seasonal goals
-          colonySurvived && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200') },
+          // Seasonal goals (beekeeper only)
+          viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200') },
             h('div', { className: 'flex items-center gap-2 mb-1' },
               h('span', null, SEASON_GOALS[season].emoji),
               h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
@@ -2222,8 +2322,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex flex-wrap gap-1' },
               SEASON_GOALS[season].goals.map(function(g, i) { return h('span', { key: i, className: 'text-[11px] px-2 py-0.5 rounded border ' + (dk ? 'bg-slate-800 border-indigo-700/30 text-indigo-300' : 'bg-white border-indigo-100 text-indigo-700') }, g); }))),
 
-          // Habitat & Pesticide meters
-          colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
+          // Habitat & Pesticide meters (beekeeper only)
+          viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-green-900/20 border-green-700/40' : 'bg-green-50 border-green-200') },
               h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                 h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, '🌳 Local Habitat'),
@@ -2237,8 +2337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-red-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                 h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' })))),
 
-          // Action buttons — grouped by purpose
-          colonySurvived && h('div', { className: 'space-y-2' },
+          // Action buttons — grouped by purpose (beekeeper only)
+          viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
               h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, '\u23E9 Next Day'),
@@ -2294,11 +2394,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-200' : 'text-slate-600') }, action.cost + ' AP · ' + action.desc));
                 }))),
 
-          // Hive Inspection (full view replacement)
-          showInspect && renderInspection(),
+          // Hive Inspection (full view replacement, beekeeper only)
+          viewMode === 'beekeeper' && showInspect && renderInspection(),
 
-          // Science cards (only when not inspecting)
-          !showInspect &&
+          // Science cards (beekeeper only, when not inspecting)
+          viewMode === 'beekeeper' && !showInspect &&
           h('div', { className: 'grid grid-cols-2 gap-3', role: 'region', 'aria-label': 'Bee science quick reference cards' },
             [
               { title: '💃 The Waggle Dance', text: 'When a forager finds nectar, she performs a figure-8 dance on the comb. The angle of the waggle run (relative to vertical) encodes the direction relative to the sun. The duration encodes distance. Karl von Frisch won the 1973 Nobel Prize for decoding this — the only known symbolic language in non-human animals.' },

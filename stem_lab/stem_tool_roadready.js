@@ -4076,7 +4076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
 
-          // High beam toggle — adjust SpotLight range + intensity
+          // High beam toggle + headlight direction tracking
           if (s3.headlightL && s3.headlightR) {
             var highBeams = d.highBeams;
             var hlDist = highBeams ? 50 : 25;
@@ -4088,6 +4088,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.headlightR.distance = hlDist;
             s3.headlightR.angle = hlAngle;
             s3.headlightR.intensity = hlInt;
+            // Rotate headlight targets to match car heading (so light follows the road)
+            var hlTargetDist = 15;
+            s3.headlightL.target.position.set(
+              carWorldX + Math.cos(car.heading) * hlTargetDist + Math.sin(car.heading) * 0.3,
+              0,
+              carWorldZ + Math.sin(car.heading) * hlTargetDist - Math.cos(car.heading) * 0.3
+            );
+            s3.headlightR.target.position.set(
+              carWorldX + Math.cos(car.heading) * hlTargetDist - Math.sin(car.heading) * 0.3,
+              0,
+              carWorldZ + Math.sin(car.heading) * hlTargetDist + Math.cos(car.heading) * 0.3
+            );
           }
 
           // 3D Dashboard updates
@@ -5549,7 +5561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             className: 'touch-controls' },
             h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, '⚙ ' + (gearRef.current || 'D')),
+            }, '⚙ Shift Gear'),
             h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; },
               style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '◄ Signal'),
