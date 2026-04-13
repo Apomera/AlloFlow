@@ -5325,6 +5325,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
           gfx.fillText(nearestDir + '  ' + Math.round(headingDeg) + '°', W / 2, 15);
 
+          // Quest / destination HUD (top-left, below scenario info)
+          var q = questRef.current;
+          if (q && !q.completed && d.freeExplore) {
+            var qDist = Math.hypot(car.x - q.x, car.y - q.y);
+            var qDistFt = Math.round(qDist * 10);
+            var qDistMi = (qDist / 160.9).toFixed(2); // world units to miles approx
+            var qAngle = Math.atan2(q.y - car.y, q.x - car.x) - car.heading;
+            // Quest panel
+            gfx.fillStyle = 'rgba(0,0,0,0.7)';
+            gfx.fillRect(10, 68, 220, 40);
+            gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1;
+            gfx.strokeRect(10, 68, 220, 40);
+            // Icon + name
+            gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText('🗺️ ' + q.icon + ' ' + q.name, 18, 84);
+            // Distance
+            gfx.fillStyle = '#94a3b8'; gfx.font = '10px monospace';
+            gfx.fillText(qDistFt > 5280 ? qDistMi + ' mi' : qDistFt + ' ft', 18, 100);
+            // Direction arrow (rotated triangle pointing toward destination)
+            gfx.save();
+            gfx.translate(210, 88);
+            gfx.rotate(-qAngle);
+            gfx.fillStyle = '#fbbf24';
+            gfx.beginPath(); gfx.moveTo(0, -8); gfx.lineTo(-5, 5); gfx.lineTo(5, 5); gfx.closePath(); gfx.fill();
+            gfx.restore();
+          }
+          // Completed quests count
+          if (q && q.questsCompleted > 0 && d.freeExplore) {
+            gfx.fillStyle = '#64748b'; gfx.font = '9px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText('🏁 ' + q.questsCompleted + ' destinations reached', 18, q.completed ? 84 : 114);
+          }
+
           // Gamepad indicator
           var gpConnected = navigator.getGamepads && navigator.getGamepads().length > 0 && navigator.getGamepads()[0];
           if (gpConnected) {
