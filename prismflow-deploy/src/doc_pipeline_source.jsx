@@ -5137,9 +5137,15 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                 const polishedParts = [];
                 let polishSkipped = 0;
                 for (let pci = 0; pci < polishChunks.length; pci++) {
+                  // Early abort: if >50% of chunks so far have failed, stop wasting API calls
+                  if (pci >= 3 && polishSkipped > pci * 0.5) {
+                    _pipeLog('Polish', 'Aborting pass — ' + polishSkipped + '/' + pci + ' chunks failed (model output too small)');
+                    for (let rem = pci; rem < polishChunks.length; rem++) polishedParts.push(polishChunks[rem]);
+                    break;
+                  }
                   const pc = polishChunks[pci];
                   try {
-                    const pPrompt = `Fix these issues in this HTML fragment. Change ONLY what's needed. Preserve ALL content and inline styles.\n\n${polishViolations}\n\nHTML FRAGMENT (${pci + 1}/${polishChunks.length}):\n"""\n${pc}\n"""\n\nReturn ONLY the fixed fragment.`;
+                    const pPrompt = `Fix these issues in this HTML fragment. Preserve ALL content.\n\n${polishViolations}\n\nHTML (${pci + 1}/${polishChunks.length}):\n"""\n${pc}\n"""\n\nReturn ONLY the fixed fragment.`;
                     const pOut = stripFence(await callGemini(pPrompt, true));
                     if (pOut && pOut.length >= pc.length * 0.85 && textCharCount(pOut) >= textCharCount(pc) * 0.9) {
                       polishedParts.push(pOut);
