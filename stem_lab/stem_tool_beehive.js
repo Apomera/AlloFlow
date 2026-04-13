@@ -1161,6 +1161,704 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return function() { document.removeEventListener('keydown', onKey); };
         }, []);
 
+        // ═══════════════════════════════════════════════════════════════
+        // ═══ DRONE FLIGHT MODE — Pseudo-3D nuptial flight experience ═══
+        // ═══════════════════════════════════════════════════════════════
+        var _droneCvRef = React.useRef(null);
+        var _droneAnimId = React.useRef(0);
+        var _droneKeys = React.useRef({});
+        var _droneState = React.useRef({
+          x: 0, y: 80, z: 0,       // position (y = altitude)
+          vx: 0, vy: 0, vz: 0,     // velocity
+          yaw: 0, pitch: 0,         // facing direction
+          speed: 0,
+          energy: 100,              // flight stamina
+          phase: 'launch',          // launch | flight | congregation | mating | end
+          matingTarget: null,
+          nearQueens: [],
+          obstacles: [],
+          flowers: [],
+          clouds: [],
+          drones: [],               // other drones
+          score: 0,
+          distance: 0,
+          maxAlt: 80,
+          timer: 120,               // seconds of flight time
+          facts: [],                // science facts shown
+          factIdx: 0
+        });
+
+        // Drone flight science facts
+        var DRONE_FACTS = [
+          '🚀 Drones have larger eyes than workers — better for spotting queens mid-flight at 200+ feet altitude.',
+          '💨 A drone\'s flight muscles are the most powerful per body weight in the insect world.',
+          '🧬 Drones are haploid — they have only 16 chromosomes (workers have 32). They develop from unfertilized eggs.',
+          '❤️ Mating is instantly fatal for the drone — the endophallus ruptures and remains with the queen.',
+          '👁️ Drones have 8,600 facets per compound eye vs 6,900 for workers — optimized for tracking queens in flight.',
+          '🌡️ Drone Congregation Areas (DCAs) form at 15-40 meters altitude. The same aerial spots are used year after year.',
+          '🏠 Drones cannot feed themselves — workers must feed them. They have no wax glands, no pollen baskets, no stinger.',
+          '🎯 Only 1 in 1,000 drones successfully mates. The rest die of exhaustion or are evicted in autumn.',
+          '⏱️ A drone\'s mating flight lasts about 30 minutes. He can fly up to 8 km from the hive.',
+          '🧪 Queens release 9-ODA pheromone during flight — drones detect it with specialized antennae at 60+ meters.'
+        ];
+
+        var droneData = d.drone || {};
+        var droneHighScore = droneData.highScore || 0;
+        var droneFlightActive = droneData.active || false;
+
+        function startDroneFlight() {
+          // Generate world
+          var obs = [], fls = [], clds = [], otherDrones = [];
+          for (var oi = 0; oi < 30; oi++) obs.push({ x: (Math.random() - 0.5) * 600, z: -200 - Math.random() * 2000, type: ['tree', 'pole', 'building'][Math.floor(Math.random() * 3)], h: 30 + Math.random() * 80 });
+          for (var fi = 0; fi < 50; fi++) fls.push({ x: (Math.random() - 0.5) * 500, z: -100 - Math.random() * 1500, col: ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399'][fi % 5] });
+          for (var ci = 0; ci < 15; ci++) clds.push({ x: (Math.random() - 0.5) * 800, y: 160 + Math.random() * 80, z: -300 - Math.random() * 2000, w: 40 + Math.random() * 60 });
+          for (var di = 0; di < 12; di++) otherDrones.push({ x: (Math.random() - 0.5) * 200, y: 80 + Math.random() * 120, z: -600 - Math.random() * 800, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5), vz: -1 - Math.random() * 2 });
+          _droneState.current = {
+            x: 0, y: 10, z: 0, vx: 0, vy: 2, vz: -2, yaw: 0, pitch: -0.1,
+            speed: 0, energy: 100, phase: 'launch',
+            matingTarget: null,
+            nearQueens: [{ x: (Math.random() - 0.5) * 100, y: 150 + Math.random() * 50, z: -1200 - Math.random() * 400, caught: false }],
+            obstacles: obs, flowers: fls, clouds: clds, drones: otherDrones,
+            score: 0, distance: 0, maxAlt: 10, timer: 90, facts: [], factIdx: 0
+          };
+          updAll({ drone: Object.assign({}, droneData, { active: true }) });
+        }
+
+        // Drone flight canvas
+        React.useEffect(function() {
+          if (viewMode !== 'drone' || !droneFlightActive) return;
+          var cv = _droneCvRef.current;
+          if (!cv) return;
+          var c = cv.getContext('2d');
+          if (!c) return;
+          var par = cv.parentElement;
+          var W = (par ? par.clientWidth : 500) || 500;
+          var H = (par ? par.clientHeight : 400) || 400;
+          cv.width = W * 2; cv.height = H * 2;
+          c.setTransform(2, 0, 0, 2, 0, 0);
+
+          var ds = _droneState.current;
+          var lastTime = performance.now();
+          var factTimer = 0;
+
+          function droneFrame(now) {
+            var dt = Math.min(0.05, (now - lastTime) / 1000);
+            lastTime = now;
+            var keys = _droneKeys.current;
+
+            // ── Update drone physics ──
+            if (ds.phase !== 'end') {
+              ds.timer -= dt;
+              if (ds.timer <= 0) { ds.phase = 'end'; ds.timer = 0; }
+
+              // Controls
+              var thrust = 0, turn = 0, pitchD = 0;
+              if (keys.ArrowUp || keys.w) thrust = 5;
+              if (keys.ArrowDown || keys.s) thrust = -3;
+              if (keys.ArrowLeft || keys.a) turn = 2.5;
+              if (keys.ArrowRight || keys.d) turn = -2.5;
+              if (keys[' '] || keys.Shift) pitchD = keys[' '] ? 1.5 : -1.5;
+
+              ds.yaw += turn * dt;
+              ds.pitch = Math.max(-0.6, Math.min(0.6, ds.pitch + pitchD * dt));
+
+              // Thrust along facing direction
+              var fwdX = Math.sin(ds.yaw), fwdZ = -Math.cos(ds.yaw);
+              ds.vx += fwdX * thrust * dt;
+              ds.vz += fwdZ * thrust * dt;
+              ds.vy += (pitchD * 2 + (ds.phase === 'launch' ? 4 : 0)) * dt;
+              ds.vy -= 2.0 * dt; // gravity
+
+              // Drag
+              ds.vx *= 0.97; ds.vy *= 0.97; ds.vz *= 0.97;
+
+              // Apply velocity
+              ds.x += ds.vx; ds.y += ds.vy; ds.z += ds.vz;
+              ds.y = Math.max(2, ds.y);
+              ds.speed = Math.sqrt(ds.vx * ds.vx + ds.vz * ds.vz);
+              ds.distance += ds.speed * dt;
+              ds.maxAlt = Math.max(ds.maxAlt, ds.y);
+
+              // Energy drain
+              ds.energy = Math.max(0, ds.energy - (thrust > 0 ? 0.8 : 0.15) * dt);
+              if (ds.energy <= 0) ds.phase = 'end';
+
+              // Phase transitions
+              if (ds.phase === 'launch' && ds.y > 40) ds.phase = 'flight';
+              if (ds.phase === 'flight' && ds.y > 100 && Math.abs(ds.z) > 600) ds.phase = 'congregation';
+
+              // Science fact timer
+              factTimer += dt;
+              if (factTimer > 8 && ds.factIdx < DRONE_FACTS.length) {
+                ds.facts.push(DRONE_FACTS[ds.factIdx]);
+                ds.factIdx++;
+                factTimer = 0;
+                ds.score += 5;
+              }
+
+              // Check queen proximity for mating
+              if (ds.phase === 'congregation') {
+                ds.nearQueens.forEach(function(q) {
+                  if (q.caught) return;
+                  var dx = ds.x - q.x, dy = ds.y - q.y, dz = ds.z - q.z;
+                  var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                  if (dist < 25) {
+                    q.caught = true;
+                    ds.phase = 'mating';
+                    ds.score += 200;
+                    playSfx(sfxSuccess);
+                  }
+                });
+              }
+
+              // Move other drones
+              ds.drones.forEach(function(od) {
+                od.x += od.vx + Math.sin(now * 0.001 + od.z) * 0.3;
+                od.y += od.vy * 0.3 + Math.sin(now * 0.002 + od.x) * 0.5;
+                od.z += od.vz;
+                if (od.z > ds.z + 200) { od.z = ds.z - 800; od.x = ds.x + (Math.random() - 0.5) * 300; }
+              });
+            }
+
+            // ── RENDER ──
+            c.clearRect(0, 0, W, H);
+            var halfW = W / 2, halfH = H / 2;
+            var cosY = Math.cos(ds.yaw), sinY = Math.sin(ds.yaw);
+            var cosP = Math.cos(ds.pitch), sinP = Math.sin(ds.pitch);
+
+            // Project 3D to 2D (perspective)
+            function project(wx, wy, wz) {
+              var rx = (wx - ds.x) * cosY + (wz - ds.z) * sinY;
+              var rz = -(wx - ds.x) * sinY + (wz - ds.z) * cosY;
+              var ry2 = (wy - ds.y) * cosP - rz * sinP;
+              var rz2 = (wy - ds.y) * sinP + rz * cosP;
+              if (rz2 >= -1) return null; // behind camera
+              var fov = 300;
+              var sx = halfW + (rx / -rz2) * fov;
+              var sy = halfH - (ry2 / -rz2) * fov;
+              var scale = fov / -rz2;
+              return { x: sx, y: sy, s: scale, d: -rz2 };
+            }
+
+            // Sky gradient (altitude-responsive)
+            var skyTop = ds.y > 150 ? '#1a237e' : ds.y > 80 ? '#4a9fd6' : '#7ec8e3';
+            var skyBot = ds.y > 150 ? '#4a5de6' : '#b8e2f2';
+            var skyG = c.createLinearGradient(0, 0, 0, halfH + 40);
+            skyG.addColorStop(0, skyTop); skyG.addColorStop(1, skyBot);
+            c.fillStyle = skyG; c.fillRect(0, 0, W, halfH + 40);
+
+            // Ground plane
+            var groundCol = ds.y > 200 ? '#2d7a3a' : '#4ade80';
+            var grdG = c.createLinearGradient(0, halfH + 20, 0, H);
+            grdG.addColorStop(0, '#8fbc8f'); grdG.addColorStop(1, groundCol);
+            c.fillStyle = grdG; c.fillRect(0, halfH + 20, W, H);
+
+            // Horizon line
+            c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(0, halfH + 20); c.lineTo(W, halfH + 20); c.stroke();
+
+            // Render clouds
+            ds.clouds.forEach(function(cl) {
+              var p = project(cl.x, cl.y, cl.z);
+              if (!p || p.d > 600) return;
+              c.globalAlpha = Math.max(0.1, 0.4 - p.d / 1500);
+              c.fillStyle = '#fff';
+              c.beginPath(); c.ellipse(p.x, p.y, cl.w * p.s * 0.5, 8 * p.s, 0, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(p.x + cl.w * p.s * 0.2, p.y - 3 * p.s, cl.w * p.s * 0.3, 6 * p.s, 0, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+            });
+
+            // Render flowers on ground
+            ds.flowers.forEach(function(fl) {
+              var p = project(fl.x, 0, fl.z);
+              if (!p || p.d > 400 || p.s < 0.3) return;
+              c.fillStyle = fl.col; c.globalAlpha = Math.min(1, p.s);
+              for (var pp = 0; pp < 5; pp++) {
+                var pa = pp * 1.257;
+                c.beginPath(); c.ellipse(p.x + Math.cos(pa) * 3 * p.s, p.y + Math.sin(pa) * 3 * p.s, 2.5 * p.s, 1.5 * p.s, pa, 0, 6.28); c.fill();
+              }
+              c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(p.x, p.y, 1.5 * p.s, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+            });
+
+            // Render obstacles (trees, buildings)
+            ds.obstacles.forEach(function(ob) {
+              var p = project(ob.x, ob.h * 0.5, ob.z);
+              if (!p || p.d > 500 || p.s < 0.2) return;
+              if (ob.type === 'tree') {
+                // Trunk
+                c.fillStyle = '#8B4513';
+                c.fillRect(p.x - 1.5 * p.s, p.y, 3 * p.s, ob.h * 0.4 * p.s);
+                // Canopy
+                c.fillStyle = '#228B22'; c.globalAlpha = 0.85;
+                c.beginPath(); c.arc(p.x, p.y - 2 * p.s, ob.h * 0.25 * p.s, 0, 6.28); c.fill();
+                c.globalAlpha = 1;
+              } else if (ob.type === 'building') {
+                c.fillStyle = '#6b7280'; c.fillRect(p.x - 10 * p.s, p.y - ob.h * 0.3 * p.s, 20 * p.s, ob.h * 0.6 * p.s);
+                c.fillStyle = '#4b5563'; c.fillRect(p.x - 10 * p.s, p.y - ob.h * 0.3 * p.s, 20 * p.s, 3 * p.s);
+              } else {
+                c.fillStyle = '#9ca3af'; c.fillRect(p.x - 1 * p.s, p.y, 2 * p.s, ob.h * 0.4 * p.s);
+              }
+            });
+
+            // Render other drones
+            ds.drones.forEach(function(od) {
+              var p = project(od.x, od.y, od.z);
+              if (!p || p.d > 300) return;
+              c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 2;
+              c.fillStyle = '#fbbf24'; c.beginPath(); c.ellipse(p.x, p.y, 4 * p.s, 2.5 * p.s, 0, 0, 6.28); c.fill();
+              c.fillStyle = '#292524'; c.fillRect(p.x - 1 * p.s, p.y - 2 * p.s, 2 * p.s, 4 * p.s);
+              // Wings
+              c.globalAlpha = 0.3; c.fillStyle = '#bfdbfe';
+              c.beginPath(); c.ellipse(p.x, p.y - 3 * p.s + Math.sin(now * 0.03 + od.z) * p.s, 3 * p.s, 1.5 * p.s, 0, 0, 6.28); c.fill();
+              c.globalAlpha = 1; c.restore();
+            });
+
+            // Render queen (golden glow target)
+            ds.nearQueens.forEach(function(q) {
+              if (q.caught) return;
+              var p = project(q.x, q.y, q.z);
+              if (!p) return;
+              c.save();
+              c.shadowColor = '#f59e0b'; c.shadowBlur = 15;
+              c.fillStyle = '#f59e0b'; c.beginPath(); c.ellipse(p.x, p.y, 6 * p.s, 3.5 * p.s, 0, 0, 6.28); c.fill();
+              c.fillStyle = '#fff'; c.font = Math.max(8, 14 * p.s) + 'px system-ui'; c.textAlign = 'center';
+              c.fillText('👑', p.x, p.y - 8 * p.s);
+              // Distance indicator
+              var dist = Math.sqrt((ds.x - q.x) * (ds.x - q.x) + (ds.y - q.y) * (ds.y - q.y) + (ds.z - q.z) * (ds.z - q.z));
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#fef3c7';
+              c.fillText(Math.round(dist) + 'm', p.x, p.y + 10 * p.s);
+              c.restore();
+            });
+
+            // ── HUD ──
+            // Crosshair
+            c.strokeStyle = 'rgba(255,255,255,0.3)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(halfW - 10, halfH); c.lineTo(halfW + 10, halfH); c.stroke();
+            c.beginPath(); c.moveTo(halfW, halfH - 10); c.lineTo(halfW, halfH + 10); c.stroke();
+
+            // Top HUD bar
+            c.fillStyle = 'rgba(15,23,42,0.7)';
+            c.beginPath(); if (c.roundRect) c.roundRect(10, 8, W - 20, 40, 10); else c.rect(10, 8, W - 20, 40); c.fill();
+            c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#fbbf24';
+            c.fillText('🚀 DRONE NUPTIAL FLIGHT', 20, 24);
+            c.font = '9px system-ui'; c.fillStyle = '#e2e8f0';
+            c.fillText('Alt: ' + Math.round(ds.y) + 'ft · Spd: ' + ds.speed.toFixed(1) + ' · Dist: ' + Math.round(ds.distance) + 'm', 20, 40);
+
+            c.textAlign = 'right'; c.fillStyle = '#fbbf24';
+            c.fillText('⚡ ' + Math.round(ds.energy) + '%', W - 20, 24);
+            c.fillStyle = ds.timer < 20 ? '#ef4444' : '#e2e8f0';
+            c.fillText('⏱ ' + Math.round(ds.timer) + 's · 🏆 ' + ds.score, W - 20, 40);
+
+            // Energy bar
+            c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(W - 130, 12, 70, 6);
+            c.fillStyle = ds.energy > 30 ? '#22c55e' : ds.energy > 10 ? '#eab308' : '#ef4444';
+            c.fillRect(W - 130, 12, 70 * (ds.energy / 100), 6);
+
+            // Phase indicator
+            var phaseLabel = { launch: '🚀 LAUNCHING...', flight: '✈️ FLYING TO DCA', congregation: '🎯 DRONE CONGREGATION AREA — FIND THE QUEEN!', mating: '❤️ MATING SUCCESS!', end: '🏁 FLIGHT OVER' }[ds.phase] || '';
+            if (phaseLabel) {
+              c.fillStyle = ds.phase === 'mating' ? 'rgba(245,158,11,0.8)' : ds.phase === 'congregation' ? 'rgba(99,102,241,0.7)' : 'rgba(15,23,42,0.5)';
+              c.textAlign = 'center'; c.font = 'bold 11px system-ui';
+              var tw = c.measureText(phaseLabel).width;
+              c.beginPath(); if (c.roundRect) c.roundRect(halfW - tw / 2 - 12, H - 50, tw + 24, 22, 8); else c.rect(halfW - tw / 2 - 12, H - 50, tw + 24, 22); c.fill();
+              c.fillStyle = '#fff'; c.fillText(phaseLabel, halfW, H - 35);
+            }
+
+            // Latest science fact
+            if (ds.facts.length > 0) {
+              var lastFact = ds.facts[ds.facts.length - 1];
+              c.fillStyle = 'rgba(15,23,42,0.75)'; c.textAlign = 'center'; c.font = '9px system-ui';
+              var ftw = Math.min(W - 40, c.measureText(lastFact).width + 20);
+              c.beginPath(); if (c.roundRect) c.roundRect(halfW - ftw / 2, 56, ftw, 20, 6); else c.rect(halfW - ftw / 2, 56, ftw, 20); c.fill();
+              c.fillStyle = '#fef3c7'; c.fillText(lastFact.length > 80 ? lastFact.substring(0, 80) + '...' : lastFact, halfW, 70);
+            }
+
+            // Controls hint (bottom-left)
+            c.fillStyle = 'rgba(15,23,42,0.5)'; c.textAlign = 'left'; c.font = '8px system-ui';
+            c.beginPath(); if (c.roundRect) c.roundRect(10, H - 28, 200, 20, 6); else c.rect(10, H - 28, 200, 20); c.fill();
+            c.fillStyle = '#94a3b8'; c.fillText('↑↓ Thrust · ←→ Turn · Space/Shift Altitude', 16, H - 14);
+
+            // Mating success overlay
+            if (ds.phase === 'mating') {
+              c.fillStyle = 'rgba(245,158,11,0.15)'; c.fillRect(0, 0, W, H);
+              c.textAlign = 'center'; c.fillStyle = '#fbbf24'; c.font = 'bold 24px system-ui';
+              c.fillText('MATING SUCCESS!', halfW, halfH - 20);
+              c.font = '12px system-ui'; c.fillStyle = '#fef3c7';
+              c.fillText('+200 pts — You fulfilled the drone\'s sole biological purpose', halfW, halfH + 10);
+              c.font = '10px system-ui'; c.fillStyle = '#e2e8f0';
+              c.fillText('In reality, this is instantly fatal for the drone.', halfW, halfH + 30);
+            }
+
+            // End screen
+            if (ds.phase === 'end') {
+              c.fillStyle = 'rgba(15,23,42,0.7)'; c.fillRect(0, 0, W, H);
+              c.textAlign = 'center'; c.fillStyle = '#fbbf24'; c.font = 'bold 20px system-ui';
+              c.fillText('Flight Complete', halfW, halfH - 40);
+              c.font = '11px system-ui'; c.fillStyle = '#e2e8f0';
+              c.fillText('Score: ' + ds.score + ' · Max Alt: ' + Math.round(ds.maxAlt) + 'ft · Distance: ' + Math.round(ds.distance) + 'm', halfW, halfH - 10);
+              c.fillText('Facts learned: ' + ds.facts.length + '/' + DRONE_FACTS.length, halfW, halfH + 10);
+              c.fillStyle = '#94a3b8'; c.font = '10px system-ui';
+              c.fillText('Click "Start Flight" to try again', halfW, halfH + 40);
+              // Save high score
+              if (ds.score > droneHighScore) {
+                setTimeout(function() { updAll({ drone: Object.assign({}, droneData, { highScore: ds.score, active: false }) }); }, 100);
+              }
+            }
+
+            if (ds.phase !== 'end') _droneAnimId.current = requestAnimationFrame(droneFrame);
+          }
+
+          // Input handlers
+          function dkDown(e) { _droneKeys.current[e.key] = true; if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].indexOf(e.key) !== -1) e.preventDefault(); }
+          function dkUp(e) { _droneKeys.current[e.key] = false; }
+          document.addEventListener('keydown', dkDown);
+          document.addEventListener('keyup', dkUp);
+
+          if (_droneAnimId.current) cancelAnimationFrame(_droneAnimId.current);
+          _droneAnimId.current = requestAnimationFrame(droneFrame);
+
+          return function() {
+            if (_droneAnimId.current) cancelAnimationFrame(_droneAnimId.current);
+            document.removeEventListener('keydown', dkDown);
+            document.removeEventListener('keyup', dkUp);
+          };
+        }, [viewMode, droneFlightActive]);
+
+        // ═══════════════════════════════════════════════════════════
+        // ═══ QUEEN RTS MODE — Pheromone-based colony management ═══
+        // ═══════════════════════════════════════════════════════════
+        var _queenCvRef = React.useRef(null);
+        var _queenAnimId = React.useRef(0);
+        var _queenClick = React.useRef(null);
+
+        var queenData = d.queen || {};
+        var queenGameActive = queenData.active || false;
+        var queenDay = queenData.day || 0;
+        var queenPheromones = queenData.pheromones || { qmp: 100, alarm: 0, nasonov: 50, brood: 40 };
+        var queenResources = queenData.resources || { nectar: 30, pollen: 20, wax: 10, royalJelly: 5 };
+        var queenPopulation = queenData.population || { nurses: 200, builders: 100, guards: 50, foragers: 300, scouts: 30 };
+        var queenStructures = queenData.structures || [
+          { type: 'brood', x: 0.5, y: 0.5, level: 1 },
+          { type: 'honey', x: 0.3, y: 0.4, level: 1 },
+          { type: 'honey', x: 0.7, y: 0.4, level: 1 }
+        ];
+        var queenThreats = queenData.threats || [];
+        var queenEvents = queenData.events || [];
+        var queenScore = queenData.score || 0;
+        var queenPhase = queenData.phase || 'build'; // build | defend | swarm
+        var queenSelectedAction = queenData.selectedAction || null;
+
+        var QUEEN_STRUCTURE_TYPES = {
+          brood: { icon: '🥚', label: 'Brood Chamber', desc: 'Lay eggs — produce new workers', cost: { wax: 3, royalJelly: 2 }, produces: 'workers', color: '#fdba74' },
+          honey: { icon: '🍯', label: 'Honey Store', desc: 'Store nectar converted to honey', cost: { wax: 2 }, produces: 'nectar_storage', color: '#f59e0b' },
+          pollen: { icon: '🌼', label: 'Pollen Vault', desc: 'Store pollen for brood food', cost: { wax: 2 }, produces: 'pollen_storage', color: '#facc15' },
+          guard: { icon: '🛡️', label: 'Guard Post', desc: 'Station guards to detect intruders', cost: { wax: 4 }, produces: 'defense', color: '#ef4444' },
+          nursery: { icon: '🍼', label: 'Royal Nursery', desc: 'Produce royal jelly from nurse bees', cost: { wax: 3, pollen: 5 }, produces: 'royalJelly', color: '#c084fc' },
+          fan: { icon: '💨', label: 'Fanning Station', desc: 'Temperature control & scent distribution', cost: { wax: 2 }, produces: 'thermoreg', color: '#38bdf8' }
+        };
+
+        var QUEEN_ACTIONS = [
+          { id: 'lay_workers', icon: '👷', label: 'Lay Worker Eggs', desc: 'Fertilized eggs → workers in 21 days', cost: { royalJelly: 1 }, pheromone: 'qmp' },
+          { id: 'lay_drones', icon: '♂️', label: 'Lay Drone Eggs', desc: 'Unfertilized eggs → drones for mating', cost: { royalJelly: 1 }, pheromone: 'qmp' },
+          { id: 'emit_qmp', icon: '💜', label: 'Emit QMP', desc: 'Release Queen Mandibular Pheromone — suppress worker rebellion, boost morale', cost: {}, pheromone: 'qmp' },
+          { id: 'alarm_signal', icon: '🚨', label: 'Alarm Signal', desc: 'Release alarm pheromone — mobilize guards against threat', cost: {}, pheromone: 'alarm' },
+          { id: 'nasonov_call', icon: '🏠', label: 'Nasonov Rally', desc: 'Release Nasonov — call foragers home, mark safe areas', cost: {}, pheromone: 'nasonov' },
+          { id: 'build_comb', icon: '🏗️', label: 'Order Comb', desc: 'Direct builders to construct new comb cells', cost: { wax: 5 }, pheromone: 'qmp' }
+        ];
+
+        function startQueenGame() {
+          updAll({ queen: {
+            active: true, day: 0, score: 0, phase: 'build',
+            pheromones: { qmp: 100, alarm: 0, nasonov: 50, brood: 40 },
+            resources: { nectar: 30, pollen: 20, wax: 10, royalJelly: 5 },
+            population: { nurses: 200, builders: 100, guards: 50, foragers: 300, scouts: 30 },
+            structures: [
+              { type: 'brood', x: 0.5, y: 0.5, level: 1 },
+              { type: 'honey', x: 0.35, y: 0.45, level: 1 },
+              { type: 'honey', x: 0.65, y: 0.45, level: 1 }
+            ],
+            threats: [], events: [], selectedAction: null
+          }});
+        }
+
+        function queenAction(actionId) {
+          var action = QUEEN_ACTIONS.find(function(a) { return a.id === actionId; });
+          if (!action) return;
+          // Check costs
+          var res = Object.assign({}, queenResources);
+          var canAfford = true;
+          if (action.cost) {
+            Object.keys(action.cost).forEach(function(k) { if ((res[k] || 0) < action.cost[k]) canAfford = false; });
+          }
+          if (!canAfford) { if (addToast) addToast('Not enough resources for ' + action.label, 'info'); return; }
+          // Deduct
+          Object.keys(action.cost).forEach(function(k) { res[k] = (res[k] || 0) - action.cost[k]; });
+
+          var ph = Object.assign({}, queenPheromones);
+          var pop = Object.assign({}, queenPopulation);
+          var sc = queenScore;
+
+          if (actionId === 'lay_workers') { pop.nurses += 20; sc += 10; ph.brood += 5; playSfx(sfxBeeCollect); }
+          else if (actionId === 'lay_drones') { sc += 5; playSfx(sfxBeeCollect); }
+          else if (actionId === 'emit_qmp') { ph.qmp = Math.min(100, ph.qmp + 30); sc += 5; playSfx(sfxBeeWaggle); }
+          else if (actionId === 'alarm_signal') { ph.alarm = Math.min(100, ph.alarm + 50); pop.guards += 20; sc += 5; playSfx(sfxAlert); }
+          else if (actionId === 'nasonov_call') { ph.nasonov = Math.min(100, ph.nasonov + 30); pop.foragers += 15; sc += 5; playSfx(sfxBeeWaggle); }
+          else if (actionId === 'build_comb') { sc += 15; playSfx(sfxBeeBuzz); }
+
+          updAll({ queen: Object.assign({}, queenData, { resources: res, pheromones: ph, population: pop, score: sc, selectedAction: actionId }) });
+          if (addToast) addToast(action.icon + ' ' + action.label, 'success');
+        }
+
+        function advanceQueenDay() {
+          var res = Object.assign({}, queenResources);
+          var ph = Object.assign({}, queenPheromones);
+          var pop = Object.assign({}, queenPopulation);
+          var threats = (queenThreats || []).slice();
+          var evts = (queenEvents || []).slice();
+
+          // Foragers bring resources
+          res.nectar = Math.round((res.nectar + pop.foragers * 0.02) * 10) / 10;
+          res.pollen = Math.round((res.pollen + pop.foragers * 0.008) * 10) / 10;
+          // Builders produce wax
+          res.wax = Math.round((res.wax + pop.builders * 0.005) * 10) / 10;
+          // Nurses produce royal jelly
+          res.royalJelly = Math.round((res.royalJelly + pop.nurses * 0.003) * 10) / 10;
+
+          // Consumption
+          var totalPop = pop.nurses + pop.builders + pop.guards + pop.foragers + pop.scouts;
+          res.nectar = Math.max(0, res.nectar - totalPop * 0.004);
+          res.pollen = Math.max(0, res.pollen - totalPop * 0.001);
+
+          // Pheromone decay
+          ph.qmp = Math.max(0, ph.qmp - 3);
+          ph.alarm = Math.max(0, ph.alarm - 8);
+          ph.nasonov = Math.max(0, ph.nasonov - 2);
+          ph.brood = Math.max(0, ph.brood - 1);
+
+          // Low QMP = worker rebellion risk
+          if (ph.qmp < 20 && Math.random() < 0.3) {
+            evts.push({ type: 'rebellion', text: '⚠️ QMP too low — workers becoming restless! Some are developing ovaries.' });
+            pop.foragers = Math.max(0, pop.foragers - 30);
+          }
+
+          // Random threats
+          if (Math.random() < 0.08 && queenDay > 3) {
+            var threatTypes = [
+              { type: 'wasp', icon: '🐝', label: 'Wasp Raider', strength: 30, desc: 'A hornet is probing the entrance!' },
+              { type: 'robber', icon: '⚔️', label: 'Robber Bees', strength: 50, desc: 'Foreign bees are trying to steal honey!' },
+              { type: 'mouse', icon: '🐭', label: 'Mouse Intruder', strength: 40, desc: 'A mouse is trying to nest inside the hive!' },
+              { type: 'mites', icon: '🦟', label: 'Varroa Spike', strength: 60, desc: 'Varroa mites are multiplying on brood!' }
+            ];
+            var nt = threatTypes[Math.floor(Math.random() * threatTypes.length)];
+            threats.push(Object.assign({}, nt, { hp: nt.strength }));
+            evts.push({ type: 'threat', text: nt.icon + ' ' + nt.label + ': ' + nt.desc });
+          }
+
+          // Guards auto-fight threats
+          threats.forEach(function(th) {
+            th.hp -= pop.guards * 0.5 * (ph.alarm > 30 ? 2 : 1);
+          });
+          threats = threats.filter(function(th) { return th.hp > 0; });
+          // Undefended threats cause damage
+          threats.forEach(function(th) {
+            res.nectar = Math.max(0, res.nectar - th.strength * 0.05);
+            pop.nurses = Math.max(0, pop.nurses - Math.floor(th.strength * 0.1));
+          });
+
+          // Natural attrition & growth from structures
+          queenStructures.forEach(function(st) {
+            if (st.type === 'brood') { pop.nurses += 5 * st.level; pop.foragers += 3 * st.level; }
+          });
+          // Age-based losses
+          pop.foragers = Math.max(0, pop.foragers - Math.round(pop.foragers * 0.008));
+          pop.guards = Math.max(0, pop.guards - Math.round(pop.guards * 0.005));
+
+          if (evts.length > 10) evts = evts.slice(-10);
+
+          playSfx(sfxDayChime);
+          updAll({ queen: Object.assign({}, queenData, {
+            day: queenDay + 1, resources: res, pheromones: ph, population: pop,
+            threats: threats, events: evts, score: queenScore + 10
+          })});
+        }
+
+        function buildQueenStructure(typeId) {
+          var sType = QUEEN_STRUCTURE_TYPES[typeId];
+          if (!sType) return;
+          var res = Object.assign({}, queenResources);
+          var canAfford = true;
+          Object.keys(sType.cost).forEach(function(k) { if ((res[k] || 0) < sType.cost[k]) canAfford = false; });
+          if (!canAfford) { if (addToast) addToast('Need more resources to build ' + sType.label, 'info'); return; }
+          Object.keys(sType.cost).forEach(function(k) { res[k] = (res[k] || 0) - sType.cost[k]; });
+
+          var newStructures = queenStructures.slice();
+          newStructures.push({ type: typeId, x: 0.2 + Math.random() * 0.6, y: 0.2 + Math.random() * 0.6, level: 1 });
+
+          playSfx(sfxBeeBuzz);
+          updAll({ queen: Object.assign({}, queenData, { resources: res, structures: newStructures, score: queenScore + 20 }) });
+          if (addToast) addToast(sType.icon + ' Built ' + sType.label + '!', 'success');
+        }
+
+        // Queen RTS canvas rendering
+        React.useEffect(function() {
+          if (viewMode !== 'queen' || !queenGameActive) return;
+          var cv = _queenCvRef.current;
+          if (!cv) return;
+          var c = cv.getContext('2d');
+          if (!c) return;
+          var par = cv.parentElement;
+          var W = (par ? par.clientWidth : 500) || 500;
+          var H = (par ? par.clientHeight : 400) || 400;
+          cv.width = W * 2; cv.height = H * 2;
+          c.setTransform(2, 0, 0, 2, 0, 0);
+
+          function queenFrame() {
+            c.clearRect(0, 0, W, H);
+
+            // ── Comb background (hexagonal grid) ──
+            var cSize = 18;
+            c.fillStyle = '#d4aa40';
+            c.fillRect(0, 0, W, H);
+
+            // Draw hexagonal comb grid
+            for (var gy = -1; gy < Math.ceil(H / (cSize * 1.6)) + 1; gy++) {
+              for (var gx = -1; gx < Math.ceil(W / (cSize * 2)) + 1; gx++) {
+                var hx = gx * cSize * 2 + (gy % 2) * cSize;
+                var hy = gy * cSize * 1.6;
+                c.fillStyle = 'rgba(180,140,40,0.4)';
+                c.beginPath();
+                for (var hh = 0; hh < 6; hh++) {
+                  var ha = hh * 1.047 + 0.524;
+                  var px = hx + Math.cos(ha) * cSize * 0.9;
+                  var py = hy + Math.sin(ha) * cSize * 0.9;
+                  hh === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
+                }
+                c.closePath();
+                c.fillStyle = '#c9a030';
+                c.fill();
+                c.strokeStyle = '#8a6508'; c.lineWidth = 0.8; c.stroke();
+              }
+            }
+
+            // ── Draw structures ──
+            queenStructures.forEach(function(st) {
+              var sx = st.x * W, sy = st.y * H;
+              var sType = QUEEN_STRUCTURE_TYPES[st.type];
+              if (!sType) return;
+
+              // Structure glow
+              c.save();
+              var sg = c.createRadialGradient(sx, sy, 5, sx, sy, 25 + st.level * 5);
+              sg.addColorStop(0, sType.color + 'aa');
+              sg.addColorStop(1, sType.color + '00');
+              c.fillStyle = sg;
+              c.beginPath(); c.arc(sx, sy, 25 + st.level * 5, 0, 6.28); c.fill();
+              c.restore();
+
+              // Structure icon
+              c.font = (16 + st.level * 4) + 'px system-ui'; c.textAlign = 'center';
+              c.fillText(sType.icon, sx, sy + 6);
+
+              // Level badge
+              if (st.level > 1) {
+                c.fillStyle = '#fbbf24'; c.font = 'bold 8px system-ui';
+                c.fillText('Lv.' + st.level, sx, sy + 18);
+              }
+            });
+
+            // ── Draw threats ──
+            queenThreats.forEach(function(th, ti) {
+              var tx = W * 0.1 + ti * 40, ty = H * 0.1;
+              c.font = '20px system-ui'; c.textAlign = 'center';
+              c.fillText(th.icon, tx, ty);
+              // HP bar
+              c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(tx - 15, ty + 5, 30, 4);
+              c.fillStyle = '#ef4444'; c.fillRect(tx - 15, ty + 5, 30 * (th.hp / th.strength), 4);
+            });
+
+            // ── Queen at center ──
+            var qx = W * 0.5, qy = H * 0.5;
+            c.save();
+            // QMP aura (pulsing)
+            var auraR = 30 + queenPheromones.qmp * 0.4;
+            var auraAlpha = 0.05 + queenPheromones.qmp * 0.002;
+            var qg = c.createRadialGradient(qx, qy, 5, qx, qy, auraR);
+            qg.addColorStop(0, 'rgba(168,85,247,' + auraAlpha + ')');
+            qg.addColorStop(1, 'rgba(168,85,247,0)');
+            c.fillStyle = qg;
+            c.beginPath(); c.arc(qx, qy, auraR, 0, 6.28); c.fill();
+            // Queen body
+            c.shadowColor = '#f59e0b'; c.shadowBlur = 8;
+            c.font = '28px system-ui'; c.textAlign = 'center';
+            c.fillText('👑', qx, qy + 10);
+            c.restore();
+
+            // ── Worker bee particles ──
+            var totalW = queenPopulation.nurses + queenPopulation.builders + queenPopulation.guards + queenPopulation.foragers;
+            var numDots = Math.min(100, Math.floor(totalW / 10));
+            c.fillStyle = '#fbbf24';
+            for (var bi = 0; bi < numDots; bi++) {
+              var bAngle = (bi / numDots) * 6.28 + Date.now() * 0.0005;
+              var bRadius = 35 + Math.sin(bi * 2.3 + Date.now() * 0.001) * 30 + Math.random() * 20;
+              var bx = qx + Math.cos(bAngle) * bRadius;
+              var by = qy + Math.sin(bAngle) * bRadius * 0.7;
+              c.globalAlpha = 0.6;
+              c.beginPath(); c.arc(bx, by, 1.5, 0, 6.28); c.fill();
+            }
+            c.globalAlpha = 1;
+
+            // ── Pheromone rings (alarm = red, nasonov = green) ──
+            if (queenPheromones.alarm > 10) {
+              c.strokeStyle = 'rgba(239,68,68,' + (queenPheromones.alarm * 0.006) + ')';
+              c.lineWidth = 2; c.setLineDash([4, 4]);
+              c.beginPath(); c.arc(qx, qy, 60 + queenPheromones.alarm * 0.5, 0, 6.28); c.stroke();
+              c.setLineDash([]);
+            }
+            if (queenPheromones.nasonov > 20) {
+              c.strokeStyle = 'rgba(34,197,94,' + (queenPheromones.nasonov * 0.005) + ')';
+              c.lineWidth = 1.5; c.setLineDash([3, 5]);
+              c.beginPath(); c.arc(qx, qy, 50 + queenPheromones.nasonov * 0.4, 0, 6.28); c.stroke();
+              c.setLineDash([]);
+            }
+
+            // ── HUD overlay ──
+            c.fillStyle = 'rgba(15,23,42,0.7)';
+            c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 160, 60, 8); else c.rect(6, 6, 160, 60); c.fill();
+            c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+            c.fillText('👑 QUEEN COMMAND · Day ' + queenDay, 14, 22);
+            c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
+            var totalPop2 = queenPopulation.nurses + queenPopulation.builders + queenPopulation.guards + queenPopulation.foragers + queenPopulation.scouts;
+            c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + queenScore + ' pts', 14, 36);
+            c.fillText('🍯 ' + Math.round(queenResources.nectar) + ' · 🌼 ' + Math.round(queenResources.pollen) + ' · 🕯 ' + Math.round(queenResources.wax) + ' · 👑 ' + Math.round(queenResources.royalJelly), 14, 50);
+
+            // Pheromone bars (top-right)
+            c.fillStyle = 'rgba(15,23,42,0.7)';
+            c.beginPath(); if (c.roundRect) c.roundRect(W - 130, 6, 124, 58, 8); else c.rect(W - 130, 6, 124, 58); c.fill();
+            c.font = 'bold 8px system-ui'; c.textAlign = 'right';
+            [
+              { label: 'QMP', val: queenPheromones.qmp, col: '#a855f7' },
+              { label: 'Alarm', val: queenPheromones.alarm, col: '#ef4444' },
+              { label: 'Nasonov', val: queenPheromones.nasonov, col: '#22c55e' },
+              { label: 'Brood', val: queenPheromones.brood, col: '#f59e0b' }
+            ].forEach(function(pb, pi) {
+              var py = 16 + pi * 12;
+              c.fillStyle = '#94a3b8'; c.fillText(pb.label, W - 76, py + 2);
+              c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(W - 70, py - 4, 56, 6);
+              c.fillStyle = pb.col; c.fillRect(W - 70, py - 4, 56 * (pb.val / 100), 6);
+            });
+
+            _queenAnimId.current = requestAnimationFrame(queenFrame);
+          }
+
+          if (_queenAnimId.current) cancelAnimationFrame(_queenAnimId.current);
+          _queenAnimId.current = requestAnimationFrame(queenFrame);
+
+          return function() {
+            if (_queenAnimId.current) cancelAnimationFrame(_queenAnimId.current);
+          };
+        }, [viewMode, queenGameActive, queenDay, queenPheromones.qmp, queenPheromones.alarm]);
+
         // ── Render ──
         var dk = isDark; // shorthand
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },

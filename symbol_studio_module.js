@@ -29,7 +29,7 @@
     + ' @keyframes ss-garden-levelup{0%{transform:scale(0.95);opacity:0}20%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}'
     + ' .ss-garden-levelup{animation:ss-garden-levelup 0.6s ease-out}'
     + ' @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}'
-    + ' .text-slate-400{color:#64748b!important}';
+    + ' .text-slate-600{color:#64748b!important}';
     document.head.appendChild(style);
   })();
 

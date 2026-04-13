@@ -3783,12 +3783,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           needleMesh.geometry.translate(0, 0.045, 0); // pivot at bottom
           dashGroup.add(needleMesh);
           // RPM gauge (smaller, right side)
+          // RPM gauge materials (separate from speedometer canvas)
+          var rpmBgMat = new T.MeshBasicMaterial({ color: 0x0a0a14 });
+          var rpmRingMat2 = new T.MeshBasicMaterial({ color: 0x334155, side: T.DoubleSide });
           var rpmBgGeo = new T.CircleGeometry(0.08, 20);
-          var rpmBg = new T.Mesh(rpmBgGeo, gaugeBgMat);
+          var rpmBg = new T.Mesh(rpmBgGeo, rpmBgMat);
           rpmBg.position.set(0.25, -0.28, -0.68);
           dashGroup.add(rpmBg);
           var rpmRingGeo = new T.RingGeometry(0.065, 0.08, 20);
-          var rpmRing = new T.Mesh(rpmRingGeo, gaugeRingMat);
+          var rpmRing = new T.Mesh(rpmRingGeo, rpmRingMat2);
           rpmRing.position.set(0.25, -0.28, -0.679);
           dashGroup.add(rpmRing);
           var rpmNeedleGeo = new T.BoxGeometry(0.004, 0.06, 0.002);

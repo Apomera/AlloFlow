@@ -1,7 +1,7 @@
 (function() {
 'use strict';
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }
 // persona_ui_source.jsx — InteractiveBlueprintCard, HarmonyMeter, CharacterColumn
 // Extracted from AlloFlowANTI.txt for CDN modularization
@@ -158,7 +158,7 @@ const InteractiveBlueprintCard = React.memo(({
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-indigo-900 text-sm"
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-500"
+    className: "text-xs text-slate-600"
   }, isEditing ? t('blueprint.drag_instruction') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.check'),
     onClick: () => setIsEditing(prev => !prev),
@@ -177,7 +177,7 @@ const InteractiveBlueprintCard = React.memo(({
     onDragEnd: handleDragEnd,
     className: `group flex items-start gap-2 p-3 rounded-lg border-2 transition-all ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 text-slate-500 cursor-grab active:cursor-grabbing hover:text-indigo-500"
+    className: "mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
   }, /*#__PURE__*/React.createElement(GripVertical, {
     size: 16
   })), /*#__PURE__*/React.createElement("div", {
@@ -204,14 +204,14 @@ const InteractiveBlueprintCard = React.memo(({
   }))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.delete'),
     onClick: () => handleDelete(idx),
-    className: "mt-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors",
+    className: "mt-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors",
     title: t('blueprint.remove_step_tooltip')
   }, /*#__PURE__*/React.createElement(Trash2, {
     size: 14
   }))))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: handleAddStep,
-    className: "w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-500 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
+    className: "w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 14
   }), " ", t('blueprint.add_step'))) : /*#__PURE__*/React.createElement("div", {
@@ -220,7 +220,7 @@ const InteractiveBlueprintCard = React.memo(({
     key: item.id,
     className: "flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white border border-slate-200 text-slate-500 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5"
+    className: "bg-white border border-slate-200 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5"
   }, idx + 1), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow"
   }, /*#__PURE__*/React.createElement("span", {
@@ -228,13 +228,13 @@ const InteractiveBlueprintCard = React.memo(({
   }, getToolLabel(item.type)), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700 leading-relaxed italic"
   }, "\"", item.directive || "No specific instructions.", "\"")))), items.length === 0 && /*#__PURE__*/React.createElement("p", {
-    className: "text-center text-slate-500 text-sm italic py-4"
+    className: "text-center text-slate-600 text-sm italic py-4"
   }, t('blueprint.empty_plan'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 pt-3 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.cancel'),
     onClick: onCancel,
-    className: "flex-1 py-2.5 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+    className: "flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
   }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.generate'),
     onClick: onConfirm,
@@ -255,7 +255,7 @@ const HarmonyMeter = ({
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-end mb-1 px-1"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] font-black uppercase tracking-widest text-indigo-600"
+    className: "text-[11px] font-black uppercase tracking-widest text-indigo-600"
   }, t('persona.harmony_label')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-indigo-700"
   }, t('persona.harmony_score', {
@@ -270,7 +270,7 @@ const HarmonyMeter = ({
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/50 z-10"
   })), score >= 80 && /*#__PURE__*/React.createElement("div", {
-    className: "text-center mt-1 text-[10px] font-bold text-green-600 animate-pulse"
+    className: "text-center mt-1 text-[11px] font-bold text-green-600 animate-pulse"
   }, t('persona.common_ground')));
 };
 const CharacterColumn = React.memo(({
@@ -303,7 +303,7 @@ const CharacterColumn = React.memo(({
   }) : /*#__PURE__*/React.createElement("div", {
     className: "w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2 p-4"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-3xl text-slate-500 font-bold"
+    className: "text-3xl text-slate-600 font-bold"
   }, "?"), onRetryPortrait && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.refresh'),
     onClick: () => onRetryPortrait(character),
@@ -320,11 +320,11 @@ const CharacterColumn = React.memo(({
   }, /*#__PURE__*/React.createElement("h3", {
     className: "font-black text-lg leading-none mb-1"
   }, character.name), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] font-bold uppercase tracking-wider opacity-80"
+    className: "text-[11px] font-bold uppercase tracking-wider opacity-80"
   }, character.role))), /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-[260px] px-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-1"
+    className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase mb-1"
   }, /*#__PURE__*/React.createElement("span", null, t('persona.rapport_label')), /*#__PURE__*/React.createElement("span", {
     className: `${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`
   }, character.rapport || 30, "%")), /*#__PURE__*/React.createElement("div", {
@@ -337,7 +337,7 @@ const CharacterColumn = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-[280px] text-left flex-1 overflow-y-auto custom-scrollbar mt-4 px-1"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: "text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1"
+    className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 10
   }), " ", t('persona.objectives_label')), /*#__PURE__*/React.createElement("div", {
@@ -348,8 +348,8 @@ const CharacterColumn = React.memo(({
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       className: `
-                            p-2.5 rounded border text-[10px] leading-tight transition-all relative overflow-hidden
-                            ${q.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : isLocked ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-white border-indigo-200 text-slate-600'}
+                            p-2.5 rounded border text-[11px] leading-tight transition-all relative overflow-hidden
+                            ${q.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : isLocked ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-indigo-200 text-slate-600'}
                         `
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 items-start relative z-10"

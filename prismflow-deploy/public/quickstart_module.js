@@ -7,7 +7,7 @@
 (function() {
   'use strict';
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById("quickstart-module-a11y")) { var _s = document.createElement("style"); _s.id = "quickstart-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("quickstart-module-a11y")) { var _s = document.createElement("style"); _s.id = "quickstart-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-quickstart')) return;
@@ -344,13 +344,13 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "aria-label": t("common.skip"),
         "data-help-ignore": "true",
         onClick: handleSkip,
-        className: "text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-wider"
+        className: "text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-wider"
       },
       t("common.skip")
     ), /* @__PURE__ */ React.createElement("button", { "data-help-ignore": "true", onClick: () => {
       setIsHelpMode(false);
       onClose();
-    }, className: "p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close_wizard") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), isHelpMode && wizardStepHelp[step] && /* @__PURE__ */ React.createElement("div", { className: "mx-8 mt-4 mb-0 p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18, className: "text-indigo-500 mt-0.5 shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-sm text-indigo-800" }, wizardStepHelp[step].title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-700 mt-1 leading-relaxed" }, wizardStepHelp[step].text), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-500 mt-2 italic" }, "\u{1F4A1} Click any element below for a detailed explanation")), /* @__PURE__ */ React.createElement("button", { onClick: () => setIsHelpMode(false), className: "text-indigo-400 hover:text-indigo-600 shrink-0 p-1" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))), /* @__PURE__ */ React.createElement("div", { className: "p-8 overflow-y-auto custom-scrollbar" }, step === 1 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-3" }, t("wizard.global_context")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-4 text-sm" }, t("wizard.grade_helper")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-4 gap-3" }, grades.map((g) => /* @__PURE__ */ React.createElement(
+    }, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close_wizard") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), isHelpMode && wizardStepHelp[step] && /* @__PURE__ */ React.createElement("div", { className: "mx-8 mt-4 mb-0 p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18, className: "text-indigo-500 mt-0.5 shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-sm text-indigo-800" }, wizardStepHelp[step].title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-700 mt-1 leading-relaxed" }, wizardStepHelp[step].text), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-500 mt-2 italic" }, "\u{1F4A1} Click any element below for a detailed explanation")), /* @__PURE__ */ React.createElement("button", { onClick: () => setIsHelpMode(false), className: "text-indigo-400 hover:text-indigo-600 shrink-0 p-1" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))), /* @__PURE__ */ React.createElement("div", { className: "p-8 overflow-y-auto custom-scrollbar" }, step === 1 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-3" }, t("wizard.global_context")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-4 text-sm" }, t("wizard.grade_helper")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-4 gap-3" }, grades.map((g) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: g.value,
@@ -359,7 +359,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         className: `py-3 px-2 rounded-xl border-2 font-bold transition-all text-sm ${localData.grade === g.value ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700"}`
       },
       g.label
-    )))), !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, isIndependentMode ? t("wizard.learning_goals") : t("wizard.learning_goal_header")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-4 text-sm" }, t("wizard.learning_goal_desc")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, !isIndependentMode && /* @__PURE__ */ React.createElement(
+    )))), !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, isIndependentMode ? t("wizard.learning_goals") : t("wizard.learning_goal_header")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-4 text-sm" }, t("wizard.learning_goal_desc")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, !isIndependentMode && /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_region"),
@@ -406,7 +406,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         },
         /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded flex items-center justify-center border ${isSelected ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-300 bg-white"}` }, isSelected && /* @__PURE__ */ React.createElement(CheckCircle, { size: 14 })), /* @__PURE__ */ React.createElement("div", null, !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "font-bold text-indigo-900 text-xs" }, std.code), /* @__PURE__ */ React.createElement("div", { className: `${isIndependentMode ? "text-sm font-medium text-slate-800" : "text-xs text-slate-600"} leading-snug` }, std.description)))
       );
-    })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 text-right" }, localData.standards.length, " ", t("wizard.selected_counter")))), step === 2 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.source_material")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-6 text-sm" }, t("wizard.source_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement(
+    })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 text-right" }, localData.standards.length, " ", t("wizard.selected_counter")))), step === 2 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.source_material")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 text-sm" }, t("wizard.source_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "data-help-key": "wizard_upload_source",
@@ -419,7 +419,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       },
       /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white" }, /* @__PURE__ */ React.createElement(Upload, { size: 32, className: "text-indigo-600" })),
       /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 group-hover:text-indigo-700 text-lg" }, t("wizard.upload_file")),
-      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 mt-1" }, t("wizard.upload_desc"))
+      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 mt-1" }, t("wizard.upload_desc"))
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -432,7 +432,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       },
       /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white" }, /* @__PURE__ */ React.createElement(Link, { size: 32, className: "text-blue-600" })),
       /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 group-hover:text-blue-700 text-lg" }, t("wizard.paste_url")),
-      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 mt-1" }, t("wizard.url_desc"))
+      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 mt-1" }, t("wizard.url_desc"))
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -445,7 +445,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       },
       /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white" }, /* @__PURE__ */ React.createElement(Globe, { size: 32, className: "text-teal-600" })),
       /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 group-hover:text-teal-700 text-lg" }, t("wizard.ai_search")),
-      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 mt-1" }, t("wizard.search_desc"))
+      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 mt-1" }, t("wizard.search_desc"))
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -459,8 +459,8 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       },
       /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-purple-600 fill-current" })),
       /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 group-hover:text-purple-700 text-lg" }, t("wizard.generate_scratch")),
-      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 mt-1" }, t("wizard.generate_desc"))
-    )))), step === 3 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, localData.sourceMode === "url" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.import_web")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-4 text-sm" }, t("wizard.url_helper")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-6" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 mt-1" }, t("wizard.generate_desc"))
+    )))), step === 3 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, localData.sourceMode === "url" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.import_web")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-4 text-sm" }, t("wizard.url_helper")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-6" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_url_input"),
@@ -495,7 +495,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       t("common.next"),
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 18 })
-    ))), localData.sourceMode === "search" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.ai_search")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-4 text-sm" }, t("wizard.search_helper")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-6" }, /* @__PURE__ */ React.createElement(
+    ))), localData.sourceMode === "search" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.ai_search")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-4 text-sm" }, t("wizard.search_helper")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-6" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_local_data"),
@@ -519,7 +519,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       },
       isFetching ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 20, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Search, { size: 20 }),
       isFetching ? t("wizard.finding_button") : t("wizard.find_button")
-    )), !localData.fetchedContent && localData.searchOptions && localData.searchOptions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mb-6 animate-in slide-in-from-bottom-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("wizard.select_resource")), localData.searchOptions.map((opt, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: "relative group" }, /* @__PURE__ */ React.createElement(
+    )), !localData.fetchedContent && localData.searchOptions && localData.searchOptions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mb-6 animate-in slide-in-from-bottom-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("wizard.select_resource")), localData.searchOptions.map((opt, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: "relative group" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.refresh"),
@@ -528,8 +528,8 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         className: "w-full text-left p-4 pr-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
       },
       /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 group-hover:text-teal-800 mb-1 text-sm" }, opt.title || t("wizard.untitled_resource")),
-      /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 group-hover:text-teal-600 line-clamp-2" }, opt.description || t("wizard.no_description")),
-      /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-2 truncate max-w-xs" }, opt.url),
+      /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 group-hover:text-teal-600 line-clamp-2" }, opt.description || t("wizard.no_description")),
+      /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2 truncate max-w-xs" }, opt.url),
       isFetching && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-white/50 flex items-center justify-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 20, className: "animate-spin text-teal-600" }))
     ), /* @__PURE__ */ React.createElement(
       "a",
@@ -543,7 +543,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
           setUrlInput("");
           if (addToast) addToast(t("wizard.link_opened_toast"), "info");
         },
-        className: "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20",
+        className: "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20",
         "data-help-key": "wizard_search_result_link",
         title: t("wizard.open_link_title")
       },
@@ -554,7 +554,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "aria-label": t("common.continue"),
         "data-help-key": "wizard_back_results_btn",
         onClick: () => setLocalData((prev) => ({ ...prev, fetchedContent: "", resourceMeta: null })),
-        className: "px-4 py-3 text-xs font-bold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl"
+        className: "px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-200 rounded-xl"
       },
       t("wizard.back_to_results")
     ), /* @__PURE__ */ React.createElement(
@@ -567,7 +567,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       t("common.next"),
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 18 })
-    )))), localData.sourceMode === "generate" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.generate_scratch_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-6 text-sm" }, t("wizard.generate_scratch_helper")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_topic_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Type, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    )))), localData.sourceMode === "generate" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.generate_scratch_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 text-sm" }, t("wizard.generate_scratch_helper")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase mb-1" }, t("wizard.input_topic_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Type, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -579,7 +579,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "data-help-key": "wizard_topic_input",
         "aria-label": t("wizard.input_topic_label")
       }
-    ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_tone_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(MessageSquare, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase mb-1" }, t("wizard.input_tone_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(MessageSquare, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "select",
       {
         value: localData.tone,
@@ -593,7 +593,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       /* @__PURE__ */ React.createElement("option", { value: "Persuasive" }, t("wizard.tones.persuasive")),
       /* @__PURE__ */ React.createElement("option", { value: "Humorous" }, t("wizard.tones.humorous")),
       /* @__PURE__ */ React.createElement("option", { value: "Step-by-Step" }, t("wizard.tones.procedural"))
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_length_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(AlignJustify, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase mb-1" }, t("wizard.input_length_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(AlignJustify, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "select",
       {
         value: localData.length,
@@ -607,7 +607,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       /* @__PURE__ */ React.createElement("option", { value: "800" }, t("wizard.lengths.long")),
       /* @__PURE__ */ React.createElement("option", { value: "1200" }, t("wizard.lengths.extended")),
       /* @__PURE__ */ React.createElement("option", { value: "2000" }, t("wizard.lengths.deep"))
-    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_level_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(GraduationCap, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase mb-1" }, t("wizard.input_level_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(GraduationCap, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "select",
       {
         value: localData.grade,
@@ -631,7 +631,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
       /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
       /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
-    ))), !isParentMode && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_dok_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Brain, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    ))), !isParentMode && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase mb-1" }, t("wizard.input_dok_label")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Brain, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "select",
       {
         value: localData.dokLevel,
@@ -650,7 +650,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       {
         "data-help-key": "wizard_std_mode_ai",
         onClick: () => setStandardMode("ai"),
-        className: `px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-500 hover:text-slate-600"}`
+        className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
       },
       t("standards.ai_match")
     ), /* @__PURE__ */ React.createElement(
@@ -658,7 +658,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       {
         "data-help-key": "wizard_std_mode_manual",
         onClick: () => setStandardMode("manual"),
-        className: `px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-500 hover:text-slate-600"}`
+        className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
       },
       t("standards.manual")
     ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, !isIndependentMode && /* @__PURE__ */ React.createElement(
@@ -709,9 +709,9 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         },
         className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, !isIndependentMode && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 uppercase ml-auto" }, std.framework)),
-      /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 leading-snug line-clamp-2 group-hover:text-indigo-900" }, std.description)
-    ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, !isIndependentMode && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase ml-auto" }, std.framework)),
+      /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug line-clamp-2 group-hover:text-indigo-900" }, std.description)
+    ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_standard_input_value"),
@@ -734,7 +734,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         title: t("standards.add_standard")
       },
       /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-    ))), localData.standards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, localData.standards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std.split(":")[0]), /* @__PURE__ */ React.createElement(
+    ))), localData.standards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, localData.standards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std.split(":")[0]), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => handleRemoveStandard(idx),
@@ -744,7 +744,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "aria-label": t("standards.remove_standard")
       },
       /* @__PURE__ */ React.createElement(X, { size: 10 })
-    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("wizard.input_vocab_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Languages, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("wizard.input_vocab_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(Languages, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -755,7 +755,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "data-help-key": "wizard_vocab_input",
         "aria-label": t("input.vocab")
       }
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_instructions_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-3 pointer-events-none" }, /* @__PURE__ */ React.createElement(Wrench, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase mb-1" }, t("wizard.input_instructions_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-3 pointer-events-none" }, /* @__PURE__ */ React.createElement(Wrench, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         "aria-label": t("wizard.input_instructions_label"),
@@ -787,7 +787,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       t("common.next"),
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 18 })
-    ))), localData.sourceMode === "file" && /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block p-6 bg-indigo-50 rounded-full mb-4 border-2 border-indigo-100" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-bold text-slate-700 mb-2" }, t("wizard.upload_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-8 max-w-xs mx-auto text-sm" }, t("wizard.file_helper")), /* @__PURE__ */ React.createElement(
+    ))), localData.sourceMode === "file" && /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block p-6 bg-indigo-50 rounded-full mb-4 border-2 border-indigo-100" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-bold text-slate-700 mb-2" }, t("wizard.upload_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-8 max-w-xs mx-auto text-sm" }, t("wizard.file_helper")), /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.upload"),
@@ -800,7 +800,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       /* @__PURE__ */ React.createElement(Upload, { size: 20 }),
       " ",
       t("wizard.select_file")
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-4" }, t("wizard.file_process_msg")))), step === 4 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.adaptation")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 mb-6" }, t("wizard.adaptation_desc")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-600 mb-2" }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-4" }, t("wizard.file_process_msg")))), step === 4 && /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in slide-in-from-right-4 duration-300" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-lg font-bold text-slate-700 mb-2" }, t("wizard.adaptation")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6" }, t("wizard.adaptation_desc")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-600 mb-2" }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("common.selection"),
@@ -871,7 +871,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         className: "hover:text-indigo-900 ml-1"
       },
       /* @__PURE__ */ React.createElement(X, { size: 12 })
-    ))), localData.languages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 italic self-center w-full text-center" }, t("wizard.no_langs_selected")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-600 mb-1" }, t("wizard.interests_label_optional").replace(" (Optional)", ""), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 font-normal" }, " (Optional)")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+    ))), localData.languages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic self-center w-full text-center" }, t("wizard.no_langs_selected")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-600 mb-1" }, t("wizard.interests_label_optional").replace(" (Optional)", ""), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, " (Optional)")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_wiz_interest_input"),
@@ -903,13 +903,13 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         className: "hover:text-pink-900 ml-1"
       },
       /* @__PURE__ */ React.createElement(X, { size: 12 })
-    ))), localData.interests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 italic self-center w-full text-center" }, t("wizard.no_interests"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, t("wizard.interests_helper")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between pt-4 mt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement(
+    ))), localData.interests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic self-center w-full text-center" }, t("wizard.no_interests"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("wizard.interests_helper")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between pt-4 mt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.check"),
         "data-help-key": "wizard_prev_btn",
         onClick: () => setStep((s) => s - 1),
-        className: "text-slate-500 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2"
+        className: "text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2"
       },
       /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
       " ",
@@ -930,7 +930,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       {
         "aria-label": t("common.continue"),
         onClick: () => setStep((s) => s - 1),
-        className: "text-slate-500 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors"
+        className: "text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors"
       },
       /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
       " ",
