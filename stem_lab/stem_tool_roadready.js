@@ -562,7 +562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Road through center with possible curve
     var curveAmp = biome === 'rural' ? 5 : biome === 'suburban' ? 2 : 0;
     var curveFreq = biome === 'rural' ? 0.12 : 0.06;
-    var hasIntersection = rng() < 0.4; // 40% chance of a cross street
+    var hasIntersection = rng() < 0.6; // 60% chance of a cross street (more explorable)
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
       var curveOffset = Math.round(Math.sin((chunkIndex * CHUNK_SIZE + cy) * curveFreq) * curveAmp);
@@ -611,9 +611,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (chunk.cells[ty][tx] === 2 && rng() < treeDensity) chunk.cells[ty][tx] = 5;
       }
     }
-    // Store metadata
+    // Store metadata for 3D rendering and signal placement
     chunk.hasIntersection = hasIntersection;
     chunk.intersectionY = intersectionY;
+    chunk.roadCenter = centerX; // base center (curves added per-row)
     chunk.curveAmp = curveAmp;
     chunk.curveFreq = curveFreq;
     return chunk;
