@@ -4154,7 +4154,7 @@ const useTranslation = (targetLanguage, apiKey) => {
       setChunkResumePrompt(e.detail);
     };
     const onBoringPalette = () => {
-      setBoringPalettePrompt(true);
+      try { setBoringPalettePrompt(true); } catch(e) { /* non-blocking — old build may not have this setter */ }
     };
     const onChunkStart = (e) => {
       setLiveChunkStream(prev => {
@@ -15800,7 +15800,7 @@ const parseTaggedContent = (text) => {
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-          maxOutputTokens: 8192,
+          maxOutputTokens: 32768,
           ...(jsonMode ? { responseMimeType: "application/json" } : {}),
           ...(temperature !== null ? { temperature: temperature } : {})
       },
@@ -16474,7 +16474,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } }
         ]
       }],
-      generationConfig: { maxOutputTokens: 8192 }
+      generationConfig: { maxOutputTokens: 32768 }
     };
     try {
       const response = await fetch(url, {

@@ -573,18 +573,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (rx >= 0 && rx < MAP_SIZE) chunk.cells[cy][rx] = 0;
       }
       if (roadCenter >= 0 && roadCenter < MAP_SIZE) chunk.cells[cy][roadCenter] = 3;
-      // Cross street at intersection
-      if (hasIntersection && Math.abs(cy - intersectionY) < 4) {
+      // Cross street at intersection — proper road with centerline
+      if (hasIntersection && Math.abs(cy - intersectionY) < 3) {
         for (var cx = 0; cx < MAP_SIZE; cx++) {
-          if (Math.abs(cx - roadCenter) > roadWidth + 1) {
-            if (chunk.cells[cy][cx] === 2) chunk.cells[cy][cx] = 0;
+          // Road surface across the full width
+          if (chunk.cells[cy][cx] === 2) chunk.cells[cy][cx] = 0;
+        }
+        // Center line for cross street (at the intersection Y middle)
+        if (cy === intersectionY) {
+          for (var clx = 0; clx < MAP_SIZE; clx++) {
+            if (Math.abs(clx - roadCenter) > roadWidth + 2) {
+              chunk.cells[cy][clx] = 3; // center line on cross street
+            }
           }
         }
       }
     }
-    // Buildings based on biome
+    // Buildings based on biome — avoid placing on/near cross streets
     var buildingDensity = biome === 'commercial' ? 0.2 : biome === 'residential' ? 0.08 : biome === 'suburban' ? 0.06 : biome === 'industrial' ? 0.12 : 0.02;
     for (var by = 2; by < CHUNK_SIZE - 2; by++) {
+      // Skip rows near the cross street intersection
+      if (hasIntersection && Math.abs(by - intersectionY) < 5) continue;
       for (var bx = 0; bx < MAP_SIZE; bx++) {
         if (chunk.cells[by][bx] === 2 && rng() < buildingDensity) {
           var nearRoad = false;
