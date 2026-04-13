@@ -2136,14 +2136,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // ── HUD overlay ──
-            c.fillStyle = 'rgba(15,23,42,0.7)';
-            c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 160, 60, 8); else c.rect(6, 6, 160, 60); c.fill();
+            var qSeasonLabel = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][qSeason2] || '';
+            var phaseLabel2 = queenPhase === 'swarm' ? '🐝 SWARM' : queenPhase === 'defend' ? '⚔️ DEFEND' : '🏗️ BUILD';
+            c.fillStyle = 'rgba(15,23,42,0.75)';
+            c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 180, 72, 8); else c.rect(6, 6, 180, 72); c.fill();
             c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
             c.fillText('👑 QUEEN COMMAND · Day ' + queenDay, 14, 22);
             c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
             var totalPop2 = queenPopulation.nurses + queenPopulation.builders + queenPopulation.guards + queenPopulation.foragers + queenPopulation.scouts;
             c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + queenScore + ' pts', 14, 36);
             c.fillText('🍯 ' + Math.round(queenResources.nectar) + ' · 🌼 ' + Math.round(queenResources.pollen) + ' · 🕯 ' + Math.round(queenResources.wax) + ' · 👑 ' + Math.round(queenResources.royalJelly), 14, 50);
+            // Season + phase indicator
+            c.fillStyle = '#94a3b8'; c.fillText(qSeasonLabel + ' · ' + phaseLabel2, 14, 64);
+            // Phase warning (low QMP in swarm phase)
+            if (queenPhase === 'swarm' && queenPheromones.qmp < 40) {
+              c.fillStyle = 'rgba(239,68,68,0.8)'; c.font = 'bold 8px system-ui';
+              c.fillText('⚠ QMP LOW — SWARM RISK!', 14, 74);
+            }
 
             // Pheromone bars (top-right)
             c.fillStyle = 'rgba(15,23,42,0.7)';
