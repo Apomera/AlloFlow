@@ -2167,7 +2167,7 @@ window.StemLab = window.StemLab || {
 
                           React.createElement("td", { className: "py-1.5 font-bold text-violet-600 w-24" }, r[1]),
 
-                          React.createElement("td", { className: "py-1.5 text-slate-500" }, r[2])
+                          React.createElement("td", { className: "py-1.5 text-slate-600" }, r[2])
 
                         );
 

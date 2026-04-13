@@ -1020,7 +1020,7 @@ window.StemLab = window.StemLab || {
                   var earned = !!badges[b.id];
                   return h('div', { key: b.id, className: 'text-center p-1.5 rounded-lg border ' + (earned ? 'bg-white border-amber-300' : 'bg-slate-50 border-slate-200 opacity-50'), title: b.desc },
                     h('span', { className: 'text-lg block' }, earned ? b.icon : '\uD83D\uDD12'),
-                    h('span', { className: 'text-[11px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name)
+                    h('span', { className: 'text-[11px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-600') }, b.name)
                   );
                 })
               )
@@ -2085,7 +2085,7 @@ window.StemLab = window.StemLab || {
                               items.push(h('div', {
                                 key: ai,
                                 className: 'text-center px-1 py-0.5 rounded text-[11px] font-bold min-w-[32px] border ' +
-                                  (changed ? 'bg-red-100 border-red-300 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-500')
+                                  (changed ? 'bg-red-100 border-red-300 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-600')
                               },
                                 h('span', { className: 'block' }, origAA),
                                 changed && h('span', { className: 'block text-[11px]' }, '\u2193'),

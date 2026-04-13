@@ -535,12 +535,12 @@ window.StemLab = window.StemLab || {
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { 'aria-label': 'AI',
               onClick: function() { upd({ showBadges: !showBadges }); },
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             h('button', { 'aria-label': 'AI',
               onClick: askAI,
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
           ),
@@ -569,9 +569,9 @@ window.StemLab = window.StemLab || {
           // Zoom
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1' },
             h('button', { 'aria-label': 'Add', onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
             h('button', { 'aria-label': 'Add', onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
-            h('button', { 'aria-label': 'Reset 3D view rotation and zoom', onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[10px] hover:bg-emerald-100' }, '\u21BA'))
+            h('button', { 'aria-label': 'Reset 3D view rotation and zoom', onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100' }, '\u21BA'))
         ),
 
         // ── Badge panel ──
@@ -610,7 +610,7 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
           !aiLoading && h('button', { 'aria-label': 'Ask Again',
             onClick: askAI,
-            className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
           }, '\uD83D\uDD04 Ask Again')
         ),
 
@@ -795,7 +795,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[10px] text-slate-600 text-center space-x-3' },
+        h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
           h('span', null, 'S Slider'),
           h('span', null, 'F Freeform'),
           h('span', null, 'N Challenge'),

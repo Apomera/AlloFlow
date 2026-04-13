@@ -1581,13 +1581,13 @@ const d = labToolData.waterCycle;
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
             ),
 
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
                 return React.createElement("button", { "aria-label": "Change wc grade override",
                   key: gb,
@@ -1624,7 +1624,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "2", step: "0.05",
                     value: d.climSolar != null ? d.climSolar : 1.0,
@@ -1632,14 +1632,14 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer",
                     style: { accentColor: '#f59e0b' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[10px] text-amber-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" },
                     React.createElement("span", null, "\uD83C\uDF19 Night"),
                     React.createElement("span", null, "\u2600\uFE0F Bright")
                   )
                 ),
                 // Temperature
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
                   React.createElement("input", {
                     type: "range", min: "-20", max: "45", step: "1",
                     value: d.climTemp != null ? d.climTemp : 15,
@@ -1647,14 +1647,14 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer",
                     style: { accentColor: '#0ea5e9' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[10px] text-sky-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-sky-500" },
                     React.createElement("span", null, "\u2744\uFE0F -20\u00B0"),
                     React.createElement("span", null, "\uD83D\uDD25 45\u00B0")
                   )
                 ),
                 // Wind Speed
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "3", step: "0.1",
                     value: d.climWind != null ? d.climWind : 1.0,
@@ -1662,7 +1662,7 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer",
                     style: { accentColor: '#22c55e' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[10px] text-emerald-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-emerald-500" },
                     React.createElement("span", null, "Calm"),
                     React.createElement("span", null, "\uD83C\uDF2A Gale")
                   )
@@ -1730,7 +1730,7 @@ const d = labToolData.waterCycle;
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u23F9 End Journey")
                     )
               ),
@@ -1755,7 +1755,7 @@ const d = labToolData.waterCycle;
                       className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-300 hover:bg-blue-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-blue-700" }, "River Runoff"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-blue-700" }, "River Runoff"),
                       React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
                     ),
                     React.createElement("button", { "aria-label": "Change journey state",
@@ -1768,7 +1768,7 @@ const d = labToolData.waterCycle;
                       className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-amber-700" }, "Underground"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700" }, "Underground"),
                       React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
                     ),
                     React.createElement("button", { "aria-label": "Change journey state",
@@ -1781,7 +1781,7 @@ const d = labToolData.waterCycle;
                       className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-300 hover:bg-emerald-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-emerald-700" }, "Enter Plant"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Enter Plant"),
                       React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
                     )
                   ),
@@ -1800,7 +1800,7 @@ const d = labToolData.waterCycle;
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[10px] font-bold" },
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[11px] font-bold" },
                   React.createElement("span", { className: "text-cyan-600" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-600" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-600" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
@@ -1809,7 +1809,7 @@ const d = labToolData.waterCycle;
               ),
 
               // Inactive description
-              !d.journeyActive && React.createElement("p", { className: "text-[10px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
+              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
             ),
 
             sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
@@ -1826,7 +1826,7 @@ const d = labToolData.waterCycle;
 
               selFunFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
+                React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
 
               )
 
@@ -1837,7 +1837,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
                 React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, "Water Budget (Live)"),
-                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[10px] font-bold rounded-full" }, "REAL-TIME")
+                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[11px] font-bold rounded-full" }, "REAL-TIME")
               ),
               (function() {
                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
@@ -1850,19 +1850,19 @@ const d = labToolData.waterCycle;
                 return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-amber-100" },
                     React.createElement("p", { className: "text-lg font-bold text-amber-600" }, (evapRate * 100).toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[10px] font-bold text-amber-500" }, "Evaporation")
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-500" }, "Evaporation")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-blue-100" },
                     React.createElement("p", { className: "text-sm font-bold text-blue-600" }, precipType),
-                    React.createElement("p", { className: "text-[10px] font-bold text-blue-500" }, "Precip Type")
+                    React.createElement("p", { className: "text-[11px] font-bold text-blue-500" }, "Precip Type")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-cyan-100" },
                     React.createElement("p", { className: "text-lg font-bold text-cyan-600" }, runoffPct.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[10px] font-bold text-cyan-500" }, "Runoff")
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-500" }, "Runoff")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-emerald-100" },
                     React.createElement("p", { className: "text-lg font-bold text-emerald-600" }, gwRecharge.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "GW Recharge")
+                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-500" }, "GW Recharge")
                   )
                 );
               })()
@@ -1961,9 +1961,9 @@ const d = labToolData.waterCycle;
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
-              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
+              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },
 

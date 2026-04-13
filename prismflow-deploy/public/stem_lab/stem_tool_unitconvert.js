@@ -340,17 +340,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCF Unit Converter'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full' }, 'INTERACTIVE'),
-            (d.score || 0) > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
-            (d.streak || 0) >= 2 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
+            (d.score || 0) > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
+            (d.streak || 0) >= 2 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
             earnedCount > 0 && h('button', { 'aria-label': 'AI',
               onClick: function() { upd('showBadges', !showBadges); },
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             h('button', { 'aria-label': 'AI',
               onClick: askTutor,
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
           ),
@@ -391,7 +391,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
             !tutorLoading && h('button', { 'aria-label': 'Ask Again',
               onClick: askTutor,
-              className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+              className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
             }, '\uD83D\uDD04 Ask Again')
           ),
 
@@ -525,7 +525,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Visual comparison bars (non-temperature)
             d.category !== 'temperature' && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Visual Comparison'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Visual Comparison'),
               (function() {
                 var fF = cat.units[d.fromUnit] || 1;
                 var tF = cat.units[d.toUnit] || 1;
@@ -535,13 +535,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 var normF = rawFrom / maxV * 100, normT = rawTo / maxV * 100;
                 return h('div', { className: 'space-y-2' },
                   h('div', null,
-                    h('p', { className: 'text-[10px] font-bold text-cyan-600 mb-1' }, d.value + ' ' + d.fromUnit),
+                    h('p', { className: 'text-[11px] font-bold text-cyan-600 mb-1' }, d.value + ' ' + d.fromUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
                       h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
                     )
                   ),
                   h('div', null,
-                    h('p', { className: 'text-[10px] font-bold text-indigo-600 mb-1' }, fmtResult + ' ' + d.toUnit),
+                    h('p', { className: 'text-[11px] font-bold text-indigo-600 mb-1' }, fmtResult + ' ' + d.toUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
                       h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500', style: { width: normT + '%' } })
                     )
@@ -580,14 +580,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Real-world reference
             refText && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real-World Reference'),
+              h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real-World Reference'),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             ),
 
             // Fun fact
             facts.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3 flex items-start gap-2' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
-                h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Fun Fact'),
+                h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Fun Fact'),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
               h('button', { 'aria-label': 'Change fact idx',
@@ -598,7 +598,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Pinned conversions
             d.pinnedConversions && d.pinnedConversions.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCC Pinned Conversions'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCC Pinned Conversions'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
                 d.pinnedConversions.map(function(p, i) {
                   return h('button', { 'aria-label': 'Unitconvert action',
@@ -628,8 +628,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // Conversion history
             d.history && d.history.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDCDD History'),
-                h('button', { 'aria-label': 'Clear', onClick: function() { upd('history', []); }, className: 'text-[10px] text-red-400 hover:text-red-600 font-bold' }, 'Clear')
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDCDD History'),
+                h('button', { 'aria-label': 'Clear', onClick: function() { upd('history', []); }, className: 'text-[11px] text-red-400 hover:text-red-600 font-bold' }, 'Clear')
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1' },
                 d.history.map(function(item, i) {
@@ -697,7 +697,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('td', { className: 'px-4 py-2 text-right' },
                         !isFrom && h('button', { 'aria-label': 'Use',
                           onClick: function() { upd('toUnit', u); upd('tab', 'convert'); },
-                          className: 'text-[10px] font-bold text-cyan-600 hover:underline'
+                          className: 'text-[11px] font-bold text-cyan-600 hover:underline'
                         }, 'Use \u2192')
                       )
                     );
@@ -706,7 +706,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               )
             ),
             refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase mb-1' }, '\uD83C\uDF0D Reference'),
+              h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase mb-1' }, '\uD83C\uDF0D Reference'),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             )
           ),
@@ -738,7 +738,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             d.quiz && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm' },
-              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83E\uDDE0 Question'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83E\uDDE0 Question'),
               h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, d.quiz.q),
 
               !d.quiz.answered
@@ -904,7 +904,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // ── Keyboard shortcuts legend ──
-          h('div', { className: 'text-[10px] text-slate-600 text-center mt-3 space-x-3' },
+          h('div', { className: 'text-[11px] text-slate-600 text-center mt-3 space-x-3' },
             h('span', null, '1-4 Tabs'),
             h('span', null, 'N Next Quiz'),
             h('span', null, 'B Badges'),

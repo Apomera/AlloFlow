@@ -932,7 +932,7 @@ window.StemLab = window.StemLab || {
               dmTotals.sort(function(a, b) { return b.total - a.total; }).map(function(t, i) {
                 return h('div', { key: t.index, className: 'text-center p-2 rounded-xl ' + (i === 0 ? 'bg-emerald-50 border-2 border-emerald-300' : 'bg-slate-50 border border-slate-200') },
                   h('p', { className: 'text-[11px] font-bold ' + (i === 0 ? 'text-emerald-700' : 'text-slate-600') }, (i === 0 ? '\uD83C\uDFC6 ' : '') + t.option),
-                  h('p', { className: 'text-lg font-bold ' + (i === 0 ? 'text-emerald-600' : 'text-slate-500') }, t.total),
+                  h('p', { className: 'text-lg font-bold ' + (i === 0 ? 'text-emerald-600' : 'text-slate-600') }, t.total),
                   h('div', { className: 'h-2 bg-slate-200 rounded-full mt-1 overflow-hidden' },
                     h('div', { className: 'h-full rounded-full', style: { width: (dmMaxTotal > 0 ? t.total / dmMaxTotal * 100 : 0) + '%', background: i === 0 ? '#10b981' : '#94a3b8' } })
                   )
@@ -1026,7 +1026,7 @@ window.StemLab = window.StemLab || {
                 var active = asCookTemp >= r.tempF;
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: r.name, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (active ? 'bg-amber-50' : 'opacity-40') },
                   h('span', null, r.icon),
-                  h('div', null, h('p', { className: 'text-[11px] font-bold ' + (active ? 'text-amber-700' : 'text-slate-500') }, r.name + ' (' + r.tempF + '\u00B0F)'), active && h('p', { className: 'text-[11px] text-slate-600' }, r.desc))
+                  h('div', null, h('p', { className: 'text-[11px] font-bold ' + (active ? 'text-amber-700' : 'text-slate-600') }, r.name + ' (' + r.tempF + '\u00B0F)'), active && h('p', { className: 'text-[11px] text-slate-600' }, r.desc))
                 );
               })
             )
@@ -1083,7 +1083,7 @@ window.StemLab = window.StemLab || {
               OIL_GRADES.map(function(g) {
                 var inRange = ccOilTemp >= g.minF && ccOilTemp <= g.maxF;
                 return h('div', { key: g.grade, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (inRange ? 'bg-emerald-50 border border-emerald-200' : 'opacity-40') },
-                  h('span', { className: 'text-xs font-bold w-16 ' + (inRange ? 'text-emerald-700' : 'text-slate-500') }, g.grade),
+                  h('span', { className: 'text-xs font-bold w-16 ' + (inRange ? 'text-emerald-700' : 'text-slate-600') }, g.grade),
                   h('span', { className: 'text-[11px] text-slate-600 flex-1' }, g.desc),
                   inRange && h('span', { className: 'text-[11px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded' }, '\u2705 RECOMMENDED')
                 );
@@ -1615,7 +1615,7 @@ window.StemLab = window.StemLab || {
               var earned = d.badges && d.badges[b.id];
               return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-50') },
                 h('span', { className: 'text-lg' + (earned ? '' : ' grayscale') }, b.icon),
-                h('div', null, h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name), h('p', { className: 'text-[11px] text-slate-600' }, b.desc))
+                h('div', null, h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-600') }, b.name), h('p', { className: 'text-[11px] text-slate-600' }, b.desc))
               );
             })
           )

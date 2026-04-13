@@ -1559,7 +1559,7 @@
                           h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
                             h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })
                           ),
-                          h('span', { className: 'text-[11px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-500') }, pct + '%')
+                          h('span', { className: 'text-[11px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-600') }, pct + '%')
                         )
                       )
                     )
@@ -2753,7 +2753,7 @@
                   title: b.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-500') },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-600') },
                     b.label
                   ),
                   earned && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')

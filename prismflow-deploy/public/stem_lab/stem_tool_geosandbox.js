@@ -703,7 +703,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, gd._srMsg || ''),
           h('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
-          h('div', { className: 'text-slate-400 text-lg' }, 'Loading 3D engine...')
+          h('div', { className: 'text-slate-200 text-lg' }, 'Loading 3D engine...')
         );
       }
 
@@ -758,7 +758,7 @@ window.StemLab = window.StemLab || {
               var earned = !!(ext.badges && ext.badges[id]);
               return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: id, className: 'flex flex-col items-center text-center p-2 rounded-lg transition-all ' + (earned ? 'bg-purple-500/20 border border-purple-400/40' : 'bg-slate-800/40 border border-slate-700/30 opacity-50') },
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl mb-1' }, earned ? b.icon : '\uD83D\uDD12'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-500') }, b.name),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-200') }, b.name),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] ' + (earned ? 'text-purple-300/70' : 'text-slate-600') }, b.desc)
               );
             })
@@ -769,13 +769,13 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, '\uD83E\uDD16 AI Geometry Tutor'),
-            h('button', { 'aria-label': 'Upd Ext', onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-500 hover:text-slate-200' }, '\u2716')
+            h('button', { 'aria-label': 'Upd Ext', onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
             ? h('div', { className: 'text-sm text-cyan-300 animate-pulse' }, 'Analyzing this ' + m.name + '...')
             : aiResponse
               ? h('div', { className: 'text-sm text-slate-200 leading-relaxed whitespace-pre-wrap' }, aiResponse)
-              : h('div', { className: 'text-sm text-slate-500 italic' }, 'Click "AI Tutor" or press / to get insights about the current shape.')
+              : h('div', { className: 'text-sm text-slate-200 italic' }, 'Click "AI Tutor" or press / to get insights about the current shape.')
         ),
 
         // Main layout: sidebar + viewport
@@ -794,10 +794,10 @@ window.StemLab = window.StemLab || {
                     onClick: function() { selectShape(s.id); },
                     title: s.label + ' [' + s.key + ']',
                     className: 'flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-xs transition-all ' +
-                      (shape === s.id ? 'bg-sky-500/30 border border-sky-400/50 text-sky-300 shadow-lg shadow-sky-500/10' : 'bg-slate-700/40 border border-slate-600/30 text-slate-500 hover:bg-slate-700/60 hover:text-slate-300')
+                      (shape === s.id ? 'bg-sky-500/30 border border-sky-400/50 text-sky-300 shadow-lg shadow-sky-500/10' : 'bg-slate-700/40 border border-slate-600/30 text-slate-200 hover:bg-slate-700/60 hover:text-slate-300')
                   },
                     h('span', { className: 'text-lg leading-none' }, s.icon),
-                    h('span', { className: 'text-[10px] leading-tight' }, s.label)
+                    h('span', { className: 'text-[11px] leading-tight' }, s.label)
                   );
                 })
               )
@@ -808,7 +808,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Properties'),
               currentSliders.map(function(sl) {
                 return h('div', { key: sl.key, className: 'mb-2' },
-                  h('div', { className: 'flex justify-between text-[10px] text-slate-300 mb-0.5' },
+                  h('div', { className: 'flex justify-between text-[11px] text-slate-300 mb-0.5' },
                     h('span', { title: getDimTooltip(shape, sl.key), style: { cursor: getDimTooltip(shape, sl.key) ? 'help' : 'default', borderBottom: getDimTooltip(shape, sl.key) ? '1px dotted #64748b' : 'none' } }, sl.label),
                     h('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
                   ),
@@ -826,7 +826,7 @@ window.StemLab = window.StemLab || {
               }),
               // Color picker
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-300 mb-1' }, 'Color'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-300 mb-1' }, 'Color'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
                   colorPalette.map(function(c) {
                     return h('button', { 'aria-label': 'Change color',
@@ -850,11 +850,11 @@ window.StemLab = window.StemLab || {
                     className: 'w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ' + (wireframe ? 'left-4' : 'left-0.5')
                   })
                 ),
-                h('span', { className: 'text-[10px] text-slate-300' }, 'Wireframe')
+                h('span', { className: 'text-[11px] text-slate-300' }, 'Wireframe')
               ),
               // Opacity slider
               h('div', { className: 'mt-2' },
-                h('div', { className: 'flex justify-between text-[10px] text-slate-300 mb-0.5' },
+                h('div', { className: 'flex justify-between text-[11px] text-slate-300 mb-0.5' },
                   h('span', null, 'Opacity'),
                   h('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
                 ),
@@ -878,7 +878,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-slate-300' }, 'Volume'),
                     h('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
                   ),
-                  h('div', { className: 'text-[10px] text-emerald-500/70 font-mono mt-0.5' }, fm.vol)
+                  h('div', { className: 'text-[11px] text-emerald-500/70 font-mono mt-0.5' }, fm.vol)
                 ),
                 // Surface Area with formula
                 h('div', null,
@@ -886,7 +886,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-slate-300' }, 'Surface Area'),
                     h('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
                   ),
-                  h('div', { className: 'text-[10px] text-sky-500/70 font-mono mt-0.5' }, fm.sa)
+                  h('div', { className: 'text-[11px] text-sky-500/70 font-mono mt-0.5' }, fm.sa)
                 ),
                 h('div', { className: 'flex justify-between text-xs' },
                   h('span', { className: 'text-slate-300' }, 'Faces'),
@@ -908,7 +908,7 @@ window.StemLab = window.StemLab || {
                     (m.vertices - m.edges + m.faces) === 2 ? ' \u2713' : ''
                   )
                 ),
-                m.note && h('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, m.note)
+                m.note && h('div', { className: 'text-[11px] text-slate-200 italic mt-1' }, m.note)
               )
             ),
 
@@ -927,7 +927,7 @@ window.StemLab = window.StemLab || {
               style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
             }),
             // Controls hint overlay
-            h('div', { className: 'absolute bottom-2 right-2 text-[10px] text-slate-600 bg-slate-900/80 px-2 py-1 rounded-md' },
+            h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-600 bg-slate-900/80 px-2 py-1 rounded-md' },
               '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
             ),
             // Shape name overlay
@@ -948,7 +948,7 @@ window.StemLab = window.StemLab || {
             h('div', null,
               h('div', { className: 'text-sm font-bold text-sky-200 mb-1' }, ct.title),
               h('div', { className: 'text-xs text-slate-200 mb-1' }, ct.tip),
-              h('div', { className: 'text-[10px] text-slate-300 italic' }, '\uD83C\uDF0D ' + ct.example)
+              h('div', { className: 'text-[11px] text-slate-300 italic' }, '\uD83C\uDF0D ' + ct.example)
             )
           )
         ),
@@ -962,7 +962,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
               h('span', { className: 'text-xs text-slate-600' }, '/'),
               h('span', { className: 'text-xs font-bold text-slate-300' }, challengeScore.total + ' attempted'),
-              challengeScore.total > 0 && h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full ' + (challengeScore.correct/challengeScore.total >= 0.8 ? 'bg-emerald-500/30 text-emerald-300' : challengeScore.correct/challengeScore.total >= 0.5 ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300') }, Math.round(challengeScore.correct/challengeScore.total*100) + '%')
+              challengeScore.total > 0 && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (challengeScore.correct/challengeScore.total >= 0.8 ? 'bg-emerald-500/30 text-emerald-300' : challengeScore.correct/challengeScore.total >= 0.5 ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300') }, Math.round(challengeScore.correct/challengeScore.total*100) + '%')
             )
           ),
           // Shape info + question
@@ -997,7 +997,7 @@ window.StemLab = window.StemLab || {
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, challengeResult === 'correct' ? '\u2705' : '\u274C'),
               h('div', null,
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (challengeResult === 'correct' ? 'text-emerald-300' : 'text-red-300') }, challengeResult === 'correct' ? 'Correct! +5 XP' : 'Not quite!'),
-                challengeResult !== 'correct' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-500 mt-0.5' }, 'The correct answer is: ',
+                challengeResult !== 'correct' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-200 mt-0.5' }, 'The correct answer is: ',
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-amber-300 font-mono' }, typeof challenge.answer === 'number' ? challenge.answer.toFixed(2) : challenge.answer),
                   challenge.unit ? ' ' + challenge.unit : ''
                 )
@@ -1015,7 +1015,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // STL note
-        h('div', { className: 'text-[10px] text-slate-600 text-center' },
+        h('div', { className: 'text-[11px] text-slate-600 text-center' },
           '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
         )
       );

@@ -1361,11 +1361,11 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
             ),
 
@@ -1522,7 +1522,7 @@ const d = labToolData.wave;
 
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
 
-                  React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block" }, s.label),
+                  React.createElement("label", { className: "text-[11px] font-bold text-slate-600 block" }, s.label),
 
                   React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
@@ -1559,31 +1559,31 @@ const d = labToolData.wave;
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "A2:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "A2:"),
 
                   React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.amplitude2 || 30)
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
                 ),
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "f2:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "f2:"),
 
                   React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': 'Second wave frequency', onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.frequency2 || 3)
 
                 ),
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
 
                   React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': 'Second wave phase', onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
 
                 )
 
@@ -1605,11 +1605,11 @@ const d = labToolData.wave;
 
               d.damping && React.createElement("div", { className: "flex items-center gap-1" },
 
-                React.createElement("span", { className: "text-[10px] text-amber-500 font-bold" }, "\u03B1:"),
+                React.createElement("span", { className: "text-[11px] text-amber-500 font-bold" }, "\u03B1:"),
 
                 React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': 'Damping coefficient', onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
 
-                React.createElement("span", { className: "text-[10px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
+                React.createElement("span", { className: "text-[11px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
 
               )
 
@@ -1655,7 +1655,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("span", { className: "text-[10px] text-rose-500" }, "of sound speed (Mach number)")
+              React.createElement("span", { className: "text-[11px] text-rose-500" }, "of sound speed (Mach number)")
 
             ),
 
@@ -1663,7 +1663,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "bg-slate-800 rounded-lg p-3 mb-3 text-center" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
 
               
 
@@ -1687,7 +1687,7 @@ const d = labToolData.wave;
 
               (d.matchTarget && d.matchTarget.isEquation) && React.createElement("div", { className: "mb-3 p-2 bg-purple-900/50 rounded-lg border border-purple-500/50 inline-block text-left" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
 
                   React.createElement("div", { className: "text-lg font-mono font-bold opacity-90" }, 
 
@@ -1697,7 +1697,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
                   (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
 
@@ -1722,7 +1722,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[10px] text-slate-600 mt-2" }, 
+              React.createElement("p", { className: "text-[11px] text-slate-600 mt-2" }, 
 
                   waveMode === 'standing' 
 

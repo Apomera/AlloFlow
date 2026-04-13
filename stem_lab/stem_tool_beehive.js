@@ -1023,10 +1023,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Header
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'flex items-center gap-3' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-400' : 'text-slate-600' })),
+              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
               h('div', null,
                 h('h3', { className: 'text-lg font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, '🐝 Beehive Colony Simulator'),
-                h('p', { className: 'text-xs ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
+                h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
 
           // ═══ ANIMATED CANVAS SIMULATION ═══
           h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
@@ -1063,31 +1063,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '👷 Workers')),
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '🥚 Brood')),
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-blue-400', style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '♂ Drones')),
-              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-400' : 'text-red-500'), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '👑 Queen'))),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👷 Workers')),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '🥚 Brood')),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-blue-400', style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '♂ Drones')),
+              h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-400' : 'text-red-500'), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👑 Queen'))),
             // Meters
             h('div', { className: 'space-y-2' },
               // Varroa
               h('div', null,
                 h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                   h('span', { className: 'font-bold ' + (dk ? 'text-red-400' : 'text-red-700') }, '🦟 Varroa Mites'),
-                  h('span', { className: varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-400' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, varroaLevel + '%')),
+                  h('span', { className: varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, varroaLevel + '%')),
                 h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                   h('div', { style: { width: varroaLevel + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' }))),
               // Morale
               h('div', null,
                 h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                   h('span', { className: 'font-bold ' + (dk ? 'text-amber-300' : 'text-amber-700') }, '😊 Colony Morale'),
-                  h('span', { className: morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-400' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, morale + '%')),
+                  h('span', { className: morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, morale + '%')),
                 h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                   h('div', { style: { width: morale + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all' }))),
               // Foraging
               h('div', null,
                 h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                   h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, '🌸 Foraging Efficiency'),
-                  h('span', { className: dk ? 'text-slate-400' : 'text-slate-600', style: { fontFamily: 'monospace' } }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '%)' : ''))),
+                  h('span', { className: dk ? 'text-slate-200' : 'text-slate-600', style: { fontFamily: 'monospace' } }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '%)' : ''))),
                 h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                   h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))))),
 
@@ -1210,7 +1210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('div', { key: s[1], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-red-700/30' : 'bg-white border-red-200') },
                   h('div', { className: 'text-sm' }, s[0]),
                   h('p', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, s[2]),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, s[1])
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, s[1])
                 );
               })
             ),
@@ -1227,7 +1227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // What to try differently
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
               h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '\uD83D\uDCA1 Next time, try:'),
-              h('ul', { className: 'space-y-0.5 pl-4 list-disc ' + (dk ? 'text-slate-400' : 'text-slate-600') },
+              h('ul', { className: 'space-y-0.5 pl-4 list-disc ' + (dk ? 'text-slate-200' : 'text-slate-600') },
                 varroaLevel > 30 && h('li', null, 'Treat varroa mites as soon as levels exceed 15\u201320%'),
                 honey < 10 && h('li', null, 'Feed sugar syrup before honey drops below 15 lbs'),
                 habitat < 40 && h('li', null, 'Plant wildflowers and build bee hotels to improve habitat'),
@@ -1265,7 +1265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-red-900/20 border-red-700/40' : 'bg-red-50 border-red-200') },
               h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                 h('span', { className: 'font-bold ' + (dk ? 'text-red-300' : 'text-red-700') }, '☠️ Pesticide Exposure'),
-                h('span', { className: pesticideExposure > 20 ? 'text-red-500 font-bold' : (dk ? 'text-slate-400' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
+                h('span', { className: pesticideExposure > 20 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
               h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-red-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                 h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' })))),
 
@@ -1323,7 +1323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center gap-1' },
                       h('span', null, action.emoji),
                       h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, action.label)),
-                    h('div', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-600') }, action.cost + ' AP · ' + action.desc));
+                    h('div', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-200' : 'text-slate-600') }, action.cost + ' AP · ' + action.desc));
                 }))),
 
           // Hive Inspection (full view replacement)
@@ -1340,7 +1340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ].map(function(sc) {
               return h('div', { key: sc.title, className: 'rounded-xl border p-3 transition-all hover:shadow-md ' + (dk ? 'bg-slate-800 border-slate-700 hover:border-amber-600/40' : 'bg-white border-slate-200 hover:border-amber-300'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
                 h('h4', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-200' : 'text-slate-800') }, sc.title),
-                h('p', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, sc.text));
+                h('p', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-600') }, sc.text));
             }))
         );
       })();

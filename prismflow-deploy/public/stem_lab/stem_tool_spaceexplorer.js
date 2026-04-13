@@ -46,7 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   function sfxSEClick() { seTone(600, 0.03, 'sine', 0.04); }
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }'; document.head.appendChild(_s); }
 
 
   // WCAG live region
@@ -690,7 +690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           h('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 text-center' },
             h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, '\uD83C\uDF0C Space Explorer'),
             h('p', { className: 'text-xs text-purple-200 mt-1' }, 'Roguelike missions across the solar system. Each run teaches new science.'),
-            completedMissions > 0 && h('div', { className: 'flex justify-center gap-3 mt-2 text-[10px] text-purple-200', 'aria-label': 'Mission statistics' },
+            completedMissions > 0 && h('div', { className: 'flex justify-center gap-3 mt-2 text-[11px] text-purple-200', 'aria-label': 'Mission statistics' },
               h('span', null, '\uD83D\uDE80 ' + completedMissions + ' missions'),
               h('span', null, '\uD83D\uDD2C ' + totalScience + ' science'),
               h('span', null, '\u26A1 ' + unlockedTech.length + ' tech'),
@@ -731,14 +731,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 ),
                 h('div', { className: 'flex gap-1 mb-1', 'aria-label': 'Difficulty ' + dest.difficulty + ' of 5' },
                   Array.from({ length: 5 }, function(_, i) {
-                    return h('span', { key: i, className: 'text-[10px]', 'aria-hidden': 'true' }, i < dest.difficulty ? '\u2B50' : '\u2606');
+                    return h('span', { key: i, className: 'text-[11px]', 'aria-hidden': 'true' }, i < dest.difficulty ? '\u2B50' : '\u2606');
                   })
                 ),
-                h('p', { className: 'text-[10px] text-slate-300 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : dest.desc),
+                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : dest.desc),
                 !locked && (function() {
                   var stats = (d.destStats || {})[dest.id];
                   if (!stats) return null;
-                  return h('div', { className: 'flex gap-2 mt-1 text-[10px] text-slate-500', 'aria-label': 'Stats: ' + stats.wins + ' wins, best ' + stats.bestPct + '%, ' + stats.totalScience + ' science' },
+                  return h('div', { className: 'flex gap-2 mt-1 text-[11px] text-slate-200', 'aria-label': 'Stats: ' + stats.wins + ' wins, best ' + stats.bestPct + '%, ' + stats.totalScience + ' science' },
                     stats.wins > 0 && h('span', null, '\u2705 ' + stats.wins + 'x'),
                     stats.bestPct > 0 && h('span', null, '\u2B50 ' + stats.bestPct + '%'),
                     stats.totalScience > 0 && h('span', null, '\uD83D\uDD2C ' + stats.totalScience)
@@ -756,7 +756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           h('div', { className: 'bg-gradient-to-r from-cyan-900 to-teal-900 rounded-xl p-4 flex justify-between items-center' },
             h('div', null,
               h('h3', { className: 'text-sm font-black text-white' }, '\uD83D\uDD2C Tech Shop'),
-              h('p', { className: 'text-[10px] text-cyan-300' }, totalScience + ' science points available')
+              h('p', { className: 'text-[11px] text-cyan-300' }, totalScience + ' science points available')
             ),
             h('button', { onClick: function() { upd('missionPhase', 'select'); }, className: 'px-3 py-1.5 bg-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/20' }, '\u2190 Back')
           ),
@@ -768,7 +768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', { className: 'text-xl' }, tech.emoji),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold ' + (owned ? 'text-green-300' : 'text-white') }, tech.name + (owned ? ' \u2705' : '')),
-                  h('p', { className: 'text-[10px] text-slate-600' }, tech.desc)
+                  h('p', { className: 'text-[11px] text-slate-600' }, tech.desc)
                 ),
                 !owned && h('button', {
                   disabled: !canBuy,
@@ -778,7 +778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (addToast) addToast('\u26A1 ' + tech.name + ' unlocked!', 'success');
                     addXP(15);
                   },
-                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
+                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
                 }, tech.cost + ' \uD83D\uDD2C')
               );
             })
@@ -833,7 +833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', { className: 'p-4 space-y-3' },
               h('h4', { className: 'text-lg font-black text-white flex items-center gap-2' }, destination.emoji, ' Mission to ' + destination.name),
               h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, destination.desc),
-              h('div', { className: 'grid grid-cols-2 gap-2 text-[10px]' },
+              h('div', { className: 'grid grid-cols-2 gap-2 text-[11px]' },
                 h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Gravity: '), h('span', { className: 'text-white font-bold' }, destination.gravity + ' m/s\u00B2')),
                 h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Temp: '), h('span', { className: 'text-white font-bold' }, destination.temp)),
                 h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Atmosphere: '), h('span', { className: 'text-white font-bold' }, destination.atmosphere)),
@@ -841,20 +841,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', { className: 'flex flex-wrap gap-1' },
                 destination.hazards.map(function(hz) {
-                  return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[10px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
+                  return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[11px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
                 })
               ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
-                h('p', { className: 'text-[10px] text-slate-600 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+                h('p', { className: 'text-[11px] text-slate-600 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   crew.map(function(c) {
                     return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
                       h('span', { className: 'text-lg' }, c.emoji),
                       h('div', null,
-                        h('p', { className: 'text-[10px] font-bold text-white' }, c.name),
-                        h('p', { className: 'text-[10px] text-slate-600' }, c.role),
-                        h('p', { className: 'text-[10px] text-indigo-300 italic' }, '"' + c.quote + '"')
+                        h('p', { className: 'text-[11px] font-bold text-white' }, c.name),
+                        h('p', { className: 'text-[11px] text-slate-600' }, c.role),
+                        h('p', { className: 'text-[11px] text-indigo-300 italic' }, '"' + c.quote + '"')
                       )
                     );
                   })
@@ -881,11 +881,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 // Mini crew indicators
                 crew.length > 0 && h('div', { className: 'flex gap-0.5 ml-1' },
                   crew.map(function(c) {
-                    return h('span', { key: c.name, title: c.name + ' (' + c.role + ')', className: 'text-[10px] cursor-default' }, c.emoji);
+                    return h('span', { key: c.name, title: c.name + ' (' + c.role + ')', className: 'text-[11px] cursor-default' }, c.emoji);
                   })
                 )
               ),
-              h('span', { className: 'text-[10px] font-mono text-slate-400' }, 'Turn ' + turn + '/' + maxTurns)
+              h('span', { className: 'text-[11px] font-mono text-slate-200' }, 'Turn ' + turn + '/' + maxTurns)
             ),
             h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Ship resources' },
               Object.keys(RESOURCES).map(function(k) {
@@ -895,7 +895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 var barColor = val <= r.max * 0.15 ? '#ef4444' : val <= r.max * 0.3 ? '#f59e0b' : r.color;
                 var statusText = r.max === 999 ? val + ' points' : val + '% ' + (val <= 15 ? '(critical)' : val <= 30 ? '(low)' : '');
                 return h('div', { key: k, className: 'bg-white/5 rounded-lg p-1.5' },
-                  h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
+                  h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                     h('span', { className: 'text-slate-300' }, r.emoji + ' ' + r.label),
                     h('span', { className: 'font-bold', style: { color: barColor }, 'aria-label': r.label + ': ' + statusText }, r.max === 999 ? val : val + '%')
                   ),
@@ -981,7 +981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('h3', { className: 'text-sm font-bold text-amber-300' }, activeEvent.title),
                 activeEvent.stemConcepts && h('div', { className: 'flex gap-1 mt-0.5 flex-wrap', 'aria-label': 'Science concepts: ' + activeEvent.stemConcepts.join(', ') },
                   activeEvent.stemConcepts.map(function(c) {
-                    return h('span', { key: c, className: 'px-1.5 py-0.5 rounded-full text-[10px] bg-sky-500/15 text-sky-200 border border-sky-500/20' }, c);
+                    return h('span', { key: c, className: 'px-1.5 py-0.5 rounded-full text-[11px] bg-sky-500/15 text-sky-200 border border-sky-500/20' }, c);
                   })
                 )
               )
@@ -997,11 +997,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   className: 'w-full text-left p-3 rounded-lg border transition-all hover:scale-[1.01] active:scale-[0.98] bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5 focus:ring-2 focus:ring-amber-400 focus:outline-none'
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
-                    h('span', { className: 'text-[10px] font-mono text-amber-500/60 w-4', 'aria-hidden': 'true' }, '(' + (ci + 1) + ')'),
+                    h('span', { className: 'text-[11px] font-mono text-amber-500/60 w-4', 'aria-hidden': 'true' }, '(' + (ci + 1) + ')'),
                     h('span', { 'aria-hidden': 'true' }, choice.icon || '\u2699\uFE0F'),
                     h('span', { className: 'text-xs font-bold text-white' }, choice.label)
                   ),
-                  choice.effects && h('div', { className: 'flex flex-wrap gap-2 text-[10px] mt-1', 'aria-hidden': 'true' },
+                  choice.effects && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mt-1', 'aria-hidden': 'true' },
                     Object.keys(choice.effects).map(function(k) {
                       var v = choice.effects[k];
                       var r = RESOURCES[k];
@@ -1013,7 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             ),
-            h('p', { className: 'text-[10px] text-slate-600 mt-2 text-center', 'aria-hidden': 'true' }, 'Press 1, 2, or 3 to choose')
+            h('p', { className: 'text-[11px] text-slate-600 mt-2 text-center', 'aria-hidden': 'true' }, 'Press 1, 2, or 3 to choose')
           ),
 
           // Generating indicator
@@ -1034,7 +1034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               )
             ),
             h('div', { className: 'bg-sky-500/10 rounded-lg p-3 border border-sky-500/20 mb-3' },
-              h('p', { className: 'text-[10px] text-sky-100 leading-relaxed' }, '\uD83D\uDD2C ' + eventOutcome.outcome)
+              h('p', { className: 'text-[11px] text-sky-100 leading-relaxed' }, '\uD83D\uDD2C ' + eventOutcome.outcome)
             ),
             turn >= maxTurns ? h('p', { className: 'text-xs text-green-300 font-bold text-center mb-2' }, '\uD83C\uDF89 Mission complete! Preparing debrief...') :
             (resources.o2 <= 0 || resources.hull <= 0) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, '\u26A0\uFE0F Critical failure! Mission ending...') :
@@ -1047,10 +1047,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
           // Mission log (collapsible)
           missionLog.length > 0 && h('details', { className: 'bg-slate-800/50 rounded-xl border border-slate-700' },
-            h('summary', { className: 'px-3 py-2 text-[10px] font-bold text-slate-300 cursor-pointer focus:ring-2 focus:ring-slate-400 focus:outline-none rounded-xl' }, '\uD83D\uDCCB Mission Log (' + missionLog.length + ' entries)'),
+            h('summary', { className: 'px-3 py-2 text-[11px] font-bold text-slate-300 cursor-pointer focus:ring-2 focus:ring-slate-400 focus:outline-none rounded-xl' }, '\uD83D\uDCCB Mission Log (' + missionLog.length + ' entries)'),
             h('div', { className: 'px-3 pb-2 space-y-0.5' },
               missionLog.slice().reverse().map(function(entry, i) {
-                return h('div', { key: i, className: 'flex justify-between text-[10px]' },
+                return h('div', { key: i, className: 'flex justify-between text-[11px]' },
                   h('span', { className: 'text-slate-300' }, entry.text),
                   h('span', { className: 'text-slate-600 font-mono' }, entry.time)
                 );
@@ -1080,23 +1080,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // Decision analysis
           decisionLog.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
-            h('h3', { className: 'text-[10px] text-slate-300 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+            h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
             decisionLog.map(function(dec, i) {
               return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                 h('div', { className: 'flex justify-between items-center mb-1' },
-                  h('span', { className: 'text-[10px] font-bold text-white' }, dec.title),
-                  h('span', { className: 'text-[10px] px-2 py-0.5 rounded-full ' +
+                  h('span', { className: 'text-[11px] font-bold text-white' }, dec.title),
+                  h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full ' +
                     (dec.quality === 'optimal' ? 'bg-green-500/20 text-green-300' : dec.quality === 'adequate' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300')
                   }, (dec.quality || 'unknown').toUpperCase())
                 ),
-                h('p', { className: 'text-[10px] text-slate-300' }, 'You: "' + dec.chosen + '"'),
-                dec.quality !== 'optimal' && dec.optimal && h('p', { className: 'text-[10px] text-indigo-300 mt-1' }, '\uD83D\uDCA1 Better: "' + dec.optimal + '"')
+                h('p', { className: 'text-[11px] text-slate-300' }, 'You: "' + dec.chosen + '"'),
+                dec.quality !== 'optimal' && dec.optimal && h('p', { className: 'text-[11px] text-indigo-300 mt-1' }, '\uD83D\uDCA1 Better: "' + dec.optimal + '"')
               );
             }),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mt-2 text-center' },
               h('p', { className: 'text-xs font-bold ' + (pct >= 80 ? 'text-green-300' : pct >= 50 ? 'text-yellow-300' : 'text-orange-300') },
                 'Decision Score: ' + optCount + '/' + decisionLog.length + ' optimal (' + pct + '%)'),
-              h('p', { className: 'text-[10px] text-slate-300 mt-0.5' },
+              h('p', { className: 'text-[11px] text-slate-300 mt-0.5' },
                 pct >= 80 ? 'Outstanding! You think like a real mission commander.' :
                 pct >= 50 ? 'Solid thinking. Review the science notes to improve.' :
                 'Room for improvement \u2014 but every explorer learns from experience!')
@@ -1104,27 +1104,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // STEM Concepts Learned (science rewards from all decisions)
           decisionLog.length > 0 && decisionLog.some(function(dec2) { return dec2.scienceReward; }) && h('div', { className: 'bg-cyan-500/5 rounded-xl p-3 border border-cyan-500/15' },
-            h('h3', { className: 'text-[10px] text-cyan-300 font-bold mb-2' }, '\uD83D\uDD2C SCIENCE CONCEPTS LEARNED'),
+            h('h3', { className: 'text-[11px] text-cyan-300 font-bold mb-2' }, '\uD83D\uDD2C SCIENCE CONCEPTS LEARNED'),
             h('div', { className: 'space-y-1.5' },
               decisionLog.filter(function(dec2) { return dec2.scienceReward; }).map(function(dec2, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border-l-2 border-cyan-500/40' },
-                  h('p', { className: 'text-[10px] font-bold text-cyan-300 mb-0.5' }, dec2.title),
-                  h('p', { className: 'text-[10px] text-slate-300 leading-relaxed' }, dec2.scienceReward)
+                  h('p', { className: 'text-[11px] font-bold text-cyan-300 mb-0.5' }, dec2.title),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, dec2.scienceReward)
                 );
               })
             )
           ),
           // Resource survival chart
           resources && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
-            h('h3', { className: 'text-[10px] text-slate-300 font-bold mb-2' }, '\uD83D\uDCCA FINAL RESOURCES'),
+            h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, '\uD83D\uDCCA FINAL RESOURCES'),
             h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Final resource levels' },
               Object.keys(RESOURCES).map(function(k) {
                 var r = RESOURCES[k]; var val = resources[k] || 0;
                 var col = val <= r.max * 0.15 ? '#ef4444' : val <= r.max * 0.3 ? '#f59e0b' : r.color;
                 return h('div', { key: k, className: 'text-center', 'aria-label': r.label + ': ' + (r.max === 999 ? val + ' points' : val + '%') },
                   h('div', { className: 'text-lg', 'aria-hidden': 'true' }, r.emoji),
-                  h('div', { className: 'text-[10px] font-bold', style: { color: col } }, r.max === 999 ? val : val + '%'),
-                  h('div', { className: 'text-[10px] text-slate-300' }, r.label)
+                  h('div', { className: 'text-[11px] font-bold', style: { color: col } }, r.max === 999 ? val : val + '%'),
+                  h('div', { className: 'text-[11px] text-slate-300' }, r.label)
                 );
               })
             )

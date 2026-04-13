@@ -347,7 +347,7 @@ window.StemLab = window.StemLab || {
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDCC8 Function Grapher"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE")
+              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
 
             ),
 
@@ -526,7 +526,7 @@ window.StemLab = window.StemLab || {
 
             // ── Zoom / Pan Controls ──
             React.createElement("div", { className: "flex items-center gap-1.5 mt-2 mb-1 flex-wrap" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83D\uDD0D View"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83D\uDD0D View"),
               React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Zoom in' }, "\u2795 Zoom In"),
               React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Zoom out' }, "\u2796 Zoom Out"),
               React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan left' }, "\u2B05"),
@@ -540,7 +540,7 @@ window.StemLab = window.StemLab || {
             // ── Transformation Labels ──
             transformLabels.length > 0 && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-1" },
               transformLabels.map(function(tl, ti) {
-                return React.createElement("span", { key: ti, className: "px-2 py-0.5 rounded-full text-[10px] font-bold border " + tl.color }, tl.text);
+                return React.createElement("span", { key: ti, className: "px-2 py-0.5 rounded-full text-[11px] font-bold border " + tl.color }, tl.text);
               })
             ),
 
@@ -556,9 +556,9 @@ window.StemLab = window.StemLab || {
 
               React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-200') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
 
-              roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
+              roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[11px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
 
-              yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("span", { className: "px-2 py-1.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold border border-green-200" }, "\uD83D\uDFE2 y-int: " + yIntercept.toFixed(2))
+              yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("span", { className: "px-2 py-1.5 bg-green-50 text-green-600 rounded-lg text-[11px] font-bold border border-green-200" }, "\uD83D\uDFE2 y-int: " + yIntercept.toFixed(2))
 
             ),
 
@@ -567,13 +567,13 @@ window.StemLab = window.StemLab || {
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xs font-bold text-pink-600" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
                 React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': 'Trace x position' }),
-                tangentInRange && React.createElement("span", { className: "text-[10px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
+                tangentInRange && React.createElement("span", { className: "text-[11px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
               )
             ),
 
             // ── Table of Values (collapsible) ──
             d.showTable && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-xl border border-cyan-200 p-3 overflow-x-auto" },
-              React.createElement("p", { className: "text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
+              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
               React.createElement("table", { className: "w-full text-xs" },
                 React.createElement("caption", { className: "sr-only" }, "funcgrapher data table"), React.createElement("thead", null,
                   React.createElement("tr", { className: "border-b border-cyan-200" },
@@ -658,7 +658,7 @@ window.StemLab = window.StemLab || {
               React.createElement("button", { "aria-label": "Change compare", onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-200') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
               d.compare && React.createElement("div", { className: "flex gap-1.5" },
                 TYPES.map(function(tp) {
-                  return React.createElement("button", { "aria-label": "Change compare type", key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-500') }, tp.emoji);
+                  return React.createElement("button", { "aria-label": "Change compare type", key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-500') }, tp.emoji);
                 })
               )
             ),
@@ -694,7 +694,7 @@ window.StemLab = window.StemLab || {
               }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
               d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
                 React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-purple-600 uppercase tracking-wider" }, "\uD83E\uDDE0 AI Explanation")
+                  React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, "\uD83E\uDDE0 AI Explanation")
                 ),
                 d.aiExplain
               )
@@ -704,7 +704,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u26A1 Quick Presets"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u26A1 Quick Presets"),
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5" },
 
@@ -736,7 +736,7 @@ window.StemLab = window.StemLab || {
 
                       addToast('\uD83D\uDCC8 ' + p.tip, 'success');
 
-                    }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
+                    }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
 
                   }, p.label);
 

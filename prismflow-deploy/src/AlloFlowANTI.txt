@@ -7891,27 +7891,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7927,7 +7927,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e59d03e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1850cfc/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51536,7 +51536,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
 
                         {/* ── Pipeline Step Tracker — always visible during processing ── */}
-                        {/* ── Pipeline Step Tracker with sub-progress ── */}
+                        {/* ── Pipeline Step Tracker with contextual explanation ── */}
                         {(() => {
                           const steps = [
                             { step: 1, label: 'Extract', icon: '📄' },
@@ -51544,18 +51544,40 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             { step: 3, label: 'Audit', icon: '🔍' },
                             { step: 4, label: 'Fix & Verify', icon: '🔧' },
                           ];
-                          // Parse sub-progress from pdfFixStep text
-                          const parseSubProgress = (stepText) => {
+                          // Contextual explanations keyed to what pdfFixStep contains — no API calls
+                          const getContextNote = (stepText) => {
                             if (!stepText) return null;
-                            // Extract the detail after the step label: "Step 2/4 🏗️ Building... — Polish pass 1/2..."
-                            const dashIdx = stepText.indexOf('—');
-                            if (dashIdx > 0) return stepText.substring(dashIdx + 1).trim().replace(/\s*\(typically.*$/, '').trim();
-                            // Fallback: extract after emoji
-                            const parts = stepText.split(/[📄🏗️🔍🔧]/);
-                            if (parts.length > 1) return parts[parts.length - 1].trim().replace(/\s*\(typically.*$/, '').trim();
+                            // Step 1 sub-phases
+                            if (/Reading document|Extract/i.test(stepText) && /Step 1/i.test(stepText)) {
+                              if (/deterministic|text layer/i.test(stepText)) return { note: 'Using pdf.js to extract text directly from the PDF structure — faster and free compared to Vision AI.', why: 'Text-layer PDFs can be read programmatically without OCR, saving API calls.' };
+                              if (/Vision|OCR|chunk/i.test(stepText)) return { note: 'This PDF appears to be scanned. Using Gemini Vision to read text from page images.', why: 'Scanned PDFs have no text layer — the content exists only as images that need OCR.' };
+                              if (/image/i.test(stepText)) return { note: 'Detecting and describing images so they can receive meaningful alt text.', why: 'WCAG 1.1.1 requires all non-decorative images to have text alternatives for screen reader users.' };
+                              return { note: 'Reading the full document content so nothing is lost during transformation.', why: 'Accurate extraction prevents content loss — every word must survive the conversion.' };
+                            }
+                            // Step 2 sub-phases
+                            if (/Step 2/i.test(stepText)) {
+                              if (/style|color/i.test(stepText)) return { note: 'Extracting the original document\'s colors and typography to preserve its visual identity.', why: 'Accessible documents should look professional — matching the original style builds trust.' };
+                              if (/structure|JSON|block/i.test(stepText)) return { note: 'Converting flat PDF content into semantic HTML structure (headings, lists, tables).', why: 'Screen readers navigate by structure. Without semantic tags, a document is a wall of undifferentiated text.' };
+                              if (/[Pp]olish|table.*unif|style.*unif/i.test(stepText)) return { note: 'Unifying styles and merging table fragments that were split during chunked processing.', why: 'Large documents are processed in sections — polish ensures consistent styling across boundaries.' };
+                              if (/spell|grammar/i.test(stepText)) return { note: 'Checking for OCR artifacts and typos introduced during text extraction.', why: 'Garbled text from scanning (e.g., "rn" instead of "m") is inaccessible to everyone.' };
+                              return { note: 'Building semantic HTML with proper headings, landmarks, and ARIA attributes.', why: 'HTML structure is the foundation of accessibility — it\'s what assistive technology reads.' };
+                            }
+                            // Step 3
+                            if (/Step 3/i.test(stepText)) {
+                              if (/axe/i.test(stepText)) return { note: 'Running axe-core — the same engine used by accessibility professionals worldwide.', why: 'axe-core tests against WCAG 2.1 AA rules deterministically. It catches issues AI might miss.' };
+                              if (/verif/i.test(stepText)) return { note: 'AI auditor evaluating the HTML for accessibility issues axe-core can\'t detect.', why: 'Some issues (poor alt text quality, confusing heading hierarchy) require judgment, not just rules.' };
+                              return { note: 'Measuring accessibility before fixes to establish a baseline score.', why: 'The before/after comparison shows exactly how much the remediation improved the document.' };
+                            }
+                            // Step 4
+                            if (/Step 4|Auto-fix|Improv|pass \d/i.test(stepText)) {
+                              if (/Verif|check/i.test(stepText)) return { note: 'Two independent AI auditors verify each fix pass to catch false positives.', why: 'Averaging multiple audits prevents a single bad score from triggering unnecessary extra passes.' };
+                              if (/surg|micro/i.test(stepText)) return { note: 'Applying targeted micro-tool fixes: each fix addresses one specific WCAG violation.', why: 'Surgical tools (alt text, heading fix, label add) are precise — they fix the issue without touching other content.' };
+                              if (/axe.*0|zero issue|clean/i.test(stepText)) return { note: 'Both axe-core and AI agree: no remaining violations detected!', why: 'When deterministic and AI engines both report clean, the document meets WCAG 2.1 AA.' };
+                              return { note: 'AI fixes remaining violations while deterministic rules catch AI-introduced errors.', why: 'The loop alternates AI fixes with rule-based cleanup — each catches what the other misses.' };
+                            }
                             return null;
                           };
-                          const subProgress = parseSubProgress(pdfFixStep);
+                          const context = getContextNote(pdfFixStep);
                           return (
                             <div className="mt-3 bg-white rounded-xl border border-slate-200 p-3 space-y-2" role="region" aria-label="Pipeline progress tracker">
                               <div className="flex items-center gap-1.5 text-[11px]">
@@ -51565,19 +51587,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   return (
                                     <React.Fragment key={s.step}>
                                       {i > 0 && <div className={`flex-1 h-0.5 rounded ${completedStep ? 'bg-green-400' : currentStep ? 'bg-indigo-300' : 'bg-slate-200'}`}></div>}
-                                      <div className={`flex flex-col items-center gap-0.5 ${completedStep ? '' : currentStep ? '' : ''}`}>
-                                        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg font-bold whitespace-nowrap ${completedStep ? 'bg-green-50 text-green-700 border border-green-200' : currentStep ? 'bg-indigo-50 text-indigo-700 border border-indigo-300 animate-pulse' : 'text-slate-400'}`}>
-                                          <span>{completedStep ? '✅' : s.icon}</span>
-                                          <span>{s.label}</span>
-                                        </div>
+                                      <div className={`flex items-center gap-1 px-2 py-1 rounded-lg font-bold whitespace-nowrap ${completedStep ? 'bg-green-50 text-green-700 border border-green-200' : currentStep ? 'bg-indigo-50 text-indigo-700 border border-indigo-300 animate-pulse' : 'text-slate-400'}`}>
+                                        <span>{completedStep ? '✅' : s.icon}</span>
+                                        <span>{s.label}</span>
                                       </div>
                                     </React.Fragment>
                                   );
                                 })}
                               </div>
-                              {subProgress && (
-                                <div className="text-[10px] text-indigo-600 font-medium text-center bg-indigo-50 rounded-lg px-3 py-1.5 border border-indigo-100">
-                                  <span className="animate-pulse inline-block mr-1">⏳</span> {subProgress}
+                              {context && (
+                                <div className="text-[10px] bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 space-y-0.5">
+                                  <div className="text-slate-700 font-medium">{context.note}</div>
+                                  <div className="text-slate-500 italic">Why: {context.why}</div>
                                 </div>
                               )}
                             </div>

@@ -492,7 +492,7 @@ window.StemLab = window.StemLab || {
           h('div', { role: 'tablist', 'aria-expanded': String(multTableHidden), role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 ml-2' },
             h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': 'Toggle hidden mode (H)',
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
-              className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
+              className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: 'Toggle hidden mode (H)'
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
@@ -504,13 +504,13 @@ window.StemLab = window.StemLab || {
             // Badge count
             earnedCount > 0 && h('button', { 'aria-label': 'View badges (B)',
               onClick: function() { extUpd({ showBadges: !_ext.showBadges }); },
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
             h('button', { 'aria-label': 'AI',
               onClick: askAI,
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
           )
@@ -558,7 +558,7 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
           !_ext.aiLoading && h('button', { 'aria-label': 'Ask Again',
             onClick: askAI,
-            className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
           }, '\uD83D\uDD04 Ask Again')
         ),
 
@@ -569,7 +569,7 @@ window.StemLab = window.StemLab || {
             return h('button', { 'aria-label': 'Set Explore Difficulty',
               key: dm.id,
               onClick: function() { setExploreDifficulty(dm.id); },
-              className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' +
+              className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' +
                 (active
                   ? dm.id === 'easy' ? 'bg-green-700 text-white shadow-sm'
                     : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
@@ -651,7 +651,7 @@ window.StemLab = window.StemLab || {
           h('table', { className: 'border-collapse w-full text-center' },
             h('caption', { className: 'sr-only' }, 'Try Again'), h('thead', null,
               h('tr', null,
-                h('th', { scope: 'col', className: 'w-8 h-8 text-[10px] font-bold text-pink-400' }, '\u00D7'),
+                h('th', { scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
                   var isColHL = multTableHover && multTableHover.c === c + 1;
                   return h('th', { scope: 'col', key: c, className: 'w-8 h-8 text-xs font-bold ' + (isColHL ? 'text-pink-700 bg-pink-100' : 'text-pink-500') }, c + 1);
@@ -770,20 +770,20 @@ window.StemLab = window.StemLab || {
           }, multTableFeedback.msg),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-center gap-2 mt-1' },
-            h('p', { className: 'text-[10px] text-slate-600 animate-pulse' }, 'Next question coming...'),
+            h('p', { className: 'text-[11px] text-slate-600 animate-pulse' }, 'Next question coming...'),
             h('button', { 'aria-label': 'Skip Next',
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
                 nextProblem();
                 setTimeout(function() { var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus(); }, 50);
               },
-              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 border border-pink-200 transition-all'
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 border border-pink-200 transition-all'
             }, 'Skip \u2192 Next')
           )
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[10px] text-slate-600 text-center space-x-3' },
+        h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
           h('span', null, 'Q Quiz'),
           h('span', null, 'S Speed'),
           h('span', null, 'H Hidden'),
@@ -792,7 +792,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Legend ──
-        h('div', { className: 'text-[10px] text-slate-600 text-center' },
+        h('div', { className: 'text-[11px] text-slate-600 text-center' },
           h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), ' Perfect squares',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), ' Hover cross',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1' }), ' Selected',

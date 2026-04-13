@@ -1203,7 +1203,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("div", { className: "text-lg font-black " + (isCompleted ? "text-emerald-600" : "text-violet-700") }, isCompleted ? "\u2714" : "L" + ch.level),
 
-                      React.createElement("div", { className: "text-[10px] font-bold text-slate-600 mt-0.5" }, ch.title)
+                      React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-0.5" }, ch.title)
 
                     );
 
@@ -1300,7 +1300,7 @@ window.StemLab = window.StemLab || {
 
                     ),
 
-                    activeCh.context && React.createElement("div", { className: "mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200 text-[10px] text-purple-700 italic flex items-center gap-1" },
+                    activeCh.context && React.createElement("div", { className: "mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200 text-[11px] text-purple-700 italic flex items-center gap-1" },
 
                       React.createElement("span", null, "\uD83E\uDD16"),
 
@@ -1470,9 +1470,9 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("div", { className: "font-bold text-violet-800 text-xs" }, rule.name),
 
-                      React.createElement("div", { className: "text-[10px] font-mono text-slate-600 mt-0.5" }, rule.form),
+                      React.createElement("div", { className: "text-[11px] font-mono text-slate-600 mt-0.5" }, rule.form),
 
-                      React.createElement("div", { className: "text-[10px] text-slate-600 mt-0.5 italic" }, rule.eng)
+                      React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 italic" }, rule.eng)
 
                     );
 
@@ -1498,7 +1498,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
                 React.createElement("span", { className: "font-black text-amber-600 text-sm" }, "\uD83D\uDD25 Streak: " + streak + " (Best: " + bestStreak + ")"),
-                React.createElement("button", { "aria-label": "Reset challenge score", onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-600 hover:text-red-400 font-bold" }, "Reset")
+                React.createElement("button", { "aria-label": "Reset challenge score", onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[11px] text-slate-600 hover:text-red-400 font-bold" }, "Reset")
               ),
 
               // Challenge type tabs
@@ -1544,7 +1544,7 @@ window.StemLab = window.StemLab || {
 
                 }),
 
-                userTopic && React.createElement("span", { className: "text-[10px] font-bold text-violet-500" }, "AI will personalize \u2728")
+                userTopic && React.createElement("span", { className: "text-[11px] font-bold text-violet-500" }, "AI will personalize \u2728")
 
               ),
 
@@ -1681,7 +1681,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-purple-900" }, "AI-Generated: Is this argument valid?"),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full border border-purple-200" }, "\u2728 AI")
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, "\u2728 AI")
 
                   ),
 
@@ -1965,7 +1965,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-purple-900" }, "AI Mystery"),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full border border-purple-200" }, "\u2728 AI")
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, "\u2728 AI")
 
                   ),
 
@@ -2111,7 +2111,7 @@ window.StemLab = window.StemLab || {
                           upd({ mode:'truth', expression: fml });
                           if (addToast) addToast('Opened in Truth Table builder!','info');
                         },
-                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-700 font-bold rounded-full text-[10px]"
+                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-700 font-bold rounded-full text-[11px]"
                       }, "\uD83D\uDCCA Open in Truth Tables \u2192")
                     )
                   );
@@ -2195,9 +2195,9 @@ window.StemLab = window.StemLab || {
                         className: "flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
                         onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }
                       },
-                        React.createElement("span", { className: "text-[10px] font-black text-violet-500 w-28 shrink-0" }, law[0]),
+                        React.createElement("span", { className: "text-[11px] font-black text-violet-500 w-28 shrink-0" }, law[0]),
                         React.createElement("code", { className: "font-mono text-xs text-violet-800 font-bold" }, law[1]),
-                        React.createElement("span", { className: "ml-auto text-violet-300 text-[10px]" }, "\u2192")
+                        React.createElement("span", { className: "ml-auto text-violet-300 text-[11px]" }, "\u2192")
                       );
                     })
                   )

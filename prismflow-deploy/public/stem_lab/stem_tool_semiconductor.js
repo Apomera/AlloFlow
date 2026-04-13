@@ -41,7 +41,7 @@ window.StemLab = window.StemLab || {
   function semiTone(f,d,tp,v) { var ac=getSemiAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxSemiClick() { semiTone(600,0.03,"sine",0.04); }
   function sfxSemiSuccess() { semiTone(523,0.08,"sine",0.07); setTimeout(function(){semiTone(659,0.08,"sine",0.07);},70); setTimeout(function(){semiTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -344,7 +344,7 @@ window.StemLab = window.StemLab || {
 
       function statBadge(label, value, color) {
         return h('div', { className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
-          h('span', { className: 'text-[10px] text-slate-600 uppercase tracking-wider' }, label),
+          h('span', { className: 'text-[11px] text-slate-600 uppercase tracking-wider' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
       }
@@ -392,7 +392,7 @@ window.StemLab = window.StemLab || {
             d.aiExplain,
             callTTS ? h('button', {
               onClick: function() { speakText(d.aiExplain); },
-              className: 'ml-2 px-1.5 py-0.5 text-[10px] bg-indigo-700 rounded hover:bg-indigo-600 transition-colors',
+              className: 'ml-2 px-1.5 py-0.5 text-[11px] bg-indigo-700 rounded hover:bg-indigo-600 transition-colors',
               'aria-label': 'Read aloud'
             }, '\uD83D\uDD0A') : null
           ]
@@ -1246,7 +1246,7 @@ window.StemLab = window.StemLab || {
                 style: { width: (showCMOS ? (cmosOut ? 100 : 0) : currentPct) + '%' }
               })
             ),
-            h('span', { className: 'text-xs font-mono w-14 text-right ' + (isOn || cmosOut ? 'text-emerald-400' : 'text-slate-500') },
+            h('span', { className: 'text-xs font-mono w-14 text-right ' + (isOn || cmosOut ? 'text-emerald-400' : 'text-slate-200') },
               showCMOS ? (cmosOut ? 'HIGH' : 'LOW') : currentPct + '%'
             )
           ),
@@ -1381,8 +1381,8 @@ window.StemLab = window.StemLab || {
                 var qVal = gate.inputs === 1 ? gate.fn(r[0]) : gate.fn(r[0], r[1]);
                 var isActive = gate.inputs === 1 ? (r[0] === inA) : (r[0] === inA && r[1] === inB);
                 return h('tr', { key: ri, className: isActive ? 'bg-cyan-900/30' : '' },
-                  h('td', { className: 'px-2 py-0.5 font-mono ' + (r[0] ? 'text-emerald-400' : 'text-slate-500') }, r[0] ? '1' : '0'),
-                  gate.inputs === 2 && h('td', { className: 'px-2 py-0.5 font-mono ' + (r[1] ? 'text-emerald-400' : 'text-slate-500') }, r[1] ? '1' : '0'),
+                  h('td', { className: 'px-2 py-0.5 font-mono ' + (r[0] ? 'text-emerald-400' : 'text-slate-200') }, r[0] ? '1' : '0'),
+                  gate.inputs === 2 && h('td', { className: 'px-2 py-0.5 font-mono ' + (r[1] ? 'text-emerald-400' : 'text-slate-200') }, r[1] ? '1' : '0'),
                   h('td', { className: 'px-2 py-0.5 font-bold font-mono ' + (qVal ? 'text-emerald-400' : 'text-red-400') }, qVal ? '1' : '0')
                 );
               }))
@@ -1681,7 +1681,7 @@ window.StemLab = window.StemLab || {
                   // Supply
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col items-center px-2 py-1 rounded bg-red-900/30 border border-red-700' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '\u26A1'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-red-400' }, supplyV + 'V')
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-red-400' }, supplyV + 'V')
                   ),
                   // Wire
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'self-center text-slate-600' }, '\u2014'),
@@ -1690,10 +1690,10 @@ window.StemLab = window.StemLab || {
                     var compInfo = COMP_PALETTE.find(function(p) { return p.type === comp.type; }) || {};
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, compInfo.icon || '?'),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, comp.value),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
-                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[10px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
+                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[11px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
                         'aria-label': 'Remove ' + comp.label
                       }, '\u2715'),
                       ci < components.length - 1 ? null : null
@@ -1703,7 +1703,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'self-center text-slate-600' }, '\u2014'),
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600' },
                     h('span', { className: 'text-lg' }, '\u23DA'),
-                    h('span', { className: 'text-[10px] text-slate-600' }, 'GND')
+                    h('span', { className: 'text-[11px] text-slate-600' }, 'GND')
                   )
                 )
           ),
@@ -1902,7 +1902,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                   key: i,
                   onClick: function() { upd('fabStage', i); },
-                  className: 'w-6 h-6 rounded-full flex items-center justify-center text-[10px] cursor-pointer transition-all ' +
+                  className: 'w-6 h-6 rounded-full flex items-center justify-center text-[11px] cursor-pointer transition-all ' +
                     (i === stage ? 'ring-2 ring-offset-1 ring-offset-slate-900' : '') + ' ' +
                     (i <= stage ? 'bg-opacity-100' : 'bg-opacity-30'),
                   style: { backgroundColor: fs.color + (i <= stage ? '' : '40') },
@@ -2071,7 +2071,7 @@ window.StemLab = window.StemLab || {
               return h('button', Object.assign({
                 key: key,
                 onClick: function() { upd('ledMaterial', key); tryAwardXP('led-' + key, 5, 'Explored ' + m.name + ' LED'); },
-                className: 'px-2 py-1 text-[10px] font-semibold rounded-full transition-all ' +
+                className: 'px-2 py-1 text-[11px] font-semibold rounded-full transition-all ' +
                   (d.ledMaterial === key ? 'ring-2 ring-white shadow-lg' : 'opacity-70 hover:opacity-100'),
                 style: { backgroundColor: m.color, color: key === 'white' || key === 'yellow' ? '#000' : '#FFF' }
               }, a11yClick ? a11yClick(function() { upd('ledMaterial', key); }) : {}), m.name.split(' ')[0]);
@@ -2644,12 +2644,12 @@ window.StemLab = window.StemLab || {
           // Energy level stats
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
             levels.map(function(lev) {
-              return statBadge('E' + lev.n, lev.E.toFixed(3) + ' eV', lev.bound ? 'text-cyan-400' : 'text-slate-500');
+              return statBadge('E' + lev.n, lev.E.toFixed(3) + ' eV', lev.bound ? 'text-cyan-400' : 'text-slate-200');
             })
           ),
           // Transition energies
           transitions.length > 0 && h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-800/60 border border-slate-700' },
-            h('div', { className: 'text-[10px] text-slate-600 uppercase tracking-wider mb-1' }, 'Optical Transitions'),
+            h('div', { className: 'text-[11px] text-slate-600 uppercase tracking-wider mb-1' }, 'Optical Transitions'),
             h('div', { className: 'flex flex-wrap gap-2' },
               transitions.filter(function(tr) { return tr.dE > 0; }).slice(0, 4).map(function(tr) {
                 return h('div', { key: tr.from + '-' + tr.to, className: 'text-xs text-slate-300' },
@@ -3192,7 +3192,7 @@ window.StemLab = window.StemLab || {
         var misses = d.challengeMisses || 0;
 
         var tierNames = ['Cadet', 'Technician', 'Engineer', 'Specialist', 'Master', 'Grandmaster'];
-        var tierColors = ['text-slate-400', 'text-blue-400', 'text-cyan-400', 'text-purple-400', 'text-amber-400', 'text-red-400'];
+        var tierColors = ['text-slate-200', 'text-blue-400', 'text-cyan-400', 'text-purple-400', 'text-amber-400', 'text-red-400'];
         var tierName = tierNames[Math.min(tier, tierNames.length - 1)];
         var tierColor = tierColors[Math.min(tier, tierColors.length - 1)];
 
@@ -3211,7 +3211,7 @@ window.StemLab = window.StemLab || {
             ),
             // Tier progress bar
             h('div', { className: 'w-48 mx-auto mb-4' },
-              h('div', { className: 'text-[10px] text-slate-600 mb-1' }, 'Progress to next rank'),
+              h('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'Progress to next rank'),
               h('div', { className: 'h-2 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
@@ -3232,7 +3232,7 @@ window.StemLab = window.StemLab || {
           ),
           // Question card
           h('div', { className: 'p-4 rounded-xl bg-slate-800 border border-slate-700 mb-3' },
-            current.topic && h('span', { className: 'text-[10px] uppercase tracking-wider text-cyan-500 mb-1 block' }, current.topic),
+            current.topic && h('span', { className: 'text-[11px] uppercase tracking-wider text-cyan-500 mb-1 block' }, current.topic),
             h('p', { className: 'text-sm font-semibold text-white mb-3', role: 'status' }, current.q),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-2' },
               current.opts.map(function(opt) {
@@ -3321,7 +3321,7 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'text-center py-6' },
             h('div', { className: 'text-4xl mb-2' }, '\u2694\uFE0F'),
             h('div', { className: 'text-lg font-bold text-white mb-1' }, 'Chip Defense'),
-            h('div', { className: 'text-sm text-slate-500 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
+            h('div', { className: 'text-sm text-slate-200 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
             h('div', { className: 'flex justify-center gap-3 mb-4' },
               statBadge('Best Score', String(d.battleScore || 0)),
               statBadge('Rounds', String(BATTLE_ROUNDS.length))
@@ -3362,23 +3362,23 @@ window.StemLab = window.StemLab || {
           // HP bars
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[10px] text-slate-600 mb-0.5' }, '\uD83D\uDEE1\uFE0F Your Chip'),
+              h('div', { className: 'text-[11px] text-slate-600 mb-0.5' }, '\uD83D\uDEE1\uFE0F Your Chip'),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-emerald-500 rounded-full transition-all', style: { width: (playerHP / 5 * 100) + '%' } })
               ),
-              h('div', { className: 'text-[10px] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
+              h('div', { className: 'text-[11px] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
             ),
             h('div', { className: 'text-sm font-bold text-slate-600' }, 'VS'),
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[10px] text-slate-600 mb-0.5 text-right' }, currentRound.enemy),
+              h('div', { className: 'text-[11px] text-slate-600 mb-0.5 text-right' }, currentRound.enemy),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-red-500 rounded-full transition-all', style: { width: (enemyHP / 5 * 100) + '%' } })
               ),
-              h('div', { className: 'text-[10px] text-red-400 mt-0.5 text-right' }, enemyHP + '/5 HP')
+              h('div', { className: 'text-[11px] text-red-400 mt-0.5 text-right' }, enemyHP + '/5 HP')
             )
           ),
           // Round info
-          h('div', { className: 'text-xs text-slate-500 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
+          h('div', { className: 'text-xs text-slate-200 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
           // Enemy card
           h('div', { className: 'p-4 rounded-xl bg-red-900/20 border border-red-800 mb-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg mb-1' }, currentRound.enemy),
@@ -3525,12 +3525,12 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'text-sm font-bold text-white' }, '\uD83D\uDCDA Semiconductor Concepts'),
-            h('div', { className: 'text-[10px] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
+            h('div', { className: 'text-[11px] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
           ),
           TOPICS.map(function(item) {
             return h('details', { className: 'group', key: item.title },
               h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors list-none flex items-center gap-1', 'aria-expanded': 'false' },
-                h('span', { className: 'text-[10px] text-slate-600 group-open:rotate-90 transition-transform' }, '\u25B6'),
+                h('span', { className: 'text-[11px] text-slate-600 group-open:rotate-90 transition-transform' }, '\u25B6'),
                 item.title
               ),
               h('div', { className: 'mt-1 pl-4 text-xs text-slate-300 leading-relaxed' }, item.body)
@@ -3579,7 +3579,7 @@ window.StemLab = window.StemLab || {
 
       var backBtn = h('button', Object.assign({
         onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
-        className: 'flex items-center gap-1 text-xs text-slate-500 hover:text-white transition-colors mb-2'
+        className: 'flex items-center gap-1 text-xs text-slate-200 hover:text-white transition-colors mb-2'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
         h(ArrowLeft, { size: 14 }), ' Back to STEM Lab'
       );
@@ -3599,7 +3599,7 @@ window.StemLab = window.StemLab || {
             if (announceToSR) announceToSR('Selected ' + st.label + ' tool');
           });
         }),
-        h('span', { className: 'text-[10px] text-slate-600 self-center ml-1' }, '\u2190\u2192 keys')
+        h('span', { className: 'text-[11px] text-slate-600 self-center ml-1' }, '\u2190\u2192 keys')
       ) : null;
 
       var content;
@@ -3662,8 +3662,8 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-2 mb-2' },
           h('span', { className: 'text-2xl' }, '\uD83D\uDCA1'),
           h('h2', { className: 'text-lg font-bold text-white' }, 'Semiconductor Lab'),
-          h('span', { className: 'text-[10px] text-slate-600 ml-1' }, 'v3.0'),
-          h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
+          h('span', { className: 'text-[11px] text-slate-600 ml-1' }, 'v3.0'),
+          h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
         ),
         tabBar,
         subtoolNav,

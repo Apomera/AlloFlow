@@ -462,11 +462,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-center gap-2 flex-wrap text-lg font-bold' },
               pp.map(function(p, i) {
                 return h(React.Fragment, { key: i },
-                  i > 0 && h('span', { className: 'text-slate-400' }, '+'),
+                  i > 0 && h('span', { className: 'text-slate-600' }, '+'),
                   h('span', { className: p.text + ' bg-white px-2 py-0.5 rounded-lg border shadow-sm' }, p.value)
                 );
               }),
-              h('span', { className: 'text-slate-400' }, '='),
+              h('span', { className: 'text-slate-600' }, '='),
               h('span', { className: 'text-2xl text-indigo-900 bg-indigo-100 px-3 py-0.5 rounded-lg border border-indigo-300 shadow-sm' }, total)
             ),
             h('p', { className: 'text-xs text-indigo-500 mt-2 italic' },

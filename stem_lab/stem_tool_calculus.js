@@ -375,7 +375,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Header
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function(){setStemLabTool(null);}, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, {size:18,className:'text-slate-500'})),
+            h('button', { onClick: function(){setStemLabTool(null);}, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, {size:18,className:'text-slate-600'})),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u222B Calculus'),
             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-red-100 text-red-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
             cScore > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
@@ -475,7 +475,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p', { className: 'text-sm font-black text-slate-600' }, pctOff.toFixed(1) + '%')
                   )
                 ),
-                h('p', { className: 'text-xs italic ' + (pctOff<5?'text-emerald-600':pctOff<20?'text-amber-600':'text-slate-500') },
+                h('p', { className: 'text-xs italic ' + (pctOff<5?'text-emerald-600':pctOff<20?'text-amber-600':'text-slate-600') },
                   pctOff<5 ? '\uD83C\uDFAF Excellent! Within 5% \u2014 you have strong spatial intuition!' :
                   pctOff<15 ? '\uD83D\uDC4D Good intuition! Within 15%. Tip: think about the average y-value \u00D7 width.' :
                   '\uD83D\uDCA1 Keep at it! Estimation gets better with practice. Try: pick a "middle" y-value and multiply by the width.'

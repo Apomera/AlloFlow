@@ -954,7 +954,7 @@ window.StemLab = window.StemLab || {
                     )
                   ),
                   placed.length === 0
-                    ? React.createElement("div", { className: "text-center py-8 text-slate-500" },
+                    ? React.createElement("div", { className: "text-center py-8 text-slate-600" },
                         React.createElement("div", { className: "text-4xl mb-2" }, "\uD83E\uDE99"),
                         React.createElement("p", { className: "text-xs" }, challengeMode ? 'Add coins/bills, then guess the total!' : 'Click coins or bills to add them here')
                       )
@@ -990,7 +990,7 @@ window.StemLab = window.StemLab || {
                   // Normal mode: show total
                   !challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
                     React.createElement("div", { className: "flex justify-between text-xs" },
-                      React.createElement("span", { className: "text-slate-500" }, placed.length + " items on board"),
+                      React.createElement("span", { className: "text-slate-600" }, placed.length + " items on board"),
                       React.createElement("span", { className: "font-bold text-emerald-600" }, "Total: " + fmt(boardTotal))
                     )
                   )
@@ -1409,11 +1409,11 @@ window.StemLab = window.StemLab || {
                     // ── Normal Mode: Show totals ──
                     !challengeMode && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-1" },
                       React.createElement("div", { className: "flex justify-between text-xs" },
-                        React.createElement("span", { className: "text-slate-500" }, "Subtotal"),
+                        React.createElement("span", { className: "text-slate-600" }, "Subtotal"),
                         React.createElement("span", { className: "font-bold" }, fmt(cartTotal))
                       ),
                       gc.includeTax && React.createElement("div", { className: "flex justify-between text-xs" },
-                        React.createElement("span", { className: "text-slate-500" }, "Tax (8%)"),
+                        React.createElement("span", { className: "text-slate-600" }, "Tax (8%)"),
                         React.createElement("span", { className: "font-bold text-orange-500" }, fmt(cartTax))
                       ),
                       React.createElement("div", { className: "flex justify-between text-sm font-black" },
@@ -1606,7 +1606,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
                           React.createElement("div", { className: "text-center" },
                             React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Original Price"),
-                            React.createElement("p", { className: "text-2xl font-black text-slate-400 line-through" }, fmt(d.discOriginal)),
+                            React.createElement("p", { className: "text-2xl font-black text-slate-600 line-through" }, fmt(d.discOriginal)),
                             React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
                               React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-600 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
                               d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-800 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
@@ -1689,7 +1689,7 @@ window.StemLab = window.StemLab || {
                       return React.createElement("div", { key: ci, className: "text-center p-2 rounded-lg", style: { background: cat.color + '15' } },
                         React.createElement("p", { className: "text-lg" }, cat.name.split(' ')[0]),
                         React.createElement("p", { className: "text-xs font-black", style: { color: cat.color } }, fmt(budgetIncome * cat.pct / 100)),
-                        React.createElement("p", { className: "text-[11px] text-slate-500" }, cat.pct + '%')
+                        React.createElement("p", { className: "text-[11px] text-slate-600" }, cat.pct + '%')
                       );
                     })
                   ),
@@ -2096,11 +2096,11 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-100 text-center" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Simple Interest"),
-                      React.createElement("p", { className: "text-2xl font-black text-slate-500" }, cur.symbol + Math.round(ciSimple).toLocaleString()),
+                      React.createElement("p", { className: "text-2xl font-black text-slate-600" }, cur.symbol + Math.round(ciSimple).toLocaleString()),
                       React.createElement("p", { className: "text-xs text-slate-600 font-bold" }, "+" + cur.symbol + Math.round(ciSimpleInterest).toLocaleString() + " earned")
                     )
                   ),
-                  React.createElement("p", { className: "text-xs font-bold text-center " + (ciCompoundInterest > ciSimpleInterest * 1.1 ? 'text-emerald-600' : 'text-slate-500'), style: { marginBottom: 8 } },
+                  React.createElement("p", { className: "text-xs font-bold text-center " + (ciCompoundInterest > ciSimpleInterest * 1.1 ? 'text-emerald-600' : 'text-slate-600'), style: { marginBottom: 8 } },
                     "\uD83D\uDCA1 Compound earns " + cur.symbol + Math.round(ciCompoundInterest - ciSimpleInterest).toLocaleString() + " MORE than simple interest!"
                   ),
                   // Growth table
@@ -2119,7 +2119,7 @@ window.StemLab = window.StemLab || {
                           return React.createElement("tr", { key: ri, className: ri % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                             React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, r.year),
                             React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-blue-600" }, cur.symbol + Math.round(r.compound).toLocaleString()),
-                            React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-500" }, cur.symbol + Math.round(r.simple).toLocaleString()),
+                            React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.simple).toLocaleString()),
                             React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-emerald-500" }, "+" + cur.symbol + Math.round(r.compound - r.simple).toLocaleString())
                           );
                         })
@@ -2161,7 +2161,7 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 text-center opacity-75" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Start at " + (retAge + 10)),
-                      React.createElement("p", { className: "text-2xl font-black text-slate-500" }, cur.symbol + Math.round(retLateResult.total).toLocaleString()),
+                      React.createElement("p", { className: "text-2xl font-black text-slate-600" }, cur.symbol + Math.round(retLateResult.total).toLocaleString()),
                       React.createElement("p", { className: "text-[11px] text-slate-600" }, "Contributed: " + cur.symbol + Math.round(retLateResult.contributed).toLocaleString()),
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600" }, "Growth: " + cur.symbol + Math.round(retLateResult.growth).toLocaleString())
                     )
@@ -2187,7 +2187,7 @@ window.StemLab = window.StemLab || {
                           return React.createElement("tr", { key: ri, className: ri % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                             React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, r.age),
                             React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-violet-600" }, cur.symbol + Math.round(r.balance).toLocaleString()),
-                            React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-500" }, late ? cur.symbol + Math.round(late.balance).toLocaleString() : '\u2014')
+                            React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-600" }, late ? cur.symbol + Math.round(late.balance).toLocaleString() : '\u2014')
                           );
                         })
                       )
@@ -2268,7 +2268,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.payment).toLocaleString()),
                             React.createElement("td", { className: "px-2 py-1.5 text-right text-blue-600 font-bold" }, cur.symbol + Math.round(r.principal).toLocaleString()),
                             React.createElement("td", { className: "px-2 py-1.5 text-right text-red-500" }, cur.symbol + Math.round(r.interest).toLocaleString()),
-                            React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-500" }, cur.symbol + Math.round(r.balance).toLocaleString())
+                            React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.balance).toLocaleString())
                           );
                         })
                       )
@@ -2326,7 +2326,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Per Day"),
                       React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + (Math.round(sgDailyNeeded * 100) / 100).toFixed(2)),
-                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "\u2248 skip a coffee")
+                      React.createElement("p", { className: "text-[11px] text-slate-600" }, "\u2248 skip a coffee")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border-2 border-emerald-300" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Per Week"),
@@ -2366,7 +2366,7 @@ window.StemLab = window.StemLab || {
                           var revealed = d.fqFb != null;
                           var isCorrect = ci === fq.correct;
                           var btnClass = revealed
-                            ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (selected ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (selected ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-600'))
                             : (selected ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md' : 'border-slate-200 bg-white text-slate-600 hover:border-amber-300 hover:bg-amber-50');
                           return React.createElement("button", { "aria-label": "Change fq answer", key: ci, disabled: revealed, onClick: function () { upd('fqAnswer', ci); upd('fqFb', null); },
                             className: "p-3 rounded-xl border-2 text-sm font-bold text-left transition-all " + btnClass
