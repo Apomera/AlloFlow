@@ -187,16 +187,26 @@ var createDocPipeline = function(deps) {
 
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
+  // Base64 data URLs are swapped to placeholders before Gemini sees them and restored after,
+  // so Gemini cannot silently strip or truncate base64 image data.
   const aiFixChunked = async (html, violationsText, label) => {
     if (!html) return html;
-    const chunks = splitHtmlOnTagBoundary(html, HTML_FIX_CHUNK);
+    // Strip data URLs before chunking so tokens ride cleanly through splits.
+    const stripped = stripDataUrls(html);
+    const workingHtml = stripped.html;
+    const chunks = splitHtmlOnTagBoundary(workingHtml, HTML_FIX_CHUNK);
+    const _countTokens = (s) => (s ? (s.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length : 0);
     if (chunks.length === 1) {
       // Short doc: single call with full document
       try {
-        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${html}\n"""\n\nReturn the COMPLETE fixed HTML.`;
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten. Preserve tokens of the form __ALLOFLOW_DATAURL_N__ verbatim — they represent embedded images.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${workingHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
         const fixed = stripFence(await callGemini(prompt, true));
-        if (acceptFixedHtml(fixed, html)) return fixed;
-        warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
+        const tokensBefore = _countTokens(workingHtml);
+        const tokensAfter = _countTokens(fixed);
+        if (acceptFixedHtml(fixed, workingHtml) && tokensAfter >= tokensBefore) {
+          return restoreDataUrls(fixed, stripped.map);
+        }
+        warnLog(`[aiFixChunked:${label}] single-chunk rejected (tokens=${tokensAfter}/${tokensBefore}) — keeping original`);
         return html;
       } catch (e) {
         warnLog(`[aiFixChunked:${label}] single-chunk failed:`, e?.message);
@@ -204,7 +214,7 @@ var createDocPipeline = function(deps) {
       }
     }
     // Multi-chunk: fix each fragment with strict per-chunk integrity
-    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks`);
+    warnLog(`[aiFixChunked:${label}] splitting ${workingHtml.length} chars into ${chunks.length} chunks (data-URL tokens protected)`);
     const fixed = new Array(chunks.length);
     for (let ci = 0; ci < chunks.length; ci++) {
       const part = chunks[ci];
@@ -214,14 +224,16 @@ var createDocPipeline = function(deps) {
         : isLast
           ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
-      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten. Preserve tokens of the form __ALLOFLOW_DATAURL_N__ verbatim — they represent embedded images.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
       try {
         const out = stripFence(await callGemini(prompt, true));
-        // Per-chunk integrity: output must not shrink by more than 5% text content
-        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
+        const tokensBefore = _countTokens(part);
+        const tokensAfter = _countTokens(out);
+        // Per-chunk integrity: output must not shrink by more than 5% text content AND all data-URL tokens must survive
+        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95 && tokensAfter >= tokensBefore) {
           fixed[ci] = out;
         } else {
-          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}, tokens=${tokensAfter}/${tokensBefore}) — keeping original`);
           fixed[ci] = part;
         }
       } catch (e) {
@@ -229,7 +241,7 @@ var createDocPipeline = function(deps) {
         fixed[ci] = part;
       }
     }
-    return fixed.join('');
+    return restoreDataUrls(fixed.join(''), stripped.map);
   };
 
   // ── Shared surgical tools (hoisted to factory scope — single source of truth) ──
@@ -2186,7 +2198,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         var surgApplied = 0;
         for (var si = 0; si < surgFixes.length; si++) {
           var fix = surgFixes[si];
-          var tool = fix && fix.tool && surgicalTools[fix.tool];
+          var tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
           if (tool) {
             var before = accessibleHtml;
             accessibleHtml = tool(accessibleHtml, fix);
@@ -3873,7 +3885,7 @@ Return ONLY the complete fixed HTML.`, true);
               if (Array.isArray(chunkSurgFixes)) {
                 for (let sfi = 0; sfi < chunkSurgFixes.length; sfi++) {
                   const fix = chunkSurgFixes[sfi];
-                  const tool = fix && fix.tool && surgicalTools[fix.tool];
+                  const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
                   if (tool) {
                     const before = preFixedChunk;
                     preFixedChunk = tool(preFixedChunk, fix);
@@ -4323,7 +4335,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
       if (Array.isArray(surgFixes)) {
         for (const fix of surgFixes) {
-          const tool = fix && fix.tool && surgicalTools[fix.tool];
+          const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
           if (tool) {
             const before = preFixedChunk;
             preFixedChunk = tool(preFixedChunk, fix);
