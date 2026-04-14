@@ -232,6 +232,351 @@ var createDocPipeline = function(deps) {
     return fixed.join('');
   };
 
+  // ── Shared surgical tools (hoisted to factory scope — single source of truth) ──
+  // Deterministic micro-operations that apply targeted fixes from Gemini-generated JSON directives.
+  // Used by fixAndVerifyPdf, autoFixAxeViolations, refixChunk, and remediateSurgicallyThenAI.
+  const SHARED_SURGICAL_TOOLS = {
+    fix_alt_text: function(html, p) {
+      if (!p.index && p.index !== 0) return html;
+      let idx = 0;
+      return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+        if (idx++ !== p.index) return m;
+        if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
+        return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
+      });
+    },
+    fix_heading: function(html, p) {
+      if (!p.newLevel) return html;
+      let idx = 0;
+      return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
+        if (idx++ !== (p.index || 0)) return m;
+        return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
+      });
+    },
+    fix_link_text: function(html, p) {
+      if (!p.newText) return html;
+      let idx = 0;
+      return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
+        if (idx++ !== (p.index || 0)) return m;
+        var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
+        if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
+          return '<a' + attrs + '>' + p.newText + '</a>';
+        }
+        return m;
+      });
+    },
+    fix_table_caption: function(html, p) {
+      if (!p.caption) return html;
+      let idx = 0;
+      return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
+        if (idx++ !== (p.index || 0)) return m;
+        return '<table' + attrs + '><caption>' + p.caption + '</caption>';
+      });
+    },
+    fix_aria_label: function(html, p) {
+      if (!p.tag || !p.label) return html;
+      let idx = 0;
+      var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
+      return html.replace(re, function(m, attrs) {
+        if (idx++ !== (p.index || 0)) return m;
+        if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+        return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+      });
+    },
+    fix_lang: function(html, p) {
+      if (!p.lang) return html;
+      return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
+                 .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+    },
+    fix_th_scope: function(html, p) {
+      var scope = p.scope || 'col';
+      let idx = 0;
+      return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
+        if (p.index !== undefined && idx++ !== p.index) return m;
+        return '<th scope="' + scope + '"' + attrs + '>';
+      });
+    },
+    fix_remove_empty_heading: function(html, p) {
+      let idx = 0;
+      return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
+        if (p.index !== undefined && idx++ !== p.index) return m;
+        return '';
+      });
+    },
+    fix_input_label: function(html, p) {
+      if (!p.label) return html;
+      let idx = 0;
+      return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
+        if (idx++ !== (p.index || 0)) return m;
+        if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+        return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+      });
+    },
+    fix_button_name: function(html, p) {
+      if (!p.label) return html;
+      let idx = 0;
+      return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
+        if (idx++ !== (p.index || 0)) return m;
+        if (content.trim()) return m;
+        return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
+      });
+    },
+    fix_iframe_title: function(html, p) {
+      if (!p.title) return html;
+      let idx = 0;
+      return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
+        if (idx++ !== (p.index || 0)) return m;
+        if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
+        return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
+      });
+    },
+    fix_add_landmark: function(html, p) {
+      var tag = p.tag || 'section';
+      var label = p.label || 'Content';
+      var selector = p.selector || 'body';
+      if (selector === 'body' && !html.includes('<main')) {
+        return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+      }
+      return html;
+    },
+    fix_duplicate_id: function(html, p) {
+      if (!p.id) return html;
+      let count = 0;
+      return html.replace(new RegExp('id="' + p.id + '"', 'g'), function(m) {
+        count++;
+        if (count === 1) return m;
+        return 'id="' + p.id + '-' + count + '"';
+      });
+    },
+    fix_figcaption: function(html, p) {
+      if (!p.caption) return html;
+      let idx = 0;
+      return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
+        if (idx++ !== (p.index || 0)) return m;
+        if (/<figcaption/i.test(content)) return m;
+        return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
+      });
+    },
+    fix_title: function(html, p) {
+      if (!p.title) return html;
+      if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
+      return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
+    },
+    fix_lang_span: function(html, p) {
+      if (!p.text || !p.lang) return html;
+      var escaped = p.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return html.replace(new RegExp(escaped), '<span lang="' + p.lang + '">' + p.text + '</span>');
+    },
+    fix_contrast: function(html, p) {
+      if (!p.oldColor || !p.newColor) return html;
+      return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
+    },
+    fix_table_header_row: function(html, p) {
+      let idx = 0;
+      return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
+        if (idx++ !== (p.index || 0)) return m;
+        if (/<thead/i.test(content)) return m;
+        var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
+          var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
+          return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
+        });
+        return '<table' + attrs + '>' + fixed + '</table>';
+      });
+    },
+    fix_abbreviation: function(html, p) {
+      if (!p.abbr || !p.title) return html;
+      var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
+      var replaced = false;
+      return html.replace(re, function(m) {
+        if (replaced) return m;
+        replaced = true;
+        return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
+      });
+    },
+    fix_image_decorative: function(html, p) {
+      let idx = 0;
+      return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+        if (idx++ !== (p.index || 0)) return m;
+        var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
+        return '<img alt="" role="presentation"' + cleaned + '>';
+      });
+    },
+    fix_list_wrap: function(html, p) {
+      var tag = p.ordered ? 'ol' : 'ul';
+      return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
+        var before = html.substring(Math.max(0, offset - 100), offset);
+        if (/<[uo]l[^>]*>\s*$/i.test(before)) return m;
+        return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
+      });
+    },
+    fix_skip_nav: function(html) {
+      if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
+      return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+    },
+    fix_text_spacing: function(html, p) {
+      var css = '';
+      if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
+      if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
+      if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
+      if (!css) return html;
+      var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
+      if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
+      return style + html;
+    },
+  };
+
+  // ── Data-URL placeholder swap (protects base64 images from Gemini corruption) ──
+  // Replace all `src="data:..."` with stable placeholders before sending HTML to Gemini,
+  // then restore from the map after. Gemini never sees base64 so it cannot truncate/strip it.
+  const stripDataUrls = (html) => {
+    if (!html) return { html: html, map: {} };
+    const map = {};
+    let counter = 0;
+    const out = html.replace(/(src|href)\s*=\s*"(data:[^"]+)"/gi, function(m, attr, dataUrl) {
+      const token = '__ALLOFLOW_DATAURL_' + (counter++) + '__';
+      map[token] = dataUrl;
+      return attr + '="' + token + '"';
+    });
+    return { html: out, map: map };
+  };
+  const restoreDataUrls = (html, map) => {
+    if (!html || !map) return html;
+    let out = html;
+    Object.keys(map).forEach(function(token) {
+      out = out.split(token).join(map[token]);
+    });
+    return out;
+  };
+
+  // ── Surgical-then-Gemini remediation for second-pass "Fix Remaining" ──
+  // Layered defense: (1) strip base64 data URLs, (2) chunk on tag boundaries,
+  // (3) per chunk: surgical diagnosis + apply, (4) optional Gemini rewrite with integrity gates,
+  // (5) reassemble, (6) restore base64. Never sends base64 to Gemini.
+  const remediateSurgicallyThenAI = async (html, opts) => {
+    if (!html) return { html: html, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 };
+    const options = opts || {};
+    const aiIssues = options.aiIssues || [];
+    const axeResult = options.axeResult || null;
+    const enableGeminiPass = options.enableGeminiPass !== false;
+    const onProgress = options.onProgress || (function() {});
+
+    // Build compact violation summary for prompts
+    const violationLines = [];
+    (aiIssues || []).forEach(function(i) {
+      if (i && i.issue) violationLines.push('AI ' + (i.severity || 'issue') + ': ' + i.issue + (i.wcag ? ' (WCAG ' + i.wcag + ')' : ''));
+    });
+    if (axeResult) {
+      ['critical', 'serious', 'moderate', 'minor'].forEach(function(sev) {
+        (axeResult[sev] || []).forEach(function(v) {
+          const targetHint = (v.nodeDetails && v.nodeDetails[0] && v.nodeDetails[0].target) ? ' target=' + JSON.stringify(v.nodeDetails[0].target) : '';
+          violationLines.push('AXE ' + sev.toUpperCase() + ': ' + v.description + ' (' + v.id + ')' + targetHint);
+        });
+      });
+    }
+    const violationText = violationLines.slice(0, 20).join('\n') || 'General WCAG 2.1 AA compliance issues';
+
+    // Step 1: strip data URLs
+    const stripped = stripDataUrls(html);
+    let workingHtml = stripped.html;
+
+    // Step 2: chunk
+    const chunks = splitHtmlOnTagBoundary(workingHtml, HTML_FIX_CHUNK);
+    warnLog('[SurgicalThenAI] Processing ' + chunks.length + ' chunk(s) with ' + violationLines.length + ' violations');
+
+    let surgicalFixCount = 0;
+    let geminiPassCount = 0;
+    let rejectedChunks = 0;
+    const fixedChunks = new Array(chunks.length);
+
+    for (let ci = 0; ci < chunks.length; ci++) {
+      let chunk = chunks[ci];
+      onProgress('Chunk ' + (ci + 1) + '/' + chunks.length + ': surgical diagnosis...');
+
+      // Step 3a: surgical diagnosis + apply
+      try {
+        const surgPrompt =
+          'You are an accessibility remediation expert. Analyze this HTML section and prescribe SPECIFIC targeted fixes.\n\n' +
+          'KNOWN VIOLATIONS:\n' + violationText + '\n\n' +
+          'HTML SECTION ' + (ci + 1) + '/' + chunks.length + ':\n"""\n' + chunk.substring(0, 5000) + '\n"""\n\n' +
+          'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' +
+          'CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n' +
+          'TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n' +
+          'FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n' +
+          'STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n' +
+          'VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}, fix_abbreviation {abbr, title}, fix_text_spacing {letterSpacing?, lineHeight?}\n' +
+          'LIST: fix_list_wrap {ordered}, fix_skip_nav {}\n' +
+          'Return ONLY a valid JSON array. Be specific — use the actual document content.';
+        const surgRaw = await callGemini(surgPrompt, true);
+        const parseSurg = (raw) => {
+          if (!raw) return [];
+          try { return JSON.parse(raw); } catch(e) {
+            try { return JSON.parse(raw.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { return []; }
+          }
+        };
+        const directives = parseSurg(surgRaw);
+        if (Array.isArray(directives)) {
+          for (let di = 0; di < directives.length; di++) {
+            const fix = directives[di];
+            const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
+            if (tool) {
+              const before = chunk;
+              try { chunk = tool(chunk, fix); } catch(toolErr) { /* tool failed, keep previous */ chunk = before; }
+              if (chunk !== before) surgicalFixCount++;
+            }
+          }
+        }
+      } catch(surgErr) {
+        warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' surgical skipped: ' + (surgErr && surgErr.message));
+      }
+
+      // Step 3b: optional Gemini full-rewrite pass with integrity gates
+      if (enableGeminiPass && violationLines.length > 0) {
+        onProgress('Chunk ' + (ci + 1) + '/' + chunks.length + ': AI rewrite pass...');
+        try {
+          const isFirst = ci === 0, isLast = ci === chunks.length - 1;
+          const fragNote = isFirst
+            ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
+            : isLast
+              ? 'This is the LAST fragment — it may end with </main></body></html>.'
+              : 'This is a middle fragment — starts and ends mid-document.';
+          const rewritePrompt =
+            'Fix any REMAINING WCAG violations in this HTML fragment. The fragment has already had surgical fixes applied — focus on what\'s left.\n\n' +
+            fragNote + '\n\n' +
+            'VIOLATIONS CONTEXT:\n' + violationText + '\n\n' +
+            'RULES: Preserve ALL text content, ALL attributes (especially src= values even if they look like placeholders), ALL inline styles. Do NOT shorten, summarize, or drop content.\n\n' +
+            'HTML:\n"""\n' + chunk + '\n"""\n\n' +
+            'Return ONLY the fixed fragment.';
+          const rewritten = stripFence(await callGemini(rewritePrompt, true));
+          // Integrity gates: length >= 90%, text >= 95%, and data-URL tokens must survive unchanged
+          const tokensBefore = (chunk.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length;
+          const tokensAfter = rewritten ? (rewritten.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length : 0;
+          const lengthOk = rewritten && rewritten.length >= chunk.length * 0.9;
+          const textOk = rewritten && textCharCount(rewritten) >= textCharCount(chunk) * 0.95;
+          const tokensOk = tokensAfter >= tokensBefore;
+          if (rewritten && lengthOk && textOk && tokensOk) {
+            chunk = rewritten;
+            geminiPassCount++;
+          } else {
+            rejectedChunks++;
+            warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' Gemini rewrite rejected (length=' + (rewritten ? rewritten.length : 0) + '/' + chunk.length + ', tokens=' + tokensAfter + '/' + tokensBefore + ')');
+          }
+        } catch(rewriteErr) {
+          warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' rewrite failed: ' + (rewriteErr && rewriteErr.message));
+        }
+      }
+      fixedChunks[ci] = chunk;
+    }
+
+    // Step 4: reassemble
+    let reassembled = fixedChunks.join('');
+
+    // Step 5: restore data URLs
+    reassembled = restoreDataUrls(reassembled, stripped.map);
+
+    warnLog('[SurgicalThenAI] Done: ' + surgicalFixCount + ' surgical fixes, ' + geminiPassCount + ' Gemini passes, ' + rejectedChunks + ' rejected chunks');
+    return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
+  };
+
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
   const ensurePdfJsLoaded = async () => {
@@ -7338,6 +7683,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
+    remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
   };
 };
 

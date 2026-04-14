@@ -1102,7 +1102,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'emergency_response', icon: '🚒', name: 'Emergency Responder', desc: 'Yield correctly to a fire truck or ambulance spawned from a landmark.' },
     { id: 'maine_explorer', icon: '🗽', name: 'Maine Explorer', desc: 'Visit a lighthouse in Free Explore.' },
     { id: 'civic_scholar', icon: '🎓', name: 'Civic Scholar', desc: 'Visit a school, library, and post office.' },
-    { id: 'safe_return', icon: '🏠', name: 'Safe Return', desc: 'Visit 3+ landmarks in one drive without crashing.' }
+    { id: 'safe_return', icon: '🏠', name: 'Safe Return', desc: 'Visit 3+ landmarks in one drive without crashing.' },
+    { id: 'bus_respect', icon: '🚌', name: 'Bus Respect', desc: 'Stop for a school bus with its stop-arm extended.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -2414,6 +2415,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var roadBump = ((Math.floor(car.x * 5) * 37 + Math.floor(car.y * 5) * 73) % 10 - 5) * 0.002;
           car._suspY = Math.sin(timeRef.current * suspFreq) * suspAmp + roadBump;
 
+          // ─── RUMBLE STRIPS: detect off-road edge drift and provide audio + visual feedback ───
+          // Check if car is on the shoulder area (just off the painted edge line)
+          if (absSpeed > 5) { // only meaningful when moving
+            var currentCell = 2; // default grass
+            var shoulderX = Math.abs(car.x - Math.floor(MAP_SIZE / 2));
+            if (infiniteWorldRef.current) {
+              currentCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
+            } else if (mapRef.current && Math.floor(car.y) >= 0 && Math.floor(car.y) < MAP_SIZE && Math.floor(car.x) >= 0 && Math.floor(car.x) < MAP_SIZE) {
+              currentCell = mapRef.current[Math.floor(car.y)][Math.floor(car.x)];
+            }
+            // Detect edge drift: car is NEAR shoulder (within 1 cell of road edge on grass) or on grass moving fast
+            var onGrass = currentCell === 2 || currentCell === 4;
+            var nearShoulder = currentCell === 0 && shoulderX >= 3.0 && shoulderX <= 3.5;
+            if ((onGrass && absSpeed > 8) || nearShoulder) {
+              // Rumble strip audio: low-frequency buzz that only plays while off-line
+              try {
+                var ar = audioRef.current;
+                if (ar && ar.ctx) {
+                  if (!ar._rumbleOsc) {
+                    ar._rumbleOsc = ar.ctx.createOscillator();
+                    ar._rumbleGain = ar.ctx.createGain();
+                    ar._rumbleOsc.type = 'sawtooth';
+                    ar._rumbleOsc.frequency.value = 45; // deep rumble
+                    ar._rumbleGain.gain.value = 0;
+                    ar._rumbleOsc.connect(ar._rumbleGain);
+                    ar._rumbleGain.connect(ar.ctx.destination);
+                    ar._rumbleOsc.start();
+                  }
+                  // Modulate rumble intensity with speed
+                  var rumbleVol = Math.min(0.08, absSpeed * 0.003);
+                  ar._rumbleGain.gain.setTargetAtTime(rumbleVol, ar.ctx.currentTime, 0.05);
+                  // Frequency wobble to sell the "strip passing under wheel" feel
+                  ar._rumbleOsc.frequency.setValueAtTime(45 + Math.sin(timeRef.current * 30) * 8, ar.ctx.currentTime);
+                }
+              } catch (rErr) { /* non-blocking */ }
+              // Visual: shake the car slightly
+              car._suspY += Math.sin(timeRef.current * 40) * 0.02;
+              // Gentle nudge toast (once every 10s max)
+              if (!statsRef.current._lastRumble || timeRef.current - statsRef.current._lastRumble > 10) {
+                statsRef.current._lastRumble = timeRef.current;
+                if (onGrass) {
+                  eventToastRef.current = { msg: '⚠️ Off the road! Steer back gently — don\'t jerk the wheel.', until: timeRef.current + 3 };
+                } else {
+                  eventToastRef.current = { msg: '💡 Rumble strip — drifting toward the shoulder. Adjust gently.', until: timeRef.current + 3 };
+                }
+              }
+            } else {
+              // Off rumble strip — fade out audio
+              try {
+                var ar2 = audioRef.current;
+                if (ar2 && ar2._rumbleGain) {
+                  ar2._rumbleGain.gain.setTargetAtTime(0, ar2.ctx.currentTime, 0.1);
+                }
+              } catch (rErr2) {}
+            }
+          }
+
           // Friction circle: lateral grip needed vs available.
           // If you brake HARD while turning, you exceed the grip budget and skid.
           var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.08;
@@ -2560,7 +2618,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Generate event appropriate for the landmark
                     var evt = null;
                     if (lt2.id === 'school') {
-                      evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
+                      // 50/50: ball event OR school bus stop-arm reminder
+                      if (Math.random() < 0.5) {
+                        evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
+                      } else {
+                        // School bus with extended stop arm — Maine + all 50 states require FULL STOP
+                        // even from the opposite direction on undivided roads
+                        evt = { kind: 'schoolbus_arm', icon: '🚌', warn: 'SCHOOL BUS stopped with RED FLASHING lights! STOP — illegal to pass!', color: '#fbbf24' };
+                      }
                     } else if (lt2.id === 'park') {
                       evt = { kind: 'ball', icon: '⚽', warn: 'Ball rolling from park — child may follow!', color: '#fbbf24' };
                     } else if (lt2.id === 'market' || lt2.id === 'pharmacy' || lt2.id === 'library') {
@@ -2817,6 +2882,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return;
             }
           } else {
+            // School bus with stop-arm sits still and tests compliance
+            if (w.kind === 'schoolbus_arm') {
+              w.vx = 0; w.vy = 0; // stationary
+              w.life -= dt * 0.3; // slower countdown (7-second stop event)
+              if (w.life <= 0) { wildlifeRef.current = null; return; }
+              // Detect whether player passes it too fast (illegal pass violation)
+              var busDx = w.x - car.x;
+              var busDy = w.y - car.y;
+              var busDist = Math.hypot(busDx, busDy);
+              if (!w.passed && busDist < 3 && Math.abs(car.speed) > 3) {
+                w.passed = true;
+                statsRef.current.safetyScore -= 30;
+                statsRef.current.crashes++;
+                addToast('🚨 ILLEGAL PASS! You passed a stopped school bus. -30 safety');
+                eventToastRef.current = { msg: '🚨 PASSING A STOPPED SCHOOL BUS is a serious violation — this endangers children.', until: timeRef.current + 6 };
+                speak('Illegal pass of a stopped school bus. This is a serious violation in all 50 states.');
+              }
+              if (!w.credited && busDist < 5 && Math.abs(car.speed) < 1) {
+                w.credited = true;
+                statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
+                statsRef.current.stops = (statsRef.current.stops || 0) + 1;
+                addToast('✓ Stopped for the school bus. +5 safety');
+                eventToastRef.current = { msg: '✓ Correct. Stopped school bus = FULL STOP in both directions (undivided road).', until: timeRef.current + 4 };
+                var busBadges = Object.assign({}, (d.badges || {}));
+                if (!busBadges.bus_respect) {
+                  busBadges.bus_respect = true;
+                  addToast('🏅 Achievement: Bus Respect 🚌');
+                  upd('badges', busBadges);
+                }
+              }
+              return;
+            }
             w.x += w.vx * dt;
             w.y += w.vy * dt;
             w.life -= dt;
@@ -6319,6 +6416,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillRect(W / 2 - 40, 2, 80, 18);
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
           gfx.fillText(nearestDir + '  ' + Math.round(headingDeg) + '°', W / 2, 15);
+
+          // ─── TURN-BY-TURN NAVIGATION ARROW (when quest active) ───
+          if (questRef.current && !questRef.current.completed && d.freeExplore) {
+            var navQ = questRef.current;
+            // Calculate relative direction to destination from player's perspective
+            var navDx = navQ.x - car.x;
+            var navDy = navQ.y - car.y;
+            var navDistToQuest = Math.hypot(navDx, navDy);
+            // Convert to angle relative to car's heading
+            var absoluteAngle = Math.atan2(navDy, navDx);
+            var relativeAngle = absoluteAngle - car.heading;
+            // Normalize to -PI to PI
+            while (relativeAngle > Math.PI) relativeAngle -= Math.PI * 2;
+            while (relativeAngle < -Math.PI) relativeAngle += Math.PI * 2;
+            // Display navigation banner
+            var navX = W / 2;
+            var navY = 28;
+            var navW = 220;
+            var navH = 46;
+            gfx.fillStyle = 'rgba(30,41,59,0.85)';
+            gfx.strokeStyle = '#fbbf24';
+            gfx.lineWidth = 2;
+            gfx.fillRect(navX - navW / 2, navY, navW, navH);
+            gfx.strokeRect(navX - navW / 2, navY, navW, navH);
+            // Big direction arrow (rotates based on relative angle)
+            // -PI/2 = forward, 0 = right, PI/2 = backward, etc.
+            gfx.save();
+            gfx.translate(navX - 75, navY + navH / 2);
+            gfx.rotate(relativeAngle + Math.PI / 2); // +PI/2 so forward = up
+            gfx.fillStyle = '#fbbf24';
+            gfx.beginPath();
+            gfx.moveTo(0, -14);
+            gfx.lineTo(-10, 10);
+            gfx.lineTo(-4, 6);
+            gfx.lineTo(-4, 14);
+            gfx.lineTo(4, 14);
+            gfx.lineTo(4, 6);
+            gfx.lineTo(10, 10);
+            gfx.closePath();
+            gfx.fill();
+            gfx.restore();
+            // Destination label + distance
+            gfx.fillStyle = '#fef3c7'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText(navQ.icon + ' ' + navQ.name, navX - 55, navY + 16);
+            gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 14px monospace';
+            var distFeet = Math.round(navDistToQuest * 10);
+            var distLabel = distFeet > 5280 ? (distFeet / 5280).toFixed(1) + ' mi' : distFeet + ' ft';
+            gfx.fillText(distLabel, navX - 55, navY + 34);
+            // Turn hint
+            var turnHint = '';
+            if (Math.abs(relativeAngle + Math.PI / 2) < 0.3) turnHint = 'Straight ahead';
+            else if (relativeAngle > 0) turnHint = 'Turn right';
+            else if (relativeAngle < 0) turnHint = 'Turn left';
+            if (navDistToQuest < 10) turnHint = 'Arriving...';
+            gfx.fillStyle = '#cbd5e1'; gfx.font = '10px system-ui';
+            gfx.textAlign = 'right';
+            gfx.fillText(turnHint, navX + navW / 2 - 8, navY + 28);
+          }
 
           // Quest / destination HUD (top-left, below scenario info)
           var q = questRef.current;

@@ -18900,6 +18900,7 @@ Return ONLY valid JSON:
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
+  const remediateSurgicallyThenAI = _docPipeline ? _docPipeline.remediateSurgicallyThenAI : async (h) => ({ html: h, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
@@ -51526,27 +51527,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               html = html.replace(/<img([^>]*)>/gi, (m, a) => /alt\s*=/.test(a) ? m : `<img alt="Document image"${a}>`);
                               html = html.replace(/<th(?![^>]*scope)/gi, '<th scope="col"');
                               html = html.replace(/<a([^>]*)>\s*<\/a>/gi, (m, a) => { const h = a.match(/href="([^"]*)"/); return `<a${a}>${h ? h[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`; });
-                              // Gemini targeted fix — skip on large docs (would require truncation → unsafe)
-                              const GEMINI_FIX_MAX_CHARS = 15000;
-                              if (html.length <= GEMINI_FIX_MAX_CHARS) {
-                                setPdfFixStep(`Pass ${pass + 1}: AI fixing ${allIssues.length} issues...`);
-                                const fixPrompt = `You are an accessibility remediation expert. Fix ONLY these WCAG issues. Do NOT introduce new problems. Preserve ALL content. Return the COMPLETE HTML.\n\nISSUES:\n${allIssues.join('\n')}\n\nHTML:\n"""${html}"""\n\nReturn ONLY fixed HTML.`;
-                                const fixed = await callGemini(fixPrompt, true);
-                                // Integrity guards: structural, length, and word count — reject Gemini response that drops content.
-                                if (fixed && (fixed.includes('<!DOCTYPE') || fixed.includes('<html'))) {
-                                  const lengthOk = fixed.length >= html.length * 0.9;
-                                  const beforeWords = countWords(html.replace(/<[^>]+>/g, ' '));
-                                  const afterWords = countWords(fixed.replace(/<[^>]+>/g, ' '));
-                                  const wordsOk = beforeWords === 0 || afterWords >= beforeWords * 0.9;
-                                  if (lengthOk && wordsOk) {
-                                    html = fixed;
-                                  } else {
-                                    warnLog(`[Fix Remaining] Pass ${pass + 1}: Gemini response rejected (length ${fixed.length}/${html.length}, words ${afterWords}/${beforeWords}) — keeping deterministic fixes only`);
-                                  }
+                              // ── Surgical-then-AI remediation (chunked, content-preserving, data-URL-safe) ──
+                              // Replaces the old whole-document Gemini round-trip.
+                              // Step 1: strip base64 data URLs → placeholders (protects images from Gemini corruption).
+                              // Step 2: chunk on tag boundaries.
+                              // Step 3 per chunk: surgical diagnosis (JSON directives → deterministic tools) THEN Gemini rewrite (integrity-gated).
+                              // Step 4: reassemble + restore base64.
+                              try {
+                                setPdfFixStep(`Pass ${pass + 1}: surgical + AI remediation (${allIssues.length} issues)...`);
+                                const remResult = await remediateSurgicallyThenAI(html, {
+                                  aiIssues: (bestAi?.issues || []),
+                                  axeResult: bestAxe,
+                                  enableGeminiPass: true,
+                                  onProgress: (msg) => setPdfFixStep(`Pass ${pass + 1}: ${msg}`),
+                                });
+                                if (remResult && remResult.html) {
+                                  html = remResult.html;
+                                  warnLog(`[Fix Remaining] Pass ${pass + 1}: ${remResult.surgicalFixCount} surgical fixes, ${remResult.geminiPassCount} Gemini passes, ${remResult.rejectedChunks} rejected chunks`);
                                 }
-                              } else {
-                                setPdfFixStep(`Pass ${pass + 1}: skipping AI fix (doc too large for round-trip)...`);
-                                warnLog(`[Fix Remaining] Pass ${pass + 1}: skipping Gemini (html ${html.length} > ${GEMINI_FIX_MAX_CHARS} chars) — relying on deterministic + axe fixes`);
+                              } catch(remErr) {
+                                warnLog(`[Fix Remaining] Pass ${pass + 1}: surgical-then-AI failed, continuing with deterministic-only fixes: ${remErr?.message}`);
                               }
                               cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
                               // Verify with 2 AI audits + axe (parallel — no extra time)
