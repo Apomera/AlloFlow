@@ -30,12 +30,12 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 
 For `doc_pipeline_source.jsx` → `doc_pipeline_module.js`:
 ```bash
-{ echo '(function(){"use strict";'; echo 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}'; cat prismflow-deploy/src/doc_pipeline_source.jsx; echo ''; echo 'window.AlloModules = window.AlloModules || {};'; echo 'window.AlloModules.createDocPipeline = createDocPipeline;'; echo 'window.AlloModules.DocPipelineModule = true;'; echo "console.log('[DocPipelineModule] Pipeline factory registered');"; echo '})();'; } > doc_pipeline_module.js && cp doc_pipeline_module.js prismflow-deploy/public/doc_pipeline_module.js && node -c doc_pipeline_module.js && echo "✓ doc_pipeline compiled"
+{ echo '(function(){"use strict";'; echo 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}'; cat doc_pipeline_source.jsx; echo ''; echo 'window.AlloModules = window.AlloModules || {};'; echo 'window.AlloModules.createDocPipeline = createDocPipeline;'; echo 'window.AlloModules.DocPipelineModule = true;'; echo "console.log('[DocPipelineModule] Pipeline factory registered');"; echo '})();'; } > doc_pipeline_module.js && cp doc_pipeline_module.js prismflow-deploy/public/doc_pipeline_module.js && node -c doc_pipeline_module.js && echo "✓ doc_pipeline compiled"
 ```
 Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > **Source → Module mapping:**
-> - `prismflow-deploy/src/doc_pipeline_source.jsx` → `doc_pipeline_module.js` (+ copy to `prismflow-deploy/public/`)
+> - `doc_pipeline_source.jsx` (root) → `doc_pipeline_module.js` (+ copy to `prismflow-deploy/public/`)
 > - `prismflow-deploy/src/games_source.jsx` → `games_module.js`
 > - `prismflow-deploy/src/adventure_source.jsx` → `adventure_module.js`
 > - `prismflow-deploy/src/content_engine_source.jsx` → `content_engine_module.js`
