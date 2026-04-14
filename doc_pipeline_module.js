@@ -2756,8 +2756,12 @@ HTML section ${chunkNum}/${chunks.length}:
       let results;
       try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      // Strip <script> tags before writing — they can break document.write() parsing
+      // (remediated HTML sometimes contains <script> blocks with JSON/template literals that
+      // iframe's HTML parser chokes on). Not needed for a11y auditing — axe-core only checks DOM structure.
+      const _safeHtml = htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '');
       iframeDoc.open();
-      iframeDoc.write(htmlContent);
+      iframeDoc.write(_safeHtml);
       iframeDoc.close();
 
       // Wait for iframe content to render
@@ -6281,7 +6285,13 @@ tr { page-break-inside: avoid; }
     if (!htmlContent) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) { addToast('Pop-up blocked — allow pop-ups to download PDF', 'error'); return; }
-    printWindow.document.write(htmlContent);
+    try {
+      printWindow.document.write(htmlContent);
+    } catch(writeErr) {
+      warnLog('[downloadAccessiblePdf] doc.write failed — retrying with scripts stripped: ' + (writeErr?.message || writeErr));
+      try { printWindow.document.write(htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '')); }
+      catch(retryErr) { warnLog('[downloadAccessiblePdf] fallback write also failed: ' + (retryErr?.message || retryErr)); }
+    }
     printWindow.document.close();
     // Add print instructions
     const printBanner = printWindow.document.createElement('div');
@@ -6364,7 +6374,20 @@ tr { page-break-inside: avoid; }
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
     doc.open();
-    doc.write(themed);
+    try {
+      doc.write(themed);
+    } catch(writeErr) {
+      // document.write can throw "Invalid or unexpected token" if the HTML contains
+      // malformed <script> blocks with unclosed template literals, JSON, etc.
+      // Fall back to script-stripped version — the preview loses interactive JS but remains viewable.
+      warnLog('[updatePdfPreview] doc.write failed (' + (writeErr?.message || writeErr) + ') — retrying with scripts stripped');
+      try {
+        const _fallbackHtml = themed.replace(/<script[\s\S]*?<\/script>/gi, '');
+        doc.write(_fallbackHtml);
+      } catch(retryErr) {
+        warnLog('[updatePdfPreview] fallback write also failed: ' + (retryErr?.message || retryErr));
+      }
+    }
     doc.close();
     // Enable editing
     setTimeout(() => {
