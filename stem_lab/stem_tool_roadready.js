@@ -552,6 +552,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Pattern repeats every ~12 chunks: highway → suburban → residential → commercial → residential → rural → ...
   var BIOME_PROGRESSION = ['suburban', 'suburban', 'residential', 'residential', 'commercial', 'residential', 'residential', 'suburban', 'rural', 'rural', 'rural', 'industrial'];
 
+  // ─────────────────────────────────────────────────────────
+  // LANDMARKS: pre-designed destination structures that make the world feel alive.
+  // Each landmark occupies a 5x5 cell footprint next to the road. Students see them
+  // from a distance, can recognize them, and real-world driving contexts emerge
+  // (school zone speed limit, pedestrians from library, etc.)
+  // ─────────────────────────────────────────────────────────
+  var LANDMARK_TYPES = [
+    { id: 'school',    name: 'Elementary School',   icon: '🏫', color: 0xc13a3a, roofColor: 0x8b1a1a, size: 6, height: 4,  sign: 'SCHOOL',       signColor: 0xfcd34d, contextRule: 'school_zone_20mph', eventChance: 0.15, biomes: ['residential','suburban'] },
+    { id: 'library',   name: 'Public Library',      icon: '📚', color: 0x6b4a2a, roofColor: 0x3d2817, size: 5, height: 3.5,sign: 'LIBRARY',      signColor: 0xfef3c7, contextRule: null,                eventChance: 0.05, biomes: ['residential','suburban','commercial'] },
+    { id: 'hospital',  name: 'Hospital',            icon: '🏥', color: 0xe5e7eb, roofColor: 0x1e40af, size: 7, height: 5,  sign: 'HOSPITAL',     signColor: 0xef4444, contextRule: 'slow_ambulance',    eventChance: 0.10, biomes: ['commercial','suburban'] },
+    { id: 'police',    name: 'Police Station',      icon: '🚔', color: 0x1e3a8a, roofColor: 0x0f172a, size: 5, height: 3,  sign: 'POLICE',       signColor: 0x60a5fa, contextRule: 'check_speed',       eventChance: 0.20, biomes: ['commercial','suburban','residential'] },
+    { id: 'fire',      name: 'Fire Station',        icon: '🚒', color: 0xb91c1c, roofColor: 0x7f1d1d, size: 6, height: 3.5,sign: 'FIRE DEPT',    signColor: 0xfacc15, contextRule: 'emergency_vehicle', eventChance: 0.12, biomes: ['commercial','suburban'] },
+    { id: 'gas',       name: 'Gas Station',         icon: '⛽', color: 0x065f46, roofColor: 0xfacc15, size: 5, height: 2.5,sign: 'GAS',          signColor: 0xfcd34d, contextRule: null,                eventChance: 0.08, biomes: ['commercial','suburban','rural'] },
+    { id: 'diner',     name: 'Diner',               icon: '🍽️', color: 0xdc2626, roofColor: 0xfef3c7, size: 5, height: 2.5,sign: 'DINER',        signColor: 0xf97316, contextRule: null,                eventChance: 0.08, biomes: ['commercial','rural'] },
+    { id: 'park',      name: 'Public Park',         icon: '🌳', color: 0x16a34a, roofColor: 0x15803d, size: 7, height: 0.3,sign: 'PARK',         signColor: 0x166534, contextRule: 'pedestrians',       eventChance: 0.15, biomes: ['residential','suburban'] },
+    { id: 'church',    name: 'Church',              icon: '⛪', color: 0xf5f5f4, roofColor: 0x78716c, size: 5, height: 5,  sign: 'CHURCH',       signColor: 0x44403c, contextRule: null,                eventChance: 0.05, biomes: ['residential','rural','suburban'] },
+    { id: 'market',    name: 'Grocery Market',      icon: '🛒', color: 0xf59e0b, roofColor: 0x78350f, size: 6, height: 3,  sign: 'MARKET',       signColor: 0xffffff, contextRule: 'pedestrians',       eventChance: 0.12, biomes: ['commercial','suburban'] },
+    { id: 'pharmacy',  name: 'Pharmacy',            icon: '💊', color: 0x059669, roofColor: 0x064e3b, size: 5, height: 3,  sign: 'RX',           signColor: 0xffffff, contextRule: null,                eventChance: 0.08, biomes: ['commercial','suburban'] },
+    { id: 'post',      name: 'Post Office',         icon: '📮', color: 0x1e40af, roofColor: 0xffffff, size: 5, height: 3,  sign: 'POST OFFICE',  signColor: 0xef4444, contextRule: null,                eventChance: 0.05, biomes: ['commercial','residential','suburban'] },
+    { id: 'farm',      name: 'Farm',                icon: '🚜', color: 0xdc2626, roofColor: 0x7f1d1d, size: 6, height: 4,  sign: 'FARM',         signColor: 0xfef3c7, contextRule: 'slow_vehicle',      eventChance: 0.12, biomes: ['rural'] },
+    { id: 'lighthouse',name: 'Lighthouse',          icon: '🗼', color: 0xffffff, roofColor: 0xdc2626, size: 4, height: 8,  sign: 'LIGHTHOUSE',   signColor: 0x1e40af, contextRule: null,                eventChance: 0.05, biomes: ['rural'] },
+    { id: 'home',      name: 'Maine Cottage',       icon: '🏠', color: 0xfef3c7, roofColor: 0x78350f, size: 4, height: 3,  sign: null,           signColor: 0xffffff, contextRule: null,                eventChance: 0.03, biomes: ['residential','rural','suburban'] }
+  ];
+
+  // Choose a landmark appropriate for a biome (deterministic by chunk index)
+  function pickLandmarkForBiome(biome, rng) {
+    var eligible = LANDMARK_TYPES.filter(function(lt) { return lt.biomes.indexOf(biome) >= 0; });
+    if (eligible.length === 0) return null;
+    return eligible[Math.floor(rng() * eligible.length)];
+  }
+
   function generateChunk(chunkIndex, seed, centerX) {
     var rng = seededRandom(seed + chunkIndex * 7919);
     // Use progression for coherent neighborhoods, with seed-based variation
@@ -559,22 +590,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var biome = BIOME_PROGRESSION[progIndex];
     // 20% chance to override with a random biome for variety
     if (rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
-    var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null };
+    var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null, landmark: null };
     // Generate cell grid for this chunk
     for (var y = 0; y < CHUNK_SIZE; y++) {
       var row = [];
       for (var x = 0; x < MAP_SIZE; x++) row.push(2); // grass
       chunk.cells.push(row);
     }
-    // Road through center with possible curve
-    var curveAmp = biome === 'rural' ? 5 : biome === 'suburban' ? 2 : 0;
-    var curveFreq = biome === 'rural' ? 0.12 : 0.06;
+    // Road through center — curves DISABLED for now because the 3D road plane is straight.
+    // A curved road plane would need bespoke geometry; keeping the road straight guarantees
+    // the visual road plane and the collision/placement grid always agree.
+    var curveAmp = 0;
+    var curveFreq = 0;
     // Intersections: ~40% chance but never two in a row (guaranteed gap)
     var hasIntersection = rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3);
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
+    // Reserve wider main-road corridor: widest possible width across all biomes (4) + safety buffer
+    var MAX_ROAD_WIDTH = 4;
+    var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
-      var curveOffset = Math.round(Math.sin((chunkIndex * CHUNK_SIZE + cy) * curveFreq) * curveAmp);
-      var roadCenter = centerX + curveOffset;
+      var roadCenter = centerX;
       var roadWidth = biome === 'commercial' || biome === 'suburban' ? 4 : 3;
       for (var dx = -roadWidth; dx <= roadWidth; dx++) {
         var rx = roadCenter + dx;
@@ -597,12 +632,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
       }
     }
-    // Buildings based on biome — avoid placing on/near cross streets
+    // Buildings based on biome — avoid placing on/near cross streets, keep clearance buffer from road
     var buildingDensity = biome === 'commercial' ? 0.2 : biome === 'residential' ? 0.08 : biome === 'suburban' ? 0.06 : biome === 'industrial' ? 0.12 : 0.02;
     for (var by = 2; by < CHUNK_SIZE - 2; by++) {
       // Skip rows near the cross street intersection
       if (hasIntersection && Math.abs(by - intersectionY) < 5) continue;
       for (var bx = 0; bx < MAP_SIZE; bx++) {
+        // Enforce CLEARANCE_BUFFER cells away from road center
+        var distFromRoad = Math.abs(bx - centerX);
+        if (distFromRoad <= MAX_ROAD_WIDTH + CLEARANCE_BUFFER) continue; // never in clearance zone
         if (chunk.cells[by][bx] === 2 && rng() < buildingDensity) {
           var nearRoad = false;
           for (var checkDx = -2; checkDx <= 2; checkDx++) {
@@ -612,17 +650,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
       }
     }
-    // Trees
+    // ─── LANDMARK PLACEMENT (every 3rd chunk, alternating sides) ──────────
+    // Landmarks are pre-designed destinations that make the world feel alive.
+    // Marked with cell value 7 so the 3D renderer knows to draw them specially.
+    var shouldPlaceLandmark = (chunkIndex % 3 === 0 && chunkIndex !== 0) && !hasIntersection;
+    if (shouldPlaceLandmark) {
+      var landmark = pickLandmarkForBiome(biome, rng);
+      if (landmark) {
+        // Alternate sides of the road by chunk index for visual variety
+        var side = (chunkIndex % 6 < 3) ? 1 : -1;
+        // Place landmark well beyond the clearance buffer (buffer + small setback + 1 extra cell)
+        var landmarkStartX = centerX + side * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 3);
+        if (side === -1) landmarkStartX -= landmark.size;
+        var landmarkStartY = Math.floor((CHUNK_SIZE - landmark.size) / 2);
+        // Check the footprint is within bounds and not overlapping cross street
+        var canPlace = landmarkStartX >= 0 && landmarkStartX + landmark.size < MAP_SIZE;
+        if (canPlace && hasIntersection) {
+          for (var ly = landmarkStartY; ly < landmarkStartY + landmark.size; ly++) {
+            if (Math.abs(ly - intersectionY) < 5) { canPlace = false; break; }
+          }
+        }
+        if (canPlace) {
+          // Clear the footprint (remove any buildings the prior pass placed here)
+          for (var lmy = landmarkStartY; lmy < landmarkStartY + landmark.size; lmy++) {
+            for (var lmx = landmarkStartX; lmx < landmarkStartX + landmark.size; lmx++) {
+              if (lmy >= 0 && lmy < CHUNK_SIZE && lmx >= 0 && lmx < MAP_SIZE) {
+                chunk.cells[lmy][lmx] = 2; // reset to grass so 3D renderer only draws landmark, not buildings
+              }
+            }
+          }
+          // Mark anchor cell with value 7 so the 3D renderer can spawn the landmark
+          if (landmarkStartY >= 0 && landmarkStartY < CHUNK_SIZE && landmarkStartX >= 0 && landmarkStartX < MAP_SIZE) {
+            chunk.cells[landmarkStartY][landmarkStartX] = 7; // landmark anchor
+          }
+          chunk.landmark = {
+            type: landmark,
+            anchorX: landmarkStartX,
+            anchorY: landmarkStartY,
+            side: side,
+            centerX: landmarkStartX + Math.floor(landmark.size / 2),
+            centerY: landmarkStartY + Math.floor(landmark.size / 2)
+          };
+        }
+      }
+    }
+    // ─── FINAL ROAD CLEARANCE: triple-guarantee nothing blocks the road ────
+    // Expanded from 1-cell to CLEARANCE_BUFFER-cell buffer and handles all obstacle types
+    for (var cry = 0; cry < CHUNK_SIZE; cry++) {
+      for (var crx = 0; crx < MAP_SIZE; crx++) {
+        if (chunk.cells[cry][crx] === 0 || chunk.cells[cry][crx] === 3) {
+          for (var cdy = -CLEARANCE_BUFFER; cdy <= CLEARANCE_BUFFER; cdy++) {
+            for (var cdx = -CLEARANCE_BUFFER; cdx <= CLEARANCE_BUFFER; cdx++) {
+              var ny = cry + cdy, nx = crx + cdx;
+              if (ny >= 0 && ny < CHUNK_SIZE && nx >= 0 && nx < MAP_SIZE) {
+                var cv = chunk.cells[ny][nx];
+                // Remove ANY obstacle within the clearance buffer (trees, buildings, landmarks)
+                if (cv === 5 || cv === 1 || cv === 6 || cv === 7) chunk.cells[ny][nx] = 2;
+              }
+            }
+          }
+        }
+      }
+    }
+    // Trees (placed AFTER road clearance with extra strict checks)
     var treeDensity = biome === 'rural' ? 0.15 : biome === 'residential' ? 0.04 : biome === 'suburban' ? 0.03 : 0.01;
     for (var ty = 0; ty < CHUNK_SIZE; ty++) {
       for (var tx = 0; tx < MAP_SIZE; tx++) {
-        if (chunk.cells[ty][tx] === 2 && rng() < treeDensity) chunk.cells[ty][tx] = 5;
+        if (chunk.cells[ty][tx] !== 2) continue; // must be grass
+        // Strictly outside the clearance zone
+        var treeDistFromRoad = Math.abs(tx - centerX);
+        if (treeDistFromRoad <= MAX_ROAD_WIDTH + CLEARANCE_BUFFER) continue;
+        // Also guard against cross-street clearance
+        if (hasIntersection && Math.abs(ty - intersectionY) <= CLEARANCE_BUFFER + 1) continue;
+        if (rng() < treeDensity) {
+          // Triple-check: scan 2-cell radius for any road cell
+          var adjRoad = false;
+          for (var ady = -CLEARANCE_BUFFER; ady <= CLEARANCE_BUFFER; ady++) {
+            for (var adx = -CLEARANCE_BUFFER; adx <= CLEARANCE_BUFFER; adx++) {
+              var any2 = ty + ady, anx = tx + adx;
+              if (any2 >= 0 && any2 < CHUNK_SIZE && anx >= 0 && anx < MAP_SIZE) {
+                if (chunk.cells[any2][anx] === 0 || chunk.cells[any2][anx] === 3) adjRoad = true;
+              }
+            }
+          }
+          if (!adjRoad) chunk.cells[ty][tx] = 5;
+        }
       }
     }
     // Store metadata for 3D rendering and signal placement
     chunk.hasIntersection = hasIntersection;
     chunk.intersectionY = intersectionY;
-    chunk.roadCenter = centerX; // base center (curves added per-row)
+    chunk.roadCenter = centerX; // base center
     chunk.curveAmp = curveAmp;
     chunk.curveFreq = curveFreq;
     return chunk;
@@ -2289,6 +2407,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Infinite world: cleanup distant chunks periodically
           if (infiniteWorldRef.current && Math.floor(timeRef.current) % 5 === 0) {
             infiniteWorldRef.current.cleanup(Math.floor(car.y / CHUNK_SIZE));
+          }
+          // ─── LANDMARK PROXIMITY HUD ───
+          // When approaching a named landmark, announce it and (for schools) apply context rules.
+          if (infiniteWorldRef.current) {
+            if (!statsRef.current._announcedLandmarks) statsRef.current._announcedLandmarks = {};
+            var curCi = Math.floor(car.y / CHUNK_SIZE);
+            // Check current + next 2 chunks ahead (based on heading direction)
+            for (var lci = -1; lci <= 2; lci++) {
+              var scanChunk = infiniteWorldRef.current.getChunk(curCi + lci);
+              if (scanChunk && scanChunk.landmark) {
+                var lmWorldY = (curCi + lci) * CHUNK_SIZE + scanChunk.landmark.centerY;
+                var distToLm = Math.abs(lmWorldY - car.y);
+                var lmKey = (curCi + lci) + '_' + scanChunk.landmark.type.id;
+                // Announce when within 14 cells, only once per landmark
+                if (distToLm < 14 && !statsRef.current._announcedLandmarks[lmKey]) {
+                  statsRef.current._announcedLandmarks[lmKey] = timeRef.current;
+                  var lmType = scanChunk.landmark.type;
+                  var lmMsg = lmType.icon + ' ' + lmType.name + ' ahead';
+                  // Add context-specific guidance
+                  if (lmType.contextRule === 'school_zone_20mph') lmMsg += ' — SLOW DOWN to 20 mph (school zone)';
+                  else if (lmType.contextRule === 'check_speed') lmMsg += ' — check your speed';
+                  else if (lmType.contextRule === 'pedestrians') lmMsg += ' — watch for pedestrians';
+                  else if (lmType.contextRule === 'slow_vehicle') lmMsg += ' — farm equipment may be slow';
+                  else if (lmType.contextRule === 'emergency_vehicle') lmMsg += ' — emergency vehicles may exit';
+                  else if (lmType.contextRule === 'slow_ambulance') lmMsg += ' — watch for ambulances';
+                  eventToastRef.current = { msg: lmMsg, until: timeRef.current + 4 };
+                  if (typeof announceToSR === 'function') announceToSR(lmType.name + ' ahead');
+                }
+              }
+            }
+            // Garbage-collect old announcements to prevent memory growth
+            if (Math.floor(timeRef.current) % 30 === 0) {
+              Object.keys(statsRef.current._announcedLandmarks).forEach(function(k) {
+                if (timeRef.current - statsRef.current._announcedLandmarks[k] > 60) {
+                  delete statsRef.current._announcedLandmarks[k];
+                }
+              });
+            }
           }
           // Update stats
           var deltaDist = car.speed * dt;
@@ -4878,6 +5034,211 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     lf.castShadow = true;
                     chunkGroup.add(lf);
                   }
+                  // Landmark cell value 7 is handled separately below after the grid loop
+                }
+              }
+              // ─── LANDMARK RENDERING: pre-designed destination structures ───
+              if (chunk.landmark) {
+                var lm = chunk.landmark;
+                var lt = lm.type;
+                var lmCenterWX = lm.centerX - MAP_SIZE / 2;
+                var lmCenterWZ = chunkWorldZ + lm.centerY;
+                var lmMainMat = new T.MeshLambertMaterial({ color: lt.color });
+                var lmRoofMat = new T.MeshLambertMaterial({ color: lt.roofColor });
+
+                if (lt.id === 'park') {
+                  // Park: grass, trees, bench, sign
+                  var parkBase = new T.Mesh(new T.BoxGeometry(lt.size * 0.9, 0.1, lt.size * 0.9), new T.MeshLambertMaterial({ color: 0x4ade80 }));
+                  parkBase.position.set(lmCenterWX, 0.05, lmCenterWZ);
+                  chunkGroup.add(parkBase);
+                  // Three trees inside park
+                  for (var pti = 0; pti < 3; pti++) {
+                    var ptAngle = (pti / 3) * Math.PI * 2;
+                    var ptTrunk = new T.Mesh(new T.CylinderGeometry(0.12, 0.18, 1.2, 6), new T.MeshLambertMaterial({ color: 0x5c3a1e }));
+                    ptTrunk.position.set(lmCenterWX + Math.cos(ptAngle) * 1.5, 0.6, lmCenterWZ + Math.sin(ptAngle) * 1.5);
+                    chunkGroup.add(ptTrunk);
+                    var ptLeaf = new T.Mesh(new T.SphereGeometry(0.9, 8, 6), new T.MeshLambertMaterial({ color: 0x16a34a }));
+                    ptLeaf.position.set(lmCenterWX + Math.cos(ptAngle) * 1.5, 1.7, lmCenterWZ + Math.sin(ptAngle) * 1.5);
+                    chunkGroup.add(ptLeaf);
+                  }
+                  // Bench
+                  var benchMat = new T.MeshLambertMaterial({ color: 0x78350f });
+                  var bench = new T.Mesh(new T.BoxGeometry(1.5, 0.15, 0.4), benchMat);
+                  bench.position.set(lmCenterWX, 0.4, lmCenterWZ);
+                  chunkGroup.add(bench);
+                } else if (lt.id === 'lighthouse') {
+                  // Lighthouse: tall cylindrical tower with red top
+                  var lhBase = new T.Mesh(new T.CylinderGeometry(0.9, 1.1, lt.height, 10), lmMainMat);
+                  lhBase.position.set(lmCenterWX, lt.height / 2, lmCenterWZ);
+                  lhBase.castShadow = true;
+                  chunkGroup.add(lhBase);
+                  // Red stripes (characteristic of Maine lighthouses)
+                  var stripeMat = new T.MeshLambertMaterial({ color: 0xdc2626 });
+                  for (var lsi = 1; lsi < 4; lsi++) {
+                    var stripe = new T.Mesh(new T.CylinderGeometry(0.92, 1.02, 0.5, 10), stripeMat);
+                    stripe.position.set(lmCenterWX, lsi * (lt.height / 4), lmCenterWZ);
+                    chunkGroup.add(stripe);
+                  }
+                  // Top housing
+                  var lhTop = new T.Mesh(new T.CylinderGeometry(0.7, 0.7, 0.8, 10), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
+                  lhTop.position.set(lmCenterWX, lt.height + 0.4, lmCenterWZ);
+                  chunkGroup.add(lhTop);
+                  // Light (glowing)
+                  var lhLight = new T.Mesh(new T.SphereGeometry(0.4, 8, 6), new T.MeshBasicMaterial({ color: 0xfef3c7 }));
+                  lhLight.position.set(lmCenterWX, lt.height + 0.4, lmCenterWZ);
+                  chunkGroup.add(lhLight);
+                  // Roof cone
+                  var lhRoof = new T.Mesh(new T.ConeGeometry(0.8, 1.0, 10), lmRoofMat);
+                  lhRoof.position.set(lmCenterWX, lt.height + 1.3, lmCenterWZ);
+                  chunkGroup.add(lhRoof);
+                } else if (lt.id === 'church') {
+                  // Church: main hall + steeple
+                  var chBase = new T.Mesh(new T.BoxGeometry(lt.size * 0.6, lt.height * 0.5, lt.size * 0.8), lmMainMat);
+                  chBase.position.set(lmCenterWX, lt.height * 0.25, lmCenterWZ);
+                  chBase.castShadow = true;
+                  chunkGroup.add(chBase);
+                  // Pitched roof
+                  var chRoof = new T.Mesh(new T.ConeGeometry(lt.size * 0.55, lt.height * 0.3, 4), lmRoofMat);
+                  chRoof.rotation.y = Math.PI / 4;
+                  chRoof.position.set(lmCenterWX, lt.height * 0.5 + lt.height * 0.15, lmCenterWZ);
+                  chunkGroup.add(chRoof);
+                  // Steeple base
+                  var chSteeple = new T.Mesh(new T.BoxGeometry(1, lt.height * 0.5, 1), lmMainMat);
+                  chSteeple.position.set(lmCenterWX, lt.height * 0.75, lmCenterWZ - lt.size * 0.3);
+                  chunkGroup.add(chSteeple);
+                  // Steeple spire
+                  var chSpire = new T.Mesh(new T.ConeGeometry(0.7, 2.0, 4), lmRoofMat);
+                  chSpire.position.set(lmCenterWX, lt.height * 1.15, lmCenterWZ - lt.size * 0.3);
+                  chunkGroup.add(chSpire);
+                  // Cross
+                  var chCrossV = new T.Mesh(new T.BoxGeometry(0.08, 0.6, 0.08), new T.MeshLambertMaterial({ color: 0xfacc15 }));
+                  chCrossV.position.set(lmCenterWX, lt.height * 1.15 + 1.3, lmCenterWZ - lt.size * 0.3);
+                  chunkGroup.add(chCrossV);
+                  var chCrossH = new T.Mesh(new T.BoxGeometry(0.4, 0.08, 0.08), new T.MeshLambertMaterial({ color: 0xfacc15 }));
+                  chCrossH.position.set(lmCenterWX, lt.height * 1.15 + 1.4, lmCenterWZ - lt.size * 0.3);
+                  chunkGroup.add(chCrossH);
+                } else if (lt.id === 'gas') {
+                  // Gas station: small building + canopy with pumps
+                  var gsBldg = new T.Mesh(new T.BoxGeometry(lt.size * 0.5, lt.height, lt.size * 0.5), lmMainMat);
+                  gsBldg.position.set(lmCenterWX - 1, lt.height / 2, lmCenterWZ);
+                  chunkGroup.add(gsBldg);
+                  // Canopy (big yellow roof on pillars)
+                  var gsCanopy = new T.Mesh(new T.BoxGeometry(lt.size * 0.7, 0.3, lt.size * 0.5), lmRoofMat);
+                  gsCanopy.position.set(lmCenterWX + 1, lt.height * 0.9, lmCenterWZ);
+                  chunkGroup.add(gsCanopy);
+                  // Canopy pillars
+                  var pillarMat = new T.MeshLambertMaterial({ color: 0x4b5563 });
+                  for (var gpi = -1; gpi <= 1; gpi += 2) {
+                    for (var gpj = -1; gpj <= 1; gpj += 2) {
+                      var pillar = new T.Mesh(new T.BoxGeometry(0.2, lt.height * 0.9, 0.2), pillarMat);
+                      pillar.position.set(lmCenterWX + 1 + gpi * lt.size * 0.3, lt.height * 0.45, lmCenterWZ + gpj * lt.size * 0.2);
+                      chunkGroup.add(pillar);
+                    }
+                  }
+                  // Pumps
+                  var pumpMat = new T.MeshLambertMaterial({ color: 0xdc2626 });
+                  for (var pmi = -1; pmi <= 1; pmi += 2) {
+                    var pump = new T.Mesh(new T.BoxGeometry(0.4, 1.2, 0.3), pumpMat);
+                    pump.position.set(lmCenterWX + 1, 0.6, lmCenterWZ + pmi * 0.6);
+                    chunkGroup.add(pump);
+                  }
+                } else {
+                  // GENERIC LANDMARK (school, library, hospital, police, fire, etc.)
+                  // Main building — taller than regular buildings, distinct color
+                  var genBldg = new T.Mesh(new T.BoxGeometry(lt.size * 0.8, lt.height, lt.size * 0.8), lmMainMat);
+                  genBldg.position.set(lmCenterWX, lt.height / 2, lmCenterWZ);
+                  genBldg.castShadow = true;
+                  chunkGroup.add(genBldg);
+                  // Roof (flat-topped for civic buildings, pitched for residential/rural)
+                  if (lt.id === 'home' || lt.id === 'farm' || lt.id === 'diner') {
+                    // Pitched roof
+                    var pRoof = new T.Mesh(new T.ConeGeometry(lt.size * 0.6, lt.height * 0.4, 4), lmRoofMat);
+                    pRoof.rotation.y = Math.PI / 4;
+                    pRoof.position.set(lmCenterWX, lt.height + lt.height * 0.2, lmCenterWZ);
+                    chunkGroup.add(pRoof);
+                  } else {
+                    // Flat civic roof with parapet
+                    var fRoof = new T.Mesh(new T.BoxGeometry(lt.size * 0.85, 0.3, lt.size * 0.85), lmRoofMat);
+                    fRoof.position.set(lmCenterWX, lt.height + 0.15, lmCenterWZ);
+                    chunkGroup.add(fRoof);
+                  }
+                  // Entry door (facing road)
+                  var doorMat = new T.MeshLambertMaterial({ color: 0x78350f });
+                  var door = new T.Mesh(new T.BoxGeometry(0.6, 1.2, 0.1), doorMat);
+                  door.position.set(lmCenterWX + lm.side * (lt.size * 0.4), 0.6, lmCenterWZ);
+                  chunkGroup.add(door);
+                  // Windows (3 across the front)
+                  var windowMat = new T.MeshLambertMaterial({ color: 0x60a5fa, emissive: 0x1e3a8a, emissiveIntensity: 0.3 });
+                  for (var gwi = -1; gwi <= 1; gwi++) {
+                    var gwin = new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.05), windowMat);
+                    gwin.position.set(lmCenterWX + lm.side * (lt.size * 0.4), lt.height * 0.55, lmCenterWZ + gwi * 1.0);
+                    chunkGroup.add(gwin);
+                    // Second story for taller buildings
+                    if (lt.height > 3.5) {
+                      var gwin2 = new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.05), windowMat);
+                      gwin2.position.set(lmCenterWX + lm.side * (lt.size * 0.4), lt.height * 0.85, lmCenterWZ + gwi * 1.0);
+                      chunkGroup.add(gwin2);
+                    }
+                  }
+                  // Special touches per landmark type
+                  if (lt.id === 'hospital') {
+                    // Big red cross on roof
+                    var hcV = new T.Mesh(new T.BoxGeometry(0.3, 1.2, 0.1), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    hcV.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ);
+                    chunkGroup.add(hcV);
+                    var hcH = new T.Mesh(new T.BoxGeometry(1.2, 0.3, 0.1), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    hcH.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ);
+                    chunkGroup.add(hcH);
+                  } else if (lt.id === 'school') {
+                    // Flagpole with American flag
+                    var flagPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
+                    flagPole.position.set(lmCenterWX + lm.side * 2, 2, lmCenterWZ + 1.5);
+                    chunkGroup.add(flagPole);
+                    var flag = new T.Mesh(new T.BoxGeometry(0.8, 0.5, 0.02), new T.MeshLambertMaterial({ color: 0xef4444 }));
+                    flag.position.set(lmCenterWX + lm.side * 2 + lm.side * 0.4, 3.5, lmCenterWZ + 1.5);
+                    chunkGroup.add(flag);
+                  } else if (lt.id === 'fire') {
+                    // Garage door (larger)
+                    var fdMat = new T.MeshLambertMaterial({ color: 0xfef3c7 });
+                    var fd = new T.Mesh(new T.BoxGeometry(1.5, 1.8, 0.1), fdMat);
+                    fd.position.set(lmCenterWX + lm.side * (lt.size * 0.4) - 0.5, 0.9, lmCenterWZ);
+                    chunkGroup.add(fd);
+                  }
+                }
+                // ─── LANDMARK SIGN (always visible from road) ───
+                if (lt.sign) {
+                  // Sign post
+                  var spMat = new T.MeshLambertMaterial({ color: 0x4b5563 });
+                  var signPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 2.5, 6), spMat);
+                  signPole.position.set(lmCenterWX - lm.side * (lt.size * 0.55), 1.25, lmCenterWZ);
+                  chunkGroup.add(signPole);
+                  // Sign panel
+                  var signMat = new T.MeshBasicMaterial({ color: lt.signColor });
+                  var sign = new T.Mesh(new T.BoxGeometry(1.4, 0.6, 0.08), signMat);
+                  sign.position.set(lmCenterWX - lm.side * (lt.size * 0.55), 2.2, lmCenterWZ);
+                  chunkGroup.add(sign);
+                  // Sign text via canvas texture
+                  try {
+                    var signCan = document.createElement('canvas');
+                    signCan.width = 256; signCan.height = 128;
+                    var signCtx = signCan.getContext('2d');
+                    signCtx.fillStyle = '#' + lt.signColor.toString(16).padStart(6, '0');
+                    signCtx.fillRect(0, 0, 256, 128);
+                    signCtx.fillStyle = '#000000';
+                    signCtx.font = 'bold 42px system-ui, sans-serif';
+                    signCtx.textAlign = 'center';
+                    signCtx.textBaseline = 'middle';
+                    signCtx.fillText(lt.sign, 128, 64);
+                    signCtx.strokeStyle = '#000000';
+                    signCtx.lineWidth = 4;
+                    signCtx.strokeRect(4, 4, 248, 120);
+                    var signTex = new T.CanvasTexture(signCan);
+                    var signTextMat = new T.MeshBasicMaterial({ map: signTex, transparent: true });
+                    var signText = new T.Mesh(new T.PlaneGeometry(1.3, 0.55), signTextMat);
+                    signText.position.set(lmCenterWX - lm.side * (lt.size * 0.55), 2.2, lmCenterWZ + (lm.side * 0.06));
+                    signText.rotation.y = lm.side === 1 ? 0 : Math.PI;
+                    chunkGroup.add(signText);
+                  } catch (signErr) { /* canvas texture fallback — plain sign still shows */ }
                 }
               }
               // Road surface for this chunk (main N-S road)
