@@ -11,10 +11,20 @@
     "start": "node server.js",
     "backend": "node backend/server.js",
     "start:all": "node server.js --with-backend",
-    "clean": "node -e \"const fs=require('fs'); ['build','modules/local','src/LocalApp.jsx'].forEach(p => { try { fs.rmSync(p,{recursive:true}); } catch{} });\""
+    "clean": "node -e \"const fs=require('fs'); ['build','modules/local','src/LocalApp.jsx'].forEach(p => { try { fs.rmSync(p,{recursive:true}); } catch{} });\",",
+    "test": "node ../scripts/test_local_app.js",
+    "test:backend": "node ../scripts/test_local_app.js --backend-only",
+    "test:verbose": "node ../scripts/test_local_app.js --verbose",
+    "test:ci": "node ../scripts/test_local_app.js --backend-only --verbose",
+    "sync": "node ../scripts/sync_local.js",
+    "sync:apply": "node ../scripts/sync_local.js --apply",
+    "sync:check": "node ../scripts/sync_local.js --validate",
+    "playwright:install": "npx playwright install chromium",
+    "playwright:test": "npx playwright test --config tests/playwright.config.js"
   },
   "devDependencies": {
     "@mintplex-labs/piper-tts-web": "^1.0.4",
+    "@playwright/test": "^1.44.0",
     "esbuild": "^0.25.0",
     "lucide-react": "^1.7.0"
   }

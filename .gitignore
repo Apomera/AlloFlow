@@ -63,6 +63,8 @@ GEIS protocol*/
 scripts/*.py
 scripts/*.txt
 scripts/*.js
+!scripts/test_local_app.js
+!scripts/sync_local.js
 scripts/archive/
 stem_test*.js
 search_results.txt
@@ -120,6 +122,10 @@ setup-local-ai.bat
 
 # Misc test files
 nonshareabletest.txt
+
+# Test runner output (runtime artifacts — logs, HTML reports, Playwright traces)
+test-results/
+playwright-report/
 
 # Old flat stem_tool files (moved to prismflow-deploy/public/shared/modules/stem_lab/)
 prismflow-deploy/public/stem_tool_*.js
