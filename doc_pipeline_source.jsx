@@ -1073,12 +1073,16 @@ var createDocPipeline = function(deps) {
   };
 
   // ── PDF Accessibility Audit ──
-  const runPdfAccessibilityAudit = async (base64Data) => {
-    setPdfAuditLoading(true);
+  const runPdfAccessibilityAudit = async (base64Data, options) => {
+    // options: { skipUiUpdates?: boolean } — when true, skips setPdfAuditResult/setPdfAuditLoading/addToast
+    //                                        so batch mode can audit per-file without clobbering single-file UI state.
+    //                                        In either mode, the final audit result object is returned.
+    const _skipUi = !!(options && options.skipUiUpdates);
+    if (!_skipUi) setPdfAuditLoading(true);
     // Estimate audit time based on data size (rough proxy for page count before we know it)
     const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
     const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
-    addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
+    if (!_skipUi) addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
     try {
       // ── Triangulated scoring: run 2 independent audits, average scores, flag discrepancies ──
       const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.
@@ -1363,12 +1367,14 @@ Return ONLY valid JSON:
         hasForms: parsedAudits.some(a => a.hasForms),
         timestamp: new Date().toISOString(),
       };
-      setPdfAuditResult(triangulated);
+      if (!_skipUi) setPdfAuditResult(triangulated);
 
       // ── Quick axe-core baseline: extract text deterministically, build minimal HTML, run axe-core ──
       // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation)
       try {
-        const detBaseline = await extractPdfTextDeterministic(pendingPdfBase64);
+        // Use the passed-in base64 when skipping UI (batch mode) so we don't read stale pendingPdfBase64 state
+        const _base64ForBaseline = _skipUi ? base64Data : pendingPdfBase64;
+        const detBaseline = await extractPdfTextDeterministic(_base64ForBaseline);
         const rawText = detBaseline.fullText || '';
         // Build minimal HTML shell from extracted text
         const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${rawText.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n')}</main></body></html>`;
@@ -1376,26 +1382,39 @@ Return ONLY valid JSON:
         if (baselineAxe) {
           warnLog(`[PDF Audit] Baseline axe-core: score ${baselineAxe.score}, ${baselineAxe.totalViolations} violations`);
           // Blend initial score: 50/50 AI + axe-core
-          const blendedInitial = Math.round((triangulated.score + baselineAxe.score) / 2);
-          setPdfAuditResult(prev => ({
-            ...prev,
-            score: blendedInitial,
-            _aiOnlyScore: triangulated.score,
-            _baselineAxeScore: baselineAxe.score,
-            _baselineAxeAudit: baselineAxe,
-            _scoreIsBlended: true
-          }));
+          const aiOnlyScore = triangulated.score;
+          const blendedInitial = Math.round((aiOnlyScore + baselineAxe.score) / 2);
+          // Mutate the triangulated object so the returned result carries the blended score
+          triangulated.score = blendedInitial;
+          triangulated._aiOnlyScore = aiOnlyScore;
+          triangulated._baselineAxeScore = baselineAxe.score;
+          triangulated._baselineAxeAudit = baselineAxe;
+          triangulated._scoreIsBlended = true;
+          if (!_skipUi) {
+            setPdfAuditResult(prev => ({
+              ...prev,
+              score: blendedInitial,
+              _aiOnlyScore: aiOnlyScore,
+              _baselineAxeScore: baselineAxe.score,
+              _baselineAxeAudit: baselineAxe,
+              _scoreIsBlended: true
+            }));
+          }
         }
       } catch (axeErr) {
         warnLog('[PDF Audit] Baseline axe-core failed (non-blocking):', axeErr);
         // Keep the AI-only score — axe-core is optional at this stage
       }
+      if (!_skipUi) setPdfAuditLoading(false);
+      return triangulated;
     } catch (err) {
       warnLog('[PDF Audit] Failed:', err?.message || err);
       console.error('[PDF Audit] Full error:', err);
-      setPdfAuditResult({ score: -1, summary: `Audit failed: ${err?.message || 'Unknown error'}. You can retry or proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [] });
+      const failureResult = { score: -1, summary: `Audit failed: ${err?.message || 'Unknown error'}. You can retry or proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [] };
+      if (!_skipUi) setPdfAuditResult(failureResult);
+      if (!_skipUi) setPdfAuditLoading(false);
+      return failureResult;
     }
-    setPdfAuditLoading(false);
   };
 
   // ═══════════════════════════════════════════════════════════════════
@@ -2672,6 +2691,29 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const queue = [...pdfBatchQueue];
     const startTime = Date.now();
 
+    // ── Per-file processing via fixAndVerifyPdf (unifies with single-file pipeline) ──
+    // Each file: audit (UI-quiet) → fixAndVerifyPdf with batch overrides → collect result
+    // This gives batch mode all the single-file improvements: deterministic text extraction,
+    // RECITATION recovery, integrity checks, surgical fixes, etc.
+    const _processOne = async (item, i, isRetry) => {
+      const label = isRetry ? '[Retry]' : `[${i + 1}/${queue.length}]`;
+      const progress = (msg) => setPdfBatchStep(`${label} ${item.fileName}: ${msg}`);
+      // Step 1: per-file audit (suppresses single-file UI updates)
+      progress('Auditing...');
+      const auditResult = await runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true });
+      if (!auditResult || auditResult.score === -1) {
+        throw new Error(auditResult?.summary || 'Audit failed');
+      }
+      // Step 2: fix & verify with batch overrides (also suppresses UI state changes)
+      const result = await fixAndVerifyPdf({
+        base64: item.base64,
+        fileName: item.fileName,
+        auditResult: auditResult,
+        onProgress: (step, msg) => progress(msg),
+      });
+      return result;
+    };
+
     for (let i = 0; i < queue.length; i++) {
       setPdfBatchCurrentIndex(i);
       const item = queue[i];
@@ -2679,9 +2721,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       setPdfBatchQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'processing' } : q));
 
       try {
-        const result = await processSinglePdfForBatch(item.base64, item.fileName, (msg) => {
-          setPdfBatchStep(`[${i + 1}/${queue.length}] ${item.fileName}: ${msg}`);
-        });
+        const result = await _processOne(item, i, false);
         queue[i] = { ...item, status: 'done', result };
         setPdfBatchQueue([...queue]);
       } catch (err) {
@@ -2706,9 +2746,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         setPdfBatchCurrentIndex(idx);
         setPdfBatchStep(`Retrying: ${failedItem.fileName}`);
         try {
-          const result = await processSinglePdfForBatch(failedItem.base64, failedItem.fileName, (msg) => {
-            setPdfBatchStep(`[Retry] ${failedItem.fileName}: ${msg}`);
-          });
+          const result = await _processOne(failedItem, idx, true);
           queue[idx] = { ...failedItem, status: 'done', result, retried: true };
           setPdfBatchQueue([...queue]);
         } catch (err) {
