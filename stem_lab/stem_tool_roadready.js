@@ -547,6 +547,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Chunk-based world: each chunk is CHUNK_SIZE cells tall, road runs through center.
   // Chunks generate on-the-fly as the player drives north or south.
   var CHUNK_SIZE = 32;
+  // Road geometry constants — referenced from both chunk generation and updateThreeScene render paths.
+  var MAX_ROAD_WIDTH = 4; // widest possible road width across all biomes
+  var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
   var BIOMES = ['residential', 'commercial', 'rural', 'suburban', 'industrial'];
   // Logical biome progression: creates neighborhoods that make geographic sense
   // Pattern repeats every ~12 chunks: highway → suburban → residential → commercial → residential → rural → ...
@@ -605,9 +608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Intersections: ~40% chance but never two in a row (guaranteed gap)
     var hasIntersection = rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3);
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
-    // Reserve wider main-road corridor: widest possible width across all biomes (4) + safety buffer
-    var MAX_ROAD_WIDTH = 4;
-    var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
+    // Reserve wider main-road corridor: MAX_ROAD_WIDTH + CLEARANCE_BUFFER are module-scope (see top of file).
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
       var roadCenter = centerX;
       var roadWidth = biome === 'commercial' || biome === 'suburban' ? 4 : 3;
