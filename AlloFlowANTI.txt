@@ -12948,6 +12948,7 @@ Return only the corrected version of this exact text:`;
   const [pdfPreviewFontSize, setPdfPreviewFontSize] = useState(16);
   const [pdfPreviewA11yInspect, setPdfPreviewA11yInspect] = useState(false);
   const pdfPreviewRef = useRef(null);
+  const selectedPreviewImgRef = useRef(null);
   // ── PDF Batch Mode ──
   const [pdfBatchMode, setPdfBatchMode] = useState(false);
   const [pdfWebMode, setPdfWebMode] = useState(false);

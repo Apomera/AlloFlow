@@ -5487,6 +5487,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
 
+              // ─── BIOME SPEED LIMIT SIGN at start of each chunk ───
+              // Teaches students to match their speed to the zone they're in.
+              if (chunkIndex % 2 === 0 || (chunk.biome === 'rural' && chunkIndex % 3 === 0)) {
+                var biomeLimit = chunk.biome === 'residential' ? 25 : chunk.biome === 'suburban' ? 35 : chunk.biome === 'commercial' ? 30 : chunk.biome === 'industrial' ? 35 : chunk.biome === 'rural' ? 50 : 30;
+                var speedZ = chunkWorldZ + 3;
+                var speedSide = chunkIndex % 4 < 2 ? 1 : -1;
+                var spPost = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
+                spPost.position.set(speedSide * (MAX_ROAD_WIDTH + 1.2), 1.2, speedZ);
+                chunkGroup.add(spPost);
+                try {
+                  var spCan = document.createElement('canvas');
+                  spCan.width = 256; spCan.height = 320;
+                  var spCtx = spCan.getContext('2d');
+                  spCtx.fillStyle = '#ffffff'; spCtx.fillRect(0, 0, 256, 320);
+                  spCtx.strokeStyle = '#000000'; spCtx.lineWidth = 10;
+                  spCtx.strokeRect(8, 8, 240, 304);
+                  spCtx.fillStyle = '#000000';
+                  spCtx.font = 'bold 36px system-ui, sans-serif';
+                  spCtx.textAlign = 'center';
+                  spCtx.fillText('SPEED', 128, 70);
+                  spCtx.fillText('LIMIT', 128, 110);
+                  spCtx.font = 'bold 140px system-ui, sans-serif';
+                  spCtx.fillText(String(biomeLimit), 128, 230);
+                  var spTex = new T.CanvasTexture(spCan);
+                  var spMat = new T.MeshBasicMaterial({ map: spTex, transparent: true, side: T.DoubleSide });
+                  var spFace = new T.Mesh(new T.PlaneGeometry(0.9, 1.15), spMat);
+                  spFace.position.set(speedSide * (MAX_ROAD_WIDTH + 1.2), 2.3, speedZ);
+                  spFace.rotation.y = speedSide === 1 ? -Math.PI / 2 : Math.PI / 2;
+                  chunkGroup.add(spFace);
+                } catch (spErr) { /* fallback: post-only */ }
+              }
+
               // ─── AMBIENT DETAILS: mailboxes, fire hydrants, streetlights along the road ───
               // These add life without adding obstacles — all placed in the shoulder grass area.
               var ambientRng = seededRandom(chunk.index * 31337 + 7);
@@ -5628,19 +5660,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   cd.position.set(cdx, 0.02, crossZ);
                   chunkGroup.add(cd);
                 }
-                // Traffic light or stop sign at the intersection
+                // Traffic light OR stop sign at intersection (alternates by chunk index)
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
-                // Overhead traffic light on the cross street
-                var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
-                sigPole.position.set(4.0, 2.1, crossZ);
-                chunkGroup.add(sigPole);
-                var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
-                sigArm.position.set(1.8, 4.0, crossZ);
-                sigArm.rotation.z = Math.PI / 2;
-                chunkGroup.add(sigArm);
-                var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
-                sigHousing.position.set(0, 3.5, crossZ);
-                chunkGroup.add(sigHousing);
+                var isTrafficLight = ci % 2 === 0;
+                if (isTrafficLight) {
+                  // Overhead traffic light on the cross street
+                  var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
+                  sigPole.position.set(4.0, 2.1, crossZ);
+                  chunkGroup.add(sigPole);
+                  var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
+                  sigArm.position.set(1.8, 4.0, crossZ);
+                  sigArm.rotation.z = Math.PI / 2;
+                  chunkGroup.add(sigArm);
+                  var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
+                  sigHousing.position.set(0, 3.5, crossZ);
+                  chunkGroup.add(sigHousing);
+                  // Three lights (red/yellow/green) — one glowing based on signal state
+                  var lightColors = [0xef4444, 0xfbbf24, 0x22c55e];
+                  for (var lci = 0; lci < 3; lci++) {
+                    var lightMesh = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: lightColors[lci] }));
+                    lightMesh.position.set(0.16, 3.75 - lci * 0.25, crossZ);
+                    chunkGroup.add(lightMesh);
+                  }
+                } else {
+                  // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text
+                  // Place on both sides of the approach for the main road
+                  [-1, 1].forEach(function(sgSide) {
+                    var ssPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
+                    ssPole.position.set(sgSide * 4.5, 1.15, crossZ + sgSide * 3.5);
+                    chunkGroup.add(ssPole);
+                    // Octagonal face via canvas texture
+                    try {
+                      var ssCan = document.createElement('canvas');
+                      ssCan.width = 256; ssCan.height = 256;
+                      var ssCtx = ssCan.getContext('2d');
+                      ssCtx.clearRect(0, 0, 256, 256);
+                      ssCtx.fillStyle = '#dc2626';
+                      ssCtx.beginPath();
+                      for (var oi2 = 0; oi2 < 8; oi2++) {
+                        var oa2 = (oi2 / 8) * Math.PI * 2 + Math.PI / 8;
+                        var ox2 = 128 + Math.cos(oa2) * 120, oy2 = 128 + Math.sin(oa2) * 120;
+                        if (oi2 === 0) ssCtx.moveTo(ox2, oy2); else ssCtx.lineTo(ox2, oy2);
+                      }
+                      ssCtx.closePath(); ssCtx.fill();
+                      ssCtx.strokeStyle = '#ffffff'; ssCtx.lineWidth = 10; ssCtx.stroke();
+                      ssCtx.fillStyle = '#ffffff';
+                      ssCtx.font = 'bold 74px system-ui, sans-serif';
+                      ssCtx.textAlign = 'center';
+                      ssCtx.textBaseline = 'middle';
+                      ssCtx.fillText('STOP', 128, 128);
+                      var ssTex = new T.CanvasTexture(ssCan);
+                      var ssMat = new T.MeshBasicMaterial({ map: ssTex, transparent: true, side: T.DoubleSide });
+                      var ssFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), ssMat);
+                      ssFace.position.set(sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      ssFace.rotation.y = sgSide === 1 ? Math.PI : 0;
+                      chunkGroup.add(ssFace);
+                    } catch (ssErr) {
+                      // Fallback: plain red octagon plane
+                      var fbMat = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide });
+                      var fbFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), fbMat);
+                      fbFace.position.set(sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      fbFace.rotation.y = sgSide === 1 ? Math.PI : 0;
+                      chunkGroup.add(fbFace);
+                    }
+                  });
+                  // Also place stop signs on the CROSS street
+                  [-1, 1].forEach(function(ccSide) {
+                    var csPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
+                    csPole.position.set(ccSide * 3.5, 1.15, crossZ + ccSide * 4.5);
+                    chunkGroup.add(csPole);
+                    try {
+                      var cs_can = document.createElement('canvas');
+                      cs_can.width = 256; cs_can.height = 256;
+                      var cs_ctx = cs_can.getContext('2d');
+                      cs_ctx.fillStyle = '#dc2626';
+                      cs_ctx.beginPath();
+                      for (var oi3 = 0; oi3 < 8; oi3++) {
+                        var oa3 = (oi3 / 8) * Math.PI * 2 + Math.PI / 8;
+                        var ox3 = 128 + Math.cos(oa3) * 120, oy3 = 128 + Math.sin(oa3) * 120;
+                        if (oi3 === 0) cs_ctx.moveTo(ox3, oy3); else cs_ctx.lineTo(ox3, oy3);
+                      }
+                      cs_ctx.closePath(); cs_ctx.fill();
+                      cs_ctx.strokeStyle = '#ffffff'; cs_ctx.lineWidth = 10; cs_ctx.stroke();
+                      cs_ctx.fillStyle = '#ffffff';
+                      cs_ctx.font = 'bold 74px system-ui, sans-serif';
+                      cs_ctx.textAlign = 'center';
+                      cs_ctx.textBaseline = 'middle';
+                      cs_ctx.fillText('STOP', 128, 128);
+                      var cs_tex = new T.CanvasTexture(cs_can);
+                      var cs_mat = new T.MeshBasicMaterial({ map: cs_tex, transparent: true, side: T.DoubleSide });
+                      var cs_face = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), cs_mat);
+                      cs_face.position.set(ccSide * 3.5, 2.2, crossZ + ccSide * 4.5);
+                      cs_face.rotation.y = Math.PI / 2;
+                      chunkGroup.add(cs_face);
+                    } catch (ccErr) { /* fallback omitted */ }
+                  });
+                }
                 // Crosswalk stripes
                 var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
                 for (var cwi = -3; cwi <= 3; cwi++) {
