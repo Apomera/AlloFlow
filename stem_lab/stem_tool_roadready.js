@@ -2257,13 +2257,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (timeRef.current - statsRef.current._lastTip > 20) {
               var tip = null;
               var absSpd = Math.abs(carRef.current.speed) * MS_TO_MPH;
+              // Track driving patterns for smarter coaching
+              if (!statsRef.current._tipHistory) statsRef.current._tipHistory = {};
+              var th = statsRef.current._tipHistory;
               if (absSpd > currentScenario.speedLimit + 10 && absSpd > 15) {
                 tip = '💡 You\'re ' + Math.round(absSpd - currentScenario.speedLimit) + ' mph over the limit. Braking distance grows with v².';
+              } else if (absSpd < currentScenario.speedLimit - 15 && absSpd > 5 && timeRef.current > 10 && !th.tooSlow) {
+                tip = '💡 Going too slow can be dangerous too — traffic needs to flow. Match the posted ' + currentScenario.speedLimit + ' mph when safe.';
+                th.tooSlow = true;
               } else if (gearRef.current === 'P' && timeRef.current > 5 && absSpd < 1) {
                 tip = '💡 Press W to start driving (auto-shifts to Drive), or F for Drive, G for Reverse.';
               } else if (Math.abs(carRef.current.steering) > 0.55 && blinkerRef.current === 0 && absSpd > 15) {
-                // Only trigger for deliberate sharp steering, not gentle curve following
                 tip = '💡 Signal before turning or changing lanes. Press E (left) or V (right).';
+              } else if (statsRef.current.hardBrakes >= 2 && !th.hardBrake) {
+                tip = '💡 Multiple hard brakes detected. Scan further ahead so you can slow gently — look 12-15 seconds down the road.';
+                th.hardBrake = true;
+              } else if (statsRef.current.jackrabbits >= 2 && !th.jackrabbit) {
+                tip = '💡 Jackrabbit starts waste fuel and wear the engine. Smooth, gentle acceleration is safer and more efficient.';
+                th.jackrabbit = true;
+              } else if (statsRef.current.closeFollows >= 2 && !th.closeFollow) {
+                tip = '💡 You\'re following too closely. Keep 3+ seconds of distance (4+ in rain, 6+ in snow).';
+                th.closeFollow = true;
+              } else if (statsRef.current.skidSeconds > 2 && !th.skid) {
+                tip = '💡 Skid detected. Ease off the gas, steer gently. Quick inputs on low-grip surfaces cause spins.';
+                th.skid = true;
+              } else if (statsRef.current.distance > 300 && statsRef.current.safetyScore >= 95 && !th.praise) {
+                tip = '🌟 Excellent driving. Your smooth inputs and awareness are exactly what the road test rewards.';
+                th.praise = true;
+              } else if (currentScenario.time === 'night' && absSpd > currentScenario.speedLimit - 3 && !th.nightSpeed) {
+                tip = '💡 At night your headlights show ~350 ft. At 50+ mph you\'re outdriving them. Slow down when visibility is limited.';
+                th.nightSpeed = true;
+              } else if ((currentScenario.weather === 'rain' || currentScenario.weather === 'snow') && absSpd > currentScenario.speedLimit - 5 && !th.badWeather) {
+                var slowNeeded = currentScenario.weather === 'snow' ? 15 : 8;
+                tip = '💡 In ' + currentScenario.weather + ', reduce speed by at least ' + slowNeeded + ' mph from the posted limit. Less grip = longer stops.';
+                th.badWeather = true;
               }
               if (tip) {
                 statsRef.current._lastTip = timeRef.current;
@@ -5641,6 +5668,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               road.position.set(0, 0.011, chunkWorldZ + CHUNK_SIZE / 2);
               road.receiveShadow = true;
               chunkGroup.add(road);
+
+              // ─── ROAD MARKINGS (painted on the road surface) ───
+              if (scn.weather !== 'snow') { // markings hidden by snow
+                // Yellow DASHED center line (double yellow for rural = no passing, single dash elsewhere)
+                var centerLineMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection; // double yellow near intersections
+                // Skip center line markings at the intersection area (keeps intersection clean)
+                var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
+                var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
+                for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
+                  if (mlZ > skipZ1 && mlZ < skipZ2) continue; // skip intersection region
+                  if (isNoPass) {
+                    // Double solid yellow (no-pass zone)
+                    var dyL = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
+                    dyL.rotation.x = -Math.PI / 2;
+                    dyL.position.set(-0.25, 0.014, mlZ);
+                    chunkGroup.add(dyL);
+                    var dyR = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
+                    dyR.rotation.x = -Math.PI / 2;
+                    dyR.position.set(0.25, 0.014, mlZ);
+                    chunkGroup.add(dyR);
+                  } else {
+                    // Single dashed yellow (passing allowed)
+                    var dyD = new T.Mesh(new T.PlaneGeometry(0.15, 1.2), centerLineMat);
+                    dyD.rotation.x = -Math.PI / 2;
+                    dyD.position.set(0, 0.014, mlZ);
+                    chunkGroup.add(dyD);
+                  }
+                }
+                // Solid WHITE edge lines (shoulder markers) — both sides
+                var edgeLineMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                [-3.2, 3.2].forEach(function(edgeX) {
+                  var edge = new T.Mesh(new T.PlaneGeometry(0.12, CHUNK_SIZE - 2), edgeLineMat);
+                  edge.rotation.x = -Math.PI / 2;
+                  edge.position.set(edgeX, 0.013, chunkWorldZ + CHUNK_SIZE / 2);
+                  chunkGroup.add(edge);
+                });
+                // Lane dividers (for commercial/suburban with wider roads) — dashed white
+                if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
+                  [-1.5, 1.5].forEach(function(laneX) {
+                    for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
+                      if (ldZ > skipZ1 && ldZ < skipZ2) continue;
+                      var ld = new T.Mesh(new T.PlaneGeometry(0.1, 1.5), edgeLineMat);
+                      ld.rotation.x = -Math.PI / 2;
+                      ld.position.set(laneX, 0.013, ldZ);
+                      chunkGroup.add(ld);
+                    }
+                  });
+                }
+              }
+
+              // ─── WEATHER-REACTIVE DETAILS ───
+              var weatherRng = seededRandom(chunk.index * 91349 + 11);
+              if (scn.weather === 'rain') {
+                // Puddles on shoulders and occasional road spots
+                var puddleMat = new T.MeshBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.6 });
+                for (var pI = 0; pI < 3; pI++) {
+                  if (weatherRng() < 0.6) {
+                    var pudSide = weatherRng() < 0.5 ? -1 : 1;
+                    var pudX = pudSide * (2.8 + weatherRng() * 1.0); // on shoulder edge
+                    var pudZ = chunkWorldZ + 4 + pI * 8 + weatherRng() * 3;
+                    var pudRadius = 0.4 + weatherRng() * 0.5;
+                    var puddle = new T.Mesh(new T.CircleGeometry(pudRadius, 10), puddleMat);
+                    puddle.rotation.x = -Math.PI / 2;
+                    puddle.position.set(pudX, 0.015, pudZ);
+                    chunkGroup.add(puddle);
+                  }
+                }
+              } else if (scn.weather === 'snow') {
+                // Snow piles along the shoulder (plowed snow)
+                var snowPileMat = new T.MeshLambertMaterial({ color: 0xf0f4f8 });
+                for (var sI = 0; sI < 5; sI++) {
+                  var snSide = sI % 2 === 0 ? -1 : 1;
+                  var snX = snSide * (MAX_ROAD_WIDTH + 0.5);
+                  var snZ = chunkWorldZ + 3 + sI * 6 + weatherRng() * 2;
+                  var snHeight = 0.4 + weatherRng() * 0.3;
+                  var snLength = 1.5 + weatherRng() * 1.5;
+                  var snPile = new T.Mesh(new T.BoxGeometry(0.6, snHeight, snLength), snowPileMat);
+                  snPile.position.set(snX, snHeight / 2, snZ);
+                  chunkGroup.add(snPile);
+                  // Rounded top (cap)
+                  var snCap = new T.Mesh(new T.SphereGeometry(0.3, 6, 4), snowPileMat);
+                  snCap.scale.set(1, 0.3, 1.5);
+                  snCap.position.set(snX, snHeight, snZ);
+                  chunkGroup.add(snCap);
+                }
+                // Patches of snow on grass between objects
+                var snowPatchMat = new T.MeshLambertMaterial({ color: 0xffffff });
+                for (var spI = 0; spI < 6; spI++) {
+                  var spSide = weatherRng() < 0.5 ? -1 : 1;
+                  var spX = spSide * (6 + weatherRng() * 15);
+                  var spZ = chunkWorldZ + weatherRng() * CHUNK_SIZE;
+                  var sp = new T.Mesh(new T.CircleGeometry(1.0 + weatherRng() * 0.8, 8), snowPatchMat);
+                  sp.rotation.x = -Math.PI / 2;
+                  sp.position.set(spX, 0.02, spZ);
+                  chunkGroup.add(sp);
+                }
+              } else if (scn.weather === 'fog') {
+                // Subtle low mist patches along the ground
+                var mistMat = new T.MeshBasicMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.25 });
+                for (var mI = 0; mI < 4; mI++) {
+                  var mistZ = chunkWorldZ + mI * 8 + weatherRng() * 3;
+                  var mist = new T.Mesh(new T.PlaneGeometry(12, 4), mistMat);
+                  mist.rotation.x = -Math.PI / 2;
+                  mist.position.set((weatherRng() - 0.5) * 4, 0.3, mistZ);
+                  chunkGroup.add(mist);
+                }
+              }
               // Cross street road surface (if intersection)
               if (chunk.hasIntersection) {
                 var crossZ = chunkWorldZ + chunk.intersectionY;
@@ -5929,13 +6064,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText('ECO', W - 100, H - 35);
 
-          // Odometer / trip meter
+          // Odometer / trip meter / landmark counter
           var distMi = (stats.distance / 1609).toFixed(2);
           var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
           var elMin = Math.floor(elapsed / 60);
           var elSec = elapsed % 60;
           gfx.fillStyle = '#64748b'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
-          gfx.fillText('TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0'), 130, H - 14);
+          var tripLine = 'TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0');
+          if (stats.landmarkVisits) {
+            var totalVisitsHud = Object.values(stats.landmarkVisits).reduce(function(a, b) { return a + b; }, 0);
+            var uniqueVisitsHud = Object.keys(stats.landmarkVisits).length;
+            if (totalVisitsHud > 0) tripLine += '  |  🗺 ' + totalVisitsHud + ' visits (' + uniqueVisitsHud + ' unique)';
+          }
+          gfx.fillText(tripLine, 130, H - 14);
 
           // Gear indicator (actual gear state from gearRef)
           var gear = gearRef.current;

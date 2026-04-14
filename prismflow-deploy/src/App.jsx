@@ -53941,21 +53941,35 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ✨ Generate & Insert
                       </button>
                     </div>
-                    <p className="text-[11px] text-slate-600">Or click an image in the preview, then:</p>
+                    <p className="text-[11px] text-slate-600">Click an image in the preview to select it, then:</p>
                     <button onClick={async () => {
-                      const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
-                      const sel = doc.getSelection();
-                      const img = sel?.anchorNode?.closest?.('figure img') || sel?.anchorNode?.parentElement?.querySelector?.('img') || doc.querySelector('img:hover');
-                      if (!img || !img.src || !callGeminiImageEdit) { addToast('Select or hover over an image first', 'info'); return; }
-                      const editPrompt = prompt('Describe how to edit this image:');
+                      const img = selectedPreviewImgRef.current;
+                      if (!img || !img.src) { addToast('Click an image in the preview to select it first', 'info'); return; }
+                      if (!callGeminiImageEdit) { addToast('Image editing not available in this build', 'error'); return; }
+                      const editPrompt = window.prompt('Describe how to edit this image:');
                       if (!editPrompt?.trim()) return;
                       addToast('🎨 Editing image...', 'info');
                       try {
-                        const base64 = img.src.split(',')[1];
-                        if (!base64) { addToast('Cannot edit this image type', 'error'); return; }
+                        let base64 = null;
+                        if (img.src.startsWith('data:')) {
+                          base64 = img.src.split(',')[1];
+                        } else {
+                          try {
+                            const resp = await fetch(img.src);
+                            const blob = await resp.blob();
+                            base64 = await new Promise((resolve, reject) => {
+                              const fr = new FileReader();
+                              fr.onload = () => { const s = String(fr.result || ''); resolve(s.includes(',') ? s.split(',')[1] : null); };
+                              fr.onerror = () => reject(fr.error);
+                              fr.readAsDataURL(blob);
+                            });
+                          } catch(fetchErr) { addToast('Cannot read this image (likely CORS-blocked). Try an AI-generated image.', 'error'); return; }
+                        }
+                        if (!base64) { addToast('Cannot extract image data', 'error'); return; }
                         const edited = await callGeminiImageEdit(editPrompt + ' No text.', base64, 400, 0.85);
                         if (edited) { img.src = edited; addToast('🎨 Image updated!', 'success'); }
-                      } catch(e) { addToast('Image edit failed', 'error'); }
+                        else { addToast('Image edit returned no result', 'error'); }
+                      } catch(e) { warnLog('[Image Edit] failed:', e); addToast('Image edit failed: ' + (e?.message || 'unknown error'), 'error'); }
                     }} className="w-full px-2 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-colors">
                       ✏️ Edit Selected Image (AI)
                     </button>
