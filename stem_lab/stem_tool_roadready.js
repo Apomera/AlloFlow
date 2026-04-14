@@ -1093,7 +1093,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'ten_drives', icon: '🔟', name: 'Road Veteran', desc: 'Complete 10 drive sessions.' },
     { id: 'hazard_ace', icon: '⚡', name: 'Hazard Ace', desc: 'Score 8/10 or better on the Hazard Perception Test.' },
     { id: 'night_drive', icon: '🌙', name: 'After Dark', desc: 'Complete a night or dawn/dusk scenario.' },
-    { id: 'all_weather', icon: '🌦️', name: 'All-Weather Driver', desc: 'Drive in clear, rain, snow, and fog conditions.' }
+    { id: 'all_weather', icon: '🌦️', name: 'All-Weather Driver', desc: 'Drive in clear, rain, snow, and fog conditions.' },
+    // ── Open-world landmark achievements ──
+    { id: 'first_landmark', icon: '📍', name: 'First Destination', desc: 'Arrive at your first landmark in Free Explore.' },
+    { id: 'five_landmarks', icon: '🗺️', name: 'Local Navigator', desc: 'Visit 5 different landmark destinations.' },
+    { id: 'ten_landmarks', icon: '🏁', name: 'Town Tourist', desc: 'Visit 10 landmark destinations in Free Explore.' },
+    { id: 'school_hero', icon: '🏫', name: 'School Zone Hero', desc: 'Pass a school landmark at 20 mph or less.' },
+    { id: 'emergency_response', icon: '🚒', name: 'Emergency Responder', desc: 'Yield correctly to a fire truck or ambulance spawned from a landmark.' },
+    { id: 'maine_explorer', icon: '🗽', name: 'Maine Explorer', desc: 'Visit a lighthouse in Free Explore.' },
+    { id: 'civic_scholar', icon: '🎓', name: 'Civic Scholar', desc: 'Visit a school, library, and post office.' },
+    { id: 'safe_return', icon: '🏠', name: 'Safe Return', desc: 'Visit 3+ landmarks in one drive without crashing.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -2213,6 +2222,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   addToast('✅ Arrived at ' + q.icon + ' ' + q.name + '! Quest #' + q.questsCompleted + ' complete.');
                   speak('You arrived at ' + q.name + '. Nice driving!');
                   statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 3);
+                  // ── Track landmark visits for achievements ──
+                  if (q.isLandmark) {
+                    if (!statsRef.current.landmarkVisits) statsRef.current.landmarkVisits = {};
+                    if (!statsRef.current.landmarkVisits[q.name]) {
+                      statsRef.current.landmarkVisits[q.name] = 0;
+                    }
+                    statsRef.current.landmarkVisits[q.name]++;
+                    var totalVisits = Object.values(statsRef.current.landmarkVisits).reduce(function(a, b) { return a + b; }, 0);
+                    var uniqueVisits = Object.keys(statsRef.current.landmarkVisits).length;
+                    // Check achievement triggers live (in addition to end-of-drive check)
+                    var liveBadges = Object.assign({}, (d.badges || {}));
+                    var awarded = false;
+                    if (!liveBadges.first_landmark) { liveBadges.first_landmark = true; addToast('🏅 Achievement: First Destination'); awarded = true; }
+                    if (uniqueVisits >= 5 && !liveBadges.five_landmarks) { liveBadges.five_landmarks = true; addToast('🏅 Achievement: Local Navigator (5 landmarks)'); awarded = true; }
+                    if (totalVisits >= 10 && !liveBadges.ten_landmarks) { liveBadges.ten_landmarks = true; addToast('🏅 Achievement: Town Tourist (10 visits)'); awarded = true; }
+                    if (q.name === 'Lighthouse' && !liveBadges.maine_explorer) { liveBadges.maine_explorer = true; addToast('🏅 Achievement: Maine Explorer 🗽'); awarded = true; }
+                    var hasCivic = statsRef.current.landmarkVisits['Elementary School'] && statsRef.current.landmarkVisits['Public Library'] && statsRef.current.landmarkVisits['Post Office'];
+                    if (hasCivic && !liveBadges.civic_scholar) { liveBadges.civic_scholar = true; addToast('🏅 Achievement: Civic Scholar 🎓'); awarded = true; }
+                    if (totalVisits >= 3 && statsRef.current.crashes === 0 && !liveBadges.safe_return) { liveBadges.safe_return = true; addToast('🏅 Achievement: Safe Return 🏠'); awarded = true; }
+                    if (awarded) upd('badges', liveBadges);
+                  }
                 }
                 // Announce when getting close
                 if (!q.announced && qdist < 18) {
@@ -2443,6 +2473,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var distToLm = Math.abs(lmWorldY - car.y);
                 var lmKey = (curCi + lci) + '_' + scanChunk.landmark.type.id;
                 // Announce when within 14 cells, only once per landmark
+                // School Zone Hero badge: track speed when passing a school
+                if (distToLm < 4 && scanChunk.landmark.type.id === 'school') {
+                  var schoolSpeedMph = Math.abs(car.speed) * MS_TO_MPH;
+                  if (schoolSpeedMph <= 20) {
+                    var schoolBadges = Object.assign({}, (d.badges || {}));
+                    if (!schoolBadges.school_hero) {
+                      schoolBadges.school_hero = true;
+                      addToast('🏅 Achievement: School Zone Hero 🏫');
+                      upd('badges', schoolBadges);
+                    }
+                  }
+                }
                 if (distToLm < 14 && !statsRef.current._announcedLandmarks[lmKey]) {
                   statsRef.current._announcedLandmarks[lmKey] = timeRef.current;
                   var lmType = scanChunk.landmark.type;
@@ -2466,6 +2508,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   delete statsRef.current._announcedLandmarks[k];
                 }
               });
+            }
+          }
+          // ─── LANDMARK-TRIGGERED EVENTS ───
+          // Context-aware events that only happen near specific landmarks, teaching
+          // real-world driving awareness. Each landmark has a small chance to trigger
+          // an appropriate event when the player is driving past.
+          if (infiniteWorldRef.current && !statsRef.current._landmarkEventActive) {
+            if (!statsRef.current._lastLandmarkEvent) statsRef.current._lastLandmarkEvent = 0;
+            var canTriggerEvent = (timeRef.current - statsRef.current._lastLandmarkEvent) > 8; // min 8s between events
+            if (canTriggerEvent && Math.abs(car.speed) > 5) {
+              var curCi2 = Math.floor(car.y / CHUNK_SIZE);
+              for (var leci = -1; leci <= 1; leci++) {
+                var eChunk = infiniteWorldRef.current.getChunk(curCi2 + leci);
+                if (!eChunk || !eChunk.landmark) continue;
+                var elmWorldY = (curCi2 + leci) * CHUNK_SIZE + eChunk.landmark.centerY;
+                var elmDist = Math.abs(elmWorldY - car.y);
+                // Trigger window: within 5-10 cells of the landmark (approaching it)
+                if (elmDist < 10 && elmDist > 2) {
+                  var lt2 = eChunk.landmark.type;
+                  if (Math.random() < (lt2.eventChance || 0) * 0.3) {
+                    statsRef.current._landmarkEventActive = true;
+                    statsRef.current._lastLandmarkEvent = timeRef.current;
+                    // Generate event appropriate for the landmark
+                    var evt = null;
+                    if (lt2.id === 'school') {
+                      evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
+                    } else if (lt2.id === 'park') {
+                      evt = { kind: 'ball', icon: '⚽', warn: 'Ball rolling from park — child may follow!', color: '#fbbf24' };
+                    } else if (lt2.id === 'market' || lt2.id === 'pharmacy' || lt2.id === 'library') {
+                      evt = { kind: 'pedestrian', icon: '🚶', warn: 'PEDESTRIAN stepping off sidewalk!', color: '#60a5fa' };
+                    } else if (lt2.id === 'hospital') {
+                      evt = { kind: 'ambulance', icon: '🚑', warn: 'AMBULANCE exiting hospital — yield!', color: '#ef4444' };
+                    } else if (lt2.id === 'fire') {
+                      evt = { kind: 'firetruck', icon: '🚒', warn: 'FIRE TRUCK responding — pull right!', color: '#dc2626' };
+                    } else if (lt2.id === 'farm') {
+                      evt = { kind: 'tractor', icon: '🚜', warn: 'SLOW TRACTOR entering road!', color: '#f97316' };
+                    } else if (lt2.id === 'police') {
+                      evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: '#1e40af' };
+                    }
+                    if (evt) {
+                      // Spawn the event as a wildlife-like entity that crosses the road
+                      var spawnAhead = 6;
+                      var spawnX = car.x + Math.cos(car.heading) * spawnAhead + (eChunk.landmark.side * 4);
+                      var spawnY = car.y + Math.sin(car.heading) * spawnAhead;
+                      if (!wildlifeRef.current) {
+                        wildlifeRef.current = {
+                          kind: evt.kind,
+                          icon: evt.icon,
+                          mass: evt.kind === 'ambulance' || evt.kind === 'firetruck' || evt.kind === 'tractor' || evt.kind === 'cruiser' ? 'medium' : 'small',
+                          x: spawnX,
+                          y: spawnY,
+                          vx: -eChunk.landmark.side * 1.5, // moves across the road
+                          vy: 0,
+                          hit: false,
+                          life: 8,
+                          fromLandmark: true,
+                          color: evt.color
+                        };
+                      }
+                      eventToastRef.current = { msg: evt.icon + ' ' + evt.warn, until: timeRef.current + 5 };
+                      if (addToast) addToast(evt.icon + ' ' + evt.warn);
+                      speak(evt.warn.replace(/[^a-zA-Z0-9 ,.!?']/g, ' '));
+                      // Reward for slowing down
+                      setTimeout(function() { statsRef.current._landmarkEventActive = false; }, 8000);
+                    }
+                    break;
+                  }
+                }
+              }
             }
           }
           // Update stats
@@ -2783,6 +2894,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               statsRef.current.emergencyYields++;
               addToast('✓ Good — pulled right and stopped for emergency vehicle. +5');
               eventToastRef.current = { msg: '✓ Correct response: pull RIGHT, STOP until it passes.', until: timeRef.current + 4 };
+              // Emergency Responder landmark achievement
+              if (em.fromLandmark) {
+                var erBadges = Object.assign({}, (d.badges || {}));
+                if (!erBadges.emergency_response) {
+                  erBadges.emergency_response = true;
+                  addToast('🏅 Achievement: Emergency Responder 🚒');
+                  upd('badges', erBadges);
+                }
+              }
             } else if (stopped && !pulledRight) {
               statsRef.current.safetyScore -= 10;
               addToast('⚠️ You stopped but didn\'t pull right. -10');
@@ -5434,6 +5554,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var bchBack = new T.Mesh(new T.BoxGeometry(1.3, 0.5, 0.08), new T.MeshLambertMaterial({ color: 0x78350f }));
                     bchBack.position.set(ambX + ambSide * 0.15, 0.65, ambZ);
                     chunkGroup.add(bchBack);
+                  }
+                } else if (ambRoll < 0.88) {
+                  // ─── Parked cars along the shoulder (commercial/residential/suburban) ───
+                  // Teaches students to watch for doors opening, people exiting, cars pulling out
+                  if (chunk.biome === 'commercial' || chunk.biome === 'residential' || chunk.biome === 'suburban') {
+                    var carColors = [0xdc2626, 0x1e40af, 0x059669, 0x78350f, 0xf59e0b, 0x4b5563, 0xfef3c7, 0x1a1a2e];
+                    var parkedCarX = ambSide * (MAX_ROAD_WIDTH + 0.9); // just off the road, closer than other ambient
+                    var parkedColor = carColors[Math.floor(ambientRng() * carColors.length)];
+                    // Car body
+                    var pcBody = new T.Mesh(new T.BoxGeometry(1.6, 0.8, 0.7), new T.MeshLambertMaterial({ color: parkedColor }));
+                    pcBody.position.set(parkedCarX, 0.5, ambZ);
+                    pcBody.castShadow = true;
+                    chunkGroup.add(pcBody);
+                    // Car roof/cabin (darker)
+                    var pcCabin = new T.Mesh(new T.BoxGeometry(0.9, 0.45, 0.65), new T.MeshLambertMaterial({ color: Math.max(0, parkedColor - 0x202020) }));
+                    pcCabin.position.set(parkedCarX + 0.05, 1.05, ambZ);
+                    chunkGroup.add(pcCabin);
+                    // Windows (glass)
+                    var pcWinMat = new T.MeshLambertMaterial({ color: 0x1e293b, emissive: 0x0f172a });
+                    var pcWinFront = new T.Mesh(new T.BoxGeometry(0.1, 0.35, 0.5), pcWinMat);
+                    pcWinFront.position.set(parkedCarX + 0.45, 1.05, ambZ);
+                    chunkGroup.add(pcWinFront);
+                    var pcWinBack = new T.Mesh(new T.BoxGeometry(0.1, 0.35, 0.5), pcWinMat);
+                    pcWinBack.position.set(parkedCarX - 0.35, 1.05, ambZ);
+                    chunkGroup.add(pcWinBack);
+                    // Wheels (4 small black cylinders)
+                    var wheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    [[-0.55, -0.35], [0.55, -0.35], [-0.55, 0.35], [0.55, 0.35]].forEach(function(wp) {
+                      var wheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), wheelMat);
+                      wheel.rotation.x = Math.PI / 2;
+                      wheel.position.set(parkedCarX + wp[0], 0.18, ambZ + wp[1]);
+                      chunkGroup.add(wheel);
+                    });
+                    // Headlights (facing outward so visible at night/dawn)
+                    if (scn.time === 'night' || scn.time === 'dawn') {
+                      var hlMat = new T.MeshBasicMaterial({ color: 0xfef3c7 });
+                      var hl1 = new T.Mesh(new T.SphereGeometry(0.08, 6, 4), hlMat);
+                      hl1.position.set(parkedCarX + 0.75, 0.5, ambZ - 0.2);
+                      chunkGroup.add(hl1);
+                      var hl2 = new T.Mesh(new T.SphereGeometry(0.08, 6, 4), hlMat);
+                      hl2.position.set(parkedCarX + 0.75, 0.5, ambZ + 0.2);
+                      chunkGroup.add(hl2);
+                    }
                   }
                 }
               }

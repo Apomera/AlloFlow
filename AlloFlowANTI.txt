@@ -51433,11 +51433,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button onClick={async () => {
                         if (!pdfFixResult.accessibleHtml) return;
                         setPdfFixLoading(true); pdfFixModeRef.current = 'sweep'; setPdfFixStep('Scanning for new issues...');
+                        const _safeClone = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
                         const prevSnapshot = {
                           html: pdfFixResult.accessibleHtml,
                           afterScore: pdfFixResult.afterScore,
-                          ai: pdfFixResult.verificationAudit,
-                          axe: pdfFixResult.axeAudit,
+                          ai: _safeClone(pdfFixResult.verificationAudit),
+                          axe: _safeClone(pdfFixResult.axeAudit),
                           chars: pdfFixResult.htmlChars,
                         };
                         try {
@@ -51485,14 +51486,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let html = pdfFixResult.accessibleHtml;
                           let bestHtml = html;
                           let bestIssueCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
-                          let bestAi = pdfFixResult.verificationAudit;
-                          let bestAxe = pdfFixResult.axeAudit;
+                          const _safeClone = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
+                          let bestAi = _safeClone(pdfFixResult.verificationAudit);
+                          let bestAxe = _safeClone(pdfFixResult.axeAudit);
                           let totalPasses = 0;
                           const prevSnapshot = {
                             html: pdfFixResult.accessibleHtml,
                             afterScore: pdfFixResult.afterScore,
-                            ai: pdfFixResult.verificationAudit,
-                            axe: pdfFixResult.axeAudit,
+                            ai: _safeClone(pdfFixResult.verificationAudit),
+                            axe: _safeClone(pdfFixResult.axeAudit),
                             chars: pdfFixResult.htmlChars,
                           };
                           try {
@@ -51523,11 +51525,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               html = html.replace(/<img([^>]*)>/gi, (m, a) => /alt\s*=/.test(a) ? m : `<img alt="Document image"${a}>`);
                               html = html.replace(/<th(?![^>]*scope)/gi, '<th scope="col"');
                               html = html.replace(/<a([^>]*)>\s*<\/a>/gi, (m, a) => { const h = a.match(/href="([^"]*)"/); return `<a${a}>${h ? h[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`; });
-                              // Gemini targeted fix
-                              setPdfFixStep(`Pass ${pass + 1}: AI fixing ${allIssues.length} issues...`);
-                              const fixPrompt = `You are an accessibility remediation expert. Fix ONLY these WCAG issues. Do NOT introduce new problems. Preserve ALL content. Return the COMPLETE HTML.\n\nISSUES:\n${allIssues.join('\n')}\n\nHTML:\n"""${html.substring(0, 15000)}${html.length > 15000 ? '\n[... ' + html.length + ' chars ...]' : ''}"""\n\nReturn ONLY fixed HTML.`;
-                              const fixed = await callGemini(fixPrompt, true);
-                              if (fixed && fixed.length > html.length * 0.5 && (fixed.includes('<!DOCTYPE') || fixed.includes('<html'))) html = fixed;
+                              // Gemini targeted fix — skip on large docs (would require truncation → unsafe)
+                              const GEMINI_FIX_MAX_CHARS = 15000;
+                              if (html.length <= GEMINI_FIX_MAX_CHARS) {
+                                setPdfFixStep(`Pass ${pass + 1}: AI fixing ${allIssues.length} issues...`);
+                                const fixPrompt = `You are an accessibility remediation expert. Fix ONLY these WCAG issues. Do NOT introduce new problems. Preserve ALL content. Return the COMPLETE HTML.\n\nISSUES:\n${allIssues.join('\n')}\n\nHTML:\n"""${html}"""\n\nReturn ONLY fixed HTML.`;
+                                const fixed = await callGemini(fixPrompt, true);
+                                // Integrity guards: structural, length, and word count — reject Gemini response that drops content.
+                                if (fixed && (fixed.includes('<!DOCTYPE') || fixed.includes('<html'))) {
+                                  const lengthOk = fixed.length >= html.length * 0.9;
+                                  const beforeWords = countWords(html.replace(/<[^>]+>/g, ' '));
+                                  const afterWords = countWords(fixed.replace(/<[^>]+>/g, ' '));
+                                  const wordsOk = beforeWords === 0 || afterWords >= beforeWords * 0.9;
+                                  if (lengthOk && wordsOk) {
+                                    html = fixed;
+                                  } else {
+                                    warnLog(`[Fix Remaining] Pass ${pass + 1}: Gemini response rejected (length ${fixed.length}/${html.length}, words ${afterWords}/${beforeWords}) — keeping deterministic fixes only`);
+                                  }
+                                }
+                              } else {
+                                setPdfFixStep(`Pass ${pass + 1}: skipping AI fix (doc too large for round-trip)...`);
+                                warnLog(`[Fix Remaining] Pass ${pass + 1}: skipping Gemini (html ${html.length} > ${GEMINI_FIX_MAX_CHARS} chars) — relying on deterministic + axe fixes`);
+                              }
                               cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
                               // Verify with 2 AI audits + axe (parallel — no extra time)
                               setPdfFixStep(`Pass ${pass + 1}: verifying (2 audits)...`);
