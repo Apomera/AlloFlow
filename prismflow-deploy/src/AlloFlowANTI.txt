@@ -7837,27 +7837,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7873,7 +7873,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487584/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78e54d0/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -53941,21 +53941,35 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ✨ Generate & Insert
                       </button>
                     </div>
-                    <p className="text-[11px] text-slate-600">Or click an image in the preview, then:</p>
+                    <p className="text-[11px] text-slate-600">Click an image in the preview to select it, then:</p>
                     <button onClick={async () => {
-                      const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
-                      const sel = doc.getSelection();
-                      const img = sel?.anchorNode?.closest?.('figure img') || sel?.anchorNode?.parentElement?.querySelector?.('img') || doc.querySelector('img:hover');
-                      if (!img || !img.src || !callGeminiImageEdit) { addToast('Select or hover over an image first', 'info'); return; }
-                      const editPrompt = prompt('Describe how to edit this image:');
+                      const img = selectedPreviewImgRef.current;
+                      if (!img || !img.src) { addToast('Click an image in the preview to select it first', 'info'); return; }
+                      if (!callGeminiImageEdit) { addToast('Image editing not available in this build', 'error'); return; }
+                      const editPrompt = window.prompt('Describe how to edit this image:');
                       if (!editPrompt?.trim()) return;
                       addToast('🎨 Editing image...', 'info');
                       try {
-                        const base64 = img.src.split(',')[1];
-                        if (!base64) { addToast('Cannot edit this image type', 'error'); return; }
+                        let base64 = null;
+                        if (img.src.startsWith('data:')) {
+                          base64 = img.src.split(',')[1];
+                        } else {
+                          try {
+                            const resp = await fetch(img.src);
+                            const blob = await resp.blob();
+                            base64 = await new Promise((resolve, reject) => {
+                              const fr = new FileReader();
+                              fr.onload = () => { const s = String(fr.result || ''); resolve(s.includes(',') ? s.split(',')[1] : null); };
+                              fr.onerror = () => reject(fr.error);
+                              fr.readAsDataURL(blob);
+                            });
+                          } catch(fetchErr) { addToast('Cannot read this image (likely CORS-blocked). Try an AI-generated image.', 'error'); return; }
+                        }
+                        if (!base64) { addToast('Cannot extract image data', 'error'); return; }
                         const edited = await callGeminiImageEdit(editPrompt + ' No text.', base64, 400, 0.85);
                         if (edited) { img.src = edited; addToast('🎨 Image updated!', 'success'); }
-                      } catch(e) { addToast('Image edit failed', 'error'); }
+                        else { addToast('Image edit returned no result', 'error'); }
+                      } catch(e) { warnLog('[Image Edit] failed:', e); addToast('Image edit failed: ' + (e?.message || 'unknown error'), 'error'); }
                     }} className="w-full px-2 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-colors">
                       ✏️ Edit Selected Image (AI)
                     </button>
