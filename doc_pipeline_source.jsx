@@ -1108,15 +1108,21 @@ IMPORTANT FORMATTING RULES for the "issue" field:
 - Avoid trailing parenthetical fragments. BAD: "lacks header rows (" GOOD: "lacks header rows and scope attributes"
 - Calculate the score by starting at 100 and subtracting per the rubric. Each unique violation deducts points ONCE.
 
+LOCATION FIELD ("location"):
+- Provide a short anchor string that identifies WHERE in the document the violation occurs, so a remediation step can target it.
+- Prefer (in order of usefulness): a heading title ("Chapter 3. Methods"), a unique phrase from the offending element (first 6-8 words), a page number ("page 4"), or a structural anchor ("first table", "footer").
+- Keep it under 80 characters. If truly document-wide (e.g., missing lang attribute), use "document".
+- Omit or set to null only if no meaningful anchor can be given.
+
 Return ONLY valid JSON:
 {
   "score": "<calculated from rubric deductions>",
   "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
   "summary": "One balanced sentence that leads with strengths before noting issues. Match tone to score — above 80 is positive with minor notes, below 50 is serious concern.",
-  "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
-  "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
-  "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
-  "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
+  "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
+  "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
+  "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
   "passes": ["Things the document does well"],
   "pageCount": N,
   "hasSearchableText": true/false,
@@ -2982,11 +2988,13 @@ AUDIT CHECKLIST:
 
 IMPORTANT: Calculate the score by starting at 100 and subtracting per the rubric above. Each unique violation deducts points ONCE regardless of how many times it appears. Do NOT estimate — count violations and calculate.
 
+LOCATION FIELD ("location"): For each issue, provide a short anchor (<80 chars) that identifies WHERE the violation occurs so remediation can target it. Prefer heading titles, unique phrases from the offending element, page numbers, or structural anchors ("first table", "footer"). Use "document" only for document-wide issues. Omit/null only if no meaningful anchor exists.
+
 Return ONLY JSON:
 {
   "score": <calculated score, minimum 0>,
   "summary": "One balanced sentence that leads with what the document does well, then briefly notes remaining areas for improvement. Match the tone to the score — a score above 80 should sound positive, not critical. Example for 94/100: 'The document demonstrates strong accessibility with proper language, headings, and semantic structure, with minor remaining issues in image alt text and navigation landmarks.'",
-  "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>}],
+  "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>, "location": "short anchor"}],
   "passes": ["List EVERY checklist item (1-11) that passes. Be thorough — for each item that IS accessible, include a specific description of what was found. A longer passes list is better than a short one."]
 }`;
   const parseAuditJson = (raw) => {
