@@ -5310,10 +5310,26 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const _defaultDocStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1', sectionBorderColor: '#e2e8f0' };
       const _selectedSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
       const _selectedSeed = _selectedSeedId && STYLE_SEEDS[_selectedSeedId] ? STYLE_SEEDS[_selectedSeedId] : null;
-      const _useExtractedStyle = !_selectedSeed || _selectedSeedId === 'matchOriginal' || !_selectedSeed.cssVars;
+      // Respect user's branding mode choice: 'auto' (default, extract from PDF), 'upload' (use uploaded brand), 'none' (skip all branding, use defaults).
+      // Branding mode interacts with style seed as follows:
+      //   - If a specific style seed (not "matchOriginal") is chosen → seed colors win, brand mode ignored for the seed's covered fields.
+      //   - If "matchOriginal" or no seed → brand mode decides: auto extracts, upload uses override, none uses defaults.
+      const _brandMode = typeof window !== 'undefined' ? (window.__pdfBrandMode || 'auto') : 'auto';
+      const _brandOverride = typeof window !== 'undefined' ? window.__pdfBrandOverride : null;
+      const _hasSpecificSeed = _selectedSeed && _selectedSeedId !== 'matchOriginal' && _selectedSeed.cssVars;
+      // Only use extracted/uploaded branding when no specific seed is chosen AND brand mode allows extraction.
+      const _useExtractedStyle = !_hasSpecificSeed && _brandMode === 'auto';
+      const _useUploadedBrand = !_hasSpecificSeed && _brandMode === 'upload' && _brandOverride;
       let docStyle = { ..._defaultDocStyle };
 
-      if (_useExtractedStyle) {
+      if (_useUploadedBrand) {
+        // User uploaded a brand reference — use those colors, skip PDF extraction
+        docStyle = { ...docStyle, ..._brandOverride };
+        _pipeLog('Style', 'Using uploaded brand colors (branding mode: upload)');
+      } else if (_brandMode === 'none' && !_hasSpecificSeed) {
+        // User turned branding off and hasn't picked a specific theme — use default palette
+        _pipeLog('Style', 'Branding off — using default palette');
+      } else if (_useExtractedStyle) {
         // Match Original or no theme selected — extract colors from the PDF
         try {
           updateProgress(2, 'Extracting color scheme...');
@@ -6649,9 +6665,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:blockquote)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
           accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"hr"\s*\}/g, '<hr>');
           accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
-          // Strip JSON wrappers
-          accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section)":\s*"/gm, '');
+          // Strip JSON wrappers — expanded to catch Gemini-invented keys and transition fragments
+          // The original patterns only caught known keys (html/content/text/section); Gemini sometimes invents
+          // keys like "fixed_html", "output_html", "accessible_html", etc. Match any <word>_html or html-ending key.
+          accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section|fixed_html|output_html|accessible_html|\w*_?html)":\s*"/gm, '');
           accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
+          // Strip JSON array transition fragments: "}{ or "][{ patterns that leak between concatenated
+          // JSON objects when Gemini returns multiple blocks. These appear as visible garbage in the output.
+          accessibleHtml = accessibleHtml.replace(/"\s*,\s*\{\s*"(?:fixed_html|output_html|accessible_html|\w*_?html|html|content|text|section)"\s*:\s*"/g, '\n');
+          accessibleHtml = accessibleHtml.replace(/"\s*\]\s*\[\s*\{\s*"(?:fixed_html|output_html|accessible_html|\w*_?html|html|content|text|section)"\s*:\s*"/g, '\n');
+          // Strip orphan escaped-quote-plus-comma fragments ("," or " , ") that appear as raw text when
+          // JSON array item separators leak through without being consumed by another cleanup pattern.
+          // Only match when surrounded by whitespace/newlines so we don't corrupt legitimate content.
+          accessibleHtml = accessibleHtml.replace(/(\n|>)\s*"\s*,\s*"\s*(\n|<)/g, '$1$2');
+          accessibleHtml = accessibleHtml.replace(/(\n|>)\s*"\s*,\s*(\n|<)/g, '$1$2');
 
           // Phase 4: If artifacts remain, send ONLY the diffs to Gemini (not the whole doc)
           var _remainingArtifacts = (accessibleHtml.match(/\{"type"\s*:\s*"/g) || []).length;
