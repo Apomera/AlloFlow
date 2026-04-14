@@ -4688,29 +4688,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               shakeX = (Math.random() - 0.5) * si;
               shakeZ = (Math.random() - 0.5) * si;
             }
-            s3.camera.position.set(
-              carWorldX + Math.cos(car.heading) * 0.3 + bobX + shakeX,
-              1.1 + bobY,
-              carWorldZ + Math.sin(car.heading) * 0.3 + shakeZ
-            );
+            // Speed-based FOV: tighter at low speed, wider at high speed for immersive "speed feel"
+            var speedMphFov = Math.abs(car.speed) * MS_TO_MPH;
+            var targetFov = 75 + Math.min(15, speedMphFov * 0.2); // 75° → 90° at 75 mph
+            if (s3.camera.fov !== targetFov) {
+              s3.camera.fov += (targetFov - s3.camera.fov) * 0.08;
+              s3.camera.updateProjectionMatrix();
+            }
+            // Smooth look-ahead that anticipates turns (Forza-style)
+            var lookAheadBias = Math.sign(car.steering) * Math.min(0.3, Math.abs(car.steering) * 0.5);
+            var fpTargetX = carWorldX + Math.cos(car.heading) * 0.3 + bobX + shakeX;
+            var fpTargetY = 1.1 + bobY;
+            var fpTargetZ = carWorldZ + Math.sin(car.heading) * 0.3 + shakeZ;
+            // Lerp position for smoother micro-motion
+            if (!s3.camera._lastFpX) { s3.camera._lastFpX = fpTargetX; s3.camera._lastFpY = fpTargetY; s3.camera._lastFpZ = fpTargetZ; }
+            s3.camera._lastFpX += (fpTargetX - s3.camera._lastFpX) * 0.4;
+            s3.camera._lastFpY += (fpTargetY - s3.camera._lastFpY) * 0.3;
+            s3.camera._lastFpZ += (fpTargetZ - s3.camera._lastFpZ) * 0.4;
+            s3.camera.position.set(s3.camera._lastFpX, s3.camera._lastFpY, s3.camera._lastFpZ);
             s3.camera.lookAt(
-              carWorldX + Math.cos(car.heading) * 10,
+              carWorldX + Math.cos(car.heading + lookAheadBias) * 10,
               0.95,
-              carWorldZ + Math.sin(car.heading) * 10
+              carWorldZ + Math.sin(car.heading + lookAheadBias) * 10
             );
             s3.playerCarGroup.visible = false;
           } else if (camMode === 'chase') {
-            // Smooth chase camera with lerp
-            var chaseTargetX = carWorldX - Math.cos(car.heading) * 5.5;
-            var chaseTargetZ = carWorldZ - Math.sin(car.heading) * 5.5;
+            // Smooth chase camera with lerp + speed-based FOV + turn anticipation
+            var chaseSpeedMph = Math.abs(car.speed) * MS_TO_MPH;
+            var chaseTargetFov = 70 + Math.min(20, chaseSpeedMph * 0.25); // 70° → 90°
+            s3.camera.fov += (chaseTargetFov - s3.camera.fov) * 0.05;
+            s3.camera.updateProjectionMatrix();
+            // Camera lags slightly behind on turns for cinematic feel
+            var chaseLagBias = Math.sign(car.steering) * Math.min(0.25, Math.abs(car.steering) * 0.4);
+            var chaseBackHeading = car.heading - chaseLagBias;
+            var chaseTargetX = carWorldX - Math.cos(chaseBackHeading) * 5.5;
+            var chaseTargetZ = carWorldZ - Math.sin(chaseBackHeading) * 5.5;
             var chaseTargetY = 2.8;
-            // Lerp current position toward target for smooth follow
-            s3.camera.position.x += (chaseTargetX - s3.camera.position.x) * 0.08;
+            // Lerp current position toward target — more responsive at high speed
+            var chaseLerpRate = 0.08 + Math.min(0.05, chaseSpeedMph * 0.0008);
+            s3.camera.position.x += (chaseTargetX - s3.camera.position.x) * chaseLerpRate;
             s3.camera.position.y += (chaseTargetY - s3.camera.position.y) * 0.06;
-            s3.camera.position.z += (chaseTargetZ - s3.camera.position.z) * 0.08;
-            // Look slightly ahead of the car
-            var lookAheadX = carWorldX + Math.cos(car.heading) * 2;
-            var lookAheadZ = carWorldZ + Math.sin(car.heading) * 2;
+            s3.camera.position.z += (chaseTargetZ - s3.camera.position.z) * chaseLerpRate;
+            // Look slightly ahead of the car (farther when going faster)
+            var chaseLookAhead = 2 + Math.min(4, chaseSpeedMph * 0.05);
+            var lookAheadX = carWorldX + Math.cos(car.heading) * chaseLookAhead;
+            var lookAheadZ = carWorldZ + Math.sin(car.heading) * chaseLookAhead;
             s3.camera.lookAt(lookAheadX, 0.6, lookAheadZ);
             s3.playerCarGroup.visible = true;
           } else if (camMode === 'rearview') {
@@ -5611,6 +5633,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
 
+              // Determine LOD: chunks > 1 away get simplified rendering for performance.
+              // Near chunks (distance 0-1) get full detail; far chunks (2-4) skip ambient + markings
+              var chunkDistFromPlayer = Math.abs(ci - currentChunk);
+              var isHighLOD = chunkDistFromPlayer <= 1; // full detail only near player
+              var isMediumLOD = chunkDistFromPlayer <= 2;
               // ─── BIOME SPEED LIMIT SIGN at start of each chunk ───
               // Teaches students to match their speed to the zone they're in.
               if (chunkIndex % 2 === 0 || (chunk.biome === 'rural' && chunkIndex % 3 === 0)) {
@@ -5644,6 +5671,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
 
               // ─── AMBIENT DETAILS: mailboxes, fire hydrants, streetlights along the road ───
+              // LOD gate: skip ambient entirely on distant chunks (cut ~40 meshes per chunk)
+              if (isMediumLOD) {
               // These add life without adding obstacles — all placed in the shoulder grass area.
               var ambientRng = seededRandom(chunk.index * 31337 + 7);
               for (var ambI = 2; ambI < CHUNK_SIZE - 2; ambI += 4) {
@@ -5756,6 +5785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               }
+              } // end isMediumLOD gate
 
               // Road surface for this chunk (main N-S road)
               var roadGeo = new T.PlaneGeometry(7, CHUNK_SIZE);
@@ -5767,7 +5797,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               chunkGroup.add(road);
 
               // ─── ROAD MARKINGS (painted on the road surface) ───
-              if (scn.weather !== 'snow') { // markings hidden by snow
+              // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
+              if (scn.weather !== 'snow' && isHighLOD) { // markings hidden by snow; only render near
                 // Yellow DASHED center line (double yellow for rural = no passing, single dash elsewhere)
                 var centerLineMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
                 var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection; // double yellow near intersections
@@ -6149,15 +6180,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText(veh.type === 'electric' ? 'MPGe AVG' : 'MPG AVG', W / 2, H - 22);
 
-          // Safety + efficiency
-          gfx.fillStyle = stats.safetyScore > 70 ? '#4ade80' : stats.safetyScore > 40 ? '#f59e0b' : '#ef4444';
+          // Safety + efficiency — smoothly interpolate displayed values so drops feel gradual
+          if (stats._displaySafety == null) stats._displaySafety = stats.safetyScore;
+          if (stats._displayEco == null) stats._displayEco = stats.efficiencyScore;
+          stats._displaySafety += (stats.safetyScore - stats._displaySafety) * 0.12;
+          stats._displayEco += (stats.efficiencyScore - stats._displayEco) * 0.12;
+          var showSafety = Math.max(0, Math.round(stats._displaySafety));
+          var showEco = Math.max(0, Math.round(stats._displayEco));
+          gfx.fillStyle = showSafety > 70 ? '#4ade80' : showSafety > 40 ? '#f59e0b' : '#ef4444';
           gfx.font = 'bold 18px monospace'; gfx.textAlign = 'right';
-          gfx.fillText(Math.max(0, Math.round(stats.safetyScore)), W - 20, H - 50);
+          gfx.fillText(showSafety, W - 20, H - 50);
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText('SAFETY', W - 20, H - 35);
-          gfx.fillStyle = stats.efficiencyScore > 70 ? '#4ade80' : stats.efficiencyScore > 40 ? '#f59e0b' : '#ef4444';
+          gfx.fillStyle = showEco > 70 ? '#4ade80' : showEco > 40 ? '#f59e0b' : '#ef4444';
           gfx.font = 'bold 18px monospace';
-          gfx.fillText(Math.max(0, Math.round(stats.efficiencyScore)), W - 100, H - 50);
+          gfx.fillText(showEco, W - 100, H - 50);
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText('ECO', W - 100, H - 35);
 
@@ -6239,15 +6276,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(distFtSig + ' ft', tlX, tlY + 26);
           }
 
-          // Event toast
+          // Event toast with smooth fade in/out
           var et = eventToastRef.current;
           if (et && et.msg && timeRef.current < et.until) {
+            var totalDur = et.until - (et._fadeStart || (et._fadeStart = timeRef.current));
+            if (totalDur <= 0) totalDur = 4;
+            var elapsed = timeRef.current - et._fadeStart;
+            var remaining = et.until - timeRef.current;
+            // Fade in over first 0.3s, fade out over last 0.5s
+            var fadeAlpha = 1;
+            if (elapsed < 0.3) fadeAlpha = elapsed / 0.3;
+            else if (remaining < 0.5) fadeAlpha = remaining / 0.5;
+            fadeAlpha = Math.max(0, Math.min(1, fadeAlpha));
+            // Slide in from top: y position animates during fade-in
+            var slideY = 80 + (1 - Math.min(1, elapsed / 0.3)) * -20;
+            gfx.save();
+            gfx.globalAlpha = fadeAlpha;
             gfx.fillStyle = 'rgba(127,29,29,0.85)';
-            gfx.fillRect(W * 0.1, 80, W * 0.8, 36);
+            gfx.fillRect(W * 0.1, slideY, W * 0.8, 36);
             gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2;
-            gfx.strokeRect(W * 0.1, 80, W * 0.8, 36);
+            gfx.strokeRect(W * 0.1, slideY, W * 0.8, 36);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText(et.msg, W / 2, 102);
+            gfx.fillText(et.msg, W / 2, slideY + 22);
+            gfx.restore();
           }
 
           // Speed limit sign
