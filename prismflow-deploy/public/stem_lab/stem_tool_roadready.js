@@ -5640,10 +5640,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var isMediumLOD = chunkDistFromPlayer <= 2;
               // ─── BIOME SPEED LIMIT SIGN at start of each chunk ───
               // Teaches students to match their speed to the zone they're in.
-              if (chunkIndex % 2 === 0 || (chunk.biome === 'rural' && chunkIndex % 3 === 0)) {
+              if (ci % 2 === 0 || (chunk.biome === 'rural' && ci % 3 === 0)) {
                 var biomeLimit = chunk.biome === 'residential' ? 25 : chunk.biome === 'suburban' ? 35 : chunk.biome === 'commercial' ? 30 : chunk.biome === 'industrial' ? 35 : chunk.biome === 'rural' ? 50 : 30;
                 var speedZ = chunkWorldZ + 3;
-                var speedSide = chunkIndex % 4 < 2 ? 1 : -1;
+                var speedSide = ci % 4 < 2 ? 1 : -1;
                 var spPost = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
                 spPost.position.set(speedSide * (MAX_ROAD_WIDTH + 1.2), 1.2, speedZ);
                 chunkGroup.add(spPost);
