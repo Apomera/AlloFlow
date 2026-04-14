@@ -7837,27 +7837,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7873,7 +7873,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5b045d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@af4f52f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18900,6 +18900,7 @@ Return ONLY valid JSON:
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
+  const remediateSurgicallyThenAI = _docPipeline ? _docPipeline.remediateSurgicallyThenAI : async (h) => ({ html: h, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
@@ -51526,27 +51527,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               html = html.replace(/<img([^>]*)>/gi, (m, a) => /alt\s*=/.test(a) ? m : `<img alt="Document image"${a}>`);
                               html = html.replace(/<th(?![^>]*scope)/gi, '<th scope="col"');
                               html = html.replace(/<a([^>]*)>\s*<\/a>/gi, (m, a) => { const h = a.match(/href="([^"]*)"/); return `<a${a}>${h ? h[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`; });
-                              // Gemini targeted fix — skip on large docs (would require truncation → unsafe)
-                              const GEMINI_FIX_MAX_CHARS = 15000;
-                              if (html.length <= GEMINI_FIX_MAX_CHARS) {
-                                setPdfFixStep(`Pass ${pass + 1}: AI fixing ${allIssues.length} issues...`);
-                                const fixPrompt = `You are an accessibility remediation expert. Fix ONLY these WCAG issues. Do NOT introduce new problems. Preserve ALL content. Return the COMPLETE HTML.\n\nISSUES:\n${allIssues.join('\n')}\n\nHTML:\n"""${html}"""\n\nReturn ONLY fixed HTML.`;
-                                const fixed = await callGemini(fixPrompt, true);
-                                // Integrity guards: structural, length, and word count — reject Gemini response that drops content.
-                                if (fixed && (fixed.includes('<!DOCTYPE') || fixed.includes('<html'))) {
-                                  const lengthOk = fixed.length >= html.length * 0.9;
-                                  const beforeWords = countWords(html.replace(/<[^>]+>/g, ' '));
-                                  const afterWords = countWords(fixed.replace(/<[^>]+>/g, ' '));
-                                  const wordsOk = beforeWords === 0 || afterWords >= beforeWords * 0.9;
-                                  if (lengthOk && wordsOk) {
-                                    html = fixed;
-                                  } else {
-                                    warnLog(`[Fix Remaining] Pass ${pass + 1}: Gemini response rejected (length ${fixed.length}/${html.length}, words ${afterWords}/${beforeWords}) — keeping deterministic fixes only`);
-                                  }
+                              // ── Surgical-then-AI remediation (chunked, content-preserving, data-URL-safe) ──
+                              // Replaces the old whole-document Gemini round-trip.
+                              // Step 1: strip base64 data URLs → placeholders (protects images from Gemini corruption).
+                              // Step 2: chunk on tag boundaries.
+                              // Step 3 per chunk: surgical diagnosis (JSON directives → deterministic tools) THEN Gemini rewrite (integrity-gated).
+                              // Step 4: reassemble + restore base64.
+                              try {
+                                setPdfFixStep(`Pass ${pass + 1}: surgical + AI remediation (${allIssues.length} issues)...`);
+                                const remResult = await remediateSurgicallyThenAI(html, {
+                                  aiIssues: (bestAi?.issues || []),
+                                  axeResult: bestAxe,
+                                  enableGeminiPass: true,
+                                  onProgress: (msg) => setPdfFixStep(`Pass ${pass + 1}: ${msg}`),
+                                });
+                                if (remResult && remResult.html) {
+                                  html = remResult.html;
+                                  warnLog(`[Fix Remaining] Pass ${pass + 1}: ${remResult.surgicalFixCount} surgical fixes, ${remResult.geminiPassCount} Gemini passes, ${remResult.rejectedChunks} rejected chunks`);
                                 }
-                              } else {
-                                setPdfFixStep(`Pass ${pass + 1}: skipping AI fix (doc too large for round-trip)...`);
-                                warnLog(`[Fix Remaining] Pass ${pass + 1}: skipping Gemini (html ${html.length} > ${GEMINI_FIX_MAX_CHARS} chars) — relying on deterministic + axe fixes`);
+                              } catch(remErr) {
+                                warnLog(`[Fix Remaining] Pass ${pass + 1}: surgical-then-AI failed, continuing with deterministic-only fixes: ${remErr?.message}`);
                               }
                               cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
                               // Verify with 2 AI audits + axe (parallel — no extra time)
