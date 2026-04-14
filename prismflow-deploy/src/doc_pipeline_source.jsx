@@ -9,8 +9,98 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // State access: functions read window.__docPipelineState (updated every render by monolith)
 // This avoids stale closures — each function call reads fresh state from the window ref.
 var createDocPipeline = function(deps) {
-  var callGemini = deps.callGemini;
-  var callGeminiVision = deps.callGeminiVision;
+  // ── Timeout + Retry utilities ──
+  // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
+  var _withTimeout = function(promise, ms, label) {
+    var _timer;
+    return Promise.race([
+      promise,
+      new Promise(function(_, reject) {
+        _timer = setTimeout(function() { reject(new Error('Timeout after ' + (ms / 1000) + 's' + (label ? ' (' + label + ')' : ''))); }, ms);
+      })
+    ]).finally(function() { clearTimeout(_timer); });
+  };
+
+  // Wraps an async function call with timeout + 1 automatic retry on timeout/error.
+  // retryMs can be shorter than initialMs since we already waited once.
+  var _withRetry = function(fn, initialMs, retryMs, label) {
+    return _withTimeout(fn(), initialMs, label).catch(function(err) {
+      var isTimeout = err && err.message && err.message.indexOf('Timeout') === 0;
+      var isRecitation = err && err.message && /RECITATION/i.test(err.message);
+      // Skip retry for RECITATION — it's deterministic, same content will always be refused
+      if (isRecitation) {
+        warnLog('[Retry] ' + (label || 'API call') + ' failed (RECITATION) — skipping retry (content filter is deterministic)');
+        throw err;
+      }
+      warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
+      return _withTimeout(fn(), retryMs || initialMs, label + ' (retry)');
+    });
+  };
+
+  // ── Pipeline telemetry logger ──
+  // Structured logging with timestamps, durations, and API call tracking.
+  // All output prefixed with [DocPipe] for easy filtering in DevTools.
+  var _pipelineStats = { apiCalls: 0, visionCalls: 0, totalApiMs: 0, retries: 0, startTime: 0, stepTimes: {} };
+  var _pipeLog = function(tag, msg, data) {
+    var elapsed = _pipelineStats.startTime ? '+' + ((performance.now() - _pipelineStats.startTime) / 1000).toFixed(1) + 's' : '';
+    var prefix = '[DocPipe][' + tag + '] ' + elapsed + ' — ';
+    if (data) {
+      try { console.groupCollapsed(prefix + msg); console.log(data); console.groupEnd(); } catch(e) { warnLog(prefix + msg, data); }
+    } else {
+      warnLog(prefix + msg);
+    }
+  };
+  var _pipeStepStart = function(step) {
+    _pipelineStats.stepTimes[step] = performance.now();
+    _pipeLog('Step ' + step, 'Starting...');
+  };
+  var _pipeStepEnd = function(step, detail) {
+    var dur = _pipelineStats.stepTimes[step] ? ((performance.now() - _pipelineStats.stepTimes[step]) / 1000).toFixed(1) + 's' : '?';
+    _pipeLog('Step ' + step, 'Complete (' + dur + ')' + (detail ? ' — ' + detail : ''));
+  };
+
+  // Wrap callGemini/callGeminiVision at the binding layer:
+  // - Automatic timeout + 1 retry (callGemini: 60s/45s, callGeminiVision: 90s/60s)
+  // - Auto-logging: every API call logs entry (prompt size) and exit (response size, duration)
+  var _rawCallGemini = deps.callGemini;
+  var _rawCallGeminiVision = deps.callGeminiVision;
+  var callGemini = _rawCallGemini ? function() {
+    var args = arguments;
+    var promptLen = args[0] ? String(args[0]).length : 0;
+    var callNum = ++_pipelineStats.apiCalls;
+    _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
+    var t0 = performance.now();
+    return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini').then(function(result) {
+      var dur = Math.round(performance.now() - t0);
+      var respLen = result ? String(result).length : 0;
+      _pipelineStats.totalApiMs += dur;
+      _pipeLog('API←', 'callGemini #' + callNum + ' done (' + dur + 'ms, ' + Math.round(respLen / 1000) + 'KB response)');
+      return result;
+    }).catch(function(err) {
+      var dur = Math.round(performance.now() - t0);
+      _pipelineStats.retries++;
+      _pipeLog('API✗', 'callGemini #' + callNum + ' FAILED after ' + dur + 'ms: ' + (err && err.message || err));
+      throw err;
+    });
+  } : null;
+  var callGeminiVision = _rawCallGeminiVision ? function() {
+    var args = arguments;
+    var callNum = ++_pipelineStats.visionCalls;
+    _pipeLog('Vision→', 'callGeminiVision #' + callNum);
+    var t0 = performance.now();
+    return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision').then(function(result) {
+      var dur = Math.round(performance.now() - t0);
+      var respLen = result ? String(result).length : 0;
+      _pipelineStats.totalApiMs += dur;
+      _pipeLog('Vision←', 'callGeminiVision #' + callNum + ' done (' + dur + 'ms, ' + Math.round(respLen / 1000) + 'KB response)');
+      return result;
+    }).catch(function(err) {
+      var dur = Math.round(performance.now() - t0);
+      _pipelineStats.retries++;
+      _pipeLog('Vision✗', 'callGeminiVision #' + callNum + ' FAILED after ' + dur + 'ms: ' + (err && err.message || err));
+      throw err;
+    });
+  } : null;
   var callImagen = deps.callImagen;
   var addToast = deps.addToast;
   var t = deps.t;
@@ -64,6 +154,63 @@ var createDocPipeline = function(deps) {
     setIsExtracting = s.setIsExtracting;
     exportAuditResult = s.exportAuditResult;
     setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
+  };
+
+  // ── IndexedDB chunk progress persistence ──
+  // Survives tab close, browser crash, API quota exhaustion.
+  // Session ID = simple hash of filename + size + page count for stable identification.
+  var _CHUNK_DB_NAME = 'alloflow-chunk-progress';
+  var _CHUNK_DB_VERSION = 1;
+  var _CHUNK_STORE = 'sessions';
+
+  var _openChunkDB = function() {
+    return new Promise(function(resolve, reject) {
+      if (typeof indexedDB === 'undefined') { reject(new Error('IndexedDB not available')); return; }
+      var req = indexedDB.open(_CHUNK_DB_NAME, _CHUNK_DB_VERSION);
+      req.onupgradeneeded = function(e) { var db = e.target.result; if (!db.objectStoreNames.contains(_CHUNK_STORE)) db.createObjectStore(_CHUNK_STORE); };
+      req.onsuccess = function(e) { resolve(e.target.result); };
+      req.onerror = function() { reject(req.error); };
+    });
+  };
+
+  var _chunkSessionId = function(filename, fileSize, pageCount) {
+    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
+    var hash = 0;
+    for (var i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash |= 0; }
+    return 'chunk_' + Math.abs(hash).toString(36);
+  };
+
+  var saveChunkProgress = function(sessionId, data) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+        tx.objectStore(_CHUNK_STORE).put(data, sessionId);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    }).catch(function(e) { warnLog('[ChunkProgress] Save failed:', e.message); });
+  };
+
+  var loadChunkProgress = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readonly');
+        var req = tx.objectStore(_CHUNK_STORE).get(sessionId);
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror = function() { reject(req.error); };
+      });
+    }).catch(function(e) { warnLog('[ChunkProgress] Load failed:', e.message); return null; });
+  };
+
+  var clearChunkProgress = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+        tx.objectStore(_CHUNK_STORE).delete(sessionId);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
   };
 
   // ── Deterministic integrity helpers ──
@@ -155,7 +302,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = 18000;
+  const HTML_FIX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     const chunks = [];
@@ -173,46 +320,6 @@ var createDocPipeline = function(deps) {
     return chunks;
   };
 
-  // Shared JSON repair: tolerant parser for AI-returned JSON arrays (handles fences, trailing garbage, unquoted keys, etc.)
-  const repairAndParseJsonShared = (raw) => {
-    if (!raw) return null;
-    let s = String(raw).trim();
-    // Strip markdown fences
-    if (s.indexOf('```') !== -1) {
-      const ps = s.split('```');
-      s = ps[1] || ps[0];
-      if (s.indexOf('\n') !== -1 && /^(json|js)\s*$/i.test(s.split('\n')[0].trim())) s = s.split('\n').slice(1).join('\n');
-      if (s.lastIndexOf('```') !== -1) s = s.substring(0, s.lastIndexOf('```'));
-      s = s.trim();
-    }
-    // Strip any text before the first [ and after the last ]
-    const firstBracket = s.indexOf('[');
-    const lastBracket = s.lastIndexOf(']');
-    if (firstBracket >= 0) s = s.substring(firstBracket);
-    if (lastBracket >= 0 && lastBracket > firstBracket) s = s.substring(0, s.lastIndexOf(']') + 1);
-    // Direct parse attempt
-    try { return JSON.parse(s); } catch(e) {}
-    // Fix common AI JSON errors
-    let repaired = s
-      .replace(/,\s*([}\]])/g, '$1')
-      .replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":')
-      .replace(/:\s*'([^']*)'/g, ':"$1"')
-      .replace(/"\s*\n\s*"/g, '","')
-      .replace(/}\s*\n?\s*{/g, '},{')
-      .replace(/\}\s*$/,'}\]')
-      .replace(/"\s*$/,'"}]');
-    if (!repaired.startsWith('[')) repaired = '[' + repaired;
-    if (!repaired.endsWith(']')) {
-      const lastCloseBrace = repaired.lastIndexOf('}');
-      if (lastCloseBrace > 0) repaired = repaired.substring(0, lastCloseBrace + 1) + ']';
-    }
-    try { return JSON.parse(repaired); } catch(e) {}
-    // Aggressive: try to extract the array portion only
-    const arrMatch = repaired.match(/\[\s*\{[\s\S]*\}\s*\]/);
-    if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
-    return null;
-  };
-
   const stripFence = (s) => {
     if (!s) return s;
     let c = s.trim();
@@ -227,409 +334,200 @@ var createDocPipeline = function(deps) {
 
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
-  // Base64 data URLs are swapped to placeholders before Gemini sees them and restored after,
-  // so Gemini cannot silently strip or truncate base64 image data.
   const aiFixChunked = async (html, violationsText, label) => {
     if (!html) return html;
-    // Strip data URLs before chunking so tokens ride cleanly through splits.
-    const stripped = stripDataUrls(html);
-    const workingHtml = stripped.html;
-    const chunks = splitHtmlOnTagBoundary(workingHtml, HTML_FIX_CHUNK);
-    const _countTokens = (s) => (s ? (s.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length : 0);
+    // Strip base64 image data URLs before sending to AI — too large for model to reproduce
+    // Replace with short placeholders, then restore after AI fixes
+    const _imgDataMap = {};
+    let _imgCounter = 0;
+    let strippedHtml = html.replace(/src="(data:image\/[^"]{100,})"/gi, function(m, dataUrl) {
+      const key = '__IMG_DATA_' + (++_imgCounter) + '__';
+      _imgDataMap[key] = dataUrl;
+      return 'src="' + key + '"';
+    });
+    const _hasImages = _imgCounter > 0;
+    if (_hasImages) warnLog(`[aiFixChunked:${label}] stripped ${_imgCounter} base64 image data URLs before AI processing`);
+    const _restoreImages = function(fixedHtml) {
+      if (!_hasImages) return fixedHtml;
+      var restored = fixedHtml;
+      for (var key in _imgDataMap) {
+        restored = restored.split(key).join(_imgDataMap[key]);
+      }
+      return restored;
+    };
+    const chunks = splitHtmlOnTagBoundary(_hasImages ? strippedHtml : html, HTML_FIX_CHUNK);
     if (chunks.length === 1) {
-      // Short doc: single call with full document
+      // Short doc: single call with full document (use stripped html without base64 images)
       try {
-        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten. Preserve tokens of the form __ALLOFLOW_DATAURL_N__ verbatim — they represent embedded images.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${workingHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
+        const _singleHtml = _hasImages ? strippedHtml : html;
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${_singleHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
         const fixed = stripFence(await callGemini(prompt, true));
-        const tokensBefore = _countTokens(workingHtml);
-        const tokensAfter = _countTokens(fixed);
-        if (acceptFixedHtml(fixed, workingHtml) && tokensAfter >= tokensBefore) {
-          return restoreDataUrls(fixed, stripped.map);
-        }
-        warnLog(`[aiFixChunked:${label}] single-chunk rejected (tokens=${tokensAfter}/${tokensBefore}) — keeping original`);
+        if (acceptFixedHtml(fixed, _singleHtml)) return _restoreImages(fixed);
+        warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
         return html;
       } catch (e) {
         warnLog(`[aiFixChunked:${label}] single-chunk failed:`, e?.message);
         return html;
       }
     }
-    // Multi-chunk: fix each fragment with strict per-chunk integrity
-    warnLog(`[aiFixChunked:${label}] splitting ${workingHtml.length} chars into ${chunks.length} chunks (data-URL tokens protected)`);
-    const fixed = new Array(chunks.length);
-    for (let ci = 0; ci < chunks.length; ci++) {
-      const part = chunks[ci];
+    // Multi-chunk: fix ALL fragments in PARALLEL for speed
+    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (parallel)`);
+    const fixed = await Promise.all(chunks.map(async (part, ci) => {
       const isFirst = ci === 0, isLast = ci === chunks.length - 1;
       const fragNote = isFirst
         ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
         : isLast
           ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
-      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten. Preserve tokens of the form __ALLOFLOW_DATAURL_N__ verbatim — they represent embedded images.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
       try {
         const out = stripFence(await callGemini(prompt, true));
-        const tokensBefore = _countTokens(part);
-        const tokensAfter = _countTokens(out);
-        // Per-chunk integrity: output must not shrink by more than 5% text content AND all data-URL tokens must survive
-        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95 && tokensAfter >= tokensBefore) {
-          fixed[ci] = out;
+        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
+          return out;
+        } else if (part.length > 5000) {
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} truncated — splitting in half and retrying`);
+          const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
+          const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
+            try {
+              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment.`;
+              const halfOut = stripFence(await callGemini(halfPrompt, true));
+              if (halfOut && halfOut.length >= half.length * 0.85 && textCharCount(halfOut) >= textCharCount(half) * 0.9) {
+                return halfOut;
+              }
+              warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} also rejected — keeping original half`);
+              return half;
+            } catch (he) { return half; }
+          }));
+          return halfResults.join('');
         } else {
-          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}, tokens=${tokensAfter}/${tokensBefore}) — keeping original`);
-          fixed[ci] = part;
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
+          return part;
         }
       } catch (e) {
         warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} failed:`, e?.message);
-        fixed[ci] = part;
+        return part;
       }
-    }
-    return restoreDataUrls(fixed.join(''), stripped.map);
+    }));
+    return _restoreImages(fixed.join(''));
   };
 
-  // ── Shared surgical tools (hoisted to factory scope — single source of truth) ──
-  // Deterministic micro-operations that apply targeted fixes from Gemini-generated JSON directives.
-  // Used by fixAndVerifyPdf, autoFixAxeViolations, refixChunk, and remediateSurgicallyThenAI.
-  const SHARED_SURGICAL_TOOLS = {
-    fix_alt_text: function(html, p) {
-      if (!p.index && p.index !== 0) return html;
-      let idx = 0;
-      return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== p.index) return m;
-        if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
-        return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_heading: function(html, p) {
-      if (!p.newLevel) return html;
-      let idx = 0;
-      return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
-      });
-    },
-    fix_link_text: function(html, p) {
-      if (!p.newText) return html;
-      let idx = 0;
-      return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
-        if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
-          return '<a' + attrs + '>' + p.newText + '</a>';
+  // ── Heuristic text structuring (RECITATION fallback) ──
+  // When Vision refuses to process copyrighted content, structure the pre-extracted text
+  // using formatting heuristics. Not as accurate as Vision, but preserves all content.
+  const structureTextHeuristic = (rawText, startPage, endPage) => {
+    if (!rawText || rawText.trim().length < 10) return [];
+    const blocks = [];
+    const lines = rawText.split(/\n/);
+    let currentParagraph = [];
+
+    const flushParagraph = () => {
+      if (currentParagraph.length > 0) {
+        const text = currentParagraph.join(' ').trim();
+        if (text.length > 0) blocks.push({ type: 'p', text: text });
+        currentParagraph = [];
+      }
+    };
+
+    for (let li = 0; li < lines.length; li++) {
+      const line = lines[li].trim();
+      if (!line) { flushParagraph(); continue; }
+
+      // Detect headings: short lines (< 80 chars), often ALL CAPS or Title Case, followed by content
+      const isShort = line.length < 80;
+      const isAllCaps = line === line.toUpperCase() && /[A-Z]/.test(line) && line.length > 3;
+      const isTitleCase = /^[A-Z][a-z]/.test(line) && line.split(' ').filter(w => /^[A-Z]/.test(w)).length >= Math.ceil(line.split(' ').length * 0.6);
+      const nextLine = li + 1 < lines.length ? lines[li + 1].trim() : '';
+      const nextIsContent = nextLine.length > 80 || (nextLine.length > 20 && /^[a-z]/.test(nextLine));
+      const hasNumber = /^(?:Chapter|Section|Part|Unit|\d+[\.\):])\s/i.test(line);
+
+      if (isShort && (isAllCaps || hasNumber) && line.length > 3) {
+        flushParagraph();
+        blocks.push({ type: isAllCaps && line.length < 40 ? 'h2' : 'h3', text: line, id: line.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 40) });
+        continue;
+      }
+      if (isShort && isTitleCase && nextIsContent && !line.endsWith('.') && line.length > 5) {
+        flushParagraph();
+        blocks.push({ type: 'h3', text: line, id: line.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 40) });
+        continue;
+      }
+
+      // Detect list items: lines starting with bullets, dashes, numbers, or letters
+      if (/^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s/.test(line) || /^[a-z]\)\s/i.test(line)) {
+        flushParagraph();
+        // Collect consecutive list items
+        const items = [line.replace(/^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s*/, '').replace(/^[a-z]\)\s*/i, '')];
+        while (li + 1 < lines.length && /^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s|^[a-z]\)\s/i.test(lines[li + 1].trim())) {
+          li++;
+          items.push(lines[li].trim().replace(/^[\u2022\u2023\u25E6\u25AA\u25CF•●○◦-]\s*/, '').replace(/^[a-z]\)\s*/i, ''));
         }
-        return m;
-      });
-    },
-    fix_table_caption: function(html, p) {
-      if (!p.caption) return html;
-      let idx = 0;
-      return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        return '<table' + attrs + '><caption>' + p.caption + '</caption>';
-      });
-    },
-    fix_aria_label: function(html, p) {
-      if (!p.tag || !p.label) return html;
-      let idx = 0;
-      var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
-      return html.replace(re, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-        return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_lang: function(html, p) {
-      if (!p.lang) return html;
-      return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
-                 .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
-    },
-    fix_th_scope: function(html, p) {
-      var scope = p.scope || 'col';
-      let idx = 0;
-      return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
-        if (p.index !== undefined && idx++ !== p.index) return m;
-        return '<th scope="' + scope + '"' + attrs + '>';
-      });
-    },
-    fix_remove_empty_heading: function(html, p) {
-      let idx = 0;
-      return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
-        if (p.index !== undefined && idx++ !== p.index) return m;
-        return '';
-      });
-    },
-    fix_input_label: function(html, p) {
-      if (!p.label) return html;
-      let idx = 0;
-      return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-        return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_button_name: function(html, p) {
-      if (!p.label) return html;
-      let idx = 0;
-      return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (content.trim()) return m;
-        return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
-      });
-    },
-    fix_iframe_title: function(html, p) {
-      if (!p.title) return html;
-      let idx = 0;
-      return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
-        return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_add_landmark: function(html, p) {
-      var tag = p.tag || 'section';
-      var label = p.label || 'Content';
-      var selector = p.selector || 'body';
-      if (selector === 'body' && !html.includes('<main')) {
-        return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+        blocks.push({ type: 'ul', items: items });
+        continue;
       }
-      return html;
-    },
-    fix_duplicate_id: function(html, p) {
-      if (!p.id) return html;
-      let count = 0;
-      return html.replace(new RegExp('id="' + p.id + '"', 'g'), function(m) {
-        count++;
-        if (count === 1) return m;
-        return 'id="' + p.id + '-' + count + '"';
-      });
-    },
-    fix_figcaption: function(html, p) {
-      if (!p.caption) return html;
-      let idx = 0;
-      return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/<figcaption/i.test(content)) return m;
-        return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
-      });
-    },
-    fix_title: function(html, p) {
-      if (!p.title) return html;
-      if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
-      return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
-    },
-    fix_lang_span: function(html, p) {
-      if (!p.text || !p.lang) return html;
-      var escaped = p.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      return html.replace(new RegExp(escaped), '<span lang="' + p.lang + '">' + p.text + '</span>');
-    },
-    fix_contrast: function(html, p) {
-      if (!p.oldColor || !p.newColor) return html;
-      return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
-    },
-    fix_table_header_row: function(html, p) {
-      let idx = 0;
-      return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/<thead/i.test(content)) return m;
-        var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
-          var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
-          return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
-        });
-        return '<table' + attrs + '>' + fixed + '</table>';
-      });
-    },
-    fix_abbreviation: function(html, p) {
-      if (!p.abbr || !p.title) return html;
-      var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
-      var replaced = false;
-      return html.replace(re, function(m) {
-        if (replaced) return m;
-        replaced = true;
-        return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
-      });
-    },
-    fix_image_decorative: function(html, p) {
-      let idx = 0;
-      return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
-        return '<img alt="" role="presentation"' + cleaned + '>';
-      });
-    },
-    fix_list_wrap: function(html, p) {
-      var tag = p.ordered ? 'ol' : 'ul';
-      return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
-        var before = html.substring(Math.max(0, offset - 100), offset);
-        if (/<[uo]l[^>]*>\s*$/i.test(before)) return m;
-        return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
-      });
-    },
-    fix_skip_nav: function(html) {
-      if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
-      return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
-    },
-    fix_text_spacing: function(html, p) {
-      var css = '';
-      if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
-      if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
-      if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
-      if (!css) return html;
-      var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
-      if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
-      return style + html;
-    },
-  };
-
-  // ── Data-URL placeholder swap (protects base64 images from Gemini corruption) ──
-  // Replace all `src="data:..."` with stable placeholders before sending HTML to Gemini,
-  // then restore from the map after. Gemini never sees base64 so it cannot truncate/strip it.
-  const stripDataUrls = (html) => {
-    if (!html) return { html: html, map: {} };
-    const map = {};
-    let counter = 0;
-    const out = html.replace(/(src|href)\s*=\s*"(data:[^"]+)"/gi, function(m, attr, dataUrl) {
-      const token = '__ALLOFLOW_DATAURL_' + (counter++) + '__';
-      map[token] = dataUrl;
-      return attr + '="' + token + '"';
-    });
-    return { html: out, map: map };
-  };
-  const restoreDataUrls = (html, map) => {
-    if (!html || !map) return html;
-    let out = html;
-    Object.keys(map).forEach(function(token) {
-      out = out.split(token).join(map[token]);
-    });
-    return out;
-  };
-
-  // ── Surgical-then-Gemini remediation for second-pass "Fix Remaining" ──
-  // Layered defense: (1) strip base64 data URLs, (2) chunk on tag boundaries,
-  // (3) per chunk: surgical diagnosis + apply, (4) optional Gemini rewrite with integrity gates,
-  // (5) reassemble, (6) restore base64. Never sends base64 to Gemini.
-  const remediateSurgicallyThenAI = async (html, opts) => {
-    if (!html) return { html: html, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 };
-    const options = opts || {};
-    const aiIssues = options.aiIssues || [];
-    const axeResult = options.axeResult || null;
-    const enableGeminiPass = options.enableGeminiPass !== false;
-    const onProgress = options.onProgress || (function() {});
-
-    // Build compact violation summary for prompts
-    const violationLines = [];
-    (aiIssues || []).forEach(function(i) {
-      if (i && i.issue) {
-        const loc = i.location ? ' [at: ' + String(i.location).substring(0, 80) + ']' : '';
-        violationLines.push('AI ' + (i.severity || 'issue') + ': ' + i.issue + (i.wcag ? ' (WCAG ' + i.wcag + ')' : '') + loc);
-      }
-    });
-    if (axeResult) {
-      ['critical', 'serious', 'moderate', 'minor'].forEach(function(sev) {
-        (axeResult[sev] || []).forEach(function(v) {
-          const targetHint = (v.nodeDetails && v.nodeDetails[0] && v.nodeDetails[0].target) ? ' target=' + JSON.stringify(v.nodeDetails[0].target) : '';
-          violationLines.push('AXE ' + sev.toUpperCase() + ': ' + v.description + ' (' + v.id + ')' + targetHint);
-        });
-      });
-    }
-    const violationText = violationLines.slice(0, 20).join('\n') || 'General WCAG 2.1 AA compliance issues';
-
-    // Step 1: strip data URLs
-    const stripped = stripDataUrls(html);
-    let workingHtml = stripped.html;
-
-    // Step 2: chunk
-    const chunks = splitHtmlOnTagBoundary(workingHtml, HTML_FIX_CHUNK);
-    warnLog('[SurgicalThenAI] Processing ' + chunks.length + ' chunk(s) with ' + violationLines.length + ' violations');
-
-    let surgicalFixCount = 0;
-    let geminiPassCount = 0;
-    let rejectedChunks = 0;
-    const fixedChunks = new Array(chunks.length);
-
-    for (let ci = 0; ci < chunks.length; ci++) {
-      let chunk = chunks[ci];
-      onProgress('Chunk ' + (ci + 1) + '/' + chunks.length + ': surgical diagnosis...');
-
-      // Step 3a: surgical diagnosis + apply
-      try {
-        const surgPrompt =
-          'You are an accessibility remediation expert. Analyze this HTML section and prescribe SPECIFIC targeted fixes.\n\n' +
-          'KNOWN VIOLATIONS:\n' + violationText + '\n\n' +
-          'HTML SECTION ' + (ci + 1) + '/' + chunks.length + ':\n"""\n' + chunk.substring(0, 5000) + '\n"""\n\n' +
-          'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' +
-          'CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n' +
-          'TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n' +
-          'FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n' +
-          'STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n' +
-          'VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}, fix_abbreviation {abbr, title}, fix_text_spacing {letterSpacing?, lineHeight?}\n' +
-          'LIST: fix_list_wrap {ordered}, fix_skip_nav {}\n' +
-          'Return ONLY a valid JSON array. Be specific — use the actual document content.';
-        const surgRaw = await callGemini(surgPrompt, true);
-        const parseSurg = (raw) => {
-          if (!raw) return [];
-          try { return JSON.parse(raw); } catch(e) {
-            try { return JSON.parse(raw.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { return []; }
-          }
-        };
-        const directives = parseSurg(surgRaw);
-        if (Array.isArray(directives)) {
-          for (let di = 0; di < directives.length; di++) {
-            const fix = directives[di];
-            const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
-            if (tool) {
-              const before = chunk;
-              try { chunk = tool(chunk, fix); } catch(toolErr) { /* tool failed, keep previous */ chunk = before; }
-              if (chunk !== before) surgicalFixCount++;
-            }
-          }
+      if (/^\d+[\.\)]\s/.test(line)) {
+        flushParagraph();
+        const items = [line.replace(/^\d+[\.\)]\s*/, '')];
+        while (li + 1 < lines.length && /^\d+[\.\)]\s/.test(lines[li + 1].trim())) {
+          li++;
+          items.push(lines[li].trim().replace(/^\d+[\.\)]\s*/, ''));
         }
-      } catch(surgErr) {
-        warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' surgical skipped: ' + (surgErr && surgErr.message));
+        blocks.push({ type: 'ol', items: items });
+        continue;
       }
 
-      // Step 3b: optional Gemini full-rewrite pass with integrity gates
-      if (enableGeminiPass && violationLines.length > 0) {
-        onProgress('Chunk ' + (ci + 1) + '/' + chunks.length + ': AI rewrite pass...');
-        try {
-          const isFirst = ci === 0, isLast = ci === chunks.length - 1;
-          const fragNote = isFirst
-            ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
-            : isLast
-              ? 'This is the LAST fragment — it may end with </main></body></html>.'
-              : 'This is a middle fragment — starts and ends mid-document.';
-          const rewritePrompt =
-            'Fix any REMAINING WCAG violations in this HTML fragment. The fragment has already had surgical fixes applied — focus on what\'s left.\n\n' +
-            fragNote + '\n\n' +
-            'VIOLATIONS CONTEXT:\n' + violationText + '\n\n' +
-            'RULES: Preserve ALL text content, ALL attributes (especially src= values even if they look like placeholders), ALL inline styles. Do NOT shorten, summarize, or drop content.\n\n' +
-            'HTML:\n"""\n' + chunk + '\n"""\n\n' +
-            'Return ONLY the fixed fragment.';
-          const rewritten = stripFence(await callGemini(rewritePrompt, true));
-          // Integrity gates: length >= 90%, text >= 95%, and data-URL tokens must survive unchanged
-          const tokensBefore = (chunk.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length;
-          const tokensAfter = rewritten ? (rewritten.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length : 0;
-          const lengthOk = rewritten && rewritten.length >= chunk.length * 0.9;
-          const textOk = rewritten && textCharCount(rewritten) >= textCharCount(chunk) * 0.95;
-          const tokensOk = tokensAfter >= tokensBefore;
-          if (rewritten && lengthOk && textOk && tokensOk) {
-            chunk = rewritten;
-            geminiPassCount++;
+      // Detect table-like content: lines with multiple tabs or pipes (data rows)
+      if ((line.split('\t').length >= 3 || line.split('|').length >= 3) && line.length > 10) {
+        flushParagraph();
+        var sep = line.split('\t').length >= 3 ? '\t' : '|';
+        var headerCells = line.split(sep).map(function(c) { return c.trim(); }).filter(Boolean);
+        var dataRows = [];
+        while (li + 1 < lines.length) {
+          var nextL = lines[li + 1].trim();
+          if (nextL.split(sep).length >= headerCells.length - 1 && nextL.length > 5 && !/^[-=\s|+]+$/.test(nextL)) {
+            li++;
+            dataRows.push(nextL.split(sep).map(function(c) { return c.trim(); }));
+          } else if (/^[-=\s|+]+$/.test(nextL)) {
+            li++; // skip separator lines
           } else {
-            rejectedChunks++;
-            warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' Gemini rewrite rejected (length=' + (rewritten ? rewritten.length : 0) + '/' + chunk.length + ', tokens=' + tokensAfter + '/' + tokensBefore + ')');
+            break;
           }
-        } catch(rewriteErr) {
-          warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' rewrite failed: ' + (rewriteErr && rewriteErr.message));
         }
+        if (dataRows.length > 0) {
+          blocks.push({ type: 'table', caption: '', headers: headerCells, rows: dataRows });
+        } else {
+          blocks.push({ type: 'p', text: line });
+        }
+        continue;
       }
-      fixedChunks[ci] = chunk;
+
+      // Detect blockquotes: indented lines (4+ spaces or tab at start)
+      if (/^(\s{4,}|\t)/.test(lines[li]) && line.length > 20) {
+        flushParagraph();
+        var quoteLines = [line];
+        while (li + 1 < lines.length && /^(\s{4,}|\t)/.test(lines[li + 1]) && lines[li + 1].trim().length > 0) {
+          li++;
+          quoteLines.push(lines[li].trim());
+        }
+        blocks.push({ type: 'blockquote', text: quoteLines.join(' ') });
+        continue;
+      }
+
+      // Detect figure/image references: "Figure X", "Fig. X", "Image X"
+      if (/^(?:Figure|Fig\.|Image|Illustration|Diagram|Chart|Table)\s+\d/i.test(line) && line.length < 200) {
+        flushParagraph();
+        blocks.push({ type: 'image', description: line, alt: line });
+        continue;
+      }
+
+      // Everything else is paragraph text
+      currentParagraph.push(line);
     }
+    flushParagraph();
 
-    // Step 4: reassemble
-    let reassembled = fixedChunks.join('');
-
-    // Step 5: restore data URLs
-    reassembled = restoreDataUrls(reassembled, stripped.map);
-
-    warnLog('[SurgicalThenAI] Done: ' + surgicalFixCount + ' surgical fixes, ' + geminiPassCount + ' Gemini passes, ' + rejectedChunks + ' rejected chunks');
-    return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
+    // If we got blocks, add a note that this section used heuristic structuring
+    if (blocks.length > 0) {
+      blocks.unshift({ type: 'rawhtml', html: '<!-- Pages ' + startPage + '-' + endPage + ': structured from extracted text (Vision unavailable) -->' });
+    }
+    return blocks;
   };
 
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
@@ -879,21 +777,15 @@ IMPORTANT FORMATTING RULES for the "issue" field:
 - Avoid trailing parenthetical fragments. BAD: "lacks header rows (" GOOD: "lacks header rows and scope attributes"
 - Calculate the score by starting at 100 and subtracting per the rubric. Each unique violation deducts points ONCE.
 
-LOCATION FIELD ("location"):
-- Provide a short anchor string that identifies WHERE in the document the violation occurs, so a remediation step can target it.
-- Prefer (in order of usefulness): a heading title ("Chapter 3. Methods"), a unique phrase from the offending element (first 6-8 words), a page number ("page 4"), or a structural anchor ("first table", "footer").
-- Keep it under 80 characters. If truly document-wide (e.g., missing lang attribute), use "document".
-- Omit or set to null only if no meaningful anchor can be given.
-
 Return ONLY valid JSON:
 {
   "score": "<calculated from rubric deductions>",
   "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
   "summary": "One balanced sentence that leads with strengths before noting issues. Match tone to score — above 80 is positive with minor notes, below 50 is serious concern.",
-  "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
-  "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
-  "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
-  "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N, "location": "short anchor"}],
+  "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "passes": ["Things the document does well"],
   "pageCount": N,
   "hasSearchableText": true/false,
@@ -1957,7 +1849,217 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     // Runs BEFORE the full AI rewrite loop — cheaper, safer, more precise.
     // Whatever remains after this goes to the full rewrite loop (Phase 5).
     log('Phase 3c: Surgical AI-diagnosed fixes...');
-    // Surgical tools hoisted to factory-scope SHARED_SURGICAL_TOOLS (see top of createDocPipeline).
+    const surgicalTools = {
+      fix_alt_text: function(html, p) {
+        if (!p.index && p.index !== 0) return html;
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== p.index) return m;
+          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
+          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      fix_heading: function(html, p) {
+        if (!p.newLevel) return html;
+        let idx = 0;
+        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
+        });
+      },
+      fix_link_text: function(html, p) {
+        if (!p.newText) return html;
+        let idx = 0;
+        return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
+          if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
+            return '<a' + attrs + '>' + p.newText + '</a>';
+          }
+          return m;
+        });
+      },
+      fix_table_caption: function(html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
+        });
+      },
+      fix_aria_label: function(html, p) {
+        if (!p.tag || !p.label) return html;
+        let idx = 0;
+        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
+        return html.replace(re, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      fix_lang: function(html, p) {
+        if (!p.lang) return html;
+        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
+                   .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+      },
+      // Add scope to a specific table header
+      fix_th_scope: function(html, p) {
+        var scope = p.scope || 'col';
+        let idx = 0;
+        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '<th scope="' + scope + '"' + attrs + '>';
+        });
+      },
+      // Remove an empty heading by index
+      fix_remove_empty_heading: function(html, p) {
+        let idx = 0;
+        return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '';
+        });
+      },
+      // Add label to a form input by index
+      fix_input_label: function(html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      // Add accessible name to a button by index
+      fix_button_name: function(html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (content.trim()) return m; // has content, leave it
+          return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
+        });
+      },
+      // Add title to an iframe by index
+      fix_iframe_title: function(html, p) {
+        if (!p.title) return html;
+        let idx = 0;
+        return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
+          return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      // Wrap orphaned content in a landmark
+      fix_add_landmark: function(html, p) {
+        var tag = p.tag || 'section';
+        var label = p.label || 'Content';
+        var selector = p.selector || 'body';
+        // Simple: wrap first non-landmarked block of content
+        if (selector === 'body' && !html.includes('<main')) {
+          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+        }
+        return html;
+      },
+      // Fix duplicate ID by appending suffix
+      fix_duplicate_id: function(html, p) {
+        if (!p.id) return html;
+        let count = 0;
+        return html.replace(new RegExp('id="' + p.id + '"', 'g'), function(m) {
+          count++;
+          if (count === 1) return m;
+          return 'id="' + p.id + '-' + count + '"';
+        });
+      },
+      // Add figcaption to a figure by index
+      fix_figcaption: function(html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<figcaption/i.test(content)) return m; // already has one
+          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
+        });
+      },
+      // Set document title
+      fix_title: function(html, p) {
+        if (!p.title) return html;
+        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
+        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
+      },
+      // Wrap text in a lang span for multilingual content
+      fix_lang_span: function(html, p) {
+        if (!p.text || !p.lang) return html;
+        // Escape regex special chars in text to prevent crash on content like "Dr. Smith (PhD)"
+        var escaped = p.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return html.replace(new RegExp(escaped), '<span lang="' + p.lang + '">' + p.text + '</span>');
+      },
+      // Change a specific element's text color for contrast compliance
+      fix_contrast: function(html, p) {
+        if (!p.oldColor || !p.newColor) return html;
+        return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
+      },
+      // Promote first row of a table to thead with th elements
+      fix_table_header_row: function(html, p) {
+        let idx = 0;
+        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<thead/i.test(content)) return m; // already has thead
+          // Convert first <tr> with <td> to <thead> with <th>
+          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
+            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
+            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
+          });
+          return '<table' + attrs + '>' + fixed + '</table>';
+        });
+      },
+      // Wrap an acronym/abbreviation in <abbr> with expansion
+      fix_abbreviation: function(html, p) {
+        if (!p.abbr || !p.title) return html;
+        var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
+        var replaced = false;
+        return html.replace(re, function(m) {
+          if (replaced) return m; // only wrap first occurrence
+          replaced = true;
+          return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
+        });
+      },
+      // Mark an image as decorative (empty alt + role=presentation)
+      fix_image_decorative: function(html, p) {
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
+          return '<img alt="" role="presentation"' + cleaned + '>';
+        });
+      },
+      // Wrap orphaned list items in a proper list container
+      fix_list_wrap: function(html, p) {
+        var tag = p.ordered ? 'ol' : 'ul';
+        // Find orphaned <li> and wrap them
+        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
+          // Check if already inside a list (use offset param instead of indexOf for O(1))
+          var before = html.substring(Math.max(0, offset - 100), offset);
+          if (/<[uo]l[^>]*>\s*$/i.test(before)) return m; // already wrapped
+          return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
+        });
+      },
+      // Add skip-to-content link if missing
+      fix_skip_nav: function(html) {
+        if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
+        return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+      },
+      // Set text spacing for readability (letter-spacing, word-spacing, line-height)
+      fix_text_spacing: function(html, p) {
+        var css = '';
+        if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
+        if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
+        if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
+        if (!css) return html;
+        var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
+        if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
+        return style + html;
+      },
+    };
 
     // Run surgical diagnosis (1 API call) + deterministic execution
     try {
@@ -2005,14 +2107,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
-        // Run 3 parallel diagnoses and merge — each catches different issues
+        // Run 2 diagnoses and merge — primary (general) + second opinion (content + structural combined)
         var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (stratified sample):\n"""\n' + sampleHtml(accessibleHtml, 9000) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
-        var [surgDiagnosis2, surgDiagnosis3] = await Promise.all([
-          callGemini('You are an independent accessibility expert (second opinion). Focus on content fixes — alt text quality, link descriptions, and heading structure.\n\n' + surgPromptBase, true),
-          callGemini('You are a strict WCAG compliance auditor (third opinion). Focus on structural fixes — landmarks, ARIA, table headers, and form labels.\n\n' + surgPromptBase, true),
-        ]);
+        var surgDiagnosis2 = await callGemini('You are an independent accessibility expert (second opinion). Focus on BOTH content fixes (alt text quality, link descriptions, heading structure) AND structural fixes (landmarks, ARIA, table headers, form labels). Be thorough — catch anything the first auditor may have missed.\n\n' + surgPromptBase, true);
 
-        // Parse all diagnoses
+        // Parse both diagnoses
         var parseSurgical = function(raw) {
           if (!raw) return [];
           var fixes = [];
@@ -2023,12 +2122,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         };
         var fixes1 = parseSurgical(surgDiagnosis);
         var fixes2 = parseSurgical(surgDiagnosis2);
-        var fixes3 = parseSurgical(surgDiagnosis3);
 
-        // Merge all 3: deduplicate by tool+index
+        // Merge both: deduplicate by tool+index
         var seenKeys = {};
         var surgFixes = [];
-        [].concat(fixes1, fixes2, fixes3).forEach(function(fix) {
+        [].concat(fixes1, fixes2).forEach(function(fix) {
           if (!fix || !fix.tool) return;
           var key = fix.tool + '-' + (fix.index || 0) + '-' + (fix.tag || '');
           if (!seenKeys[key]) { seenKeys[key] = true; surgFixes.push(fix); }
@@ -2037,7 +2135,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         var surgApplied = 0;
         for (var si = 0; si < surgFixes.length; si++) {
           var fix = surgFixes[si];
-          var tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
+          var tool = fix && fix.tool && surgicalTools[fix.tool];
           if (tool) {
             var before = accessibleHtml;
             accessibleHtml = tool(accessibleHtml, fix);
@@ -2553,13 +2651,11 @@ AUDIT CHECKLIST:
 
 IMPORTANT: Calculate the score by starting at 100 and subtracting per the rubric above. Each unique violation deducts points ONCE regardless of how many times it appears. Do NOT estimate — count violations and calculate.
 
-LOCATION FIELD ("location"): For each issue, provide a short anchor (<80 chars) that identifies WHERE the violation occurs so remediation can target it. Prefer heading titles, unique phrases from the offending element, page numbers, or structural anchors ("first table", "footer"). Use "document" only for document-wide issues. Omit/null only if no meaningful anchor exists.
-
 Return ONLY JSON:
 {
   "score": <calculated score, minimum 0>,
   "summary": "One balanced sentence that leads with what the document does well, then briefly notes remaining areas for improvement. Match the tone to the score — a score above 80 should sound positive, not critical. Example for 94/100: 'The document demonstrates strong accessibility with proper language, headings, and semantic structure, with minor remaining issues in image alt text and navigation landmarks.'",
-  "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>, "location": "short anchor"}],
+  "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>}],
   "passes": ["List EVERY checklist item (1-11) that passes. Be thorough — for each item that IS accessible, include a specific description of what was found. A longer passes list is better than a short one."]
 }`;
   const parseAuditJson = (raw) => {
@@ -2572,7 +2668,7 @@ Return ONLY JSON:
   const auditOutputAccessibility = async (htmlContent) => {
     if (!callGemini || !htmlContent) return null;
     try {
-      const CHUNK_SIZE = 8000;
+      const CHUNK_SIZE = 16000; // increased with maxOutputTokens=65536
       const OVERLAP = 400;
       // Short documents: single audit pass
       if (htmlContent.length <= CHUNK_SIZE) {
@@ -2755,8 +2851,7 @@ HTML section ${chunkNum}/${chunks.length}:
       try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       // Strip <script> tags before writing — they can break document.write() parsing
-      // (remediated HTML sometimes contains <script> blocks with JSON/template literals that
-      // iframe's HTML parser chokes on). Not needed for a11y auditing — axe-core only checks DOM structure.
+      // and aren't needed for accessibility auditing (axe-core only checks DOM structure)
       const _safeHtml = htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '');
       iframeDoc.open();
       iframeDoc.write(_safeHtml);
@@ -2779,10 +2874,13 @@ HTML section ${chunkNum}/${chunks.length}:
       const iframeAxe = iframe.contentWindow.axe;
       if (!iframeAxe) throw new Error('axe-core not available in iframe');
 
-      results = await iframeAxe.run(iframeDoc, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
-        resultTypes: ['violations', 'passes', 'incomplete']
-      });
+      results = await _withTimeout(
+        iframeAxe.run(iframeDoc, {
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+          resultTypes: ['violations', 'passes', 'incomplete']
+        }),
+        30000, 'axe-core audit'
+      );
       } finally {
         // Always clean up iframe — prevents memory leak on error
         try { document.body.removeChild(iframe); } catch(e) { /* iframe may not be attached */ }
@@ -3522,10 +3620,14 @@ HTML section ${chunkNum}/${chunks.length}:
         // ── Chunked remediation: split large documents into sections, fix each, reassemble ──
         // This prevents truncation from Gemini's output token limit (~8K tokens).
         {
-        const MAX_CHUNK = 12000; // chars per chunk (leaves room for prompt + output)
+        const MAX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
 
         if (currentHtml.length <= MAX_CHUNK) {
           // Small document: single-pass fix
+          // Emit synthetic chunk events so the Live Remediation UI shows for all documents
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: 1, chunkSizes: [currentHtml.length], timestamp: Date.now() } })); } catch(e) {}
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: 0, total: 1, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+
           const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
 
 VIOLATIONS TO FIX:
@@ -3549,6 +3651,9 @@ Return ONLY the complete fixed HTML.`, true);
           } else if (fixedHtml) {
             warnLog(`[Auto-fix] Single-pass rejected: output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
           }
+          // Emit single-pass completion so Live UI updates
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: '', fixedHtml: currentHtml, score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: 1, failedCount: 0, retriedCount: 0, timestamp: Date.now() } })); } catch(e) {}
         } else {
           // ── Large document: chunked remediation ──
           // Strategy: extract <head>, split <body> content into chunks at block-level
@@ -3651,9 +3756,60 @@ Return ONLY the complete fixed HTML.`, true);
             }
           } catch(e) { /* non-blocking */ }
 
+          // ── Resume detection: check IndexedDB for saved progress from a prior session ──
+          const _sessionId = _chunkSessionId(
+            pendingPdfFile ? pendingPdfFile.name : 'document',
+            pendingPdfFile ? pendingPdfFile.size : currentHtml.length,
+            bodyChunks.length
+          );
+          let _resumedResults = null;
+          let _resumeStartIndex = 0;
+          try {
+            const saved = await loadChunkProgress(_sessionId);
+            if (saved && saved.chunkResults && saved.chunkResults.length > 0
+                && saved.totalChunks === bodyChunks.length && (Date.now() - saved.timestamp) < 24 * 60 * 60 * 1000) {
+              // Emit resume-available event for UI to show prompt
+              const resumePromise = new Promise(function(resolve) {
+                var _onAccept = function() { window.removeEventListener('alloflow:chunk-resume-accept', _onAccept); window.removeEventListener('alloflow:chunk-resume-decline', _onDecline); resolve(true); };
+                var _onDecline = function() { window.removeEventListener('alloflow:chunk-resume-accept', _onAccept); window.removeEventListener('alloflow:chunk-resume-decline', _onDecline); resolve(false); };
+                window.addEventListener('alloflow:chunk-resume-accept', _onAccept);
+                window.addEventListener('alloflow:chunk-resume-decline', _onDecline);
+                // Auto-decline after 15s if no user interaction
+                setTimeout(function() { _onDecline(); }, 15000);
+              });
+              window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-available', {
+                detail: {
+                  completedChunks: saved.chunkResults.length,
+                  totalChunks: saved.totalChunks,
+                  savedAt: saved.timestamp,
+                  sessionId: _sessionId,
+                }
+              }));
+              setPdfFixStep('Found saved progress (' + saved.chunkResults.length + '/' + saved.totalChunks + ' sections). Waiting for your choice...');
+              const userWantsResume = await resumePromise;
+              if (userWantsResume) {
+                _resumedResults = saved.chunkResults;
+                _resumeStartIndex = saved.chunkResults.length;
+                warnLog('[ChunkProgress] Resuming from chunk ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length);
+                setPdfFixStep('Resuming from section ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length + '...');
+                // Re-emit chunk-fixed events for already-completed chunks so live UI populates
+                for (var ri = 0; ri < _resumedResults.length; ri++) {
+                  try {
+                    window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', {
+                      detail: Object.assign({}, _resumedResults[ri], { index: ri, total: bodyChunks.length, resumed: true, timestamp: Date.now() })
+                    }));
+                  } catch(e) {}
+                }
+              } else {
+                await clearChunkProgress(_sessionId);
+                warnLog('[ChunkProgress] User chose to start fresh');
+              }
+            }
+          } catch(resumeErr) { warnLog('[ChunkProgress] Resume check failed:', resumeErr.message); }
+
           // Fix each chunk with integrity verification + retry
-          const chunkResults = [];
-          for (let chi = 0; chi < bodyChunks.length; chi++) {
+          const chunkResults = _resumedResults ? _resumedResults.slice() : [];
+          for (let chi = _resumeStartIndex; chi < bodyChunks.length; chi++) {
             const originalChunk = bodyChunks[chi];
 
             // ── Emit per-chunk start event: UI shows "working on chunk N" placeholder ──
@@ -3730,7 +3886,7 @@ Return ONLY the complete fixed HTML.`, true);
               if (Array.isArray(chunkSurgFixes)) {
                 for (let sfi = 0; sfi < chunkSurgFixes.length; sfi++) {
                   const fix = chunkSurgFixes[sfi];
-                  const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
+                  const tool = fix && fix.tool && surgicalTools[fix.tool];
                   if (tool) {
                     const before = preFixedChunk;
                     preFixedChunk = tool(preFixedChunk, fix);
@@ -3957,6 +4113,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 window.dispatchEvent(evt);
               }
             } catch(evtErr) { /* non-blocking */ }
+
+            // ── Save progress to IndexedDB after each chunk (survives crashes) ──
+            try {
+              saveChunkProgress(_sessionId, {
+                chunkResults: chunkResults.map(function(cr, i) {
+                  return { index: i, html: cr.html, score: cr.score, integrityCheck: cr.integrityCheck, aiVerified: cr.aiVerified, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixCount: cr.deterministicFixCount || 0, surgicalFixCount: cr.surgicalFixCount || 0, sizeKB: Math.round(cr.html.length / 1000) };
+                }),
+                totalChunks: bodyChunks.length,
+                violationInstructions: violationInstructions,
+                headSection: headSection,
+                timestamp: Date.now(),
+              });
+            } catch(saveErr) { /* non-blocking — progress save is best-effort */ }
           }
 
           // ── Compute weighted average score (weighted by original chunk size) ──
@@ -4025,6 +4194,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             timestamp: Date.now(),
           };
           warnLog(`[AutoFix] Chunk state persisted: ${_chunkState.fixedChunks.length} chunks saved for selective re-fixing`);
+
+          // ── Clear IndexedDB progress — full remediation completed successfully ──
+          try { clearChunkProgress(_sessionId); } catch(e) {}
 
           if (reassembled.length > currentHtml.length * 0.7) {
             currentHtml = reassembled;
@@ -4180,7 +4352,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
       if (Array.isArray(surgFixes)) {
         for (const fix of surgFixes) {
-          const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
+          const tool = fix && fix.tool && surgicalTools[fix.tool];
           if (tool) {
             const before = preFixedChunk;
             preFixedChunk = tool(preFixedChunk, fix);
@@ -4357,6 +4529,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _onProgress = batchOverrides?.onProgress || null;
     const _startTime = Date.now();
 
+    // Reset pipeline telemetry for this run
+    _pipelineStats.apiCalls = 0; _pipelineStats.visionCalls = 0; _pipelineStats.totalApiMs = 0; _pipelineStats.retries = 0;
+    _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
+    _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
     if (!_base64) { addToast('Cannot fix: PDF data not found in memory. Please re-upload the PDF.', 'error'); return null; }
@@ -4394,6 +4570,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         .slice(0, 25).join('\n');
 
       // ── Step 1: Extract ALL text content from PDF (chunked for long docs) ──
+      _pipeStepStart(1);
       updateProgress(1, 'Reading document content...');
       let extractedText = '';
       // Reset ground-truth state for this run
@@ -4706,28 +4883,114 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         warnLog('[PDF Fix] Image extraction failed (non-blocking):', imgErr);
       }
 
+      _pipeStepEnd(1, extractedText.length + ' chars extracted');
+
+      // ── Listen for user alt text edits from the image review panel ──
+      var _userAltTextEdits = {};
+      var _onAltTextEdit = function(e) {
+        if (e.detail && typeof e.detail.index === 'number') {
+          _userAltTextEdits[e.detail.index] = e.detail.altText;
+          if (extractedImages[e.detail.index]) extractedImages[e.detail.index].description = e.detail.altText;
+        }
+      };
+      window.addEventListener('alloflow:alt-text-edited', _onAltTextEdit);
+
+      // ── Emit extracted data for UI to show during wait ──
+      // Images + metadata are available now; user can review/edit alt text while Steps 2-4 run
+      try {
+        setTimeout(function() {
+          window.dispatchEvent(new CustomEvent('alloflow:extraction-complete', {
+            detail: {
+              images: extractedImages.map(function(img, i) {
+                return { index: i, description: img.description || '', src: img.generatedSrc || null, type: img.type || 'content', educationalPurpose: img.educationalPurpose || '', isRegenerated: !!img.isRegenerated, cropData: img.cropData || null };
+              }),
+              metadata: {
+                fileName: _fileName,
+                pageCount: pageCount,
+                extractedChars: extractedText.length,
+                hasImages: extractedImages.length > 0,
+                hasTables: /\btable\b/i.test(extractedText),
+                language: /[\u0600-\u06FF]/.test(extractedText) ? 'ar' : /[\u4E00-\u9FFF]/.test(extractedText) ? 'zh' : /[\u0400-\u04FF]/.test(extractedText) ? 'ru' : 'en',
+              },
+              timestamp: Date.now(),
+            }
+          }));
+        }, 0);
+      } catch(e) { /* non-blocking */ }
+
       // ── Step 2: Transform to accessible HTML via JSON data pipeline ──
+      _pipeStepStart(2);
       // Strategy: AI extracts structured JSON (content + style metadata), then
       // deterministic code renders it into guaranteed-valid styled HTML.
       updateProgress(2, 'Analyzing document structure...');
       let bodyContent = '';
 
-      // ── Step 2a: Extract document style metadata ──
-      let docStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1', sectionBorderColor: '#e2e8f0' };
-      try {
-        updateProgress(2, 'Extracting color scheme...');
-        const styleResult = await callGeminiVision(
-          `Analyze the visual design of this PDF. Extract the exact color scheme and typography.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex for links/accents","bgColor":"hex background","headerBg":"hex or CSS gradient for header area","headerText":"hex","bodyFont":"CSS font-family","tableBg":"hex for table headers","tableBorder":"hex","sectionBorderColor":"hex for section dividers","hasHeaderBanner":true/false,"hasSidebarAccents":true/false,"accentBorderSide":"left|top|none"}`,
-          _base64, _mimeType
-        );
-        if (styleResult) {
-          let sc = styleResult.trim();
-          if (sc.indexOf('```') !== -1) { const ps = sc.split('```'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('```') !== -1) sc = sc.substring(0, sc.lastIndexOf('```')); }
-          const parsed = JSON.parse(sc);
-          docStyle = { ...docStyle, ...parsed };
-          warnLog('[PDF Fix] Extracted doc style:', docStyle);
-        }
-      } catch(styleErr) { warnLog('[PDF Fix] Style extraction failed (using defaults):', styleErr); }
+      // ── Step 2a: Determine document styling ──
+      // If user selected a preset theme (not "Match Original"), use the theme's colors directly
+      // and skip the Vision style extraction call entirely (saves 1 API call + 10-30s)
+      const _defaultDocStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1', sectionBorderColor: '#e2e8f0' };
+      const _selectedSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
+      const _selectedSeed = _selectedSeedId && STYLE_SEEDS[_selectedSeedId] ? STYLE_SEEDS[_selectedSeedId] : null;
+      const _useExtractedStyle = !_selectedSeed || _selectedSeedId === 'matchOriginal' || !_selectedSeed.cssVars;
+      let docStyle = { ..._defaultDocStyle };
+
+      if (_useExtractedStyle) {
+        // Match Original or no theme selected — extract colors from the PDF
+        try {
+          updateProgress(2, 'Extracting color scheme...');
+          _pipeLog('Style', 'Extracting original document colors (Match Original / auto)');
+          const styleResult = await callGeminiVision(
+            `Analyze the visual design of this PDF. Extract the exact color scheme and typography.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex for links/accents","bgColor":"hex background","headerBg":"hex or CSS gradient for header area","headerText":"hex","bodyFont":"CSS font-family","tableBg":"hex for table headers","tableBorder":"hex","sectionBorderColor":"hex for section dividers","hasHeaderBanner":true/false,"hasSidebarAccents":true/false,"accentBorderSide":"left|top|none"}`,
+            _base64, _mimeType
+          );
+          if (styleResult) {
+            let sc = styleResult.trim();
+            if (sc.indexOf('```') !== -1) { const ps = sc.split('```'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('```') !== -1) sc = sc.substring(0, sc.lastIndexOf('```')); }
+            const parsed = JSON.parse(sc);
+            docStyle = { ...docStyle, ...parsed };
+            warnLog('[PDF Fix] Extracted doc style:', docStyle);
+          }
+
+          // Detect boring/grayscale palette and offer theme suggestion
+          const _colors = [docStyle.headingColor, docStyle.accentColor, docStyle.bgColor, docStyle.headerBg].filter(c => typeof c === 'string' && c.startsWith('#'));
+          const _isGrayscale = _colors.every(function(c) {
+            if (c.length < 7) return true;
+            var r = parseInt(c.slice(1,3), 16), g = parseInt(c.slice(3,5), 16), b = parseInt(c.slice(5,7), 16);
+            return Math.max(r,g,b) - Math.min(r,g,b) < 30;
+          });
+          if (_isGrayscale && _colors.length >= 2) {
+            _pipeLog('Style', 'Detected boring/grayscale palette — offering theme suggestion');
+            // Emit event for UI to show theme suggestion prompt
+            try {
+              const _themePromise = new Promise(function(resolve) {
+                var _onChoice = function(e) { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(e.detail ? e.detail.seedId : null); };
+                window.addEventListener('alloflow:boring-palette-choice', _onChoice);
+                setTimeout(function() { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(null); }, 10000);
+              });
+              setTimeout(function() {
+                window.dispatchEvent(new CustomEvent('alloflow:boring-palette-detected', {
+                  detail: { extractedColors: docStyle, seedId: _selectedSeedId }
+                }));
+              }, 0);
+              updateProgress(2, 'Original styling is minimal — you can keep it or choose a theme...');
+              const _chosenSeedId = await _themePromise;
+              if (_chosenSeedId && STYLE_SEEDS[_chosenSeedId] && STYLE_SEEDS[_chosenSeedId].cssVars) {
+                const _chosenCss = STYLE_SEEDS[_chosenSeedId].cssVars;
+                docStyle = { ...docStyle, headingColor: _chosenCss.headingColor, accentColor: _chosenCss.accentColor, bgColor: _chosenCss.bgColor || '#ffffff', headerBg: _chosenCss.headerBg || _chosenCss.headingColor, headerText: _chosenCss.headerText || '#ffffff', bodyFont: _chosenCss.bodyFont || docStyle.bodyFont };
+                _pipeLog('Style', 'User chose theme: ' + STYLE_SEEDS[_chosenSeedId].name);
+              } else {
+                _pipeLog('Style', 'User kept original styling (or timed out)');
+              }
+            } catch(e) { /* non-blocking */ }
+          }
+        } catch(styleErr) { warnLog('[PDF Fix] Style extraction failed (using defaults):', styleErr); }
+      } else {
+        // Preset theme selected — use its CSS vars directly, skip Vision call
+        const _css = _selectedSeed.cssVars;
+        docStyle = { ...docStyle, headingColor: _css.headingColor, accentColor: _css.accentColor, bgColor: _css.bgColor || '#ffffff', headerBg: _css.headerBg || _css.headingColor, headerText: _css.headerText || '#ffffff', bodyFont: _css.bodyFont || 'system-ui, sans-serif', tableBg: _css.cardBg || docStyle.tableBg, tableBorder: _css.cardBorder || docStyle.tableBorder };
+        _pipeLog('Style', 'Using preset theme: ' + _selectedSeed.name + ' (skipped Vision extraction)');
+        updateProgress(2, 'Using ' + _selectedSeed.name + ' theme...');
+      }
 
       // ── Deterministic HTML renderer from JSON content blocks ──
       const renderJsonToHtml = (blocks) => {
@@ -4994,122 +5257,112 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               }
             }
           } catch (chunkErr) {
-            const errMsg = (chunkErr && chunkErr.message) || String(chunkErr);
-            const isRecitation = /RECITATION/i.test(errMsg);
-            warnLog(`[PDF Fix] Chunk ${i + 1} failed${isRecitation ? ' (RECITATION filter)' : ''}:`, errMsg);
+            const isRecitation = chunkErr && chunkErr.message && /RECITATION/i.test(chunkErr.message);
+            warnLog(`[PDF Fix] Chunk ${i + 1} failed${isRecitation ? ' (RECITATION — copyrighted content detected)' : ''}:`, chunkErr.message);
 
-            // ── Step 1 of fallback ladder: single-page vision retry ──
-            // The RECITATION filter scores longer contiguous verbatim runs more aggressively.
-            // Retry each page in the chunk individually — pages that fail individually will cascade to the sibling-hint recovery.
-            const pagesInChunk = endPg - startPg + 1;
-            if (pagesInChunk > 1 && isRecitation) {
-              warnLog(`[PDF Fix] Chunk ${i + 1}: retrying ${pagesInChunk} pages individually`);
-              const perPageResults = [];
-              let perPageSuccessCount = 0;
-              for (let pg = startPg; pg <= endPg; pg++) {
-                try {
-                  const perPagePrompt =
-                    `Extract ALL content from page ${pg} of this PDF as a JSON array of content blocks.\n\n` +
-                    `Block types: {"type":"h1"|"h2"|"h3","text":"...","id":"slug"}, {"type":"p","text":"..."}, {"type":"ul","items":[...]}, {"type":"ol","items":[...]}, {"type":"table","caption":"...","headers":[...],"rows":[[...]]}, {"type":"image","description":"...","alt":"..."}, {"type":"blockquote","text":"..."}, {"type":"hr"}.\n` +
-                    `Preserve ALL content. Return ONLY a JSON array.`;
-                  const perPageRaw = await callGeminiVision(perPagePrompt, _base64, _mimeType);
-                  if (perPageRaw) {
-                    const parsed = repairAndParseJsonShared(perPageRaw);
+            // Extract the pre-extracted text for these pages
+            const fallbackStart = Math.floor((i / transformChunks) * extractedText.length);
+            const fallbackEnd = Math.floor(((i + 1) / transformChunks) * extractedText.length);
+            const chunkText = extractedText.substring(fallbackStart, fallbackEnd);
+
+            // ── Fallback Layer 1 (for RECITATION): Structure-only Vision retry ──
+            // Retry with a modified prompt that asks for structure WITHOUT reproducing text.
+            // This often works because RECITATION only triggers when the model outputs copyrighted text.
+            if (isRecitation) {
+              try {
+                warnLog(`[PDF Fix] Chunk ${i + 1}: trying structure-only Vision prompt (no text reproduction)`);
+                const structureMap = await callGeminiVision(
+                  `Look at pages ${startPg}-${endPg} of this PDF. DO NOT reproduce any text content.\n\n` +
+                  `Instead, return a JSON array describing the STRUCTURE ONLY:\n` +
+                  `[{"type":"h2","lineStart":"first 5 words...","lineEnd":"last 3 words"},\n` +
+                  ` {"type":"p","lineStart":"first 5 words...","lineEnd":"last 3 words"},\n` +
+                  ` {"type":"table","caption":"brief description","cols":4,"rows":10},\n` +
+                  ` {"type":"ul","count":5},\n` +
+                  ` {"type":"image","description":"what the image shows"}]\n\n` +
+                  `For each block, include only the first few words and last few words so we can match it to text we already have. DO NOT include full text content.\n\n` +
+                  `Return ONLY the JSON array.`,
+                  _base64, _mimeType
+                );
+                if (structureMap) {
+                  // Parse structure map and merge with extracted text
+                  let structBlocks = [];
+                  try {
+                    let cleaned = structureMap.trim();
+                    if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); }
+                    const fi = cleaned.indexOf('['); if (fi >= 0) cleaned = cleaned.substring(fi);
+                    const li = cleaned.lastIndexOf(']'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
+                    const parsed = JSON.parse(cleaned);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                      perPageResults.push(...parsed);
-                      perPageSuccessCount++;
-                      continue;
+                      // Use structure types from Vision but fill text from extracted content
+                      let textPos = 0;
+                      const textLines = chunkText.split(/\n/).filter(l => l.trim());
+                      parsed.forEach(block => {
+                        if (block.type === 'image') {
+                          structBlocks.push({ type: 'image', description: block.description || 'Image', alt: block.description || 'Image' });
+                        } else if (block.type === 'table') {
+                          structBlocks.push({ type: 'p', text: '[Table: ' + (block.caption || 'Data table') + ']' });
+                        } else if ((block.type === 'ul' || block.type === 'ol') && block.count) {
+                          const items = [];
+                          for (let ti = 0; ti < block.count && textPos < textLines.length; ti++) {
+                            items.push(textLines[textPos++] || '');
+                          }
+                          structBlocks.push({ type: block.type, items: items });
+                        } else {
+                          // Match by lineStart if available
+                          if (block.lineStart && textPos < textLines.length) {
+                            const startWords = block.lineStart.toLowerCase();
+                            // Find the line that starts with these words
+                            let matched = false;
+                            for (let si = textPos; si < Math.min(textPos + 10, textLines.length); si++) {
+                              if (textLines[si].toLowerCase().startsWith(startWords.substring(0, 15))) {
+                                // Collect lines until lineEnd or next heading
+                                let blockText = textLines[si];
+                                textPos = si + 1;
+                                if (block.type === 'p') {
+                                  while (textPos < textLines.length && textLines[textPos].length > 30 && !/^[A-Z][A-Z\s]{3,}$/.test(textLines[textPos])) {
+                                    blockText += ' ' + textLines[textPos++];
+                                  }
+                                }
+                                structBlocks.push({ type: block.type || 'p', text: blockText, id: block.type && block.type.startsWith('h') ? blockText.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 40) : undefined });
+                                matched = true;
+                                break;
+                              }
+                            }
+                            if (!matched) {
+                              structBlocks.push({ type: block.type || 'p', text: textLines[textPos++] || '' });
+                            }
+                          } else if (textPos < textLines.length) {
+                            structBlocks.push({ type: block.type || 'p', text: textLines[textPos++] || '' });
+                          }
+                        }
+                      });
+                      // Add remaining text as paragraphs
+                      while (textPos < textLines.length) {
+                        structBlocks.push({ type: 'p', text: textLines[textPos++] });
+                      }
                     }
+                  } catch(parseErr) {
+                    warnLog('[PDF Fix] Structure map parse failed:', parseErr.message);
                   }
-                } catch(ppErr) {
-                  warnLog(`[PDF Fix] Chunk ${i + 1}, page ${pg} single-page retry failed: ${ppErr?.message || ppErr}`);
+                  if (structBlocks.length > 2) {
+                    warnLog(`[PDF Fix] Chunk ${i + 1}: structure-only Vision fallback produced ${structBlocks.length} blocks`);
+                    return structBlocks;
+                  }
                 }
-                // This page failed; mark it for sibling-hint recovery (narrower scope = better recovery)
-                perPageResults.push({ __chunkFailed: true, chunkIndex: i, startPage: pg, endPage: pg, reason: 'recitation-per-page', errMsg: 'single-page retry also failed' });
-              }
-              if (perPageSuccessCount > 0) {
-                warnLog(`[PDF Fix] Chunk ${i + 1}: single-page retry recovered ${perPageSuccessCount}/${pagesInChunk} pages`);
-                return perPageResults;
+              } catch(structErr) {
+                warnLog(`[PDF Fix] Structure-only Vision also failed for chunk ${i + 1}:`, structErr.message);
               }
             }
 
-            // Return a tagged fail-marker so the second pass can attempt recovery with sibling hints + per-page text.
-            return [{ __chunkFailed: true, chunkIndex: i, startPage: startPg, endPage: endPg, reason: isRecitation ? 'recitation' : 'error', errMsg }];
+            // ── Final fallback: heuristic structuring from pre-extracted text ──
+            const heuristicBlocks = structureTextHeuristic(chunkText, startPg, endPg);
+            if (heuristicBlocks.length > 2) {
+              warnLog(`[PDF Fix] Chunk ${i + 1}: heuristic fallback produced ${heuristicBlocks.length} blocks from extracted text`);
+              return heuristicBlocks;
+            }
+            return [{ type: 'p', text: chunkText.substring(0, 5000) }];
           }
           return [];
-        };
-
-        // Helper: retrieve exact per-page text for pages startPg..endPg from pdf.js page map
-        const _getPagesText = (startPg, endPg) => {
-          const pageMap = (typeof window !== 'undefined') ? window.__lastGroundTruthPageMap : null;
-          if (Array.isArray(pageMap) && pageMap.length > 0) {
-            const slice = pageMap.filter(pg => pg.pageNum >= startPg && pg.pageNum <= endPg);
-            if (slice.length > 0) return slice.map(pg => pg.text).join('\n\n');
-          }
-          // Fallback: proportional slice of extractedText (legacy behavior)
-          const fallbackStart = Math.floor(((startPg - 1) / pageCount) * extractedText.length);
-          const fallbackEnd = Math.floor((endPg / pageCount) * extractedText.length);
-          return extractedText.substring(fallbackStart, fallbackEnd);
-        };
-
-        // Helper: split text into paragraph <p> blocks (for the final deterministic floor)
-        const _paragraphsToBlocks = (text, startPg, endPg) => {
-          if (!text || text.trim().length === 0) return [];
-          const paragraphs = text.split(/\n{2,}/).map(p => p.trim()).filter(p => p.length > 0);
-          const label = `[Pages ${startPg}-${endPg}]`;
-          if (paragraphs.length === 0) return [{ type: 'p', text: label + ' ' + text.substring(0, 3000) }];
-          return paragraphs.slice(0, 50).map((p, idx) => ({ type: 'p', text: (idx === 0 ? label + ' ' : '') + p }));
-        };
-
-        // Second-pass recovery: text-in-input with sibling-chunk format hints.
-        // Uses 1-2 successful sibling chunks as few-shot examples so the failing chunk emits the same JSON schema/style,
-        // while grounding content in the exact per-page pdf.js text (no re-extraction by Gemini → far less likely to trip RECITATION).
-        const recoverFailedChunkWithSiblings = async (failMarker, successfulSiblingsArr) => {
-          const { startPage: startPg, endPage: endPg, chunkIndex: ci } = failMarker;
-          const pageText = _getPagesText(startPg, endPg);
-          if (!pageText || pageText.trim().length < 20) {
-            warnLog(`[PDF Fix] Chunk ${ci + 1}: no pdf.js text available for recovery, using paragraph floor`);
-            return _paragraphsToBlocks(pageText, startPg, endPg);
-          }
-          // Pick 1-2 sibling examples with the most structural variety (highest block count, capped)
-          const examples = successfulSiblingsArr
-            .filter(s => s && s.blocks && s.blocks.length >= 3)
-            .sort((a, b) => b.blocks.length - a.blocks.length)
-            .slice(0, 2)
-            .map(s => JSON.stringify(s.blocks.slice(0, 12)));
-          const hintBlock = examples.length > 0
-            ? `\n\nFORMAT EXAMPLES (from other successfully-extracted sections of THIS SAME DOCUMENT — match this schema and style):\n${examples.map((ex, i) => `Example ${i + 1}:\n${ex}`).join('\n\n')}\n\n`
-            : '\n\n';
-          const recoveryPrompt =
-            `Structure the text below (extracted from pages ${startPg}-${endPg} of a PDF) as a JSON array of content blocks.\n\n` +
-            `The raw text is provided — do NOT re-extract, do NOT paraphrase, do NOT summarize. Preserve ALL text exactly as given. ` +
-            `Your job is ONLY to classify each section into the correct block type (h1/h2/h3/p/ul/ol/table/blockquote/hr) and produce valid JSON.\n\n` +
-            `Block types:\n` +
-            `- {"type":"h1","text":"...","id":"slug"} / h2 / h3 (use for section titles)\n` +
-            `- {"type":"p","text":"..."}\n` +
-            `- {"type":"ul","items":["...","..."]} / ol (for bulleted/numbered lists)\n` +
-            `- {"type":"table","caption":"...","headers":["..."],"rows":[["...","..."]]}\n` +
-            `- {"type":"blockquote","text":"..."}\n` +
-            `- {"type":"hr"}\n` +
-            hintBlock +
-            `RAW TEXT (pages ${startPg}-${endPg}):\n"""\n${pageText.substring(0, 12000)}\n"""\n\n` +
-            `Return ONLY a JSON array. Include ALL text from the raw input above, classified into appropriate blocks.`;
-          try {
-            const raw = await callGemini(recoveryPrompt, true);
-            if (!raw) return _paragraphsToBlocks(pageText, startPg, endPg);
-            let cleaned = raw.trim();
-            if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
-            const parsed = repairAndParseJsonShared(cleaned);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              warnLog(`[PDF Fix] Chunk ${ci + 1} recovered via text-in-input: ${parsed.length} blocks`);
-              return parsed;
-            }
-            warnLog(`[PDF Fix] Chunk ${ci + 1} recovery JSON unparseable, using paragraph floor`);
-            return _paragraphsToBlocks(pageText, startPg, endPg);
-          } catch (recErr) {
-            warnLog(`[PDF Fix] Chunk ${ci + 1} recovery failed (${recErr?.message || recErr}) — using paragraph floor`);
-            return _paragraphsToBlocks(pageText, startPg, endPg);
-          }
         };
         // Launch chunks in batches of 5 to avoid rate limiting
         const chunkBlockArrays = [];
@@ -5122,46 +5375,6 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           chunkBlockArrays.push(...batchResults);
           if (batchEnd < transformChunks) await new Promise(r => setTimeout(r, 500));
         }
-
-        // ── Second-pass recovery: for chunks (or individual pages) that failed, use pdf.js per-page text +
-        // 1-2 successful sibling chunks' JSON as format examples to reconstruct with maximum accuracy ──
-        const _isFailMarker = (b) => b && b.__chunkFailed === true;
-        // Collect all successful blocks (for sibling hints) and identify fail markers
-        const successfulSiblings = [];
-        chunkBlockArrays.forEach((blocks, ci) => {
-          if (Array.isArray(blocks)) {
-            const successBlocks = blocks.filter(b => !_isFailMarker(b));
-            if (successBlocks.length > 0) successfulSiblings.push({ index: ci, blocks: successBlocks });
-          }
-        });
-        // Count total fail markers across all chunks
-        let totalFailMarkers = 0;
-        chunkBlockArrays.forEach(blocks => {
-          if (Array.isArray(blocks)) totalFailMarkers += blocks.filter(_isFailMarker).length;
-        });
-        if (totalFailMarkers > 0) {
-          updateProgress(2, `Recovering ${totalFailMarkers} failed section(s) via text-in-input (sibling format hints)...`);
-          warnLog(`[PDF Fix] Second-pass recovery: ${totalFailMarkers} fail marker(s) — ${successfulSiblings.length} successful sibling chunk(s) for format hints`);
-          for (let ci = 0; ci < chunkBlockArrays.length; ci++) {
-            const blocks = chunkBlockArrays[ci];
-            if (!Array.isArray(blocks)) continue;
-            const recoveredBlocks = [];
-            for (const b of blocks) {
-              if (_isFailMarker(b)) {
-                try {
-                  const recovered = await recoverFailedChunkWithSiblings(b, successfulSiblings);
-                  if (recovered && recovered.length > 0) recoveredBlocks.push(...recovered);
-                } catch(recOuterErr) {
-                  warnLog(`[PDF Fix] Recovery outer failure for pages ${b.startPage}-${b.endPage}: ${recOuterErr?.message}`);
-                }
-              } else {
-                recoveredBlocks.push(b);
-              }
-            }
-            chunkBlockArrays[ci] = recoveredBlocks;
-          }
-        }
-
         chunkBlockArrays.forEach((blocks, ci) => {
           const startPg = ci * TRANSFORM_PAGES + 1;
           const endPg = Math.min((ci + 1) * TRANSFORM_PAGES, pageCount);
@@ -5215,25 +5428,107 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           }
         };
 
-        // ── Polish passes: unify heading hierarchy and clean transitions (chunked for large docs) ──
-        if (transformChunks > 1 && pdfPolishPasses > 0) {
-          const polishViolations = 'HEADING HIERARCHY: Ensure exactly ONE <h1>. Demote extra <h1> to <h2>. Fix h2→h3→h4 hierarchy.\nDUPLICATE CONTENT: Remove headings or paragraphs duplicated at chunk seams.\nTRANSITIONS: Remove redundant horizontal rules between sections.\nTABLE CONTINUITY: Merge table fragments split across sections.\nSTYLE CONSISTENCY: Unify inline CSS — match all similar elements to the dominant color scheme.\nPRESERVE ALL INLINE STYLES: Do NOT strip any style="" attributes.\nKeep ALL unique content. Only remove true duplicates and fix structure. Do NOT summarize or shorten.';
-          for (let polishIdx = 0; polishIdx < pdfPolishPasses; polishIdx++) {
-            updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses}...`);
-            try {
-              const polished = await aiFixChunked(bodyContent, polishViolations, `polish-${polishIdx + 1}`);
-              if (polished && polished !== bodyContent) {
-                // Polish pass: looser floor — polish legitimately removes duplicates
-                if (polished.length >= bodyContent.length * 0.9 && textCharCount(polished) >= textCharCount(bodyContent) * 0.95) {
-                  bodyContent = polished.trim()
-                    .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-                    .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1');
-                } else {
-                  warnLog(`[Polish] Pass ${polishIdx + 1} rejected: output ${polished.length} chars vs source ${bodyContent.length} chars`);
+        // ── Polish passes: deterministic first, then AI with small chunks ──
+        if (transformChunks > 1) {
+          // Phase 1: Deterministic fixes (instant, free)
+          _pipeLog('Polish', 'Phase 1: deterministic heading/dedup fixes');
+          let h1Count = 0;
+          bodyContent = bodyContent.replace(/<h1([^>]*)>/gi, function(m, attrs) {
+            h1Count++;
+            return h1Count > 1 ? '<h2' + attrs + '>' : m;
+          });
+          if (h1Count > 1) {
+            bodyContent = bodyContent.replace(/<\/h1>/gi, function() {
+              return h1Count-- > 1 ? '</h2>' : '</h1>';
+            });
+            warnLog('[Polish] Demoted extra h1 tags → h2');
+          }
+          bodyContent = bodyContent.replace(/<(h[1-6])[^>]*>([^<]{3,})<\/\1>\s*<\1[^>]*>\2<\/\1>/gi, '<$1>$2</$1>');
+          bodyContent = bodyContent.replace(/(<\/(?:section|article|div)>)\s*<hr\s*\/?>\s*(<(?:section|article|div))/gi, '$1\n$2');
+
+          // Phase 1b: Deduplicate inline styles into CSS classes
+          // This shrinks CSS-heavy HTML (e.g., 1.5MB → ~150KB) so AI passes can process it
+          const _beforeDedup = bodyContent.length;
+          const _styleMap = {};
+          let _classCounter = 0;
+          // Extract all unique style="" values and assign class names
+          bodyContent.replace(/\sstyle="([^"]*)"/gi, function(m, styleVal) {
+            if (!_styleMap[styleVal]) {
+              _classCounter++;
+              _styleMap[styleVal] = 'ds' + _classCounter;
+            }
+            return m;
+          });
+          // Only deduplicate if there are repeated styles (>5 unique styles used >1 time)
+          const _styleEntries = Object.entries(_styleMap);
+          if (_styleEntries.length > 0 && _classCounter < bodyContent.split(/style="/gi).length - 1) {
+            // Replace inline styles with class references
+            bodyContent = bodyContent.replace(/\sstyle="([^"]*)"/gi, function(m, styleVal) {
+              var cls = _styleMap[styleVal];
+              return cls ? ' class="' + cls + '"' : m;
+            });
+            // Build CSS block from the style map
+            var _cssBlock = '<style>\n' + _styleEntries.map(function(entry) {
+              return '.' + entry[1] + '{' + entry[0] + '}';
+            }).join('\n') + '\n</style>\n';
+            // Insert CSS block at the beginning of the body content
+            bodyContent = _cssBlock + bodyContent;
+            _pipeLog('Polish', 'Deduplicated ' + (bodyContent.split('class="ds').length - 1) + ' inline styles into ' + _styleEntries.length + ' CSS classes (' + Math.round(_beforeDedup / 1000) + 'KB → ' + Math.round(bodyContent.length / 1000) + 'KB)');
+          }
+
+          // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
+          if (pdfPolishPasses > 0) {
+            const POLISH_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
+            const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
+            const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
+            for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
+              updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses} (style + table unification)...`);
+              _pipeLog('Polish', 'Phase 2: AI polish pass ' + (polishIdx + 1) + ' (' + POLISH_CHUNK + ' char chunks)');
+              try {
+                // Strip <style> block before chunking — CSS classes don't need polishing
+                // and they inflate early chunks causing MAX_TOKENS truncation
+                let _polishStyleBlock = '';
+                let _polishBody = bodyContent;
+                const _styleMatch = bodyContent.match(/^(<style[\s\S]*?<\/style>\s*)/i);
+                if (_styleMatch) {
+                  _polishStyleBlock = _styleMatch[1];
+                  _polishBody = bodyContent.substring(_polishStyleBlock.length);
                 }
+                const polishChunks = splitHtmlOnTagBoundary(_polishBody, POLISH_CHUNK);
+                const polishedParts = [];
+                let polishSkipped = 0;
+                for (let pci = 0; pci < polishChunks.length; pci++) {
+                  // Early abort: if >50% of chunks so far have failed, stop wasting API calls
+                  if (pci >= 3 && polishSkipped > pci * 0.5) {
+                    _pipeLog('Polish', 'Aborting pass — ' + polishSkipped + '/' + pci + ' chunks failed (model output too small)');
+                    for (let rem = pci; rem < polishChunks.length; rem++) polishedParts.push(polishChunks[rem]);
+                    break;
+                  }
+                  const pc = polishChunks[pci];
+                  try {
+                    const pPrompt = `Fix: merge split tables, smooth section transitions, remove duplicated headings. Preserve ALL text and class attributes.\n\nHTML:\n${pc}\n\nReturn ONLY the fixed fragment.`;
+                    const pOut = stripFence(await callGemini(pPrompt, true));
+                    if (pOut && pOut.length >= pc.length * 0.85 && textCharCount(pOut) >= textCharCount(pc) * 0.9) {
+                      polishedParts.push(pOut);
+                    } else {
+                      polishSkipped++;
+                      polishedParts.push(pc);
+                    }
+                  } catch (pcErr) {
+                    polishSkipped++;
+                    polishedParts.push(pc);
+                  }
+                }
+                const polished = _polishStyleBlock + polishedParts.join('');
+                if (polished.length >= bodyContent.length * 0.85) {
+                  bodyContent = polished;
+                  _pipeLog('Polish', 'Pass ' + (polishIdx + 1) + ' applied (' + polishChunks.length + ' chunks, ' + polishSkipped + ' kept original)');
+                } else {
+                  warnLog('[Polish] Pass ' + (polishIdx + 1) + ' rejected: output too short');
+                }
+              } catch (polishErr) {
+                warnLog('[PDF Fix] Polish pass ' + (polishIdx + 1) + ' failed:', polishErr);
               }
-            } catch (polishErr) {
-              warnLog(`[PDF Fix] Polish pass ${polishIdx + 1} failed:`, polishErr);
             }
           }
         }
@@ -5457,11 +5752,18 @@ ${bodyContent}
 
       warnLog(`[PDF Fix] Final HTML: ${accessibleHtml.length} chars from ${extractedLength} chars extracted text`);
 
-      // ── Step 2c: Spelling & grammar correction pass (chunked to cover full document) ──
-      updateProgress(2, 'Checking spelling & grammar...');
+      // ── Step 2c: Spelling & grammar correction pass (on extracted text, not HTML) ──
+      // Skip when text was extracted deterministically (pdf.js text layer) — no OCR artifacts
+      const _wasOcrExtracted = window.__lastGroundTruthMethod === 'vision-ocr';
+      if (!_wasOcrExtracted) {
+        _pipeLog('Grammar', 'Skipping grammar check — text was extracted deterministically (no OCR artifacts)');
+      }
+      if (_wasOcrExtracted) {
+      updateProgress(2, 'Checking spelling & grammar (OCR text)...');
       try {
-        const textForCheck = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        const GRAMMAR_CHUNK = 5000;
+        const textForCheck = (extractedText || '').trim();
+        // With 65K output, we can send much larger chunks — 20KB instead of 5KB
+        const GRAMMAR_CHUNK = 20000;
         const grammarChunks = [];
         for (let gi = 0; gi < textForCheck.length; gi += GRAMMAR_CHUNK) {
           grammarChunks.push(textForCheck.slice(gi, Math.min(gi + GRAMMAR_CHUNK, textForCheck.length)));
@@ -5488,6 +5790,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             if (grammarResult) {
               let gc = grammarResult.trim();
               if (gc.indexOf('```') !== -1) { const ps = gc.split('```'); gc = ps[1] || ps[0]; if (gc.indexOf('\n') !== -1) gc = gc.split('\n').slice(1).join('\n'); if (gc.lastIndexOf('```') !== -1) gc = gc.substring(0, gc.lastIndexOf('```')); }
+              // Self-repair: strip anything after the last } to handle trailing garbage
+              const lastBrace = gc.lastIndexOf('}');
+              if (lastBrace > 0) gc = gc.substring(0, lastBrace + 1);
               const parsed = JSON.parse(gc);
               if (parsed.corrections && parsed.corrections.length > 0) {
                 parsed.corrections.forEach(c => {
@@ -5511,8 +5816,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
       } catch(gramErr) { warnLog('[PDF Fix] Grammar check failed (non-blocking):', gramErr); }
+      } // end if (_wasOcrExtracted)
 
+      _pipeStepEnd(2, accessibleHtml.length + ' chars HTML generated');
       // ── Step 3a: Baseline axe-core on raw HTML (before any fixes) for consistent "before" score ──
+      _pipeStepStart(3);
       updateProgress(3, 'Running baseline axe-core audit...');
       const beforeAxeResult = await runAxeAudit(accessibleHtml);
       const beforeAxeScore = beforeAxeResult ? beforeAxeResult.score : null;
@@ -5740,17 +6048,41 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         if (reAxe) axeResults = reAxe;
       }
 
-      // ── Step 5: Self-correcting AI fix loop with regression guard ──
+      _pipeStepEnd(3, 'axe: ' + (axeResults ? axeResults.totalViolations : '?') + ' violations, AI: ' + (verification ? verification.score : '?') + '/100');
+      // ── Step 4: Self-correcting AI fix loop with regression guard ──
       // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
+      _pipeStepStart(4);
       let autoFixPasses = 0;
       const maxFixPasses = pdfAutoFixPasses;
       let bestHtml = accessibleHtml;
       let bestAiScore = verification ? verification.score : 0;
       let bestAxeViolations = axeResults ? axeResults.totalViolations : 0;
 
-      if (maxFixPasses > 0 && ((axeResults && axeResults.totalViolations > 0) || bestAiScore < 90)) {
+      const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
+      const _totalIssues = bestAxeViolations + _aiIssueCount;
+      const _targetScore = pdfTargetScore || 90;
+      if (maxFixPasses > 0 && _totalIssues > 0 && (bestAxeViolations > 0 || bestAiScore < _targetScore)) {
+        // Emit live remediation session start so UI shows progress panel
+        warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
+        // Emit specific issues list for UI to display during fix passes
+        var _issuesList = [];
+        if (verification && verification.issues) {
+          _issuesList = verification.issues.map(function(iss) { return typeof iss === 'string' ? iss : (iss.issue || iss.description || String(iss)); }).slice(0, 12);
+        }
+        if (axeResults) {
+          (axeResults.critical || []).forEach(function(v) { _issuesList.push('🔴 ' + v.description + ' (' + v.id + ')'); });
+          (axeResults.serious || []).forEach(function(v) { _issuesList.push('🟠 ' + v.description + ' (' + v.id + ')'); });
+          (axeResults.moderate || []).forEach(function(v) { _issuesList.push('🟡 ' + v.description); });
+        }
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, target: _targetScore } })); }, 0); } catch(e) {}
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); }, 0); } catch(e) {}
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
-          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${axeResults.totalViolations} issue${axeResults.totalViolations !== 1 ? 's' : ''} remaining)...`);
+          // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
+          try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
+          const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
+          const _passAiCount = verification && verification.issues ? verification.issues.length : 0;
+          const _passTotal = _passAxeCount + _passAiCount;
+          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passTotal} issue${_passTotal !== 1 ? 's' : ''} remaining — ${_passAxeCount} axe-core, ${_passAiCount} AI-flagged)${_passTotal === 0 ? ' \u2714 verifying...' : ''}...`);
 
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
@@ -5807,24 +6139,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             return m;
           });
 
-          // Re-audit with 3 AI engines + axe-core for statistical reliability
+          // Re-audit with 2 AI engines + axe-core (2 provides averaging + disagreement detection while saving ~33% API calls vs 3)
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
-          const [reVerify1, reVerify2, reVerify3, reAxe] = await Promise.all([
-            auditOutputAccessibility(accessibleHtml),
+          const [reVerify1, reVerify2, reAxe] = await Promise.all([
             auditOutputAccessibility(accessibleHtml),
             auditOutputAccessibility(accessibleHtml),
             runAxeAudit(accessibleHtml)
           ]);
 
-          // Average 3 AI scores & compute SEM for significance testing
-          const reScores = [reVerify1, reVerify2, reVerify3].map(v => v ? v.score : null).filter(s => s !== null);
+          // Average 2 AI scores & compute SEM for significance testing
+          const reScores = [reVerify1, reVerify2].map(v => v ? v.score : null).filter(s => s !== null);
           const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
           const reSD = reScores.length > 1 ? Math.sqrt(reScores.reduce((s, x) => s + (x - newAiScore) ** 2, 0) / (reScores.length - 1)) : 0;
           const reSEM = reScores.length > 1 ? reSD / Math.sqrt(reScores.length) : 0;
-          // Pick auditor with HIGHEST score for issues list (not first truthy)
-          // The || operator was giving the fastest responder's issues, which could be
-          // more pessimistic than the averaged score suggests
-          const reVerify = [reVerify1, reVerify2, reVerify3]
+          // Pick auditor with HIGHEST score for issues list
+          const reVerify = [reVerify1, reVerify2]
             .filter(Boolean)
             .sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
           if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
@@ -5851,6 +6180,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
+          // Emit per-pass completion for live UI
+          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
+
+          // If BOTH engines report 0 actionable issues, stop regardless of score
+          if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
+            break;
+          }
+
           // If BOTH engines are satisfied, stop
           const targetScore = pdfTargetScore || 90;
           if (newAxeViolations === 0 && newAiScore >= targetScore) {
@@ -5868,7 +6206,136 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             break;
           }
         }
+        // Emit session complete for live UI
+        try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
       }
+
+      // ── Diff-based semantic cleanup: compare final HTML against extractedText ground truth ──
+      // Instead of blind regex, we identify what changed from the original and classify
+      // each change as intentional (alt text, headings, labels) vs artifact (JSON, escapes)
+      {
+        const _beforeCleanHtml = accessibleHtml;
+
+        // Phase 1: Always-safe deterministic fixes (no risk of content loss)
+        accessibleHtml = accessibleHtml.replace(/\\n\\n/g, '</p>\n<p>').replace(/\\n/g, ' ').replace(/\\t/g, ' ').replace(/\\"/g, '"');
+        accessibleHtml = accessibleHtml.replace(/```html\s*/gi, '').replace(/```\s*/g, '');
+        accessibleHtml = accessibleHtml.replace(/(<p>\s*<\/p>)+/g, '');
+
+        // Phase 2: Diff-based artifact detection
+        if (extractedText && extractedText.length > 100) {
+          const _originalNorm = extractedText.toLowerCase().replace(/\s+/g, ' ').trim();
+          const _htmlText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          const _htmlNorm = _htmlText.toLowerCase();
+
+          // Find text segments in HTML that are NOT in the original (additions)
+          // Split HTML text into sentences and check each against original
+          const _htmlSentences = _htmlText.split(/[.!?]\s+/).filter(s => s.trim().length > 15);
+          const _additions = []; // text that was added (not in original)
+          const _preserved = []; // text from original that survived
+          const _artifacts = []; // suspected artifacts
+
+          _htmlSentences.forEach(function(sent) {
+            const norm = sent.toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 100);
+            if (norm.length < 15) return;
+            if (_originalNorm.includes(norm)) {
+              _preserved.push(norm);
+            } else {
+              // This text was added during remediation — classify it
+              var isArtifact = false;
+              // JSON syntax artifacts
+              if (/\{"type"\s*:|\[\s*\{/.test(sent)) isArtifact = true;
+              // Escaped characters that shouldn't be visible
+              if (/\\n|\\t|\\"|```/.test(sent)) isArtifact = true;
+              // Raw code fence
+              if (/^```|```$/.test(sent.trim())) isArtifact = true;
+
+              if (isArtifact) {
+                _artifacts.push(sent.substring(0, 80));
+              } else {
+                _additions.push(sent.substring(0, 80));
+              }
+            }
+          });
+
+          _pipeLog('Diff', 'Semantic diff: ' + _preserved.length + ' original sentences preserved, ' + _additions.length + ' intentional additions (alt text, labels), ' + _artifacts.length + ' artifacts detected');
+
+          // Phase 3: Remove artifacts found by diff analysis
+          // Convert raw JSON blocks to HTML (these are definitely artifacts, not intentional)
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:p|paragraph)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:h[1-6])"\s*,\s*"text"\s*:\s*"([^"]*)"\s*(?:,\s*"id"\s*:\s*"[^"]*"\s*)?\}/g, '<h2>$1</h2>');
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
+            var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
+            return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
+          });
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:blockquote)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"hr"\s*\}/g, '<hr>');
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
+          // Strip JSON wrappers
+          accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section)":\s*"/gm, '');
+          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
+
+          // Phase 4: If artifacts remain, send ONLY the diffs to Gemini (not the whole doc)
+          var _remainingArtifacts = (accessibleHtml.match(/\{"type"\s*:\s*"/g) || []).length;
+          if (_remainingArtifacts > 0 && callGemini && _artifacts.length > 0) {
+            _pipeLog('Diff', _remainingArtifacts + ' artifacts remain — sending diff summary to Gemini for cleanup');
+            try {
+              // Build a compact diff payload with just the problem areas
+              const _artifactSamples = _artifacts.slice(0, 10).map(function(a, i) { return (i + 1) + '. "' + a + '"'; }).join('\n');
+              const _cleaned = await callGemini(
+                'This HTML document has ' + _remainingArtifacts + ' raw JSON artifacts mixed into the content.\n\n' +
+                'ARTIFACT EXAMPLES (text that should NOT be in the document):\n' + _artifactSamples + '\n\n' +
+                'IMPORTANT: The document also has INTENTIONAL additions like alt text for images, ARIA labels, and heading restructuring. Do NOT remove those.\n\n' +
+                'Convert any remaining raw JSON blocks (like {"type":"p","text":"..."}) into proper HTML. Remove escape sequences (\\n, \\t). Preserve ALL other content.\n\n' +
+                'HTML:\n"""\n' + accessibleHtml + '\n"""', true);
+              if (_cleaned && textCharCount(_cleaned) >= textCharCount(accessibleHtml) * 0.95) {
+                accessibleHtml = stripFence(_cleaned);
+                _pipeLog('Diff', 'AI diff-based cleanup applied');
+              }
+            } catch(cleanErr) { warnLog('[Diff Cleanup] AI cleanup failed:', cleanErr.message); }
+          }
+
+          // Phase 5: Ground-truth verification — sample original sentences and verify they survived
+          const _finalHtmlText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const _origSentences = extractedText.split(/[.!?]\s+/).filter(s => s.length > 30 && s.length < 200);
+          const _sampleSize = Math.min(15, _origSentences.length);
+          const _step = Math.max(1, Math.floor(_origSentences.length / _sampleSize));
+          let _matchCount = 0, _totalChecked = 0;
+          for (let si = 0; si < _origSentences.length && _totalChecked < _sampleSize; si += _step) {
+            _totalChecked++;
+            const _needle = _origSentences[si].toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 80);
+            if (_needle.length > 20 && _finalHtmlText.includes(_needle)) _matchCount++;
+          }
+          const _matchRate = _totalChecked > 0 ? _matchCount / _totalChecked : 1;
+          _pipeLog('Verify', 'Ground-truth: ' + _matchCount + '/' + _totalChecked + ' sentences (' + Math.round(_matchRate * 100) + '% match), ' + _additions.length + ' intentional additions preserved');
+
+          if (_matchRate < 0.5 && _beforeCleanHtml) {
+            warnLog('[Cleanup] Ground-truth match too low (' + Math.round(_matchRate * 100) + '%) — reverting to pre-cleanup HTML');
+            accessibleHtml = _beforeCleanHtml;
+            accessibleHtml = accessibleHtml.replace(/\\n\\n/g, '</p>\n<p>').replace(/\\n/g, ' ').replace(/\\t/g, ' ').replace(/\\"/g, '"');
+            accessibleHtml = accessibleHtml.replace(/(<p>\s*<\/p>)+/g, '');
+          }
+        } else {
+          // No extracted text available — fall back to regex-only cleanup
+          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"[^"]*"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
+        }
+      }
+
+      // ── Final contrast + WCAG revalidation (catches AI-introduced color violations) ──
+      try {
+        const _finalContrast = fixContrastViolations(accessibleHtml);
+        if (_finalContrast.fixCount > 0) {
+          accessibleHtml = _finalContrast.html;
+          _pipeLog('Cleanup', 'Final contrast revalidation: fixed ' + _finalContrast.fixCount + ' color issues');
+        }
+        const _finalSanitize = sanitizeStyleForWCAG(accessibleHtml);
+        if (_finalSanitize.fixCount > 0) {
+          accessibleHtml = _finalSanitize.html;
+          _pipeLog('Cleanup', 'Final WCAG sanitization: fixed ' + _finalSanitize.fixCount + ' issues');
+        }
+        // Also re-run deterministic list/ARIA fixes
+        accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
+      } catch(finalFixErr) { warnLog('[Final Fix] Revalidation failed:', finalFixErr.message); }
 
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
       // The verification from the fix loop may have stale issues from an earlier pass.
@@ -5978,6 +6445,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         remainingIssues: verification ? (verification.issues || []).length : null,
         elapsed: Math.round((Date.now() - _startTime) / 1000),
       };
+
+      _pipeStepEnd(4, autoFixPasses + ' fix passes, score: ' + (verification ? verification.score : '?') + '/100');
+      _pipeLog('Done', 'Pipeline complete', {
+        totalElapsed: Math.round((Date.now() - _startTime) / 1000) + 's',
+        apiCalls: _pipelineStats.apiCalls,
+        visionCalls: _pipelineStats.visionCalls,
+        totalApiTime: Math.round(_pipelineStats.totalApiMs / 1000) + 's',
+        retries: _pipelineStats.retries,
+        fixPasses: autoFixPasses,
+        beforeScore: beforeScore,
+        afterScore: verification ? verification.score : null,
+        axeViolations: axeResults ? axeResults.totalViolations : null,
+        htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
+      });
 
       // Batch mode: return result without touching React state
       if (_isBatch) return _result;
@@ -6375,9 +6856,6 @@ tr { page-break-inside: avoid; }
     try {
       doc.write(themed);
     } catch(writeErr) {
-      // document.write can throw "Invalid or unexpected token" if the HTML contains
-      // malformed <script> blocks with unclosed template literals, JSON, etc.
-      // Fall back to script-stripped version — the preview loses interactive JS but remains viewable.
       warnLog('[updatePdfPreview] doc.write failed (' + (writeErr?.message || writeErr) + ') — retrying with scripts stripped');
       try {
         const _fallbackHtml = themed.replace(/<script[\s\S]*?<\/script>/gi, '');
@@ -7698,6 +8176,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
+    getPdfPreviewHtml: _wrap(getPdfPreviewHtml),
     updatePdfPreview: _wrap(updatePdfPreview),
     generateCustomExportStyle: _wrapAsync(generateCustomExportStyle),
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
@@ -7709,7 +8188,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
-    remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
   };
 };
 

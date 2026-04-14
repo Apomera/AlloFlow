@@ -357,6 +357,48 @@ if (mode === 'prod') {
             console.warn('⚠️  Could not check for stale hash: ' + e.message);
         }
     }
+
+    // ── Module shrink guard: block if any managed module lost significant content vs HEAD ──
+    // Protects against the failure mode where `git add -A` bundles a stale local copy of a
+    // module file that is behind the remote version, silently reverting ~100s of lines of work.
+    // This happened on 2026-04-13 when af4f52f silently dropped ~900 lines from doc_pipeline_source.jsx.
+    if (!forceFlag) {
+        const SHRINK_THRESHOLD_LINES = 200; // refuse a prod build if any module lost >200 lines vs HEAD
+        try {
+            const allManagedFiles = MODULES.map(m => m.filename).concat(PLUGIN_FILES);
+            const shrunk = [];
+            for (const rel of allManagedFiles) {
+                const abs = path.join(ROOT, rel);
+                if (!fs.existsSync(abs)) continue;
+                try {
+                    const headContent = execSync(`git show HEAD:"${rel}"`, { cwd: ROOT, encoding: 'utf-8' });
+                    const headLines = headContent.split('\n').length;
+                    const currentLines = fs.readFileSync(abs, 'utf-8').split('\n').length;
+                    const loss = headLines - currentLines;
+                    if (loss > SHRINK_THRESHOLD_LINES) {
+                        shrunk.push({ file: rel, headLines, currentLines, loss });
+                    }
+                } catch(fileErr) {
+                    // File may be new / not in HEAD — skip shrink check
+                }
+            }
+            if (shrunk.length > 0) {
+                console.error('');
+                console.error('❌ MODULE SHRINK GUARD — One or more module files lost significant content vs HEAD:');
+                shrunk.forEach(s => console.error(`   ${s.file}: ${s.headLines} lines in HEAD → ${s.currentLines} lines now (lost ${s.loss} lines)`));
+                console.error('');
+                console.error('   This often indicates a stale local copy clobbered the authoritative one.');
+                console.error('   Investigate: compare your local file to HEAD (git diff HEAD -- <file>).');
+                console.error('   If the shrink is intentional, re-run with --force to override this check.');
+                console.error('');
+                process.exit(1);
+            }
+        } catch (e) {
+            console.warn('⚠️  Could not run module shrink guard: ' + e.message);
+        }
+    } else {
+        console.warn('⚠️  --force flag: skipping module shrink guard');
+    }
 }
 
 // ── Transform URLs ──────────────────────────────────────────────
