@@ -50871,6 +50871,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-[11px] text-slate-600">Use default palette</div>
                         </button>
                       </div>
+                      <p className="text-[10px] text-slate-600 italic mt-1.5 leading-snug">Tip: If you pick a specific Style Seed below (not "Match Original"), that seed's colors override your branding choice. To use your brand colors, pair them with the Match Original seed.</p>
                     </div>
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
@@ -51765,7 +51766,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       {chunk.deterministicFixCount > 0 && <span className="text-slate-600">🔧{chunk.deterministicFixCount}</span>}
                                       {chunk.surgicalFixCount > 0 && <span className="text-slate-600">🎯{chunk.surgicalFixCount}</span>}
                                       {chunk.aiVerified && <span className="text-green-600">✓</span>}
-                                      {chunk.usedOriginal && <span className="text-red-600 font-bold">det-only</span>}
+                                      {chunk.usedOriginal && <span className="text-red-600 font-bold" title="AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.">AI skipped · rule-based only</span>}
                                       <span className={`ml-auto font-black ${chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{chunk.score}/100</span>
                                     </>}
                                     {isWorking && <span className="ml-auto text-indigo-600 font-bold">Fixing...</span>}
@@ -51800,7 +51801,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="text-[11px] text-slate-600 leading-snug">Accessible materials support Universal Design for Learning (UDL) — benefiting <em>all</em> learners regardless of ability, language, or learning style</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better UX for Everyone</div>
+                              <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better User Experience (UX) for Everyone</div>
                               <div className="text-[11px] text-slate-600 leading-snug">Clear headings, logical structure, and sufficient contrast make documents easier to read for <em>all</em> users — including on mobile and in bright sunlight</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
@@ -52140,9 +52141,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
                                     <span className="text-[11px] text-slate-600">{chunk.sizeKB || '?'}KB</span>
                                     {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">Fixing...</span>}
-                                    {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title="Deterministic regex fixes">{chunk.deterministicFixCount} det</span>}
-                                    {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title="AI-diagnosed micro-tool fixes">{chunk.surgicalFixCount} surg</span>}
-                                    {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title="AI fix failed — deterministic fixes only">det-only</span>}
+                                    {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title="Rule-based (deterministic) regex fixes applied — always safe, no AI involved">{chunk.deterministicFixCount} rule-based</span>}
+                                    {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title="AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)">{chunk.surgicalFixCount} targeted</span>}
+                                    {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title="AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.">AI skipped</span>}
                                     {!isWorking && chunk.wasRetried && !chunk.usedOriginal && <span className="text-[11px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">retried</span>}
                                     {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title="AI verified content preserved">✓ verified</span>}
                                     {!isWorking && chunk.integrityPassed && <span className="text-[11px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold" title="Word overlap integrity check passed">integrity ✓</span>}
@@ -52531,9 +52532,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-[11px] font-bold text-slate-700">Section {ci + 1}</span>
                                     <span className="text-[11px] text-slate-600">{cr.sizeKB || '?'}KB</span>
-                                    {cr.deterministicFixes > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold">{cr.deterministicFixes} det</span>}
-                                    {cr.surgicalFixes > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold">{cr.surgicalFixes} surg</span>}
-                                    {cr.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold">det-only</span>}
+                                    {cr.deterministicFixes > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold" title="Rule-based (deterministic) fixes applied">{cr.deterministicFixes} rule-based</span>}
+                                    {cr.surgicalFixes > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold" title="AI-diagnosed targeted micro-fixes">{cr.surgicalFixes} targeted</span>}
+                                    {cr.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold" title="AI rewrite was rejected — only rule-based fixes applied">AI skipped</span>}
                                     {cr.wasRetried && !cr.usedOriginal && <span className="text-[11px] bg-slate-100 text-slate-600 px-1 rounded font-bold">retried</span>}
                                   </div>
                                   {/* Score bar */}

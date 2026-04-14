@@ -5940,7 +5940,12 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           .replace(/(<p>\s*<\/p>)+/g, ''); // remove empty paragraphs created by cleanup
       }
 
-      // ── Insert extracted images into placeholders ──
+      // ── Insert extracted images using placeholder tokens (deferred real-image insertion) ──
+      // Instead of embedding base64 data URLs directly, use stable placeholder tokens that survive
+      // every AI pass (grammar, surgical, aiFixChunked, artifact cleanup). Real data URLs get
+      // swapped in at the very end of the pipeline, after all AI calls complete. This prevents
+      // any AI pass from accidentally corrupting/truncating/stripping base64 image data.
+      const _deferredImageMap = {}; // token -> dataUrl
       if (extractedImages.length > 0) {
         let imgIdx = 0;
         // Find figure elements with data-img-placeholder marker (clean, no regex issues)
@@ -5957,11 +5962,19 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             const isRegenerated = imgInfo && imgInfo.isRegenerated;
             const hasCropData = imgInfo && imgInfo.cropData;
             const cropJson = hasCropData ? JSON.stringify(imgInfo.cropData).replace(/"/g, '&quot;') : '';
+            // Generate a stable placeholder token for this image's data URL. Real src is restored
+            // at the end of the pipeline. Token format matches _stripDataUrlsForAi so it's safe
+            // in case any nested AI helper also tries to swap data URLs.
+            let srcToken = '';
+            if (hasSrc) {
+              srcToken = '__ALLOFLOW_DATAURL_FINAL_' + imgIdx + '__';
+              _deferredImageMap[srcToken] = imgInfo.generatedSrc;
+            }
             // If we have a regenerated image, show it; otherwise show placeholder with upload
             return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData ? ` data-crop="${cropJson}"` : ''} style="position:relative;margin:1em 0">
 <div id="${imgId}-container" style="${hasSrc ? '' : 'background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;'}text-align:center;min-height:${hasSrc ? '0' : '120px'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
 ${hasSrc
-  ? `<img src="${imgInfo.generatedSrc}" alt="${desc.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
+  ? `<img src="${srcToken}" alt="${desc.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
   : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
 <span style="font-size:12px;color:#64748b;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
 <span style="font-size:11px;color:#94a3b8">${desc.substring(0, 100)}${desc.length > 100 ? '...' : ''}</span>`}
@@ -5977,6 +5990,7 @@ ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage
 </figure>`;
           }
         });
+        _pipeLog('Images', 'Deferred ' + Object.keys(_deferredImageMap).length + ' image(s) as placeholder tokens — real data URLs restored at end of pipeline');
       }
 
       // Wrap in full HTML document
@@ -6825,6 +6839,23 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const needsExpertReview = axeFailed || // axe-core failed entirely — can't verify
         integrityWarning || // content loss detected — always flag for review
         (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 70) || axeCritical > 0));
+
+      // ── Final step: restore deferred image data URLs ──
+      // All AI passes (grammar, surgical, aiFixChunked, artifact cleanup) have completed; now we
+      // swap placeholder tokens for the real base64 data URLs. Because this is a deterministic
+      // string replacement on tokens that passed through every AI stage unchanged, we guarantee
+      // zero image corruption regardless of what any AI pass tried to do.
+      if (_deferredImageMap && Object.keys(_deferredImageMap).length > 0) {
+        const _tokenCountBefore = Object.keys(_deferredImageMap).reduce((acc, tok) => acc + (accessibleHtml.split(tok).length - 1), 0);
+        Object.keys(_deferredImageMap).forEach((token) => {
+          accessibleHtml = accessibleHtml.split(token).join(_deferredImageMap[token]);
+        });
+        const _expectedTokens = Object.keys(_deferredImageMap).length;
+        _pipeLog('Images', 'Restored ' + _tokenCountBefore + '/' + _expectedTokens + ' image data URL(s) from placeholder tokens');
+        if (_tokenCountBefore < _expectedTokens) {
+          warnLog('[Images] WARNING: ' + (_expectedTokens - _tokenCountBefore) + ' image placeholder token(s) were missing before restoration — some images may have been dropped by an AI pass. Investigate the log above.');
+        }
+      }
 
       // ── Store results ──
       const _result = {
