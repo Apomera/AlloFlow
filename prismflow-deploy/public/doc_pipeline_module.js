@@ -175,6 +175,46 @@ var createDocPipeline = function(deps) {
     return chunks;
   };
 
+  // Shared JSON repair: tolerant parser for AI-returned JSON arrays (handles fences, trailing garbage, unquoted keys, etc.)
+  const repairAndParseJsonShared = (raw) => {
+    if (!raw) return null;
+    let s = String(raw).trim();
+    // Strip markdown fences
+    if (s.indexOf('```') !== -1) {
+      const ps = s.split('```');
+      s = ps[1] || ps[0];
+      if (s.indexOf('\n') !== -1 && /^(json|js)\s*$/i.test(s.split('\n')[0].trim())) s = s.split('\n').slice(1).join('\n');
+      if (s.lastIndexOf('```') !== -1) s = s.substring(0, s.lastIndexOf('```'));
+      s = s.trim();
+    }
+    // Strip any text before the first [ and after the last ]
+    const firstBracket = s.indexOf('[');
+    const lastBracket = s.lastIndexOf(']');
+    if (firstBracket >= 0) s = s.substring(firstBracket);
+    if (lastBracket >= 0 && lastBracket > firstBracket) s = s.substring(0, s.lastIndexOf(']') + 1);
+    // Direct parse attempt
+    try { return JSON.parse(s); } catch(e) {}
+    // Fix common AI JSON errors
+    let repaired = s
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^']*)'/g, ':"$1"')
+      .replace(/"\s*\n\s*"/g, '","')
+      .replace(/}\s*\n?\s*{/g, '},{')
+      .replace(/\}\s*$/,'}\]')
+      .replace(/"\s*$/,'"}]');
+    if (!repaired.startsWith('[')) repaired = '[' + repaired;
+    if (!repaired.endsWith(']')) {
+      const lastCloseBrace = repaired.lastIndexOf('}');
+      if (lastCloseBrace > 0) repaired = repaired.substring(0, lastCloseBrace + 1) + ']';
+    }
+    try { return JSON.parse(repaired); } catch(e) {}
+    // Aggressive: try to extract the array portion only
+    const arrMatch = repaired.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
+    return null;
+  };
+
   const stripFence = (s) => {
     if (!s) return s;
     let c = s.trim();
@@ -4952,12 +4992,122 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               }
             }
           } catch (chunkErr) {
-            warnLog(`[PDF Fix] Chunk ${i + 1} failed:`, chunkErr);
-            const fallbackStart = Math.floor((i / transformChunks) * extractedText.length);
-            const fallbackEnd = Math.floor(((i + 1) / transformChunks) * extractedText.length);
-            return [{ type: 'p', text: `[Pages ${startPg}-${endPg}] ` + extractedText.substring(fallbackStart, fallbackEnd).substring(0, 3000) }];
+            const errMsg = (chunkErr && chunkErr.message) || String(chunkErr);
+            const isRecitation = /RECITATION/i.test(errMsg);
+            warnLog(`[PDF Fix] Chunk ${i + 1} failed${isRecitation ? ' (RECITATION filter)' : ''}:`, errMsg);
+
+            // ── Step 1 of fallback ladder: single-page vision retry ──
+            // The RECITATION filter scores longer contiguous verbatim runs more aggressively.
+            // Retry each page in the chunk individually — pages that fail individually will cascade to the sibling-hint recovery.
+            const pagesInChunk = endPg - startPg + 1;
+            if (pagesInChunk > 1 && isRecitation) {
+              warnLog(`[PDF Fix] Chunk ${i + 1}: retrying ${pagesInChunk} pages individually`);
+              const perPageResults = [];
+              let perPageSuccessCount = 0;
+              for (let pg = startPg; pg <= endPg; pg++) {
+                try {
+                  const perPagePrompt =
+                    `Extract ALL content from page ${pg} of this PDF as a JSON array of content blocks.\n\n` +
+                    `Block types: {"type":"h1"|"h2"|"h3","text":"...","id":"slug"}, {"type":"p","text":"..."}, {"type":"ul","items":[...]}, {"type":"ol","items":[...]}, {"type":"table","caption":"...","headers":[...],"rows":[[...]]}, {"type":"image","description":"...","alt":"..."}, {"type":"blockquote","text":"..."}, {"type":"hr"}.\n` +
+                    `Preserve ALL content. Return ONLY a JSON array.`;
+                  const perPageRaw = await callGeminiVision(perPagePrompt, _base64, _mimeType);
+                  if (perPageRaw) {
+                    const parsed = repairAndParseJsonShared(perPageRaw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                      perPageResults.push(...parsed);
+                      perPageSuccessCount++;
+                      continue;
+                    }
+                  }
+                } catch(ppErr) {
+                  warnLog(`[PDF Fix] Chunk ${i + 1}, page ${pg} single-page retry failed: ${ppErr?.message || ppErr}`);
+                }
+                // This page failed; mark it for sibling-hint recovery (narrower scope = better recovery)
+                perPageResults.push({ __chunkFailed: true, chunkIndex: i, startPage: pg, endPage: pg, reason: 'recitation-per-page', errMsg: 'single-page retry also failed' });
+              }
+              if (perPageSuccessCount > 0) {
+                warnLog(`[PDF Fix] Chunk ${i + 1}: single-page retry recovered ${perPageSuccessCount}/${pagesInChunk} pages`);
+                return perPageResults;
+              }
+            }
+
+            // Return a tagged fail-marker so the second pass can attempt recovery with sibling hints + per-page text.
+            return [{ __chunkFailed: true, chunkIndex: i, startPage: startPg, endPage: endPg, reason: isRecitation ? 'recitation' : 'error', errMsg }];
           }
           return [];
+        };
+
+        // Helper: retrieve exact per-page text for pages startPg..endPg from pdf.js page map
+        const _getPagesText = (startPg, endPg) => {
+          const pageMap = (typeof window !== 'undefined') ? window.__lastGroundTruthPageMap : null;
+          if (Array.isArray(pageMap) && pageMap.length > 0) {
+            const slice = pageMap.filter(pg => pg.pageNum >= startPg && pg.pageNum <= endPg);
+            if (slice.length > 0) return slice.map(pg => pg.text).join('\n\n');
+          }
+          // Fallback: proportional slice of extractedText (legacy behavior)
+          const fallbackStart = Math.floor(((startPg - 1) / pageCount) * extractedText.length);
+          const fallbackEnd = Math.floor((endPg / pageCount) * extractedText.length);
+          return extractedText.substring(fallbackStart, fallbackEnd);
+        };
+
+        // Helper: split text into paragraph <p> blocks (for the final deterministic floor)
+        const _paragraphsToBlocks = (text, startPg, endPg) => {
+          if (!text || text.trim().length === 0) return [];
+          const paragraphs = text.split(/\n{2,}/).map(p => p.trim()).filter(p => p.length > 0);
+          const label = `[Pages ${startPg}-${endPg}]`;
+          if (paragraphs.length === 0) return [{ type: 'p', text: label + ' ' + text.substring(0, 3000) }];
+          return paragraphs.slice(0, 50).map((p, idx) => ({ type: 'p', text: (idx === 0 ? label + ' ' : '') + p }));
+        };
+
+        // Second-pass recovery: text-in-input with sibling-chunk format hints.
+        // Uses 1-2 successful sibling chunks as few-shot examples so the failing chunk emits the same JSON schema/style,
+        // while grounding content in the exact per-page pdf.js text (no re-extraction by Gemini → far less likely to trip RECITATION).
+        const recoverFailedChunkWithSiblings = async (failMarker, successfulSiblingsArr) => {
+          const { startPage: startPg, endPage: endPg, chunkIndex: ci } = failMarker;
+          const pageText = _getPagesText(startPg, endPg);
+          if (!pageText || pageText.trim().length < 20) {
+            warnLog(`[PDF Fix] Chunk ${ci + 1}: no pdf.js text available for recovery, using paragraph floor`);
+            return _paragraphsToBlocks(pageText, startPg, endPg);
+          }
+          // Pick 1-2 sibling examples with the most structural variety (highest block count, capped)
+          const examples = successfulSiblingsArr
+            .filter(s => s && s.blocks && s.blocks.length >= 3)
+            .sort((a, b) => b.blocks.length - a.blocks.length)
+            .slice(0, 2)
+            .map(s => JSON.stringify(s.blocks.slice(0, 12)));
+          const hintBlock = examples.length > 0
+            ? `\n\nFORMAT EXAMPLES (from other successfully-extracted sections of THIS SAME DOCUMENT — match this schema and style):\n${examples.map((ex, i) => `Example ${i + 1}:\n${ex}`).join('\n\n')}\n\n`
+            : '\n\n';
+          const recoveryPrompt =
+            `Structure the text below (extracted from pages ${startPg}-${endPg} of a PDF) as a JSON array of content blocks.\n\n` +
+            `The raw text is provided — do NOT re-extract, do NOT paraphrase, do NOT summarize. Preserve ALL text exactly as given. ` +
+            `Your job is ONLY to classify each section into the correct block type (h1/h2/h3/p/ul/ol/table/blockquote/hr) and produce valid JSON.\n\n` +
+            `Block types:\n` +
+            `- {"type":"h1","text":"...","id":"slug"} / h2 / h3 (use for section titles)\n` +
+            `- {"type":"p","text":"..."}\n` +
+            `- {"type":"ul","items":["...","..."]} / ol (for bulleted/numbered lists)\n` +
+            `- {"type":"table","caption":"...","headers":["..."],"rows":[["...","..."]]}\n` +
+            `- {"type":"blockquote","text":"..."}\n` +
+            `- {"type":"hr"}\n` +
+            hintBlock +
+            `RAW TEXT (pages ${startPg}-${endPg}):\n"""\n${pageText.substring(0, 12000)}\n"""\n\n` +
+            `Return ONLY a JSON array. Include ALL text from the raw input above, classified into appropriate blocks.`;
+          try {
+            const raw = await callGemini(recoveryPrompt, true);
+            if (!raw) return _paragraphsToBlocks(pageText, startPg, endPg);
+            let cleaned = raw.trim();
+            if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+            const parsed = repairAndParseJsonShared(cleaned);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              warnLog(`[PDF Fix] Chunk ${ci + 1} recovered via text-in-input: ${parsed.length} blocks`);
+              return parsed;
+            }
+            warnLog(`[PDF Fix] Chunk ${ci + 1} recovery JSON unparseable, using paragraph floor`);
+            return _paragraphsToBlocks(pageText, startPg, endPg);
+          } catch (recErr) {
+            warnLog(`[PDF Fix] Chunk ${ci + 1} recovery failed (${recErr?.message || recErr}) — using paragraph floor`);
+            return _paragraphsToBlocks(pageText, startPg, endPg);
+          }
         };
         // Launch chunks in batches of 5 to avoid rate limiting
         const chunkBlockArrays = [];
@@ -4970,6 +5120,46 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           chunkBlockArrays.push(...batchResults);
           if (batchEnd < transformChunks) await new Promise(r => setTimeout(r, 500));
         }
+
+        // ── Second-pass recovery: for chunks (or individual pages) that failed, use pdf.js per-page text +
+        // 1-2 successful sibling chunks' JSON as format examples to reconstruct with maximum accuracy ──
+        const _isFailMarker = (b) => b && b.__chunkFailed === true;
+        // Collect all successful blocks (for sibling hints) and identify fail markers
+        const successfulSiblings = [];
+        chunkBlockArrays.forEach((blocks, ci) => {
+          if (Array.isArray(blocks)) {
+            const successBlocks = blocks.filter(b => !_isFailMarker(b));
+            if (successBlocks.length > 0) successfulSiblings.push({ index: ci, blocks: successBlocks });
+          }
+        });
+        // Count total fail markers across all chunks
+        let totalFailMarkers = 0;
+        chunkBlockArrays.forEach(blocks => {
+          if (Array.isArray(blocks)) totalFailMarkers += blocks.filter(_isFailMarker).length;
+        });
+        if (totalFailMarkers > 0) {
+          updateProgress(2, `Recovering ${totalFailMarkers} failed section(s) via text-in-input (sibling format hints)...`);
+          warnLog(`[PDF Fix] Second-pass recovery: ${totalFailMarkers} fail marker(s) — ${successfulSiblings.length} successful sibling chunk(s) for format hints`);
+          for (let ci = 0; ci < chunkBlockArrays.length; ci++) {
+            const blocks = chunkBlockArrays[ci];
+            if (!Array.isArray(blocks)) continue;
+            const recoveredBlocks = [];
+            for (const b of blocks) {
+              if (_isFailMarker(b)) {
+                try {
+                  const recovered = await recoverFailedChunkWithSiblings(b, successfulSiblings);
+                  if (recovered && recovered.length > 0) recoveredBlocks.push(...recovered);
+                } catch(recOuterErr) {
+                  warnLog(`[PDF Fix] Recovery outer failure for pages ${b.startPage}-${b.endPage}: ${recOuterErr?.message}`);
+                }
+              } else {
+                recoveredBlocks.push(b);
+              }
+            }
+            chunkBlockArrays[ci] = recoveredBlocks;
+          }
+        }
+
         chunkBlockArrays.forEach((blocks, ci) => {
           const startPg = ci * TRANSFORM_PAGES + 1;
           const endPg = Math.min((ci + 1) * TRANSFORM_PAGES, pageCount);
