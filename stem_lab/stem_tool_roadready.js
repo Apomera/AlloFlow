@@ -1805,6 +1805,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
+      // ─── HEAD-CHECK STATE ───
+      // Tracks whether the player is currently holding a shoulder-check key.
+      // dir: 0 = forward (no check), -1 = left shoulder, 1 = right shoulder
+      // swivel: current smoothed head rotation (radians) — lerps toward target
+      // lastCheckLeft / lastCheckRight: timestamps of most recent checks (for teaching)
+      var headCheckRef = useRef({ dir: 0, swivel: 0, lastCheckLeft: 0, lastCheckRight: 0 });
       var gearRef = useRef('P'); // P = park, R = reverse, D = drive
       var distractRef = useRef({ active: false, timer: 0, msg: '', penalty: false }); // distracted driving events
       var blinkerRef = useRef(0); // -1 left, 0 off, 1 right
@@ -1863,7 +1869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             } catch (e2) {}
           }
-          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
         window.addEventListener('keydown', onKeyDown);
@@ -1908,7 +1914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var worldSeed = d.worldSeed || Math.floor(Math.random() * 100000);
           if (!d.worldSeed) upd('worldSeed', worldSeed);
           infiniteWorldRef.current = createInfiniteWorld(worldSeed);
-          introMsg = '🌎 FREE EXPLORE — Infinite world (seed: ' + worldSeed + '). Drive forever. Toggle conditions on the right panel.';
+          introMsg = '🌎 FREE EXPLORE — Infinite world. Z=look left, X=look right (shoulder check before lane changes!)';
         }
         eventToastRef.current = introMsg ? { msg: introMsg, until: 10 } : { msg: null, until: 0 };
         // Speak the intro aloud after a short delay
@@ -4695,8 +4701,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               s3.camera.fov += (targetFov - s3.camera.fov) * 0.08;
               s3.camera.updateProjectionMatrix();
             }
+            // ─── HEAD-CHECK SWIVEL: Z (look left) / X (look right) ───
+            // Hold to look, release to return forward. Mimics real driver shoulder-checks.
+            var kHold = keysRef.current || {};
+            var hc = headCheckRef.current;
+            var targetSwivel = 0;
+            if (kHold['z']) { targetSwivel = -1.2; hc.dir = -1; hc.lastCheckLeft = timeRef.current; }
+            else if (kHold['x']) { targetSwivel = 1.2; hc.dir = 1; hc.lastCheckRight = timeRef.current; }
+            else { hc.dir = 0; }
+            // Smooth lerp toward target — fast enough to feel responsive, slow enough to feel natural (~0.3s)
+            hc.swivel += (targetSwivel - hc.swivel) * 0.25;
             // Smooth look-ahead that anticipates turns (Forza-style)
             var lookAheadBias = Math.sign(car.steering) * Math.min(0.3, Math.abs(car.steering) * 0.5);
+            // Combine head swivel with turn look-ahead
+            var totalLookOffset = lookAheadBias + hc.swivel;
             var fpTargetX = carWorldX + Math.cos(car.heading) * 0.3 + bobX + shakeX;
             var fpTargetY = 1.1 + bobY;
             var fpTargetZ = carWorldZ + Math.sin(car.heading) * 0.3 + shakeZ;
@@ -4707,9 +4725,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.camera._lastFpZ += (fpTargetZ - s3.camera._lastFpZ) * 0.4;
             s3.camera.position.set(s3.camera._lastFpX, s3.camera._lastFpY, s3.camera._lastFpZ);
             s3.camera.lookAt(
-              carWorldX + Math.cos(car.heading + lookAheadBias) * 10,
+              carWorldX + Math.cos(car.heading + totalLookOffset) * 10,
               0.95,
-              carWorldZ + Math.sin(car.heading + lookAheadBias) * 10
+              carWorldZ + Math.sin(car.heading + totalLookOffset) * 10
             );
             s3.playerCarGroup.visible = false;
           } else if (camMode === 'chase') {
@@ -6318,6 +6336,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('E=◄  V=►  T=off', W / 2, H - 8);
+
+          // ─── HEAD-CHECK INDICATOR ───
+          // Shows a prominent visual cue when player is shoulder-checking, plus a subtle hint when not.
+          var hcState = headCheckRef.current;
+          if (hcState && hcState.dir !== 0) {
+            // Active head check: big directional arrow with "SHOULDER CHECK" label
+            var hcColor = '#fbbf24';
+            var arrow = hcState.dir === -1 ? '◄' : '►';
+            var side = hcState.dir === -1 ? 'LEFT' : 'RIGHT';
+            gfx.save();
+            gfx.fillStyle = 'rgba(30,41,59,0.8)';
+            gfx.strokeStyle = hcColor;
+            gfx.lineWidth = 2;
+            gfx.fillRect(W / 2 - 90, 60, 180, 32);
+            gfx.strokeRect(W / 2 - 90, 60, 180, 32);
+            gfx.fillStyle = hcColor;
+            gfx.font = 'bold 22px system-ui';
+            gfx.textAlign = 'center';
+            gfx.fillText(arrow + ' SHOULDER CHECK ' + arrow, W / 2, 82);
+            gfx.restore();
+          } else {
+            // Subtle hint in the controls row
+            gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('Z=look left  X=look right (shoulder check)', W / 2, H - 22);
+          }
 
           // MPG sparkline
           var mHist = mpgHistoryRef.current;

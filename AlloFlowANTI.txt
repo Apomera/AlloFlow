@@ -12860,6 +12860,8 @@ Return only the corrected version of this exact text:`;
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
   // ── Regression safeguard helpers (Fix Remaining / Additional Sweep) ──
   const PDF_REGRESSION_TOLERANCE = 5;
+  // Deep-copy plain-data audit objects so later in-place score mutations can't corrupt a snapshot.
+  const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
     if (aiScore == null) return null;
     if (typeof axeScore !== 'number') return aiScore;
@@ -51435,12 +51437,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button onClick={async () => {
                         if (!pdfFixResult.accessibleHtml) return;
                         setPdfFixLoading(true); pdfFixModeRef.current = 'sweep'; setPdfFixStep('Scanning for new issues...');
-                        const _safeClone = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
                         const prevSnapshot = {
                           html: pdfFixResult.accessibleHtml,
                           afterScore: pdfFixResult.afterScore,
-                          ai: _safeClone(pdfFixResult.verificationAudit),
-                          axe: _safeClone(pdfFixResult.axeAudit),
+                          ai: safeCloneAudit(pdfFixResult.verificationAudit),
+                          axe: safeCloneAudit(pdfFixResult.axeAudit),
                           chars: pdfFixResult.htmlChars,
                         };
                         try {
@@ -51488,15 +51489,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let html = pdfFixResult.accessibleHtml;
                           let bestHtml = html;
                           let bestIssueCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
-                          const _safeClone = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
-                          let bestAi = _safeClone(pdfFixResult.verificationAudit);
-                          let bestAxe = _safeClone(pdfFixResult.axeAudit);
+                          let bestAi = safeCloneAudit(pdfFixResult.verificationAudit);
+                          let bestAxe = safeCloneAudit(pdfFixResult.axeAudit);
                           let totalPasses = 0;
                           const prevSnapshot = {
                             html: pdfFixResult.accessibleHtml,
                             afterScore: pdfFixResult.afterScore,
-                            ai: _safeClone(pdfFixResult.verificationAudit),
-                            axe: _safeClone(pdfFixResult.axeAudit),
+                            ai: safeCloneAudit(pdfFixResult.verificationAudit),
+                            axe: safeCloneAudit(pdfFixResult.axeAudit),
                             chars: pdfFixResult.htmlChars,
                           };
                           try {
@@ -51520,7 +51520,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const tm = html.match(/<h1[^>]*>([^<]+)<\/h1>/i); const tt = tm ? tm[1].trim() : 'Accessible Document';
                                 html = html.includes('<title>') ? html.replace(/<title>[^<]*<\/title>/, `<title>${tt}</title>`) : html.replace(/<head([^>]*)>/, `<head$1><title>${tt}</title>`);
                               }
-                              html = html.replace(/<div([^>]*style="[^"]*(?:font-size:\s*(?:1[8-9]|[2-9]\d)\s*px|font-weight:\s*(?:bold|[6-9]\d{2}))[^"]*"[^>]*)>([\s\S]*?)<\/div>/gi, (m, a, c) => { const t = c.replace(/<[^>]+>/g,'').trim(); return (t.length > 0 && t.length < 200 && !/<h\d/.test(c)) ? (/<h1[\s>]/i.test(html) ? `<h2${a}>${c}</h2>` : `<h1${a}>${c}</h1>`) : m; });
+                              // Promote styled divs to headings on first pass only (avoids cascading h2 creation across passes).
+                              if (pass === 0) {
+                                html = html.replace(/<div([^>]*style="[^"]*(?:font-size:\s*(?:1[8-9]|[2-9]\d)\s*px|font-weight:\s*(?:bold|[6-9]\d{2}))[^"]*"[^>]*)>([\s\S]*?)<\/div>/gi, (m, a, c) => { const t = c.replace(/<[^>]+>/g,'').trim(); return (t.length > 0 && t.length < 200 && !/<h\d/.test(c)) ? (/<h1[\s>]/i.test(html) ? `<h2${a}>${c}</h2>` : `<h1${a}>${c}</h1>`) : m; });
+                              }
                               if (!/<header[\s>]/i.test(html)) html = html.replace(/(<body[^>]*>)([\s\S]*?)(<main[\s>]|<h1[\s>])/i, (m, b, p, n) => p.trim().length > 10 ? `${b}<header role="banner">${p}</header>${n}` : m);
                               if (!/<main[\s>]/i.test(html)) { html = html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main">'); html = html.replace('</body>', '</main>\n</body>'); }
                               if (!/skip.to/i.test(html) && !/skip-nav/i.test(html)) html = html.replace(/<body([^>]*)>/, '<body$1>\n<a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>');

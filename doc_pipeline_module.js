@@ -189,16 +189,26 @@ var createDocPipeline = function(deps) {
 
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
+  // Base64 data URLs are swapped to placeholders before Gemini sees them and restored after,
+  // so Gemini cannot silently strip or truncate base64 image data.
   const aiFixChunked = async (html, violationsText, label) => {
     if (!html) return html;
-    const chunks = splitHtmlOnTagBoundary(html, HTML_FIX_CHUNK);
+    // Strip data URLs before chunking so tokens ride cleanly through splits.
+    const stripped = stripDataUrls(html);
+    const workingHtml = stripped.html;
+    const chunks = splitHtmlOnTagBoundary(workingHtml, HTML_FIX_CHUNK);
+    const _countTokens = (s) => (s ? (s.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length : 0);
     if (chunks.length === 1) {
       // Short doc: single call with full document
       try {
-        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${html}\n"""\n\nReturn the COMPLETE fixed HTML.`;
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten. Preserve tokens of the form __ALLOFLOW_DATAURL_N__ verbatim — they represent embedded images.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${workingHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
         const fixed = stripFence(await callGemini(prompt, true));
-        if (acceptFixedHtml(fixed, html)) return fixed;
-        warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
+        const tokensBefore = _countTokens(workingHtml);
+        const tokensAfter = _countTokens(fixed);
+        if (acceptFixedHtml(fixed, workingHtml) && tokensAfter >= tokensBefore) {
+          return restoreDataUrls(fixed, stripped.map);
+        }
+        warnLog(`[aiFixChunked:${label}] single-chunk rejected (tokens=${tokensAfter}/${tokensBefore}) — keeping original`);
         return html;
       } catch (e) {
         warnLog(`[aiFixChunked:${label}] single-chunk failed:`, e?.message);
@@ -206,7 +216,7 @@ var createDocPipeline = function(deps) {
       }
     }
     // Multi-chunk: fix each fragment with strict per-chunk integrity
-    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks`);
+    warnLog(`[aiFixChunked:${label}] splitting ${workingHtml.length} chars into ${chunks.length} chunks (data-URL tokens protected)`);
     const fixed = new Array(chunks.length);
     for (let ci = 0; ci < chunks.length; ci++) {
       const part = chunks[ci];
@@ -216,14 +226,16 @@ var createDocPipeline = function(deps) {
         : isLast
           ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
-      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten. Preserve tokens of the form __ALLOFLOW_DATAURL_N__ verbatim — they represent embedded images.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
       try {
         const out = stripFence(await callGemini(prompt, true));
-        // Per-chunk integrity: output must not shrink by more than 5% text content
-        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
+        const tokensBefore = _countTokens(part);
+        const tokensAfter = _countTokens(out);
+        // Per-chunk integrity: output must not shrink by more than 5% text content AND all data-URL tokens must survive
+        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95 && tokensAfter >= tokensBefore) {
           fixed[ci] = out;
         } else {
-          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}, tokens=${tokensAfter}/${tokensBefore}) — keeping original`);
           fixed[ci] = part;
         }
       } catch (e) {
@@ -231,7 +243,7 @@ var createDocPipeline = function(deps) {
         fixed[ci] = part;
       }
     }
-    return fixed.join('');
+    return restoreDataUrls(fixed.join(''), stripped.map);
   };
 
   // ── Shared surgical tools (hoisted to factory scope — single source of truth) ──
@@ -1898,217 +1910,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     // Runs BEFORE the full AI rewrite loop — cheaper, safer, more precise.
     // Whatever remains after this goes to the full rewrite loop (Phase 5).
     log('Phase 3c: Surgical AI-diagnosed fixes...');
-    const surgicalTools = {
-      fix_alt_text: function(html, p) {
-        if (!p.index && p.index !== 0) return html;
-        let idx = 0;
-        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== p.index) return m;
-          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
-          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      fix_heading: function(html, p) {
-        if (!p.newLevel) return html;
-        let idx = 0;
-        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
-        });
-      },
-      fix_link_text: function(html, p) {
-        if (!p.newText) return html;
-        let idx = 0;
-        return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
-          if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
-            return '<a' + attrs + '>' + p.newText + '</a>';
-          }
-          return m;
-        });
-      },
-      fix_table_caption: function(html, p) {
-        if (!p.caption) return html;
-        let idx = 0;
-        return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
-        });
-      },
-      fix_aria_label: function(html, p) {
-        if (!p.tag || !p.label) return html;
-        let idx = 0;
-        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
-        return html.replace(re, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      fix_lang: function(html, p) {
-        if (!p.lang) return html;
-        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
-                   .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
-      },
-      // Add scope to a specific table header
-      fix_th_scope: function(html, p) {
-        var scope = p.scope || 'col';
-        let idx = 0;
-        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
-          if (p.index !== undefined && idx++ !== p.index) return m;
-          return '<th scope="' + scope + '"' + attrs + '>';
-        });
-      },
-      // Remove an empty heading by index
-      fix_remove_empty_heading: function(html, p) {
-        let idx = 0;
-        return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
-          if (p.index !== undefined && idx++ !== p.index) return m;
-          return '';
-        });
-      },
-      // Add label to a form input by index
-      fix_input_label: function(html, p) {
-        if (!p.label) return html;
-        let idx = 0;
-        return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-          return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      // Add accessible name to a button by index
-      fix_button_name: function(html, p) {
-        if (!p.label) return html;
-        let idx = 0;
-        return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (content.trim()) return m; // has content, leave it
-          return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
-        });
-      },
-      // Add title to an iframe by index
-      fix_iframe_title: function(html, p) {
-        if (!p.title) return html;
-        let idx = 0;
-        return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
-          return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      // Wrap orphaned content in a landmark
-      fix_add_landmark: function(html, p) {
-        var tag = p.tag || 'section';
-        var label = p.label || 'Content';
-        var selector = p.selector || 'body';
-        // Simple: wrap first non-landmarked block of content
-        if (selector === 'body' && !html.includes('<main')) {
-          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
-        }
-        return html;
-      },
-      // Fix duplicate ID by appending suffix
-      fix_duplicate_id: function(html, p) {
-        if (!p.id) return html;
-        let count = 0;
-        return html.replace(new RegExp('id="' + p.id + '"', 'g'), function(m) {
-          count++;
-          if (count === 1) return m;
-          return 'id="' + p.id + '-' + count + '"';
-        });
-      },
-      // Add figcaption to a figure by index
-      fix_figcaption: function(html, p) {
-        if (!p.caption) return html;
-        let idx = 0;
-        return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/<figcaption/i.test(content)) return m; // already has one
-          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
-        });
-      },
-      // Set document title
-      fix_title: function(html, p) {
-        if (!p.title) return html;
-        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
-        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
-      },
-      // Wrap text in a lang span for multilingual content
-      fix_lang_span: function(html, p) {
-        if (!p.text || !p.lang) return html;
-        // Escape regex special chars in text to prevent crash on content like "Dr. Smith (PhD)"
-        var escaped = p.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return html.replace(new RegExp(escaped), '<span lang="' + p.lang + '">' + p.text + '</span>');
-      },
-      // Change a specific element's text color for contrast compliance
-      fix_contrast: function(html, p) {
-        if (!p.oldColor || !p.newColor) return html;
-        return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
-      },
-      // Promote first row of a table to thead with th elements
-      fix_table_header_row: function(html, p) {
-        let idx = 0;
-        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/<thead/i.test(content)) return m; // already has thead
-          // Convert first <tr> with <td> to <thead> with <th>
-          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
-            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
-            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
-          });
-          return '<table' + attrs + '>' + fixed + '</table>';
-        });
-      },
-      // Wrap an acronym/abbreviation in <abbr> with expansion
-      fix_abbreviation: function(html, p) {
-        if (!p.abbr || !p.title) return html;
-        var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
-        var replaced = false;
-        return html.replace(re, function(m) {
-          if (replaced) return m; // only wrap first occurrence
-          replaced = true;
-          return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
-        });
-      },
-      // Mark an image as decorative (empty alt + role=presentation)
-      fix_image_decorative: function(html, p) {
-        let idx = 0;
-        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
-          return '<img alt="" role="presentation"' + cleaned + '>';
-        });
-      },
-      // Wrap orphaned list items in a proper list container
-      fix_list_wrap: function(html, p) {
-        var tag = p.ordered ? 'ol' : 'ul';
-        // Find orphaned <li> and wrap them
-        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
-          // Check if already inside a list (use offset param instead of indexOf for O(1))
-          var before = html.substring(Math.max(0, offset - 100), offset);
-          if (/<[uo]l[^>]*>\s*$/i.test(before)) return m; // already wrapped
-          return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
-        });
-      },
-      // Add skip-to-content link if missing
-      fix_skip_nav: function(html) {
-        if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
-        return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
-      },
-      // Set text spacing for readability (letter-spacing, word-spacing, line-height)
-      fix_text_spacing: function(html, p) {
-        var css = '';
-        if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
-        if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
-        if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
-        if (!css) return html;
-        var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
-        if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
-        return style + html;
-      },
-    };
+    // Surgical tools hoisted to factory-scope SHARED_SURGICAL_TOOLS (see top of createDocPipeline).
 
     // Run surgical diagnosis (1 API call) + deterministic execution
     try {
@@ -2188,7 +1990,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         var surgApplied = 0;
         for (var si = 0; si < surgFixes.length; si++) {
           var fix = surgFixes[si];
-          var tool = fix && fix.tool && surgicalTools[fix.tool];
+          var tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
           if (tool) {
             var before = accessibleHtml;
             accessibleHtml = tool(accessibleHtml, fix);
@@ -3875,7 +3677,7 @@ Return ONLY the complete fixed HTML.`, true);
               if (Array.isArray(chunkSurgFixes)) {
                 for (let sfi = 0; sfi < chunkSurgFixes.length; sfi++) {
                   const fix = chunkSurgFixes[sfi];
-                  const tool = fix && fix.tool && surgicalTools[fix.tool];
+                  const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
                   if (tool) {
                     const before = preFixedChunk;
                     preFixedChunk = tool(preFixedChunk, fix);
@@ -4325,7 +4127,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
       if (Array.isArray(surgFixes)) {
         for (const fix of surgFixes) {
-          const tool = fix && fix.tool && surgicalTools[fix.tool];
+          const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
           if (tool) {
             const before = preFixedChunk;
             preFixedChunk = tool(preFixedChunk, fix);
