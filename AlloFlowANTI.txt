@@ -12858,6 +12858,40 @@ Return only the corrected version of this exact text:`;
   const pdfFixModeRef = useRef('');
   const [pdfFixStep, setPdfFixStep] = useState('');
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
+  // ── Regression safeguard helpers (Fix Remaining / Additional Sweep) ──
+  const PDF_REGRESSION_TOLERANCE = 5;
+  const blendAiAxe = (aiScore, axeScore) => {
+    if (aiScore == null) return null;
+    if (typeof axeScore !== 'number') return aiScore;
+    return Math.round((aiScore + axeScore) / 2);
+  };
+  const commitOrRevertPdfFix = (prev, candidate, extras, label) => {
+    const newAi = candidate.ai?.score ?? null;
+    const newAxe = candidate.axe?.score ?? null;
+    const newBlended = candidate.perfect ? 100 : blendAiAxe(newAi, newAxe);
+    const prevScore = prev.afterScore;
+    const regressed = prevScore != null && newBlended != null && newBlended < prevScore - PDF_REGRESSION_TOLERANCE;
+    if (regressed || newBlended == null) {
+      setPdfFixResult(p => ({ ...p, ...(extras?.preserveOnRevert || {}) }));
+      addToast(
+        newBlended == null
+          ? `${label}: audit failed — kept previous version.`
+          : `${label}: score would have dropped (${prevScore} → ${newBlended}). Kept previous version.`,
+        'warning'
+      );
+      return false;
+    }
+    setPdfFixResult(p => ({
+      ...p,
+      accessibleHtml: candidate.html,
+      verificationAudit: candidate.ai,
+      axeAudit: candidate.axe,
+      afterScore: newBlended,
+      htmlChars: candidate.chars,
+      ...(extras?.commit || {}),
+    }));
+    return true;
+  };
   // ── Live chunk review state ──
   // Tracks per-chunk events dispatched by doc_pipeline_module during remediation
   const [liveChunkStream, setLiveChunkStream] = useState([]); // array of chunk event details
@@ -51144,16 +51178,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
               </div>
             ) : pdfAuditResult && (
-              <>
-              {pdfFixResult && (
-                <div role="tablist" aria-label="Audit view" className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
-                  <button role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>Remediation Results</button>
-                  <button role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>Original Audit</button>
-                </div>
-              )}
-              {(!pdfFixResult || pdfAuditTab === 'original') && (
               <div role="status" aria-live="polite" aria-label={`PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`}>
-                {/* Header with score */}
+                {pdfFixResult && (
+                  <div role="tablist" aria-label="Audit view" className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
+                    <button role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>Remediation Results</button>
+                    <button role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>Original Audit</button>
+                  </div>
+                )}
+                {(!pdfFixResult || pdfAuditTab === 'original') && (
                 <div className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
                   <h3 className="text-lg font-bold" id="pdf-audit-title">PDF Accessibility Score {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
@@ -51166,8 +51198,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {pdfAuditResult.scoreRange > 25 && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold">Note: Score variance is high (range: {pdfAuditResult.scoreRange}) — this is normal for documents with low accessibility scores</p>}
                   <p className="text-sm opacity-90 mt-1">{pdfAuditResult.summary}</p>
                 </div>
+                )}
 
                 <div className="p-5 space-y-4" aria-labelledby="pdf-audit-title">
+                  {(!pdfFixResult || pdfAuditTab === 'original') && (<>
                   {/* Document info */}
                   <div className="flex gap-2 flex-wrap" role="list" aria-label="Document properties">
                     {pdfAuditResult.hasSearchableText !== undefined && <span role="listitem" className={`px-2 py-1 rounded-full text-[11px] font-bold ${pdfAuditResult.hasSearchableText ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{pdfAuditResult.hasSearchableText ? '✓ Searchable Text' : '✗ No Text Layer'}</span>}
@@ -51391,6 +51425,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </section>
                     );
                   })()}
+                  </>)}
 
                   {/* Action buttons — transforms after pipeline has run */}
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -51398,23 +51433,45 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button onClick={async () => {
                         if (!pdfFixResult.accessibleHtml) return;
                         setPdfFixLoading(true); pdfFixModeRef.current = 'sweep'; setPdfFixStep('Scanning for new issues...');
+                        const prevSnapshot = {
+                          html: pdfFixResult.accessibleHtml,
+                          afterScore: pdfFixResult.afterScore,
+                          ai: pdfFixResult.verificationAudit,
+                          axe: pdfFixResult.axeAudit,
+                          chars: pdfFixResult.htmlChars,
+                        };
                         try {
                           let html = pdfFixResult.accessibleHtml;
                           const cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
                           setPdfFixStep('Running audit...');
                           const [rv, ra] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
+                          let committed = false;
                           if (ra && ra.totalViolations > 0) {
                             setPdfFixStep('Fixing ' + ra.totalViolations + ' violations...');
                             const fr = await autoFixAxeViolations(html, ra, pdfAutoFixPasses);
                             html = fr.html;
                             const [fv, fa] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
-                            const finalScore = (fv?.issues?.length === 0 && fa?.totalViolations === 0) ? 100 : fv?.score ?? rv?.score;
-                            setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: fv||rv, axeAudit: fa||ra, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0)+fr.passes, htmlChars: html.length, chunkState: fr.chunkState || p.chunkState, chunkWeightedScore: fr.chunkWeightedScore || p.chunkWeightedScore}));
+                            const candAi = fv || rv;
+                            const candAxe = fa || ra;
+                            const perfect = (candAi?.issues?.length === 0 && candAxe?.totalViolations === 0);
+                            committed = commitOrRevertPdfFix(
+                              prevSnapshot,
+                              { html, ai: candAi, axe: candAxe, chars: html.length, perfect },
+                              { commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + fr.passes, chunkState: fr.chunkState || pdfFixResult.chunkState, chunkWeightedScore: fr.chunkWeightedScore || pdfFixResult.chunkWeightedScore } },
+                              'Additional Sweep'
+                            );
                           } else {
-                            const finalScore = (rv?.issues?.length === 0 && ra?.totalViolations === 0) ? 100 : rv?.score;
-                            setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: rv||p.verificationAudit, axeAudit: ra||p.axeAudit, afterScore: finalScore ?? p.afterScore, htmlChars: html.length}));
+                            const candAi = rv || pdfFixResult.verificationAudit;
+                            const candAxe = ra || pdfFixResult.axeAudit;
+                            const perfect = (candAi?.issues?.length === 0 && candAxe?.totalViolations === 0);
+                            committed = commitOrRevertPdfFix(
+                              prevSnapshot,
+                              { html, ai: candAi, axe: candAxe, chars: html.length, perfect },
+                              {},
+                              'Additional Sweep'
+                            );
                           }
-                          addToast('Sweep complete!', 'success');
+                          if (committed) addToast('Sweep complete!', 'success');
                         } catch(e) { addToast('Sweep failed: ' + (e?.message || ''), 'error'); }
                         finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
@@ -51431,6 +51488,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let bestAi = pdfFixResult.verificationAudit;
                           let bestAxe = pdfFixResult.axeAudit;
                           let totalPasses = 0;
+                          const prevSnapshot = {
+                            html: pdfFixResult.accessibleHtml,
+                            afterScore: pdfFixResult.afterScore,
+                            ai: pdfFixResult.verificationAudit,
+                            axe: pdfFixResult.axeAudit,
+                            chars: pdfFixResult.htmlChars,
+                          };
                           try {
                             for (let pass = 0; pass < MAX_INTERNAL_PASSES; pass++) {
                               setPdfFixStep(`Pass ${pass + 1}/${MAX_INTERNAL_PASSES}: gathering issues...`);
@@ -51507,10 +51571,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const finalAxeResult = endAxe || bestAxe;
                             const finalAiResult = endAi1 || bestAi;
                             if (finalAiResult) finalAiResult.score = avgScore;
-                            const finalScore = ((finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0) ? 100 : avgScore;
+                            const perfect = ((finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0);
                             const startCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
-                            setPdfFixResult(p => ({...p, accessibleHtml: bestHtml, verificationAudit: finalAiResult, axeAudit: finalAxeResult, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0) + totalPasses, htmlChars: bestHtml.length}));
-                            addToast(bestIssueCount < startCount ? `Fixed! ${startCount} → ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? 'success' : 'info');
+                            const committed = commitOrRevertPdfFix(
+                              prevSnapshot,
+                              { html: bestHtml, ai: finalAiResult, axe: finalAxeResult, chars: bestHtml.length, perfect },
+                              {
+                                commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses },
+                                preserveOnRevert: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses },
+                              },
+                              'Fix Remaining'
+                            );
+                            if (committed) {
+                              addToast(bestIssueCount < startCount ? `Fixed! ${startCount} → ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? 'success' : 'info');
+                            }
                           } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining failed: ' + (e?.message || 'unknown error'), 'error'); }
                           // Always reset loading state — prevents button from getting stuck
                           finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }

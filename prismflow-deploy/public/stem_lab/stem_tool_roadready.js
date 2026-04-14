@@ -2148,44 +2148,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             checkCyclistPassing();
             checkCollisions();
             // ── Quest / destination system (Free Explore) ──
+            // Now anchored to REAL landmarks in the procedural world. The quest engine
+            // scans chunks ahead of the player and picks a nearby generated landmark as
+            // the destination. Students literally drive TO a building they can see.
             if (d.freeExplore) {
               var q = questRef.current;
               // Generate a new quest if none active
-              if (!q || q.completed) {
-                var destinations = [
-                  { name: 'Gas Station', icon: '⛽', dist: 40 + Math.random() * 60 },
-                  { name: 'School', icon: '🏫', dist: 30 + Math.random() * 50 },
-                  { name: 'Hospital', icon: '🏥', dist: 50 + Math.random() * 80 },
-                  { name: 'Grocery Store', icon: '🛒', dist: 25 + Math.random() * 40 },
-                  { name: 'Park', icon: '🌳', dist: 20 + Math.random() * 30 },
-                  { name: 'Library', icon: '📚', dist: 35 + Math.random() * 45 },
-                  { name: 'Fire Station', icon: '🚒', dist: 40 + Math.random() * 50 },
-                  { name: 'Post Office', icon: '📮', dist: 30 + Math.random() * 40 },
-                  { name: 'Pizza Place', icon: '🍕', dist: 15 + Math.random() * 25 },
-                  { name: 'Friend\'s House', icon: '🏠', dist: 20 + Math.random() * 35 }
-                ];
-                var dest = destinations[Math.floor(Math.random() * destinations.length)];
-                // Place destination along the road, ahead of the player
-                questRef.current = {
-                  name: dest.name,
-                  icon: dest.icon,
-                  y: carRef.current.y - dest.dist, // north (negative Y = ahead when heading -PI/2)
-                  x: Math.floor(MAP_SIZE / 2) + 1.5, // on the road
-                  startDist: dest.dist,
-                  completed: false,
-                  announced: false,
-                  questsCompleted: (q ? q.questsCompleted || 0 : 0)
-                };
-                if (q && q.completed) {
-                  addToast('🗺️ New destination: ' + dest.icon + ' ' + dest.name + ' — ' + Math.round(dest.dist * 10) + ' ft ahead');
-                  speak('New destination: ' + dest.name + '. Drive north to reach it.');
+              if ((!q || q.completed) && infiniteWorldRef.current) {
+                var carCi = Math.floor(carRef.current.y / CHUNK_SIZE);
+                // Search for the nearest landmark ahead of the player (negative Z = ahead)
+                var candidates = [];
+                for (var qci = carCi - 12; qci <= carCi - 1; qci++) {
+                  var qchunk = infiniteWorldRef.current.getChunk(qci);
+                  if (qchunk && qchunk.landmark) {
+                    var lmY = qci * CHUNK_SIZE + qchunk.landmark.centerY;
+                    var lmDist = Math.abs(lmY - carRef.current.y);
+                    candidates.push({ chunk: qchunk, lmY: lmY, dist: lmDist });
+                  }
+                }
+                if (candidates.length > 0) {
+                  // Pick one of the closer landmarks (first 3) — slight randomness keeps it interesting
+                  candidates.sort(function(a, b) { return a.dist - b.dist; });
+                  var pick = candidates[Math.min(candidates.length - 1, Math.floor(Math.random() * Math.min(3, candidates.length)))];
+                  var lmDest = pick.chunk.landmark;
+                  questRef.current = {
+                    name: lmDest.type.name,
+                    icon: lmDest.type.icon,
+                    y: pick.lmY,
+                    x: lmDest.centerX, // cell-space X (matches car.x coordinate system)
+                    startDist: pick.dist,
+                    completed: false,
+                    announced: false,
+                    questsCompleted: (q ? q.questsCompleted || 0 : 0),
+                    isLandmark: true
+                  };
+                  if (q && q.completed) {
+                    addToast('🗺️ New destination: ' + lmDest.type.icon + ' ' + lmDest.type.name + ' — ' + Math.round(pick.dist * 10) + ' ft ahead');
+                    speak('New destination: ' + lmDest.type.name + '. Drive north to reach it.');
+                  }
+                } else if (!q) {
+                  // No landmarks in range yet — drive further north first (seed the first quest gently)
+                  questRef.current = {
+                    name: 'Explore the road',
+                    icon: '🛣️',
+                    y: carRef.current.y - 50,
+                    x: Math.floor(MAP_SIZE / 2),
+                    startDist: 50,
+                    completed: false,
+                    announced: false,
+                    questsCompleted: 0,
+                    isLandmark: false
+                  };
                 }
               }
               // Check if player reached the destination
               q = questRef.current;
               if (q && !q.completed) {
                 var qdist = Math.hypot(carRef.current.x - q.x, carRef.current.y - q.y);
-                if (qdist < 5) {
+                // Larger arrival radius for landmarks since they're real buildings with footprint
+                var arrivalRadius = q.isLandmark ? 8 : 5;
+                if (qdist < arrivalRadius) {
                   q.completed = true;
                   q.questsCompleted = (q.questsCompleted || 0) + 1;
                   addToast('✅ Arrived at ' + q.icon + ' ' + q.name + '! Quest #' + q.questsCompleted + ' complete.');
@@ -2193,7 +2215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 3);
                 }
                 // Announce when getting close
-                if (!q.announced && qdist < 15) {
+                if (!q.announced && qdist < 18) {
                   q.announced = true;
                   addToast(q.icon + ' ' + q.name + ' is just ahead!');
                 }
@@ -5240,7 +5262,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chunkGroup.add(signText);
                   } catch (signErr) { /* canvas texture fallback — plain sign still shows */ }
                 }
+
+                // ─── CONTEXT-AWARE ROAD SIGNS near each landmark ───
+                // Draw an appropriate warning/regulatory sign on the shoulder as the driver approaches.
+                var landmarkSignZ = chunkWorldZ + lm.centerY - 6; // 6 cells before the landmark center
+                var roadShoulderX = lm.side * (MAX_ROAD_WIDTH + 1); // just off the road on the landmark side
+                var signBackMat = new T.MeshLambertMaterial({ color: 0xffffff });
+                var signPost2Mat = new T.MeshLambertMaterial({ color: 0xd1d5db });
+                function addRoadSign(shape, faceColor, label, labelColor, zOff) {
+                  var postZ = landmarkSignZ + (zOff || 0);
+                  var post = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.2, 6), signPost2Mat);
+                  post.position.set(roadShoulderX, 1.1, postZ);
+                  chunkGroup.add(post);
+                  var faceGeo;
+                  if (shape === 'diamond') {
+                    faceGeo = new T.PlaneGeometry(0.9, 0.9);
+                  } else if (shape === 'octagon') {
+                    faceGeo = new T.CircleGeometry(0.5, 8);
+                  } else if (shape === 'rect') {
+                    faceGeo = new T.PlaneGeometry(0.8, 1.0);
+                  } else {
+                    faceGeo = new T.PlaneGeometry(0.8, 0.8);
+                  }
+                  // Draw sign face with text via canvas texture
+                  try {
+                    var sgCan = document.createElement('canvas');
+                    sgCan.width = 256; sgCan.height = shape === 'rect' ? 320 : 256;
+                    var sgCtx = sgCan.getContext('2d');
+                    var faceHex = '#' + faceColor.toString(16).padStart(6, '0');
+                    sgCtx.fillStyle = faceHex;
+                    if (shape === 'octagon') {
+                      sgCtx.beginPath();
+                      for (var oi = 0; oi < 8; oi++) {
+                        var oa = (oi / 8) * Math.PI * 2 + Math.PI / 8;
+                        var ox = 128 + Math.cos(oa) * 120, oy = 128 + Math.sin(oa) * 120;
+                        if (oi === 0) sgCtx.moveTo(ox, oy); else sgCtx.lineTo(ox, oy);
+                      }
+                      sgCtx.closePath(); sgCtx.fill();
+                      sgCtx.strokeStyle = '#ffffff'; sgCtx.lineWidth = 8; sgCtx.stroke();
+                    } else if (shape === 'diamond') {
+                      sgCtx.save(); sgCtx.translate(128, 128); sgCtx.rotate(Math.PI / 4);
+                      sgCtx.fillRect(-90, -90, 180, 180);
+                      sgCtx.strokeStyle = '#000000'; sgCtx.lineWidth = 6;
+                      sgCtx.strokeRect(-90, -90, 180, 180);
+                      sgCtx.restore();
+                    } else {
+                      sgCtx.fillRect(0, 0, sgCan.width, sgCan.height);
+                      sgCtx.strokeStyle = labelColor === 0xffffff ? '#ffffff' : '#000000';
+                      sgCtx.lineWidth = 8;
+                      sgCtx.strokeRect(8, 8, sgCan.width - 16, sgCan.height - 16);
+                    }
+                    sgCtx.fillStyle = '#' + labelColor.toString(16).padStart(6, '0');
+                    var lines = String(label).split('\n');
+                    var baseSize = lines.length > 1 ? 48 : 56;
+                    sgCtx.font = 'bold ' + baseSize + 'px system-ui, sans-serif';
+                    sgCtx.textAlign = 'center';
+                    sgCtx.textBaseline = 'middle';
+                    var cy = sgCan.height / 2 - (lines.length - 1) * (baseSize / 2);
+                    lines.forEach(function(ln, li) { sgCtx.fillText(ln, sgCan.width / 2, cy + li * baseSize); });
+                    var sgTex = new T.CanvasTexture(sgCan);
+                    var sgMat = new T.MeshBasicMaterial({ map: sgTex, transparent: true, side: T.DoubleSide });
+                    var sgMesh = new T.Mesh(faceGeo, sgMat);
+                    sgMesh.position.set(roadShoulderX, 2.0, postZ);
+                    sgMesh.rotation.y = lm.side === 1 ? -Math.PI / 2 : Math.PI / 2;
+                    chunkGroup.add(sgMesh);
+                  } catch (sgErr) {
+                    // Fallback: plain colored square
+                    var faceMat = new T.MeshBasicMaterial({ color: faceColor, side: T.DoubleSide });
+                    var faceMesh = new T.Mesh(faceGeo, faceMat);
+                    faceMesh.position.set(roadShoulderX, 2.0, postZ);
+                    faceMesh.rotation.y = lm.side === 1 ? -Math.PI / 2 : Math.PI / 2;
+                    chunkGroup.add(faceMesh);
+                  }
+                }
+
+                // Pick signs appropriate for each landmark
+                if (lt.id === 'school') {
+                  addRoadSign('diamond', 0xfacc15, 'SCHOOL\nZONE', 0x000000, 0);
+                  addRoadSign('rect', 0xffffff, '20\nMPH', 0x000000, 3);
+                } else if (lt.id === 'hospital') {
+                  addRoadSign('rect', 0x1e40af, 'H', 0xffffff, 0);
+                } else if (lt.id === 'park') {
+                  addRoadSign('diamond', 0xfacc15, 'PED\nXING', 0x000000, 0);
+                } else if (lt.id === 'fire') {
+                  addRoadSign('diamond', 0xfacc15, 'FIRE\nSTA', 0x000000, 0);
+                } else if (lt.id === 'police') {
+                  addRoadSign('rect', 0xffffff, 'SPEED\nCHECK', 0x000000, 0);
+                } else if (lt.id === 'farm') {
+                  addRoadSign('diamond', 0xf97316, 'SLOW\nVEHICLE', 0x000000, 0);
+                } else if (lt.id === 'market' || lt.id === 'pharmacy') {
+                  addRoadSign('rect', 0xffffff, 'PED\nXING', 0x000000, 0);
+                }
+
+                // ─── CROSSWALK near pedestrian-heavy landmarks ───
+                if (lt.id === 'school' || lt.id === 'park' || lt.id === 'market' || lt.id === 'library' || lt.id === 'pharmacy') {
+                  var crosswalkZ = chunkWorldZ + lm.centerY;
+                  var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                  for (var cwi = -3; cwi <= 3; cwi++) {
+                    var cwStripe = new T.Mesh(new T.PlaneGeometry(0.7, 0.3), cwMat);
+                    cwStripe.rotation.x = -Math.PI / 2;
+                    cwStripe.position.set(cwi * 0.9, 0.016, crosswalkZ);
+                    chunkGroup.add(cwStripe);
+                  }
+                }
               }
+
+              // ─── AMBIENT DETAILS: mailboxes, fire hydrants, streetlights along the road ───
+              // These add life without adding obstacles — all placed in the shoulder grass area.
+              var ambientRng = seededRandom(chunk.index * 31337 + 7);
+              for (var ambI = 2; ambI < CHUNK_SIZE - 2; ambI += 4) {
+                var ambSide = ambientRng() < 0.5 ? 1 : -1;
+                var ambRoll = ambientRng();
+                var ambX = ambSide * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 0.3);
+                var ambZ = chunkWorldZ + ambI + Math.floor(ambientRng() * 2);
+                // Don't place ambient details at intersections
+                if (chunk.hasIntersection && Math.abs(ambI - chunk.intersectionY) < 4) continue;
+                // Don't place ambient details too close to landmark footprint
+                var skipAmb = false;
+                if (chunk.landmark) {
+                  var lmSide = chunk.landmark.side;
+                  if (ambSide === lmSide && Math.abs(ambI - chunk.landmark.centerY) < chunk.landmark.type.size / 2 + 1) skipAmb = true;
+                }
+                if (skipAmb) continue;
+                if (ambRoll < 0.25) {
+                  // Mailbox (residential biome weighting)
+                  if (chunk.biome === 'residential' || chunk.biome === 'suburban' || chunk.biome === 'rural') {
+                    var mbPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.0, 5), new T.MeshLambertMaterial({ color: 0x78350f }));
+                    mbPost.position.set(ambX, 0.5, ambZ);
+                    chunkGroup.add(mbPost);
+                    var mbBox = new T.Mesh(new T.BoxGeometry(0.4, 0.25, 0.25), new T.MeshLambertMaterial({ color: 0x4b5563 }));
+                    mbBox.position.set(ambX, 1.1, ambZ);
+                    chunkGroup.add(mbBox);
+                    var mbFlag = new T.Mesh(new T.BoxGeometry(0.02, 0.12, 0.18), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    mbFlag.position.set(ambX + ambSide * 0.22, 1.22, ambZ);
+                    chunkGroup.add(mbFlag);
+                  }
+                } else if (ambRoll < 0.4) {
+                  // Fire hydrant (all biomes except rural)
+                  if (chunk.biome !== 'rural') {
+                    var fhBase = new T.Mesh(new T.CylinderGeometry(0.15, 0.18, 0.5, 8), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    fhBase.position.set(ambX, 0.25, ambZ);
+                    chunkGroup.add(fhBase);
+                    var fhTop = new T.Mesh(new T.SphereGeometry(0.17, 8, 6), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    fhTop.position.set(ambX, 0.55, ambZ);
+                    chunkGroup.add(fhTop);
+                    var fhNozzle = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.2, 5), new T.MeshLambertMaterial({ color: 0x4b5563 }));
+                    fhNozzle.rotation.z = Math.PI / 2;
+                    fhNozzle.position.set(ambX - ambSide * 0.2, 0.35, ambZ);
+                    chunkGroup.add(fhNozzle);
+                  }
+                } else if (ambRoll < 0.58) {
+                  // Streetlight (urban/suburban)
+                  if (chunk.biome === 'commercial' || chunk.biome === 'suburban' || chunk.biome === 'residential') {
+                    var slPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), new T.MeshLambertMaterial({ color: 0x4b5563 }));
+                    slPole.position.set(ambX, 2.1, ambZ);
+                    chunkGroup.add(slPole);
+                    var slArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.2, 4), new T.MeshLambertMaterial({ color: 0x4b5563 }));
+                    slArm.rotation.z = Math.PI / 2;
+                    slArm.position.set(ambX - ambSide * 0.6, 4.0, ambZ);
+                    chunkGroup.add(slArm);
+                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: scn.time === 'night' || scn.time === 'dawn' ? 0xfef3c7 : 0x4b5563 }));
+                    slHead.position.set(ambX - ambSide * 1.1, 3.9, ambZ);
+                    chunkGroup.add(slHead);
+                  }
+                } else if (ambRoll < 0.72) {
+                  // Bench (near parks/schools/libraries in commercial/suburban areas)
+                  if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
+                    var bchBase = new T.Mesh(new T.BoxGeometry(1.3, 0.12, 0.35), new T.MeshLambertMaterial({ color: 0x78350f }));
+                    bchBase.position.set(ambX, 0.35, ambZ);
+                    chunkGroup.add(bchBase);
+                    var bchBack = new T.Mesh(new T.BoxGeometry(1.3, 0.5, 0.08), new T.MeshLambertMaterial({ color: 0x78350f }));
+                    bchBack.position.set(ambX + ambSide * 0.15, 0.65, ambZ);
+                    chunkGroup.add(bchBack);
+                  }
+                }
+              }
+
               // Road surface for this chunk (main N-S road)
               var roadGeo = new T.PlaneGeometry(7, CHUNK_SIZE);
               var roadMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
