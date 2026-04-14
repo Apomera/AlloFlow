@@ -7837,27 +7837,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7873,7 +7873,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98f80d1/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7efd652/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -12860,6 +12860,8 @@ Return only the corrected version of this exact text:`;
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
   // ── Regression safeguard helpers (Fix Remaining / Additional Sweep) ──
   const PDF_REGRESSION_TOLERANCE = 5;
+  // Deep-copy plain-data audit objects so later in-place score mutations can't corrupt a snapshot.
+  const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
     if (aiScore == null) return null;
     if (typeof axeScore !== 'number') return aiScore;
@@ -51435,12 +51437,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button onClick={async () => {
                         if (!pdfFixResult.accessibleHtml) return;
                         setPdfFixLoading(true); pdfFixModeRef.current = 'sweep'; setPdfFixStep('Scanning for new issues...');
-                        const _safeClone = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
                         const prevSnapshot = {
                           html: pdfFixResult.accessibleHtml,
                           afterScore: pdfFixResult.afterScore,
-                          ai: _safeClone(pdfFixResult.verificationAudit),
-                          axe: _safeClone(pdfFixResult.axeAudit),
+                          ai: safeCloneAudit(pdfFixResult.verificationAudit),
+                          axe: safeCloneAudit(pdfFixResult.axeAudit),
                           chars: pdfFixResult.htmlChars,
                         };
                         try {
@@ -51488,15 +51489,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let html = pdfFixResult.accessibleHtml;
                           let bestHtml = html;
                           let bestIssueCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
-                          const _safeClone = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
-                          let bestAi = _safeClone(pdfFixResult.verificationAudit);
-                          let bestAxe = _safeClone(pdfFixResult.axeAudit);
+                          let bestAi = safeCloneAudit(pdfFixResult.verificationAudit);
+                          let bestAxe = safeCloneAudit(pdfFixResult.axeAudit);
                           let totalPasses = 0;
                           const prevSnapshot = {
                             html: pdfFixResult.accessibleHtml,
                             afterScore: pdfFixResult.afterScore,
-                            ai: _safeClone(pdfFixResult.verificationAudit),
-                            axe: _safeClone(pdfFixResult.axeAudit),
+                            ai: safeCloneAudit(pdfFixResult.verificationAudit),
+                            axe: safeCloneAudit(pdfFixResult.axeAudit),
                             chars: pdfFixResult.htmlChars,
                           };
                           try {
@@ -51520,7 +51520,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const tm = html.match(/<h1[^>]*>([^<]+)<\/h1>/i); const tt = tm ? tm[1].trim() : 'Accessible Document';
                                 html = html.includes('<title>') ? html.replace(/<title>[^<]*<\/title>/, `<title>${tt}</title>`) : html.replace(/<head([^>]*)>/, `<head$1><title>${tt}</title>`);
                               }
-                              html = html.replace(/<div([^>]*style="[^"]*(?:font-size:\s*(?:1[8-9]|[2-9]\d)\s*px|font-weight:\s*(?:bold|[6-9]\d{2}))[^"]*"[^>]*)>([\s\S]*?)<\/div>/gi, (m, a, c) => { const t = c.replace(/<[^>]+>/g,'').trim(); return (t.length > 0 && t.length < 200 && !/<h\d/.test(c)) ? (/<h1[\s>]/i.test(html) ? `<h2${a}>${c}</h2>` : `<h1${a}>${c}</h1>`) : m; });
+                              // Promote styled divs to headings on first pass only (avoids cascading h2 creation across passes).
+                              if (pass === 0) {
+                                html = html.replace(/<div([^>]*style="[^"]*(?:font-size:\s*(?:1[8-9]|[2-9]\d)\s*px|font-weight:\s*(?:bold|[6-9]\d{2}))[^"]*"[^>]*)>([\s\S]*?)<\/div>/gi, (m, a, c) => { const t = c.replace(/<[^>]+>/g,'').trim(); return (t.length > 0 && t.length < 200 && !/<h\d/.test(c)) ? (/<h1[\s>]/i.test(html) ? `<h2${a}>${c}</h2>` : `<h1${a}>${c}</h1>`) : m; });
+                              }
                               if (!/<header[\s>]/i.test(html)) html = html.replace(/(<body[^>]*>)([\s\S]*?)(<main[\s>]|<h1[\s>])/i, (m, b, p, n) => p.trim().length > 10 ? `${b}<header role="banner">${p}</header>${n}` : m);
                               if (!/<main[\s>]/i.test(html)) { html = html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main">'); html = html.replace('</body>', '</main>\n</body>'); }
                               if (!/skip.to/i.test(html) && !/skip-nav/i.test(html)) html = html.replace(/<body([^>]*)>/, '<body$1>\n<a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>');
