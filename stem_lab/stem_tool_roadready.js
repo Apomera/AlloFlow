@@ -641,6 +641,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         samples[y] = { x: c.x, heading: c.h };
       }
     }
+    // Elevation: low-frequency seeded noise per Y. Independent of curvature so
+    // hills and turns can occur in any combination. Amplitude varies by biome
+    // (rural ≈ rolling, commercial ≈ flat). Deterministic from seed alone.
+    function heightAt(y) {
+      var biome = biomeForY(y);
+      var amp = biome === 'rural' ? 1.6 : biome === 'industrial' ? 0.8 : biome === 'residential' ? 0.5 : biome === 'suburban' ? 0.4 : 0.15;
+      // Sum two sine waves with phases derived from the seed — cheap pseudo-noise
+      // that's smooth, periodic, and identical across renderer + physics.
+      var phaseA = (seed * 0.0001) % (Math.PI * 2);
+      var phaseB = (seed * 0.0007) % (Math.PI * 2);
+      var hA = Math.sin(y * 0.045 + phaseA) * 0.7;
+      var hB = Math.sin(y * 0.013 + phaseB) * 0.3;
+      return (hA + hB) * amp;
+    }
     return {
       seed: seed,
       samples: samples,
@@ -653,6 +667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (y >= 0) ensureUpTo(y); else ensureDownTo(y);
         return samples[y].heading;
       },
+      heightAt: heightAt,
       // Drop samples far from the live window to bound memory. Always retain a small
       // anchor band on each side so revisiting a chunk regenerates identical headings.
       cleanup: function(currentChunkIndex) {
@@ -890,6 +905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // consumer that needs the smooth (non-rounded) curve position.
       roadCenterAtY: function(worldY) { return spline.centerAt(worldY); },
       roadHeadingAtY: function(worldY) { return spline.headingAt(worldY); },
+      roadHeightAtY: function(worldY) { return spline.heightAt(worldY); },
       getChunk: function(chunkIndex) {
         if (!this.chunks[chunkIndex]) {
           this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX, this.spline);
@@ -3653,6 +3669,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var mtnMesh = new T.Mesh(mtnGeo, mtnMat);
               mtnMesh.name = 'mountain_ring';
               scene.add(mtnMesh);
+
+              // Forest ring — lower, closer band of darker jagged silhouette
+              // between the player and the mountains. Adds a depth layer that
+              // sells the horizon even when no trees are near the road.
+              var fSeg = 80;
+              var fVerts = [];
+              var fIdx = [];
+              var fSeed = 99173;
+              function fRng() { fSeed = (fSeed * 1103515245 + 12345) & 0x7fffffff; return (fSeed >>> 16) / 32768; }
+              for (var fi = 0; fi <= fSeg; fi++) {
+                var fAng = (fi / fSeg) * Math.PI * 2;
+                var fx = Math.cos(fAng) * 95;
+                var fz = Math.sin(fAng) * 95;
+                // Jagged top — alternating tall/short for a dense tree silhouette.
+                var fTop = 2.5 + fRng() * 4.5 + ((fi % 3 === 0) ? 2 : 0);
+                fVerts.push(fx, 0, fz);
+                fVerts.push(fx, fTop, fz);
+              }
+              for (var fj = 0; fj < fSeg; fj++) {
+                var fa = fj * 2, fb = fj * 2 + 1, fc = fj * 2 + 2, fd = fj * 2 + 3;
+                fIdx.push(fa, fc, fb, fb, fc, fd);
+              }
+              var fGeo = new T.BufferGeometry();
+              fGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(fVerts), 3));
+              fGeo.setIndex(fIdx);
+              fGeo.computeVertexNormals();
+              var fColor = isNight && !isDawn ? 0x0a1a18 : isDawn ? 0x3a2a3a : 0x1e4a2a;
+              var fMat = new T.MeshBasicMaterial({ color: fColor, fog: false, depthWrite: false });
+              var fMesh = new T.Mesh(fGeo, fMat);
+              fMesh.name = 'forest_ring';
+              scene.add(fMesh);
+            }
+
+            // High-altitude parallax cloud band — large flat puffs at y≈60, ~120u
+            // out, drifting slowly. Distinct from the low cloudGroup so we get two
+            // depths of cloud motion. Hidden in fog/snow/rain (overcast already).
+            if (!isFog && !isSnow && !isRain) {
+              var hiCloudGroup = new T.Group();
+              hiCloudGroup.name = 'hi_clouds';
+              var hcColor = isNight && !isDawn ? 0x2a3050 : isDawn ? 0xffb088 : 0xf0f4fa;
+              var hcMat = new T.MeshBasicMaterial({ color: hcColor, transparent: true, opacity: isNight && !isDawn ? 0.4 : 0.7, fog: false, depthWrite: false });
+              var hcSeed = 19287;
+              function hcRng() { hcSeed = (hcSeed * 1103515245 + 12345) & 0x7fffffff; return (hcSeed >>> 16) / 32768; }
+              for (var hci = 0; hci < 18; hci++) {
+                var hcAng = (hci / 18) * Math.PI * 2 + hcRng() * 0.2;
+                var hcDist = 110 + hcRng() * 25;
+                var hcW = 18 + hcRng() * 14;
+                var hcH = 4 + hcRng() * 3;
+                var hcPlane = new T.Mesh(new T.PlaneGeometry(hcW, hcH), hcMat);
+                hcPlane.position.set(Math.cos(hcAng) * hcDist, 55 + hcRng() * 10, Math.sin(hcAng) * hcDist);
+                hcPlane.lookAt(0, hcPlane.position.y, 0); // face center
+                hcPlane._driftAng = hcAng;
+                hcPlane._driftDist = hcDist;
+                hcPlane._driftSpeed = 0.003 + hcRng() * 0.003;
+                hiCloudGroup.add(hcPlane);
+              }
+              scene.add(hiCloudGroup);
+            }
+
+            // Halo around the sun/moon so the celestial body reads as a light source
+            // rather than a flat disc. Three concentric soft circles, additive.
+            // The existing sun/moon meshes live elsewhere; halos register by name and
+            // are positioned to follow them in the per-frame update.
+            var haloColor;
+            if (isNight && !isDawn) haloColor = 0xc4d0e8;
+            else if (isDawn) haloColor = 0xffd2a0;
+            else haloColor = 0xfff0c4;
+            var haloGroup = new T.Group();
+            haloGroup.name = 'celestial_halo';
+            for (var hi = 0; hi < 3; hi++) {
+              var hSize = 4 + hi * 3.5;
+              var hMat = new T.MeshBasicMaterial({ color: haloColor, transparent: true, opacity: 0.18 - hi * 0.05, fog: false, depthWrite: false, blending: T.AdditiveBlending });
+              var hRing = new T.Mesh(new T.CircleGeometry(hSize, 24), hMat);
+              haloGroup.add(hRing);
+            }
+            scene.add(haloGroup);
+
+            // Dawn light shafts — wide, soft, angled planes emanating from the
+            // low sun direction. Additive blending over the sky gradient gives
+            // the god-ray effect without needing a real volumetric light pass.
+            if (isDawn) {
+              var shaftGroup = new T.Group();
+              shaftGroup.name = 'dawn_shafts';
+              var shaftMat = new T.MeshBasicMaterial({
+                color: 0xffb880,
+                transparent: true,
+                opacity: 0.12,
+                blending: T.AdditiveBlending,
+                side: T.DoubleSide,
+                fog: false,
+                depthWrite: false
+              });
+              // Fan of long rectangles tilted at shallow angles — each one is a
+              // light shaft spreading from the sun position.
+              for (var si = 0; si < 6; si++) {
+                var shaft = new T.Mesh(new T.PlaneGeometry(30, 140), shaftMat);
+                // Rotate around Z so each shaft points outward at a slightly
+                // different angle, and tilt around X so they lean toward horizon.
+                shaft.rotation.z = (si - 2.5) * 0.08;
+                shaft.rotation.x = Math.PI / 2.2;
+                // Offset so shafts originate near the low sun position (dawn
+                // sun is positioned at sun.position ≈ (60, 5, -10) in scene setup).
+                shaft.position.set(50, 30, -8);
+                shaftGroup.add(shaft);
+              }
+              scene.add(shaftGroup);
+            }
+
+            // Birds — tiny V-shaped silhouettes flying in a loose formation.
+            // Day/dawn only (night has different ambient; fog/rain too murky).
+            if (!isNight && !isFog && !isRain && !isSnow) {
+              var birdGroup = new T.Group();
+              birdGroup.name = 'birds';
+              var birdMat = new T.MeshBasicMaterial({ color: isDawn ? 0x4a3050 : 0x1a1a2a, fog: false });
+              for (var bdi = 0; bdi < 7; bdi++) {
+                // Each bird = two tiny triangles shaped like a V.
+                var bdGeo = new T.BufferGeometry();
+                var bv = new Float32Array([
+                  -0.18, 0, 0,
+                   0,    0.04, 0,
+                   0.18, 0, 0
+                ]);
+                bdGeo.setAttribute('position', new T.BufferAttribute(bv, 3));
+                bdGeo.setIndex([0, 1, 2]);
+                var bd = new T.Mesh(bdGeo, birdMat);
+                // Start each bird at a random position in a slow-drift flock.
+                bd._flockAng = (bdi / 7) * Math.PI * 2;
+                bd._flockRad = 40 + (bdi % 3) * 8;
+                bd._flockY = 22 + (bdi % 2) * 4;
+                bd._flapPhase = bdi * 0.7;
+                bd._flockSpeed = 0.04 + (bdi % 3) * 0.01;
+                birdGroup.add(bd);
+              }
+              scene.add(birdGroup);
             }
           })();
 
@@ -3680,10 +3830,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           scene.add(sun);
 
           // ── Ground plane (road + grass) ──
+          // Subdivided + vertex-colored so the grass reads as a real meadow with
+          // patchy variation instead of a flat green rectangle. Light-frequency
+          // sine displacement adds gentle rolling even in scenario mode.
           var map = mapRef.current;
-          var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2);
-          var grassColor = isSnow ? 0xd0d8e0 : 0x2d6a1e;
-          var groundMat = new T.MeshLambertMaterial({ color: grassColor });
+          var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, 48, 48);
+          var grassBase = isSnow ? [0xd0d8e0, 0xe8ecf0, 0xb8c4d0]
+                                 : [0x2d6a1e, 0x3a7a26, 0x1f5a16, 0x4a8a2e];
+          var gPos = groundGeo.getAttribute('position');
+          var gCol = new Float32Array(gPos.count * 3);
+          for (var gvi = 0; gvi < gPos.count; gvi++) {
+            var gx = gPos.getX(gvi);
+            var gy = gPos.getY(gvi);
+            // Plane is in XY before rotation; Z is "up" post-displacement.
+            var bump = Math.sin(gx * 0.08) * 0.3 + Math.cos(gy * 0.11) * 0.25 + Math.sin((gx + gy) * 0.05) * 0.2;
+            gPos.setZ(gvi, bump);
+            // Pick one of the palette colors via spatial hash so patches feel natural.
+            var pIdx = ((Math.floor(gx * 0.3) * 73 + Math.floor(gy * 0.3) * 37) % grassBase.length + grassBase.length) % grassBase.length;
+            var cH = grassBase[pIdx];
+            gCol[gvi * 3 + 0] = ((cH >> 16) & 0xff) / 255;
+            gCol[gvi * 3 + 1] = ((cH >>  8) & 0xff) / 255;
+            gCol[gvi * 3 + 2] = ( cH        & 0xff) / 255;
+          }
+          groundGeo.setAttribute('color', new T.BufferAttribute(gCol, 3));
+          groundGeo.computeVertexNormals();
+          var groundMat = new T.MeshLambertMaterial({ vertexColors: true });
           var ground = new T.Mesh(groundGeo, groundMat);
           ground.rotation.x = -Math.PI / 2;
           ground.receiveShadow = true;
@@ -4839,8 +5010,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var carWorldX = car.x - MAP_SIZE / 2;
           var carWorldZ = car.y - MAP_SIZE / 2;
 
-          // Position player car
-          s3.playerCarGroup.position.set(carWorldX, car._suspY || 0, carWorldZ);
+          // Position player car. Add road elevation so the car rides over hills
+          // instead of phasing through them. infiniteWorldRef is null in scenario
+          // mode (flat terrain), so the lookup is gated.
+          var roadH = (infiniteWorldRef.current && infiniteWorldRef.current.roadHeightAtY)
+            ? infiniteWorldRef.current.roadHeightAtY(car.y) : 0;
+          s3.playerCarGroup.position.set(carWorldX, roadH + (car._suspY || 0), carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
 
           // Skydome + mountain ring follow the car so the infinite world never
@@ -4849,6 +5024,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (s3._skyRef) s3._skyRef.position.set(carWorldX, 0, carWorldZ);
           if (!s3._mtnRef) s3._mtnRef = s3.scene.getObjectByName('mountain_ring');
           if (s3._mtnRef) s3._mtnRef.position.set(carWorldX, 0, carWorldZ);
+          if (!s3._forestRef) s3._forestRef = s3.scene.getObjectByName('forest_ring');
+          if (s3._forestRef) s3._forestRef.position.set(carWorldX, 0, carWorldZ);
           // Weight transfer: body pitch (brake/accel) and roll (turns)
           s3.playerCarGroup.rotation.x = car._pitch || 0;
           s3.playerCarGroup.rotation.z = car._roll || 0;
@@ -5559,33 +5736,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var chunkWorldZ = ci * CHUNK_SIZE - MAP_SIZE / 2;
               // Build 3D objects for this chunk
               var buildMats = [new T.MeshLambertMaterial({ color: 0xb08c64 }), new T.MeshLambertMaterial({ color: 0xa09078 }), new T.MeshLambertMaterial({ color: 0x8c7a62 })];
-              var treeTMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
-              var treeLMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xc8d0d8 : 0x2a7e2a });
+              // Tree palette varies by species. Materials reused across all trees
+              // in a chunk for batching. Snow biomes desaturate everything.
+              var snowy = scn.weather === 'snow';
+              var pineLeaf = new T.MeshLambertMaterial({ color: snowy ? 0xb8c4d0 : 0x1f5d2c });
+              var maple    = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : 0x3a8a3a });
+              var maple2   = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : 0x6ba84f });
+              var birch    = new T.MeshLambertMaterial({ color: snowy ? 0xd6dde6 : 0xa8c66c });
+              var darkBark = new T.MeshLambertMaterial({ color: 0x4a2e18 });
+              var lightBark= new T.MeshLambertMaterial({ color: 0xe8e0d4 });
               for (var cy = 0; cy < CHUNK_SIZE; cy++) {
                 for (var cx = 0; cx < MAP_SIZE; cx++) {
                   var cellVal = chunk.cells[cy][cx];
                   var wx = cx - MAP_SIZE / 2;
                   var wz = chunkWorldZ + cy;
                   if (cellVal === 1) {
-                    // Building
-                    var bH = 3 + ((cx * 37 + cy * 73) % 5);
-                    var bGeo = new T.BoxGeometry(1, bH, 1);
-                    var bMesh = new T.Mesh(bGeo, buildMats[(cx + cy) % 3]);
-                    bMesh.position.set(wx, bH / 2, wz);
+                    // Building — main box + roof cap + window belt. Style varies
+                    // by biome: commercial gets flat roofs + storefront awning,
+                    // residential gets peaked roofs, industrial gets corrugated flat tops.
+                    var bHash = (cx * 37 + cy * 73);
+                    var bH = 3 + (bHash % 5);
+                    var bW = 1 + (chunk.biome === 'commercial' ? 0.3 : 0);
+                    var bMat = buildMats[(cx + cy) % 3];
+                    var bMesh = new T.Mesh(new T.BoxGeometry(bW, bH, bW), bMat);
+                    var terrainYb = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) * 0.5 : 0;
+                    bMesh.position.set(wx, terrainYb + bH / 2, wz);
                     bMesh.castShadow = true;
                     chunkGroup.add(bMesh);
+                    // Roof
+                    if (chunk.biome === 'residential' || chunk.biome === 'suburban') {
+                      // Peaked roof
+                      var rfMat = new T.MeshLambertMaterial({ color: (bHash & 1) ? 0x7a2a1a : 0x3a2a1a });
+                      var rfGeo = new T.ConeGeometry(bW * 0.85, bH * 0.35, 4);
+                      var rf = new T.Mesh(rfGeo, rfMat);
+                      rf.rotation.y = Math.PI / 4;
+                      rf.position.set(wx, terrainYb + bH + bH * 0.175, wz);
+                      chunkGroup.add(rf);
+                    } else if (chunk.biome === 'industrial') {
+                      // Flat roof with a mechanical box on top
+                      var mBox = new T.Mesh(new T.BoxGeometry(bW * 0.4, 0.35, bW * 0.4), new T.MeshLambertMaterial({ color: 0x55606a }));
+                      mBox.position.set(wx, terrainYb + bH + 0.175, wz);
+                      chunkGroup.add(mBox);
+                    } else if (chunk.biome === 'commercial') {
+                      // Flat roof + small parapet cap
+                      var cap = new T.Mesh(new T.BoxGeometry(bW + 0.08, 0.12, bW + 0.08), new T.MeshLambertMaterial({ color: 0x2a2a2a }));
+                      cap.position.set(wx, terrainYb + bH + 0.06, wz);
+                      chunkGroup.add(cap);
+                    }
+                    // Windows: bright dots at night, dark squares by day.
+                    var isNightWin = currentScenario.time === 'night' || currentScenario.id === 'night';
+                    var winColor = isNightWin ? ((bHash & 3) === 0 ? 0x1a1a2e : 0xfff0a8) : 0x3a4a5e;
+                    var winMat = new T.MeshBasicMaterial({ color: winColor });
+                    var windowRows = Math.max(1, Math.floor(bH / 1.1));
+                    for (var wri = 0; wri < windowRows; wri++) {
+                      var wrY = terrainYb + 0.9 + wri * 1.1;
+                      if (wrY > terrainYb + bH - 0.3) break;
+                      [-1, 1].forEach(function(wFace) {
+                        var w1 = new T.Mesh(new T.PlaneGeometry(bW * 0.22, 0.4), winMat);
+                        w1.position.set(wx + wFace * (bW / 2 + 0.002), wrY, wz);
+                        w1.rotation.y = wFace > 0 ? -Math.PI / 2 : Math.PI / 2;
+                        chunkGroup.add(w1);
+                      });
+                    }
                   } else if (cellVal === 5) {
-                    // Tree
+                    // Tree — species picked deterministically from cell position so
+                    // the same chunk always renders the same forest. Lift by terrain
+                    // height (rolling but softer than the road) so trees follow hills.
+                    var hashTree = (cx * 73856093) ^ (cy * 19349663);
+                    var speciesRoll = (hashTree & 0xff) / 255;
                     var tH = 2 + ((cx * 47 + cy * 83) % 3);
-                    var trGeo = new T.CylinderGeometry(0.1, 0.15, tH * 0.5, 5);
-                    var tr = new T.Mesh(trGeo, treeTMat);
-                    tr.position.set(wx, tH * 0.25, wz);
-                    chunkGroup.add(tr);
-                    var lfGeo = new T.ConeGeometry(0.7, tH * 0.6, 5);
-                    var lf = new T.Mesh(lfGeo, treeLMat);
-                    lf.position.set(wx, tH * 0.55 + tH * 0.3, wz);
-                    lf.castShadow = true;
-                    chunkGroup.add(lf);
+                    var terrainY = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) * 0.5 : 0;
+                    // Bias species by biome.
+                    var pickPine, pickBirch;
+                    if (chunk.biome === 'rural') { pickPine = speciesRoll < 0.55; pickBirch = !pickPine && speciesRoll < 0.80; }
+                    else if (chunk.biome === 'suburban' || chunk.biome === 'residential') { pickPine = false; pickBirch = speciesRoll < 0.20; }
+                    else { pickPine = false; pickBirch = false; } // commercial/industrial: maples
+                    if (pickPine) {
+                      // Conifer: tall trunk + stacked cones for that fir-tree silhouette.
+                      var pTrunk = new T.Mesh(new T.CylinderGeometry(0.12, 0.18, tH * 0.55, 6), darkBark);
+                      pTrunk.position.set(wx, terrainY + tH * 0.275, wz);
+                      chunkGroup.add(pTrunk);
+                      var coneCount = 3;
+                      for (var pcc = 0; pcc < coneCount; pcc++) {
+                        var pcRad = 0.85 - pcc * 0.20;
+                        var pcH = tH * 0.4 - pcc * 0.05;
+                        var pc = new T.Mesh(new T.ConeGeometry(pcRad, pcH, 7), pineLeaf);
+                        pc.position.set(wx, terrainY + tH * 0.55 + pcc * (tH * 0.22), wz);
+                        pc.castShadow = true;
+                        chunkGroup.add(pc);
+                      }
+                    } else if (pickBirch) {
+                      // Birch: pale trunk, sparse rounded canopy.
+                      var bTrunk = new T.Mesh(new T.CylinderGeometry(0.08, 0.10, tH * 0.85, 6), lightBark);
+                      bTrunk.position.set(wx, terrainY + tH * 0.425, wz);
+                      chunkGroup.add(bTrunk);
+                      var bCan = new T.Mesh(new T.SphereGeometry(0.55 + (hashTree & 7) * 0.04, 7, 5), birch);
+                      bCan.position.set(wx, terrainY + tH * 0.95, wz);
+                      bCan.scale.y = 1.2;
+                      bCan.castShadow = true;
+                      chunkGroup.add(bCan);
+                    } else {
+                      // Maple/deciduous: short trunk + irregular spherical canopy.
+                      var mTrunk = new T.Mesh(new T.CylinderGeometry(0.13, 0.18, tH * 0.5, 6), darkBark);
+                      mTrunk.position.set(wx, terrainY + tH * 0.25, wz);
+                      chunkGroup.add(mTrunk);
+                      var mLeaf = (hashTree & 1) ? maple : maple2;
+                      var mCan = new T.Mesh(new T.SphereGeometry(0.7 + ((hashTree >> 3) & 7) * 0.04, 8, 6), mLeaf);
+                      mCan.position.set(wx, terrainY + tH * 0.7, wz);
+                      mCan.scale.set(1.0 + ((hashTree >> 6) & 3) * 0.08, 0.85, 1.0 + ((hashTree >> 9) & 3) * 0.08);
+                      mCan.castShadow = true;
+                      chunkGroup.add(mCan);
+                    }
                   }
                   // Landmark cell value 7 is handled separately below after the grid loop
                 }
@@ -6052,34 +6313,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               } // end isMediumLOD gate
 
+              // ─── ROADSIDE FURNITURE ────────────────────────────────────
+              // Mile markers, mailboxes, and guardrails on tight curves.
+              // All anchored to the spline so they line the road on bends.
+              if (isHighLOD && iw.spline) {
+                var furnRng = seededRandom(chunk.index * 33391 + 7);
+                var chunkBY = ci * CHUNK_SIZE;
+                var lookupCenterAtZ = function(worldZ) {
+                  return iw.spline.centerAt(worldZ - chunkWorldZ + chunkBY) - MAP_SIZE / 2;
+                };
+                var lookupHeightAtZ = function(worldZ) {
+                  return iw.spline.heightAt(worldZ - chunkWorldZ + chunkBY);
+                };
+                // Guardrails on tight curves: place on the OUTSIDE of any bend
+                // where |heading| exceeds a threshold. Two visual elements per
+                // segment — post + horizontal beam — so it reads as W-beam rail.
+                var grMat = new T.MeshLambertMaterial({ color: 0xa8b0bc });
+                var grPostMat = new T.MeshLambertMaterial({ color: 0x4a4a52 });
+                var crackMat = new T.MeshBasicMaterial({ color: 0x16181c, transparent: true, opacity: 0.55 });
+                for (var grZ = chunkWorldZ + 2; grZ < chunkWorldZ + CHUNK_SIZE - 2; grZ += 2) {
+                  var grHd = iw.spline.headingAt(grZ - chunkWorldZ + chunkBY);
+                  if (Math.abs(grHd) < 0.18) continue;
+                  var grSide = grHd > 0 ? 1 : -1;
+                  var grCx = lookupCenterAtZ(grZ);
+                  var grHy = lookupHeightAtZ(grZ);
+                  var grPost = new T.Mesh(new T.BoxGeometry(0.08, 0.7, 0.08), grPostMat);
+                  grPost.position.set(grCx + grSide * 4.0, grHy + 0.35, grZ);
+                  chunkGroup.add(grPost);
+                  var grRail = new T.Mesh(new T.BoxGeometry(0.06, 0.18, 2.0), grMat);
+                  grRail.position.set(grCx + grSide * 4.0, grHy + 0.55, grZ);
+                  chunkGroup.add(grRail);
+                  // Crack on the outside wheel track — stress fractures form where
+                  // tires track the tightest radius. Skip snow (covered anyway).
+                  if (scn.weather !== 'snow' && furnRng() < 0.6) {
+                    var crLen = 0.8 + furnRng() * 1.0;
+                    var crWid = 0.04 + furnRng() * 0.04;
+                    var cr = new T.Mesh(new T.PlaneGeometry(crWid, crLen), crackMat);
+                    cr.rotation.x = -Math.PI / 2;
+                    cr.rotation.z = (furnRng() - 0.5) * 0.6;
+                    cr.position.set(grCx + grSide * (1.5 + furnRng() * 0.9), grHy + 0.016, grZ + (furnRng() - 0.5) * 1.5);
+                    chunkGroup.add(cr);
+                  }
+                }
+                // Mile markers — small reflective post every ~16 cells, alternating sides
+                for (var mmZ = chunkWorldZ + 4; mmZ < chunkWorldZ + CHUNK_SIZE - 4; mmZ += 16) {
+                  var mmCx = lookupCenterAtZ(mmZ);
+                  var mmHy = lookupHeightAtZ(mmZ);
+                  var mmSide = ((Math.floor(mmZ) >> 4) & 1) ? 1 : -1;
+                  var mmPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 5), grPostMat);
+                  mmPost.position.set(mmCx + mmSide * 4.2, mmHy + 0.45, mmZ);
+                  chunkGroup.add(mmPost);
+                  var mmTop = new T.Mesh(new T.BoxGeometry(0.12, 0.18, 0.04), new T.MeshBasicMaterial({ color: 0xffffff }));
+                  mmTop.position.set(mmCx + mmSide * 4.2, mmHy + 0.85, mmZ);
+                  chunkGroup.add(mmTop);
+                }
+                // Mailboxes in residential/rural biomes — small box on a stick.
+                if (chunk.biome === 'residential' || chunk.biome === 'rural') {
+                  var mbCount = chunk.biome === 'residential' ? 3 : 1;
+                  var mbBoxMat = new T.MeshLambertMaterial({ color: 0x9a8a72 });
+                  var mbPostMat = new T.MeshLambertMaterial({ color: 0x6a4a2a });
+                  for (var mbI = 0; mbI < mbCount; mbI++) {
+                    var mbZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
+                    var mbSide = furnRng() < 0.5 ? -1 : 1;
+                    var mbCx = lookupCenterAtZ(mbZ);
+                    var mbHy = lookupHeightAtZ(mbZ);
+                    var mbPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.0, 5), mbPostMat);
+                    mbPost.position.set(mbCx + mbSide * 4.0, mbHy + 0.5, mbZ);
+                    chunkGroup.add(mbPost);
+                    var mbBox = new T.Mesh(new T.BoxGeometry(0.35, 0.2, 0.18), mbBoxMat);
+                    mbBox.position.set(mbCx + mbSide * 4.0, mbHy + 1.05, mbZ);
+                    chunkGroup.add(mbBox);
+                  }
+                }
+              }
+
               // Road surface for this chunk — built as a curved ribbon following
               // chunk.roadCenters[cy]. Two verts per row (left edge, right edge);
               // the strip is triangulated via two triangles between consecutive rows.
               var roadHalfW = 3.5; // matches legacy 7-unit width
-              var roadMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
-              var ribbonRows = CHUNK_SIZE + 1; // need one extra so the strip closes against the next chunk
+              // Vertex-colored asphalt: each row gets a slightly different shade
+              // seeded by world Y, so the road reads as patched/weathered instead
+              // of a single flat gray. Snow biomes desaturate the palette.
+              var roadMat = new T.MeshLambertMaterial({ vertexColors: true });
+              var asphaltBase = scn.weather === 'snow' ? [0x8c9ba8, 0x7d8c9a, 0x9aa7b4] : [0x333842, 0x2a2f38, 0x3c424c, 0x2e333d];
+              var ribbonRows = CHUNK_SIZE + 1;
               var ribbonVerts = new Float32Array(ribbonRows * 2 * 3);
               var ribbonUvs = new Float32Array(ribbonRows * 2 * 2);
+              var ribbonCols = new Float32Array(ribbonRows * 2 * 3);
               var ribbonIdx = new Uint16Array((ribbonRows - 1) * 6);
               var ribbonChunkBaseY = ci * CHUNK_SIZE;
               for (var rr = 0; rr < ribbonRows; rr++) {
                 var sampleY = ribbonChunkBaseY + rr;
-                // Use the shared spline so this chunk's edge lines up with the next chunk's start.
                 var cellCenter = iw.spline ? iw.spline.centerAt(sampleY) : (chunk.roadCenters[Math.min(rr, CHUNK_SIZE - 1)]);
                 var worldCx = cellCenter - MAP_SIZE / 2;
                 var worldZ = chunkWorldZ + rr;
-                // Left and right edges, shifted along X (world). For visible curvature
-                // this is enough; banking/normal-shifted edges can come later.
+                // Elevation: same heightAt() that the player car samples, so the car
+                // stays planted on the road instead of floating or sinking into hills.
+                var rowH = iw.spline ? iw.spline.heightAt(sampleY) : 0;
+                // Banking: tilt the strip around its tangent on tight curves.
+                // bank ≈ -heading × factor → outside edge raised, inside lowered (proper superelevation).
+                var rowHd = iw.spline ? iw.spline.headingAt(sampleY) : 0;
+                var bank = -rowHd * 0.6; // radians of roll; gentle so it reads as banking, not a wall
+                var bankLift = Math.sin(bank) * roadHalfW;
                 ribbonVerts[(rr * 2 + 0) * 3 + 0] = worldCx - roadHalfW;
-                ribbonVerts[(rr * 2 + 0) * 3 + 1] = 0.011;
+                ribbonVerts[(rr * 2 + 0) * 3 + 1] = rowH + 0.011 - bankLift;
                 ribbonVerts[(rr * 2 + 0) * 3 + 2] = worldZ;
                 ribbonVerts[(rr * 2 + 1) * 3 + 0] = worldCx + roadHalfW;
-                ribbonVerts[(rr * 2 + 1) * 3 + 1] = 0.011;
+                ribbonVerts[(rr * 2 + 1) * 3 + 1] = rowH + 0.011 + bankLift;
                 ribbonVerts[(rr * 2 + 1) * 3 + 2] = worldZ;
                 ribbonUvs[(rr * 2 + 0) * 2 + 0] = 0;
                 ribbonUvs[(rr * 2 + 0) * 2 + 1] = rr / ribbonRows;
                 ribbonUvs[(rr * 2 + 1) * 2 + 0] = 1;
                 ribbonUvs[(rr * 2 + 1) * 2 + 1] = rr / ribbonRows;
+                // Per-vertex asphalt shade. Pick from the palette via a hash of
+                // world Y so the same stretch always renders the same wear.
+                var asphIdx = ((sampleY * 9301 + 49297) % asphaltBase.length + asphaltBase.length) % asphaltBase.length;
+                var asphC = asphaltBase[asphIdx];
+                var ar = ((asphC >> 16) & 0xff) / 255;
+                var ag = ((asphC >>  8) & 0xff) / 255;
+                var ab = ( asphC        & 0xff) / 255;
+                ribbonCols[(rr * 2 + 0) * 3 + 0] = ar;
+                ribbonCols[(rr * 2 + 0) * 3 + 1] = ag;
+                ribbonCols[(rr * 2 + 0) * 3 + 2] = ab;
+                ribbonCols[(rr * 2 + 1) * 3 + 0] = ar;
+                ribbonCols[(rr * 2 + 1) * 3 + 1] = ag;
+                ribbonCols[(rr * 2 + 1) * 3 + 2] = ab;
               }
               for (var ri = 0; ri < ribbonRows - 1; ri++) {
                 var a = ri * 2, b = ri * 2 + 1, c = (ri + 1) * 2, d = (ri + 1) * 2 + 1;
@@ -6093,6 +6451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var roadGeo = new T.BufferGeometry();
               roadGeo.setAttribute('position', new T.BufferAttribute(ribbonVerts, 3));
               roadGeo.setAttribute('uv', new T.BufferAttribute(ribbonUvs, 2));
+              roadGeo.setAttribute('color', new T.BufferAttribute(ribbonCols, 3));
               roadGeo.setIndex(new T.BufferAttribute(ribbonIdx, 1));
               roadGeo.computeVertexNormals();
               var road = new T.Mesh(roadGeo, roadMat);
@@ -6395,6 +6754,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cg.position.x += (cg._drift || 0.3) * 0.016;
               if (cg.position.x > 120) cg.position.x = -120;
             });
+          }
+          // High-altitude parallax clouds — orbit slowly around the player so
+          // they persist regardless of how far the car drives. Slower than the
+          // low cloudGroup ⇒ visual depth.
+          if (!s3._hiCloudRef) s3._hiCloudRef = s3.scene.getObjectByName('hi_clouds');
+          if (s3._hiCloudRef) {
+            s3._hiCloudRef.position.set(carWorldX, 0, carWorldZ);
+            s3._hiCloudRef.children.forEach(function(hc) {
+              hc._driftAng = (hc._driftAng || 0) + (hc._driftSpeed || 0.004) * 0.016;
+              hc.position.x = Math.cos(hc._driftAng) * hc._driftDist;
+              hc.position.z = Math.sin(hc._driftAng) * hc._driftDist;
+              hc.lookAt(carWorldX, hc.position.y, carWorldZ);
+            });
+          }
+          // Birds — slow circular drift around the player + wing-flap Y wobble.
+          // Dawn shafts follow the player, with a slow sway so the light feels alive.
+          if (!s3._shaftRef) s3._shaftRef = s3.scene.getObjectByName('dawn_shafts');
+          if (s3._shaftRef) {
+            s3._shaftRef.position.set(carWorldX, 0, carWorldZ);
+            s3._shaftRef.rotation.y = Math.sin(timeRef.current * 0.08) * 0.05;
+          }
+          if (!s3._birdRef) s3._birdRef = s3.scene.getObjectByName('birds');
+          if (s3._birdRef) {
+            s3._birdRef.position.set(carWorldX, 0, carWorldZ);
+            s3._birdRef.children.forEach(function(bd) {
+              bd._flockAng += (bd._flockSpeed || 0.05) * 0.016;
+              bd.position.x = Math.cos(bd._flockAng) * bd._flockRad;
+              bd.position.z = Math.sin(bd._flockAng) * bd._flockRad;
+              bd.position.y = bd._flockY + Math.sin(timeRef.current * 6 + (bd._flapPhase || 0)) * 0.4;
+              // Face tangent to orbit (direction of motion)
+              bd.rotation.y = -bd._flockAng + Math.PI / 2;
+            });
+          }
+          // Celestial halo: snap to whichever sun/moon mesh exists, billboard to camera.
+          if (!s3._haloRef) s3._haloRef = s3.scene.getObjectByName('celestial_halo');
+          if (s3._haloRef) {
+            // Find the brightest celestial body — the original sun/moon meshes were
+            // added in the scene with characteristic emissive materials. Cheap
+            // heuristic: pick the highest-Y MeshBasicMaterial sphere in the scene.
+            if (!s3._haloTarget) {
+              var best = null, bestY = -Infinity;
+              s3.scene.traverse(function(obj) {
+                if (obj.isMesh && obj.geometry && obj.geometry.type === 'SphereGeometry'
+                  && obj.material && obj.material.color && obj.position.y > 8 && obj.position.y > bestY
+                  && obj !== s3._haloRef) {
+                  // skip dome/halo/players
+                  if (obj.name === 'skydome' || obj.name === 'celestial_halo') return;
+                  best = obj; bestY = obj.position.y;
+                }
+              });
+              s3._haloTarget = best;
+            }
+            if (s3._haloTarget) {
+              s3._haloRef.position.copy(s3._haloTarget.position);
+              s3._haloRef.lookAt(s3.camera.position);
+            }
           }
 
           // Tree wind sway (gentle rocking based on weather)

@@ -2801,9 +2801,22 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         const newAxe = rAxe ? rAxe.totalViolations : bestAxeViolations;
         autoFixPasses++;
 
-        if (newAi < bestAiScore - 5 && newAxe > bestAxeViolations) {
-          log(`Pass ${fp + 1} REGRESSED \u2014 REVERTING`);
+        // Tiered OR regression guard — see single-file path for rationale.
+        const _aiDelta = bestAiScore - newAi;
+        const _axeDelta = newAxe - bestAxeViolations;
+        const _semFloor = Math.max(1, Math.round(rvSEM));
+        const _aiHard = _aiDelta >= Math.max(8, _semFloor * 2);
+        const _axeHard = _axeDelta >= 2;
+        const _bothMild = _aiDelta > 5 && _axeDelta >= 1;
+        if (_aiHard || _axeHard || _bothMild) {
+          const _why = _aiHard ? 'AI' : _axeHard ? 'axe' : 'both-mild';
+          log(`Pass ${fp + 1} REGRESSED [${_why}] (AI ${bestAiScore}\u2192${newAi}, axe ${bestAxeViolations}\u2192${newAxe}) \u2014 REVERTING`);
           accessibleHtml = snap;
+          // Re-run axe on reverted HTML so curAxeResults matches what we're keeping
+          try {
+            const _revertAxe = await runAxeAudit(accessibleHtml);
+            if (_revertAxe) { curAxeResults = _revertAxe; bestAxeViolations = _revertAxe.totalViolations; }
+          } catch (_revertErr) { /* non-fatal */ }
           break;
         }
 
@@ -6810,33 +6823,86 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
           const reSD = reScores.length > 1 ? Math.sqrt(reScores.reduce((s, x) => s + (x - newAiScore) ** 2, 0) / (reScores.length - 1)) : 0;
           const reSEM = reScores.length > 1 ? reSD / Math.sqrt(reScores.length) : 0;
-          // Pick auditor with HIGHEST score for issues list
+          // Union both auditors' issue lists so the next pass's prompt sees every
+          // reported violation (not just the more-optimistic auditor's). Previously
+          // we picked the highest-scoring auditor's issues, which masked real
+          // problems flagged only by the stricter auditor and caused oscillation
+          // between passes (fix A, then next pass reveals B was hiding, Gemini
+          // partially reverts A to fix B, etc.).
+          const _unionIssues = [];
+          const _seenIssueKeys = new Set();
+          [reVerify1, reVerify2].forEach((v) => {
+            if (!v || !Array.isArray(v.issues)) return;
+            v.issues.forEach((iss) => {
+              const raw = typeof iss === 'string' ? iss : (iss.issue || iss.description || JSON.stringify(iss));
+              const key = String(raw).toLowerCase().replace(/\s+/g, ' ').trim().slice(0, 200);
+              if (key && !_seenIssueKeys.has(key)) { _seenIssueKeys.add(key); _unionIssues.push(iss); }
+            });
+          });
+          // Use the HIGHER-scoring auditor's object as the carrier (preserves
+          // passes/metadata), but override its issues with the union so the
+          // next-pass prompt gets every flagged problem.
           const reVerify = [reVerify1, reVerify2]
             .filter(Boolean)
             .sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
-          if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
+          if (reVerify) {
+            reVerify.score = newAiScore;
+            reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores;
+            reVerify.issues = _unionIssues;
+            reVerify._issueUnionSize = _unionIssues.length;
+          }
           const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
           autoFixPasses++;
 
-          // Regression guard: if BOTH scores got worse, revert
-          const aiWorse = newAiScore < bestAiScore - 5; // allow 5-point tolerance
-          const axeWorse = newAxeViolations > bestAxeViolations;
+          // Regression guard (tiered OR). Previous logic required BOTH auditors to
+          // worsen before reverting, which let "AI 80→40 with axe unchanged" pass
+          // silently. Now any of three distinct regression signals trips a revert:
+          //   (a) AI score drops more than one std-error-of-the-mean, at least 8 pts
+          //   (b) axe-core gains ≥ 2 new violations on its own
+          //   (c) both drop mildly (AI >5 AND axe ≥1) — the original heuristic, kept
+          //       so mild-dual regressions still trigger
+          const aiDelta = bestAiScore - newAiScore;            // positive = regression
+          const axeDelta = newAxeViolations - bestAxeViolations; // positive = regression
+          const semFloor = Math.max(1, Math.round(reSEM));
+          const aiHardRegression = aiDelta >= Math.max(8, semFloor * 2);
+          const axeHardRegression = axeDelta >= 2;
+          const bothMildRegression = aiDelta > 5 && axeDelta >= 1;
+          const regressed = aiHardRegression || axeHardRegression || bothMildRegression;
 
-          if (aiWorse && axeWorse) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
+          if (regressed) {
+            const why = aiHardRegression ? 'AI' : axeHardRegression ? 'axe' : 'both-mild';
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED [${why}] (AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
             accessibleHtml = snapshotHtml;
+            // Re-run axe on the reverted HTML so curAxeResults / final blend reflect
+            // the true state of the document we're keeping. Without this, the final
+            // blended score mixes AI-on-reverted + axe-on-regressed and looks worse
+            // than either snapshot actually is.
+            try {
+              const revertAxe = await runAxeAudit(accessibleHtml);
+              if (revertAxe) { axeResults = revertAxe; bestAxeViolations = revertAxe.totalViolations; }
+            } catch (_revertAxeErr) { /* non-fatal — keep previous axe snapshot */ }
             if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted`, 'info');
             break;
           }
 
-          // Update best known state
+          // Update tracking. Pass the current reVerify / axeResults to the next
+          // pass (so the next prompt is built from fresh issue lists), but keep
+          // best* as a true high-water mark — only advance when the combined
+          // signal actually improved. This way a mild regression-within-tolerance
+          // can't silently replace an earlier better state, and the regression
+          // guard on the next pass compares against the real best (not drift).
           if (reVerify) verification = reVerify;
           if (reAxe) axeResults = reAxe;
-          bestHtml = accessibleHtml;
-          bestAiScore = newAiScore;
-          bestAxeViolations = newAxeViolations;
-
-          warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
+          const _combinedNew = newAiScore - (newAxeViolations * 3);
+          const _combinedBest = bestAiScore - (bestAxeViolations * 3);
+          if (_combinedNew > _combinedBest) {
+            bestHtml = accessibleHtml;
+            bestAiScore = newAiScore;
+            bestAxeViolations = newAxeViolations;
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: NEW BEST (AI ${newAiScore}/100, axe ${newAxeViolations} violations)`);
+          } else {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} (best still AI ${bestAiScore}, axe ${bestAxeViolations})`);
+          }
 
           // Emit per-pass completion for live UI
           try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
@@ -6863,6 +6929,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement, stopping`);
             break;
           }
+        }
+        // Restore best-ever HTML. bestHtml is written every accepted pass; before
+        // this fix, accessibleHtml at loop-exit was whatever the *last* pass
+        // produced — which could be a mild regression accepted within tolerance.
+        // We now prefer the actual high-water mark.
+        if (bestHtml && accessibleHtml !== bestHtml) {
+          warnLog(`[Auto-fix] Loop exited on non-best state — restoring best (AI ${bestAiScore}, axe ${bestAxeViolations})`);
+          accessibleHtml = bestHtml;
         }
         // Emit session complete for live UI
         try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
