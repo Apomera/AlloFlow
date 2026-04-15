@@ -550,6 +550,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Road geometry constants — referenced from both chunk generation and updateThreeScene render paths.
   var MAX_ROAD_WIDTH = 4; // widest possible road width across all biomes
   var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
+
+  // ─────────────────────────────────────────────────────────
+  // ROAD SPLINE — shared centerline for the infinite world.
+  // The spline is sampled per Y-row so the carved cells, the 3D road ribbon,
+  // landmark placement, lane markings and signal positions all agree on where
+  // the road actually is. Built incrementally with seeded heading-walk so that
+  // chunk N's exit heading equals chunk N+1's entry heading by construction.
+  // ─────────────────────────────────────────────────────────
+  var SPLINE_MAX_HEADING = 0.55; // radians; clamps how far the road may lean from due-north
+  function createRoadSpline(seed, baseCenterX) {
+    // samples[y] = { x: roadCenter, heading: tangent angle in radians (0 = +Y/north) }
+    // Headings small ⇒ road is mostly N-S. Positive heading ⇒ road bends toward +X.
+    var samples = {};
+    function biomeForY(y) {
+      // Mirror BIOME_PROGRESSION lookup so curvature matches the visible biome.
+      var ci = Math.floor(y / CHUNK_SIZE);
+      var pi = ((ci % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
+      return BIOME_PROGRESSION[pi];
+    }
+    function curvatureForBiome(b) {
+      // Max heading delta per cell (radians). Rural roads twist; commercial grids stay straight.
+      // Tuned so a ~30-cell rural stretch visibly sweeps several cells of lateral travel.
+      if (b === 'rural') return 0.075;
+      if (b === 'industrial') return 0.040;
+      if (b === 'residential') return 0.020;
+      if (b === 'suburban') return 0.015;
+      return 0.008; // commercial
+    }
+    // Pure deterministic step computation: given the heading at one sample plus
+    // the seeded draw indexed by edge Y, returns the heading at the neighbor.
+    // Edge between samples y-1 and y is keyed by y. Same edge ⇒ same delta.
+    function edgeDelta(edgeY, fromHeading) {
+      var rng = seededRandom(seed + edgeY * 2654435761);
+      var maxDelta = curvatureForBiome(biomeForY(edgeY));
+      // Random component only depends on edgeY; mean-reversion uses the heading
+      // at the LOWER-Y endpoint so forward/backward walks see the same value.
+      // (When walking backward, we recover that endpoint heading first.)
+      return (rng() - 0.5) * 2 * maxDelta - fromHeading * 0.006;
+    }
+    function clampMargin(x, h) {
+      var margin = MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 4;
+      if (x < margin) return { x: margin, h: h * 0.5 };
+      if (x > MAP_SIZE - margin) return { x: MAP_SIZE - margin, h: h * 0.5 };
+      return { x: x, h: h };
+    }
+    function ensureUpTo(yTarget) {
+      var maxY = -1;
+      for (var k in samples) { var ki = +k; if (ki > maxY) maxY = ki; }
+      if (maxY < 0) {
+        samples[0] = { x: baseCenterX, heading: 0 };
+        maxY = 0;
+      }
+      for (var y = maxY + 1; y <= yTarget; y++) {
+        var prev = samples[y - 1];
+        var h = prev.heading + edgeDelta(y, prev.heading);
+        if (h > SPLINE_MAX_HEADING) h = SPLINE_MAX_HEADING;
+        if (h < -SPLINE_MAX_HEADING) h = -SPLINE_MAX_HEADING;
+        var nx = prev.x + Math.tan(h);
+        var c = clampMargin(nx, h);
+        samples[y] = { x: c.x, heading: c.h };
+      }
+    }
+    function ensureDownTo(yTarget) {
+      var minY = 1e9;
+      for (var k in samples) { var ki = +k; if (ki < minY) minY = ki; }
+      if (minY === 1e9) {
+        samples[0] = { x: baseCenterX, heading: 0 };
+        minY = 0;
+      }
+      for (var y = minY - 1; y >= yTarget; y--) {
+        // Edge (y, y+1) was forward-defined as: h(y+1) = h(y) + edgeDelta(y+1, h(y))
+        // Going backward we don't know h(y) directly. Solve via fixed-point iteration:
+        // start from h(y) ≈ h(y+1), apply edgeDelta, repeat. The mean-reversion term
+        // is tiny (0.02·h) so this converges in 2-3 iterations.
+        var next = samples[y + 1];
+        var hGuess = next.heading;
+        for (var it = 0; it < 4; it++) {
+          var predictedNext = hGuess + edgeDelta(y + 1, hGuess);
+          // Adjust hGuess to drive predictedNext toward next.heading.
+          hGuess += (next.heading - predictedNext);
+        }
+        var h = hGuess;
+        if (h > SPLINE_MAX_HEADING) h = SPLINE_MAX_HEADING;
+        if (h < -SPLINE_MAX_HEADING) h = -SPLINE_MAX_HEADING;
+        // Position recovered the same way: next.x = h(y).x + tan(h(y+1))? No — the
+        // forward rule uses tan(h_NEW). Mirror exactly: next.x = prev.x + tan(next.heading).
+        var nx = next.x - Math.tan(next.heading);
+        var c = clampMargin(nx, h);
+        samples[y] = { x: c.x, heading: c.h };
+      }
+    }
+    return {
+      seed: seed,
+      samples: samples,
+      // Road center (X) at integer Y. Returns float; floor at the call site if needed.
+      centerAt: function(y) {
+        if (y >= 0) ensureUpTo(y); else ensureDownTo(y);
+        return samples[y].x;
+      },
+      headingAt: function(y) {
+        if (y >= 0) ensureUpTo(y); else ensureDownTo(y);
+        return samples[y].heading;
+      },
+      // Drop samples far from the live window to bound memory. Always retain a small
+      // anchor band on each side so revisiting a chunk regenerates identical headings.
+      cleanup: function(currentChunkIndex) {
+        var keepFrom = (currentChunkIndex - 6) * CHUNK_SIZE;
+        var keepTo = (currentChunkIndex + 6) * CHUNK_SIZE;
+        for (var k in samples) {
+          var ki = +k;
+          if (ki < keepFrom || ki > keepTo) delete samples[k];
+        }
+      }
+    };
+  }
   var BIOMES = ['residential', 'commercial', 'rural', 'suburban', 'industrial'];
   // Logical biome progression: creates neighborhoods that make geographic sense
   // Pattern repeats every ~12 chunks: highway → suburban → residential → commercial → residential → rural → ...
@@ -586,7 +701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return eligible[Math.floor(rng() * eligible.length)];
   }
 
-  function generateChunk(chunkIndex, seed, centerX) {
+  function generateChunk(chunkIndex, seed, centerX, spline) {
     var rng = seededRandom(seed + chunkIndex * 7919);
     // Use progression for coherent neighborhoods, with seed-based variation
     var progIndex = ((chunkIndex % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
@@ -594,23 +709,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // 20% chance to override with a random biome for variety
     if (rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
     var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null, landmark: null };
+    // Per-row road centerline derived from the spline (world Y → local x within chunk).
+    // Using these everywhere instead of a constant centerX is what lets the road curve.
+    var chunkBaseY = chunkIndex * CHUNK_SIZE;
+    var roadCenters = new Array(CHUNK_SIZE); // index = local cy
+    for (var rcy = 0; rcy < CHUNK_SIZE; rcy++) {
+      roadCenters[rcy] = spline ? Math.round(spline.centerAt(chunkBaseY + rcy)) : centerX;
+    }
     // Generate cell grid for this chunk
     for (var y = 0; y < CHUNK_SIZE; y++) {
       var row = [];
       for (var x = 0; x < MAP_SIZE; x++) row.push(2); // grass
       chunk.cells.push(row);
     }
-    // Road through center — curves DISABLED for now because the 3D road plane is straight.
-    // A curved road plane would need bespoke geometry; keeping the road straight guarantees
-    // the visual road plane and the collision/placement grid always agree.
-    var curveAmp = 0;
+    // Road carved along the spline — roadCenters[cy] is the X for this row.
+    // Visual road ribbon and collision grid both read from the same spline so they stay in sync.
+    var curveAmp = 0; // legacy field kept for compatibility; spline supersedes it
     var curveFreq = 0;
     // Intersections: ~40% chance but never two in a row (guaranteed gap)
     var hasIntersection = rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3);
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
     // Reserve wider main-road corridor: MAX_ROAD_WIDTH + CLEARANCE_BUFFER are module-scope (see top of file).
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
-      var roadCenter = centerX;
+      var roadCenter = roadCenters[cy];
       var roadWidth = biome === 'commercial' || biome === 'suburban' ? 4 : 3;
       for (var dx = -roadWidth; dx <= roadWidth; dx++) {
         var rx = roadCenter + dx;
@@ -639,8 +760,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Skip rows near the cross street intersection
       if (hasIntersection && Math.abs(by - intersectionY) < 5) continue;
       for (var bx = 0; bx < MAP_SIZE; bx++) {
-        // Enforce CLEARANCE_BUFFER cells away from road center
-        var distFromRoad = Math.abs(bx - centerX);
+        // Enforce CLEARANCE_BUFFER cells away from the spline-local road center
+        var distFromRoad = Math.abs(bx - roadCenters[by]);
         if (distFromRoad <= MAX_ROAD_WIDTH + CLEARANCE_BUFFER) continue; // never in clearance zone
         if (chunk.cells[by][bx] === 2 && rng() < buildingDensity) {
           var nearRoad = false;
@@ -660,10 +781,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (landmark) {
         // Alternate sides of the road by chunk index for visual variety
         var side = (chunkIndex % 6 < 3) ? 1 : -1;
-        // Place landmark well beyond the clearance buffer (buffer + small setback + 1 extra cell)
-        var landmarkStartX = centerX + side * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 3);
-        if (side === -1) landmarkStartX -= landmark.size;
         var landmarkStartY = Math.floor((CHUNK_SIZE - landmark.size) / 2);
+        // Anchor on the spline center at the landmark's middle row so curving roads
+        // don't push landmarks into the woods or onto the asphalt.
+        var landmarkAnchorRow = landmarkStartY + Math.floor(landmark.size / 2);
+        var landmarkAnchorCenter = roadCenters[Math.max(0, Math.min(CHUNK_SIZE - 1, landmarkAnchorRow))];
+        var landmarkStartX = landmarkAnchorCenter + side * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 3);
+        if (side === -1) landmarkStartX -= landmark.size;
         // Check the footprint is within bounds and not overlapping cross street
         var canPlace = landmarkStartX >= 0 && landmarkStartX + landmark.size < MAP_SIZE;
         if (canPlace && hasIntersection) {
@@ -718,8 +842,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     for (var ty = 0; ty < CHUNK_SIZE; ty++) {
       for (var tx = 0; tx < MAP_SIZE; tx++) {
         if (chunk.cells[ty][tx] !== 2) continue; // must be grass
-        // Strictly outside the clearance zone
-        var treeDistFromRoad = Math.abs(tx - centerX);
+        // Strictly outside the clearance zone (spline-relative)
+        var treeDistFromRoad = Math.abs(tx - roadCenters[ty]);
         if (treeDistFromRoad <= MAX_ROAD_WIDTH + CLEARANCE_BUFFER) continue;
         // Also guard against cross-street clearance
         if (hasIntersection && Math.abs(ty - intersectionY) <= CLEARANCE_BUFFER + 1) continue;
@@ -741,7 +865,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Store metadata for 3D rendering and signal placement
     chunk.hasIntersection = hasIntersection;
     chunk.intersectionY = intersectionY;
-    chunk.roadCenter = centerX; // base center
+    // Per-row spline centers (length = CHUNK_SIZE). Renderer/signal code reads this
+    // to position the road ribbon, lane markings, and traffic signals on the curve.
+    chunk.roadCenters = roadCenters;
+    // roadCenter kept as a representative value for legacy callers (signal placement
+    // at the intersection row uses chunk.roadCenter — point it at the intersection's
+    // actual spline-local center so the signal stands at the curve, not the world center).
+    chunk.roadCenter = roadCenters[Math.max(0, Math.min(CHUNK_SIZE - 1, intersectionY))];
     chunk.curveAmp = curveAmp;
     chunk.curveFreq = curveFreq;
     return chunk;
@@ -749,13 +879,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   // Infinite world state
   function createInfiniteWorld(seed) {
+    var centerX = Math.floor(MAP_SIZE / 2);
+    var spline = createRoadSpline(seed, centerX);
     return {
       seed: seed,
       chunks: {}, // chunkIndex → chunk data
-      centerX: Math.floor(MAP_SIZE / 2),
+      centerX: centerX,
+      spline: spline,
+      // World-space road centerline for any Y. Used by the 3D ribbon mesh and any
+      // consumer that needs the smooth (non-rounded) curve position.
+      roadCenterAtY: function(worldY) { return spline.centerAt(worldY); },
+      roadHeadingAtY: function(worldY) { return spline.headingAt(worldY); },
       getChunk: function(chunkIndex) {
         if (!this.chunks[chunkIndex]) {
-          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX);
+          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX, this.spline);
         }
         return this.chunks[chunkIndex];
       },
@@ -775,6 +912,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             delete self.chunks[key];
           }
         });
+        // Spline keeps a slightly wider band so revisited chunks regenerate identically.
+        spline.cleanup(currentChunkIndex);
       }
     };
   }
@@ -3447,6 +3586,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           else if (isDawn) { scene.fog = new T.Fog(0xe8875c, 15, 80); }
           else { scene.fog = new T.Fog(scene.background.getHex(), 30, 120); }
 
+          // ─── SKYDOME: inward-facing sphere with a vertex-colored zenith→horizon
+          // gradient. Replaces the flat scene.background so the sky actually has
+          // depth. fog: false keeps the gradient visible through the fog volume.
+          (function() {
+            var zenith, horizon;
+            if (isNight && !isDawn) { zenith = new T.Color(0x050a1a); horizon = new T.Color(0x1a2548); }
+            else if (isDawn) { zenith = new T.Color(0x3a2a5a); horizon = new T.Color(0xff9a55); }
+            else if (isFog) { zenith = new T.Color(0xa8b4c2); horizon = new T.Color(0x94a3b8); }
+            else if (isSnow) { zenith = new T.Color(0xdde3ed); horizon = new T.Color(0xcbd5e1); }
+            else if (isRain) { zenith = new T.Color(0x334155); horizon = new T.Color(0x64748b); }
+            else { zenith = new T.Color(0x4a86d4); horizon = new T.Color(0xcfe4f5); }
+            var skyGeo = new T.SphereGeometry(180, 24, 16);
+            // Per-vertex color: interpolate by Y (altitude). Sphere vertices with
+            // positive Y are sky-top; negative Y are ground-band (we hide that
+            // half behind the ground plane anyway).
+            var posAttr = skyGeo.getAttribute('position');
+            var colors = new Float32Array(posAttr.count * 3);
+            for (var vi = 0; vi < posAttr.count; vi++) {
+              var vy = posAttr.getY(vi);
+              var t = Math.max(0, Math.min(1, vy / 180)); // 0 = horizon, 1 = zenith
+              // Ease so the horizon band is tight and most of the dome is zenith color.
+              var tt = t * t * (3 - 2 * t);
+              var r = horizon.r + (zenith.r - horizon.r) * tt;
+              var g = horizon.g + (zenith.g - horizon.g) * tt;
+              var b = horizon.b + (zenith.b - horizon.b) * tt;
+              colors[vi * 3 + 0] = r;
+              colors[vi * 3 + 1] = g;
+              colors[vi * 3 + 2] = b;
+            }
+            skyGeo.setAttribute('color', new T.BufferAttribute(colors, 3));
+            var skyMat = new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide, fog: false, depthWrite: false });
+            var skyMesh = new T.Mesh(skyGeo, skyMat);
+            skyMesh.name = 'skydome';
+            scene.add(skyMesh);
+
+            // Distant silhouette ring — low-poly "mountains" ~140 units out. Only
+            // render for outdoor clear / dawn / night scenarios where you can see
+            // them; fog/snow/rain hide the horizon anyway.
+            if (!isFog && !isSnow && !isRain) {
+              var mtnSeg = 48;
+              var mtnGeo = new T.BufferGeometry();
+              var mtnVerts = [];
+              var mtnIdx = [];
+              var mtnSeed = 20240415;
+              function mtnRng() { mtnSeed = (mtnSeed * 1103515245 + 12345) & 0x7fffffff; return (mtnSeed >>> 16) / 32768; }
+              // Two vertices per segment: top (random height) and bottom (y=0).
+              // Triangulated as a strip.
+              for (var mi = 0; mi <= mtnSeg; mi++) {
+                var ang = (mi / mtnSeg) * Math.PI * 2;
+                var mx = Math.cos(ang) * 140;
+                var mz = Math.sin(ang) * 140;
+                var peakHeight = 6 + mtnRng() * 14;
+                mtnVerts.push(mx, 0, mz);
+                mtnVerts.push(mx, peakHeight, mz);
+              }
+              for (var mj = 0; mj < mtnSeg; mj++) {
+                var a = mj * 2, b = mj * 2 + 1, c = mj * 2 + 2, d = mj * 2 + 3;
+                mtnIdx.push(a, c, b, b, c, d);
+              }
+              mtnGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(mtnVerts), 3));
+              mtnGeo.setIndex(mtnIdx);
+              mtnGeo.computeVertexNormals();
+              var mtnColor = isNight && !isDawn ? 0x1a2240 : isDawn ? 0x5a3a5a : 0x4a6a8a;
+              var mtnMat = new T.MeshBasicMaterial({ color: mtnColor, fog: false, depthWrite: false });
+              var mtnMesh = new T.Mesh(mtnGeo, mtnMat);
+              mtnMesh.name = 'mountain_ring';
+              scene.add(mtnMesh);
+            }
+          })();
+
           var camera = new T.PerspectiveCamera(65, W / H, 0.1, 200);
           var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true });
           renderer.setSize(W, H);
@@ -4633,6 +4842,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Position player car
           s3.playerCarGroup.position.set(carWorldX, car._suspY || 0, carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
+
+          // Skydome + mountain ring follow the car so the infinite world never
+          // reaches their edge. Y stays at 0 — only translate horizontally.
+          if (!s3._skyRef) s3._skyRef = s3.scene.getObjectByName('skydome');
+          if (s3._skyRef) s3._skyRef.position.set(carWorldX, 0, carWorldZ);
+          if (!s3._mtnRef) s3._mtnRef = s3.scene.getObjectByName('mountain_ring');
+          if (s3._mtnRef) s3._mtnRef.position.set(carWorldX, 0, carWorldZ);
           // Weight transfer: body pitch (brake/accel) and roll (turns)
           s3.playerCarGroup.rotation.x = car._pitch || 0;
           s3.playerCarGroup.rotation.z = car._roll || 0;
@@ -4652,22 +4868,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var isFogNow = scn.weather === 'fog';
           var isSnowNow = scn.weather === 'snow';
           var isRainNow = scn.weather === 'rain';
-          // Update fog dynamically
+          // Recolor the skydome's vertex gradient to match the current weather.
+          // Called only when fog params actually change below so we don't churn
+          // vertex buffers every frame.
+          var recolorSky = function() {
+            var sky = s3._skyRef || s3.scene.getObjectByName('skydome');
+            if (!sky || !sky.geometry || !sky.geometry.getAttribute('color')) return;
+            var zenith, horizon;
+            if (isNightNow) { zenith = new T.Color(0x050a1a); horizon = new T.Color(0x1a2548); }
+            else if (isFogNow) { zenith = new T.Color(0xa8b4c2); horizon = new T.Color(0x94a3b8); }
+            else if (isSnowNow) { zenith = new T.Color(0xdde3ed); horizon = new T.Color(0xcbd5e1); }
+            else if (isRainNow) { zenith = new T.Color(0x334155); horizon = new T.Color(0x64748b); }
+            else { zenith = new T.Color(0x4a86d4); horizon = new T.Color(0xcfe4f5); }
+            var pos = sky.geometry.getAttribute('position');
+            var col = sky.geometry.getAttribute('color');
+            for (var vi = 0; vi < pos.count; vi++) {
+              var vy = pos.getY(vi);
+              var t = Math.max(0, Math.min(1, vy / 180));
+              var tt = t * t * (3 - 2 * t);
+              col.setXYZ(vi,
+                horizon.r + (zenith.r - horizon.r) * tt,
+                horizon.g + (zenith.g - horizon.g) * tt,
+                horizon.b + (zenith.b - horizon.b) * tt);
+            }
+            col.needsUpdate = true;
+          };
+          // Update fog + skydome dynamically.
           if (isFogNow && (!s3.scene.fog || s3.scene.fog.far !== 40)) {
             s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
             s3.scene.background = new T.Color(0x94a3b8);
+            recolorSky();
           } else if (isSnowNow && (!s3.scene.fog || s3.scene.fog.far !== 60)) {
             s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
             s3.scene.background = new T.Color(0xcbd5e1);
+            recolorSky();
           } else if (isRainNow && (!s3.scene.fog || s3.scene.fog.far !== 50)) {
             s3.scene.fog = new T.Fog(0x475569, 8, 50);
             s3.scene.background = new T.Color(0x475569);
+            recolorSky();
           } else if (isNightNow && (!s3.scene.fog || s3.scene.fog.far !== 120)) {
             s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
             s3.scene.background = new T.Color(0x0a0f1e);
+            recolorSky();
           } else if (!isFogNow && !isSnowNow && !isRainNow && !isNightNow && s3.scene.fog && s3.scene.fog.far !== 120) {
             s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
             s3.scene.background = new T.Color(0x87ceeb);
+            recolorSky();
           }
           // Update ambient light intensity for time-of-day
           s3.scene.children.forEach(function(child) {
@@ -5806,76 +6052,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               } // end isMediumLOD gate
 
-              // Road surface for this chunk (main N-S road)
-              var roadGeo = new T.PlaneGeometry(7, CHUNK_SIZE);
+              // Road surface for this chunk — built as a curved ribbon following
+              // chunk.roadCenters[cy]. Two verts per row (left edge, right edge);
+              // the strip is triangulated via two triangles between consecutive rows.
+              var roadHalfW = 3.5; // matches legacy 7-unit width
               var roadMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
+              var ribbonRows = CHUNK_SIZE + 1; // need one extra so the strip closes against the next chunk
+              var ribbonVerts = new Float32Array(ribbonRows * 2 * 3);
+              var ribbonUvs = new Float32Array(ribbonRows * 2 * 2);
+              var ribbonIdx = new Uint16Array((ribbonRows - 1) * 6);
+              var ribbonChunkBaseY = ci * CHUNK_SIZE;
+              for (var rr = 0; rr < ribbonRows; rr++) {
+                var sampleY = ribbonChunkBaseY + rr;
+                // Use the shared spline so this chunk's edge lines up with the next chunk's start.
+                var cellCenter = iw.spline ? iw.spline.centerAt(sampleY) : (chunk.roadCenters[Math.min(rr, CHUNK_SIZE - 1)]);
+                var worldCx = cellCenter - MAP_SIZE / 2;
+                var worldZ = chunkWorldZ + rr;
+                // Left and right edges, shifted along X (world). For visible curvature
+                // this is enough; banking/normal-shifted edges can come later.
+                ribbonVerts[(rr * 2 + 0) * 3 + 0] = worldCx - roadHalfW;
+                ribbonVerts[(rr * 2 + 0) * 3 + 1] = 0.011;
+                ribbonVerts[(rr * 2 + 0) * 3 + 2] = worldZ;
+                ribbonVerts[(rr * 2 + 1) * 3 + 0] = worldCx + roadHalfW;
+                ribbonVerts[(rr * 2 + 1) * 3 + 1] = 0.011;
+                ribbonVerts[(rr * 2 + 1) * 3 + 2] = worldZ;
+                ribbonUvs[(rr * 2 + 0) * 2 + 0] = 0;
+                ribbonUvs[(rr * 2 + 0) * 2 + 1] = rr / ribbonRows;
+                ribbonUvs[(rr * 2 + 1) * 2 + 0] = 1;
+                ribbonUvs[(rr * 2 + 1) * 2 + 1] = rr / ribbonRows;
+              }
+              for (var ri = 0; ri < ribbonRows - 1; ri++) {
+                var a = ri * 2, b = ri * 2 + 1, c = (ri + 1) * 2, d = (ri + 1) * 2 + 1;
+                ribbonIdx[ri * 6 + 0] = a;
+                ribbonIdx[ri * 6 + 1] = c;
+                ribbonIdx[ri * 6 + 2] = b;
+                ribbonIdx[ri * 6 + 3] = b;
+                ribbonIdx[ri * 6 + 4] = c;
+                ribbonIdx[ri * 6 + 5] = d;
+              }
+              var roadGeo = new T.BufferGeometry();
+              roadGeo.setAttribute('position', new T.BufferAttribute(ribbonVerts, 3));
+              roadGeo.setAttribute('uv', new T.BufferAttribute(ribbonUvs, 2));
+              roadGeo.setIndex(new T.BufferAttribute(ribbonIdx, 1));
+              roadGeo.computeVertexNormals();
               var road = new T.Mesh(roadGeo, roadMat);
-              road.rotation.x = -Math.PI / 2;
-              road.position.set(0, 0.011, chunkWorldZ + CHUNK_SIZE / 2);
               road.receiveShadow = true;
               chunkGroup.add(road);
 
               // ─── ROAD MARKINGS (painted on the road surface) ───
               // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
+              // Each mark is positioned at the spline center for its Z, plus a lateral
+              // offset, so markings curve with the road instead of running off the edge.
               if (scn.weather !== 'snow' && isHighLOD) { // markings hidden by snow; only render near
-                // Yellow DASHED center line (double yellow for rural = no passing, single dash elsewhere)
                 var centerLineMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
-                var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection; // double yellow near intersections
-                // Skip center line markings at the intersection area (keeps intersection clean)
+                var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection;
                 var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
                 var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
+                var markCenterAtZ = function(worldZ) {
+                  // worldZ → world Y (cells), spline → world X.
+                  return iw.spline ? (iw.spline.centerAt(worldZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+                };
                 for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
-                  if (mlZ > skipZ1 && mlZ < skipZ2) continue; // skip intersection region
+                  if (mlZ > skipZ1 && mlZ < skipZ2) continue;
+                  var ctrX = markCenterAtZ(mlZ);
                   if (isNoPass) {
-                    // Double solid yellow (no-pass zone)
                     var dyL = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
                     dyL.rotation.x = -Math.PI / 2;
-                    dyL.position.set(-0.25, 0.014, mlZ);
+                    dyL.position.set(ctrX - 0.25, 0.014, mlZ);
                     chunkGroup.add(dyL);
                     var dyR = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
                     dyR.rotation.x = -Math.PI / 2;
-                    dyR.position.set(0.25, 0.014, mlZ);
+                    dyR.position.set(ctrX + 0.25, 0.014, mlZ);
                     chunkGroup.add(dyR);
                   } else {
-                    // Single dashed yellow (passing allowed)
                     var dyD = new T.Mesh(new T.PlaneGeometry(0.15, 1.2), centerLineMat);
                     dyD.rotation.x = -Math.PI / 2;
-                    dyD.position.set(0, 0.014, mlZ);
+                    dyD.position.set(ctrX, 0.014, mlZ);
                     chunkGroup.add(dyD);
                   }
                 }
-                // Solid WHITE edge lines (shoulder markers) — both sides
+                // Solid white edge lines: short segments tracking the spline rather
+                // than one long straight plane (so they bend with the road).
                 var edgeLineMat = new T.MeshBasicMaterial({ color: 0xffffff });
-                [-3.2, 3.2].forEach(function(edgeX) {
-                  var edge = new T.Mesh(new T.PlaneGeometry(0.12, CHUNK_SIZE - 2), edgeLineMat);
-                  edge.rotation.x = -Math.PI / 2;
-                  edge.position.set(edgeX, 0.013, chunkWorldZ + CHUNK_SIZE / 2);
-                  chunkGroup.add(edge);
-                });
-                // Lane dividers (for commercial/suburban with wider roads) — dashed white
+                for (var elZ = chunkWorldZ + 1; elZ < chunkWorldZ + CHUNK_SIZE - 1; elZ += 1.5) {
+                  var elCtr = markCenterAtZ(elZ);
+                  [-3.2, 3.2].forEach(function(edgeOff) {
+                    var edge = new T.Mesh(new T.PlaneGeometry(0.12, 1.5), edgeLineMat);
+                    edge.rotation.x = -Math.PI / 2;
+                    edge.position.set(elCtr + edgeOff, 0.013, elZ);
+                    chunkGroup.add(edge);
+                  });
+                }
                 if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
-                  [-1.5, 1.5].forEach(function(laneX) {
-                    for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
-                      if (ldZ > skipZ1 && ldZ < skipZ2) continue;
+                  for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
+                    if (ldZ > skipZ1 && ldZ < skipZ2) continue;
+                    var ldCtr = markCenterAtZ(ldZ);
+                    [-1.5, 1.5].forEach(function(laneOff) {
                       var ld = new T.Mesh(new T.PlaneGeometry(0.1, 1.5), edgeLineMat);
                       ld.rotation.x = -Math.PI / 2;
-                      ld.position.set(laneX, 0.013, ldZ);
+                      ld.position.set(ldCtr + laneOff, 0.013, ldZ);
                       chunkGroup.add(ld);
-                    }
-                  });
+                    });
+                  }
                 }
               }
 
               // ─── WEATHER-REACTIVE DETAILS ───
+              // splineCenterAtZ: shared helper so puddles, snow piles, and other
+              // shoulder details ride the curve instead of floating in the grass.
+              var splineCenterAtZ = function(worldZ) {
+                return iw.spline ? (iw.spline.centerAt(worldZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+              };
               var weatherRng = seededRandom(chunk.index * 91349 + 11);
               if (scn.weather === 'rain') {
-                // Puddles on shoulders and occasional road spots
                 var puddleMat = new T.MeshBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.6 });
                 for (var pI = 0; pI < 3; pI++) {
                   if (weatherRng() < 0.6) {
                     var pudSide = weatherRng() < 0.5 ? -1 : 1;
-                    var pudX = pudSide * (2.8 + weatherRng() * 1.0); // on shoulder edge
                     var pudZ = chunkWorldZ + 4 + pI * 8 + weatherRng() * 3;
+                    var pudX = splineCenterAtZ(pudZ) + pudSide * (2.8 + weatherRng() * 1.0);
                     var pudRadius = 0.4 + weatherRng() * 0.5;
                     var puddle = new T.Mesh(new T.CircleGeometry(pudRadius, 10), puddleMat);
                     puddle.rotation.x = -Math.PI / 2;
@@ -5884,12 +6179,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               } else if (scn.weather === 'snow') {
-                // Snow piles along the shoulder (plowed snow)
                 var snowPileMat = new T.MeshLambertMaterial({ color: 0xf0f4f8 });
                 for (var sI = 0; sI < 5; sI++) {
                   var snSide = sI % 2 === 0 ? -1 : 1;
-                  var snX = snSide * (MAX_ROAD_WIDTH + 0.5);
                   var snZ = chunkWorldZ + 3 + sI * 6 + weatherRng() * 2;
+                  var snX = splineCenterAtZ(snZ) + snSide * (MAX_ROAD_WIDTH + 0.5);
                   var snHeight = 0.4 + weatherRng() * 0.3;
                   var snLength = 1.5 + weatherRng() * 1.5;
                   var snPile = new T.Mesh(new T.BoxGeometry(0.6, snHeight, snLength), snowPileMat);
@@ -5926,50 +6220,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Cross street road surface (if intersection)
               if (chunk.hasIntersection) {
                 var crossZ = chunkWorldZ + chunk.intersectionY;
+                // Where the curved main road actually meets the cross street.
+                var crossCenterX = splineCenterAtZ(crossZ);
                 var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, 6);
                 var crossRoad = new T.Mesh(crossRoadGeo, roadMat);
                 crossRoad.rotation.x = -Math.PI / 2;
                 crossRoad.position.set(0, 0.012, crossZ);
                 crossRoad.receiveShadow = true;
                 chunkGroup.add(crossRoad);
-                // Cross street center dashes
+                // Cross street center dashes — skip the section overlapping the main road
+                // (gap stays centered on the spline, not on world X = 0).
                 var crossDashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
                 for (var cdx = -MAP_SIZE / 2; cdx < MAP_SIZE / 2; cdx += 3) {
-                  if (Math.abs(cdx) < 5) continue; // skip over main road intersection
+                  if (Math.abs(cdx - crossCenterX) < 5) continue;
                   var cdGeo = new T.PlaneGeometry(1.5, 0.12);
                   var cd = new T.Mesh(cdGeo, crossDashMat);
                   cd.rotation.x = -Math.PI / 2;
                   cd.position.set(cdx, 0.02, crossZ);
                   chunkGroup.add(cd);
                 }
-                // Traffic light OR stop sign at intersection (alternates by chunk index)
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;
                 if (isTrafficLight) {
-                  // Overhead traffic light on the cross street
+                  // Overhead traffic light — pole sits at the corner past the curved road.
                   var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
-                  sigPole.position.set(4.0, 2.1, crossZ);
+                  sigPole.position.set(crossCenterX + 4.0, 2.1, crossZ);
                   chunkGroup.add(sigPole);
                   var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
-                  sigArm.position.set(1.8, 4.0, crossZ);
+                  sigArm.position.set(crossCenterX + 1.8, 4.0, crossZ);
                   sigArm.rotation.z = Math.PI / 2;
                   chunkGroup.add(sigArm);
                   var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
-                  sigHousing.position.set(0, 3.5, crossZ);
+                  sigHousing.position.set(crossCenterX, 3.5, crossZ);
                   chunkGroup.add(sigHousing);
-                  // Three lights (red/yellow/green) — one glowing based on signal state
                   var lightColors = [0xef4444, 0xfbbf24, 0x22c55e];
                   for (var lci = 0; lci < 3; lci++) {
                     var lightMesh = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: lightColors[lci] }));
-                    lightMesh.position.set(0.16, 3.75 - lci * 0.25, crossZ);
+                    lightMesh.position.set(crossCenterX + 0.16, 3.75 - lci * 0.25, crossZ);
                     chunkGroup.add(lightMesh);
                   }
                 } else {
                   // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text
-                  // Place on both sides of the approach for the main road
+                  // Place on both sides of the approach for the main road, offset by spline center.
                   [-1, 1].forEach(function(sgSide) {
                     var ssPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    ssPole.position.set(sgSide * 4.5, 1.15, crossZ + sgSide * 3.5);
+                    ssPole.position.set(crossCenterX + sgSide * 4.5, 1.15, crossZ + sgSide * 3.5);
                     chunkGroup.add(ssPole);
                     // Octagonal face via canvas texture
                     try {
@@ -5994,22 +6289,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var ssTex = new T.CanvasTexture(ssCan);
                       var ssMat = new T.MeshBasicMaterial({ map: ssTex, transparent: true, side: T.DoubleSide });
                       var ssFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), ssMat);
-                      ssFace.position.set(sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      ssFace.position.set(crossCenterX + sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
                       ssFace.rotation.y = sgSide === 1 ? Math.PI : 0;
                       chunkGroup.add(ssFace);
                     } catch (ssErr) {
                       // Fallback: plain red octagon plane
                       var fbMat = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide });
                       var fbFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), fbMat);
-                      fbFace.position.set(sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      fbFace.position.set(crossCenterX + sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
                       fbFace.rotation.y = sgSide === 1 ? Math.PI : 0;
                       chunkGroup.add(fbFace);
                     }
                   });
-                  // Also place stop signs on the CROSS street
+                  // Also place stop signs on the CROSS street (offset by spline center).
                   [-1, 1].forEach(function(ccSide) {
                     var csPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    csPole.position.set(ccSide * 3.5, 1.15, crossZ + ccSide * 4.5);
+                    csPole.position.set(crossCenterX + ccSide * 3.5, 1.15, crossZ + ccSide * 4.5);
                     chunkGroup.add(csPole);
                     try {
                       var cs_can = document.createElement('canvas');
@@ -6032,26 +6327,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var cs_tex = new T.CanvasTexture(cs_can);
                       var cs_mat = new T.MeshBasicMaterial({ map: cs_tex, transparent: true, side: T.DoubleSide });
                       var cs_face = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), cs_mat);
-                      cs_face.position.set(ccSide * 3.5, 2.2, crossZ + ccSide * 4.5);
+                      cs_face.position.set(crossCenterX + ccSide * 3.5, 2.2, crossZ + ccSide * 4.5);
                       cs_face.rotation.y = Math.PI / 2;
                       chunkGroup.add(cs_face);
                     } catch (ccErr) { /* fallback omitted */ }
                   });
                 }
-                // Crosswalk stripes
+                // Crosswalk stripes — span the curved main road, not world center.
                 var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                var cwCtrZ = crossZ - 3.5;
+                var cwCtrX = splineCenterAtZ(cwCtrZ);
                 for (var cwi = -3; cwi <= 3; cwi++) {
                   var cwGeo = new T.PlaneGeometry(0.25, 0.7);
                   var cw = new T.Mesh(cwGeo, cwMat);
                   cw.rotation.x = -Math.PI / 2;
-                  cw.position.set(cwi * 0.7, 0.022, crossZ - 3.5);
+                  cw.position.set(cwCtrX + cwi * 0.7, 0.022, cwCtrZ);
                   chunkGroup.add(cw);
                 }
-                // Stop line
+                // Stop line — same; ride the curve.
+                var slZ = crossZ - 4;
                 var slGeo = new T.PlaneGeometry(6, 0.2);
                 var sl = new T.Mesh(slGeo, cwMat);
                 sl.rotation.x = -Math.PI / 2;
-                sl.position.set(0, 0.021, crossZ - 4);
+                sl.position.set(splineCenterAtZ(slZ), 0.021, slZ);
                 chunkGroup.add(sl);
               }
               s3.scene.add(chunkGroup);

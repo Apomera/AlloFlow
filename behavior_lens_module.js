@@ -368,7 +368,7 @@
                 style: { animationDuration: '150ms', display: 'block' }
             },
                 h('span', { className: 'font-bold text-indigo-300 text-[11px] mb-1', style: { display: 'block' } }, `${term} — ${entry.affirming}`),
-                h('span', { className: 'text-slate-200', style: { display: 'block' } }, entry.def),
+                h('span', { className: 'text-amber-200', style: { display: 'block' } }, entry.def),
                 h('span', {
                     className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900',
                     style: { display: 'block' }

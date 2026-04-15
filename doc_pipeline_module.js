@@ -867,6 +867,180 @@ var createDocPipeline = function(deps) {
     return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
   };
 
+  // ── OCR-assisted Vision extraction helpers ──
+  // Lazy-load Tesseract.js. Used to produce a character-level "ground truth" layer
+  // that is handed to Gemini Vision alongside the page image, so Vision can reconcile
+  // against it and avoid silently dropping paragraphs or hallucinating text. ~15MB
+  // download on first use; cached on window.__tesseractWorker so it's one-time.
+  const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  const TESSERACT_WORKER_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js';
+  const TESSERACT_CORE_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1';
+  const TESSERACT_LANG_CDN = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int';
+  const ensureTesseractLoaded = async () => {
+    if (window.Tesseract) return;
+    if (document.querySelector('script[data-docpipe-tesseract]')) {
+      await new Promise((resolve, reject) => {
+        const wait = setInterval(() => { if (window.Tesseract) { clearInterval(wait); resolve(); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('Tesseract load timeout')); }, 10000);
+      });
+    } else {
+      const s = document.createElement('script');
+      s.src = TESSERACT_CDN;
+      s.setAttribute('data-docpipe-tesseract', 'true');
+      document.head.appendChild(s);
+      await new Promise((resolve, reject) => {
+        const wait = setInterval(() => { if (window.Tesseract) { clearInterval(wait); resolve(); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('Tesseract load timeout')); }, 10000);
+      });
+    }
+  };
+  // Acquire (or return cached) Tesseract worker. Caller must be prepared for this to throw.
+  const getTesseractWorker = async () => {
+    if (window.__tesseractWorker) return window.__tesseractWorker;
+    await ensureTesseractLoaded();
+    if (!window.Tesseract) throw new Error('Tesseract unavailable after load');
+    const worker = await window.Tesseract.createWorker('eng', 1, {
+      workerPath: TESSERACT_WORKER_CDN,
+      corePath: TESSERACT_CORE_CDN,
+      langPath: TESSERACT_LANG_CDN,
+    });
+    window.__tesseractWorker = worker;
+    return worker;
+  };
+  // Should we skip OCR entirely? Runtime kill switch + bandwidth check.
+  const shouldSkipOcrAssist = (pageCount) => {
+    if (window.__DISABLE_OCR_ASSIST === true) return { skip: true, reason: 'disabled by kill switch' };
+    if (pageCount > 30) return { skip: true, reason: 'document > 30 pages' };
+    try {
+      const conn = navigator.connection;
+      if (conn && conn.saveData === true) return { skip: true, reason: 'saveData mode' };
+      if (conn && (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g')) {
+        return { skip: true, reason: 'slow connection (' + conn.effectiveType + ')' };
+      }
+    } catch { /* navigator.connection not available — allow */ }
+    return { skip: false };
+  };
+  // Run OCR across an array of page canvases. Returns per-page text + confidence.
+  // pageCanvases: { [pageNum]: HTMLCanvasElement }. updateProgressFn: optional (step, detail) => void.
+  // Returns: { pages: [{pageNum, text, avgConfidence}], overallConfidence } or null on failure.
+  const extractOcrLayer = async (pageCanvases, updateProgressFn) => {
+    const pageNums = Object.keys(pageCanvases).map(n => parseInt(n, 10)).sort((a, b) => a - b);
+    if (pageNums.length === 0) return null;
+    const skip = shouldSkipOcrAssist(pageNums.length);
+    if (skip.skip) {
+      _pipeLog('OCR', 'Skipping OCR assist: ' + skip.reason);
+      return null;
+    }
+    let worker;
+    try {
+      if (updateProgressFn && !window.__tesseractWorker) {
+        updateProgressFn(1, 'Loading OCR engine (one-time, ~15MB)...');
+      }
+      worker = await getTesseractWorker();
+    } catch (e) {
+      warnLog('[OCR] Failed to load Tesseract — falling back to Vision-only:', e && e.message);
+      if (typeof addToast === 'function') {
+        try { addToast('OCR assist unavailable — using Vision alone.', 'info'); } catch {}
+      }
+      return null;
+    }
+    const pages = [];
+    let totalChars = 0;
+    let weightedConfidence = 0;
+    for (let i = 0; i < pageNums.length; i++) {
+      const pg = pageNums[i];
+      const canvas = pageCanvases[pg];
+      if (!canvas) { pages.push({ pageNum: pg, text: '', avgConfidence: 0 }); continue; }
+      if (updateProgressFn) updateProgressFn(1, 'OCR scanning page ' + (i + 1) + '/' + pageNums.length + '...');
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const result = await worker.recognize(dataUrl);
+        const text = (result && result.data && result.data.text) ? result.data.text.trim() : '';
+        const confidence = (result && result.data && typeof result.data.confidence === 'number') ? result.data.confidence : 0;
+        pages.push({ pageNum: pg, text, avgConfidence: confidence });
+        const charCount = text.length;
+        totalChars += charCount;
+        weightedConfidence += confidence * charCount;
+        _pipeLog('OCR', 'Page ' + pg + ': ' + charCount + ' chars, ' + Math.round(confidence) + '% confidence');
+      } catch (e) {
+        warnLog('[OCR] Page ' + pg + ' failed (skipping, routing to Vision-only for this page):', e && e.message);
+        pages.push({ pageNum: pg, text: '', avgConfidence: 0 });
+      }
+    }
+    const overallConfidence = totalChars > 0 ? weightedConfidence / totalChars : 0;
+    const layer = { pages, overallConfidence };
+    window.__lastOcrLayer = layer;
+    _pipeLog('OCR', 'Layer complete: ' + Math.round(overallConfidence) + '% weighted confidence across ' + pages.length + ' page(s)');
+    return layer;
+  };
+  // Render a range of PDF pages to canvases at 2x scale for OCR input.
+  // We deliberately do NOT populate window.__pdfPageCanvases here — the image-
+  // extraction block later stores its own page dataURLs in that global, and we
+  // don't want to conflict with its shape (dataURL vs canvas element). Rendering
+  // twice is a minor cost compared to the Vision calls downstream.
+  const renderPdfPageCanvases = async (pdfDoc, pageRange) => {
+    const [startPage, endPage] = pageRange || [1, pdfDoc.numPages];
+    const canvases = {};
+    for (let pg = startPage; pg <= endPage; pg++) {
+      try {
+        const page = await pdfDoc.getPage(pg);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        canvases[pg] = canvas;
+      } catch (e) {
+        warnLog('[Render] Page ' + pg + ' render failed:', e && e.message);
+      }
+    }
+    return canvases;
+  };
+  // Select a prompt strategy based on OCR confidence for a given page chunk.
+  // Returns { mode: 'verbatim'|'reconcile'|'vision-only', ocrText }.
+  const chooseOcrPromptStrategy = (ocrLayer, startPage, endPage) => {
+    if (!ocrLayer) return { mode: 'vision-only', ocrText: '' };
+    const slice = ocrLayer.pages.filter(p => p.pageNum >= startPage && p.pageNum <= endPage);
+    if (slice.length === 0) return { mode: 'vision-only', ocrText: '' };
+    let totalChars = 0; let weighted = 0;
+    for (const p of slice) { totalChars += p.text.length; weighted += p.avgConfidence * p.text.length; }
+    const chunkConf = totalChars > 0 ? weighted / totalChars : 0;
+    const ocrText = slice.map(p => '[Page ' + p.pageNum + ']\n' + p.text).join('\n\n');
+    if (chunkConf >= 85) return { mode: 'verbatim', ocrText, confidence: chunkConf };
+    if (chunkConf >= 60) return { mode: 'reconcile', ocrText, confidence: chunkConf };
+    return { mode: 'vision-only', ocrText: '', confidence: chunkConf };
+  };
+  // Build the Vision extraction prompt, augmenting the base instructions with OCR
+  // context when the chunk's OCR layer is usable.
+  const buildVisionExtractionPrompt = (startPage, endPage, ocrStrategy) => {
+    const base = 'Extract ALL text content from pages ' + startPage + ' through ' + endPage + ' of this document.\n\nRULES:\n' +
+      '- Use # for titles, ## for sections, ### for subsections\n' +
+      '- Preserve tables as markdown tables with | pipes and --- dividers\n' +
+      '- Describe images as: [Image: detailed description]\n' +
+      '- Use * for bullet lists, 1. for numbered lists\n' +
+      '- LINKS: Preserve ALL hyperlinks as [link text](URL)\n' +
+      '- READING ORDER: If multiple columns, linearize left-to-right, top-to-bottom\n' +
+      'Return ONLY plain text with markdown formatting. Do NOT wrap in JSON.';
+    if (!ocrStrategy || ocrStrategy.mode === 'vision-only' || !ocrStrategy.ocrText) return base;
+    const header = 'You are extracting text from pages ' + startPage + '-' + endPage + '. To prevent omissions and hallucinations, here is an OCR transcript of these pages produced by Tesseract. It may contain character-level errors (especially tables, math, ligatures) but it is COMPLETE — every visible word is captured.\n\n' +
+      '--- OCR TRANSCRIPT (pages ' + startPage + '-' + endPage + ') ---\n' +
+      ocrStrategy.ocrText + '\n' +
+      '--- END OCR TRANSCRIPT ---\n\n';
+    if (ocrStrategy.mode === 'verbatim') {
+      return header +
+        'OCR confidence is high (' + Math.round(ocrStrategy.confidence) + '%). Preserve text VERBATIM from the OCR transcript. Your job is to add structure (tables, headings, image descriptions, reading order, list formatting) and fix only obvious OCR errors (e.g. "rn" → "m", "0" → "O") visible in the image. Do not rewrite or paraphrase.\n\n' + base;
+    }
+    // reconcile mode
+    return header +
+      'Produce clean markdown that RECONCILES the page image with the OCR transcript:\n' +
+      '- If a paragraph appears in OCR but you would otherwise skip it, INCLUDE IT\n' +
+      '- If a word appears in OCR but is clearly an OCR error, correct it from the image\n' +
+      '- If text appears in your output but NOT in OCR, double-check the image — do not invent text\n' +
+      '- Tables, equations, multi-column reading order, image descriptions: trust the image, ignore OCR shape\n' +
+      '- LINKS, headings, lists: same rules as below\n\n' + base;
+  };
+
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
   const ensurePdfJsLoaded = async () => {
@@ -5025,28 +5199,57 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
 
+      // ── OCR-assisted Vision: render pages once and OCR them so Vision has a
+      // character-level ground truth to reconcile against. Gated on "deterministic
+      // pass didn't yield enough text" — otherwise we skip OCR entirely (born-digital
+      // PDFs don't need it). Failure of this block is non-fatal; it just means Vision
+      // runs with its original prompt (current behavior).
+      let _ocrLayer = null;
+      const _needsVisionFallback = isPdf && !(extractedText && extractedText.length > 100);
+      if (_needsVisionFallback) {
+        try {
+          updateProgress(1, `Rendering ${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''} for OCR assist...`);
+          await ensurePdfJsLoaded();
+          const _raw = _base64.includes(',') ? _base64.split(',')[1] : _base64;
+          const _bytes = Uint8Array.from(atob(_raw), c => c.charCodeAt(0));
+          const _pdfDoc = await window.pdfjsLib.getDocument({ data: _bytes }).promise;
+          const _pageCanvases = await renderPdfPageCanvases(_pdfDoc, [1, Math.min(effectivePageCount, _pdfDoc.numPages)]);
+          _ocrLayer = await extractOcrLayer(_pageCanvases, updateProgress);
+        } catch (ocrErr) {
+          warnLog('[OCR] Assist failed, continuing with Vision-only:', ocrErr && ocrErr.message);
+          _ocrLayer = null;
+        }
+      }
+
       // If deterministic extraction succeeded, skip the Vision OCR block entirely
       if (extractedText && extractedText.length > 100) {
         warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping Vision OCR`);
         // Fall through to Step 1b (image extraction) with extractedText already populated
       } else if (numChunks <= 1 && effectivePageCount <= 2) {
         // Very short PDF (1-2 pages): single extraction pass is safe
-        updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})...`);
+        const _strat1 = chooseOcrPromptStrategy(_ocrLayer, 1, effectivePageCount);
+        if (_ocrLayer) _pipeLog('OCR', 'Single-pass strategy: ' + _strat1.mode + (_strat1.confidence ? ' (' + Math.round(_strat1.confidence) + '% conf)' : ''));
+        updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})${_strat1.mode !== 'vision-only' ? ' with OCR assist' : ''}...`);
         extractedText = await callGeminiVision(
-          `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+          buildVisionExtractionPrompt(1, effectivePageCount, _strat1),
           _base64, _mimeType
         );
       } else {
         // Multi-page: extract in page-range chunks (3 pages each), parallel batches to avoid rate limiting
-        updateProgress(1, `Extracting ${effectivePageCount} pages in ${numChunks} chunks (${PAGES_PER_CHUNK} pages each)...`);
+        updateProgress(1, `Extracting ${effectivePageCount} pages in ${numChunks} chunks (${PAGES_PER_CHUNK} pages each)${_ocrLayer ? ' with OCR assist' : ''}...`);
         const MAX_PARALLEL = 5;
         const chunkPromises = [];
         for (let i = 0; i < numChunks; i++) {
           const startPage = i * PAGES_PER_CHUNK + 1;
           const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
+          const _stratN = chooseOcrPromptStrategy(_ocrLayer, startPage, endPage);
+          if (_ocrLayer) _pipeLog('OCR', 'Chunk pp.' + startPage + '-' + endPage + ' strategy: ' + _stratN.mode + (_stratN.confidence ? ' (' + Math.round(_stratN.confidence) + '% conf)' : ''));
+          if (_stratN.mode === 'vision-only' && _ocrLayer) {
+            updateProgress(1, 'Scan quality low — using Vision alone for pages ' + startPage + '-' + endPage);
+          }
           chunkPromises.push(
             callGeminiVision(
-              `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+              buildVisionExtractionPrompt(startPage, endPage, _stratN),
               _base64, _mimeType
             ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} extraction failed:`, err); return null; })
           );
@@ -5074,7 +5277,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Record ground truth from OCR fallback if deterministic extraction was not used
       if (extractedText && !window.__lastGroundTruthCharCount) {
         window.__lastGroundTruthCharCount = extractedText.length;
-        window.__lastGroundTruthMethod = 'vision-ocr';
+        window.__lastGroundTruthMethod = _ocrLayer ? 'ocr-vision' : 'vision-ocr';
       }
 
       if (!extractedText || extractedText.length < 20) {
@@ -8589,11 +8792,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
           .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
           .section > .resource-header + * { padding-top: 16px; }
-          table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-          th, td { border: 1px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; }
-          th { background-color: ${theme.cardBg}; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; }
-          tbody tr:nth-child(even) { background-color: rgba(248,250,252,0.5); }
-          tbody tr:hover { background-color: rgba(241,245,249,0.8); }
+          table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); color: inherit; }
+          th, td { border: 1px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; color: inherit; background-clip: padding-box; }
+          th { background-color: ${theme.cardBg}; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: ${theme.headingColor || 'inherit'}; }
+          tbody tr { background-color: ${theme.bgColor || '#ffffff'}; color: inherit; }
+          tbody tr:nth-child(even) td { background-color: ${theme.cardBg || '#f8fafc'}; }
+          tbody tr:hover td { background-color: ${theme.cardBorder || '#e2e8f0'}; }
           img { max-width: 100%; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
           .math-symbol { font-family: "Times New Roman", serif; display: inline-block; }
           .math-fraction {
