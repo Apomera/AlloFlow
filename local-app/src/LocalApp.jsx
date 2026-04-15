@@ -1,7 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  AlloFlow — Local App                                               ║
 // ║  Auto-assembled by local_build.js — DO NOT EDIT MANUALLY            ║
-// ║  Built: 2026-04-13T16:32:15.955Z
+// ║  Built: 2026-04-15T14:57:01.274Z
 // ╚══════════════════════════════════════════════════════════════════════╝
 // @mode react
 
@@ -779,7 +779,10 @@ window.__alloShared = {
   safeGetItem, safeSetItem, warnLog, SafetyContentChecker,
   Download, Upload, Trash2, BarChart3, ClipboardList, Cloud, Wifi,
   ShieldCheck, Settings, ChevronLeft, AlertCircle, Check, Save,
-  Activity, Users, Search, X
+  Activity, Users, Search, X,
+  // Teacher-mode helpers — updated reactively by the App component
+  isTeacher: true,
+  setTeacherMode: null,
 };
 window.__alloDebugLog = debugLog;
 window.__alloIsGlobalMuted = isGlobalMuted;
@@ -8247,6 +8250,13 @@ const AlloFlowContent = () => {
   const setStandardDeckLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'standardDeckLang', value: v });
   const setTargetTranslationLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'targetTranslationLang', value: v });
   const [isTeacherMode, setIsTeacherMode] = useState(true);
+  // Keep __alloShared in sync with teacher-mode state so tests can read it
+  useEffect(() => {
+    if (window.__alloShared) {
+      window.__alloShared.isTeacher = isTeacherMode;
+      window.__alloShared.setTeacherMode = setIsTeacherMode;
+    }
+  }, [isTeacherMode]);
   const [showClassAnalytics, setShowClassAnalytics] = useState(false);
   const [isHelpMode, setIsHelpMode] = useState(false);
   const [showHelpOnboarding, setShowHelpOnboarding] = useState(false);
@@ -13942,11 +13952,87 @@ Return only the corrected version of this exact text:`;
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(2);
+  const [pdfTargetScore, setPdfTargetScore] = useState(90);
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
   const [pdfPreviewFontSize, setPdfPreviewFontSize] = useState(16);
   const [pdfPreviewA11yInspect, setPdfPreviewA11yInspect] = useState(false);
   const pdfPreviewRef = useRef(null);
+  // ── PDF Batch Mode ──
+  const [pdfBatchMode, setPdfBatchMode] = useState(false);
+  const [pdfWebMode, setPdfWebMode] = useState(false);
+  const [pdfBatchQueue, setPdfBatchQueue] = useState([]);
+  const [pdfBatchProcessing, setPdfBatchProcessing] = useState(false);
+  const [pdfBatchCurrentIndex, setPdfBatchCurrentIndex] = useState(-1);
+  const [pdfBatchStep, setPdfBatchStep] = useState('');
+  const [pdfBatchSummary, setPdfBatchSummary] = useState(null);
+  const [pdfExperimentMode, setPdfExperimentMode] = useState(false);
+  const [pdfExperimentRuns, setPdfExperimentRuns] = useState(3);
+  // ── LMS / external session state ──
+  const [lmsSession, setLmsSession] = useState(null);
+  const [lmsAuditUrls, setLmsAuditUrls] = useState([]);
+  // ── Lit Lab modal ──
+  const [showLitLab, setShowLitLab] = useState(false);
+  // ── Kokoro TTS state ──
+  const [showKokoroOfferModal, setShowKokoroOfferModal] = useState(false);
+  // ── Export presets ──
+  const [exportPresets, setExportPresets] = useState(() => {
+    try { const saved = localStorage.getItem('alloflow_export_presets'); return saved ? JSON.parse(saved) : {}; } catch { return {}; }
+  });
+  const saveExportPreset = (name) => {
+    const key = name.toLowerCase().replace(/\s+/g, '_');
+    const updated = { ...exportPresets, [key]: { name, emoji: '💾', config: { ...exportConfig }, theme: exportTheme, format: exportPreviewMode } };
+    setExportPresets(updated);
+    try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); } catch {}
+    addToast && addToast(`Preset "${name}" saved!`, 'success');
+  };
+  const deleteExportPreset = (key) => {
+    const updated = { ...exportPresets };
+    delete updated[key];
+    setExportPresets(updated);
+    try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); } catch {}
+  };
+  const handleExportResearchJSON = useCallback(() => {
+    const researchBundle = {
+      exportVersion: 1,
+      exportDate: new Date().toISOString(),
+      probeHistory,
+      surveyResponses,
+      fidelityLog,
+      sessionCounter,
+      externalCBMScores,
+      interventionLogs,
+    };
+    const blob = new Blob([JSON.stringify(researchBundle, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `alloflow_research_data_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (addToast) addToast('Research data exported to JSON', 'success');
+  }, [probeHistory, surveyResponses, fidelityLog, sessionCounter, externalCBMScores, interventionLogs, addToast]);
+  const handleImportResearchJSON = useCallback((file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.probeHistory) { setProbeHistory(data.probeHistory); try { localStorage.setItem('alloflow_probe_history', JSON.stringify(data.probeHistory)); } catch {} }
+        if (data.surveyResponses) { setSurveyResponses(data.surveyResponses); try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(data.surveyResponses)); } catch {} }
+        if (data.fidelityLog) { setFidelityLog(data.fidelityLog); try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(data.fidelityLog)); } catch {} }
+        if (data.sessionCounter !== undefined) { setSessionCounter(data.sessionCounter); try { localStorage.setItem('alloflow_session_counter', String(data.sessionCounter)); } catch {} }
+        if (data.externalCBMScores) { setExternalCBMScores(data.externalCBMScores); try { localStorage.setItem('alloflow_external_cbm_scores', JSON.stringify(data.externalCBMScores)); } catch {} }
+        if (data.interventionLogs) { setInterventionLogs(data.interventionLogs); try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {} }
+        if (addToast) addToast('Research data imported successfully', 'success');
+      } catch (err) {
+        if (addToast) addToast('Invalid research data file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }, [addToast]);
   // ── Custom Export Style ──
   const [customExportCSS, setCustomExportCSS] = useState('');
   const [exportStylePrompt, setExportStylePrompt] = useState('');

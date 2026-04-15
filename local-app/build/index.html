@@ -22,8 +22,9 @@
   <link rel="stylesheet" href="./tailwind.css" onerror="(function(){if(!document.querySelector('script[src*=tailwindcss]')){const s=document.createElement('script');s.src='https://cdn.tailwindcss.com';document.head.appendChild(s);console.warn('[Tailwind] Loaded CDN fallback');}})()">
 
   <!-- React + ReactDOM from CDN (pinned to same version as web app) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- React + ReactDOM — local copy (served from build/) with CDN fallback -->
+  <script crossorigin src="./react.development.js" onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/react@18/umd/react.development.js';s.crossOrigin='';document.head.appendChild(s);console.warn('[React] Loaded from CDN fallback');})()"></script>
+  <script crossorigin src="./react-dom.development.js" onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/react-dom@18/umd/react-dom.development.js';s.crossOrigin='';document.head.appendChild(s);console.warn('[ReactDOM] Loaded from CDN fallback');})()"></script>
 
   <!-- Shared context (must load first — defines window.__alloShared) -->
   <script src="./sharedContext_local.js" defer></script>
@@ -82,6 +83,11 @@
   <div id="root"></div>
 
   <script>
+    // ── Firebase config sentinel (local/offline build) ─────────────────────
+    // app.js gates React mount on typeof __firebase_config !== 'undefined'.
+    // The web build injects this at compile time; define it here for local use.
+    if (typeof __firebase_config === 'undefined') window.__firebase_config = null;
+
     // ── Local config injected by admin app ──────────────────────────────────
     // The admin Electron app injects __alloLocalConfig into the served HTML.
     // Fallback values used when loading the file directly in dev mode.

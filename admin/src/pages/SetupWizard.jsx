@@ -563,6 +563,91 @@ export default function SetupWizard({ onComplete }) {
                   </p>
                 </div>
 
+                {/* LM Studio — model download + server setup guidance */}
+                {selectedAiProvider === 'llm-engine' && (
+                  <div className="info-box" style={{borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.05)', marginTop: '16px'}}>
+                    <strong>🦙 LM Studio — you must download a model after setup</strong>
+                    <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
+                      AlloFlow will install and launch LM Studio, but <strong>AI features won't work until you download a model and start the local server.</strong> This takes about 5 minutes.
+                    </p>
+                    <div style={{display: 'grid', gap: '10px'}}>
+                      <div style={{padding: '8px 10px', background: 'rgba(124,58,237,0.06)', borderRadius: '6px', border: '1px solid rgba(124,58,237,0.2)'}}>
+                        <strong>Steps to complete after setup finishes:</strong>
+                        <ol style={{margin: '6px 0 0 0', paddingLeft: '18px', lineHeight: 1.8}}>
+                          <li>Open <strong>LM Studio</strong> (it will appear in your taskbar after setup)</li>
+                          <li>Click the <strong>Discover</strong> tab (🔍 icon in the left sidebar)</li>
+                          <li>Search for one of the recommended models below and click <strong>Download</strong></li>
+                          <li>Wait for the download to complete (model files are 4–8 GB)</li>
+                          <li>Click the <strong>Local Server</strong> tab (⇄ icon in the left sidebar)</li>
+                          <li>In the model dropdown at the top, select your downloaded model</li>
+                          <li>Click <strong>"Start Server"</strong> — the status indicator should turn green</li>
+                          <li>Confirm it shows <strong>port 1234</strong> — AlloFlow connects here</li>
+                        </ol>
+                      </div>
+                      <div style={{padding: '8px 10px', background: 'rgba(124,58,237,0.06)', borderRadius: '6px', border: '1px solid rgba(124,58,237,0.2)'}}>
+                        <strong>Recommended models{hardware ? ` for ${hardware.tierProfile?.label || 'your system'}` : ''}:</strong>
+                        <ul style={{margin: '6px 0 0 0', paddingLeft: '18px', lineHeight: 1.8}}>
+                          {hardware?.tier === 'entryLevel' && <>
+                            <li><strong>Phi-3.5-mini-instruct (Q4_K_M)</strong> — Best for low-RAM systems, fast ✓ Recommended</li>
+                            <li><strong>Llama-3.2-1B-Instruct (Q8)</strong> — Smallest/fastest, minimal RAM needed</li>
+                          </>}
+                          {hardware?.tier === 'midRange' && <>
+                            <li><strong>Mistral-7B-Instruct-v0.3 (Q4_K_M)</strong> — Best overall balance ✓ Recommended</li>
+                            <li><strong>Llama-3.1-8B-Instruct (Q4_K_M)</strong> — Excellent instruction following</li>
+                          </>}
+                          {(hardware?.tier === 'workstation') && <>
+                            <li><strong>Mistral-7B-Instruct-v0.3 (Q4_K_M)</strong> — Best overall balance ✓ Recommended</li>
+                            <li><strong>Meta-Llama-3.1-8B-Instruct (Q8_0)</strong> — High quality full precision</li>
+                            <li><strong>Llama-3.3-70B-Instruct (Q4_K_M)</strong> — Best quality, requires 48GB+ RAM</li>
+                          </>}
+                          {!hardware?.tier && <>
+                            <li><strong>Mistral-7B-Instruct-v0.3 (Q4_K_M)</strong> — Best overall balance ✓ Recommended</li>
+                            <li><strong>Phi-3.5-mini-instruct (Q4_K_M)</strong> — Faster, lower RAM requirement</li>
+                          </>}
+                        </ul>
+                      </div>
+                      <div style={{padding: '8px 10px', background: 'rgba(245,158,11,0.08)', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)'}}>
+                        <strong>⚠ The LM Studio Local Server must be running on port 1234 each time you use AlloFlow.</strong>
+                        <p style={{margin: '4px 0 0 0', fontSize: '0.85rem'}}>
+                          Tip: In LM Studio → Settings, enable <strong>"Start server on app launch"</strong> so it starts automatically.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Flux — model download info */}
+                {config.selectedServices?.includes('flux') && (
+                  <div className="info-box" style={{borderColor: '#db2777', backgroundColor: 'rgba(219,39,119,0.05)', marginTop: '16px'}}>
+                    <strong>🎨 Flux Image Generation — what gets downloaded</strong>
+                    <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
+                      AlloFlow will automatically download the Flux model during deployment. No manual steps needed — but here's what to expect:
+                    </p>
+                    <div style={{display: 'grid', gap: '10px'}}>
+                      <div style={{padding: '8px 10px', background: 'rgba(219,39,119,0.06)', borderRadius: '6px', border: '1px solid rgba(219,39,119,0.2)'}}>
+                        <strong>Model downloaded automatically:</strong>
+                        <ul style={{margin: '6px 0 0 0', paddingLeft: '18px', lineHeight: 1.8}}>
+                          <li><strong>FLUX.1-schnell (GGUF Q5_K_S)</strong> — ~3.8 GB download, fast 4-step generation</li>
+                          <li>Saved to <code>~/.alloflow/models/flux/</code></li>
+                          <li>GPU: ~5 sec per image &nbsp;|&nbsp; CPU fallback: ~2 min per image</li>
+                        </ul>
+                      </div>
+                      <div style={{padding: '8px 10px', background: 'rgba(219,39,119,0.06)', borderRadius: '6px', border: '1px solid rgba(219,39,119,0.2)'}}>
+                        <strong>GPU requirements for real-time generation:</strong>
+                        <ul style={{margin: '6px 0 0 0', paddingLeft: '18px', lineHeight: 1.8}}>
+                          <li>NVIDIA: 8 GB+ VRAM (GTX 1080 Ti / RTX series)</li>
+                          <li>AMD: 8 GB+ VRAM with ROCm (RX 6800 or newer)</li>
+                          <li>Apple Silicon: 16 GB+ unified memory (M1 Pro or better)</li>
+                          <li>CPU fallback: Works but ~2 min per image</li>
+                        </ul>
+                      </div>
+                      <p style={{margin: 0, fontSize: '0.85rem', color: '#666'}}>
+                        The download happens during the <strong>Deploying Services</strong> step and may take several minutes. Progress is shown on screen.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Gemini OAuth — show when Gemini is selected as AI provider or image provider */}
                 {(selectedAiProvider === 'gemini' || (selectedAiProvider === 'llm-engine' && config.selectedServices?.includes('gemini'))) && (
                   <div className="info-box" style={{borderColor: '#4285f4', backgroundColor: 'rgba(66,133,244,0.05)'}}>
@@ -599,7 +684,7 @@ export default function SetupWizard({ onComplete }) {
                           onClick={async () => {
                             setGeminiConnecting(true);
                             try {
-                              await window.alloAPI.writeAIConfig({ imageProvider: 'gemini', googleClientId: geminiClientId.trim(), googleClientSecret: geminiClientSecret.trim() });
+                              await window.alloAPI.writeAIConfig({ aiProvider: selectedAiProvider === 'gemini' ? 'gemini' : undefined, imageProvider: 'gemini', googleClientId: geminiClientId.trim(), googleClientSecret: geminiClientSecret.trim() });
                               const result = await window.alloAPI?.geminiOAuth?.start?.();
                               if (result?.success) {
                                 setGeminiAuthDone(true);
@@ -922,6 +1007,41 @@ export default function SetupWizard({ onComplete }) {
             <div className="info-box">
               <p>Services are running natively on your machine.</p>
               <p style={{marginTop: '10px'}}>Data stored in <code>~/.alloflow/</code></p>
+            </div>
+          )}
+
+          {selectedType === 'local' && selectedAiProvider === 'llm-engine' && (
+            <div className="info-box" style={{borderColor: '#7c3aed', background: 'rgba(124,58,237,0.05)', marginTop: '16px'}}>
+              <strong>🦙 Required next step: load a model in LM Studio</strong>
+              <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '8px'}}>
+                AlloFlow AI features are offline until you complete these steps:
+              </p>
+              <ol style={{margin: '0', paddingLeft: '20px', lineHeight: 1.8, fontSize: '0.9rem'}}>
+                <li>Open <strong>LM Studio</strong> (check your taskbar — it launched during setup)</li>
+                <li><strong>Discover</strong> tab → search <em>"Mistral 7B Instruct"</em> → click <strong>Download</strong></li>
+                <li>Wait for the download to complete (4–8 GB)</li>
+                <li><strong>Local Server</strong> tab → select your model → click <strong>"Start Server"</strong></li>
+                <li>Confirm green status on <strong>port 1234</strong> — AlloFlow will connect automatically</li>
+              </ol>
+              <p style={{margin: '10px 0 0 0', fontSize: '0.85rem', color: '#555'}}>
+                💡 In LM Studio Settings, enable <strong>"Start server on app launch"</strong> to avoid repeating this step every reboot.
+              </p>
+            </div>
+          )}
+
+          {selectedType === 'local' && selectedServices.includes('flux') && (
+            <div className="info-box" style={{borderColor: '#db2777', background: 'rgba(219,39,119,0.05)', marginTop: '16px'}}>
+              <strong>🎨 Flux image generation is ready</strong>
+              <p style={{fontSize: '0.9rem', marginTop: '6px'}}>
+                The FLUX.1-schnell model was downloaded to <code>~/.alloflow/models/flux/</code>.
+                Image generation works automatically — no extra steps needed.
+              </p>
+              {(!gpuStatus || gpuStatus.gpu_accelerated === false) && (
+                <p style={{margin: '8px 0 0 0', fontSize: '0.85rem', color: '#856404'}}>
+                  ⚠ Running on <strong>CPU fallback</strong> — each image takes ~2 minutes.
+                  For GPU acceleration, ensure your GPU drivers support CUDA, ROCm, or Metal.
+                </p>
+              )}
             </div>
           )}
 

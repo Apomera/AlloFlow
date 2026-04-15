@@ -19,7 +19,7 @@ const AI_PORT      = process.env.ALLOFLOW_AI_PORT      || '1234';
 
 module.exports = defineConfig({
     // Test files
-    testDir:         './tests',   // relative to the local-app/ directory
+    testDir:         '.',   // relative to this config file (local-app/tests/)
     testMatch:       '**/*.spec.js',
     outputDir:       '../test-results/playwright-artifacts',
     snapshotDir:     '../test-results/snapshots',

@@ -48,6 +48,20 @@ const NO_MOCK_AI     = ARGS.includes('--no-mock');
 const VERBOSE        = ARGS.includes('--verbose');
 const KEEP_SERVERS   = ARGS.includes('--keep-servers');
 
+// Read the configured AI provider from ~/.alloflow/ai_config.json (set by admin app after setup).
+// Used to decide whether an unreachable :1234 in --no-mock mode is a SKIP or a FAIL.
+const CLOUD_AI_PROVIDERS = new Set(['gemini', 'copilot', 'openai']);
+const _aiConfigPath = path.join(os.homedir(), '.alloflow', 'ai_config.json');
+const CONFIGURED_AI_PROVIDER = (() => {
+    try {
+        const raw = fs.readFileSync(_aiConfigPath, 'utf-8');
+        return JSON.parse(raw)?.aiProvider || 'lmstudio';
+    } catch { return 'lmstudio'; }
+})();
+// When --no-mock and provider is cloud-based, unreachable :1234 is expected → skip.
+// When --no-mock and provider is lmstudio/llm-engine (or unset), unreachable :1234 is a real failure.
+const LM_STUDIO_IS_OPTIONAL = NO_MOCK_AI && CLOUD_AI_PROVIDERS.has(CONFIGURED_AI_PROVIDER);
+
 // ── Logging ───────────────────────────────────────────────────────────────────
 
 fs.mkdirSync(RESULTS_DIR, { recursive: true });
@@ -56,7 +70,7 @@ const logStream = fs.createWriteStream(LOG_FILE, { flags: 'a' });
 function log(msg, tag = 'RUNNER') {
     const line = `[${new Date().toISOString()}] [${tag}] ${msg}`;
     logStream.write(line + '\n');
-    if (VERBOSE || tag === 'FAIL' || tag === 'PASS' || tag === 'INFO') {
+    if (VERBOSE || tag === 'FAIL' || tag === 'PASS' || tag === 'SKIP' || tag === 'INFO') {
         process.stdout.write(line + '\n');
     }
 }
@@ -75,10 +89,17 @@ const results = {
     startMs:  Date.now(),
 };
 
+class SkipError extends Error {
+    constructor(note = '') { super('SKIP'); this.isSkip = true; this.note = note; }
+}
+const SKIP = (note) => { throw new SkipError(note); };
+
 function addResult(suite, name, passed, ms, extra = {}) {
     results[suite].push({ name, passed, ms, ...extra });
-    const icon = passed ? '✓' : '✗';
-    log(`${icon} ${name} (${ms}ms)${extra.error ? ' — ' + extra.error : ''}`, passed ? 'PASS' : 'FAIL');
+    const icon = passed ? (extra.skipped ? '~' : '✓') : '✗';
+    const tag  = passed ? (extra.skipped ? 'SKIP' : 'PASS') : 'FAIL';
+    const note = extra.skipped ? ` — SKIPPED${extra.note ? ': ' + extra.note : ''}` : extra.error ? ' — ' + extra.error : '';
+    log(`${icon} ${name} (${ms}ms)${note}`, tag);
 }
 
 // ── Process list for cleanup ───────────────────────────────────────────────────
@@ -114,6 +135,10 @@ function spawnServer(label, cmd, args_, cwd, readyPattern) {
         proc.stderr.on('data', (d) => {
             logRaw(d, `${label}:ERR`);
             onData(d);
+            if (!ready && String(d).includes('EADDRINUSE')) {
+                results.servers.push({ name: label, status: 'port already in use' });
+                reject(new Error(`${label}: port already in use — kill stale node processes first`));
+            }
         });
 
         proc.on('error', (err) => {
@@ -323,7 +348,11 @@ async function runBackendTests() {
             await fn();
             addResult('backend', name, true, Date.now() - t0);
         } catch (e) {
-            addResult('backend', name, false, Date.now() - t0, { error: e.message });
+            if (e instanceof SkipError) {
+                addResult('backend', name, true, Date.now() - t0, { skipped: true, note: e.note || '' });
+            } else {
+                addResult('backend', name, false, Date.now() - t0, { error: e.message });
+            }
         }
     }
 
@@ -437,17 +466,34 @@ async function runBackendTests() {
         if (r.status !== 401) throw new Error(`Expected 401 after logout, got ${r.status}`);
     });
 
-    // ── Mock AI connectivity ──────────────────────────────────────────────────
+    // ── AI connectivity (mock or real LM Studio) ──────────────────────────────
+
+    // Pre-check reachability. Failure here means:
+    //   - cloud AI provider configured → tests will skip (LM Studio not expected)
+    //   - LM Studio provider configured → tests will fail (misconfiguration or server not started)
+    const _aiReachable = await get(PORTS.mockAI, '/health').then(r => r.status === 200).catch(() => false);
+    if (NO_MOCK_AI && !_aiReachable) {
+        log(`AI endpoint :${PORTS.mockAI} unreachable — configured provider: ${CONFIGURED_AI_PROVIDER} (${LM_STUDIO_IS_OPTIONAL ? 'cloud, will skip' : 'LM Studio, will fail'})`, 'INFO');
+    }
 
     await test('Mock LM Studio /health → ok', async () => {
+        if (!_aiReachable) {
+            if (LM_STUDIO_IS_OPTIONAL) { SKIP(`LM Studio not running on :1234 (${CONFIGURED_AI_PROVIDER} is cloud provider)`); }
+            throw new Error(`LM Studio unreachable on :1234 — configured provider is '${CONFIGURED_AI_PROVIDER}', expected LM Studio to be running`);
+        }
         const r = await get(PORTS.mockAI, '/health');
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
-        if (!r.body.status) throw new Error('No status field');
+        // Mock returns { status } — real LM Studio returns { status } or just 200 body
+        if (!NO_MOCK_AI && !r.body.status) throw new Error('No status field');
     });
 
     await test('Mock LM Studio /v1/chat/completions → valid response', async () => {
+        if (!_aiReachable) {
+            if (LM_STUDIO_IS_OPTIONAL) { SKIP(`LM Studio not running on :1234 (${CONFIGURED_AI_PROVIDER} is cloud provider)`); }
+            throw new Error(`LM Studio unreachable on :1234 — configured provider is '${CONFIGURED_AI_PROVIDER}', expected LM Studio to be running`);
+        }
         const r = await post(PORTS.mockAI, '/v1/chat/completions', {
-            model: 'mock-model',
+            model: NO_MOCK_AI ? 'google/gemma-3-4b' : 'mock-model',
             messages: [{ role: 'user', content: 'Analyze this text: "The sun is a star."' }],
         });
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
@@ -455,6 +501,20 @@ async function runBackendTests() {
     });
 
     await test('Mock LM Studio returns quiz JSON for quiz prompt', async () => {
+        if (!_aiReachable) {
+            if (LM_STUDIO_IS_OPTIONAL) { SKIP(`LM Studio not running on :1234 (${CONFIGURED_AI_PROVIDER} is cloud provider)`); }
+            throw new Error(`LM Studio unreachable on :1234 — configured provider is '${CONFIGURED_AI_PROVIDER}', expected LM Studio to be running`);
+        }
+        if (NO_MOCK_AI) {
+            // Real LLMs don't reliably return strict JSON — skip structural check
+            const r = await post(PORTS.mockAI, '/v1/chat/completions', {
+                model: 'google/gemma-3-4b',
+                messages: [{ role: 'user', content: 'Create a 2-question multiple choice quiz. Return JSON with a "questions" array.' }],
+            });
+            if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
+            if (!r.body.choices?.[0]?.message?.content) throw new Error('No content in response');
+            return; // pass — real LLM responded, structural JSON not enforced
+        }
         const r = await post(PORTS.mockAI, '/v1/chat/completions', {
             model: 'mock-model',
             messages: [{ role: 'user', content: 'Create an exit ticket quiz with multiple choice questions. Return JSON with "questions" array.' }],
@@ -499,7 +559,10 @@ async function runFrontendTests() {
     log('─── Frontend E2E Tests (Playwright) ──────────────────────────', 'INFO');
 
     const playwrightConfig = path.join(LOCAL_APP, 'tests', 'playwright.config.js');
-    const playwrightBin    = path.join(LOCAL_APP, 'node_modules', '.bin', 'playwright');
+    const binBase       = path.join(LOCAL_APP, 'node_modules', '.bin', 'playwright');
+    const playwrightBin = process.platform === 'win32' && fs.existsSync(binBase + '.cmd')
+        ? binBase + '.cmd'
+        : binBase;
 
     if (!fs.existsSync(playwrightBin)) {
         log('Playwright not installed. Run: cd local-app && npm install --save-dev @playwright/test && npx playwright install chromium', 'INFO');
@@ -513,18 +576,23 @@ async function runFrontendTests() {
         const args_ = [
             'test',
             '--config', playwrightConfig,
-            '--reporter', `json:${playwrightJsonOutput}`,
+            '--reporter', 'json',
         ];
 
-        const proc = spawn(playwrightBin, args_, {
+        const [spawnCmd, spawnArgs] = process.platform === 'win32'
+            ? ['cmd.exe', ['/c', playwrightBin, ...args_]]
+            : [playwrightBin, args_];
+
+        const proc = spawn(spawnCmd, spawnArgs, {
             cwd: LOCAL_APP,
             stdio: ['ignore', 'pipe', 'pipe'],
-            shell: process.platform === 'win32',
+            shell: false,
             env: {
                 ...process.env,
-                ALLOFLOW_APP_PORT:     String(PORTS.app),
-                ALLOFLOW_BACKEND_PORT: String(PORTS.backend),
-                ALLOFLOW_AI_PORT:      String(PORTS.mockAI),
+                ALLOFLOW_APP_PORT:          String(PORTS.app),
+                ALLOFLOW_BACKEND_PORT:      String(PORTS.backend),
+                ALLOFLOW_AI_PORT:           String(PORTS.mockAI),
+                PLAYWRIGHT_JSON_OUTPUT_NAME: playwrightJsonOutput,
             },
         });
 

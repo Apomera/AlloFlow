@@ -1030,6 +1030,20 @@ async function startDeployment(setupData, onProgress) {
       timestamp: new Date().toISOString()
     });
     console.log('[deploy:start] Deployment manifest saved with services:', servicesToInstallFinal);
+
+    // Always persist aiProvider to ai_config.json so localAppServer can inject it into the page
+    try {
+      const existingAi = fs.existsSync(AI_CONFIG_FILE)
+        ? JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'))
+        : {};
+      if (existingAi.aiProvider !== selectedAiProvider) {
+        existingAi.aiProvider = selectedAiProvider;
+        fs.writeFileSync(AI_CONFIG_FILE, JSON.stringify(existingAi, null, 2));
+        console.log('[deploy:start] Updated aiProvider in ai_config.json:', selectedAiProvider);
+      }
+    } catch (err) {
+      console.warn('[deploy:start] Could not update aiProvider in ai_config.json:', err.message);
+    }
     
     // PHASE 7: Open AlloFlow local app in user's browser
     const localAppPort = getLocalAppPort();
