@@ -3746,6 +3746,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             scene.add(haloGroup);
 
+            // Starfield — several hundred tiny bright points on a sphere just
+            // inside the skydome. Night + dawn twilight only.
+            if ((isNight && !isDawn) || isDawn) {
+              var starCount = isDawn ? 120 : 420;
+              var starGeo = new T.BufferGeometry();
+              var starPos = new Float32Array(starCount * 3);
+              var starCol = new Float32Array(starCount * 3);
+              var stSeed = 77213;
+              function stRng() { stSeed = (stSeed * 1103515245 + 12345) & 0x7fffffff; return (stSeed >>> 16) / 32768; }
+              for (var sti = 0; sti < starCount; sti++) {
+                // Uniform on upper hemisphere so no stars under the ground.
+                var stPhi = stRng() * Math.PI * 2;
+                var stTheta = Math.acos(stRng() * 0.85 + 0.15);
+                var stR = 175;
+                starPos[sti * 3 + 0] = stR * Math.sin(stTheta) * Math.cos(stPhi);
+                starPos[sti * 3 + 1] = stR * Math.cos(stTheta);
+                starPos[sti * 3 + 2] = stR * Math.sin(stTheta) * Math.sin(stPhi);
+                // Slight color variance: blue-white, warm white, pale yellow.
+                var palette = stRng();
+                var scR = palette < 0.6 ? 1 : palette < 0.85 ? 1 : 0.95;
+                var scG = palette < 0.6 ? 1 : palette < 0.85 ? 0.95 : 0.88;
+                var scB = palette < 0.6 ? 1 : palette < 0.85 ? 0.85 : 0.7;
+                var scDim = 0.6 + stRng() * 0.4;
+                starCol[sti * 3 + 0] = scR * scDim;
+                starCol[sti * 3 + 1] = scG * scDim;
+                starCol[sti * 3 + 2] = scB * scDim;
+              }
+              starGeo.setAttribute('position', new T.BufferAttribute(starPos, 3));
+              starGeo.setAttribute('color', new T.BufferAttribute(starCol, 3));
+              var starMat = new T.PointsMaterial({ size: isDawn ? 0.6 : 0.9, vertexColors: true, fog: false, transparent: true, opacity: isDawn ? 0.4 : 1 });
+              var stars = new T.Points(starGeo, starMat);
+              stars.name = 'starfield';
+              scene.add(stars);
+
+              // Shooting star — single long bright line that streaks across the
+              // sky periodically. Start inert; the update loop repositions it.
+              if (isNight && !isDawn) {
+                var ssGeo = new T.BufferGeometry();
+                var ssPts = new Float32Array([0, 0, 0, 0, 0, 0]);
+                ssGeo.setAttribute('position', new T.BufferAttribute(ssPts, 3));
+                var ssMat = new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, fog: false });
+                var shooting = new T.Line(ssGeo, ssMat);
+                shooting.name = 'shooting_star';
+                shooting._nextAt = 3; // seconds until next streak
+                shooting._active = false;
+                scene.add(shooting);
+              }
+            }
+
             // Dawn light shafts — wide, soft, angled planes emanating from the
             // low sun direction. Additive blending over the sky gradient gives
             // the god-ray effect without needing a real volumetric light pass.
@@ -4761,6 +4810,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             headlightR.target.position.set(10, 0, 0.3);
             playerCarGroup.add(headlightR);
             playerCarGroup.add(headlightR.target);
+          }
+          // Visible headlight beam cones — a stretched cone per headlight with
+          // additive blending. Shows up best at night + fog; hidden by day.
+          if (isNight || isFog || isRain) {
+            var beamColor = isFog ? 0xf0e0a0 : 0xfff5cc;
+            var beamOpacity = isFog ? 0.18 : isRain ? 0.10 : 0.14;
+            var beamMat = new T.MeshBasicMaterial({ color: beamColor, transparent: true, opacity: beamOpacity, blending: T.AdditiveBlending, depthWrite: false, fog: false });
+            // Cone geometry opens along +Y by default; we'll aim it along +X.
+            var beamGeo = new T.ConeGeometry(1.8, 9, 12, 1, true);
+            [-0.3, 0.3].forEach(function(zOff) {
+              var beam = new T.Mesh(beamGeo, beamMat);
+              beam.rotation.z = -Math.PI / 2; // point along +X
+              beam.position.set(0.95 + 4.5, 0.5, zOff);
+              playerCarGroup.add(beam);
+            });
           }
           // Brake lights
           var brakeMat = new T.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.3 });
@@ -5783,6 +5847,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       cap.position.set(wx, terrainYb + bH + 0.06, wz);
                       chunkGroup.add(cap);
                     }
+                    // Chimney + rising smoke — residential/suburban only, and only
+                    // when it would feel motivated (cold morning or snow). Keeps
+                    // density of plumes deterministic per cell so animation per-
+                    // frame doesn't have to invent state.
+                    if ((chunk.biome === 'residential' || chunk.biome === 'suburban')
+                        && (currentScenario.id === 'dawn' || scn.weather === 'snow')
+                        && (bHash & 3) === 0) {
+                      var chimMat = new T.MeshLambertMaterial({ color: 0x8a5a48 });
+                      var chimney = new T.Mesh(new T.BoxGeometry(0.18, 0.65, 0.18), chimMat);
+                      chimney.position.set(wx + 0.25, terrainYb + bH + 0.32, wz + 0.18);
+                      chunkGroup.add(chimney);
+                      // Three offset puff spheres rising — animated softly via
+                      // chunk-walk by their `smoke_puff` name.
+                      var puffMat = new T.MeshBasicMaterial({ color: 0xd0d4d8, transparent: true, opacity: 0.55, depthWrite: false });
+                      for (var spi = 0; spi < 3; spi++) {
+                        var puff = new T.Mesh(new T.SphereGeometry(0.18 + spi * 0.06, 6, 5), puffMat);
+                        puff.position.set(wx + 0.25, terrainYb + bH + 0.95 + spi * 0.55, wz + 0.18);
+                        puff.name = 'smoke_puff';
+                        puff._sBaseY = puff.position.y;
+                        puff._sPhase = (bHash + spi * 17) * 0.13;
+                        chunkGroup.add(puff);
+                      }
+                    }
+                    // Snow caps on roofs during snow weather — thin white layer
+                    // sitting just above the roof peak/flat.
+                    if (scn.weather === 'snow') {
+                      var snowCapMat = new T.MeshLambertMaterial({ color: 0xf8fafc });
+                      var snowCap = new T.Mesh(new T.BoxGeometry(bW + 0.14, 0.10, bW + 0.14), snowCapMat);
+                      var capY = (chunk.biome === 'residential' || chunk.biome === 'suburban') ? bH + bH * 0.35 + 0.05
+                                 : chunk.biome === 'industrial' ? bH + 0.4 : bH + 0.18;
+                      snowCap.position.set(wx, terrainYb + capY, wz);
+                      chunkGroup.add(snowCap);
+                    }
                     // Windows: bright dots at night, dark squares by day.
                     var isNightWin = currentScenario.time === 'night' || currentScenario.id === 'night';
                     var winColor = isNightWin ? ((bHash & 3) === 0 ? 0x1a1a2e : 0xfff0a8) : 0x3a4a5e;
@@ -6354,6 +6451,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     cr.position.set(grCx + grSide * (1.5 + furnRng() * 0.9), grHy + 0.016, grZ + (furnRng() - 0.5) * 1.5);
                     chunkGroup.add(cr);
                   }
+                  // Skid streak — long thin black smear on the inside line where
+                  // braking-while-turning leaves rubber. Less common than cracks.
+                  if (scn.weather !== 'snow' && furnRng() < 0.3) {
+                    var skidMat = new T.MeshBasicMaterial({ color: 0x0a0a10, transparent: true, opacity: 0.5 });
+                    var skid = new T.Mesh(new T.PlaneGeometry(0.18, 2.4 + furnRng() * 1.5), skidMat);
+                    skid.rotation.x = -Math.PI / 2;
+                    skid.rotation.z = grHd; // align with the road tangent
+                    skid.position.set(grCx + (grHd > 0 ? -1 : 1) * (1.6 + furnRng() * 0.5), grHy + 0.017, grZ);
+                    chunkGroup.add(skid);
+                  }
                 }
                 // Mile markers — small reflective post every ~16 cells, alternating sides
                 for (var mmZ = chunkWorldZ + 4; mmZ < chunkWorldZ + CHUNK_SIZE - 4; mmZ += 16) {
@@ -6366,6 +6473,301 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var mmTop = new T.Mesh(new T.BoxGeometry(0.12, 0.18, 0.04), new T.MeshBasicMaterial({ color: 0xffffff }));
                   mmTop.position.set(mmCx + mmSide * 4.2, mmHy + 0.85, mmZ);
                   chunkGroup.add(mmTop);
+                }
+                // Deer at the forest edge (rural only). Box-body + cylinder neck
+                // + small head + four leg cylinders. Stand quiet — visual only,
+                // no AI. Players who already learned about Maine moose risk see
+                // the same scan-the-treeline cue here.
+                if (chunk.biome === 'rural' && furnRng() < 0.32) {
+                  var deerCount = 1 + Math.floor(furnRng() * 2);
+                  var deerMat = new T.MeshLambertMaterial({ color: 0x8a5a32 });
+                  var deerWhite = new T.MeshLambertMaterial({ color: 0xefe0c8 });
+                  for (var di = 0; di < deerCount; di++) {
+                    var dZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
+                    var dSide = furnRng() < 0.5 ? -1 : 1;
+                    var dCx = lookupCenterAtZ(dZ);
+                    var dHy = lookupHeightAtZ(dZ);
+                    var dDist = 7 + furnRng() * 4;
+                    var dxw = dCx + dSide * dDist;
+                    var dGroup = new T.Group();
+                    var dBody = new T.Mesh(new T.BoxGeometry(1.1, 0.45, 0.4), deerMat);
+                    dBody.position.set(0, 0.85, 0);
+                    dGroup.add(dBody);
+                    var dRump = new T.Mesh(new T.BoxGeometry(0.18, 0.18, 0.42), deerWhite);
+                    dRump.position.set(-0.55, 0.95, 0);
+                    dGroup.add(dRump);
+                    var dNeck = new T.Mesh(new T.CylinderGeometry(0.12, 0.16, 0.5, 6), deerMat);
+                    dNeck.position.set(0.5, 1.15, 0);
+                    dNeck.rotation.z = -Math.PI / 4;
+                    dGroup.add(dNeck);
+                    var dHead = new T.Mesh(new T.BoxGeometry(0.32, 0.18, 0.18), deerMat);
+                    dHead.position.set(0.78, 1.4, 0);
+                    dGroup.add(dHead);
+                    // Four legs
+                    [[-0.45, 0.18], [-0.45, -0.18], [0.45, 0.18], [0.45, -0.18]].forEach(function(lp) {
+                      var leg = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 0.7, 5), deerMat);
+                      leg.position.set(lp[0], 0.35, lp[1]);
+                      dGroup.add(leg);
+                    });
+                    // Face the road so the silhouette reads from the player's POV.
+                    dGroup.position.set(dxw, dHy, dZ);
+                    dGroup.rotation.y = dSide < 0 ? 0 : Math.PI;
+                    chunkGroup.add(dGroup);
+                  }
+                }
+                // Wildflowers & grass tufts in rural/residential shoulders.
+                // Tiny billboards so they read as color specks without adding geometry cost.
+                if (chunk.biome === 'rural' || chunk.biome === 'residential') {
+                  var flowerColors = [0xf5e050, 0xe85a7a, 0xb050e0, 0xffffff, 0xff9040];
+                  var tuftMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xeef2f7 : 0x5a8a3a });
+                  var flowerCount = chunk.biome === 'rural' ? 14 : 6;
+                  for (var fli = 0; fli < flowerCount; fli++) {
+                    var flZ = chunkWorldZ + 1 + furnRng() * (CHUNK_SIZE - 2);
+                    var flSide = furnRng() < 0.5 ? -1 : 1;
+                    var flDist = 3.7 + furnRng() * 3.5;
+                    var flCx = lookupCenterAtZ(flZ);
+                    var flHy = lookupHeightAtZ(flZ);
+                    if (furnRng() < 0.4 && scn.weather !== 'snow') {
+                      // Flower: colored sphere on tiny stem
+                      var petalMat = new T.MeshBasicMaterial({ color: flowerColors[Math.floor(furnRng() * flowerColors.length)] });
+                      var petal = new T.Mesh(new T.SphereGeometry(0.06, 4, 3), petalMat);
+                      petal.position.set(flCx + flSide * flDist, flHy + 0.18, flZ);
+                      chunkGroup.add(petal);
+                    } else {
+                      // Grass tuft: tiny flat triangle
+                      var tuft = new T.Mesh(new T.ConeGeometry(0.08, 0.22, 4), tuftMat);
+                      tuft.position.set(flCx + flSide * flDist, flHy + 0.11, flZ);
+                      chunkGroup.add(tuft);
+                    }
+                  }
+                }
+                // Streetlights (commercial/suburban/industrial) — tall curved arm
+                // with a lamp head. At night the head emits a soft glow sphere.
+                if (chunk.biome === 'commercial' || chunk.biome === 'suburban' || chunk.biome === 'industrial') {
+                  var isNightSL = scn.time === 'night' || scn.id === 'night';
+                  var slPoleMat = new T.MeshLambertMaterial({ color: 0x2a2e34 });
+                  for (var slZ = chunkWorldZ + 6; slZ < chunkWorldZ + CHUNK_SIZE - 6; slZ += 10) {
+                    var slSide = ((Math.floor(slZ) / 10) & 1) ? 1 : -1;
+                    var slCx = lookupCenterAtZ(slZ);
+                    var slHy = lookupHeightAtZ(slZ);
+                    // Vertical pole
+                    var slPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.08, 5.5, 6), slPoleMat);
+                    slPole.position.set(slCx + slSide * 4.5, slHy + 2.75, slZ);
+                    chunkGroup.add(slPole);
+                    // Curved arm over the road
+                    var slArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 2.5, 4), slPoleMat);
+                    slArm.position.set(slCx + slSide * 3.3, slHy + 5.4, slZ);
+                    slArm.rotation.z = Math.PI / 2;
+                    chunkGroup.add(slArm);
+                    // Lamp head
+                    var slHead = new T.Mesh(new T.BoxGeometry(0.4, 0.14, 0.22), new T.MeshLambertMaterial({ color: 0x1a1a1a }));
+                    slHead.position.set(slCx + slSide * 2.1, slHy + 5.3, slZ);
+                    chunkGroup.add(slHead);
+                    // Glowing bulb + sodium-halo sphere at night
+                    if (isNightSL) {
+                      var slBulb = new T.Mesh(new T.SphereGeometry(0.12, 8, 6), new T.MeshBasicMaterial({ color: 0xffdc8a }));
+                      slBulb.position.set(slCx + slSide * 2.1, slHy + 5.22, slZ);
+                      chunkGroup.add(slBulb);
+                      var slHalo = new T.Mesh(new T.SphereGeometry(0.6, 8, 6), new T.MeshBasicMaterial({ color: 0xffdc8a, transparent: true, opacity: 0.25, blending: T.AdditiveBlending, depthWrite: false }));
+                      slHalo.position.set(slCx + slSide * 2.1, slHy + 5.22, slZ);
+                      chunkGroup.add(slHalo);
+                    }
+                  }
+                }
+                // Utility poles & drooping wires (residential/rural) — wooden pole
+                // + crossbar + two droop-shaped line segments per span.
+                if (chunk.biome === 'residential' || chunk.biome === 'rural') {
+                  var upMat = new T.MeshLambertMaterial({ color: 0x6a4a2e });
+                  var wireMat = new T.MeshBasicMaterial({ color: 0x1a1a1a });
+                  var upSpacing = 12;
+                  var upStarts = [];
+                  for (var upZ = chunkWorldZ + 3; upZ < chunkWorldZ + CHUNK_SIZE - 3; upZ += upSpacing) {
+                    var upSide = 1; // always on same side for a clean wire line
+                    var upCx = lookupCenterAtZ(upZ);
+                    var upHy = lookupHeightAtZ(upZ);
+                    var upX = upCx + upSide * 5.2;
+                    upStarts.push({ x: upX, y: upHy, z: upZ });
+                    var upPole = new T.Mesh(new T.CylinderGeometry(0.09, 0.13, 6.5, 6), upMat);
+                    upPole.position.set(upX, upHy + 3.25, upZ);
+                    chunkGroup.add(upPole);
+                    var upBar = new T.Mesh(new T.BoxGeometry(0.08, 0.08, 1.4), upMat);
+                    upBar.position.set(upX, upHy + 5.8, upZ);
+                    chunkGroup.add(upBar);
+                  }
+                  // Draw wires between consecutive poles — a thin slightly-drooping
+                  // cylinder approximates a catenary without per-chunk shader cost.
+                  var crowMat = new T.MeshLambertMaterial({ color: 0x0a0a10 });
+                  for (var wi = 0; wi < upStarts.length - 1; wi++) {
+                    var pA = upStarts[wi], pB = upStarts[wi + 1];
+                    [-0.45, 0.45].forEach(function(attach) {
+                      var wLen = Math.hypot(pB.z - pA.z, pB.y - pA.y);
+                      var wMid = new T.Mesh(new T.CylinderGeometry(0.015, 0.015, wLen, 3), wireMat);
+                      wMid.position.set(pA.x, (pA.y + pB.y) / 2 + 5.7, (pA.z + pB.z) / 2);
+                      wMid.rotation.x = Math.PI / 2;
+                      wMid.position.z = (pA.z + pB.z) / 2;
+                      wMid.position.x = pA.x + attach * 0.001;
+                      chunkGroup.add(wMid);
+                    });
+                    // Crows: 30% chance per span, 1-3 birds spaced along the wire.
+                    if (furnRng() < 0.3) {
+                      var crowCount = 1 + Math.floor(furnRng() * 3);
+                      for (var ci2 = 0; ci2 < crowCount; ci2++) {
+                        var crT = (ci2 + 1) / (crowCount + 1) + (furnRng() - 0.5) * 0.1;
+                        var crZ = pA.z + (pB.z - pA.z) * crT;
+                        var crY = pA.y + 5.7;
+                        // Body
+                        var crBody = new T.Mesh(new T.BoxGeometry(0.18, 0.16, 0.12), crowMat);
+                        crBody.position.set(pA.x, crY + 0.13, crZ);
+                        crBody.rotation.y = furnRng() * Math.PI * 0.4 - 0.2;
+                        chunkGroup.add(crBody);
+                        // Tiny beak
+                        var crBeak = new T.Mesh(new T.ConeGeometry(0.025, 0.08, 4), new T.MeshLambertMaterial({ color: 0x4a3a20 }));
+                        crBeak.rotation.z = -Math.PI / 2;
+                        crBeak.position.set(pA.x + 0.12, crY + 0.16, crZ);
+                        chunkGroup.add(crBeak);
+                      }
+                    }
+                  }
+                }
+                // Rural lake — occasional distant water body. Blue ellipse disc
+                // with a darker shore ring so it reads as a lake surrounded by mud/rocks.
+                if (chunk.biome === 'rural' && furnRng() < 0.18) {
+                  var lkSide = furnRng() < 0.5 ? -1 : 1;
+                  var lkZ = chunkWorldZ + CHUNK_SIZE / 2;
+                  var lkCx = lookupCenterAtZ(lkZ);
+                  var lkHy = lookupHeightAtZ(lkZ);
+                  var lkX = lkCx + lkSide * 28;
+                  var lkR = 6 + furnRng() * 4;
+                  // Shore ring
+                  var shoreMat = new T.MeshLambertMaterial({ color: 0x7a6644 });
+                  var shore = new T.Mesh(new T.CircleGeometry(lkR + 1.1, 24), shoreMat);
+                  shore.rotation.x = -Math.PI / 2;
+                  shore.position.set(lkX, lkHy - 0.02, lkZ);
+                  chunkGroup.add(shore);
+                  // Water surface (MeshBasicMaterial so it glows faintly on its own)
+                  var waterMat = new T.MeshBasicMaterial({ color: scn.weather === 'snow' ? 0x6a8abc : 0x3f6b9e, transparent: true, opacity: 0.9 });
+                  var water = new T.Mesh(new T.CircleGeometry(lkR, 28), waterMat);
+                  water.rotation.x = -Math.PI / 2;
+                  water.position.set(lkX, lkHy + 0.01, lkZ);
+                  water.scale.z = 0.7; // make lakes oval
+                  water.name = 'lake_surface';
+                  water._basePhase = furnRng() * Math.PI * 2;
+                  chunkGroup.add(water);
+                  // A couple of dockside reeds as vertical accents
+                  var reedMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xc4caca : 0x5a7a3a });
+                  for (var rdi = 0; rdi < 4; rdi++) {
+                    var rdAng = rdi / 4 * Math.PI * 2 + furnRng() * 0.5;
+                    var reed = new T.Mesh(new T.BoxGeometry(0.05, 0.9, 0.05), reedMat);
+                    reed.position.set(lkX + Math.cos(rdAng) * (lkR + 0.4), lkHy + 0.45, lkZ + Math.sin(rdAng) * (lkR + 0.4));
+                    chunkGroup.add(reed);
+                  }
+                }
+                // Overhead bridge — concrete span crossing the road. Once per
+                // ~15 chunks; positioned mid-chunk and not on intersections.
+                if (!chunk.hasIntersection && (Math.floor(chunk.index) % 17) === 5) {
+                  var bgZ = chunkWorldZ + CHUNK_SIZE / 2;
+                  var bgCx = lookupCenterAtZ(bgZ);
+                  var bgHy = lookupHeightAtZ(bgZ);
+                  var bridgeMat = new T.MeshLambertMaterial({ color: 0x9aa3ad });
+                  var bridgeShade = new T.MeshLambertMaterial({ color: 0x6f7882 });
+                  // Span deck — wide enough to clear a crossing road; thick slab
+                  var deck = new T.Mesh(new T.BoxGeometry(20, 0.6, 4), bridgeMat);
+                  deck.position.set(bgCx, bgHy + 5.0, bgZ);
+                  deck.castShadow = true;
+                  chunkGroup.add(deck);
+                  // Underside shadow strip
+                  var deckU = new T.Mesh(new T.BoxGeometry(20, 0.05, 3.8), bridgeShade);
+                  deckU.position.set(bgCx, bgHy + 4.65, bgZ);
+                  chunkGroup.add(deckU);
+                  // Two abutments either side of the road
+                  [-1, 1].forEach(function(abS) {
+                    var abut = new T.Mesh(new T.BoxGeometry(2.5, 5, 4), bridgeMat);
+                    abut.position.set(bgCx + abS * 7.5, bgHy + 2.5, bgZ);
+                    abut.castShadow = true;
+                    chunkGroup.add(abut);
+                  });
+                  // Guard parapet on top edges
+                  [-1, 1].forEach(function(pS) {
+                    var par = new T.Mesh(new T.BoxGeometry(20, 0.5, 0.2), bridgeMat);
+                    par.position.set(bgCx, bgHy + 5.55, bgZ + pS * 1.9);
+                    chunkGroup.add(par);
+                  });
+                }
+                // Rural farm structures — occasional red barn + silo set back from
+                // the road. Placed at most once per chunk to avoid barn-row effect.
+                if (chunk.biome === 'rural' && furnRng() < 0.35) {
+                  var barnSide = furnRng() < 0.5 ? -1 : 1;
+                  var barnZ = chunkWorldZ + 6 + furnRng() * (CHUNK_SIZE - 12);
+                  var barnCx = lookupCenterAtZ(barnZ);
+                  var barnHy = lookupHeightAtZ(barnZ);
+                  var barnX = barnCx + barnSide * 12;
+                  var barnMat = new T.MeshLambertMaterial({ color: 0xa82828 });
+                  var barnRoofMat = new T.MeshLambertMaterial({ color: 0x3a2418 });
+                  var barnBody = new T.Mesh(new T.BoxGeometry(3.5, 2.6, 4.5), barnMat);
+                  barnBody.position.set(barnX, barnHy + 1.3, barnZ);
+                  barnBody.castShadow = true;
+                  chunkGroup.add(barnBody);
+                  var barnRoof = new T.Mesh(new T.ConeGeometry(2.3, 1.8, 4), barnRoofMat);
+                  barnRoof.rotation.y = Math.PI / 4;
+                  barnRoof.position.set(barnX, barnHy + 3.5, barnZ);
+                  barnRoof.scale.set(1.4, 1, 1);
+                  chunkGroup.add(barnRoof);
+                  var barnDoor = new T.Mesh(new T.PlaneGeometry(1.0, 1.6), new T.MeshLambertMaterial({ color: 0xf5f0e0 }));
+                  barnDoor.position.set(barnX + (barnSide < 0 ? 1.76 : -1.76), barnHy + 0.8, barnZ);
+                  barnDoor.rotation.y = barnSide < 0 ? -Math.PI / 2 : Math.PI / 2;
+                  chunkGroup.add(barnDoor);
+                  var siloMat = new T.MeshLambertMaterial({ color: 0xbcc4cc });
+                  var silo = new T.Mesh(new T.CylinderGeometry(0.9, 0.9, 4.5, 14), siloMat);
+                  silo.position.set(barnX + barnSide * 2.8, barnHy + 2.25, barnZ - 1.2);
+                  silo.castShadow = true;
+                  chunkGroup.add(silo);
+                  var siloCap = new T.Mesh(new T.SphereGeometry(0.9, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), siloMat);
+                  siloCap.position.set(barnX + barnSide * 2.8, barnHy + 4.5, barnZ - 1.2);
+                  chunkGroup.add(siloCap);
+                  var hayMat = new T.MeshLambertMaterial({ color: 0xd4b564 });
+                  for (var hbi = 0; hbi < 2; hbi++) {
+                    var hay = new T.Mesh(new T.CylinderGeometry(0.45, 0.45, 0.8, 10), hayMat);
+                    hay.rotation.z = Math.PI / 2;
+                    hay.position.set(barnX - barnSide * 2.8, barnHy + 0.45, barnZ + 2 + hbi * 1.0);
+                    chunkGroup.add(hay);
+                  }
+                  // Farmhouse window glow + halo at night — sells "someone's home"
+                  // and gives players landmarks to navigate by in pitch dark.
+                  if (scn.time === 'night' || scn.id === 'night') {
+                    var farmWinMat = new T.MeshBasicMaterial({ color: 0xffd070 });
+                    var farmWin = new T.Mesh(new T.PlaneGeometry(0.5, 0.5), farmWinMat);
+                    farmWin.position.set(barnX + (barnSide < 0 ? 1.77 : -1.77), barnHy + 1.6, barnZ + 0.8);
+                    farmWin.rotation.y = barnSide < 0 ? -Math.PI / 2 : Math.PI / 2;
+                    chunkGroup.add(farmWin);
+                    var farmHalo = new T.Mesh(new T.SphereGeometry(0.9, 8, 6), new T.MeshBasicMaterial({ color: 0xffd070, transparent: true, opacity: 0.18, blending: T.AdditiveBlending, depthWrite: false }));
+                    farmHalo.position.copy(farmWin.position);
+                    farmHalo.name = 'farm_glow';
+                    farmHalo._twPhase = furnRng() * Math.PI * 2;
+                    chunkGroup.add(farmHalo);
+                  }
+                }
+                // Fence lines along pasture-adjacent rural stretches.
+                // White picket-style posts every 2m on one side for ~half the chunk.
+                if (chunk.biome === 'rural' && furnRng() < 0.6) {
+                  var fnMat = new T.MeshLambertMaterial({ color: 0xe8e4d6 });
+                  var fnSide = furnRng() < 0.5 ? -1 : 1;
+                  var fnStart = chunkWorldZ + 2;
+                  var fnEnd = chunkWorldZ + CHUNK_SIZE / 2 + furnRng() * (CHUNK_SIZE / 2 - 4);
+                  for (var fnZ = fnStart; fnZ < fnEnd; fnZ += 1.4) {
+                    var fnCx = lookupCenterAtZ(fnZ);
+                    var fnHy = lookupHeightAtZ(fnZ);
+                    var fnPost = new T.Mesh(new T.BoxGeometry(0.06, 0.6, 0.06), fnMat);
+                    fnPost.position.set(fnCx + fnSide * 5.5, fnHy + 0.3, fnZ);
+                    chunkGroup.add(fnPost);
+                  }
+                  // Two horizontal rails spanning the fence.
+                  var fnRailLen = fnEnd - fnStart;
+                  [0.22, 0.48].forEach(function(fnY) {
+                    var fnRail = new T.Mesh(new T.BoxGeometry(0.05, 0.05, fnRailLen), fnMat);
+                    fnRail.position.set(lookupCenterAtZ((fnStart + fnEnd) / 2) + fnSide * 5.5,
+                      lookupHeightAtZ((fnStart + fnEnd) / 2) + fnY, (fnStart + fnEnd) / 2);
+                    chunkGroup.add(fnRail);
+                  });
                 }
                 // Mailboxes in residential/rural biomes — small box on a stick.
                 if (chunk.biome === 'residential' || chunk.biome === 'rural') {
@@ -6540,6 +6942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var weatherRng = seededRandom(chunk.index * 91349 + 11);
               if (scn.weather === 'rain') {
                 var puddleMat = new T.MeshBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.6 });
+                var rippleMat = new T.MeshBasicMaterial({ color: 0xa0c0d8, transparent: true, opacity: 0.4, side: T.DoubleSide });
                 for (var pI = 0; pI < 3; pI++) {
                   if (weatherRng() < 0.6) {
                     var pudSide = weatherRng() < 0.5 ? -1 : 1;
@@ -6550,9 +6953,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     puddle.rotation.x = -Math.PI / 2;
                     puddle.position.set(pudX, 0.015, pudZ);
                     chunkGroup.add(puddle);
+                    // Ripple ring — animated in the update loop. Stored name so
+                    // we can cheaply find+expand all ripples per frame.
+                    var ripple = new T.Mesh(new T.RingGeometry(0.05, 0.08, 16), rippleMat);
+                    ripple.rotation.x = -Math.PI / 2;
+                    ripple.position.set(pudX, 0.017, pudZ);
+                    ripple.name = 'ripple';
+                    ripple._maxR = pudRadius;
+                    ripple._phase = weatherRng() * Math.PI * 2;
+                    chunkGroup.add(ripple);
                   }
                 }
               } else if (scn.weather === 'snow') {
+                // Road dusting — a semi-transparent white overlay following the
+                // ribbon, broken up by Y-striped opacity so it reads as partial
+                // coverage instead of a second pristine road.
+                var dustMat = new T.MeshBasicMaterial({ color: 0xf0f4f8, transparent: true, opacity: 0.45, depthWrite: false });
+                var dustRows = CHUNK_SIZE + 1;
+                var dustVerts = new Float32Array(dustRows * 2 * 3);
+                var dustIdx = new Uint16Array((dustRows - 1) * 6);
+                for (var dr = 0; dr < dustRows; dr++) {
+                  var dsY = ribbonChunkBaseY + dr;
+                  var dsC = iw.spline ? (iw.spline.centerAt(dsY) - MAP_SIZE / 2) : 0;
+                  var dsH = iw.spline ? iw.spline.heightAt(dsY) : 0;
+                  dustVerts[(dr * 2 + 0) * 3 + 0] = dsC - 3.2;
+                  dustVerts[(dr * 2 + 0) * 3 + 1] = dsH + 0.018;
+                  dustVerts[(dr * 2 + 0) * 3 + 2] = chunkWorldZ + dr;
+                  dustVerts[(dr * 2 + 1) * 3 + 0] = dsC + 3.2;
+                  dustVerts[(dr * 2 + 1) * 3 + 1] = dsH + 0.018;
+                  dustVerts[(dr * 2 + 1) * 3 + 2] = chunkWorldZ + dr;
+                }
+                for (var dj = 0; dj < dustRows - 1; dj++) {
+                  var da = dj * 2, db = dj * 2 + 1, dc = (dj + 1) * 2, dd = (dj + 1) * 2 + 1;
+                  dustIdx[dj * 6 + 0] = da; dustIdx[dj * 6 + 1] = dc; dustIdx[dj * 6 + 2] = db;
+                  dustIdx[dj * 6 + 3] = db; dustIdx[dj * 6 + 4] = dc; dustIdx[dj * 6 + 5] = dd;
+                }
+                var dustGeo = new T.BufferGeometry();
+                dustGeo.setAttribute('position', new T.BufferAttribute(dustVerts, 3));
+                dustGeo.setIndex(new T.BufferAttribute(dustIdx, 1));
+                dustGeo.computeVertexNormals();
+                chunkGroup.add(new T.Mesh(dustGeo, dustMat));
                 var snowPileMat = new T.MeshLambertMaterial({ color: 0xf0f4f8 });
                 for (var sI = 0; sI < 5; sI++) {
                   var snSide = sI % 2 === 0 ? -1 : 1;
@@ -6784,6 +7224,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
           // Birds — slow circular drift around the player + wing-flap Y wobble.
+          // Rain puddle ripples — scale pulse + opacity fade. One cycle ≈ 1.5s.
+          if (scn.weather === 'rain') {
+            s3.scene.traverse(function(obj) {
+              if (obj.name === 'ripple' && obj.scale) {
+                var tt = ((timeRef.current + (obj._phase || 0)) * 0.7) % 1;
+                obj.scale.set(0.2 + tt * 8, 0.2 + tt * 8, 1);
+                if (obj.material) obj.material.opacity = 0.5 * (1 - tt);
+              }
+            });
+          }
+          // Starfield: follow player, gentle twinkle by modulating material opacity.
+          if (!s3._starsRef) s3._starsRef = s3.scene.getObjectByName('starfield');
+          if (s3._starsRef) {
+            s3._starsRef.position.set(carWorldX, 0, carWorldZ);
+            if (s3._starsRef.material) {
+              s3._starsRef.material.opacity = 0.75 + Math.sin(timeRef.current * 0.7) * 0.15 + Math.sin(timeRef.current * 1.9) * 0.08;
+            }
+          }
+          // Shooting star: idle timer, then fire a quick streak across a random
+          // sky direction and fade out over ~1.2s.
+          if (!s3._shootRef) s3._shootRef = s3.scene.getObjectByName('shooting_star');
+          if (s3._shootRef) {
+            var sh = s3._shootRef;
+            sh.position.set(carWorldX, 0, carWorldZ);
+            if (!sh._active) {
+              sh._nextAt -= 0.016;
+              if (sh._nextAt <= 0) {
+                // Kick off a new streak.
+                var shA = Math.random() * Math.PI * 2;
+                var shE = 0.3 + Math.random() * 0.4; // elevation (rad)
+                var shR = 160;
+                var sx = Math.cos(shA) * Math.cos(shE) * shR;
+                var sy = Math.sin(shE) * shR;
+                var sz = Math.sin(shA) * Math.cos(shE) * shR;
+                // End point offset a short distance along a random tangent.
+                var tanA = shA + Math.PI / 2;
+                var ex = sx + Math.cos(tanA) * 22;
+                var ey = sy - 4;
+                var ez = sz + Math.sin(tanA) * 22;
+                var pos = sh.geometry.getAttribute('position');
+                pos.setXYZ(0, sx, sy, sz);
+                pos.setXYZ(1, ex, ey, ez);
+                pos.needsUpdate = true;
+                sh.material.opacity = 1;
+                sh._active = true;
+                sh._fadeT = 1.2;
+              }
+            } else {
+              sh._fadeT -= 0.016;
+              sh.material.opacity = Math.max(0, sh._fadeT / 1.2);
+              if (sh._fadeT <= 0) {
+                sh._active = false;
+                sh._nextAt = 6 + Math.random() * 12;
+              }
+            }
+          }
           // Dawn shafts follow the player, with a slow sway so the light feels alive.
           if (!s3._shaftRef) s3._shaftRef = s3.scene.getObjectByName('dawn_shafts');
           if (s3._shaftRef) {
@@ -6827,14 +7323,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // Tree wind sway (gentle rocking based on weather)
+          // Tree wind sway + grass tuft shimmer + lake surface ripple.
+          // Walk chunk groups since trees and tufts live inside them, not directly
+          // on the scene. Cheaper than scene.traverse: skip far chunks entirely.
           var windStrength = scn.weather === 'rain' ? 0.04 : scn.weather === 'snow' ? 0.02 : scn.weather === 'fog' ? 0.01 : 0.015;
-          s3.scene.children.forEach(function(child) {
-            if (child.isMesh && child.geometry && child.geometry.type === 'ConeGeometry' && child.position.y > 1.5) {
-              child.rotation.z = Math.sin(timeRef.current * 1.5 + child.position.x * 2 + child.position.z) * windStrength;
-              child.rotation.x = Math.cos(timeRef.current * 1.2 + child.position.z * 1.5) * windStrength * 0.5;
-            }
-          });
+          var t_now = timeRef.current;
+          if (s3._loadedChunks) {
+            Object.keys(s3._loadedChunks).forEach(function(ck) {
+              var cgrp = s3._loadedChunks[ck];
+              if (!cgrp) return;
+              cgrp.children.forEach(function(child) {
+                if (!child.isMesh || !child.geometry) return;
+                var gt = child.geometry.type;
+                if (gt === 'ConeGeometry' && child.position.y > 1.5) {
+                  // Tree canopy / pine cone — main rocking motion.
+                  child.rotation.z = Math.sin(t_now * 1.5 + child.position.x * 2 + child.position.z) * windStrength;
+                  child.rotation.x = Math.cos(t_now * 1.2 + child.position.z * 1.5) * windStrength * 0.5;
+                } else if (gt === 'SphereGeometry' && child.position.y > 1.0 && child.position.y < 6.0) {
+                  // Maple/birch round canopies — subtler tilt.
+                  child.rotation.z = Math.sin(t_now * 1.1 + child.position.x * 1.7 + child.position.z) * windStrength * 0.6;
+                } else if (gt === 'ConeGeometry' && child.position.y < 0.3) {
+                  // Grass tufts — shimmer via Y-scale wobble.
+                  child.scale.y = 1 + Math.sin(t_now * 4 + child.position.x * 6) * 0.15;
+                } else if (child.name === 'lake_surface') {
+                  // Lake — gentle vertical bob + scale pulse for surface life.
+                  var lp = child._basePhase || 0;
+                  child.position.y = (child.position.y || 0) + Math.sin(t_now * 1.4 + lp) * 0.0008;
+                  child.scale.x = 1 + Math.sin(t_now * 0.8 + lp) * 0.01;
+                } else if (child.name === 'smoke_puff') {
+                  // Smoke rises slowly + fades + drifts on wind. When it tops out
+                  // (~3m above start), recycle to the base position.
+                  var sp = child._sPhase || 0;
+                  var rise = ((t_now * 0.45 + sp) % 3.0);
+                  child.position.y = (child._sBaseY || 0) + rise;
+                  child.position.x += Math.sin(t_now * 0.6 + sp) * 0.002;
+                  if (child.material) child.material.opacity = 0.55 * (1 - rise / 3.0);
+                  child.scale.setScalar(1 + rise * 0.4);
+                } else if (child.name === 'farm_glow' && child.material) {
+                  // Farmhouse halo twinkle — slow flicker so the light feels
+                  // hand-lit rather than uniform.
+                  var fp = child._twPhase || 0;
+                  child.material.opacity = 0.14 + 0.08 * (0.5 + 0.5 * Math.sin(t_now * 1.6 + fp)) + 0.04 * Math.sin(t_now * 7 + fp);
+                }
+              });
+            });
+          }
 
           // Lightning flash during rain (random bright flash)
           if (scn.weather === 'rain') {

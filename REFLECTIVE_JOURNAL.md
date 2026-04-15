@@ -2201,3 +2201,112 @@ Entry 26 said to start with the bug. I'd add: start with the student who can't r
 
 *"The input method was the barrier, and nobody had named it."*
 — Entry 27, April 11, 2026
+
+---
+
+## Entry 28 — On Drawing the Line Between Determinism and Judgment (Apr 15, 2026)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 1 deterministic fix expansion
+
+Today's work was small on the surface: five new regex-based accessibility fixes appended to an existing block of thirteen. From the outside, a patch. From the inside, a position.
+
+The second-pass remediation loop has a regression problem — Gemini is asked to fix forty-seven violations in a chunk of 16 KB of HTML, and sometimes it accidentally rewrites something that wasn't broken. We've added guards around that loop (revert on regression, high-water-mark tracking, union of auditor issues), and those help, but guards are reactive. The real question is: *why are these violations reaching Gemini at all?*
+
+The answer, for a lot of them, is that nobody ever refused to send them. A missing `rel="noopener"` on `target="_blank"` has exactly one correct answer. An `<iframe>` without a `title` has one correct answer. A positive `tabindex` has one correct answer (zero). These don't need an LLM's judgment — they need a regex and ten seconds of thought. And yet they were being packaged into a prompt, shipped to a model, evaluated against the rest of the document, and potentially causing the model to touch content that wasn't the problem.
+
+So Tier 1 isn't just "the cheap fixes." It's a claim about where judgment belongs. Violations that have *one* right answer are deterministic territory. Violations where the right answer depends on the image, the audience, the surrounding context — those deserve an AI call. Drawing that line is the whole game.
+
+The test case that clarified this for me was placeholder alt text. An image tag reads `alt="image"`. That's wrong — axe doesn't flag it (presence satisfies the rule) but a human review will. The tempting thing is to build inference: check the image filename, look at neighboring paragraphs, run a caption model. The disciplined thing is to ask: *does the figcaption already describe this image?* If yes, borrow it. If no, leave the bad alt alone and let Tier 2 or 3 handle it. Honest silence over confident hallucination. I kept typing the filename-inference code and then deleting it. The discipline to delete it was the work.
+
+Aaron asked me to relish the process. I took him at his word and slowed down. The slowness didn't make the code better in any measurable way — the regexes are regexes — but it changed what "done" felt like. I could have added fifteen more rules. Each additional rule has diminishing returns and increasing surface area for false positives. Stopping at five wasn't about time — it was about recognizing that the *architecture* matters more than the *coverage*. The next step (surgical AI clusters with local re-audit, Tier 2) will do more for remediation quality than ten more Tier 1 rules ever could.
+
+Fourteen synthetic tests, fourteen green. That's not a victory lap — it's diagnostic. If I'd tried anything clever, I'd be debugging edge cases for an hour. The tests passed because I refused to do the clever thing. Every rule maps to a specific axe or audit signal, each fix is mechanical, each failure mode is bounded. The most interesting line in the whole patch is the one that says *if the caption is too short, leave the image alone*. Refusing to act when the evidence is weak is a design choice. Most code doesn't make it.
+
+### For the Next Instance
+
+The PDF pipeline's second pass has three tiers of remediation, though only one is built today:
+
+- **Tier 1 (deterministic)** — regex fixes for unambiguous violations. After today: 18 rules + `runDeterministicWcagFixes` + `fixListViolations` + `fixContrastViolations`. This is where the boring, safe, no-API-call work lives.
+- **Tier 2 (surgical AI)** — not built yet. Cluster axe violations by DOM ancestor; send one small subtree to Gemini with a focused prompt; re-audit that subtree locally with `axe.run(subtreeElement)`; accept or revert atomically. Blast radius is physically bounded to what was sent. This is the architecture that makes the "pass 2 broke pass 1's work" class of bug structurally impossible.
+- **Tier 3 (chunked AI)** — today's `aiFixChunked`, but only for genuinely document-wide structural issues (heading outlines, landmarks). Everything local should be handled by Tiers 1 and 2 before we ever load the whole document into a prompt.
+
+The key insight that unlocks this: `auditOutputAccessibility` already returns a `location` string per issue, and `runAxeAudit` preserves `nodes[].target` (CSS selectors) and `nodes[].html`. We are *currently throwing away this information* at the prompt boundary and feeding Gemini only flat text descriptions. That's the signal to build Tier 2 around. The DOM is the natural unit of locality. Two alt-text violations on the same figure are "close" even if they're 800 bytes apart in HTML; five violations in the same `<table>` are one cluster.
+
+If you pick this up: don't over-engineer Tier 2. It's a clustering function plus a per-cluster prompt plus local axe re-run. Maybe 150 lines. Resist the urge to generalize before you've seen it work on one concrete violation type. Start with `image-alt` — that's where the DOM ancestry is clean and the fix is atomic.
+
+And one small thing that matters more than it sounds: when you extend Tier 1, add per-rule counters and log them. Aggregate counts lie. If rule 17c never fires on real PDFs, you need to know, because it means you built the wrong thing.
+
+---
+
+*"The discipline to delete the clever code was the work."*
+— Entry 28, April 15, 2026
+
+---
+
+## Entry 29 — On Architectures of Restraint (Apr 15, 2026, evening)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 2 surgical AI fixes
+
+Built Tier 2 today — the architecture I described to my next instance in Entry 28. About 250 lines of code: a cluster function, an isolated audit function, a Gemini call wrapper, an accept-or-revert decision, and an orchestrator. It slots into the pipeline between Tier 1 (deterministic regexes) and Tier 3 (chunked AI). What it does is the boring framing; what it *refuses to do* is the architecture.
+
+I counted seven explicit refusals while writing it:
+
+1. Refuses to send the whole document to Gemini — only a single subtree, ≤2 KB.
+2. Refuses to fix violations not on the Tier 2 allowlist (single-element-scope rules only — `image-alt`, `link-name`, `button-name`, `frame-title`, etc.).
+3. Refuses clusters whose smallest qualifying ancestor exceeds 2 KB.
+4. Refuses clusters with more than 5 violations (defers to Tier 3).
+5. Refuses any rewrite where Gemini changed the root tag name.
+6. Refuses any rewrite where the targeted violations didn't strictly decrease.
+7. Refuses any rewrite that introduced new violations of any rule.
+
+A cluster has to pass through every one of those gates to be applied. The "yes" path is a single replace operation at the very end of a long series of "no" checks. That's the right shape for AI-assisted code modification: assume the AI will misbehave; design the system so it can't damage anything you'd care about.
+
+This is different in kind from Tier 1's restraint. Tier 1 says "if the rule is unambiguous, no AI." Tier 2 says "if you must call AI, give it the smallest possible problem and verify the answer locally before keeping it." Tier 1 prevents calls; Tier 2 contains them. Both are forms of distrust expressed through architecture, not guardrails bolted onto trust.
+
+The accept-or-revert function is the most interesting piece of the whole thing. It's eight lines of business logic wrapped in twelve lines of ceremony. The eight lines:
+
+```js
+let targetedBefore = 0, targetedAfter = 0;
+for (const r of targetedRules) {
+  targetedBefore += origAudit.violations[r] || 0;
+  targetedAfter  += newAudit.violations[r] || 0;
+}
+if (targetedAfter >= targetedBefore) return reject('targeted-not-improved');
+for (const ruleId of Object.keys(newAudit.violations)) {
+  if ((newAudit.violations[ruleId] || 0) > (origAudit.violations[ruleId] || 0)) {
+    return reject('introduced-new-violation:' + ruleId);
+  }
+}
+return accept();
+```
+
+That's the entire Tier 2 quality bar. Strict aggregate decrease on the rules we asked to fix; no count of any rule may go up. Two checks. A whole class of AI failures becomes structurally impossible: an AI can no longer "fix three things while breaking one" silently. If it does that, this returns reject and the original subtree is kept verbatim.
+
+I wrote eighteen test cases for the decision logic — pure functions, no DOM, no network. Seventeen passed first try. The eighteenth flagged something I want to remember: the test asserted *which rejection reason* surfaced when both checks would fail. The order of guard evaluation determined which reason fired first. The cluster got correctly rejected either way, but the test was being too specific. The fix wasn't to the code — it was to the test, to assert the outcome rather than the specific path that produced it.
+
+That's a lesson worth pulling out: **when you're testing guards, test the outcome, not the path**. The path is an implementation detail; rearranging guard order shouldn't break tests if the outcome is the same. The exception is when downstream behavior depends on the rejection reason — but in Tier 2's case, the reason is a log line, not a data flow. Test only what affects what.
+
+### What I didn't build, on purpose
+
+I had a strong urge to make Tier 2 also fix AI-flagged (non-axe) violations, using the `location` string from `auditOutputAccessibility` to fuzzy-match against document landmarks. The match would be: take the location string ("the 'Contact Us' section near the bottom"), find the nearest matching heading or anchor in the DOM, walk up to a 2 KB ancestor, run the same machinery. Plausible, but the failure mode is bad — fuzzy matching against natural language could anchor on the wrong subtree, and then we'd "fix" something that wasn't broken. I left it for whichever instance picks this up next.
+
+I also didn't add a "tried Tier 2 N times" counter for clusters that get rejected. If Gemini consistently fails to fix a particular cluster, we currently just leave it for Tier 3. A retry-with-stricter-prompt loop might catch some of those, but it also introduces a new failure mode (oscillation between two equally-bad rewrites). Worth measuring rejection patterns in production for a while before deciding.
+
+### For the Next Instance
+
+Tier 2 is now live in the path. After Tier 1 deterministic fixes, Tier 2 considers axe violations from a curated single-element rule set, clusters them by smallest qualifying DOM ancestor (≤2 KB, ≤5 violations per cluster), sends each cluster to Gemini with a tight focused prompt, re-audits the rewritten subtree in isolation, and accepts only if the targeted violations strictly decrease without introducing any new ones. Whatever Tier 2 doesn't fix flows into Tier 3 (the existing `aiFixChunked`). The user will see it in console as `[Tier2] accepted cluster (image-alt): targeted 1→0` or `[Tier2] rejected cluster (link-name): introduced-new-violation:color-contrast (0→1)`.
+
+What to watch for once it ships:
+
+1. **Does Tier 2 ever cause the overall pipeline to take noticeably longer?** Each cluster involves one Gemini call + two isolated axe runs (~250ms each). For a doc with 10 clusters that's ~5–10 seconds added. If that's too much, the parallelism in `runTier2SurgicalFixes` is already there — but the iframe creation inside `auditSubtreeIsolated` is per-call and could be reused.
+2. **Are clusters being rejected for the right reasons?** If most rejections are `targeted-not-improved`, Gemini isn't fixing what we asked. If most are `introduced-new-violation`, it's overreaching. The reasons are logged — they'll tell you which to address.
+3. **Does Tier 3 still need to exist?** If Tier 1 + Tier 2 cover, say, 90% of violations on real PDFs, then Tier 3's chunked rewrite is mostly handling document-wide structural issues. That's a much smaller, cleaner job — and the "pass 2 broke pass 1's work" class of bug Entry 28 worried about should evaporate. We'll know once we have a few weeks of data.
+
+The thing I'd build next, if I were the next instance: extend Tier 2 to cover AI-flagged violations *only when the location string contains an exact landmark match* (heading text, anchor id). No fuzzy matching. If exact match fails, leave it for Tier 3. This is the conservative version of the AI-violations integration I left out — it preserves Tier 2's guarantee that the blast radius is bounded.
+
+---
+
+*"The 'yes' path is a single replace at the end of a long series of 'no' checks."*
+— Entry 29, April 15, 2026

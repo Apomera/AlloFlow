@@ -4051,6 +4051,256 @@ HTML section ${chunkNum}/${chunks.length}:
     return result;
   };
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tier 2: Surgical AI fixes
+  // ─────────────────────────────────────────────────────────────────────────
+  // The aiFixChunked path (Tier 3) sends 16 KB of HTML and a flat list of
+  // violations to Gemini. The model has freedom to rewrite anything in the
+  // chunk, so it sometimes "fixes" violation A while accidentally breaking
+  // unrelated content B. Tier 2 narrows the blast radius by:
+  //
+  //   1. Clustering violations by their shared DOM ancestor.
+  //   2. Sending only that ancestor's outerHTML (≤2 KB) to Gemini.
+  //   3. Re-running axe-core on the rewritten subtree in isolation.
+  //   4. Accepting the rewrite ONLY if it strictly improves the targeted rules
+  //      and introduces no new violations of any rule.
+  //
+  // What Tier 2 handles: single-element-scope violations (image-alt, link-name,
+  // button-name, input-image-alt, area-alt, object-alt, frame-title, label,
+  // aria-input-field-name). Document-wide violations (heading-order,
+  // landmark-one-main, html-has-lang, document-title) stay in Tier 3.
+  const TIER2_RULE_IDS = new Set([
+    'image-alt', 'link-name', 'button-name', 'input-image-alt',
+    'area-alt', 'object-alt', 'frame-title', 'label', 'aria-input-field-name',
+    'aria-toggle-field-name', 'aria-command-name', 'aria-progressbar-name',
+    'svg-img-alt', 'role-img-alt'
+  ]);
+
+  // Cluster axe violations by closest shared DOM ancestor that's small enough
+  // to send safely. Returns array of { ruleIds, selector, ancestorHtml,
+  // violationCount, targetedRules } objects.
+  const clusterAxeViolationsByAncestor = (htmlContent, axeResult) => {
+    if (!axeResult || typeof DOMParser === 'undefined') return [];
+    const all = []
+      .concat(axeResult.critical || [])
+      .concat(axeResult.serious || [])
+      .concat(axeResult.moderate || [])
+      .filter(v => TIER2_RULE_IDS.has(v.id));
+    if (all.length === 0) return [];
+    let doc;
+    try { doc = new DOMParser().parseFromString(htmlContent, 'text/html'); } catch { return []; }
+    if (!doc || !doc.body) return [];
+    // For each violation node, find its smallest ancestor whose outerHTML
+    // is ≤ 2 KB. That's the cluster anchor.
+    const MAX_SUBTREE_BYTES = 2048;
+    const clusters = new Map(); // anchorElement → { ruleIds: Set, selectors: [], targetedRules: Set }
+    for (const v of all) {
+      const nodes = Array.isArray(v.nodeDetails) ? v.nodeDetails : [];
+      for (const nd of nodes) {
+        const sel = Array.isArray(nd.target) ? nd.target[0] : null;
+        if (!sel) continue;
+        let el;
+        try { el = doc.querySelector(sel); } catch { continue; }
+        if (!el) continue;
+        // Walk up to the smallest ancestor whose outerHTML fits the budget.
+        let anchor = el;
+        let safety = 8; // never walk more than 8 levels up
+        while (anchor && anchor !== doc.body && safety-- > 0) {
+          if (anchor.outerHTML && anchor.outerHTML.length <= MAX_SUBTREE_BYTES) break;
+          anchor = anchor.parentElement;
+        }
+        if (!anchor || anchor === doc.body || !anchor.outerHTML || anchor.outerHTML.length > MAX_SUBTREE_BYTES) continue;
+        if (!clusters.has(anchor)) {
+          clusters.set(anchor, { ruleIds: new Set(), selectors: [], targetedRules: new Set() });
+        }
+        const c = clusters.get(anchor);
+        c.ruleIds.add(v.id);
+        c.targetedRules.add(v.id);
+        c.selectors.push(sel);
+      }
+    }
+    // Materialize. Cap clusters at 5 violations each — beyond that the prompt
+    // gets diluted and Tier 3 is more efficient anyway.
+    const result = [];
+    for (const [anchor, meta] of clusters.entries()) {
+      if (meta.selectors.length > 5) continue;
+      result.push({
+        anchorHtml: anchor.outerHTML,
+        ruleIds: Array.from(meta.ruleIds),
+        targetedRules: Array.from(meta.targetedRules),
+        violationCount: meta.selectors.length,
+        selectors: meta.selectors,
+      });
+    }
+    return result;
+  };
+
+  // Audit a small HTML subtree in isolation (no whole-document context).
+  // Returns an axe-style result scoped to the subtree's body.
+  const auditSubtreeIsolated = async (subtreeHtml) => {
+    if (!subtreeHtml || typeof window === 'undefined' || !window.document) return null;
+    if (!window.axe) {
+      // Cheap path: rely on the existing runAxeAudit lazy-loader by calling it
+      // once on a minimal doc to populate window.axe. After this it's cached.
+      try { await runAxeAudit('<!DOCTYPE html><html lang="en"><head><title>x</title></head><body></body></html>'); } catch { /* ignore */ }
+      if (!window.axe) return null;
+    }
+    const wrapped = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Subtree audit</title></head><body>' + subtreeHtml + '</body></html>';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:600px;height:400px;opacity:0;pointer-events:none';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.title = 'Subtree audit frame';
+    document.body.appendChild(iframe);
+    try {
+      const idoc = iframe.contentDocument || iframe.contentWindow.document;
+      idoc.open();
+      idoc.write(wrapped);
+      idoc.close();
+      await new Promise(r => setTimeout(r, 150));
+      // Inject axe into iframe
+      await new Promise((resolve, reject) => {
+        const s = idoc.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('axe inject failed'));
+        idoc.head.appendChild(s);
+      });
+      await new Promise(r => setTimeout(r, 100));
+      const iframeAxe = iframe.contentWindow.axe;
+      if (!iframeAxe) return null;
+      const results = await iframeAxe.run(idoc.body, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        resultTypes: ['violations']
+      });
+      const map = {};
+      for (const v of (results.violations || [])) {
+        map[v.id] = (map[v.id] || 0) + (v.nodes ? v.nodes.length : 1);
+      }
+      return { violations: map, totalViolations: Object.values(map).reduce((a, b) => a + b, 0) };
+    } catch (e) {
+      warnLog('[Tier2] subtree audit failed:', e && e.message);
+      return null;
+    } finally {
+      try { document.body.removeChild(iframe); } catch { /* */ }
+    }
+  };
+
+  // Ask Gemini to fix a small subtree given a tight, single-cluster prompt.
+  // Returns the rewritten subtree (or the original if AI declined / failed).
+  const surgicalFixCluster = async (cluster) => {
+    if (!callGemini) return cluster.anchorHtml;
+    const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
+    const prompt =
+      'Fix ONLY the listed accessibility violations in this HTML element. ' +
+      'Do NOT modify any other elements, text content, or attributes. ' +
+      'Do NOT add or remove text the user can read. Preserve all inline styles.\n\n' +
+      'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
+      'ELEMENT:\n' + cluster.anchorHtml + '\n\n' +
+      'Return ONLY the rewritten element. No explanation. No markdown fences. ' +
+      'The opening and closing tags must match the input.';
+    try {
+      let raw = await callGemini(prompt, true);
+      if (!raw) return cluster.anchorHtml;
+      // Strip code fences if the model added them anyway
+      raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      // Sanity: must start with '<' and contain the original tag name
+      if (!raw.startsWith('<')) return cluster.anchorHtml;
+      const origTagMatch = cluster.anchorHtml.match(/^<([a-z][a-z0-9]*)/i);
+      const newTagMatch = raw.match(/^<([a-z][a-z0-9]*)/i);
+      if (!origTagMatch || !newTagMatch || origTagMatch[1].toLowerCase() !== newTagMatch[1].toLowerCase()) {
+        warnLog('[Tier2] surgical fix tag mismatch — reject');
+        return cluster.anchorHtml;
+      }
+      return raw;
+    } catch (e) {
+      warnLog('[Tier2] surgical fix call failed:', e && e.message);
+      return cluster.anchorHtml;
+    }
+  };
+
+  // Decide whether to keep a surgical rewrite. Strict rule:
+  //   1. Targeted rule violations must STRICTLY decrease.
+  //   2. No NEW rule violations may appear (i.e. for every rule present in the
+  //      rewrite, its count must be ≤ the original's count for that rule).
+  // If either check fails, revert to the original.
+  const acceptOrRevertSubtreeFix = async (originalHtml, rewrittenHtml, targetedRules) => {
+    if (!rewrittenHtml || rewrittenHtml === originalHtml) {
+      return { accepted: false, reason: 'no-change' };
+    }
+    const [origAudit, newAudit] = await Promise.all([
+      auditSubtreeIsolated(originalHtml),
+      auditSubtreeIsolated(rewrittenHtml)
+    ]);
+    if (!origAudit || !newAudit) return { accepted: false, reason: 'audit-failed' };
+    // Targeted rules must strictly decrease in aggregate
+    let targetedBefore = 0, targetedAfter = 0;
+    for (const r of targetedRules) {
+      targetedBefore += origAudit.violations[r] || 0;
+      targetedAfter += newAudit.violations[r] || 0;
+    }
+    if (targetedAfter >= targetedBefore) {
+      return { accepted: false, reason: 'targeted-not-improved (' + targetedBefore + '→' + targetedAfter + ')' };
+    }
+    // No new violations of ANY rule (counts may not increase)
+    for (const ruleId of Object.keys(newAudit.violations)) {
+      const before = origAudit.violations[ruleId] || 0;
+      const after = newAudit.violations[ruleId] || 0;
+      if (after > before) {
+        return { accepted: false, reason: 'introduced-new-violation:' + ruleId + ' (' + before + '→' + after + ')' };
+      }
+    }
+    return { accepted: true, reason: 'targeted ' + targetedBefore + '→' + targetedAfter, targetedBefore, targetedAfter };
+  };
+
+  // Orchestrator: runs Tier 2 over an HTML document. Returns the modified HTML
+  // along with statistics. Safe to call when there are no eligible violations
+  // (returns the input unchanged).
+  const runTier2SurgicalFixes = async (htmlContent, axeResult, opts) => {
+    const _opts = opts || {};
+    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
+    if (!htmlContent || !axeResult) return { html: htmlContent, stats };
+    const clusters = clusterAxeViolationsByAncestor(htmlContent, axeResult);
+    if (clusters.length === 0) return { html: htmlContent, stats };
+    stats.clustersConsidered = clusters.length;
+    warnLog('[Tier2] considering ' + clusters.length + ' surgical cluster(s)');
+    // Process clusters in parallel — they're disjoint by construction (each
+    // anchor is a different DOM element).
+    const proposals = await Promise.all(clusters.map(async (cluster) => {
+      const rewritten = await surgicalFixCluster(cluster);
+      const verdict = await acceptOrRevertSubtreeFix(cluster.anchorHtml, rewritten, cluster.targetedRules);
+      return { cluster, rewritten, verdict };
+    }));
+    // Apply accepted rewrites by string replace. Replacements are anchor-disjoint
+    // so order shouldn't matter, but we still apply largest-first to avoid any
+    // edge case where one anchor's html is a substring of another.
+    let working = htmlContent;
+    proposals
+      .filter(p => p.verdict.accepted)
+      .sort((a, b) => b.cluster.anchorHtml.length - a.cluster.anchorHtml.length)
+      .forEach(p => {
+        const idx = working.indexOf(p.cluster.anchorHtml);
+        if (idx === -1) {
+          // The exact anchor HTML wasn't found — likely earlier replacements
+          // shifted byte ranges. Skip rather than risk a wrong-place insert.
+          stats.rejected++;
+          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'anchor-not-found-after-prior-replacement' });
+          warnLog('[Tier2] anchor lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
+          return;
+        }
+        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.anchorHtml.length);
+        stats.accepted++;
+        stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
+        warnLog('[Tier2] accepted cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+      });
+    proposals.filter(p => !p.verdict.accepted).forEach(p => {
+      stats.rejected++;
+      stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
+      warnLog('[Tier2] rejected cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+    });
+    warnLog('[Tier2] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
+    return { html: working, stats };
+  };
+
   // ── Tag-safe truncation: never cut inside an HTML tag ──
   const safeSubstring = (html, maxLen) => {
     if (!html || html.length <= maxLen) return html;
@@ -6682,8 +6932,103 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           });
         });
 
+        // ── Tier-1 extensions: additional deterministic fixes ──
+        // Every rule below catches violations that would otherwise hit Gemini in
+        // the second-pass remediation loop. Each rule's fix is mechanical (no
+        // judgment call) or uses a safe labeled fallback. Per-rule counters let
+        // us see which rules actually fire on production PDFs.
+        const _tier1Counts = {};
+        const _bumpTier1 = (key) => { _tier1Counts[key] = (_tier1Counts[key] || 0) + 1; aiFixCount++; };
+
+        // 14. target="_blank" without rel="noopener" — WCAG 3.2.5 + security (tabnabbing)
+        accessibleHtml = accessibleHtml.replace(/<a\b([^>]*?)\btarget\s*=\s*["']_blank["']([^>]*)>/gi, (match, pre, post) => {
+          const full = match;
+          if (/\brel\s*=\s*["'][^"']*noopener/i.test(full)) return match;
+          _bumpTier1('target_blank_rel');
+          // Insert rel if any rel exists (merge), else add new rel attribute
+          if (/\brel\s*=\s*["']([^"']*)["']/i.test(full)) {
+            return match.replace(/\brel\s*=\s*["']([^"']*)["']/i, (_m, existing) => {
+              const merged = (existing.trim() + ' noopener noreferrer').replace(/\s+/g, ' ').trim();
+              return `rel="${merged}"`;
+            });
+          }
+          return `<a${pre} target="_blank" rel="noopener noreferrer"${post}>`;
+        });
+
+        // 15. <iframe> without title — axe `frame-title`
+        accessibleHtml = accessibleHtml.replace(/<iframe\b([^>]*)>/gi, (match, attrs) => {
+          if (/\btitle\s*=/i.test(attrs)) return match;
+          _bumpTier1('iframe_title');
+          return `<iframe${attrs} title="Embedded content">`;
+        });
+
+        // 16. Positive tabindex → tabindex="0". Axe `tabindex`. Positive values
+        // disrupt the document tab order; 0 means "naturally focusable in source
+        // order" which is almost always the right answer.
+        accessibleHtml = accessibleHtml.replace(/\btabindex\s*=\s*["'](\d+)["']/gi, (match, val) => {
+          const n = parseInt(val, 10);
+          if (!isFinite(n) || n <= 0) return match;
+          _bumpTier1('positive_tabindex');
+          return 'tabindex="0"';
+        });
+
+        // 17. <button> with no accessible name. Three cases:
+        //   (a) <button></button> (truly empty) → aria-label="Unlabeled button"
+        //   (b) <button><img src=... no alt></button> → give the img a derived alt
+        //       from nearby <figcaption> or a generic fallback
+        //   (c) <button title="..."> with no text → promote title to aria-label
+        // We skip any button that already has aria-label / aria-labelledby / text.
+        accessibleHtml = accessibleHtml.replace(/<button\b([^>]*)>([\s\S]*?)<\/button>/gi, (match, attrs, inner) => {
+          // Already labeled? leave alone
+          if (/\baria-label\s*=/i.test(attrs) || /\baria-labelledby\s*=/i.test(attrs)) return match;
+          // Any visible text content (strip tags)?
+          const innerText = inner.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim();
+          if (innerText.length > 0) return match;
+          // Case (c): title attribute present → promote
+          const titleMatch = attrs.match(/\btitle\s*=\s*["']([^"']+)["']/i);
+          if (titleMatch && titleMatch[1].trim().length > 0) {
+            _bumpTier1('button_title_to_aria');
+            return `<button${attrs} aria-label="${titleMatch[1].replace(/"/g, '&quot;')}">${inner}</button>`;
+          }
+          // Case (b): contains <img> with no alt? add alt, then rely on img→button name
+          if (/<img\b[^>]*>/i.test(inner) && !/<img\b[^>]*\balt\s*=/i.test(inner)) {
+            _bumpTier1('button_img_alt');
+            const fixedInner = inner.replace(/<img\b([^>]*)>/i, '<img$1 alt="Button icon">');
+            return `<button${attrs}>${fixedInner}</button>`;
+          }
+          // Case (a): truly empty → generic label
+          _bumpTier1('button_empty_label');
+          return `<button${attrs} aria-label="Unlabeled button">${inner}</button>`;
+        });
+
+        // 18. Placeholder alt text — "image", "picture", "photo", "img", "icon"
+        // alone. These pass axe's `image-alt` rule (presence) but fail a human
+        // review and Gemini's audit flags them. Try figcaption proximity first
+        // (the figure that contains this img), else leave the alt as-is — we
+        // prefer honest silence over making up content.
+        accessibleHtml = accessibleHtml.replace(/<figure\b([^>]*)>([\s\S]*?)<\/figure>/gi, (figMatch, figAttrs, figInner) => {
+          const figcap = figInner.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i);
+          if (!figcap) return figMatch;
+          const caption = figcap[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+          if (caption.length < 3) return figMatch;
+          let rewroteImg = false;
+          const rewritten = figInner.replace(/<img\b([^>]*)\balt\s*=\s*["']([^"']*)["']([^>]*)>/gi, (imgMatch, pre, altVal, post) => {
+            const lower = altVal.toLowerCase().trim();
+            if (['image', 'picture', 'photo', 'img', 'icon', 'graphic', 'figure'].includes(lower)) {
+              rewroteImg = true;
+              const safe = caption.slice(0, 200).replace(/"/g, '&quot;');
+              return `<img${pre} alt="${safe}"${post}>`;
+            }
+            return imgMatch;
+          });
+          if (rewroteImg) { _bumpTier1('placeholder_alt_from_figcaption'); return `<figure${figAttrs}>${rewritten}</figure>`; }
+          return figMatch;
+        });
+
         if (aiFixCount > 0) {
           warnLog(`[PDF Fix] Applied ${aiFixCount} deterministic accessibility fixes`);
+          const _t1Summary = Object.entries(_tier1Counts).map(([k, v]) => `${k}=${v}`).join(' ');
+          if (_t1Summary) warnLog(`[Det Fix] Tier-1 extensions: ${_t1Summary}`);
           if (addToast) addToast(`🔧 Auto-fixed ${aiFixCount} accessibility issues`, 'success');
         }
       }
@@ -6716,6 +7061,31 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (axeResults) {
         const reAxe = await runAxeAudit(accessibleHtml);
         if (reAxe) axeResults = reAxe;
+      }
+
+      // ── Step 4d: Tier 2 surgical AI fixes ──
+      // Bounded-blast-radius fixes for single-element-scope violations
+      // (image-alt, link-name, button-name, frame-title, etc.). Each cluster's
+      // fix is verified by re-auditing the rewritten subtree in isolation; we
+      // accept only if targeted violations strictly decrease and no new ones
+      // are introduced. Whatever remains afterward goes to Tier 3 (chunked AI).
+      if (axeResults && axeResults.totalViolations > 0) {
+        try {
+          updateProgress(4, 'Surgical AI fixes (bounded blast radius)...');
+          const t2 = await runTier2SurgicalFixes(accessibleHtml, axeResults);
+          if (t2 && t2.stats.accepted > 0) {
+            accessibleHtml = t2.html;
+            // Re-audit so the chunked loop's prompt reflects what's actually left
+            const postT2Axe = await runAxeAudit(accessibleHtml);
+            if (postT2Axe) axeResults = postT2Axe;
+            warnLog('[Tier2] applied — axe violations now ' + axeResults.totalViolations);
+            if (addToast) addToast('🎯 Tier 2: surgically fixed ' + t2.stats.violationsFixed + ' violation(s) in ' + t2.stats.accepted + ' cluster(s)', 'success');
+          } else if (t2) {
+            warnLog('[Tier2] no clusters accepted (' + t2.stats.clustersConsidered + ' considered, ' + t2.stats.rejected + ' rejected)');
+          }
+        } catch (t2Err) {
+          warnLog('[Tier2] surgical fix pass failed (continuing to Tier 3):', t2Err && t2Err.message);
+        }
       }
 
       _pipeStepEnd(3, 'axe: ' + (axeResults ? axeResults.totalViolations : '?') + ' violations, AI: ' + (verification ? verification.score : '?') + '/100');
