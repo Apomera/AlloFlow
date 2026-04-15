@@ -1,7 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  AlloFlow — Local App                                               ║
 // ║  Auto-assembled by local_build.js — DO NOT EDIT MANUALLY            ║
-// ║  Built: 2026-04-15T14:57:01.274Z
+// ║  Built: 2026-04-15T16:37:22.734Z
 // ╚══════════════════════════════════════════════════════════════════════╝
 // @mode react
 
@@ -9090,6 +9090,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('WordSoundsSetupModule', './shared/modules/word_sounds_setup_module.js');
     loadModule('AdventureModule', './shared/modules/adventure_module.js');
     loadModule('StudentInteractionModule', './shared/modules/student_interaction_module.js');
+    // ── ContentEngine module (source text generation, lesson tools) ──
+    loadModule('createContentEngine', './shared/modules/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -16882,7 +16884,16 @@ const parseTaggedContent = (text) => {
       if (useSearch) return { text: "", groundingMetadata: null };
       return "";
     }
-    const _buildUrl = (model) => { console.log(`[callGemini] ✉ Using model: ${model}`); return 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */ };
+    const _buildUrl = (model) => {
+      console.log(`[callGemini] ✉ Using model: ${model}`);
+      const _aiProv = window.__alloLocalConfig?.aiProvider;
+      if (_aiProv === 'gemini' || _aiProv === 'copilot') {
+        // Route through local server proxy for cloud providers (server holds the token)
+        const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
+        return `${_base}/api/gemini/proxy/${encodeURIComponent(model || 'gemini-2.0-flash')}`;
+      }
+      return 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+    };
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {

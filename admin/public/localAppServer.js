@@ -87,8 +87,15 @@ function buildLocalConfigScript() {
         }
     } catch (_) {}
 
+    // For cloud providers (gemini, copilot), redirect llmEngineUrl to this server
+    // so that ai_local_module.js calls /v1/chat/completions here instead of LM Studio.
+    const CLOUD_PROVIDERS = new Set(['gemini', 'copilot', 'openai']);
+    if (CLOUD_PROVIDERS.has(cfg.aiProvider)) {
+        cfg.llmEngineUrl = `http://localhost:${_serverPort}`;
+    }
+
     // SECURITY: Do NOT inject tokens here. Server uses tokens internally via API proxy.
-    // Client calls: POST /api/ai/chat with { provider, messages, ... }
+    // Client calls: POST /v1/chat/completions (OpenAI-compat) — dispatched by provider.
     // Server authenticates with stored tokens and returns only the AI response.
 
     return `<script>
@@ -193,6 +200,184 @@ async function handleAiChatApi(req, res, body) {
     }
 }
 
+/**
+ * Read the configured aiProvider from ai_config.json (at request time).
+ * @returns {string} aiProvider — 'gemini', 'copilot', 'lmstudio', etc.
+ */
+function readAiProvider() {
+    try {
+        if (fs.existsSync(AI_CONFIG_FILE)) {
+            const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+            return ai.aiProvider || 'lmstudio';
+        }
+    } catch {}
+    return 'lmstudio';
+}
+
+/**
+ * Log an AI proxy event to the console.
+ * @param {string} route    e.g. '/v1/chat/completions'
+ * @param {string} provider e.g. 'gemini'
+ * @param {number} status   HTTP status returned
+ * @param {number} ms       Elapsed milliseconds
+ */
+function logAIProxy(route, provider, status, ms) {
+    console.log(`[localApp:ai-proxy] ${route} → ${provider} | ${status} | ${ms}ms`);
+}
+
+/**
+ * Handle /v1/chat/completions — OpenAI-compatible proxy dispatched by aiProvider.
+ * Gemini and Copilot are handled server-side with stored tokens.
+ * LM Studio requests are passed through to localhost:1234.
+ */
+async function handleV1ChatCompletions(req, res, body) {
+    const t0 = Date.now();
+    const provider = readAiProvider();
+
+    try {
+        if (provider === 'gemini') {
+            const token = loadGeminiToken();
+            if (!token) {
+                logAIProxy('/v1/chat/completions', 'gemini', 401, Date.now() - t0);
+                res.writeHead(401, { 'Content-Type': 'application/json' });
+                return res.end(JSON.stringify({ error: 'Gemini token not available — re-authorize in Settings' }));
+            }
+            // Forward as-is to Gemini's OpenAI-compat endpoint
+            const upstream = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body),
+            });
+            const data = await upstream.json();
+            logAIProxy('/v1/chat/completions', 'gemini', upstream.status, Date.now() - t0);
+            res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify(data));
+
+        } else if (provider === 'copilot') {
+            const token = loadCopilotToken();
+            if (!token) {
+                logAIProxy('/v1/chat/completions', 'copilot', 401, Date.now() - t0);
+                res.writeHead(401, { 'Content-Type': 'application/json' });
+                return res.end(JSON.stringify({ error: 'Copilot token not available — re-authorize in Settings' }));
+            }
+            // GitHub Copilot uses the standard OpenAI completions endpoint
+            const copilotEndpoint = (() => {
+                try {
+                    if (fs.existsSync(AI_CONFIG_FILE)) {
+                        const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+                        return ai.copilot?.endpoint || 'https://api.githubcopilot.com';
+                    }
+                } catch {}
+                return 'https://api.githubcopilot.com';
+            })();
+            const upstream = await fetch(`${copilotEndpoint}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Editor-Version': 'AlloFlow/1.0',
+                    'Copilot-Integration-Id': 'vscode-chat',
+                },
+                body: JSON.stringify(body),
+            });
+            const data = await upstream.json();
+            logAIProxy('/v1/chat/completions', 'copilot', upstream.status, Date.now() - t0);
+            res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify(data));
+
+        } else {
+            // LM Studio passthrough
+            const lmUrl = 'http://localhost:1234/v1/chat/completions';
+            const upstream = await fetch(lmUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await upstream.json();
+            logAIProxy('/v1/chat/completions', provider, upstream.status, Date.now() - t0);
+            res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify(data));
+        }
+    } catch (err) {
+        console.error('[localApp:ai-proxy] /v1/chat/completions error:', err.message);
+        logAIProxy('/v1/chat/completions', provider, 500, Date.now() - t0);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'AI proxy error: ' + err.message }));
+    }
+}
+
+/**
+ * Handle /v1/models — returns a virtual model list for cloud providers,
+ * or passes through to LM Studio for local providers.
+ * Used by the app's offline banner check.
+ */
+async function handleV1Models(req, res) {
+    const t0 = Date.now();
+    const provider = readAiProvider();
+
+    if (provider === 'gemini') {
+        const data = { object: 'list', data: [{ id: 'gemini-2.0-flash', object: 'model', owned_by: 'google' }] };
+        logAIProxy('/v1/models', 'gemini', 200, Date.now() - t0);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
+    } else if (provider === 'copilot') {
+        const data = { object: 'list', data: [{ id: 'gpt-4o', object: 'model', owned_by: 'github' }] };
+        logAIProxy('/v1/models', 'copilot', 200, Date.now() - t0);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
+    } else {
+        // LM Studio passthrough
+        try {
+            const upstream = await fetch('http://localhost:1234/v1/models');
+            const data = await upstream.json();
+            logAIProxy('/v1/models', provider, upstream.status, Date.now() - t0);
+            res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify(data));
+        } catch (err) {
+            logAIProxy('/v1/models', provider, 503, Date.now() - t0);
+            res.writeHead(503, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ error: 'LM Studio not reachable' }));
+        }
+    }
+}
+
+/**
+ * Handle /api/gemini/proxy/:model — accepts Gemini-native format and proxies to Gemini API.
+ * Used by callGemini() in local app when aiProvider=gemini so the client never needs a token.
+ * @param {http.ServerRequest} req
+ * @param {http.ServerResponse} res
+ * @param {string} model  Gemini model name (e.g. 'gemini-2.0-flash')
+ * @param {object} body   Gemini-native payload {contents, generationConfig?, tools?, ...}
+ */
+async function handleGeminiNativeProxy(req, res, model, body) {
+    const t0 = Date.now();
+    const token = loadGeminiToken();
+    if (!token) {
+        logAIProxy(`/api/gemini/proxy/${model}`, 'gemini', 401, Date.now() - t0);
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Gemini token not available — re-authorize in Settings' }));
+    }
+
+    const safeModel = model || 'gemini-2.0-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${safeModel}:generateContent`;
+    try {
+        const upstream = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(body),
+        });
+        const data = await upstream.json();
+        logAIProxy(`/api/gemini/proxy/${safeModel}`, 'gemini', upstream.status, Date.now() - t0);
+        res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
+    } catch (err) {
+        console.error('[localApp:ai-proxy] /api/gemini/proxy error:', err.message);
+        logAIProxy(`/api/gemini/proxy/${safeModel}`, 'gemini', 500, Date.now() - t0);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Gemini proxy error: ' + err.message }));
+    }
+}
+
 // ── Path resolution ───────────────────────────────────────────────────────────
 
 /**
@@ -249,6 +434,48 @@ function startLocalAppServer(port, isPackaged) {
                     try {
                         const parsed = JSON.parse(body);
                         await handleAiChatApi(req, res, parsed);
+                    } catch (err) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+                    }
+                });
+                return;
+            }
+
+            // OpenAI-compatible proxy — dispatches to Gemini/Copilot/LM Studio
+            if (urlPath === '/v1/chat/completions' && req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => { body += chunk.toString(); });
+                req.on('end', async () => {
+                    try {
+                        const parsed = JSON.parse(body);
+                        await handleV1ChatCompletions(req, res, parsed);
+                    } catch (err) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+                    }
+                });
+                return;
+            }
+
+            if (urlPath === '/v1/models' && (req.method === 'GET' || req.method === 'OPTIONS')) {
+                handleV1Models(req, res).catch(err => {
+                    console.error('[localApp:ai-proxy] /v1/models error:', err.message);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: err.message }));
+                });
+                return;
+            }
+
+            // Gemini native-format proxy — used by callGemini() when aiProvider=gemini
+            if (urlPath.startsWith('/api/gemini/proxy/') && req.method === 'POST') {
+                const model = decodeURIComponent(urlPath.slice('/api/gemini/proxy/'.length));
+                let body = '';
+                req.on('data', chunk => { body += chunk.toString(); });
+                req.on('end', async () => {
+                    try {
+                        const parsed = JSON.parse(body);
+                        await handleGeminiNativeProxy(req, res, model, parsed);
                     } catch (err) {
                         res.writeHead(400, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ error: 'Invalid JSON' }));

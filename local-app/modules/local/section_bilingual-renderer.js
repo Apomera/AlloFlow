@@ -536,7 +536,16 @@ const parseTaggedContent = (text) => {
       if (useSearch) return { text: "", groundingMetadata: null };
       return "";
     }
-    const _buildUrl = (model) => { console.log(`[callGemini] ✉ Using model: ${model}`); return 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */ };
+    const _buildUrl = (model) => {
+      console.log(`[callGemini] ✉ Using model: ${model}`);
+      const _aiProv = window.__alloLocalConfig?.aiProvider;
+      if (_aiProv === 'gemini' || _aiProv === 'copilot') {
+        // Route through local server proxy for cloud providers (server holds the token)
+        const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
+        return `${_base}/api/gemini/proxy/${encodeURIComponent(model || 'gemini-2.0-flash')}`;
+      }
+      return 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+    };
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
