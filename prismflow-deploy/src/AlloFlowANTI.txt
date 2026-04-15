@@ -7837,27 +7837,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7873,7 +7873,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b4d57e8/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18110,6 +18110,11 @@ Return ONLY valid JSON:
           if (playbackSessionRef.current === sessionId) stopPlayback();
           return;
       }
+      // Advance the karaoke highlight up-front. Earlier we tried waiting until play()
+      // resolved, but in modes where the user clicks sentences rapidly (FAQ/Adventure/Persona),
+      // play() often rejects with AbortError when a prior audio is paused, which prevented
+      // the highlight from ever updating and left the UI stuck. It's safer to move the
+      // highlight here and clear it on final failure in handlePlaybackError.
       setPlaybackState(prev => ({ ...prev, currentIdx: index }));
       if (!preloadedAudio) setIsGeneratingAudio(true);
       try {
@@ -18230,22 +18235,78 @@ Return ONLY valid JSON:
                .replace(/^\d+\.\s/gm, '')                     // numbered lists
                .replace(/\s+/g, ' ')                          // collapse whitespace
                .trim();
+          // Browser-TTS fallback is opt-in. Users who'd rather hear *something* when
+          // Gemini refuses or exhausts retries can enable alloflow_ai_config.browserTtsFallback.
+          // Default off because overlapping retry + fallback was producing double audio.
+          const _browserTtsFallbackEnabled = (() => {
+              try {
+                  const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+                  return cfg.browserTtsFallback === true;
+              } catch { return false; }
+          })();
+          // Idempotency guard: audio.onerror and playPromise.catch can both fire for the
+          // same failure, and each call was scheduling its own retry. One decision per segment.
+          let _errorHandled = false;
+          const speakViaBrowserFallback = (reason) => {
+              warnLog(`Browser-TTS fallback at index ${index} (${reason})`);
+              try {
+                  if (!('speechSynthesis' in window)) {
+                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                      return;
+                  }
+                  const utter = new SpeechSynthesisUtterance(textToSpeak);
+                  utter.rate = playbackRateRef.current || 1;
+                  const advance = () => {
+                      if (playbackSessionRef.current !== sessionId) return;
+                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                  };
+                  utter.onend = advance;
+                  utter.onerror = advance;
+                  setPlaybackState(prev => ({ ...prev, currentIdx: index }));
+                  setIsPlaying(true);
+                  setIsGeneratingAudio(false);
+                  window.speechSynthesis.speak(utter);
+              } catch (e) {
+                  warnLog('Browser-TTS fallback threw:', e);
+                  playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+              }
+          };
           const handlePlaybackError = (err) => {
+              if (_errorHandled) return;
+              _errorHandled = true;
               warnLog(`Playback error at index ${index} (Retry ${retryCount}):`, err);
               if (audioUrl) {
                   releaseBlob(audioUrl);
                   delete audioBufferRef.current[bufferKey];
               }
               if (playbackSessionRef.current === sessionId) {
-                  const isRefusal = err.isModelRefusal || (err.message && err.message.includes("Refusal"));
-                  const isAbort = err.name === 'AbortError' || err.name === 'NotAllowedError';
-                  if (!isRefusal && !isAbort && retryCount < 2) {
-                      debugLog(`Retrying segment ${index}...`);
+                  const isRefusal = err && err.isModelRefusal === true;
+                  const isAbort = err && (err.name === 'AbortError' || err.name === 'NotAllowedError');
+                  if (isAbort) return;
+                  if (isRefusal) {
+                      if (_browserTtsFallbackEnabled) {
+                          warnLog(`Segment ${index} refused by Gemini safety filter — using browser TTS fallback.`);
+                          speakViaBrowserFallback('refusal');
+                      } else {
+                          warnLog(`Segment ${index} refused by Gemini safety filter — skipping (enable browserTtsFallback to hear sentence via system voice).`);
+                          playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                      }
+                      return;
+                  }
+                  if (retryCount < 3) {
+                      // Exponential backoff: 1s, 2s, 4s — handles 429s and transient 5xx
+                      const backoffMs = 1000 * Math.pow(2, retryCount);
+                      debugLog(`Retrying segment ${index} in ${backoffMs}ms (attempt ${retryCount + 1}/3)...`);
                       setTimeout(() => {
-                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1);
-                      }, 1000); // Back off 1 second to avoid hammering Gemini API
+                          if (playbackSessionRef.current === sessionId) {
+                              playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1);
+                          }
+                      }, backoffMs);
+                  } else if (_browserTtsFallbackEnabled) {
+                      warnLog(`Segment ${index} exhausted Gemini retries — using browser TTS fallback.`);
+                      speakViaBrowserFallback('retries-exhausted');
                   } else {
-                      warnLog(`Segment ${index} definitively failed/skipped.`);
+                      warnLog(`Segment ${index} exhausted Gemini retries — skipping.`);
                       playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
                   }
               }
@@ -19929,17 +19990,63 @@ Return ONLY valid JSON:
       .slide-num { position: absolute; bottom: 8px; right: 16px; font-size: 10px; color: #94a3b8; font-weight: 600; }
     </style></head><body>${slides.map((s, i) => s.replace('</div></div>', '<div class="slide-num">' + (i+1) + ' / ' + slides.length + '</div></div></div>')).join('\n')}</body></html>`;
   };
+  // Track the last-toasted preview error so re-renders (theme change, config tweak,
+  // history update) don't spam the user with the same message on every effect tick.
+  const _exportPreviewErrorRef = React.useRef(null);
   // Update preview iframe when config changes
   const updateExportPreview = React.useCallback(() => {
     if (!exportPreviewRef.current) return;
     const iframe = exportPreviewRef.current;
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
-    const html = getExportPreviewHTML();
+    // Catch synchronous throws from the CDN pipeline (e.g. missing state bindings)
+    // so a rendering bug never crashes the whole React tree through the effect.
+    let html;
+    try {
+      html = getExportPreviewHTML();
+      _exportPreviewErrorRef.current = null; // clear on success
+    } catch (err) {
+      const msg = (err && err.message) ? err.message : String(err);
+      warnLog('[Export preview] getExportPreviewHTML threw:', err);
+      // Toast only once per distinct error message per modal-open, not per re-render
+      if (_exportPreviewErrorRef.current !== msg) {
+        _exportPreviewErrorRef.current = msg;
+        addToast && addToast('Preview failed to render — the document pipeline reported an error. Check console for details.', 'error');
+      }
+      const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
+    }
     doc.open();
     doc.write(html);
     doc.close();
   }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, history, studentResponses, selectedFont]);
+
+  // Re-render preview when the modal opens, history/config changes, or the
+  // CDN-loaded doc pipeline finishes loading. Without this, opening the
+  // Document Builder before doc_pipeline_module.js was ready left the iframe
+  // blank with no retrigger, and later history changes never re-rendered.
+  React.useEffect(() => {
+    if (!showExportPreview) {
+      _exportPreviewErrorRef.current = null; // reset so reopening can toast again
+      return;
+    }
+    // Poll briefly for _docPipeline readiness — it's loaded from a CDN module
+    // and may not be available at the moment the modal opens.
+    let cancelled = false;
+    let attempts = 0;
+    const tryRender = () => {
+      if (cancelled) return;
+      const pipelineReady = !!(window.AlloModules && window.AlloModules.createDocPipeline);
+      if (pipelineReady || attempts > 20) {
+        updateExportPreview();
+        return;
+      }
+      attempts++;
+      setTimeout(tryRender, 150);
+    };
+    tryRender();
+    return () => { cancelled = true; };
+  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, studentResponses, selectedFont, updateExportPreview]);
 
   // Helper: update export config and refresh preview in one call
   const setExportConfigAndRefresh = (updater) => {
@@ -20118,6 +20225,12 @@ Return ONLY valid JSON:
 
   // Execute the actual export from preview — uses edited iframe content if available
   const executeExportFromPreview = async () => {
+    // Readiness guard: if the CDN doc pipeline hasn't loaded, bail loudly instead
+    // of silently producing an empty file via the no-op fallback at line ~18961.
+    if (!_docPipeline) {
+      addToast(t('export_status.pipeline_loading') || 'Export tools still loading — please try again in a moment.', 'error');
+      return;
+    }
     const mode = exportPreviewMode;
     const isWorksheet = mode === 'worksheet';
     // Read the user's edited content from the iframe instead of regenerating
@@ -20145,6 +20258,20 @@ Return ONLY valid JSON:
       console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');
       htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
       console.log(`[Export] ✅ Regenerated from history: ${htmlContent.length} chars, ${history.length} history items`);
+    }
+    // Empty-output guard: if the renderer produced nothing substantive, show why
+    // instead of silently downloading a blank file.
+    if (!htmlContent || htmlContent.trim().length < 200) {
+      const exportable = getExportableHistory();
+      const skipped = getSkippedResources();
+      if (exportable.length === 0 && skipped.length > 0) {
+        addToast(`No exportable resources — ${skipped.length} interactive resource${skipped.length === 1 ? '' : 's'} (${skipped.slice(0, 3).join(', ')}${skipped.length > 3 ? '…' : ''}) can't be exported as static documents.`, 'error');
+      } else if (exportable.length === 0) {
+        addToast('No resources in history to export yet.', 'error');
+      } else {
+        addToast('Export came back empty — the document pipeline may not be ready. Please try again.', 'error');
+      }
+      return;
     }
 
     // ── Inject TTS audio if toggled on ──
@@ -20223,8 +20350,24 @@ Return ONLY valid JSON:
   };
 
   const handleExport = async (mode = 'html') => {
+    if (!_docPipeline) {
+      addToast(t('export_status.pipeline_loading') || 'Export tools still loading — please try again in a moment.', 'error');
+      return;
+    }
     const isWorksheet = mode === 'worksheet';
     const htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
+    if (!htmlContent || htmlContent.trim().length < 200) {
+      const exportable = getExportableHistory();
+      const skipped = getSkippedResources();
+      if (exportable.length === 0 && skipped.length > 0) {
+        addToast(`No exportable resources — ${skipped.length} interactive resource${skipped.length === 1 ? '' : 's'} (${skipped.slice(0, 3).join(', ')}${skipped.length > 3 ? '…' : ''}) can't be exported as static documents.`, 'error');
+      } else if (exportable.length === 0) {
+        addToast('No resources in history to export yet.', 'error');
+      } else {
+        addToast('Export came back empty — the document pipeline may not be ready. Please try again.', 'error');
+      }
+      return;
+    }
 
     // ── Blind Output Accessibility Audit (runs in background, non-blocking) ──
     if (mode === 'print') {
@@ -32760,6 +32903,30 @@ Return ONLY JSON:
                                                         <p className="text-[11px] text-slate-600 mt-1">Fast uses a smaller model for quicker response. High Quality is richer but slower.</p>
                                                     </div>
                                                 )}
+                                                {/* ── Browser-TTS Fallback Toggle ──
+                                                    When Gemini refuses a sentence or exhausts retries, fall back to the
+                                                    system voice instead of skipping. Default off because the system voice
+                                                    sounds jarring next to Gemini. */}
+                                                <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+                                                    <label className="flex items-start gap-2 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="mt-0.5 accent-indigo-600"
+                                                            defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').browserTtsFallback === true; } catch { return false; } })()}
+                                                            onChange={(e) => {
+                                                                try {
+                                                                    const cur = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+                                                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, browserTtsFallback: e.target.checked }));
+                                                                } catch {}
+                                                            }}
+                                                            aria-label="Use browser voice as fallback when Gemini TTS refuses or fails"
+                                                        />
+                                                        <span className="text-[11px] leading-tight">
+                                                            <span className="font-bold text-slate-600 dark:text-slate-200 block">Browser-voice fallback</span>
+                                                            <span className="text-slate-600 dark:text-slate-400">Read refused/failed sentences with the system voice instead of skipping.</span>
+                                                        </span>
+                                                    </label>
+                                                </div>
                                                 {/* ── Non-English Language TTS Indicator ── */}
                                                 {_isCanvasEnv && leveledTextLanguage && leveledTextLanguage !== 'English' && (
                                                     <div className="mt-2 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
