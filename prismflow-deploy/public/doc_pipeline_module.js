@@ -113,7 +113,8 @@ var createDocPipeline = function(deps) {
   // Re-expose state vars as getters so existing code works unchanged
   var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
       selectedFont, responses, history, inputText, gradeLevel,
-      projectName, studentNickname, isTeacherMode, generatedContent,
+      projectName, studentNickname, isTeacherMode, isIndependentMode, isParentMode,
+      currentUiLanguage, generatedContent,
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
@@ -133,7 +134,10 @@ var createDocPipeline = function(deps) {
     selectedFont = s.selectedFont; responses = s.responses; history = s.history;
     inputText = s.inputText; gradeLevel = s.gradeLevel;
     projectName = s.projectName; studentNickname = s.studentNickname;
-    isTeacherMode = s.isTeacherMode; generatedContent = s.generatedContent;
+    isTeacherMode = s.isTeacherMode;
+    isIndependentMode = s.isIndependentMode; isParentMode = s.isParentMode;
+    currentUiLanguage = s.currentUiLanguage;
+    generatedContent = s.generatedContent;
     pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
     pdfFixResult = s.pdfFixResult; pdfAuditResult = s.pdfAuditResult;
     pdfAutoFixPasses = s.pdfAutoFixPasses; pdfPolishPasses = s.pdfPolishPasses;
@@ -5388,6 +5392,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       // ── Deterministic HTML renderer from JSON content blocks ──
+      // Track image-block ordinal so each placeholder marker carries a stable
+      // data-img-idx that survives AI passes. Without this, the association
+      // pass (line ~5952) relied on DOM position order, which drifts whenever
+      // an AI pass removes, merges, or reorders figures.
+      let _imageBlockIdx = 0;
       const renderJsonToHtml = (blocks) => {
         if (!Array.isArray(blocks)) return '';
         return blocks.map((block, blockIdx) => {
@@ -5447,8 +5456,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             }
             case 'image': {
               // Use data-img-placeholder marker instead of SVG data URI (avoids regex issues)
+              // Stable data-img-idx binds this marker to extractedImages[idx] regardless
+              // of DOM reordering by later AI passes.
               const imgDesc = (block.description || block.alt || 'Image').replace(/"/g, '&quot;');
-              return `<figure data-img-placeholder="true" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
+              const stableIdx = _imageBlockIdx++;
+              return `<figure data-img-placeholder="true" data-img-idx="${stableIdx}" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
             }
             case 'link': return `<a href="${block.url || '#'}" style="color:${docStyle.accentColor}">${block.text}</a>`;
             case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
@@ -5947,14 +5959,26 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
       // any AI pass from accidentally corrupting/truncating/stripping base64 image data.
       const _deferredImageMap = {}; // token -> dataUrl
       if (extractedImages.length > 0) {
-        let imgIdx = 0;
+        let positionalIdx = 0; // fallback only, for markers without data-img-idx
         // Find figure elements with data-img-placeholder marker (clean, no regex issues)
         bodyContent = bodyContent.replace(/<figure data-img-placeholder="true"[\s\S]*?<\/figure>/gi, (match) => {
           const captionMatch = match.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i);
           const altText = captionMatch ? captionMatch[1].replace(/<[^>]*>/g, '').trim() : 'Image';
+          // Prefer the stable data-img-idx stamped at placement time (survives AI passes
+          // that might reorder or drop figures). Fall back to positional counter for any
+          // legacy/AI-generated markers lacking the attribute.
+          const stableMatch = match.match(/data-img-idx="(\d+)"/);
+          let resolvedIdx;
+          if (stableMatch) {
+            resolvedIdx = parseInt(stableMatch[1], 10);
+          } else {
+            resolvedIdx = positionalIdx;
+            warnLog('[PDF Fix] data-img-placeholder figure missing data-img-idx — falling back to positional index ' + positionalIdx + ' (placement may drift if AI passes reordered figures)');
+          }
+          positionalIdx++;
           {
-            const imgInfo = extractedImages[imgIdx] || null;
-            imgIdx++;
+            const imgInfo = extractedImages[resolvedIdx] || null;
+            const imgIdx = resolvedIdx + 1; // keep legacy 1-based id/label
             const imgId = 'pdf-img-' + imgIdx;
             const desc = imgInfo ? imgInfo.description : altText;
             const purpose = imgInfo ? (imgInfo.educationalPurpose || '') : '';
@@ -5992,6 +6016,27 @@ ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage
         });
         _pipeLog('Images', 'Deferred ' + Object.keys(_deferredImageMap).length + ' image(s) as placeholder tokens — real data URLs restored at end of pipeline');
       }
+      // ── Figure-integrity diagnostic ──
+      // Counts how many of our stamped data-img-idx figures are still present in the HTML.
+      // Call this after each potentially destructive pass (aiFixChunked, surgical remediation,
+      // axe auto-fix, etc.) to surface exactly which pass is dropping figures.
+      const _trackedImgIdxs = Array.from({ length: extractedImages.length }, (_, i) => i);
+      const _countFigureIntegrity = (html, label) => {
+        if (!extractedImages.length) return null;
+        const present = new Set();
+        const re = /data-img-idx="(\d+)"/g;
+        let m;
+        while ((m = re.exec(html)) !== null) present.add(parseInt(m[1], 10));
+        const missing = _trackedImgIdxs.filter(i => !present.has(i));
+        const summary = `${present.size}/${extractedImages.length} figures present`;
+        if (missing.length > 0) {
+          warnLog(`[Figure integrity] after ${label}: ${summary} — MISSING idx [${missing.join(', ')}]`);
+        } else {
+          _pipeLog('Figure integrity', `after ${label}: ${summary} — all figures intact`);
+        }
+        return { present: present.size, missing };
+      };
+      _countFigureIntegrity(bodyContent, 'placement');
 
       // Wrap in full HTML document
       let accessibleHtml = `<!DOCTYPE html>
@@ -6516,6 +6561,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             warnLog(`[Auto-fix] Pass ${fixPass + 1} AI fix failed:`, fixErr);
             break;
           }
+          _countFigureIntegrity(accessibleHtml, `aiFixChunked pass ${fixPass + 1}`);
 
           // Deterministic cleanup after each AI fix pass — catches AI-introduced errors
           const _postListFix = fixListViolations(accessibleHtml);
@@ -6845,6 +6891,93 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // swap placeholder tokens for the real base64 data URLs. Because this is a deterministic
       // string replacement on tokens that passed through every AI stage unchanged, we guarantee
       // zero image corruption regardless of what any AI pass tried to do.
+      const _finalIntegrity = _countFigureIntegrity(accessibleHtml, 'final (pre data-URL restore)');
+      // ── Unplaced-images drawer ──
+      // Any extracted image whose figure got dropped by an AI pass (or never had a
+      // landing block emitted by Gemini) appears here. Each entry offers: a thumbnail,
+      // a download button (so the user can salvage the image), and an "Insert here"
+      // button that re-inserts a fresh placeholder where the user's cursor is. This
+      // way extraction-without-placement never silently loses the image.
+      if (_finalIntegrity && _finalIntegrity.missing.length > 0) {
+        const unplaced = _finalIntegrity.missing
+          .map(idx => ({ idx, info: extractedImages[idx] }))
+          .filter(o => o.info && o.info.generatedSrc);
+        if (unplaced.length > 0) {
+          const drawerId = 'unplaced-images-drawer';
+          const drawerHtml = `
+<aside id="${drawerId}" role="complementary" aria-label="Extracted images not placed in document" style="margin-top:3rem;padding:1.25rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px">
+  <h2 style="margin-top:0;font-size:1.15rem;color:#78350f">📎 Extracted Images (${unplaced.length}) — not placed in document</h2>
+  <p style="font-size:0.9rem;color:#78350f;margin:0.25rem 0 1rem">These images were extracted from the source PDF but didn't end up in the document body. Use the buttons below to download them or insert them where needed.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem">
+    ${unplaced.map(({ idx, info }) => {
+      const token = '__ALLOFLOW_DATAURL_FINAL_UNPLACED_' + idx + '__';
+      _deferredImageMap[token] = info.generatedSrc;
+      const safeDesc = (info.description || 'Image ' + (idx + 1)).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const dlName = ('pdf-image-' + (idx + 1) + (info.generatedSrc.indexOf('image/png') > -1 ? '.png' : '.jpg')).replace(/"/g, '');
+      return `<div data-unplaced-idx="${idx}" style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:0.5rem;display:flex;flex-direction:column;gap:0.5rem">
+      <img src="${token}" alt="${safeDesc}" style="width:100%;height:120px;object-fit:contain;background:#f8fafc;border-radius:4px">
+      <div style="font-size:0.75rem;color:#475569;line-height:1.3">${safeDesc.substring(0, 120)}${safeDesc.length > 120 ? '…' : ''}</div>
+      <div style="font-size:0.7rem;color:#94a3b8">${info.page ? 'Page ' + info.page : ''}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <a href="${token}" download="${dlName}" style="flex:1;text-align:center;padding:6px 8px;background:#2563eb;color:white;text-decoration:none;border-radius:4px;font-size:0.75rem;font-weight:600">⬇ Download</a>
+        <button onclick="window.__insertUnplacedImage && window.__insertUnplacedImage(${idx})" style="flex:1;padding:6px 8px;background:#059669;color:white;border:none;border-radius:4px;font-size:0.75rem;font-weight:600;cursor:pointer">↪ Insert here</button>
+      </div>
+    </div>`;
+    }).join('')}
+  </div>
+  <p class="sr-only">End of extracted-images drawer.</p>
+</aside>
+<script>
+// "Insert here" inserts a figure with the extracted image at the current caret/selection.
+window.__insertUnplacedImage = function(idx) {
+  var card = document.querySelector('[data-unplaced-idx="' + idx + '"]');
+  if (!card) return;
+  var img = card.querySelector('img');
+  var desc = card.querySelector('div[style*="color:#475569"]');
+  if (!img || !img.src) return;
+  var fig = document.createElement('figure');
+  fig.setAttribute('data-img-idx', 'user-inserted-' + idx);
+  fig.style.margin = '1em 0';
+  fig.style.textAlign = 'center';
+  var newImg = document.createElement('img');
+  newImg.src = img.src;
+  newImg.alt = img.alt || 'Inserted image';
+  newImg.style.maxWidth = '100%';
+  newImg.style.borderRadius = '8px';
+  newImg.style.border = '1px solid #e2e8f0';
+  fig.appendChild(newImg);
+  if (desc && desc.textContent) {
+    var cap = document.createElement('figcaption');
+    cap.textContent = desc.textContent;
+    cap.style.fontSize = '0.85em';
+    cap.style.color = '#64748b';
+    cap.style.fontStyle = 'italic';
+    cap.style.marginTop = '0.5em';
+    fig.appendChild(cap);
+  }
+  var sel = window.getSelection && window.getSelection();
+  if (sel && sel.rangeCount > 0 && document.body.contains(sel.anchorNode)) {
+    var range = sel.getRangeAt(0);
+    range.collapse(false);
+    range.insertNode(fig);
+    range.setStartAfter(fig); range.setEndAfter(fig); sel.removeAllRanges(); sel.addRange(range);
+  } else {
+    var main = document.querySelector('main') || document.body;
+    main.appendChild(fig);
+  }
+  card.style.opacity = '0.45';
+  var btn = card.querySelector('button');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Inserted'; btn.style.background = '#94a3b8'; btn.style.cursor = 'default'; }
+};
+</script>`;
+          accessibleHtml = accessibleHtml.replace('</main>', drawerHtml + '\n</main>');
+          if (!accessibleHtml.includes(drawerId)) {
+            // No </main> — fall back to before </body>
+            accessibleHtml = accessibleHtml.replace('</body>', drawerHtml + '\n</body>');
+          }
+          _pipeLog('Images', 'Unplaced drawer: ' + unplaced.length + ' image(s) offered for download/insert');
+        }
+      }
       if (_deferredImageMap && Object.keys(_deferredImageMap).length > 0) {
         const _tokenCountBefore = Object.keys(_deferredImageMap).reduce((acc, tok) => acc + (accessibleHtml.split(tok).length - 1), 0);
         Object.keys(_deferredImageMap).forEach((token) => {
@@ -8387,8 +8520,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = config || exportConfig;
-      const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses, cfg)).join('');
-      const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => generateResourceHTML(item, true, responses, cfg)).join('') : '';
+      // Per-item try/catch: one malformed resource (e.g. adventure-linked item with missing fields)
+      // should NOT blank the whole pack. Log the failure and keep going.
+      const renderItemSafely = (item, isTeacher) => {
+          try {
+              const html = generateResourceHTML(item, isTeacher, responses, cfg);
+              return typeof html === 'string' ? html : '';
+          } catch (err) {
+              console.warn('[Export] Resource render failed, skipping:', item && item.type, item && item.id, err);
+              return `<!-- skipped resource: ${item && item.type} (${item && item.id}) — render error -->`;
+          }
+      };
+      const studentContent = historyItems.map(item => renderItemSafely(item, false)).join('');
+      const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => renderItemSafely(item, true)).join('') : '';
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
