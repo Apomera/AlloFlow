@@ -7837,27 +7837,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7873,7 +7873,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f9a9be/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18105,7 +18105,7 @@ Return ONLY valid JSON:
           }
       }
   }, [isPaused]);
-  const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0) => {
+  const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null) => {
       if (playbackSessionRef.current !== sessionId || index >= sentences.length) {
           if (playbackSessionRef.current === sessionId) stopPlayback();
           return;
@@ -18200,11 +18200,17 @@ Return ONLY valid JSON:
               // Build a voice profile instruction for consistent accent/tone across all TTS calls
               const geminiAvailable = !_isCanvasEnv || (Date.now() >= globalTtsRateLimitedUntil);
               if (geminiAvailable) {
-                  // Find the character's voice profile for consistent accent instructions
+                  // Find the character's voice profile for consistent accent instructions.
+                  // Prefer speakerName (threaded from handleSpeak) over voice match, since in
+                  // panel/debate mode multiple characters can share a fallback-hashed voice but
+                  // need distinct voiceProfile prompts. Matching on voice alone caused char 2 to
+                  // inherit char 1's voiceProfile, which produced contradictory Gemini prompts
+                  // (e.g. "[speak as Maria, Mexican]" + Sulafat voice) that triggered silent refusals.
                   let voiceInstruction = `[speak in character as ${activeSpeaker}]`;
                   const isPanelMode = personaState.selectedCharacters && personaState.selectedCharacters.length > 0;
                   const speakingChar = isPanelMode
-                    ? personaState.selectedCharacters.find(c => c.voice === activeSpeaker || c.name === currentMsg?.speakerName)
+                    ? (speakerName && personaState.selectedCharacters.find(c => c.name === speakerName))
+                      || personaState.selectedCharacters.find(c => c.voice === activeSpeaker)
                     : personaState.selectedCharacter;
                   if (speakingChar && speakingChar.voiceProfile) {
                     // Use the detailed voice profile for consistent accent/tone
@@ -18251,14 +18257,14 @@ Return ONLY valid JSON:
               warnLog(`Browser-TTS fallback at index ${index} (${reason})`);
               try {
                   if (!('speechSynthesis' in window)) {
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName);
                       return;
                   }
                   const utter = new SpeechSynthesisUtterance(textToSpeak);
                   utter.rate = playbackRateRef.current || 1;
                   const advance = () => {
                       if (playbackSessionRef.current !== sessionId) return;
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName);
                   };
                   utter.onend = advance;
                   utter.onerror = advance;
@@ -18268,7 +18274,7 @@ Return ONLY valid JSON:
                   window.speechSynthesis.speak(utter);
               } catch (e) {
                   warnLog('Browser-TTS fallback threw:', e);
-                  playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                  playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName);
               }
           };
           const handlePlaybackError = (err) => {
@@ -18277,8 +18283,11 @@ Return ONLY valid JSON:
               warnLog(`Playback error at index ${index} (Retry ${retryCount}):`, err);
               if (audioUrl) {
                   releaseBlob(audioUrl);
-                  delete audioBufferRef.current[bufferKey];
               }
+              // Always invalidate the cached TTS promise on error, not only when we
+              // got a URL back. Otherwise a timed-out/hung callTTS promise stays in the
+              // buffer and every retry awaits the same zombie promise → stuck forever.
+              delete audioBufferRef.current[bufferKey];
               if (playbackSessionRef.current === sessionId) {
                   const isRefusal = err && err.isModelRefusal === true;
                   const isAbort = err && (err.name === 'AbortError' || err.name === 'NotAllowedError');
@@ -18289,7 +18298,7 @@ Return ONLY valid JSON:
                           speakViaBrowserFallback('refusal');
                       } else {
                           warnLog(`Segment ${index} refused by Gemini safety filter — skipping (enable browserTtsFallback to hear sentence via system voice).`);
-                          playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                          playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName);
                       }
                       return;
                   }
@@ -18299,7 +18308,7 @@ Return ONLY valid JSON:
                       debugLog(`Retrying segment ${index} in ${backoffMs}ms (attempt ${retryCount + 1}/3)...`);
                       setTimeout(() => {
                           if (playbackSessionRef.current === sessionId) {
-                              playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1);
+                              playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName);
                           }
                       }, backoffMs);
                   } else if (_browserTtsFallbackEnabled) {
@@ -18307,7 +18316,7 @@ Return ONLY valid JSON:
                       speakViaBrowserFallback('retries-exhausted');
                   } else {
                       warnLog(`Segment ${index} exhausted Gemini retries — skipping.`);
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName);
                   }
               }
           };
@@ -18470,7 +18479,7 @@ Return ONLY valid JSON:
                   } catch (e) {
                   }
               }
-              playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreloadedAudio, 0);
+              playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreloadedAudio, 0, speakerName);
           };
           audio.onerror = (e) => {
               if (watchdogTimer) clearTimeout(watchdogTimer);
@@ -18524,16 +18533,16 @@ Return ONLY valid JSON:
           if (playbackSessionRef.current === sessionId) {
               if (err.message && err.message.includes("finishReason: OTHER")) {
                   setTimeout(() => {
-                        playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1);
+                        playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName);
                   }, 500);
               } else {
                   warnLog("Critical Playback Error:", err);
                   if (retryCount < 2) {
                       setTimeout(() => {
-                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1);
+                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName);
                       }, 500);
                   } else {
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, activeSpeaker);
+                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, speakerName);
                   }
               }
           }
@@ -18640,6 +18649,15 @@ Return ONLY valid JSON:
         }
         const sessionId = Date.now();
         playbackSessionRef.current = sessionId;
+        // Capture the speakerName now so playSequence can resolve the right character
+        // in panel/debate mode — matching on voice alone is ambiguous when characters
+        // share a voice slot.
+        let personaSpeakerName = null;
+        if (contentId.startsWith('persona-message-')) {
+            const _msgIdx = parseInt(contentId.replace('persona-message-', ''), 10);
+            const _msg = personaState.chatHistory[_msgIdx];
+            if (_msg && _msg.speakerName) personaSpeakerName = _msg.speakerName;
+        }
         setPlayingContentId(contentId);
         setIsPlaying(true);
         setIsPaused(false);
@@ -18703,8 +18721,8 @@ Return ONLY valid JSON:
                  activeSpeaker = selectedVoice;
              }
         }
-        console.log("[handleSpeak] Using playSequence() - mode:", mode, "sentences:", cleanSentences.length);
-        playSequence(startIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker);
+        console.log("[handleSpeak] Using playSequence() - mode:", mode, "sentences:", cleanSentences.length, "speaker:", personaSpeakerName);
+        playSequence(startIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, personaSpeakerName);
     } else {
         setIsGeneratingAudio(true);
         setPlayingContentId(contentId);
