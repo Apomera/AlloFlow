@@ -6514,6 +6514,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     });
                   }
                 }
+                // Road-edge reflectors (cat's eyes) — small beads every 4m.
+                // Amber on the right edge, white on the left (US convention).
+                // Use MeshBasicMaterial so they glow independent of scene lighting.
+                var isNightRef = scn.time === 'night' || scn.id === 'night';
+                var amberMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffc040 : 0xbc7a1a });
+                var whiteRefMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffffff : 0xcccccc });
+                for (var refZ = chunkWorldZ + 2; refZ < chunkWorldZ + CHUNK_SIZE - 2; refZ += 4) {
+                  var refCtr = markCenterAtZ(refZ);
+                  var amber = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), amberMat);
+                  amber.position.set(refCtr + 3.3, 0.02, refZ);
+                  chunkGroup.add(amber);
+                  var whiteR = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), whiteRefMat);
+                  whiteR.position.set(refCtr - 3.3, 0.02, refZ);
+                  chunkGroup.add(whiteR);
+                }
               }
 
               // ─── WEATHER-REACTIVE DETAILS ───

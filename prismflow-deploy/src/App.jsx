@@ -4685,6 +4685,35 @@ const getBilingualPromptInstruction = (targetLang) => {
     `;
 };
 
+// Reliable two-call bilingual generator: generates the target-language text first,
+// then makes a second call to translate it to English, and concatenates with the
+// standard "--- ENGLISH TRANSLATION ---" delimiter. This is more reliable than
+// asking Gemini to emit both blocks in a single response (which frequently
+// collapses to English-only output). For English targetLang, it just runs the
+// base prompt and returns the result with no translation block.
+const generateBilingualText = async (basePrompt, targetLang, callGeminiFn) => {
+    const stripFences = (s) => String(s || "")
+        .replace(/^```[a-zA-Z]*\n/i, '')
+        .replace(/^```\s*/, '')
+        .replace(/```\s*$/, '')
+        .trim();
+    if (!targetLang || targetLang === 'English') {
+        const raw = await callGeminiFn(basePrompt);
+        return stripFences(raw);
+    }
+    const targetPrompt = `${basePrompt}\nCRITICAL: Return ONLY the ${targetLang} text. Do NOT provide an English translation yet.`;
+    const targetResult = stripFences(await callGeminiFn(targetPrompt));
+    const translationPrompt = `
+      Translate the following ${targetLang} text into English.
+      Maintain the formatting, tone, emojis, and citation markers exactly.
+      Return ONLY the English translation.
+      Text to Translate:
+      "${targetResult}"
+    `;
+    const englishResult = stripFences(await callGeminiFn(translationPrompt));
+    return `${targetResult}\n\n--- ENGLISH TRANSLATION ---\n\n${englishResult}`;
+};
+
 // Extract the English portion from bilingual content (or return full text if not bilingual)
 // Also returns metadata about what was found
 const extractSourceTextForProcessing = (text, preferEnglish = true) => {
@@ -7837,27 +7866,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7873,7 +7902,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ce64615/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1185122/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -27535,7 +27564,6 @@ Return ONLY JSON.`;
             return;
         } else {
             setGenerationStep(t('status_steps.adapting_text'));
-            const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
             const prompt = `
               Rewrite the following text for ${effectiveGrade} level in ${effectiveLanguage}.
               ${complexityGuide}
@@ -27554,12 +27582,11 @@ Return ONLY JSON.`;
               ${studentInterests.length > 0 ? `- CRITICAL: Explain key concepts using analogies and examples related to: "${studentInterests.join(', ')}" to increase engagement and relevance.` : ''}
               ${standardsPromptString ? `- CRITICAL: Align the text complexity and skill focus to meet Target Standards: "${standardsPromptString}".` : ''}
               ${dokLevel ? `- Target Webb's Depth of Knowledge (DOK): ${dokLevel}` : ''}
-              ${bilingualInstruction}
               ${dialectInstruction}
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
-            content = await callGemini(prompt);
+            content = await generateBilingualText(prompt, effectiveLanguage, callGemini);
             const currentWordCount = countWords(content);
             const minWords = targetWords * LENGTH_THRESHOLDS.MIN_VARIANCE;
             const maxWords = targetWords * LENGTH_THRESHOLDS.MAX_VARIANCE;
@@ -31021,9 +31048,9 @@ Return ONLY JSON:
     if (!generatedContent || !generatedContent.alignmentCheck || !generatedContent?.data) return;
     setIsProcessing(true);
     try {
-        const currentText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+        const rawText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+        const { text: currentText } = extractSourceTextForProcessing(rawText, false);
         const suggestion = generatedContent.alignmentCheck.improvement;
-        const bilingualInstruction = getBilingualPromptInstruction(leveledTextLanguage);
         const prompt = `
             Rewrite the following educational text to address specific feedback regarding standard alignment.
             Current Text:
@@ -31034,9 +31061,9 @@ Return ONLY JSON:
             Instructions:
             - Incorporate the suggestion to increase rigor or alignment.
             - Maintain the appropriate reading level for ${gradeLevel}.
-            ${bilingualInstruction}
+            - Write the rewritten text in ${leveledTextLanguage}.
         `;
-        const newText = await callGemini(prompt);
+        const newText = await generateBilingualText(prompt, leveledTextLanguage, callGemini);
         const updatedContent = { ...generatedContent, data: newText };
         delete updatedContent.alignmentCheck;
         if (updatedContent.levelCheck) delete updatedContent.levelCheck;
@@ -31435,9 +31462,9 @@ Return ONLY JSON:
         let prompt = '';
         let jsonMode = false;
         if (generatedContent.type === 'simplified') {
-            const currentText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+            const rawText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+            const { text: currentText } = extractSourceTextForProcessing(rawText, false);
             const direction = isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
-            const bilingualInstruction = getBilingualPromptInstruction(leveledTextLanguage);
             prompt = `
                 Rewrite the following educational text.
                 Goal: Make the text ${direction} relative to its current version.
@@ -31446,7 +31473,7 @@ Return ONLY JSON:
                 Instructions:
                 - Keep the same topic and core information.
                 - ${isSimpler ? "Shorten sentences, reduce vocabulary difficulty, focus on clarity." : "Increase sentence variety, use more precise academic vocabulary, add nuance."}
-                ${bilingualInstruction}
+                - Write the rewritten text in ${leveledTextLanguage}.
                 Current Text:
                 "${currentText}"
             `;
@@ -31505,7 +31532,9 @@ Return ONLY JSON:
                 Return ONLY JSON matching the input structure exactly.
             `;
         }
-        const result = await callGemini(prompt, jsonMode);
+        const result = (!jsonMode && generatedContent.type === 'simplified')
+            ? await generateBilingualText(prompt, leveledTextLanguage, callGemini)
+            : await callGemini(prompt, jsonMode);
         let updatedData;
         if (jsonMode) {
             const parsed = JSON.parse(cleanJson(result));
