@@ -2163,11 +2163,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         try {
           var a = audioRef.current;
           // Stop and disconnect all oscillators and buffer sources
-          ['engineOsc', '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode'].forEach(function(key) {
+          ['engineOsc', '_engineHarm', '_engineOct', '_engineNoise', '_engineLFO',
+           '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode',
+           '_rumbleOsc', '_brakeOsc', '_signalOsc'].forEach(function(key) {
             if (a[key]) { try { a[key].stop(); } catch(e2){} a[key] = null; }
           });
           // Zero all gains
-          ['engineGain', '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain'].forEach(function(key) {
+          ['engineGain', '_engineFundGain', '_engineHarmGain', '_engineOctGain',
+           '_engineNoiseGain', '_engineLFOGain',
+           '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain',
+           '_rumbleGain', '_brakeGain', '_signalGain'].forEach(function(key) {
             if (a[key]) { try { a[key].gain.value = 0; a[key].disconnect(); } catch(e3){} a[key] = null; }
           });
           // Reset audio state so next drive creates fresh nodes
@@ -3258,23 +3263,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var a = audioRef.current;
           if (!a.ctx) return;
           var car = carRef.current;
-          // Engine hum: low oscillator whose frequency tracks RPM-ish (speed + throttle)
+          // Engine audio — 4-cylinder-ish layered synth.
+          // Graph (built once, retuned per frame):
+          //   fundamentalOsc (triangle, firing rate) → fundGain ─┐
+          //   harmonicOsc    (sawtooth at 2×)      → harmGain ─┤
+          //   octaveOsc      (square at 4×)        → octGain  ─┤→ engineLPF → engineGain → ctx
+          //   combustionNoise(filtered pink noise)  → noiseGain ┘
+          //   pitchLFO      (slow sine, ±2%)       → fundamental frequency (idle wobble)
           try {
             if (!a.engineOsc) {
-              a.engineOsc = a.ctx.createOscillator();
+              // Fundamental ≈ engine firing rate; 4-cyl 4-stroke idles ~10 Hz but
+              // we can't go that low, so treat fundamental as 2nd harmonic (≈20-50 Hz)
+              // and stack up from there. Makes the result feel like a real motor
+              // rather than a buzz-saw.
+              a.engineOsc = a.ctx.createOscillator(); // fundamental
+              a.engineOsc.type = 'triangle';
+              a.engineOsc.frequency.value = 40;
+              a._engineHarm = a.ctx.createOscillator(); // 2× saw
+              a._engineHarm.type = 'sawtooth';
+              a._engineHarm.frequency.value = 80;
+              a._engineOct = a.ctx.createOscillator(); // 4× square (top-end rasp)
+              a._engineOct.type = 'square';
+              a._engineOct.frequency.value = 160;
+              // Individual gains so we can mix harmonics per throttle.
+              a._engineFundGain = a.ctx.createGain(); a._engineFundGain.gain.value = 0.7;
+              a._engineHarmGain = a.ctx.createGain(); a._engineHarmGain.gain.value = 0.25;
+              a._engineOctGain  = a.ctx.createGain(); a._engineOctGain.gain.value  = 0.05;
+              // Low-pass filter opens as throttle rises — airy top end under load.
+              a._engineLPF = a.ctx.createBiquadFilter();
+              a._engineLPF.type = 'lowpass';
+              a._engineLPF.frequency.value = 300;
+              a._engineLPF.Q.value = 0.7;
+              // Master engine gain (legacy name kept so existing shutdown code works).
               a.engineGain = a.ctx.createGain();
-              a.engineOsc.type = 'sawtooth';
-              a.engineOsc.frequency.value = 60;
               a.engineGain.gain.value = 0;
-              a.engineOsc.connect(a.engineGain);
+              // Combustion noise: white noise → band-pass → gain, adds irregularity.
+              var nLen = a.ctx.sampleRate * 1;
+              var nBuf = a.ctx.createBuffer(1, nLen, a.ctx.sampleRate);
+              var nData = nBuf.getChannelData(0);
+              for (var ni = 0; ni < nLen; ni++) nData[ni] = Math.random() * 2 - 1;
+              a._engineNoise = a.ctx.createBufferSource();
+              a._engineNoise.buffer = nBuf;
+              a._engineNoise.loop = true;
+              a._engineNoiseBP = a.ctx.createBiquadFilter();
+              a._engineNoiseBP.type = 'bandpass';
+              a._engineNoiseBP.frequency.value = 160;
+              a._engineNoiseBP.Q.value = 1.2;
+              a._engineNoiseGain = a.ctx.createGain();
+              a._engineNoiseGain.gain.value = 0.04;
+              // Pitch LFO — tiny wobble so idle doesn't sound laser-flat.
+              a._engineLFO = a.ctx.createOscillator();
+              a._engineLFO.type = 'sine';
+              a._engineLFO.frequency.value = 3.5;
+              a._engineLFOGain = a.ctx.createGain();
+              a._engineLFOGain.gain.value = 1.2; // ±1.2 Hz wobble at idle
+              // Wire it up
+              a.engineOsc.connect(a._engineFundGain).connect(a._engineLPF);
+              a._engineHarm.connect(a._engineHarmGain).connect(a._engineLPF);
+              a._engineOct.connect(a._engineOctGain).connect(a._engineLPF);
+              a._engineNoise.connect(a._engineNoiseBP).connect(a._engineNoiseGain).connect(a._engineLPF);
+              a._engineLPF.connect(a.engineGain);
               a.engineGain.connect(a.ctx.destination);
+              a._engineLFO.connect(a._engineLFOGain).connect(a.engineOsc.frequency);
+              // Start sources
               a.engineOsc.start();
+              a._engineHarm.start();
+              a._engineOct.start();
+              a._engineNoise.start();
+              a._engineLFO.start();
             }
             if (a.ctx.state === 'suspended') a.ctx.resume();
-            var targetFreq = 50 + car.speed * 3 + car.throttle * 30;
-            var targetGain = Math.min(0.06, 0.01 + car.throttle * 0.05 + car.speed * 0.0015);
-            a.engineOsc.frequency.setTargetAtTime(targetFreq, a.ctx.currentTime, 0.08);
-            a.engineGain.gain.setTargetAtTime(targetGain, a.ctx.currentTime, 0.1);
+            // Fundamental = idle (≈32 Hz) + speed + throttle contributions.
+            // Throttle affects pitch MORE than speed when stopped (revving in park)
+            // and less when already at speed (engine already spinning). Nonlinear
+            // mix matches how drivers actually feel the motor.
+            var idleHz = 32;
+            var speedHz = Math.abs(car.speed) * 2.4;
+            var throtHz = car.throttle * (car.speed < 2 ? 45 : 22);
+            var fund = idleHz + speedHz + throtHz;
+            var now = a.ctx.currentTime;
+            a.engineOsc.frequency.setTargetAtTime(fund, now, 0.07);
+            a._engineHarm.frequency.setTargetAtTime(fund * 2, now, 0.07);
+            a._engineOct.frequency.setTargetAtTime(fund * 4, now, 0.07);
+            // Open the filter under throttle — more rasp when accelerating.
+            var lpfTarget = 280 + car.throttle * 1800 + Math.abs(car.speed) * 12;
+            a._engineLPF.frequency.setTargetAtTime(lpfTarget, now, 0.12);
+            // Mix: more harmonic saw + octave square under load.
+            a._engineHarmGain.gain.setTargetAtTime(0.18 + car.throttle * 0.35, now, 0.1);
+            a._engineOctGain.gain.setTargetAtTime(0.02 + car.throttle * 0.18, now, 0.1);
+            a._engineNoiseGain.gain.setTargetAtTime(0.03 + car.throttle * 0.08, now, 0.1);
+            // LFO intensity — wobble more at idle, less when revving (smoother combustion).
+            var lfoAmt = car.throttle < 0.1 ? 1.8 : Math.max(0.3, 1.5 - car.throttle * 2);
+            a._engineLFOGain.gain.setTargetAtTime(lfoAmt, now, 0.15);
+            // Master volume — audible but never dominant.
+            var targetGain = Math.min(0.09, 0.018 + car.throttle * 0.055 + Math.abs(car.speed) * 0.0012);
+            a.engineGain.gain.setTargetAtTime(targetGain, now, 0.1);
             // Skid screech: short high burst while skidding
             if (skidRef.current.active && !a._skidOsc) {
               a._skidOsc = a.ctx.createOscillator();
@@ -3317,6 +3400,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var windCutoff = 200 + car.speed * 20;
             a._windGain.gain.setTargetAtTime(windVol, a.ctx.currentTime, 0.1);
             a._windFilter.frequency.setTargetAtTime(windCutoff, a.ctx.currentTime, 0.1);
+            // Tire-on-surface noise — separate noise layer, filter tuning depends
+            // on the cell the car is currently over: asphalt = narrow mid-band,
+            // grass = wider+lower (muffled), gravel/shoulder = crunchy higher-Q.
+            // Weather modulates: rain adds sizzling top end; snow damps everything.
+            if (!a._tireNode) {
+              var tBufSize = a.ctx.sampleRate * 1.5;
+              var tBuf = a.ctx.createBuffer(1, tBufSize, a.ctx.sampleRate);
+              var tData = tBuf.getChannelData(0);
+              for (var tni = 0; tni < tBufSize; tni++) tData[tni] = (Math.random() * 2 - 1) * 0.6;
+              a._tireNode = a.ctx.createBufferSource();
+              a._tireNode.buffer = tBuf;
+              a._tireNode.loop = true;
+              a._tireFilter = a.ctx.createBiquadFilter();
+              a._tireFilter.type = 'bandpass';
+              a._tireFilter.frequency.value = 600;
+              a._tireFilter.Q.value = 0.8;
+              a._tireGain = a.ctx.createGain();
+              a._tireGain.gain.value = 0;
+              a._tireNode.connect(a._tireFilter).connect(a._tireGain).connect(a.ctx.destination);
+              a._tireNode.start();
+            }
+            // Sample the surface cell under the car. Cell values: 0=road, 2=grass,
+            // 3=centerline (still road), 4=sidewalk, 5=tree (blocked — treat as grass).
+            var tireCell = 0;
+            if (infiniteWorldRef.current) {
+              tireCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
+            } else if (mapRef.current) {
+              var tcy = Math.floor(car.y), tcx = Math.floor(car.x);
+              if (tcy >= 0 && tcy < MAP_SIZE && tcx >= 0 && tcx < MAP_SIZE) tireCell = mapRef.current[tcy][tcx];
+            }
+            var onRoad = (tireCell === 0 || tireCell === 3);
+            var onSidewalk = (tireCell === 4);
+            var weather = currentScenario.weather;
+            // Center freq + Q vary by surface
+            var tireFreq, tireQ, tireVolMult;
+            if (onRoad) { tireFreq = 550 + Math.abs(car.speed) * 12; tireQ = 0.7; tireVolMult = 1.0; }
+            else if (onSidewalk) { tireFreq = 900 + Math.abs(car.speed) * 18; tireQ = 1.4; tireVolMult = 1.3; }
+            else { tireFreq = 280 + Math.abs(car.speed) * 6; tireQ = 0.5; tireVolMult = 1.15; } // grass/off-road
+            if (weather === 'rain') { tireFreq *= 1.4; tireVolMult *= 1.25; }
+            else if (weather === 'snow') { tireFreq *= 0.7; tireVolMult *= 0.55; }
+            var tireVol = Math.min(0.08, Math.abs(car.speed) * 0.0022 * tireVolMult);
+            a._tireGain.gain.setTargetAtTime(tireVol, a.ctx.currentTime, 0.08);
+            a._tireFilter.frequency.setTargetAtTime(tireFreq, a.ctx.currentTime, 0.08);
+            a._tireFilter.Q.setTargetAtTime(tireQ, a.ctx.currentTime, 0.15);
             // Rain ambient (if raining — constant patter)
             if (currentScenario.weather === 'rain' && !a._rainNode) {
               var rainBuf = a.ctx.createBuffer(1, a.ctx.sampleRate * 2, a.ctx.sampleRate);
