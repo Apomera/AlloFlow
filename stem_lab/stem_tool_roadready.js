@@ -2185,6 +2185,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         drivingRef.current = true;
         pausedRef.current = false;
         updMulti({ view: 'driving', scenario: scn.id, vehicle: veh.id });
+        // Door-thud when the session starts. Delay slightly so the audio ctx
+        // (which only initializes on user gesture) has definitely resumed.
+        setTimeout(function() { playDoorClose(); }, 80);
       }, []);
 
       var exitDriving = useCallback(function() {
