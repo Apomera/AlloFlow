@@ -5635,7 +5635,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               } else {
                 warnLog(`[PDF Fix] JSON parse failed for chunk ${i + 1}, attempting object-by-object recovery`);
                 const recovered = [];
-                const objectMatches = cleaned.match(/\{[^{}]*"type"\s*:\s*"[^"]+?"[^{}]*\}/g);
+                const objectMatches = cleaned.match(/\{[^{}]*"(?:type|tag|element)"\s*:\s*"[^"]+?"[^{}]*\}/g);
                 if (objectMatches && objectMatches.length > 0) {
                   let recoveredCount = 0;
                   objectMatches.forEach(objStr => {
@@ -6681,24 +6681,31 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
           // Phase 3: Remove artifacts found by diff analysis
           // Convert raw JSON blocks to HTML (these are definitely artifacts, not intentional)
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:p|paragraph)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:h[1-6])"\s*,\s*"text"\s*:\s*"([^"]*)"\s*(?:,\s*"id"\s*:\s*"[^"]*"\s*)?\}/g, '<h2>$1</h2>');
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
+          // Handle both canonical schema {"type":"p","text":"..."} AND Gemini's alternate
+          // schema {"tag":"p","class":"ds6","content":"..."} which leaks when the AI returns
+          // a different structure than expected.
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:p|paragraph)"[^{}]*?(?:"(?:text|content)"\s*:\s*"([^"]*)")?\s*\}/g, function(m, txt) { return txt ? '<p>' + txt + '</p>' : ''; });
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:h[1-6])"[^{}]*?(?:"(?:text|content)"\s*:\s*"([^"]*)")?\s*\}/g, function(m, txt) { return txt ? '<h2>' + txt + '</h2>' : ''; });
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
             var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
             return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
           });
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:blockquote)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"hr"\s*\}/g, '<hr>');
-          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
-          // Strip JSON wrappers — expanded to catch Gemini-invented keys and transition fragments
-          // The original patterns only caught known keys (html/content/text/section); Gemini sometimes invents
-          // keys like "fixed_html", "output_html", "accessible_html", etc. Match any <word>_html or html-ending key.
-          accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section|fixed_html|output_html|accessible_html|\w*_?html)":\s*"/gm, '');
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:blockquote)"[^{}]*?"(?:text|content)"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"hr"\s*\}/g, '<hr>');
+          // Catch-all: any JSON object with a "text" or "content" field containing 10+ chars
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
+          // Strip JSON wrappers — catch all known Gemini key variants including alternate schemas.
+          // Gemini has returned: {html, content, text, section, fixed_html, output_html, accessible_html,
+          // tag, class, element, value, body} — match any of these or any *_html key.
+          var _jsonKeyPat = '(?:html|content|text|section|tag|class|element|value|body|fixed_html|output_html|accessible_html|\\w*_?html)';
+          accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[\\s*\\{[^}]*"' + _jsonKeyPat + '"\\s*:\\s*"', 'gm'), '');
           accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
           // Strip JSON array transition fragments: "}{ or "][{ patterns that leak between concatenated
           // JSON objects when Gemini returns multiple blocks. These appear as visible garbage in the output.
-          accessibleHtml = accessibleHtml.replace(/"\s*,\s*\{\s*"(?:fixed_html|output_html|accessible_html|\w*_?html|html|content|text|section)"\s*:\s*"/g, '\n');
-          accessibleHtml = accessibleHtml.replace(/"\s*\]\s*\[\s*\{\s*"(?:fixed_html|output_html|accessible_html|\w*_?html|html|content|text|section)"\s*:\s*"/g, '\n');
+          accessibleHtml = accessibleHtml.replace(new RegExp('"\\s*,\\s*\\{\\s*"' + _jsonKeyPat + '"\\s*:\\s*"', 'g'), '\n');
+          accessibleHtml = accessibleHtml.replace(new RegExp('"\\s*\\]\\s*\\[\\s*\\{\\s*"' + _jsonKeyPat + '"\\s*:\\s*"', 'g'), '\n');
+          // Also strip standalone "} ][" and "} ][ {" fragments with no recognized key (bare transitions).
+          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*\[\s*\{\s*"/g, '\n');
           // Strip orphan escaped-quote-plus-comma fragments ("," or " , ") that appear as raw text when
           // JSON array item separators leak through without being consumed by another cleanup pattern.
           // Only match when surrounded by whitespace/newlines so we don't corrupt legitimate content.
@@ -6706,7 +6713,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = accessibleHtml.replace(/(\n|>)\s*"\s*,\s*(\n|<)/g, '$1$2');
 
           // Phase 4: If artifacts remain, send ONLY the diffs to Gemini (not the whole doc)
-          var _remainingArtifacts = (accessibleHtml.match(/\{"type"\s*:\s*"/g) || []).length;
+          var _remainingArtifacts = (accessibleHtml.match(/\{"(?:type|tag|element)"\s*:\s*"/g) || []).length;
           if (_remainingArtifacts > 0 && callGemini && _artifacts.length > 0) {
             _pipeLog('Diff', _remainingArtifacts + ' artifacts remain — sending diff summary to Gemini for cleanup');
             try {

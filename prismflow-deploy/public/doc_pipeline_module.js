@@ -113,10 +113,8 @@ var createDocPipeline = function(deps) {
   // Re-expose state vars as getters so existing code works unchanged
   var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
       selectedFont, responses, history, inputText, gradeLevel,
-      projectName, studentNickname, isTeacherMode, isIndependentMode, isParentMode,
-      currentUiLanguage, generatedContent,
+      projectName, studentNickname, isTeacherMode, generatedContent,
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
-      pdfAutoSaveProject,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
       pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
@@ -135,13 +133,9 @@ var createDocPipeline = function(deps) {
     selectedFont = s.selectedFont; responses = s.responses; history = s.history;
     inputText = s.inputText; gradeLevel = s.gradeLevel;
     projectName = s.projectName; studentNickname = s.studentNickname;
-    isTeacherMode = s.isTeacherMode;
-    isIndependentMode = s.isIndependentMode; isParentMode = s.isParentMode;
-    currentUiLanguage = s.currentUiLanguage;
-    generatedContent = s.generatedContent;
+    isTeacherMode = s.isTeacherMode; generatedContent = s.generatedContent;
     pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
     pdfFixResult = s.pdfFixResult; pdfAuditResult = s.pdfAuditResult;
-    pdfAutoSaveProject = (typeof s.pdfAutoSaveProject === 'boolean') ? s.pdfAutoSaveProject : true;
     pdfAutoFixPasses = s.pdfAutoFixPasses; pdfPolishPasses = s.pdfPolishPasses;
     pdfAuditorCount = s.pdfAuditorCount;
     pdfPreviewTheme = s.pdfPreviewTheme; pdfPreviewFontSize = s.pdfPreviewFontSize;
@@ -219,104 +213,6 @@ var createDocPipeline = function(deps) {
         tx.onerror = function() { reject(tx.error); };
       });
     }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
-  };
-
-  // ── Multi-session PDF remediation persistence ──
-  // Lets users tackle a long PDF over multiple days on a free Gemini quota.
-  // Each session runs the remediation pipeline on a page range, persists the
-  // remediated HTML to IndexedDB keyed by a stable doc fingerprint (filename +
-  // size + page count), and merges across sessions on demand.
-  //
-  // Reuses the existing _CHUNK_DB infrastructure — different namespace prefix
-  // ('msdoc_' vs 'chunk_') so the keys don't collide. Expiry is 30 days
-  // (vs. chunk-progress's 24 hours) because multi-day workflows are the point.
-  var _MULTI_SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-  var _MULTI_SESSION_SCHEMA = 1;
-
-  // Hash a filename + size + total page count into a stable session key that
-  // identifies the same PDF across uploads. Same algorithm as _chunkSessionId
-  // so the deterministic-hash discipline is consistent.
-  var _multiSessionId = function(filename, fileSize, pageCount) {
-    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
-    var hash = 0;
-    for (var i = 0; i < raw.length; i++) {
-      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-      hash |= 0;
-    }
-    return 'msdoc_' + Math.abs(hash).toString(36);
-  };
-
-  // Load the multi-session record for a given session ID. Returns null when
-  // there's no record, or when the record is older than the expiry window
-  // (in which case it's also cleared from disk so it doesn't sit around).
-  var loadMultiSession = function(sessionId) {
-    return _openChunkDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx = db.transaction(_CHUNK_STORE, 'readonly');
-        var req = tx.objectStore(_CHUNK_STORE).get(sessionId);
-        req.onsuccess = function() { resolve(req.result || null); };
-        req.onerror = function() { reject(req.error); };
-      });
-    }).then(function(record) {
-      if (!record) return null;
-      if (record.schemaVersion !== _MULTI_SESSION_SCHEMA) {
-        warnLog('[MultiSession] Record schema version mismatch — discarding.');
-        return clearMultiSession(sessionId).then(function() { return null; });
-      }
-      var age = Date.now() - (record.lastUpdatedAt || record.createdAt || 0);
-      if (age > _MULTI_SESSION_EXPIRY_MS) {
-        warnLog('[MultiSession] Record expired (' + Math.round(age / (24 * 60 * 60 * 1000)) + ' days old) — clearing.');
-        return clearMultiSession(sessionId).then(function() { return null; });
-      }
-      return record;
-    }).catch(function(e) { warnLog('[MultiSession] Load failed:', e && e.message); return null; });
-  };
-
-  // Append (or replace, if pages overlap) one remediated range to a session
-  // record. Creates the record on first call. Does not merge HTML — that's
-  // the caller's job via mergeRangesToFullHtml.
-  var saveMultiSessionRange = function(sessionId, meta, rangeData) {
-    return loadMultiSession(sessionId).then(function(existing) {
-      var record = existing || {
-        schemaVersion: _MULTI_SESSION_SCHEMA,
-        sessionId: sessionId,
-        fileName: meta.fileName,
-        fileSize: meta.fileSize,
-        pageCount: meta.pageCount,
-        createdAt: Date.now(),
-        ranges: [],
-      };
-      // Replace any existing range that exactly matches the new one's
-      // [start, end] (re-running the same range overwrites). For overlap
-      // handling beyond exact match, mergeRangesToFullHtml will sort and
-      // resolve at merge time.
-      var newPages = rangeData.pages;
-      record.ranges = (record.ranges || []).filter(function(r) {
-        return !(r.pages && r.pages[0] === newPages[0] && r.pages[1] === newPages[1]);
-      });
-      record.ranges.push(Object.assign({ completedAt: Date.now() }, rangeData));
-      record.lastUpdatedAt = Date.now();
-      return _openChunkDB().then(function(db) {
-        return new Promise(function(resolve, reject) {
-          var tx = db.transaction(_CHUNK_STORE, 'readwrite');
-          tx.objectStore(_CHUNK_STORE).put(record, sessionId);
-          tx.oncomplete = function() { resolve(record); };
-          tx.onerror = function() { reject(tx.error); };
-        });
-      });
-    }).catch(function(e) { warnLog('[MultiSession] Save failed:', e && e.message); return null; });
-  };
-
-  // Erase a session record entirely (the user clicked "Clear saved progress").
-  var clearMultiSession = function(sessionId) {
-    return _openChunkDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
-        tx.objectStore(_CHUNK_STORE).delete(sessionId);
-        tx.oncomplete = function() { resolve(); };
-        tx.onerror = function() { reject(tx.error); };
-      });
-    }).catch(function(e) { warnLog('[MultiSession] Clear failed:', e && e.message); });
   };
 
   // ── Deterministic integrity helpers ──
@@ -967,180 +863,6 @@ var createDocPipeline = function(deps) {
     return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
   };
 
-  // ── OCR-assisted Vision extraction helpers ──
-  // Lazy-load Tesseract.js. Used to produce a character-level "ground truth" layer
-  // that is handed to Gemini Vision alongside the page image, so Vision can reconcile
-  // against it and avoid silently dropping paragraphs or hallucinating text. ~15MB
-  // download on first use; cached on window.__tesseractWorker so it's one-time.
-  const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
-  const TESSERACT_WORKER_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js';
-  const TESSERACT_CORE_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1';
-  const TESSERACT_LANG_CDN = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int';
-  const ensureTesseractLoaded = async () => {
-    if (window.Tesseract) return;
-    if (document.querySelector('script[data-docpipe-tesseract]')) {
-      await new Promise((resolve, reject) => {
-        const wait = setInterval(() => { if (window.Tesseract) { clearInterval(wait); resolve(); } }, 100);
-        setTimeout(() => { clearInterval(wait); reject(new Error('Tesseract load timeout')); }, 10000);
-      });
-    } else {
-      const s = document.createElement('script');
-      s.src = TESSERACT_CDN;
-      s.setAttribute('data-docpipe-tesseract', 'true');
-      document.head.appendChild(s);
-      await new Promise((resolve, reject) => {
-        const wait = setInterval(() => { if (window.Tesseract) { clearInterval(wait); resolve(); } }, 100);
-        setTimeout(() => { clearInterval(wait); reject(new Error('Tesseract load timeout')); }, 10000);
-      });
-    }
-  };
-  // Acquire (or return cached) Tesseract worker. Caller must be prepared for this to throw.
-  const getTesseractWorker = async () => {
-    if (window.__tesseractWorker) return window.__tesseractWorker;
-    await ensureTesseractLoaded();
-    if (!window.Tesseract) throw new Error('Tesseract unavailable after load');
-    const worker = await window.Tesseract.createWorker('eng', 1, {
-      workerPath: TESSERACT_WORKER_CDN,
-      corePath: TESSERACT_CORE_CDN,
-      langPath: TESSERACT_LANG_CDN,
-    });
-    window.__tesseractWorker = worker;
-    return worker;
-  };
-  // Should we skip OCR entirely? Runtime kill switch + bandwidth check.
-  const shouldSkipOcrAssist = (pageCount) => {
-    if (window.__DISABLE_OCR_ASSIST === true) return { skip: true, reason: 'disabled by kill switch' };
-    if (pageCount > 30) return { skip: true, reason: 'document > 30 pages' };
-    try {
-      const conn = navigator.connection;
-      if (conn && conn.saveData === true) return { skip: true, reason: 'saveData mode' };
-      if (conn && (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g')) {
-        return { skip: true, reason: 'slow connection (' + conn.effectiveType + ')' };
-      }
-    } catch { /* navigator.connection not available — allow */ }
-    return { skip: false };
-  };
-  // Run OCR across an array of page canvases. Returns per-page text + confidence.
-  // pageCanvases: { [pageNum]: HTMLCanvasElement }. updateProgressFn: optional (step, detail) => void.
-  // Returns: { pages: [{pageNum, text, avgConfidence}], overallConfidence } or null on failure.
-  const extractOcrLayer = async (pageCanvases, updateProgressFn) => {
-    const pageNums = Object.keys(pageCanvases).map(n => parseInt(n, 10)).sort((a, b) => a - b);
-    if (pageNums.length === 0) return null;
-    const skip = shouldSkipOcrAssist(pageNums.length);
-    if (skip.skip) {
-      _pipeLog('OCR', 'Skipping OCR assist: ' + skip.reason);
-      return null;
-    }
-    let worker;
-    try {
-      if (updateProgressFn && !window.__tesseractWorker) {
-        updateProgressFn(1, 'Loading OCR engine (one-time, ~15MB)...');
-      }
-      worker = await getTesseractWorker();
-    } catch (e) {
-      warnLog('[OCR] Failed to load Tesseract — falling back to Vision-only:', e && e.message);
-      if (typeof addToast === 'function') {
-        try { addToast('OCR assist unavailable — using Vision alone.', 'info'); } catch {}
-      }
-      return null;
-    }
-    const pages = [];
-    let totalChars = 0;
-    let weightedConfidence = 0;
-    for (let i = 0; i < pageNums.length; i++) {
-      const pg = pageNums[i];
-      const canvas = pageCanvases[pg];
-      if (!canvas) { pages.push({ pageNum: pg, text: '', avgConfidence: 0 }); continue; }
-      if (updateProgressFn) updateProgressFn(1, 'OCR scanning page ' + (i + 1) + '/' + pageNums.length + '...');
-      try {
-        const dataUrl = canvas.toDataURL('image/png');
-        const result = await worker.recognize(dataUrl);
-        const text = (result && result.data && result.data.text) ? result.data.text.trim() : '';
-        const confidence = (result && result.data && typeof result.data.confidence === 'number') ? result.data.confidence : 0;
-        pages.push({ pageNum: pg, text, avgConfidence: confidence });
-        const charCount = text.length;
-        totalChars += charCount;
-        weightedConfidence += confidence * charCount;
-        _pipeLog('OCR', 'Page ' + pg + ': ' + charCount + ' chars, ' + Math.round(confidence) + '% confidence');
-      } catch (e) {
-        warnLog('[OCR] Page ' + pg + ' failed (skipping, routing to Vision-only for this page):', e && e.message);
-        pages.push({ pageNum: pg, text: '', avgConfidence: 0 });
-      }
-    }
-    const overallConfidence = totalChars > 0 ? weightedConfidence / totalChars : 0;
-    const layer = { pages, overallConfidence };
-    window.__lastOcrLayer = layer;
-    _pipeLog('OCR', 'Layer complete: ' + Math.round(overallConfidence) + '% weighted confidence across ' + pages.length + ' page(s)');
-    return layer;
-  };
-  // Render a range of PDF pages to canvases at 2x scale for OCR input.
-  // We deliberately do NOT populate window.__pdfPageCanvases here — the image-
-  // extraction block later stores its own page dataURLs in that global, and we
-  // don't want to conflict with its shape (dataURL vs canvas element). Rendering
-  // twice is a minor cost compared to the Vision calls downstream.
-  const renderPdfPageCanvases = async (pdfDoc, pageRange) => {
-    const [startPage, endPage] = pageRange || [1, pdfDoc.numPages];
-    const canvases = {};
-    for (let pg = startPage; pg <= endPage; pg++) {
-      try {
-        const page = await pdfDoc.getPage(pg);
-        const viewport = page.getViewport({ scale: 2 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        canvases[pg] = canvas;
-      } catch (e) {
-        warnLog('[Render] Page ' + pg + ' render failed:', e && e.message);
-      }
-    }
-    return canvases;
-  };
-  // Select a prompt strategy based on OCR confidence for a given page chunk.
-  // Returns { mode: 'verbatim'|'reconcile'|'vision-only', ocrText }.
-  const chooseOcrPromptStrategy = (ocrLayer, startPage, endPage) => {
-    if (!ocrLayer) return { mode: 'vision-only', ocrText: '' };
-    const slice = ocrLayer.pages.filter(p => p.pageNum >= startPage && p.pageNum <= endPage);
-    if (slice.length === 0) return { mode: 'vision-only', ocrText: '' };
-    let totalChars = 0; let weighted = 0;
-    for (const p of slice) { totalChars += p.text.length; weighted += p.avgConfidence * p.text.length; }
-    const chunkConf = totalChars > 0 ? weighted / totalChars : 0;
-    const ocrText = slice.map(p => '[Page ' + p.pageNum + ']\n' + p.text).join('\n\n');
-    if (chunkConf >= 85) return { mode: 'verbatim', ocrText, confidence: chunkConf };
-    if (chunkConf >= 60) return { mode: 'reconcile', ocrText, confidence: chunkConf };
-    return { mode: 'vision-only', ocrText: '', confidence: chunkConf };
-  };
-  // Build the Vision extraction prompt, augmenting the base instructions with OCR
-  // context when the chunk's OCR layer is usable.
-  const buildVisionExtractionPrompt = (startPage, endPage, ocrStrategy) => {
-    const base = 'Extract ALL text content from pages ' + startPage + ' through ' + endPage + ' of this document.\n\nRULES:\n' +
-      '- Use # for titles, ## for sections, ### for subsections\n' +
-      '- Preserve tables as markdown tables with | pipes and --- dividers\n' +
-      '- Describe images as: [Image: detailed description]\n' +
-      '- Use * for bullet lists, 1. for numbered lists\n' +
-      '- LINKS: Preserve ALL hyperlinks as [link text](URL)\n' +
-      '- READING ORDER: If multiple columns, linearize left-to-right, top-to-bottom\n' +
-      'Return ONLY plain text with markdown formatting. Do NOT wrap in JSON.';
-    if (!ocrStrategy || ocrStrategy.mode === 'vision-only' || !ocrStrategy.ocrText) return base;
-    const header = 'You are extracting text from pages ' + startPage + '-' + endPage + '. To prevent omissions and hallucinations, here is an OCR transcript of these pages produced by Tesseract. It may contain character-level errors (especially tables, math, ligatures) but it is COMPLETE — every visible word is captured.\n\n' +
-      '--- OCR TRANSCRIPT (pages ' + startPage + '-' + endPage + ') ---\n' +
-      ocrStrategy.ocrText + '\n' +
-      '--- END OCR TRANSCRIPT ---\n\n';
-    if (ocrStrategy.mode === 'verbatim') {
-      return header +
-        'OCR confidence is high (' + Math.round(ocrStrategy.confidence) + '%). Preserve text VERBATIM from the OCR transcript. Your job is to add structure (tables, headings, image descriptions, reading order, list formatting) and fix only obvious OCR errors (e.g. "rn" → "m", "0" → "O") visible in the image. Do not rewrite or paraphrase.\n\n' + base;
-    }
-    // reconcile mode
-    return header +
-      'Produce clean markdown that RECONCILES the page image with the OCR transcript:\n' +
-      '- If a paragraph appears in OCR but you would otherwise skip it, INCLUDE IT\n' +
-      '- If a word appears in OCR but is clearly an OCR error, correct it from the image\n' +
-      '- If text appears in your output but NOT in OCR, double-check the image — do not invent text\n' +
-      '- Tables, equations, multi-column reading order, image descriptions: trust the image, ignore OCR shape\n' +
-      '- LINKS, headings, lists: same rules as below\n\n' + base;
-  };
-
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
   const ensurePdfJsLoaded = async () => {
@@ -1168,26 +890,15 @@ var createDocPipeline = function(deps) {
   // Extract text from a PDF using pdf.js's native text layer. Zero AI calls, zero truncation.
   // Returns { fullText, pages, pageCount, sourceCharCount, isScanned }.
   // isScanned = true when the PDF has no text layer (< 50 chars/page average) — fall back to OCR.
-  // Optional pageRange = [startPage, endPage] (1-indexed, inclusive). When omitted,
-  // extracts the entire document for backward compatibility. When supplied, only
-  // pages within the range are read and returned. The PDF's true total pageCount
-  // is always reported in the result so callers can show "remediating pages X-Y
-  // of N" in the UI.
-  const extractPdfTextDeterministic = async (base64, pageRange) => {
+  const extractPdfTextDeterministic = async (base64) => {
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
       const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
-      const totalPageCount = pdf.numPages;
-      // Resolve range. Defaults to full document. Clamp to valid bounds so a
-      // caller passing [1, 9999] on a 30-page PDF doesn't error out.
-      const startPage = Math.max(1, (pageRange && pageRange[0]) || 1);
-      const endPage = Math.min(totalPageCount, (pageRange && pageRange[1]) || totalPageCount);
-      const isPartial = startPage !== 1 || endPage !== totalPageCount;
       const pages = [];
-      for (let p = startPage; p <= endPage; p++) {
+      for (let p = 1; p <= pdf.numPages; p++) {
         const page = await pdf.getPage(p);
         const tc = await page.getTextContent();
         // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
@@ -1204,15 +915,11 @@ var createDocPipeline = function(deps) {
         pages.push({ pageNum: p, text: pageText });
       }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
-      const extractedPageCount = pages.length;
-      const avgCharsPerPage = extractedPageCount > 0 ? fullText.length / extractedPageCount : 0;
+      const avgCharsPerPage = pdf.numPages > 0 ? fullText.length / pdf.numPages : 0;
       return {
         fullText,
         pages,
-        pageCount: totalPageCount,            // true total pages in the PDF
-        extractedPageCount,                    // pages actually read in this call
-        pageRange: [startPage, endPage],       // resolved range (clamped)
-        isPartial,                             // false when this was a whole-doc extract
+        pageCount: pdf.numPages,
         sourceCharCount: fullText.length,
         isScanned: avgCharsPerPage < 50,
       };
@@ -1229,7 +936,7 @@ var createDocPipeline = function(deps) {
       } else {
         warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
       }
-      return { fullText: '', pages: [], pageCount: 0, extractedPageCount: 0, pageRange: null, isPartial: false, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt };
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt };
     }
   };
 
@@ -2916,22 +2623,9 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         const newAxe = rAxe ? rAxe.totalViolations : bestAxeViolations;
         autoFixPasses++;
 
-        // Tiered OR regression guard — see single-file path for rationale.
-        const _aiDelta = bestAiScore - newAi;
-        const _axeDelta = newAxe - bestAxeViolations;
-        const _semFloor = Math.max(1, Math.round(rvSEM));
-        const _aiHard = _aiDelta >= Math.max(8, _semFloor * 2);
-        const _axeHard = _axeDelta >= 2;
-        const _bothMild = _aiDelta > 5 && _axeDelta >= 1;
-        if (_aiHard || _axeHard || _bothMild) {
-          const _why = _aiHard ? 'AI' : _axeHard ? 'axe' : 'both-mild';
-          log(`Pass ${fp + 1} REGRESSED [${_why}] (AI ${bestAiScore}\u2192${newAi}, axe ${bestAxeViolations}\u2192${newAxe}) \u2014 REVERTING`);
+        if (newAi < bestAiScore - 5 && newAxe > bestAxeViolations) {
+          log(`Pass ${fp + 1} REGRESSED \u2014 REVERTING`);
           accessibleHtml = snap;
-          // Re-run axe on reverted HTML so curAxeResults matches what we're keeping
-          try {
-            const _revertAxe = await runAxeAudit(accessibleHtml);
-            if (_revertAxe) { curAxeResults = _revertAxe; bestAxeViolations = _revertAxe.totalViolations; }
-          } catch (_revertErr) { /* non-fatal */ }
           break;
         }
 
@@ -4166,638 +3860,6 @@ HTML section ${chunkNum}/${chunks.length}:
     return result;
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Tier 2: Surgical AI fixes
-  // ─────────────────────────────────────────────────────────────────────────
-  // The aiFixChunked path (Tier 3) sends 16 KB of HTML and a flat list of
-  // violations to Gemini. The model has freedom to rewrite anything in the
-  // chunk, so it sometimes "fixes" violation A while accidentally breaking
-  // unrelated content B. Tier 2 narrows the blast radius by:
-  //
-  //   1. Clustering violations by their shared DOM ancestor.
-  //   2. Sending only that ancestor's outerHTML (≤2 KB) to Gemini.
-  //   3. Re-running axe-core on the rewritten subtree in isolation.
-  //   4. Accepting the rewrite ONLY if it strictly improves the targeted rules
-  //      and introduces no new violations of any rule.
-  //
-  // What Tier 2 handles: single-element-scope violations (image-alt, link-name,
-  // button-name, input-image-alt, area-alt, object-alt, frame-title, label,
-  // aria-input-field-name). Document-wide violations (heading-order,
-  // landmark-one-main, html-has-lang, document-title) stay in Tier 3.
-  const TIER2_RULE_IDS = new Set([
-    'image-alt', 'link-name', 'button-name', 'input-image-alt',
-    'area-alt', 'object-alt', 'frame-title', 'label', 'aria-input-field-name',
-    'aria-toggle-field-name', 'aria-command-name', 'aria-progressbar-name',
-    'svg-img-alt', 'role-img-alt'
-  ]);
-
-  // Cluster axe violations by closest shared DOM ancestor that's small enough
-  // to send safely. Returns array of { ruleIds, selector, ancestorHtml,
-  // violationCount, targetedRules } objects.
-  const clusterAxeViolationsByAncestor = (htmlContent, axeResult) => {
-    if (!axeResult || typeof DOMParser === 'undefined') return [];
-    const all = []
-      .concat(axeResult.critical || [])
-      .concat(axeResult.serious || [])
-      .concat(axeResult.moderate || [])
-      .filter(v => TIER2_RULE_IDS.has(v.id));
-    if (all.length === 0) return [];
-    let doc;
-    try { doc = new DOMParser().parseFromString(htmlContent, 'text/html'); } catch { return []; }
-    if (!doc || !doc.body) return [];
-    // For each violation node, find its smallest ancestor whose outerHTML
-    // is ≤ 2 KB. That's the cluster anchor.
-    const MAX_SUBTREE_BYTES = 2048;
-    const clusters = new Map(); // anchorElement → { ruleIds: Set, selectors: [], targetedRules: Set }
-    for (const v of all) {
-      const nodes = Array.isArray(v.nodeDetails) ? v.nodeDetails : [];
-      for (const nd of nodes) {
-        const sel = Array.isArray(nd.target) ? nd.target[0] : null;
-        if (!sel) continue;
-        let el;
-        try { el = doc.querySelector(sel); } catch { continue; }
-        if (!el) continue;
-        // Walk up to the smallest ancestor whose outerHTML fits the budget.
-        let anchor = el;
-        let safety = 8; // never walk more than 8 levels up
-        while (anchor && anchor !== doc.body && safety-- > 0) {
-          if (anchor.outerHTML && anchor.outerHTML.length <= MAX_SUBTREE_BYTES) break;
-          anchor = anchor.parentElement;
-        }
-        if (!anchor || anchor === doc.body || !anchor.outerHTML || anchor.outerHTML.length > MAX_SUBTREE_BYTES) continue;
-        if (!clusters.has(anchor)) {
-          clusters.set(anchor, { ruleIds: new Set(), selectors: [], targetedRules: new Set() });
-        }
-        const c = clusters.get(anchor);
-        c.ruleIds.add(v.id);
-        c.targetedRules.add(v.id);
-        c.selectors.push(sel);
-      }
-    }
-    // Materialize. Cap clusters at 5 violations each — beyond that the prompt
-    // gets diluted and Tier 3 is more efficient anyway.
-    const result = [];
-    for (const [anchor, meta] of clusters.entries()) {
-      if (meta.selectors.length > 5) continue;
-      result.push({
-        anchorHtml: anchor.outerHTML,
-        ruleIds: Array.from(meta.ruleIds),
-        targetedRules: Array.from(meta.targetedRules),
-        violationCount: meta.selectors.length,
-        selectors: meta.selectors,
-      });
-    }
-    return result;
-  };
-
-  // Audit a small HTML subtree in isolation (no whole-document context).
-  // Returns an axe-style result scoped to the subtree's body.
-  const auditSubtreeIsolated = async (subtreeHtml) => {
-    if (!subtreeHtml || typeof window === 'undefined' || !window.document) return null;
-    if (!window.axe) {
-      // Cheap path: rely on the existing runAxeAudit lazy-loader by calling it
-      // once on a minimal doc to populate window.axe. After this it's cached.
-      try { await runAxeAudit('<!DOCTYPE html><html lang="en"><head><title>x</title></head><body></body></html>'); } catch { /* ignore */ }
-      if (!window.axe) return null;
-    }
-    const wrapped = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Subtree audit</title></head><body>' + subtreeHtml + '</body></html>';
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:600px;height:400px;opacity:0;pointer-events:none';
-    iframe.setAttribute('aria-hidden', 'true');
-    iframe.title = 'Subtree audit frame';
-    document.body.appendChild(iframe);
-    try {
-      const idoc = iframe.contentDocument || iframe.contentWindow.document;
-      idoc.open();
-      idoc.write(wrapped);
-      idoc.close();
-      await new Promise(r => setTimeout(r, 150));
-      // Inject axe into iframe
-      await new Promise((resolve, reject) => {
-        const s = idoc.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
-        s.onload = () => resolve();
-        s.onerror = () => reject(new Error('axe inject failed'));
-        idoc.head.appendChild(s);
-      });
-      await new Promise(r => setTimeout(r, 100));
-      const iframeAxe = iframe.contentWindow.axe;
-      if (!iframeAxe) return null;
-      const results = await iframeAxe.run(idoc.body, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
-        resultTypes: ['violations']
-      });
-      const map = {};
-      for (const v of (results.violations || [])) {
-        map[v.id] = (map[v.id] || 0) + (v.nodes ? v.nodes.length : 1);
-      }
-      return { violations: map, totalViolations: Object.values(map).reduce((a, b) => a + b, 0) };
-    } catch (e) {
-      warnLog('[Tier2] subtree audit failed:', e && e.message);
-      return null;
-    } finally {
-      try { document.body.removeChild(iframe); } catch { /* */ }
-    }
-  };
-
-  // Ask Gemini to fix a small subtree given a tight, single-cluster prompt.
-  // Returns the rewritten subtree (or the original if AI declined / failed).
-  const surgicalFixCluster = async (cluster) => {
-    if (!callGemini) return cluster.anchorHtml;
-    const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
-    const prompt =
-      'Fix ONLY the listed accessibility violations in this HTML element. ' +
-      'Do NOT modify any other elements, text content, or attributes. ' +
-      'Do NOT add or remove text the user can read. Preserve all inline styles.\n\n' +
-      'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
-      'ELEMENT:\n' + cluster.anchorHtml + '\n\n' +
-      'Return ONLY the rewritten element. No explanation. No markdown fences. ' +
-      'The opening and closing tags must match the input.';
-    try {
-      let raw = await callGemini(prompt, true);
-      if (!raw) return cluster.anchorHtml;
-      // Strip code fences if the model added them anyway
-      raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-      // Sanity: must start with '<' and contain the original tag name
-      if (!raw.startsWith('<')) return cluster.anchorHtml;
-      const origTagMatch = cluster.anchorHtml.match(/^<([a-z][a-z0-9]*)/i);
-      const newTagMatch = raw.match(/^<([a-z][a-z0-9]*)/i);
-      if (!origTagMatch || !newTagMatch || origTagMatch[1].toLowerCase() !== newTagMatch[1].toLowerCase()) {
-        warnLog('[Tier2] surgical fix tag mismatch — reject');
-        return cluster.anchorHtml;
-      }
-      return raw;
-    } catch (e) {
-      warnLog('[Tier2] surgical fix call failed:', e && e.message);
-      return cluster.anchorHtml;
-    }
-  };
-
-  // Decide whether to keep a surgical rewrite. Strict rule:
-  //   1. Targeted rule violations must STRICTLY decrease.
-  //   2. No NEW rule violations may appear (i.e. for every rule present in the
-  //      rewrite, its count must be ≤ the original's count for that rule).
-  // If either check fails, revert to the original.
-  const acceptOrRevertSubtreeFix = async (originalHtml, rewrittenHtml, targetedRules) => {
-    if (!rewrittenHtml || rewrittenHtml === originalHtml) {
-      return { accepted: false, reason: 'no-change' };
-    }
-    const [origAudit, newAudit] = await Promise.all([
-      auditSubtreeIsolated(originalHtml),
-      auditSubtreeIsolated(rewrittenHtml)
-    ]);
-    if (!origAudit || !newAudit) return { accepted: false, reason: 'audit-failed' };
-    // Targeted rules must strictly decrease in aggregate
-    let targetedBefore = 0, targetedAfter = 0;
-    for (const r of targetedRules) {
-      targetedBefore += origAudit.violations[r] || 0;
-      targetedAfter += newAudit.violations[r] || 0;
-    }
-    if (targetedAfter >= targetedBefore) {
-      return { accepted: false, reason: 'targeted-not-improved (' + targetedBefore + '→' + targetedAfter + ')' };
-    }
-    // No new violations of ANY rule (counts may not increase)
-    for (const ruleId of Object.keys(newAudit.violations)) {
-      const before = origAudit.violations[ruleId] || 0;
-      const after = newAudit.violations[ruleId] || 0;
-      if (after > before) {
-        return { accepted: false, reason: 'introduced-new-violation:' + ruleId + ' (' + before + '→' + after + ')' };
-      }
-    }
-    return { accepted: true, reason: 'targeted ' + targetedBefore + '→' + targetedAfter, targetedBefore, targetedAfter };
-  };
-
-  // Orchestrator: runs Tier 2 over an HTML document. Returns the modified HTML
-  // along with statistics. Safe to call when there are no eligible violations
-  // (returns the input unchanged).
-  const runTier2SurgicalFixes = async (htmlContent, axeResult, opts) => {
-    const _opts = opts || {};
-    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
-    if (!htmlContent || !axeResult) return { html: htmlContent, stats };
-    const clusters = clusterAxeViolationsByAncestor(htmlContent, axeResult);
-    if (clusters.length === 0) return { html: htmlContent, stats };
-    stats.clustersConsidered = clusters.length;
-    warnLog('[Tier2] considering ' + clusters.length + ' surgical cluster(s)');
-    // Process clusters in parallel — they're disjoint by construction (each
-    // anchor is a different DOM element).
-    const proposals = await Promise.all(clusters.map(async (cluster) => {
-      const rewritten = await surgicalFixCluster(cluster);
-      const verdict = await acceptOrRevertSubtreeFix(cluster.anchorHtml, rewritten, cluster.targetedRules);
-      return { cluster, rewritten, verdict };
-    }));
-    // Apply accepted rewrites by string replace. Replacements are anchor-disjoint
-    // so order shouldn't matter, but we still apply largest-first to avoid any
-    // edge case where one anchor's html is a substring of another.
-    let working = htmlContent;
-    proposals
-      .filter(p => p.verdict.accepted)
-      .sort((a, b) => b.cluster.anchorHtml.length - a.cluster.anchorHtml.length)
-      .forEach(p => {
-        const idx = working.indexOf(p.cluster.anchorHtml);
-        if (idx === -1) {
-          // The exact anchor HTML wasn't found — likely earlier replacements
-          // shifted byte ranges. Skip rather than risk a wrong-place insert.
-          stats.rejected++;
-          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'anchor-not-found-after-prior-replacement' });
-          warnLog('[Tier2] anchor lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
-          return;
-        }
-        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.anchorHtml.length);
-        stats.accepted++;
-        stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
-        warnLog('[Tier2] accepted cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
-      });
-    proposals.filter(p => !p.verdict.accepted).forEach(p => {
-      stats.rejected++;
-      stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
-      warnLog('[Tier2] rejected cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
-    });
-    warnLog('[Tier2] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
-    return { html: working, stats };
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Tier 2.5: Section-scoped AI fixes
-  // ─────────────────────────────────────────────────────────────────────────
-  // The missing middle between Tier 2 (single-element, ≤2 KB ancestor) and
-  // Tier 3 (whole document, 16 KB chunks). For violations that *do* need
-  // structural context (heading hierarchy within a section, landmark wrapping,
-  // multi-element layout) but DON'T need the whole document, we send just the
-  // containing section to Gemini with a tight prompt and re-audit it in
-  // isolation. Same accept-or-revert discipline as Tier 2.
-  //
-  // What Tier 2.5 handles:
-  //   - axe rules that need section context: heading-order, region, bypass,
-  //     landmark-banner-is-top-level, landmark-no-duplicate-banner,
-  //     landmark-no-duplicate-contentinfo, page-has-heading-one
-  //     (when the violation lives inside a section)
-  //   - AI-flagged issues whose `location` string contains an exact substring
-  //     match against a heading inside one of the document's sections
-  //
-  // What Tier 2.5 does NOT handle:
-  //   - violations Tier 2 already addressed (image-alt, link-name, etc.) —
-  //     those are checked first and skipped here
-  //   - truly document-wide violations (html-has-lang, document-title,
-  //     landmark-one-main when there is no main anywhere) — those need Tier 3
-  const TIER2_5_SECTION_TAGS = ['section', 'article', 'aside', 'nav', 'header', 'footer', 'main'];
-  const TIER2_5_RULE_IDS = new Set([
-    'heading-order',
-    'region',
-    'bypass',
-    'landmark-banner-is-top-level',
-    'landmark-no-duplicate-banner',
-    'landmark-no-duplicate-contentinfo',
-    'landmark-complementary-is-top-level',
-    'page-has-heading-one',
-    'identical-links-same-purpose',
-    'duplicate-id',
-    'duplicate-id-aria',
-    'aria-required-children',
-    'aria-required-parent',
-  ]);
-
-  // Find the closest section-like ancestor of an element using the priority
-  // order. Returns null when no qualifying ancestor exists. Cap walk at 10
-  // levels so a deeply-nested element doesn't trigger O(N) walks repeatedly.
-  const _findSectionAncestor = (element) => {
-    let safety = 10;
-    let cur = element;
-    while (cur && cur.parentElement && safety-- > 0) {
-      const tag = (cur.tagName || '').toLowerCase();
-      if (TIER2_5_SECTION_TAGS.indexOf(tag) >= 0) return cur;
-      // Accept a div with id as a fallback — it's at least an addressable
-      // landmark, even if not semantically tagged.
-      if (tag === 'div' && cur.id) return cur;
-      cur = cur.parentElement;
-    }
-    return null;
-  };
-
-  // Cluster axe violations by section ancestor. Each cluster holds the
-  // section's outerHTML, the rule IDs targeted, and the count of violations.
-  // Skips violations Tier 2 already targets, sections too large to send
-  // (>8 KB), and clusters with too many violations (>8) — those are better
-  // handled by Tier 3.
-  const clusterAxeViolationsBySection = (htmlContent, axeResult) => {
-    if (!axeResult || typeof DOMParser === 'undefined') return [];
-    const all = []
-      .concat(axeResult.critical || [])
-      .concat(axeResult.serious || [])
-      .concat(axeResult.moderate || [])
-      .filter(v => TIER2_5_RULE_IDS.has(v.id));
-    if (all.length === 0) return [];
-    let doc;
-    try { doc = new DOMParser().parseFromString(htmlContent, 'text/html'); } catch { return []; }
-    if (!doc || !doc.body) return [];
-    const MAX_SECTION_BYTES = 8192;
-    const MAX_VIOLATIONS_PER_CLUSTER = 8;
-    const clusters = new Map(); // sectionElement → { ruleIds: Set, selectors: [], targetedRules: Set }
-    for (const v of all) {
-      const nodes = Array.isArray(v.nodeDetails) ? v.nodeDetails : [];
-      // For document-wide rules without nodeDetails (e.g. page-has-heading-one
-      // when there's literally no h1), there's no anchor — Tier 3 handles it.
-      if (nodes.length === 0) continue;
-      for (const nd of nodes) {
-        const sel = Array.isArray(nd.target) ? nd.target[0] : null;
-        if (!sel) continue;
-        let el;
-        try { el = doc.querySelector(sel); } catch { continue; }
-        if (!el) continue;
-        const section = _findSectionAncestor(el);
-        if (!section) continue;
-        if (!section.outerHTML || section.outerHTML.length > MAX_SECTION_BYTES) continue;
-        if (!clusters.has(section)) {
-          clusters.set(section, { ruleIds: new Set(), selectors: [], targetedRules: new Set() });
-        }
-        const c = clusters.get(section);
-        c.ruleIds.add(v.id);
-        c.targetedRules.add(v.id);
-        c.selectors.push(sel);
-      }
-    }
-    const result = [];
-    for (const [section, meta] of clusters.entries()) {
-      if (meta.selectors.length > MAX_VIOLATIONS_PER_CLUSTER) continue;
-      result.push({
-        sectionTag: (section.tagName || 'section').toLowerCase(),
-        sectionHtml: section.outerHTML,
-        ruleIds: Array.from(meta.ruleIds),
-        targetedRules: Array.from(meta.targetedRules),
-        violationCount: meta.selectors.length,
-        selectors: meta.selectors,
-      });
-    }
-    return result;
-  };
-
-  // Section-scoped Gemini prompt. Tighter than Tier 3's whole-document prompt;
-  // looser than Tier 2's single-element prompt. The model is told exactly what
-  // section it's seeing and exactly which violations to address.
-  const sectionScopedFixCluster = async (cluster) => {
-    if (!callGemini) return cluster.sectionHtml;
-    const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
-    const prompt =
-      'Fix ONLY the listed accessibility violations in this <' + cluster.sectionTag + '> element.\n' +
-      'Do NOT modify any text content (the words a human reads must remain identical).\n' +
-      'Do NOT modify alt attributes, aria-label values, or button/link text — those are\n' +
-      'handled by other tiers.\n' +
-      'You MAY modify: heading levels (h1-h6) within the section, landmark roles, the\n' +
-      'section\'s opening tag attributes (e.g. add aria-labelledby), nested element\n' +
-      'structure for landmark/region compliance.\n\n' +
-      'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
-      'SECTION:\n' + cluster.sectionHtml + '\n\n' +
-      'Return ONLY the rewritten <' + cluster.sectionTag + '> element. No explanation.\n' +
-      'No markdown fences. The opening and closing tag names must match the input.';
-    try {
-      let raw = await callGemini(prompt, true);
-      if (!raw) return cluster.sectionHtml;
-      raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-      if (!raw.startsWith('<')) return cluster.sectionHtml;
-      const newTagMatch = raw.match(/^<([a-z][a-z0-9]*)/i);
-      if (!newTagMatch || newTagMatch[1].toLowerCase() !== cluster.sectionTag) {
-        warnLog('[Tier2.5] section tag mismatch (expected ' + cluster.sectionTag + ', got ' + (newTagMatch ? newTagMatch[1] : '?') + ') — reject');
-        return cluster.sectionHtml;
-      }
-      return raw;
-    } catch (e) {
-      warnLog('[Tier2.5] section fix call failed:', e && e.message);
-      return cluster.sectionHtml;
-    }
-  };
-
-  // Orchestrator. Same shape as runTier2SurgicalFixes — returns the modified
-  // HTML and a stats object. Reuses acceptOrRevertSubtreeFix for the verdict
-  // (the math is identical: targeted violations must strictly decrease, no new
-  // violations allowed).
-  const runTier2_5SectionScopedFixes = async (htmlContent, axeResult) => {
-    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
-    if (!htmlContent || !axeResult) return { html: htmlContent, stats };
-    const clusters = clusterAxeViolationsBySection(htmlContent, axeResult);
-    if (clusters.length === 0) return { html: htmlContent, stats };
-    stats.clustersConsidered = clusters.length;
-    warnLog('[Tier2.5] considering ' + clusters.length + ' section-scoped cluster(s)');
-    const proposals = await Promise.all(clusters.map(async (cluster) => {
-      const rewritten = await sectionScopedFixCluster(cluster);
-      const verdict = await acceptOrRevertSubtreeFix(cluster.sectionHtml, rewritten, cluster.targetedRules);
-      return { cluster, rewritten, verdict };
-    }));
-    let working = htmlContent;
-    proposals
-      .filter(p => p.verdict.accepted)
-      .sort((a, b) => b.cluster.sectionHtml.length - a.cluster.sectionHtml.length)
-      .forEach(p => {
-        const idx = working.indexOf(p.cluster.sectionHtml);
-        if (idx === -1) {
-          stats.rejected++;
-          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'section-not-found-after-prior-replacement' });
-          warnLog('[Tier2.5] section lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
-          return;
-        }
-        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.sectionHtml.length);
-        stats.accepted++;
-        stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
-        warnLog('[Tier2.5] accepted <' + p.cluster.sectionTag + '> cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
-      });
-    proposals.filter(p => !p.verdict.accepted).forEach(p => {
-      stats.rejected++;
-      stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
-      warnLog('[Tier2.5] rejected <' + p.cluster.sectionTag + '> cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
-    });
-    warnLog('[Tier2.5] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
-    return { html: working, stats };
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Tier 3: Structural AI fixes (chunked, document-wide)
-  // ─────────────────────────────────────────────────────────────────────────
-  // Tier 3 wraps the existing aiFixChunked but does three things differently:
-  //
-  //   1. FILTERS its input. Violations Tier 2 already targeted (image-alt,
-  //      link-name, etc.) are stripped from the prompt — if Tier 2 couldn't
-  //      fix them, Tier 3's bigger hammer probably can't either, and including
-  //      them just bloats the prompt and tempts the model to touch unrelated
-  //      content.
-  //   2. SCOPES the prompt. The instructions explicitly say "focus on document-
-  //      wide structure (heading hierarchy, landmarks, lang attribute) — DO NOT
-  //      modify individual elements (alt text, button labels, link text) which
-  //      have already been handled."
-  //   3. SKIPS itself when the filtered violation list is empty or the only
-  //      remaining violations are below a meaningful-work threshold. Saves an
-  //      API call (and avoids regression risk) when there's nothing left to do.
-  //
-  // Tier 3 keeps the same regression guard as before — if a pass makes things
-  // worse, it reverts. It also keeps the per-chunk integrity validators in
-  // aiFixChunked. This is purely a smarter front-end to existing infrastructure.
-
-  // Build the structural-only prompt instructions, filtering out rules that
-  // Tier 2 already handled. Returns null if there's nothing meaningful to fix.
-  const buildTier3StructuralPromptText = (axeResult, aiVerification) => {
-    if (!axeResult && !aiVerification) return null;
-    const tier3RemainingAxe = ['critical', 'serious', 'moderate']
-      .flatMap(impact => (axeResult && axeResult[impact]) ? axeResult[impact] : [])
-      .filter(v => !TIER2_RULE_IDS.has(v.id));
-    const tier3AiIssues = (aiVerification && Array.isArray(aiVerification.issues))
-      ? aiVerification.issues
-      : [];
-    if (tier3RemainingAxe.length === 0 && tier3AiIssues.length === 0) return null;
-    const axeLines = tier3RemainingAxe.map(v => {
-      const impactLabel = (v.impact || 'moderate').toUpperCase();
-      const wcag = v.wcag ? ' — ' + v.wcag : '';
-      return impactLabel + ' (axe-core): ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)' + wcag;
-    });
-    const aiLines = tier3AiIssues.map(i => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i))));
-    return axeLines.concat(aiLines).join('\n');
-  };
-
-  // Decide whether Tier 3 has meaningful work to do. We skip the full AI pass
-  // when only minor or low-confidence issues remain — the API call cost +
-  // regression risk outweigh any expected improvement.
-  const tier3HasMeaningfulWork = (axeResult, aiVerification, options) => {
-    const _opts = options || {};
-    const minViolations = _opts.minViolations || 1;
-    if (!axeResult && !aiVerification) return false;
-    const remainingAxe = ['critical', 'serious', 'moderate']
-      .flatMap(impact => (axeResult && axeResult[impact]) ? axeResult[impact] : [])
-      .filter(v => !TIER2_RULE_IDS.has(v.id));
-    const aiIssueCount = (aiVerification && Array.isArray(aiVerification.issues)) ? aiVerification.issues.length : 0;
-    return (remainingAxe.length + aiIssueCount) >= minViolations;
-  };
-
-  // Wrap the AI fix call with the structural prompt scoping. Returns the same
-  // shape as the inner call. Caller is responsible for applying its own
-  // regression guard around our return value.
-  const runTier3StructuralFix = async (htmlContent, axeResult, aiVerification, label) => {
-    if (!callGemini) return { html: htmlContent, skipped: true, reason: 'no-callGemini' };
-    const violationInstructions = buildTier3StructuralPromptText(axeResult, aiVerification);
-    if (!violationInstructions) {
-      return { html: htmlContent, skipped: true, reason: 'no-structural-violations-remaining' };
-    }
-    if (!tier3HasMeaningfulWork(axeResult, aiVerification)) {
-      return { html: htmlContent, skipped: true, reason: 'below-meaningful-work-threshold' };
-    }
-    // Prepend a structural-scope preamble so Gemini knows what tier this is.
-    const scopedInstructions =
-      'TIER 3 STRUCTURAL FIX PASS. Earlier tiers (deterministic regex + surgical per-element AI) ' +
-      'have already addressed individual-element violations like missing alt text, button names, ' +
-      'link names, iframe titles, and form labels. Focus EXCLUSIVELY on document-wide structural ' +
-      'issues from this list:\n\n' + violationInstructions + '\n\n' +
-      'STRICT RULES:\n' +
-      '- Do NOT modify alt attributes, aria-label values, button content, or link text.\n' +
-      '- Do NOT modify any individual <img>, <button>, <a>, <input>, or <iframe> attributes\n' +
-      '  unless the violation list above explicitly names that element type.\n' +
-      '- DO modify: heading levels (h1-h6), landmark wrappers (main/nav/header/footer/aside),\n' +
-      '  the <html lang> attribute, the <title> tag, document outline structure.\n' +
-      '- Preserve ALL text content. Preserve ALL inline styles. Preserve ALL data-* attributes.';
-    try {
-      const fixed = await aiFixChunked(htmlContent, scopedInstructions, label || 'tier3-structural');
-      return { html: fixed || htmlContent, skipped: false, reason: 'applied' };
-    } catch (e) {
-      warnLog('[Tier3] structural fix call failed:', e && e.message);
-      return { html: htmlContent, skipped: true, reason: 'call-failed' };
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Multi-session merge: assemble a cohesive HTML doc from N remediated ranges
-  // ─────────────────────────────────────────────────────────────────────────
-  // Pure function — no I/O, no DOM. Takes the ranges[] array stored on a
-  // multi-session record and produces a single accessible HTML document
-  // covering all completed pages, with explicit boundary markers between
-  // ranges and gap markers where the user hasn't remediated yet.
-  //
-  // Strategy:
-  //   1. Sort ranges by starting page.
-  //   2. Lift the preamble (DOCTYPE through first <main>/<body> open) from the
-  //      first range. Lift the postamble (closing </main>/</body>/</html>)
-  //      from the last range.
-  //   3. From each range, extract just the body/main inner content.
-  //   4. Stitch together with <hr data-multi-session-boundary> between ranges,
-  //      and <p data-gap> markers where pages are missing.
-  //
-  // Defensive: if any range is missing structural tags, fall back to using
-  // its raw HTML as a body fragment. We always produce *some* output, even
-  // for partial/malformed records — the user can still download what's there.
-  const mergeRangesToFullHtml = (ranges, totalPages) => {
-    if (!Array.isArray(ranges) || ranges.length === 0) return '';
-    const sorted = ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
-    // Helper: extract body inner content from a single remediated range's HTML.
-    // Tries <main>...</main> first (the preferred landmark), falls back to
-    // <body>...</body>, then to the raw string if neither is present.
-    const _extractBodyContent = (html) => {
-      if (!html) return '';
-      const mainMatch = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
-      if (mainMatch) return mainMatch[1];
-      const bodyMatch = html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
-      if (bodyMatch) return bodyMatch[1];
-      return html; // raw fragment — better than dropping it
-    };
-    // Helper: pull the document opening (DOCTYPE + html + head + opening body
-    // and main if present) from a complete HTML doc. Returns empty string when
-    // the input doesn't look like a full document.
-    const _extractPreamble = (html) => {
-      if (!html) return '';
-      const m = html.match(/^([\s\S]*?<main\b[^>]*>)/i);
-      if (m) return m[1];
-      const b = html.match(/^([\s\S]*?<body\b[^>]*>)/i);
-      if (b) return b[1];
-      return '';
-    };
-    const _extractPostamble = (html) => {
-      if (!html) return '';
-      const m = html.match(/(<\/main>[\s\S]*?<\/html>\s*)$/i);
-      if (m) return m[1];
-      const b = html.match(/(<\/body>[\s\S]*?<\/html>\s*)$/i);
-      if (b) return b[1];
-      return '';
-    };
-    const firstRange = sorted[0];
-    const lastRange = sorted[sorted.length - 1];
-    const preamble = _extractPreamble(firstRange.remediatedHtml) ||
-      '<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8"><title>Multi-session remediated document</title></head>\n<body>\n<main id="main-content" role="main">\n';
-    const postamble = _extractPostamble(lastRange.remediatedHtml) || '\n</main>\n</body>\n</html>\n';
-    const _boundary = (prevEnd, nextStart) => {
-      const gapStart = prevEnd + 1;
-      const gapEnd = nextStart - 1;
-      if (gapEnd >= gapStart) {
-        return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
-          '" data-gap="pages ' + gapStart + '-' + gapEnd + ' not yet remediated" ' +
-          'aria-label="Section break — pages ' + gapStart + ' to ' + gapEnd + ' not yet remediated">\n' +
-          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
-          'Pages ' + gapStart + '\u2013' + gapEnd + ' have not yet been remediated in this session. ' +
-          'Re-upload this PDF and select that range to add them.' +
-          '</p>\n';
-      }
-      return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
-        '" aria-label="Section break — resumed remediation session">\n';
-    };
-    const bodies = [];
-    for (let i = 0; i < sorted.length; i++) {
-      const r = sorted[i];
-      bodies.push(
-        '<section data-page-range="' + r.pages[0] + '-' + r.pages[1] + '"' +
-        (r.completedAt ? ' data-completed-at="' + new Date(r.completedAt).toISOString() + '"' : '') +
-        '>\n' +
-        _extractBodyContent(r.remediatedHtml) +
-        '\n</section>'
-      );
-      if (i < sorted.length - 1) {
-        bodies.push(_boundary(r.pages[1], sorted[i + 1].pages[0]));
-      }
-    }
-    // Optional final gap notice if the last range doesn't reach totalPages.
-    let trailingNotice = '';
-    if (totalPages && lastRange.pages[1] < totalPages) {
-      const remStart = lastRange.pages[1] + 1;
-      trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
-        'aria-label="End of completed pages">\n' +
-        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
-        'Pages ' + remStart + '\u2013' + totalPages + ' remain to be remediated. ' +
-        'Re-upload this PDF in a future session to continue.' +
-        '</p>\n';
-    }
-    return preamble + bodies.join('\n') + trailingNotice + postamble;
-  };
-
   // ── Tag-safe truncation: never cut inside an HTML tag ──
   const safeSubstring = (html, maxLen) => {
     if (!html || html.length <= maxLen) return html;
@@ -5844,12 +4906,6 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _mimeType = _fileName.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : _fileName.endsWith('.pptx') ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
     const _auditResult = batchOverrides?.auditResult || pdfAuditResult;
     const _onProgress = batchOverrides?.onProgress || null;
-    // Optional [startPage, endPage] range. When omitted, the whole document is
-    // remediated (backward compatibility — no UI changes required for single-pass
-    // users). When supplied, only that page range is extracted and remediated;
-    // the resulting HTML covers just those pages and gets persisted to the
-    // multi-session store for cross-day workflows.
-    const _pageRange = batchOverrides?.pageRange || null;
     const _startTime = Date.now();
 
     // Reset pipeline telemetry for this run
@@ -5914,12 +4970,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 0: DETERMINISTIC EXTRACTION (no AI calls, no truncation risk) ──
       // For text-layer PDFs, DOCX, and PPTX we can extract the source text exactly from the file itself.
       // Only fall through to Gemini Vision OCR for scanned PDFs / images.
-      // Hoisted outside the try block so downstream code (OCR-assist, Vision
-      // fallback) can read isPdf without a block-scoping ReferenceError.
-      const isDocx = _fileName && /\.docx$/i.test(_fileName);
-      const isPptx = _fileName && /\.pptx$/i.test(_fileName);
-      const isPdf = !isDocx && !isPptx;
       try {
+        const isDocx = _fileName && /\.docx$/i.test(_fileName);
+        const isPptx = _fileName && /\.pptx$/i.test(_fileName);
+        const isPdf = !isDocx && !isPptx; // default to PDF path for unknown mime types
 
         if (isDocx) {
           updateProgress(1, 'Extracting DOCX text deterministically...');
@@ -5947,57 +5001,25 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
         } else if (isPdf) {
           updateProgress(1, 'Extracting PDF text layer deterministically...');
-          const det = await extractPdfTextDeterministic(_base64, _pageRange);
+          const det = await extractPdfTextDeterministic(_base64);
           if (det && !det.isScanned && det.sourceCharCount > 100) {
             extractedText = det.fullText;
             window.__lastGroundTruthCharCount = det.sourceCharCount;
             window.__lastGroundTruthPageMap = det.pages;
             window.__lastGroundTruthMethod = 'pdfjs';
-            // For partial extracts, effectivePageCount must reflect the RANGE,
-            // not the whole-document page count. The Vision chunk loop later
-            // uses this to size its work; the multi-session merge uses it to
-            // record which pages this range actually covered.
-            if (det.extractedPageCount > 0) effectivePageCount = det.extractedPageCount;
-            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.extractedPageCount} pages` + (det.isPartial ? ` (range ${det.pageRange[0]}-${det.pageRange[1]} of ${det.pageCount})` : ''));
-            warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.extractedPageCount} pages` + (det.isPartial ? ` [range ${det.pageRange[0]}-${det.pageRange[1]} of ${det.pageCount}]` : '') + ` (avg ${Math.round(det.sourceCharCount / Math.max(1, det.extractedPageCount))}/page)`);
+            if (det.pageCount > 0) effectivePageCount = det.pageCount;
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
+            warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
           } else if (det) {
-            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.extractedPageCount} pages) — falling through to Vision OCR`);
+            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
           }
         }
       } catch (detErr) {
         warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
       }
 
-      // For partial-range remediation, _rangeStart shifts the chunk page numbers
-      // so the Vision prompts say "extracting pages 50-51" instead of "1-2".
-      // OCR canvas rendering also uses this to render the right slice of the PDF.
-      const _rangeStart = _pageRange ? _pageRange[0] : 1;
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
-
-      // ── OCR-assisted Vision: render pages once and OCR them so Vision has a
-      // character-level ground truth to reconcile against. Gated on "deterministic
-      // pass didn't yield enough text" — otherwise we skip OCR entirely (born-digital
-      // PDFs don't need it). Failure of this block is non-fatal; it just means Vision
-      // runs with its original prompt (current behavior).
-      let _ocrLayer = null;
-      const _needsVisionFallback = isPdf && !(extractedText && extractedText.length > 100);
-      if (_needsVisionFallback) {
-        try {
-          updateProgress(1, `Rendering ${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''} for OCR assist...`);
-          await ensurePdfJsLoaded();
-          const _raw = _base64.includes(',') ? _base64.split(',')[1] : _base64;
-          const _bytes = Uint8Array.from(atob(_raw), c => c.charCodeAt(0));
-          const _pdfDoc = await window.pdfjsLib.getDocument({ data: _bytes }).promise;
-          // For partial-range remediation, render only the requested slice.
-          const _renderEnd = Math.min(_rangeStart + effectivePageCount - 1, _pdfDoc.numPages);
-          const _pageCanvases = await renderPdfPageCanvases(_pdfDoc, [_rangeStart, _renderEnd]);
-          _ocrLayer = await extractOcrLayer(_pageCanvases, updateProgress);
-        } catch (ocrErr) {
-          warnLog('[OCR] Assist failed, continuing with Vision-only:', ocrErr && ocrErr.message);
-          _ocrLayer = null;
-        }
-      }
 
       // If deterministic extraction succeeded, skip the Vision OCR block entirely
       if (extractedText && extractedText.length > 100) {
@@ -6005,31 +5027,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // Fall through to Step 1b (image extraction) with extractedText already populated
       } else if (numChunks <= 1 && effectivePageCount <= 2) {
         // Very short PDF (1-2 pages): single extraction pass is safe
-        const _spStart = _rangeStart;
-        const _spEnd = _rangeStart + effectivePageCount - 1;
-        const _strat1 = chooseOcrPromptStrategy(_ocrLayer, _spStart, _spEnd);
-        if (_ocrLayer) _pipeLog('OCR', 'Single-pass strategy: ' + _strat1.mode + (_strat1.confidence ? ' (' + Math.round(_strat1.confidence) + '% conf)' : ''));
-        updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})${_strat1.mode !== 'vision-only' ? ' with OCR assist' : ''}...`);
+        updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})...`);
         extractedText = await callGeminiVision(
-          buildVisionExtractionPrompt(_spStart, _spEnd, _strat1),
+          `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
           _base64, _mimeType
         );
       } else {
         // Multi-page: extract in page-range chunks (3 pages each), parallel batches to avoid rate limiting
-        updateProgress(1, `Extracting ${effectivePageCount} pages in ${numChunks} chunks (${PAGES_PER_CHUNK} pages each)${_ocrLayer ? ' with OCR assist' : ''}...`);
+        updateProgress(1, `Extracting ${effectivePageCount} pages in ${numChunks} chunks (${PAGES_PER_CHUNK} pages each)...`);
         const MAX_PARALLEL = 5;
         const chunkPromises = [];
         for (let i = 0; i < numChunks; i++) {
-          const startPage = _rangeStart + i * PAGES_PER_CHUNK;
-          const endPage = Math.min(_rangeStart + (i + 1) * PAGES_PER_CHUNK - 1, _rangeStart + effectivePageCount - 1);
-          const _stratN = chooseOcrPromptStrategy(_ocrLayer, startPage, endPage);
-          if (_ocrLayer) _pipeLog('OCR', 'Chunk pp.' + startPage + '-' + endPage + ' strategy: ' + _stratN.mode + (_stratN.confidence ? ' (' + Math.round(_stratN.confidence) + '% conf)' : ''));
-          if (_stratN.mode === 'vision-only' && _ocrLayer) {
-            updateProgress(1, 'Scan quality low — using Vision alone for pages ' + startPage + '-' + endPage);
-          }
+          const startPage = i * PAGES_PER_CHUNK + 1;
+          const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
           chunkPromises.push(
             callGeminiVision(
-              buildVisionExtractionPrompt(startPage, endPage, _stratN),
+              `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
               _base64, _mimeType
             ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} extraction failed:`, err); return null; })
           );
@@ -6057,7 +5070,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Record ground truth from OCR fallback if deterministic extraction was not used
       if (extractedText && !window.__lastGroundTruthCharCount) {
         window.__lastGroundTruthCharCount = extractedText.length;
-        window.__lastGroundTruthMethod = _ocrLayer ? 'ocr-vision' : 'vision-ocr';
+        window.__lastGroundTruthMethod = 'vision-ocr';
       }
 
       if (!extractedText || extractedText.length < 20) {
@@ -6375,16 +5388,24 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       // ── Deterministic HTML renderer from JSON content blocks ──
-      // Track image-block ordinal so each placeholder marker carries a stable
-      // data-img-idx that survives AI passes. Without this, the association
-      // pass (line ~5952) relied on DOM position order, which drifts whenever
-      // an AI pass removes, merges, or reorders figures.
-      let _imageBlockIdx = 0;
       const renderJsonToHtml = (blocks) => {
         if (!Array.isArray(blocks)) return '';
         return blocks.map((block, blockIdx) => {
           // Guard: skip invalid blocks
           if (!block || typeof block !== 'object') return '';
+          // ── Normalize alternate schemas ──
+          // Gemini sometimes returns {"tag":"p","class":"ds6","content":"..."} or
+          // {"element":"p","text":"..."} instead of {"type":"p","text":"..."}.
+          // Map all known variants to the canonical {type, text} schema.
+          if (!block.type && block.tag) block.type = block.tag;
+          if (!block.type && block.element) block.type = block.element;
+          if (!block.text && block.content) block.text = block.content;
+          if (!block.text && block.value) block.text = block.value;
+          if (!block.text && block.body) block.text = block.body;
+          // "fixed_html" or "output_html" as raw HTML content
+          if (!block.html && block.fixed_html) block.html = block.fixed_html;
+          if (!block.html && block.output_html) block.html = block.output_html;
+          if (!block.html && block.accessible_html) block.html = block.accessible_html;
           if (!block.type && !block.text && !block.html && !block.title && !block.items) return '';
           if (!block.type && block.text) block.type = 'p';
           if (!block.type && block.title) block.type = 'banner';
@@ -6439,11 +5460,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             }
             case 'image': {
               // Use data-img-placeholder marker instead of SVG data URI (avoids regex issues)
-              // Stable data-img-idx binds this marker to extractedImages[idx] regardless
-              // of DOM reordering by later AI passes.
               const imgDesc = (block.description || block.alt || 'Image').replace(/"/g, '&quot;');
-              const stableIdx = _imageBlockIdx++;
-              return `<figure data-img-placeholder="true" data-img-idx="${stableIdx}" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
+              return `<figure data-img-placeholder="true" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
             }
             case 'link': return `<a href="${block.url || '#'}" style="color:${docStyle.accentColor}">${block.text}</a>`;
             case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
@@ -6619,7 +5637,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               } else {
                 warnLog(`[PDF Fix] JSON parse failed for chunk ${i + 1}, attempting object-by-object recovery`);
                 const recovered = [];
-                const objectMatches = cleaned.match(/\{[^{}]*"type"\s*:\s*"[^"]+?"[^{}]*\}/g);
+                const objectMatches = cleaned.match(/\{[^{}]*"(?:type|tag|element)"\s*:\s*"[^"]+?"[^{}]*\}/g);
                 if (objectMatches && objectMatches.length > 0) {
                   let recoveredCount = 0;
                   objectMatches.forEach(objStr => {
@@ -6942,26 +5960,14 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
       // any AI pass from accidentally corrupting/truncating/stripping base64 image data.
       const _deferredImageMap = {}; // token -> dataUrl
       if (extractedImages.length > 0) {
-        let positionalIdx = 0; // fallback only, for markers without data-img-idx
+        let imgIdx = 0;
         // Find figure elements with data-img-placeholder marker (clean, no regex issues)
         bodyContent = bodyContent.replace(/<figure data-img-placeholder="true"[\s\S]*?<\/figure>/gi, (match) => {
           const captionMatch = match.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i);
           const altText = captionMatch ? captionMatch[1].replace(/<[^>]*>/g, '').trim() : 'Image';
-          // Prefer the stable data-img-idx stamped at placement time (survives AI passes
-          // that might reorder or drop figures). Fall back to positional counter for any
-          // legacy/AI-generated markers lacking the attribute.
-          const stableMatch = match.match(/data-img-idx="(\d+)"/);
-          let resolvedIdx;
-          if (stableMatch) {
-            resolvedIdx = parseInt(stableMatch[1], 10);
-          } else {
-            resolvedIdx = positionalIdx;
-            warnLog('[PDF Fix] data-img-placeholder figure missing data-img-idx — falling back to positional index ' + positionalIdx + ' (placement may drift if AI passes reordered figures)');
-          }
-          positionalIdx++;
           {
-            const imgInfo = extractedImages[resolvedIdx] || null;
-            const imgIdx = resolvedIdx + 1; // keep legacy 1-based id/label
+            const imgInfo = extractedImages[imgIdx] || null;
+            imgIdx++;
             const imgId = 'pdf-img-' + imgIdx;
             const desc = imgInfo ? imgInfo.description : altText;
             const purpose = imgInfo ? (imgInfo.educationalPurpose || '') : '';
@@ -6999,27 +6005,6 @@ ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage
         });
         _pipeLog('Images', 'Deferred ' + Object.keys(_deferredImageMap).length + ' image(s) as placeholder tokens — real data URLs restored at end of pipeline');
       }
-      // ── Figure-integrity diagnostic ──
-      // Counts how many of our stamped data-img-idx figures are still present in the HTML.
-      // Call this after each potentially destructive pass (aiFixChunked, surgical remediation,
-      // axe auto-fix, etc.) to surface exactly which pass is dropping figures.
-      const _trackedImgIdxs = Array.from({ length: extractedImages.length }, (_, i) => i);
-      const _countFigureIntegrity = (html, label) => {
-        if (!extractedImages.length) return null;
-        const present = new Set();
-        const re = /data-img-idx="(\d+)"/g;
-        let m;
-        while ((m = re.exec(html)) !== null) present.add(parseInt(m[1], 10));
-        const missing = _trackedImgIdxs.filter(i => !present.has(i));
-        const summary = `${present.size}/${extractedImages.length} figures present`;
-        if (missing.length > 0) {
-          warnLog(`[Figure integrity] after ${label}: ${summary} — MISSING idx [${missing.join(', ')}]`);
-        } else {
-          _pipeLog('Figure integrity', `after ${label}: ${summary} — all figures intact`);
-        }
-        return { present: present.size, missing };
-      };
-      _countFigureIntegrity(bodyContent, 'placement');
 
       // Wrap in full HTML document
       let accessibleHtml = `<!DOCTYPE html>
@@ -7449,103 +6434,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           });
         });
 
-        // ── Tier-1 extensions: additional deterministic fixes ──
-        // Every rule below catches violations that would otherwise hit Gemini in
-        // the second-pass remediation loop. Each rule's fix is mechanical (no
-        // judgment call) or uses a safe labeled fallback. Per-rule counters let
-        // us see which rules actually fire on production PDFs.
-        const _tier1Counts = {};
-        const _bumpTier1 = (key) => { _tier1Counts[key] = (_tier1Counts[key] || 0) + 1; aiFixCount++; };
-
-        // 14. target="_blank" without rel="noopener" — WCAG 3.2.5 + security (tabnabbing)
-        accessibleHtml = accessibleHtml.replace(/<a\b([^>]*?)\btarget\s*=\s*["']_blank["']([^>]*)>/gi, (match, pre, post) => {
-          const full = match;
-          if (/\brel\s*=\s*["'][^"']*noopener/i.test(full)) return match;
-          _bumpTier1('target_blank_rel');
-          // Insert rel if any rel exists (merge), else add new rel attribute
-          if (/\brel\s*=\s*["']([^"']*)["']/i.test(full)) {
-            return match.replace(/\brel\s*=\s*["']([^"']*)["']/i, (_m, existing) => {
-              const merged = (existing.trim() + ' noopener noreferrer').replace(/\s+/g, ' ').trim();
-              return `rel="${merged}"`;
-            });
-          }
-          return `<a${pre} target="_blank" rel="noopener noreferrer"${post}>`;
-        });
-
-        // 15. <iframe> without title — axe `frame-title`
-        accessibleHtml = accessibleHtml.replace(/<iframe\b([^>]*)>/gi, (match, attrs) => {
-          if (/\btitle\s*=/i.test(attrs)) return match;
-          _bumpTier1('iframe_title');
-          return `<iframe${attrs} title="Embedded content">`;
-        });
-
-        // 16. Positive tabindex → tabindex="0". Axe `tabindex`. Positive values
-        // disrupt the document tab order; 0 means "naturally focusable in source
-        // order" which is almost always the right answer.
-        accessibleHtml = accessibleHtml.replace(/\btabindex\s*=\s*["'](\d+)["']/gi, (match, val) => {
-          const n = parseInt(val, 10);
-          if (!isFinite(n) || n <= 0) return match;
-          _bumpTier1('positive_tabindex');
-          return 'tabindex="0"';
-        });
-
-        // 17. <button> with no accessible name. Three cases:
-        //   (a) <button></button> (truly empty) → aria-label="Unlabeled button"
-        //   (b) <button><img src=... no alt></button> → give the img a derived alt
-        //       from nearby <figcaption> or a generic fallback
-        //   (c) <button title="..."> with no text → promote title to aria-label
-        // We skip any button that already has aria-label / aria-labelledby / text.
-        accessibleHtml = accessibleHtml.replace(/<button\b([^>]*)>([\s\S]*?)<\/button>/gi, (match, attrs, inner) => {
-          // Already labeled? leave alone
-          if (/\baria-label\s*=/i.test(attrs) || /\baria-labelledby\s*=/i.test(attrs)) return match;
-          // Any visible text content (strip tags)?
-          const innerText = inner.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim();
-          if (innerText.length > 0) return match;
-          // Case (c): title attribute present → promote
-          const titleMatch = attrs.match(/\btitle\s*=\s*["']([^"']+)["']/i);
-          if (titleMatch && titleMatch[1].trim().length > 0) {
-            _bumpTier1('button_title_to_aria');
-            return `<button${attrs} aria-label="${titleMatch[1].replace(/"/g, '&quot;')}">${inner}</button>`;
-          }
-          // Case (b): contains <img> with no alt? add alt, then rely on img→button name
-          if (/<img\b[^>]*>/i.test(inner) && !/<img\b[^>]*\balt\s*=/i.test(inner)) {
-            _bumpTier1('button_img_alt');
-            const fixedInner = inner.replace(/<img\b([^>]*)>/i, '<img$1 alt="Button icon">');
-            return `<button${attrs}>${fixedInner}</button>`;
-          }
-          // Case (a): truly empty → generic label
-          _bumpTier1('button_empty_label');
-          return `<button${attrs} aria-label="Unlabeled button">${inner}</button>`;
-        });
-
-        // 18. Placeholder alt text — "image", "picture", "photo", "img", "icon"
-        // alone. These pass axe's `image-alt` rule (presence) but fail a human
-        // review and Gemini's audit flags them. Try figcaption proximity first
-        // (the figure that contains this img), else leave the alt as-is — we
-        // prefer honest silence over making up content.
-        accessibleHtml = accessibleHtml.replace(/<figure\b([^>]*)>([\s\S]*?)<\/figure>/gi, (figMatch, figAttrs, figInner) => {
-          const figcap = figInner.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i);
-          if (!figcap) return figMatch;
-          const caption = figcap[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-          if (caption.length < 3) return figMatch;
-          let rewroteImg = false;
-          const rewritten = figInner.replace(/<img\b([^>]*)\balt\s*=\s*["']([^"']*)["']([^>]*)>/gi, (imgMatch, pre, altVal, post) => {
-            const lower = altVal.toLowerCase().trim();
-            if (['image', 'picture', 'photo', 'img', 'icon', 'graphic', 'figure'].includes(lower)) {
-              rewroteImg = true;
-              const safe = caption.slice(0, 200).replace(/"/g, '&quot;');
-              return `<img${pre} alt="${safe}"${post}>`;
-            }
-            return imgMatch;
-          });
-          if (rewroteImg) { _bumpTier1('placeholder_alt_from_figcaption'); return `<figure${figAttrs}>${rewritten}</figure>`; }
-          return figMatch;
-        });
-
         if (aiFixCount > 0) {
           warnLog(`[PDF Fix] Applied ${aiFixCount} deterministic accessibility fixes`);
-          const _t1Summary = Object.entries(_tier1Counts).map(([k, v]) => `${k}=${v}`).join(' ');
-          if (_t1Summary) warnLog(`[Det Fix] Tier-1 extensions: ${_t1Summary}`);
           if (addToast) addToast(`🔧 Auto-fixed ${aiFixCount} accessibility issues`, 'success');
         }
       }
@@ -7578,56 +6468,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (axeResults) {
         const reAxe = await runAxeAudit(accessibleHtml);
         if (reAxe) axeResults = reAxe;
-      }
-
-      // ── Step 4d: Tier 2 surgical AI fixes ──
-      // Bounded-blast-radius fixes for single-element-scope violations
-      // (image-alt, link-name, button-name, frame-title, etc.). Each cluster's
-      // fix is verified by re-auditing the rewritten subtree in isolation; we
-      // accept only if targeted violations strictly decrease and no new ones
-      // are introduced. Whatever remains afterward goes to Tier 3 (chunked AI).
-      if (axeResults && axeResults.totalViolations > 0) {
-        try {
-          updateProgress(4, 'Surgical AI fixes (bounded blast radius)...');
-          const t2 = await runTier2SurgicalFixes(accessibleHtml, axeResults);
-          if (t2 && t2.stats.accepted > 0) {
-            accessibleHtml = t2.html;
-            // Re-audit so the chunked loop's prompt reflects what's actually left
-            const postT2Axe = await runAxeAudit(accessibleHtml);
-            if (postT2Axe) axeResults = postT2Axe;
-            warnLog('[Tier2] applied — axe violations now ' + axeResults.totalViolations);
-            if (addToast) addToast('🎯 Tier 2: surgically fixed ' + t2.stats.violationsFixed + ' violation(s) in ' + t2.stats.accepted + ' cluster(s)', 'success');
-          } else if (t2) {
-            warnLog('[Tier2] no clusters accepted (' + t2.stats.clustersConsidered + ' considered, ' + t2.stats.rejected + ' rejected)');
-          }
-        } catch (t2Err) {
-          warnLog('[Tier2] surgical fix pass failed (continuing to Tier 2.5):', t2Err && t2Err.message);
-        }
-      }
-
-      // ── Step 4e: Tier 2.5 section-scoped AI fixes ──
-      // The middle ground between Tier 2 (single element) and Tier 3 (whole
-      // doc). For violations that need section context (heading order within a
-      // section, landmark wrapping, etc.) but not whole-document context, we
-      // send just the containing <section>/<article>/<nav>/etc. to Gemini and
-      // re-audit the rewritten section in isolation. Same atomic accept/reject
-      // discipline as Tier 2.
-      if (axeResults && axeResults.totalViolations > 0) {
-        try {
-          updateProgress(4, 'Section-scoped AI fixes...');
-          const t25 = await runTier2_5SectionScopedFixes(accessibleHtml, axeResults);
-          if (t25 && t25.stats.accepted > 0) {
-            accessibleHtml = t25.html;
-            const postT25Axe = await runAxeAudit(accessibleHtml);
-            if (postT25Axe) axeResults = postT25Axe;
-            warnLog('[Tier2.5] applied — axe violations now ' + axeResults.totalViolations);
-            if (addToast) addToast('📐 Tier 2.5: fixed ' + t25.stats.violationsFixed + ' structural violation(s) in ' + t25.stats.accepted + ' section(s)', 'success');
-          } else if (t25) {
-            warnLog('[Tier2.5] no section clusters accepted (' + t25.stats.clustersConsidered + ' considered, ' + t25.stats.rejected + ' rejected)');
-          }
-        } catch (t25Err) {
-          warnLog('[Tier2.5] section fix pass failed (continuing to Tier 3):', t25Err && t25Err.message);
-        }
       }
 
       _pipeStepEnd(3, 'axe: ' + (axeResults ? axeResults.totalViolations : '?') + ' violations, AI: ' + (verification ? verification.score : '?') + '/100');
@@ -7669,33 +6509,26 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
 
-          // Tier 3: structural-scope AI fix. Filters out violations Tier 2 would
-          // have already targeted (image-alt, link-name, etc.) and tells Gemini
-          // to focus exclusively on document-wide issues (heading-order,
-          // landmarks, lang, title). If nothing structural remains, the call is
-          // skipped — saves an API hit and removes regression risk.
-          let _t3Skipped = false;
+          // AI attempts targeted fixes for remaining violations from BOTH engines
+          const axeInstructions = []
+            .concat((axeResults ? axeResults.critical || [] : []).map(v => `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
+            .concat((axeResults ? axeResults.serious || [] : []).map(v => `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
+            .concat((axeResults ? axeResults.moderate || [] : []).map(v => `MODERATE (axe-core): ${v.description} (${v.id})`));
+          const aiInstructions = verification && verification.issues
+            ? verification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
+            : [];
+          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
+
           try {
-            const t3Result = await runTier3StructuralFix(
-              accessibleHtml, axeResults, verification, `pdf-pass-${fixPass + 1}`
-            );
-            if (t3Result.skipped) {
-              _t3Skipped = true;
-              warnLog('[Tier3] pass ' + (fixPass + 1) + ' skipped: ' + t3Result.reason);
-            } else if (t3Result.html && t3Result.html !== accessibleHtml) {
-              accessibleHtml = t3Result.html;
+            // Chunked fix across the entire document (no truncation)
+            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`);
+            if (fixedHtml && fixedHtml !== accessibleHtml) {
+              accessibleHtml = fixedHtml;
             }
           } catch(fixErr) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1} AI fix failed:`, fixErr);
             break;
           }
-          if (_t3Skipped) {
-            // Nothing changed — break out of the loop so we don't waste a
-            // re-audit cycle on identical HTML.
-            warnLog('[Auto-fix] Pass ' + (fixPass + 1) + ': Tier 3 had no structural work — stopping fix loop early');
-            break;
-          }
-          _countFigureIntegrity(accessibleHtml, `aiFixChunked pass ${fixPass + 1}`);
 
           // Deterministic cleanup after each AI fix pass — catches AI-introduced errors
           const _postListFix = fixListViolations(accessibleHtml);
@@ -7741,86 +6574,33 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
           const reSD = reScores.length > 1 ? Math.sqrt(reScores.reduce((s, x) => s + (x - newAiScore) ** 2, 0) / (reScores.length - 1)) : 0;
           const reSEM = reScores.length > 1 ? reSD / Math.sqrt(reScores.length) : 0;
-          // Union both auditors' issue lists so the next pass's prompt sees every
-          // reported violation (not just the more-optimistic auditor's). Previously
-          // we picked the highest-scoring auditor's issues, which masked real
-          // problems flagged only by the stricter auditor and caused oscillation
-          // between passes (fix A, then next pass reveals B was hiding, Gemini
-          // partially reverts A to fix B, etc.).
-          const _unionIssues = [];
-          const _seenIssueKeys = new Set();
-          [reVerify1, reVerify2].forEach((v) => {
-            if (!v || !Array.isArray(v.issues)) return;
-            v.issues.forEach((iss) => {
-              const raw = typeof iss === 'string' ? iss : (iss.issue || iss.description || JSON.stringify(iss));
-              const key = String(raw).toLowerCase().replace(/\s+/g, ' ').trim().slice(0, 200);
-              if (key && !_seenIssueKeys.has(key)) { _seenIssueKeys.add(key); _unionIssues.push(iss); }
-            });
-          });
-          // Use the HIGHER-scoring auditor's object as the carrier (preserves
-          // passes/metadata), but override its issues with the union so the
-          // next-pass prompt gets every flagged problem.
+          // Pick auditor with HIGHEST score for issues list
           const reVerify = [reVerify1, reVerify2]
             .filter(Boolean)
             .sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
-          if (reVerify) {
-            reVerify.score = newAiScore;
-            reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores;
-            reVerify.issues = _unionIssues;
-            reVerify._issueUnionSize = _unionIssues.length;
-          }
+          if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
           const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
           autoFixPasses++;
 
-          // Regression guard (tiered OR). Previous logic required BOTH auditors to
-          // worsen before reverting, which let "AI 80→40 with axe unchanged" pass
-          // silently. Now any of three distinct regression signals trips a revert:
-          //   (a) AI score drops more than one std-error-of-the-mean, at least 8 pts
-          //   (b) axe-core gains ≥ 2 new violations on its own
-          //   (c) both drop mildly (AI >5 AND axe ≥1) — the original heuristic, kept
-          //       so mild-dual regressions still trigger
-          const aiDelta = bestAiScore - newAiScore;            // positive = regression
-          const axeDelta = newAxeViolations - bestAxeViolations; // positive = regression
-          const semFloor = Math.max(1, Math.round(reSEM));
-          const aiHardRegression = aiDelta >= Math.max(8, semFloor * 2);
-          const axeHardRegression = axeDelta >= 2;
-          const bothMildRegression = aiDelta > 5 && axeDelta >= 1;
-          const regressed = aiHardRegression || axeHardRegression || bothMildRegression;
+          // Regression guard: if BOTH scores got worse, revert
+          const aiWorse = newAiScore < bestAiScore - 5; // allow 5-point tolerance
+          const axeWorse = newAxeViolations > bestAxeViolations;
 
-          if (regressed) {
-            const why = aiHardRegression ? 'AI' : axeHardRegression ? 'axe' : 'both-mild';
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED [${why}] (AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
+          if (aiWorse && axeWorse) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
             accessibleHtml = snapshotHtml;
-            // Re-run axe on the reverted HTML so curAxeResults / final blend reflect
-            // the true state of the document we're keeping. Without this, the final
-            // blended score mixes AI-on-reverted + axe-on-regressed and looks worse
-            // than either snapshot actually is.
-            try {
-              const revertAxe = await runAxeAudit(accessibleHtml);
-              if (revertAxe) { axeResults = revertAxe; bestAxeViolations = revertAxe.totalViolations; }
-            } catch (_revertAxeErr) { /* non-fatal — keep previous axe snapshot */ }
             if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted`, 'info');
             break;
           }
 
-          // Update tracking. Pass the current reVerify / axeResults to the next
-          // pass (so the next prompt is built from fresh issue lists), but keep
-          // best* as a true high-water mark — only advance when the combined
-          // signal actually improved. This way a mild regression-within-tolerance
-          // can't silently replace an earlier better state, and the regression
-          // guard on the next pass compares against the real best (not drift).
+          // Update best known state
           if (reVerify) verification = reVerify;
           if (reAxe) axeResults = reAxe;
-          const _combinedNew = newAiScore - (newAxeViolations * 3);
-          const _combinedBest = bestAiScore - (bestAxeViolations * 3);
-          if (_combinedNew > _combinedBest) {
-            bestHtml = accessibleHtml;
-            bestAiScore = newAiScore;
-            bestAxeViolations = newAxeViolations;
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: NEW BEST (AI ${newAiScore}/100, axe ${newAxeViolations} violations)`);
-          } else {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} (best still AI ${bestAiScore}, axe ${bestAxeViolations})`);
-          }
+          bestHtml = accessibleHtml;
+          bestAiScore = newAiScore;
+          bestAxeViolations = newAxeViolations;
+
+          warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
           // Emit per-pass completion for live UI
           try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
@@ -7847,14 +6627,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement, stopping`);
             break;
           }
-        }
-        // Restore best-ever HTML. bestHtml is written every accepted pass; before
-        // this fix, accessibleHtml at loop-exit was whatever the *last* pass
-        // produced — which could be a mild regression accepted within tolerance.
-        // We now prefer the actual high-water mark.
-        if (bestHtml && accessibleHtml !== bestHtml) {
-          warnLog(`[Auto-fix] Loop exited on non-best state — restoring best (AI ${bestAiScore}, axe ${bestAxeViolations})`);
-          accessibleHtml = bestHtml;
         }
         // Emit session complete for live UI
         try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
@@ -7911,24 +6683,31 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
           // Phase 3: Remove artifacts found by diff analysis
           // Convert raw JSON blocks to HTML (these are definitely artifacts, not intentional)
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:p|paragraph)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<p>$1</p>');
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:h[1-6])"\s*,\s*"text"\s*:\s*"([^"]*)"\s*(?:,\s*"id"\s*:\s*"[^"]*"\s*)?\}/g, '<h2>$1</h2>');
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
+          // Handle both canonical schema {"type":"p","text":"..."} AND Gemini's alternate
+          // schema {"tag":"p","class":"ds6","content":"..."} which leaks when the AI returns
+          // a different structure than expected.
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:p|paragraph)"[^{}]*?(?:"(?:text|content)"\s*:\s*"([^"]*)")?\s*\}/g, function(m, txt) { return txt ? '<p>' + txt + '</p>' : ''; });
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:h[1-6])"[^{}]*?(?:"(?:text|content)"\s*:\s*"([^"]*)")?\s*\}/g, function(m, txt) { return txt ? '<h2>' + txt + '</h2>' : ''; });
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
             var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
             return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
           });
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"(?:blockquote)"\s*,\s*"text"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
-          accessibleHtml = accessibleHtml.replace(/\{"type"\s*:\s*"hr"\s*\}/g, '<hr>');
-          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"text"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
-          // Strip JSON wrappers — expanded to catch Gemini-invented keys and transition fragments
-          // The original patterns only caught known keys (html/content/text/section); Gemini sometimes invents
-          // keys like "fixed_html", "output_html", "accessible_html", etc. Match any <word>_html or html-ending key.
-          accessibleHtml = accessibleHtml.replace(/^\s*\[\s*\{[^}]*"(?:html|content|text|section|fixed_html|output_html|accessible_html|\w*_?html)":\s*"/gm, '');
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:blockquote)"[^{}]*?"(?:text|content)"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"hr"\s*\}/g, '<hr>');
+          // Catch-all: any JSON object with a "text" or "content" field containing 10+ chars
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
+          // Strip JSON wrappers — catch all known Gemini key variants including alternate schemas.
+          // Gemini has returned: {html, content, text, section, fixed_html, output_html, accessible_html,
+          // tag, class, element, value, body} — match any of these or any *_html key.
+          var _jsonKeyPat = '(?:html|content|text|section|tag|class|element|value|body|fixed_html|output_html|accessible_html|\\w*_?html)';
+          accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[\\s*\\{[^}]*"' + _jsonKeyPat + '"\\s*:\\s*"', 'gm'), '');
           accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
           // Strip JSON array transition fragments: "}{ or "][{ patterns that leak between concatenated
           // JSON objects when Gemini returns multiple blocks. These appear as visible garbage in the output.
-          accessibleHtml = accessibleHtml.replace(/"\s*,\s*\{\s*"(?:fixed_html|output_html|accessible_html|\w*_?html|html|content|text|section)"\s*:\s*"/g, '\n');
-          accessibleHtml = accessibleHtml.replace(/"\s*\]\s*\[\s*\{\s*"(?:fixed_html|output_html|accessible_html|\w*_?html|html|content|text|section)"\s*:\s*"/g, '\n');
+          accessibleHtml = accessibleHtml.replace(new RegExp('"\\s*,\\s*\\{\\s*"' + _jsonKeyPat + '"\\s*:\\s*"', 'g'), '\n');
+          accessibleHtml = accessibleHtml.replace(new RegExp('"\\s*\\]\\s*\\[\\s*\\{\\s*"' + _jsonKeyPat + '"\\s*:\\s*"', 'g'), '\n');
+          // Also strip standalone "} ][" and "} ][ {" fragments with no recognized key (bare transitions).
+          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*\[\s*\{\s*"/g, '\n');
           // Strip orphan escaped-quote-plus-comma fragments ("," or " , ") that appear as raw text when
           // JSON array item separators leak through without being consumed by another cleanup pattern.
           // Only match when surrounded by whitespace/newlines so we don't corrupt legitimate content.
@@ -7936,7 +6715,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = accessibleHtml.replace(/(\n|>)\s*"\s*,\s*(\n|<)/g, '$1$2');
 
           // Phase 4: If artifacts remain, send ONLY the diffs to Gemini (not the whole doc)
-          var _remainingArtifacts = (accessibleHtml.match(/\{"type"\s*:\s*"/g) || []).length;
+          var _remainingArtifacts = (accessibleHtml.match(/\{"(?:type|tag|element)"\s*:\s*"/g) || []).length;
           if (_remainingArtifacts > 0 && callGemini && _artifacts.length > 0) {
             _pipeLog('Diff', _remainingArtifacts + ' artifacts remain — sending diff summary to Gemini for cleanup');
             try {
@@ -8086,93 +6865,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // swap placeholder tokens for the real base64 data URLs. Because this is a deterministic
       // string replacement on tokens that passed through every AI stage unchanged, we guarantee
       // zero image corruption regardless of what any AI pass tried to do.
-      const _finalIntegrity = _countFigureIntegrity(accessibleHtml, 'final (pre data-URL restore)');
-      // ── Unplaced-images drawer ──
-      // Any extracted image whose figure got dropped by an AI pass (or never had a
-      // landing block emitted by Gemini) appears here. Each entry offers: a thumbnail,
-      // a download button (so the user can salvage the image), and an "Insert here"
-      // button that re-inserts a fresh placeholder where the user's cursor is. This
-      // way extraction-without-placement never silently loses the image.
-      if (_finalIntegrity && _finalIntegrity.missing.length > 0) {
-        const unplaced = _finalIntegrity.missing
-          .map(idx => ({ idx, info: extractedImages[idx] }))
-          .filter(o => o.info && o.info.generatedSrc);
-        if (unplaced.length > 0) {
-          const drawerId = 'unplaced-images-drawer';
-          const drawerHtml = `
-<aside id="${drawerId}" role="complementary" aria-label="Extracted images not placed in document" style="margin-top:3rem;padding:1.25rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px">
-  <h2 style="margin-top:0;font-size:1.15rem;color:#78350f">📎 Extracted Images (${unplaced.length}) — not placed in document</h2>
-  <p style="font-size:0.9rem;color:#78350f;margin:0.25rem 0 1rem">These images were extracted from the source PDF but didn't end up in the document body. Use the buttons below to download them or insert them where needed.</p>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem">
-    ${unplaced.map(({ idx, info }) => {
-      const token = '__ALLOFLOW_DATAURL_FINAL_UNPLACED_' + idx + '__';
-      _deferredImageMap[token] = info.generatedSrc;
-      const safeDesc = (info.description || 'Image ' + (idx + 1)).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-      const dlName = ('pdf-image-' + (idx + 1) + (info.generatedSrc.indexOf('image/png') > -1 ? '.png' : '.jpg')).replace(/"/g, '');
-      return `<div data-unplaced-idx="${idx}" style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:0.5rem;display:flex;flex-direction:column;gap:0.5rem">
-      <img src="${token}" alt="${safeDesc}" style="width:100%;height:120px;object-fit:contain;background:#f8fafc;border-radius:4px">
-      <div style="font-size:0.75rem;color:#475569;line-height:1.3">${safeDesc.substring(0, 120)}${safeDesc.length > 120 ? '…' : ''}</div>
-      <div style="font-size:0.7rem;color:#94a3b8">${info.page ? 'Page ' + info.page : ''}</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap">
-        <a href="${token}" download="${dlName}" style="flex:1;text-align:center;padding:6px 8px;background:#2563eb;color:white;text-decoration:none;border-radius:4px;font-size:0.75rem;font-weight:600">⬇ Download</a>
-        <button onclick="window.__insertUnplacedImage && window.__insertUnplacedImage(${idx})" style="flex:1;padding:6px 8px;background:#059669;color:white;border:none;border-radius:4px;font-size:0.75rem;font-weight:600;cursor:pointer">↪ Insert here</button>
-      </div>
-    </div>`;
-    }).join('')}
-  </div>
-  <p class="sr-only">End of extracted-images drawer.</p>
-</aside>
-<script>
-// "Insert here" inserts a figure with the extracted image at the current caret/selection.
-window.__insertUnplacedImage = function(idx) {
-  var card = document.querySelector('[data-unplaced-idx="' + idx + '"]');
-  if (!card) return;
-  var img = card.querySelector('img');
-  var desc = card.querySelector('div[style*="color:#475569"]');
-  if (!img || !img.src) return;
-  var fig = document.createElement('figure');
-  fig.setAttribute('data-img-idx', 'user-inserted-' + idx);
-  fig.style.margin = '1em 0';
-  fig.style.textAlign = 'center';
-  var newImg = document.createElement('img');
-  newImg.src = img.src;
-  newImg.alt = img.alt || 'Inserted image';
-  newImg.style.maxWidth = '100%';
-  newImg.style.borderRadius = '8px';
-  newImg.style.border = '1px solid #e2e8f0';
-  fig.appendChild(newImg);
-  if (desc && desc.textContent) {
-    var cap = document.createElement('figcaption');
-    cap.textContent = desc.textContent;
-    cap.style.fontSize = '0.85em';
-    cap.style.color = '#64748b';
-    cap.style.fontStyle = 'italic';
-    cap.style.marginTop = '0.5em';
-    fig.appendChild(cap);
-  }
-  var sel = window.getSelection && window.getSelection();
-  if (sel && sel.rangeCount > 0 && document.body.contains(sel.anchorNode)) {
-    var range = sel.getRangeAt(0);
-    range.collapse(false);
-    range.insertNode(fig);
-    range.setStartAfter(fig); range.setEndAfter(fig); sel.removeAllRanges(); sel.addRange(range);
-  } else {
-    var main = document.querySelector('main') || document.body;
-    main.appendChild(fig);
-  }
-  card.style.opacity = '0.45';
-  var btn = card.querySelector('button');
-  if (btn) { btn.disabled = true; btn.textContent = '✓ Inserted'; btn.style.background = '#94a3b8'; btn.style.cursor = 'default'; }
-};
-</script>`;
-          accessibleHtml = accessibleHtml.replace('</main>', drawerHtml + '\n</main>');
-          if (!accessibleHtml.includes(drawerId)) {
-            // No </main> — fall back to before </body>
-            accessibleHtml = accessibleHtml.replace('</body>', drawerHtml + '\n</body>');
-          }
-          _pipeLog('Images', 'Unplaced drawer: ' + unplaced.length + ' image(s) offered for download/insert');
-        }
-      }
       if (_deferredImageMap && Object.keys(_deferredImageMap).length > 0) {
         const _tokenCountBefore = Object.keys(_deferredImageMap).reduce((acc, tok) => acc + (accessibleHtml.split(tok).length - 1), 0);
         Object.keys(_deferredImageMap).forEach((token) => {
@@ -8224,127 +6916,6 @@ window.__insertUnplacedImage = function(idx) {
         axeViolations: axeResults ? axeResults.totalViolations : null,
         htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
       });
-
-      // ── Multi-session persistence (page-range workflows) ──
-      // When this run targeted a page range (rather than the whole document),
-      // append the remediated HTML to the multi-session record for this PDF
-      // and re-merge so the UI displays the cohesive cross-session document.
-      // Backward compatibility: when no _pageRange was supplied (the default
-      // single-pass UI path), we don't touch the multi-session store at all —
-      // existing users see no behavior change.
-      if (_pageRange && pendingPdfFile) {
-        try {
-          const _msMeta = {
-            fileName: _fileName,
-            fileSize: pendingPdfFile.size || 0,
-            pageCount: pageCount,
-          };
-          const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount);
-          const _rangeData = {
-            pages: [_pageRange[0], _pageRange[1]],
-            remediatedHtml: accessibleHtml,
-            apiCallsUsed: _pipelineStats.apiCalls || 0,
-            visionCallsUsed: _pipelineStats.visionCalls || 0,
-            finalScore: finalAfterScore,
-            axeViolations: _result.axeViolations || 0,
-          };
-          const _saved = await saveMultiSessionRange(_msSessionId, _msMeta, _rangeData);
-          if (_saved && Array.isArray(_saved.ranges)) {
-            const _mergedHtml = mergeRangesToFullHtml(_saved.ranges, pageCount);
-            // Compute coverage and surface a "come back tomorrow for the rest" toast
-            const _completedPages = _saved.ranges.reduce((acc, r) => {
-              const span = (r.pages[1] - r.pages[0] + 1);
-              return acc + Math.max(0, span);
-            }, 0);
-            const _remaining = Math.max(0, pageCount - _completedPages);
-            // Replace single-range HTML with merged cross-session HTML so the
-            // download / preview UI shows the cumulative document.
-            _result.accessibleHtml = _mergedHtml;
-            _result.multiSession = {
-              sessionId: _msSessionId,
-              ranges: _saved.ranges.map(r => ({
-                pages: r.pages,
-                completedAt: r.completedAt,
-                finalScore: r.finalScore,
-                apiCallsUsed: r.apiCallsUsed,
-                visionCallsUsed: r.visionCallsUsed,
-              })),
-              completedPages: _completedPages,
-              remainingPages: _remaining,
-              totalPages: pageCount,
-            };
-            warnLog('[MultiSession] Saved range ' + _pageRange[0] + '-' + _pageRange[1] + '. Total covered: ' + _completedPages + '/' + pageCount + ' pages.');
-            if (_remaining > 0 && !_isBatch && typeof addToast === 'function') {
-              addToast('💾 Saved progress: ' + _completedPages + '/' + pageCount + ' pages remediated. Re-upload this PDF in a future session to continue with the remaining ' + _remaining + ' pages.', 'success');
-            }
-            // ── Auto-download the project file ──
-            // Critical for Canvas users: IndexedDB is wiped per session there,
-            // so the .alloflow.json file is the durable source of truth. We
-            // build the same shape the Save Project button writes (so Load
-            // Project handles it without changes) and add the multiSession
-            // payload so the prior-ranges panel rehydrates from this file
-            // alone, even on a fresh browser. Gated on pdfAutoSaveProject so
-            // users who don't want it can opt out.
-            if (pdfAutoSaveProject !== false && !_isBatch && typeof document !== 'undefined') {
-              try {
-                const _projectPayload = {
-                  version: 1,
-                  savedAt: new Date().toISOString(),
-                  fileName: _fileName,
-                  // Mirror the Save Project shape so old loaders accept the file
-                  accessibleHtml: _result.accessibleHtml,
-                  beforeScore: _result.beforeScore,
-                  afterScore: _result.afterScore,
-                  axeAudit: _result.axeAudit,
-                  verificationAudit: _result.verificationAudit,
-                  docStyle: _result.docStyle,
-                  pageCount: _result.pageCount,
-                  imageCount: _result.imageCount,
-                  needsExpertReview: _result.needsExpertReview,
-                  // NEW: cross-session ranges + metadata. Old loaders ignore
-                  // this; new loaders use it to restore the prior-ranges panel.
-                  multiSession: {
-                    schemaVersion: 1,
-                    sessionId: _msSessionId,
-                    fileName: _msMeta.fileName,
-                    fileSize: _msMeta.fileSize,
-                    pageCount: _msMeta.pageCount,
-                    ranges: _saved.ranges,
-                    completedPages: _completedPages,
-                    remainingPages: _remaining,
-                  },
-                };
-                const _projBlob = new Blob([JSON.stringify(_projectPayload)], { type: 'application/json' });
-                const _projUrl = URL.createObjectURL(_projBlob);
-                const _a = document.createElement('a');
-                _a.href = _projUrl;
-                // Stable filename — overwrites the prior auto-save in the
-                // user's Downloads folder so they end up with one file, not N.
-                _a.download = (_fileName || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json';
-                document.body.appendChild(_a);
-                _a.click();
-                document.body.removeChild(_a);
-                setTimeout(function() { URL.revokeObjectURL(_projUrl); }, 1000);
-                warnLog('[MultiSession] Auto-saved project file: ' + _a.download);
-                // First-time explanation toast — Chrome will prompt about
-                // multiple downloads on the second auto-save. Surface this
-                // expectation up front so the prompt isn't a mystery.
-                try {
-                  const _shown = window.localStorage && window.localStorage.getItem('alloflow_autosave_explained_v1');
-                  if (!_shown && typeof addToast === 'function') {
-                    addToast('💾 Auto-saved your progress as a file. If your browser prompts to allow multiple downloads, click Allow — that lets us keep saving as you remediate more pages.', 'info');
-                    if (window.localStorage) window.localStorage.setItem('alloflow_autosave_explained_v1', '1');
-                  }
-                } catch { /* localStorage may be unavailable */ }
-              } catch (dlErr) {
-                warnLog('[MultiSession] Auto-download failed:', dlErr && dlErr.message);
-              }
-            }
-          }
-        } catch (msErr) {
-          warnLog('[MultiSession] Failed to persist range result:', msErr && msErr.message);
-        }
-      }
 
       // Batch mode: return result without touching React state
       if (_isBatch) return _result;
@@ -9836,19 +8407,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = config || exportConfig;
-      // Per-item try/catch: one malformed resource (e.g. adventure-linked item with missing fields)
-      // should NOT blank the whole pack. Log the failure and keep going.
-      const renderItemSafely = (item, isTeacher) => {
-          try {
-              const html = generateResourceHTML(item, isTeacher, responses, cfg);
-              return typeof html === 'string' ? html : '';
-          } catch (err) {
-              console.warn('[Export] Resource render failed, skipping:', item && item.type, item && item.id, err);
-              return `<!-- skipped resource: ${item && item.type} (${item && item.id}) — render error -->`;
-          }
-      };
-      const studentContent = historyItems.map(item => renderItemSafely(item, false)).join('');
-      const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => renderItemSafely(item, true)).join('') : '';
+      const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses, cfg)).join('');
+      const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => generateResourceHTML(item, true, responses, cfg)).join('') : '';
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
@@ -9905,12 +8465,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
           .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
           .section > .resource-header + * { padding-top: 16px; }
-          table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); color: inherit; }
-          th, td { border: 1px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; color: inherit; background-clip: padding-box; }
-          th { background-color: ${theme.cardBg}; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: ${theme.headingColor || 'inherit'}; }
-          tbody tr { background-color: ${theme.bgColor || '#ffffff'}; color: inherit; }
-          tbody tr:nth-child(even) td { background-color: ${theme.cardBg || '#f8fafc'}; }
-          tbody tr:hover td { background-color: ${theme.cardBorder || '#e2e8f0'}; }
+          table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+          th, td { border: 1px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; }
+          th { background-color: ${theme.cardBg}; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; }
+          tbody tr:nth-child(even) { background-color: rgba(248,250,252,0.5); }
+          tbody tr:hover { background-color: rgba(241,245,249,0.8); }
           img { max-width: 100%; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
           .math-symbol { font-family: "Times New Roman", serif; display: inline-block; }
           .math-fraction {
@@ -10087,19 +8646,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
-    // Multi-session helpers — exposed for the UI to inspect prior progress and
-    // clear records. The main entry point is fixAndVerifyPdf with a pageRange
-    // in batchOverrides; these are for the prior-session panel and reset button.
-    multiSessionId: _multiSessionId,
-    loadMultiSession: function(sid) { return loadMultiSession(sid); },
-    clearMultiSession: function(sid) { return clearMultiSession(sid); },
-    mergeRangesToFullHtml: _wrap(mergeRangesToFullHtml),
-    // Tier 2 / 2.5 / 3 helpers — exposed so the "Fix Remaining" UI can run the
-    // tiered cascade independently from the main remediation pipeline. Each
-    // tier has its own bounded blast radius and atomic accept/reject discipline.
-    runTier2SurgicalFixes: _wrapAsync(runTier2SurgicalFixes),
-    runTier2_5SectionScopedFixes: _wrapAsync(runTier2_5SectionScopedFixes),
-    runTier3StructuralFix: _wrapAsync(runTier3StructuralFix),
   };
 };
 

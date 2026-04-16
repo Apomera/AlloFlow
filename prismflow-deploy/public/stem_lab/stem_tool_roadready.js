@@ -547,6 +547,162 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Chunk-based world: each chunk is CHUNK_SIZE cells tall, road runs through center.
   // Chunks generate on-the-fly as the player drives north or south.
   var CHUNK_SIZE = 32;
+  // Road geometry constants — referenced from both chunk generation and updateThreeScene render paths.
+  var MAX_ROAD_WIDTH = 4; // widest possible road width across all biomes
+  var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
+
+  // ─────────────────────────────────────────────────────────
+  // ROAD SPLINE — shared centerline for the infinite world.
+  // The spline is sampled per Y-row so the carved cells, the 3D road ribbon,
+  // landmark placement, lane markings and signal positions all agree on where
+  // the road actually is. Built incrementally with seeded heading-walk so that
+  // chunk N's exit heading equals chunk N+1's entry heading by construction.
+  // ─────────────────────────────────────────────────────────
+  var SPLINE_MAX_HEADING = 0.55; // radians; clamps how far the road may lean from due-north
+  function createRoadSpline(seed, baseCenterX) {
+    // samples[y] = { x: roadCenter, heading: tangent angle in radians (0 = +Y/north) }
+    // Headings small ⇒ road is mostly N-S. Positive heading ⇒ road bends toward +X.
+    var samples = {};
+    function biomeForY(y) {
+      // Mirror BIOME_PROGRESSION lookup so curvature matches the visible biome.
+      var ci = Math.floor(y / CHUNK_SIZE);
+      var pi = ((ci % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
+      return BIOME_PROGRESSION[pi];
+    }
+    function curvatureForBiome(b) {
+      // Max heading delta per cell (radians). Rural roads twist; commercial grids stay straight.
+      // Tuned so a ~30-cell rural stretch visibly sweeps several cells of lateral travel.
+      if (b === 'rural') return 0.075;
+      if (b === 'industrial') return 0.040;
+      if (b === 'residential') return 0.020;
+      if (b === 'suburban') return 0.015;
+      return 0.008; // commercial
+    }
+    // Pure deterministic step computation: given the heading at one sample plus
+    // the seeded draw indexed by edge Y, returns the heading at the neighbor.
+    // Edge between samples y-1 and y is keyed by y. Same edge ⇒ same delta.
+    function edgeDelta(edgeY, fromHeading) {
+      var rng = seededRandom(seed + edgeY * 2654435761);
+      var maxDelta = curvatureForBiome(biomeForY(edgeY));
+      // Random component only depends on edgeY; mean-reversion uses the heading
+      // at the LOWER-Y endpoint so forward/backward walks see the same value.
+      // (When walking backward, we recover that endpoint heading first.)
+      return (rng() - 0.5) * 2 * maxDelta - fromHeading * 0.006;
+    }
+    function clampMargin(x, h) {
+      var margin = MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 4;
+      if (x < margin) return { x: margin, h: h * 0.5 };
+      if (x > MAP_SIZE - margin) return { x: MAP_SIZE - margin, h: h * 0.5 };
+      return { x: x, h: h };
+    }
+    function ensureUpTo(yTarget) {
+      var maxY = -1;
+      for (var k in samples) { var ki = +k; if (ki > maxY) maxY = ki; }
+      if (maxY < 0) {
+        samples[0] = { x: baseCenterX, heading: 0 };
+        maxY = 0;
+      }
+      for (var y = maxY + 1; y <= yTarget; y++) {
+        var prev = samples[y - 1];
+        var h = prev.heading + edgeDelta(y, prev.heading);
+        if (h > SPLINE_MAX_HEADING) h = SPLINE_MAX_HEADING;
+        if (h < -SPLINE_MAX_HEADING) h = -SPLINE_MAX_HEADING;
+        var nx = prev.x + Math.tan(h);
+        var c = clampMargin(nx, h);
+        samples[y] = { x: c.x, heading: c.h };
+      }
+    }
+    function ensureDownTo(yTarget) {
+      var minY = 1e9;
+      for (var k in samples) { var ki = +k; if (ki < minY) minY = ki; }
+      if (minY === 1e9) {
+        samples[0] = { x: baseCenterX, heading: 0 };
+        minY = 0;
+      }
+      for (var y = minY - 1; y >= yTarget; y--) {
+        // Edge (y, y+1) was forward-defined as: h(y+1) = h(y) + edgeDelta(y+1, h(y))
+        // Going backward we don't know h(y) directly. Solve via fixed-point iteration:
+        // start from h(y) ≈ h(y+1), apply edgeDelta, repeat. The mean-reversion term
+        // is tiny (0.02·h) so this converges in 2-3 iterations.
+        var next = samples[y + 1];
+        var hGuess = next.heading;
+        for (var it = 0; it < 4; it++) {
+          var predictedNext = hGuess + edgeDelta(y + 1, hGuess);
+          // Adjust hGuess to drive predictedNext toward next.heading.
+          hGuess += (next.heading - predictedNext);
+        }
+        var h = hGuess;
+        if (h > SPLINE_MAX_HEADING) h = SPLINE_MAX_HEADING;
+        if (h < -SPLINE_MAX_HEADING) h = -SPLINE_MAX_HEADING;
+        // Position recovered the same way: next.x = h(y).x + tan(h(y+1))? No — the
+        // forward rule uses tan(h_NEW). Mirror exactly: next.x = prev.x + tan(next.heading).
+        var nx = next.x - Math.tan(next.heading);
+        var c = clampMargin(nx, h);
+        samples[y] = { x: c.x, heading: c.h };
+      }
+    }
+    // Elevation: low-frequency seeded noise per Y. Independent of curvature so
+    // hills and turns can occur in any combination. Amplitude varies by biome
+    // (rural ≈ rolling, commercial ≈ flat). Deterministic from seed alone.
+    function heightAt(y) {
+      var biome = biomeForY(y);
+      var amp = biome === 'rural' ? 1.6 : biome === 'industrial' ? 0.8 : biome === 'residential' ? 0.5 : biome === 'suburban' ? 0.4 : 0.15;
+      // Sum two sine waves with phases derived from the seed — cheap pseudo-noise
+      // that's smooth, periodic, and identical across renderer + physics.
+      var phaseA = (seed * 0.0001) % (Math.PI * 2);
+      var phaseB = (seed * 0.0007) % (Math.PI * 2);
+      var hA = Math.sin(y * 0.045 + phaseA) * 0.7;
+      var hB = Math.sin(y * 0.013 + phaseB) * 0.3;
+      return (hA + hB) * amp;
+    }
+    return {
+      seed: seed,
+      samples: samples,
+      // Road center (X) at any (possibly non-integer) Y. Catmull-Rom spline
+      // through 4 surrounding integer samples for C¹-smooth curves between
+      // rows — linear interp had visible faceting on the road ribbon.
+      centerAt: function(y) {
+        var y1 = Math.floor(y);
+        var y0 = y1 - 1, y2 = y1 + 1, y3 = y1 + 2;
+        var t = y - y1;
+        if (y0 >= 0) ensureUpTo(y3); else ensureDownTo(y0);
+        var s0 = samples[y0], s1 = samples[y1], s2 = samples[y2], s3 = samples[y3];
+        // Fall back gracefully if we're at the edge of the populated range.
+        if (!s1) return s2 ? s2.x : (s0 ? s0.x : baseCenterX);
+        if (!s2) return s1.x;
+        if (!s0) s0 = s1;
+        if (!s3) s3 = s2;
+        // Catmull-Rom basis (uniform, tension 0.5).
+        var p0 = s0.x, p1 = s1.x, p2 = s2.x, p3 = s3.x;
+        var a0 = -0.5 * p0 + 1.5 * p1 - 1.5 * p2 + 0.5 * p3;
+        var a1 = p0 - 2.5 * p1 + 2 * p2 - 0.5 * p3;
+        var a2 = -0.5 * p0 + 0.5 * p2;
+        var a3 = p1;
+        return ((a0 * t + a1) * t + a2) * t + a3;
+      },
+      headingAt: function(y) {
+        var y0 = Math.floor(y);
+        var y1 = y0 + 1;
+        var t = y - y0;
+        if (y0 >= 0) ensureUpTo(y1); else ensureDownTo(y0);
+        var s0 = samples[y0], s1 = samples[y1];
+        if (!s0) return s1 ? s1.heading : 0;
+        if (!s1) return s0.heading;
+        return s0.heading + (s1.heading - s0.heading) * t;
+      },
+      heightAt: heightAt,
+      // Drop samples far from the live window to bound memory. Always retain a small
+      // anchor band on each side so revisiting a chunk regenerates identical headings.
+      cleanup: function(currentChunkIndex) {
+        var keepFrom = (currentChunkIndex - 6) * CHUNK_SIZE;
+        var keepTo = (currentChunkIndex + 6) * CHUNK_SIZE;
+        for (var k in samples) {
+          var ki = +k;
+          if (ki < keepFrom || ki > keepTo) delete samples[k];
+        }
+      }
+    };
+  }
   var BIOMES = ['residential', 'commercial', 'rural', 'suburban', 'industrial'];
   // Logical biome progression: creates neighborhoods that make geographic sense
   // Pattern repeats every ~12 chunks: highway → suburban → residential → commercial → residential → rural → ...
@@ -583,7 +739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return eligible[Math.floor(rng() * eligible.length)];
   }
 
-  function generateChunk(chunkIndex, seed, centerX) {
+  function generateChunk(chunkIndex, seed, centerX, spline) {
     var rng = seededRandom(seed + chunkIndex * 7919);
     // Use progression for coherent neighborhoods, with seed-based variation
     var progIndex = ((chunkIndex % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
@@ -591,25 +747,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // 20% chance to override with a random biome for variety
     if (rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
     var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null, landmark: null };
+    // Per-row road centerline derived from the spline (world Y → local x within chunk).
+    // Using these everywhere instead of a constant centerX is what lets the road curve.
+    var chunkBaseY = chunkIndex * CHUNK_SIZE;
+    var roadCenters = new Array(CHUNK_SIZE); // index = local cy
+    for (var rcy = 0; rcy < CHUNK_SIZE; rcy++) {
+      roadCenters[rcy] = spline ? Math.round(spline.centerAt(chunkBaseY + rcy)) : centerX;
+    }
     // Generate cell grid for this chunk
     for (var y = 0; y < CHUNK_SIZE; y++) {
       var row = [];
       for (var x = 0; x < MAP_SIZE; x++) row.push(2); // grass
       chunk.cells.push(row);
     }
-    // Road through center — curves DISABLED for now because the 3D road plane is straight.
-    // A curved road plane would need bespoke geometry; keeping the road straight guarantees
-    // the visual road plane and the collision/placement grid always agree.
-    var curveAmp = 0;
+    // Road carved along the spline — roadCenters[cy] is the X for this row.
+    // Visual road ribbon and collision grid both read from the same spline so they stay in sync.
+    var curveAmp = 0; // legacy field kept for compatibility; spline supersedes it
     var curveFreq = 0;
     // Intersections: ~40% chance but never two in a row (guaranteed gap)
     var hasIntersection = rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3);
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
-    // Reserve wider main-road corridor: widest possible width across all biomes (4) + safety buffer
-    var MAX_ROAD_WIDTH = 4;
-    var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
+    // Reserve wider main-road corridor: MAX_ROAD_WIDTH + CLEARANCE_BUFFER are module-scope (see top of file).
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
-      var roadCenter = centerX;
+      var roadCenter = roadCenters[cy];
       var roadWidth = biome === 'commercial' || biome === 'suburban' ? 4 : 3;
       for (var dx = -roadWidth; dx <= roadWidth; dx++) {
         var rx = roadCenter + dx;
@@ -638,8 +798,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Skip rows near the cross street intersection
       if (hasIntersection && Math.abs(by - intersectionY) < 5) continue;
       for (var bx = 0; bx < MAP_SIZE; bx++) {
-        // Enforce CLEARANCE_BUFFER cells away from road center
-        var distFromRoad = Math.abs(bx - centerX);
+        // Enforce CLEARANCE_BUFFER cells away from the spline-local road center
+        var distFromRoad = Math.abs(bx - roadCenters[by]);
         if (distFromRoad <= MAX_ROAD_WIDTH + CLEARANCE_BUFFER) continue; // never in clearance zone
         if (chunk.cells[by][bx] === 2 && rng() < buildingDensity) {
           var nearRoad = false;
@@ -659,10 +819,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (landmark) {
         // Alternate sides of the road by chunk index for visual variety
         var side = (chunkIndex % 6 < 3) ? 1 : -1;
-        // Place landmark well beyond the clearance buffer (buffer + small setback + 1 extra cell)
-        var landmarkStartX = centerX + side * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 3);
-        if (side === -1) landmarkStartX -= landmark.size;
         var landmarkStartY = Math.floor((CHUNK_SIZE - landmark.size) / 2);
+        // Anchor on the spline center at the landmark's middle row so curving roads
+        // don't push landmarks into the woods or onto the asphalt.
+        var landmarkAnchorRow = landmarkStartY + Math.floor(landmark.size / 2);
+        var landmarkAnchorCenter = roadCenters[Math.max(0, Math.min(CHUNK_SIZE - 1, landmarkAnchorRow))];
+        var landmarkStartX = landmarkAnchorCenter + side * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 3);
+        if (side === -1) landmarkStartX -= landmark.size;
         // Check the footprint is within bounds and not overlapping cross street
         var canPlace = landmarkStartX >= 0 && landmarkStartX + landmark.size < MAP_SIZE;
         if (canPlace && hasIntersection) {
@@ -717,8 +880,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     for (var ty = 0; ty < CHUNK_SIZE; ty++) {
       for (var tx = 0; tx < MAP_SIZE; tx++) {
         if (chunk.cells[ty][tx] !== 2) continue; // must be grass
-        // Strictly outside the clearance zone
-        var treeDistFromRoad = Math.abs(tx - centerX);
+        // Strictly outside the clearance zone (spline-relative)
+        var treeDistFromRoad = Math.abs(tx - roadCenters[ty]);
         if (treeDistFromRoad <= MAX_ROAD_WIDTH + CLEARANCE_BUFFER) continue;
         // Also guard against cross-street clearance
         if (hasIntersection && Math.abs(ty - intersectionY) <= CLEARANCE_BUFFER + 1) continue;
@@ -740,7 +903,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Store metadata for 3D rendering and signal placement
     chunk.hasIntersection = hasIntersection;
     chunk.intersectionY = intersectionY;
-    chunk.roadCenter = centerX; // base center
+    // Per-row spline centers (length = CHUNK_SIZE). Renderer/signal code reads this
+    // to position the road ribbon, lane markings, and traffic signals on the curve.
+    chunk.roadCenters = roadCenters;
+    // roadCenter kept as a representative value for legacy callers (signal placement
+    // at the intersection row uses chunk.roadCenter — point it at the intersection's
+    // actual spline-local center so the signal stands at the curve, not the world center).
+    chunk.roadCenter = roadCenters[Math.max(0, Math.min(CHUNK_SIZE - 1, intersectionY))];
     chunk.curveAmp = curveAmp;
     chunk.curveFreq = curveFreq;
     return chunk;
@@ -748,13 +917,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   // Infinite world state
   function createInfiniteWorld(seed) {
+    var centerX = Math.floor(MAP_SIZE / 2);
+    var spline = createRoadSpline(seed, centerX);
     return {
       seed: seed,
       chunks: {}, // chunkIndex → chunk data
-      centerX: Math.floor(MAP_SIZE / 2),
+      centerX: centerX,
+      spline: spline,
+      // World-space road centerline for any Y. Used by the 3D ribbon mesh and any
+      // consumer that needs the smooth (non-rounded) curve position.
+      roadCenterAtY: function(worldY) { return spline.centerAt(worldY); },
+      roadHeadingAtY: function(worldY) { return spline.headingAt(worldY); },
+      roadHeightAtY: function(worldY) { return spline.heightAt(worldY); },
       getChunk: function(chunkIndex) {
         if (!this.chunks[chunkIndex]) {
-          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX);
+          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX, this.spline);
         }
         return this.chunks[chunkIndex];
       },
@@ -774,6 +951,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             delete self.chunks[key];
           }
         });
+        // Spline keeps a slightly wider band so revisited chunks regenerate identically.
+        spline.cleanup(currentChunkIndex);
       }
     };
   }
@@ -974,13 +1153,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Ensure mix of same-direction and oncoming (at least 30% each way)
       var direction = i < count * 0.35 ? 1 : i < count * 0.7 ? -1 : (Math.random() < 0.5 ? 1 : -1);
       var color = vType.colors[Math.floor(Math.random() * vType.colors.length)];
+      // Per-driver personality: speed bias (±10mph), following distance,
+      // lane-change aggressiveness, stop-sign rolling tendency. Deterministic
+      // per-vehicle (assigned at spawn) so the same car behaves consistently.
+      var prRoll = Math.random();
+      var personality;
+      if (prRoll < 0.15) personality = { speedBias: 1.12, followMult: 0.8, aggro: 0.7, rollsStops: 0.25 }; // aggressive
+      else if (prRoll < 0.35) personality = { speedBias: 0.92, followMult: 1.3, aggro: 0.15, rollsStops: 0.0 }; // cautious
+      else if (prRoll < 0.48) personality = { speedBias: 0.88, followMult: 1.5, aggro: 0.05, rollsStops: 0.0 }; // elderly/learner
+      else personality = { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0.05 }; // normal
       traffic.push({
         x: centerX + (direction === 1 ? -1.5 : 1.5),
         y: Math.random() * MAP_SIZE,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
-        speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS,
+        speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS * personality.speedBias,
         color: color,
-        type: vType.type
+        type: vType.type,
+        personality: personality
       });
     }
     // Cross-street traffic (on intersections — only for grid scenarios)
@@ -1019,19 +1208,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var side = i % 2 === 0 ? -1 : 1; // alternate sides
       // Spawn exactly ON the sidewalk
       var pedX = side === -1 ? sidewalkLeft : sidewalkRight;
+      // Pedestrian "kind" — changes appearance and speed. Kids are small and
+      // unpredictable (can dart), joggers move fast along sidewalk, dog walkers
+      // have a small dog that wanders on a short tether.
+      var kindRoll = Math.random();
+      var kind;
+      if (scenario.id === 'school_zone' && kindRoll < 0.55) kind = 'kid';
+      else if (kindRoll < 0.15) kind = 'kid';
+      else if (kindRoll < 0.30) kind = 'jogger';
+      else if (kindRoll < 0.45) kind = 'dogWalker';
+      else kind = 'adult';
+      var speedMult = kind === 'jogger' ? 3.5 : kind === 'kid' ? 1.6 : 1.0;
       peds.push({
         x: pedX,
         y: pedY,
-        homeX: pedX, // remember which sidewalk they belong to
+        homeX: pedX,
         vx: 0,
-        vy: nearIntersection ? 0 : (Math.random() - 0.5) * 0.08, // walk along sidewalk slowly
-        color: ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
+        vy: nearIntersection ? 0 : (Math.random() - 0.5) * 0.08 * speedMult,
+        color: kind === 'jogger' ? '#22c55e' : kind === 'kid' ? ['#fbbf24', '#ec4899', '#06b6d4'][i % 3] :
+               kind === 'dogWalker' ? '#6b7280' : ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
         crossing: false,
         waitingAtCrosswalk: nearIntersection,
         crosswalkY: nearIntersection ? crossYs[i % crossYs.length] : null,
         crossDirection: side,
         sidewalkLeft: sidewalkLeft,
-        sidewalkRight: sidewalkRight
+        sidewalkRight: sidewalkRight,
+        kind: kind,
+        dartCooldown: 0 // kids may dart into street
       });
     }
     return peds;
@@ -1796,6 +1999,180 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var wildlifeRef = useRef(null); // { kind, x, y, vx, vy, icon, mass, warn }
       var cyclistsRef = useRef([]);
       var audioRef = useRef({ ctx: null, engineOsc: null, engineGain: null, started: false });
+      // Two-tone horn: major-third stack (≈400 + ≈500 Hz) with a square wave for
+      // bite and a tiny attack ramp. Closer to a real car than a single beep.
+      var playHorn = function(dur) {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var hn = dur || 0.35;
+          [440, 554].forEach(function(freq, idx) {
+            var osc = ac.createOscillator();
+            var gn = ac.createGain();
+            osc.type = 'square';
+            osc.frequency.value = freq;
+            var t0 = ac.currentTime;
+            gn.gain.setValueAtTime(0, t0);
+            gn.gain.linearRampToValueAtTime(idx === 0 ? 0.08 : 0.05, t0 + 0.015);
+            gn.gain.setTargetAtTime(0, t0 + Math.max(0.05, hn - 0.08), 0.05);
+            // Slight pitch droop at the tail — authentic mechanical decay.
+            osc.frequency.setTargetAtTime(freq * 0.97, t0 + hn - 0.08, 0.1);
+            osc.connect(gn).connect(ac.destination);
+            osc.start();
+            osc.stop(t0 + hn);
+          });
+        } catch (hornErr) {}
+      };
+      // Tire splash — quick high-band noise burst, used when crossing a puddle.
+      var playSplash = function(intensity) {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var amp = Math.max(0.04, Math.min(0.18, intensity * 0.025));
+          var blen = Math.floor(ac.sampleRate * 0.22);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 1.6);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var bp = ac.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 2400;
+          bp.Q.value = 1.4;
+          var gn = ac.createGain();
+          gn.gain.value = amp;
+          src.connect(bp).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.22);
+        } catch (spErr) {}
+      };
+      // Pothole thump — short low filtered impulse with body resonance.
+      var playThump = function(intensity) {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var amp = Math.max(0.05, Math.min(0.22, intensity * 0.03));
+          // Filtered noise burst (impact).
+          var blen = Math.floor(ac.sampleRate * 0.18);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 2);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var lp = ac.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 180;
+          var gn = ac.createGain();
+          gn.gain.value = amp;
+          src.connect(lp).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.18);
+          // Body resonance — quick decaying sine to suggest the chassis ringing.
+          var ros = ac.createOscillator();
+          var rg = ac.createGain();
+          ros.type = 'sine';
+          ros.frequency.value = 65;
+          var t0 = ac.currentTime;
+          rg.gain.setValueAtTime(amp * 0.6, t0);
+          rg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.25);
+          ros.connect(rg).connect(ac.destination);
+          ros.start();
+          ros.stop(t0 + 0.27);
+        } catch (thErr) {}
+      };
+      // Gear-shift clunk: brief filtered noise pop with a faint pitched click.
+      // Mechanical-feeling without overstaying its welcome.
+      var playGearShift = function() {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var blen = Math.floor(ac.sampleRate * 0.12);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 1.5);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var bp = ac.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 320;
+          bp.Q.value = 4;
+          var gn = ac.createGain();
+          gn.gain.value = 0.18;
+          src.connect(bp).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.12);
+          // Mechanical click — short metallic blip on top of the noise pop.
+          var clk = ac.createOscillator();
+          var clkG = ac.createGain();
+          clk.type = 'square';
+          clk.frequency.value = 720;
+          var t0 = ac.currentTime;
+          clkG.gain.setValueAtTime(0.05, t0);
+          clkG.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+          clk.connect(clkG).connect(ac.destination);
+          clk.start(t0);
+          clk.stop(t0 + 0.06);
+        } catch (gsErr) {}
+      };
+      // Engine crank → catch sequence. 3 short low oscillator chugs at ~6 Hz
+      // then a rising pitch glide as the engine catches. Plays once at session
+      // start before the persistent engine layer ramps up.
+      var playEngineStart = function() {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var t0 = ac.currentTime;
+          // Three crank chugs — low square pulses with noise overlay.
+          for (var k = 0; k < 3; k++) {
+            var osc = ac.createOscillator();
+            var gn = ac.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 28 + k * 2;
+            gn.gain.value = 0;
+            osc.connect(gn).connect(ac.destination);
+            var tk = t0 + k * 0.16;
+            gn.gain.setValueAtTime(0, tk);
+            gn.gain.linearRampToValueAtTime(0.07, tk + 0.02);
+            gn.gain.exponentialRampToValueAtTime(0.001, tk + 0.13);
+            osc.start(tk);
+            osc.stop(tk + 0.15);
+          }
+          // Catch — pitch glides up over 0.4s into idle.
+          var catchOsc = ac.createOscillator();
+          var catchGn = ac.createGain();
+          catchOsc.type = 'sawtooth';
+          catchOsc.frequency.setValueAtTime(35, t0 + 0.5);
+          catchOsc.frequency.exponentialRampToValueAtTime(70, t0 + 0.95);
+          catchOsc.frequency.exponentialRampToValueAtTime(45, t0 + 1.4);
+          catchGn.gain.setValueAtTime(0, t0 + 0.5);
+          catchGn.gain.linearRampToValueAtTime(0.06, t0 + 0.62);
+          catchGn.gain.exponentialRampToValueAtTime(0.001, t0 + 1.5);
+          catchOsc.connect(catchGn).connect(ac.destination);
+          catchOsc.start(t0 + 0.5);
+          catchOsc.stop(t0 + 1.55);
+        } catch (esErr) {}
+      };
+      // Door-close thud: short filtered noise burst. Fires when drivingRef flips on.
+      var playDoorClose = function() {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var blen = Math.floor(ac.sampleRate * 0.25);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 2);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var lpf = ac.createBiquadFilter();
+          lpf.type = 'lowpass';
+          lpf.frequency.value = 220;
+          var gn = ac.createGain();
+          gn.gain.value = 0.35;
+          src.connect(lpf).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.25);
+        } catch (dcErr) {}
+      };
       var skidRef = useRef({ active: false, intensity: 0 });
       var eventToastRef = useRef({ msg: null, until: 0 });
       var drivingRef = useRef(false);
@@ -1853,22 +2230,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 'e') blinkerRef.current = blinkerRef.current === -1 ? 0 : -1;
           if (e.key.toLowerCase() === 'v') blinkerRef.current = blinkerRef.current === 1 ? 0 : 1;
           if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
-          // Horn — quick beep on 'q'
-          if (e.key.toLowerCase() === 'q') {
-            try {
-              var ac = audioRef.current.ctx;
-              if (ac) {
-                var horn = ac.createOscillator();
-                var hGain = ac.createGain();
-                horn.type = 'square'; horn.frequency.value = 440;
-                hGain.gain.value = 0.08;
-                horn.connect(hGain); hGain.connect(ac.destination);
-                horn.start();
-                hGain.gain.setTargetAtTime(0, ac.currentTime + 0.25, 0.05);
-                horn.stop(ac.currentTime + 0.3);
-              }
-            } catch (e2) {}
-          }
+          // Horn — quick two-tone beep on 'q'
+          if (e.key.toLowerCase() === 'q') playHorn(0.35);
           if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
@@ -1998,6 +2361,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         drivingRef.current = true;
         pausedRef.current = false;
         updMulti({ view: 'driving', scenario: scn.id, vehicle: veh.id });
+        // Door-thud when the session starts, then engine crank a beat later.
+        // Delay so the audio ctx (only resumes on user gesture) has settled.
+        setTimeout(function() { playDoorClose(); }, 80);
+        setTimeout(function() { playEngineStart(); }, 450);
       }, []);
 
       var exitDriving = useCallback(function() {
@@ -2007,11 +2374,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         try {
           var a = audioRef.current;
           // Stop and disconnect all oscillators and buffer sources
-          ['engineOsc', '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode'].forEach(function(key) {
+          ['engineOsc', '_engineHarm', '_engineOct', '_engineNoise', '_engineLFO',
+           '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode',
+           '_rumbleOsc', '_brakeOsc', '_signalOsc', '_tireNode',
+           '_reverseOsc', '_wiperNode', '_ambDayNode', '_ambNightNode'].forEach(function(key) {
             if (a[key]) { try { a[key].stop(); } catch(e2){} a[key] = null; }
           });
           // Zero all gains
-          ['engineGain', '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain'].forEach(function(key) {
+          ['engineGain', '_engineFundGain', '_engineHarmGain', '_engineOctGain',
+           '_engineNoiseGain', '_engineLFOGain',
+           '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain',
+           '_rumbleGain', '_brakeGain', '_signalGain', '_tireGain',
+           '_reverseGain', '_wiperGain', '_ambDayGain', '_ambNightGain'].forEach(function(key) {
             if (a[key]) { try { a[key].gain.value = 0; a[key].disconnect(); } catch(e3){} a[key] = null; }
           });
           // Reset audio state so next drive creates fresh nodes
@@ -2121,7 +2495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (axes.length > 4 && axes[4] > 0) ltVal = Math.max(ltVal, (axes[4] + 1) / 2);
             k._gpBrake = ltVal;
             // Buttons (edge-triggered)
-            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; /* horn */ try { var ac = audioRef.current.ctx; if (ac) { var h2 = ac.createOscillator(); var hg = ac.createGain(); h2.type = 'square'; h2.frequency.value = 440; hg.gain.value = 0.08; h2.connect(hg); hg.connect(ac.destination); h2.start(); hg.gain.setTargetAtTime(0, ac.currentTime + 0.25, 0.05); h2.stop(ac.currentTime + 0.3); } } catch(e2){} }
+            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; playHorn(0.35); }
             else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
             if (buttons[1] && buttons[1].pressed && !k._gpB) { k._gpB = true; var modes = ['cockpit','chase','overhead','rearview']; cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current)+1)%modes.length]; }
             else if (!buttons[1] || !buttons[1].pressed) k._gpB = false;
@@ -2385,7 +2759,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Drag and rolling resist always oppose motion
           var resistSign = car.speed >= 0 ? 1 : -1;
           var brakeForce = brakeInput * veh.mass * mu * 9.81 * 0.95;
-          var netForce = thrust - (Fd + Fr + brakeForce) * resistSign;
+          // Hill grade: slope of road height at the car's position. Positive
+          // slope = uphill (opposes forward motion), negative = downhill (assists).
+          // Grade force = m * g * sin(atan(slope)) ≈ m * g * slope for small angles.
+          var gradeForce = 0;
+          if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+            var sp = infiniteWorldRef.current.spline;
+            var hHere = sp.heightAt(car.y);
+            var hAhead = sp.heightAt(car.y + 1);
+            var slope = (hAhead - hHere); // rise per 1 cell
+            gradeForce = veh.mass * 9.81 * slope * 0.18; // scaled down — full gravity grade is too harsh for gameplay
+          }
+          var netForce = thrust - (Fd + Fr + brakeForce) * resistSign - gradeForce * resistSign;
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
           // Extra brake clamping: if braking and speed is very low, snap to zero (prevents creeping)
@@ -2409,8 +2794,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (gear === 'R' && car.speed < -15 * MPH_TO_MS) car.speed = -15 * MPH_TO_MS;
           // Reverse auto-stop when throttle released and nearly stopped
           if (gear === 'R' && Math.abs(car.speed) < 0.5 && throttleInput === 0 && brakeInput === 0) car.speed = 0;
-          // Weight transfer (affects car pitch — visible in 3D)
-          car._pitchTarget = accel * 0.003; // nose dips on brake, lifts on accel
+          // Weight transfer (affects car pitch — visible in 3D) PLUS road grade.
+          // Grade pitch tilts the whole car to follow the slope; accel pitch adds
+          // the suspension nose-dip/lift on top.
+          var gradePitch = 0;
+          if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+            var spP = infiniteWorldRef.current.spline;
+            gradePitch = Math.atan2(spP.heightAt(car.y + 1) - spP.heightAt(car.y), 1);
+          }
+          car._pitchTarget = accel * 0.003 + gradePitch * 0.5;
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
           car._rollTarget = -car.steering * Math.abs(car.speed) * 0.003; // body rolls in turns
           car._roll = (car._roll || 0) + (car._rollTarget - (car._roll || 0)) * dt * 4;
@@ -2758,22 +3150,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var signals = signalsRef.current;
           var scn = currentScenario;
           traffic.forEach(function(t, idx) {
+            // Default personality for legacy/cross-street cars that didn't get one.
+            var pers = t.personality || { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0 };
             // Look for nearest signal ahead in our direction of travel
             var slowFor = 0; // 0=clear, 1=slow, 2=stop
             signals.forEach(function(s) {
               var ahead = (t.heading > 0 ? s.y - t.y : t.y - s.y);
               if (ahead > 0 && ahead < 8 && Math.abs(s.x - t.x) < 3) {
-                if (s.type === 'stop' || s.state === 'red') slowFor = Math.max(slowFor, 2);
-                else if (s.state === 'yellow') slowFor = Math.max(slowFor, 1);
+                if (s.type === 'stop' || s.state === 'red') {
+                  // Some drivers roll stops — flag once per signal so they only
+                  // commit one rolling stop per encounter. Otherwise stop as normal.
+                  if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
+                    slowFor = Math.max(slowFor, 1); // slow but don't stop
+                  } else {
+                    slowFor = Math.max(slowFor, 2);
+                  }
+                } else if (s.state === 'yellow') {
+                  // Aggressive drivers gun it through yellow; cautious brake.
+                  slowFor = Math.max(slowFor, pers.aggro > 0.5 ? 0 : 1);
+                }
               }
             });
-            // Follow car ahead (other traffic)
+            // Follow car ahead — distance scaled by personality.followMult
+            // (aggressive tailgate, cautious leave space). Speed-aware: longer
+            // gap when moving fast, shorter at crawl speeds.
+            var followNear = 4 * pers.followMult + t.speed * 0.25 * pers.followMult;
+            var followFar  = 7 * pers.followMult + t.speed * 0.35 * pers.followMult;
             traffic.forEach(function(other, j) {
               if (j === idx) return;
               if (Math.abs(other.x - t.x) > 2) return;
               var ahead = (t.heading > 0 ? other.y - t.y : t.y - other.y);
-              if (ahead > 0 && ahead < 4) slowFor = Math.max(slowFor, 2);
-              else if (ahead > 0 && ahead < 7) slowFor = Math.max(slowFor, 1);
+              if (ahead > 0 && ahead < followNear) slowFor = Math.max(slowFor, 2);
+              else if (ahead > 0 && ahead < followFar) slowFor = Math.max(slowFor, 1);
             });
             // React to PLAYER car — slow down, honk, or rear-end
             var playerCar = carRef.current;
@@ -2832,14 +3240,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             t.speed += (targetSpeed - t.speed) * Math.min(1, dt * 2);
             // Turn signal on AI vehicles — blink when slowing for a signal
             t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
-            // Occasional lane change (non-cross-street only, highway/suburban)
+            // Lane-change: triggered when slow car ahead + aggressive personality.
+            // Aggressive drivers switch more readily and on less gap.
             if (!t.crossStreet && !t._laneChangeCooldown) t._laneChangeCooldown = 0;
-            if (!t.crossStreet && t._laneChangeCooldown <= 0 && Math.random() < 0.001) {
+            if (!t.crossStreet && t._laneChangeCooldown <= 0) {
               var centerXt = Math.floor(MAP_SIZE / 2);
-              var laneDir = t.x < centerXt ? 0.3 : -0.3;
-              t.x += laneDir;
-              t.blinker = laneDir > 0 ? 1 : -1;
-              t._laneChangeCooldown = 10; // seconds before next change
+              // Check for slower car 3-8 units directly ahead — reason to overtake.
+              var wantOvertake = false;
+              traffic.forEach(function(other2, j2) {
+                if (j2 === idx || wantOvertake) return;
+                if (Math.abs(other2.x - t.x) > 1.5) return;
+                var ah = (t.heading > 0 ? other2.y - t.y : t.y - other2.y);
+                if (ah > 3 && ah < 8 && other2.speed < t.speed * 0.8) wantOvertake = true;
+              });
+              // Aggressive drivers (aggro > 0.4) overtake; cautious drivers wait.
+              if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.02) {
+                var laneDir = t.x < centerXt ? 0.3 : -0.3;
+                t.x += laneDir;
+                t.blinker = laneDir > 0 ? 1 : -1;
+                t._laneChangeCooldown = 8;
+              } else if (!wantOvertake && Math.random() < 0.0008) {
+                // Idle lane drift (rare) — still happens occasionally.
+                var laneDir2 = t.x < centerXt ? 0.2 : -0.2;
+                t.x += laneDir2;
+                t._laneChangeCooldown = 10;
+              }
             }
             if (t._laneChangeCooldown > 0) t._laneChangeCooldown -= dt;
             // Move
@@ -2990,8 +3415,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   audioRef.current._sirenOsc.type = 'sine';
                   audioRef.current._sirenOsc.frequency.value = spawn.sirenFreq;
                   audioRef.current._sirenGain.gain.value = 0.06;
+                  // Stereo panner + low-pass — lets the siren feel directional.
+                  // LPF cutoff drops when the vehicle is further away (distance muffle).
+                  audioRef.current._sirenPan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+                  audioRef.current._sirenLPF = ac.createBiquadFilter();
+                  audioRef.current._sirenLPF.type = 'lowpass';
+                  audioRef.current._sirenLPF.frequency.value = 4000;
                   audioRef.current._sirenOsc.connect(audioRef.current._sirenGain);
-                  audioRef.current._sirenGain.connect(ac.destination);
+                  var tail = audioRef.current._sirenGain.connect(audioRef.current._sirenLPF);
+                  if (audioRef.current._sirenPan) tail = tail.connect(audioRef.current._sirenPan);
+                  tail.connect(ac.destination);
                   audioRef.current._sirenOsc.start();
                 }
               } catch (e) {}
@@ -3006,6 +3439,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (audioRef.current._sirenOsc) {
               var wob = em.sirenFreq + Math.sin(timeRef.current * 8) * 200;
               audioRef.current._sirenOsc.frequency.setTargetAtTime(wob, audioRef.current.ctx.currentTime, 0.05);
+              // Stereo pan tracks lateral offset of em relative to car heading.
+              // Transform em→car vector into the car's frame so "right" means
+              // right-of-player regardless of which way the car is facing.
+              var relX = em.x - car.x;
+              var relY = em.y - car.y;
+              var cosH = Math.cos(car.heading);
+              var sinH = Math.sin(car.heading);
+              // Forward axis = (cosH, sinH); lateral = (-sinH, cosH).
+              var lateral = -sinH * relX + cosH * relY;
+              var forward = cosH * relX + sinH * relY;
+              var dist = Math.hypot(relX, relY);
+              var panTarget = Math.max(-1, Math.min(1, lateral / 6));
+              if (audioRef.current._sirenPan) audioRef.current._sirenPan.pan.setTargetAtTime(panTarget, audioRef.current.ctx.currentTime, 0.08);
+              // Distance muffle — cutoff 1kHz far away, 5kHz when right next to you.
+              var cutoff = Math.max(800, 5000 - dist * 180);
+              if (audioRef.current._sirenLPF) audioRef.current._sirenLPF.frequency.setTargetAtTime(cutoff, audioRef.current.ctx.currentTime, 0.15);
+              // Doppler-ish pitch shift — higher when approaching (forward > 0 and
+              // closing), lower after it passes. Real Doppler needs velocity vectors;
+              // a quick approximation from forward distance still feels right.
+              var dopScale = forward > 0 ? 1.05 : 0.92;
+              audioRef.current._sirenOsc.frequency.setTargetAtTime(wob * dopScale, audioRef.current.ctx.currentTime, 0.06);
               // Fade out as it passes
               if (em.y < car.y - 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
             }
@@ -3102,23 +3556,232 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var a = audioRef.current;
           if (!a.ctx) return;
           var car = carRef.current;
-          // Engine hum: low oscillator whose frequency tracks RPM-ish (speed + throttle)
+          // Engine audio — 4-cylinder-ish layered synth.
+          // Graph (built once, retuned per frame):
+          //   fundamentalOsc (triangle, firing rate) → fundGain ─┐
+          //   harmonicOsc    (sawtooth at 2×)      → harmGain ─┤
+          //   octaveOsc      (square at 4×)        → octGain  ─┤→ engineLPF → engineGain → ctx
+          //   combustionNoise(filtered pink noise)  → noiseGain ┘
+          //   pitchLFO      (slow sine, ±2%)       → fundamental frequency (idle wobble)
           try {
             if (!a.engineOsc) {
-              a.engineOsc = a.ctx.createOscillator();
+              // Fundamental ≈ engine firing rate; 4-cyl 4-stroke idles ~10 Hz but
+              // we can't go that low, so treat fundamental as 2nd harmonic (≈20-50 Hz)
+              // and stack up from there. Makes the result feel like a real motor
+              // rather than a buzz-saw.
+              a.engineOsc = a.ctx.createOscillator(); // fundamental
+              a.engineOsc.type = 'triangle';
+              a.engineOsc.frequency.value = 40;
+              a._engineHarm = a.ctx.createOscillator(); // 2× saw
+              a._engineHarm.type = 'sawtooth';
+              a._engineHarm.frequency.value = 80;
+              a._engineOct = a.ctx.createOscillator(); // 4× square (top-end rasp)
+              a._engineOct.type = 'square';
+              a._engineOct.frequency.value = 160;
+              // Individual gains so we can mix harmonics per throttle.
+              a._engineFundGain = a.ctx.createGain(); a._engineFundGain.gain.value = 0.7;
+              a._engineHarmGain = a.ctx.createGain(); a._engineHarmGain.gain.value = 0.25;
+              a._engineOctGain  = a.ctx.createGain(); a._engineOctGain.gain.value  = 0.05;
+              // Low-pass filter opens as throttle rises — airy top end under load.
+              a._engineLPF = a.ctx.createBiquadFilter();
+              a._engineLPF.type = 'lowpass';
+              a._engineLPF.frequency.value = 300;
+              a._engineLPF.Q.value = 0.7;
+              // Master engine gain (legacy name kept so existing shutdown code works).
               a.engineGain = a.ctx.createGain();
-              a.engineOsc.type = 'sawtooth';
-              a.engineOsc.frequency.value = 60;
               a.engineGain.gain.value = 0;
-              a.engineOsc.connect(a.engineGain);
+              // Combustion noise: white noise → band-pass → gain, adds irregularity.
+              var nLen = a.ctx.sampleRate * 1;
+              var nBuf = a.ctx.createBuffer(1, nLen, a.ctx.sampleRate);
+              var nData = nBuf.getChannelData(0);
+              for (var ni = 0; ni < nLen; ni++) nData[ni] = Math.random() * 2 - 1;
+              a._engineNoise = a.ctx.createBufferSource();
+              a._engineNoise.buffer = nBuf;
+              a._engineNoise.loop = true;
+              a._engineNoiseBP = a.ctx.createBiquadFilter();
+              a._engineNoiseBP.type = 'bandpass';
+              a._engineNoiseBP.frequency.value = 160;
+              a._engineNoiseBP.Q.value = 1.2;
+              a._engineNoiseGain = a.ctx.createGain();
+              a._engineNoiseGain.gain.value = 0.04;
+              // Pitch LFO — tiny wobble so idle doesn't sound laser-flat.
+              a._engineLFO = a.ctx.createOscillator();
+              a._engineLFO.type = 'sine';
+              a._engineLFO.frequency.value = 3.5;
+              a._engineLFOGain = a.ctx.createGain();
+              a._engineLFOGain.gain.value = 1.2; // ±1.2 Hz wobble at idle
+              // Wire it up
+              a.engineOsc.connect(a._engineFundGain).connect(a._engineLPF);
+              a._engineHarm.connect(a._engineHarmGain).connect(a._engineLPF);
+              a._engineOct.connect(a._engineOctGain).connect(a._engineLPF);
+              a._engineNoise.connect(a._engineNoiseBP).connect(a._engineNoiseGain).connect(a._engineLPF);
+              a._engineLPF.connect(a.engineGain);
               a.engineGain.connect(a.ctx.destination);
+              a._engineLFO.connect(a._engineLFOGain).connect(a.engineOsc.frequency);
+              // Start sources
               a.engineOsc.start();
+              a._engineHarm.start();
+              a._engineOct.start();
+              a._engineNoise.start();
+              a._engineLFO.start();
             }
             if (a.ctx.state === 'suspended') a.ctx.resume();
-            var targetFreq = 50 + car.speed * 3 + car.throttle * 30;
-            var targetGain = Math.min(0.06, 0.01 + car.throttle * 0.05 + car.speed * 0.0015);
-            a.engineOsc.frequency.setTargetAtTime(targetFreq, a.ctx.currentTime, 0.08);
-            a.engineGain.gain.setTargetAtTime(targetGain, a.ctx.currentTime, 0.1);
+            // Fundamental = idle (≈32 Hz) + speed + throttle contributions.
+            // Throttle affects pitch MORE than speed when stopped (revving in park)
+            // and less when already at speed (engine already spinning). Nonlinear
+            // mix matches how drivers actually feel the motor.
+            var idleHz = 32;
+            var speedHz = Math.abs(car.speed) * 2.4;
+            var throtHz = car.throttle * (car.speed < 2 ? 45 : 22);
+            var fund = idleHz + speedHz + throtHz;
+            var now = a.ctx.currentTime;
+            a.engineOsc.frequency.setTargetAtTime(fund, now, 0.07);
+            a._engineHarm.frequency.setTargetAtTime(fund * 2, now, 0.07);
+            a._engineOct.frequency.setTargetAtTime(fund * 4, now, 0.07);
+            // Open the filter under throttle — more rasp when accelerating.
+            var lpfTarget = 280 + car.throttle * 1800 + Math.abs(car.speed) * 12;
+            a._engineLPF.frequency.setTargetAtTime(lpfTarget, now, 0.12);
+            // Coast-down detection — off-throttle but still rolling fast. Engine
+            // braking has a tighter, less-rasp timbre than power-on (pumping vs
+            // combustion-led). Reduce harmonic gains; let the noise layer dominate
+            // softly. 0..1 weight makes the transition smooth.
+            var coast = (car.throttle < 0.06 && Math.abs(car.speed) > 4) ? 1 : 0;
+            var coastBlend = coast > 0 ? Math.min(1, (Math.abs(car.speed) - 4) / 12) : 0;
+            // Mix: more harmonic saw + octave square under load; less when coasting.
+            a._engineHarmGain.gain.setTargetAtTime(0.18 + car.throttle * 0.35 - coastBlend * 0.10, now, 0.1);
+            a._engineOctGain.gain.setTargetAtTime(0.02 + car.throttle * 0.18 - coastBlend * 0.015, now, 0.1);
+            a._engineNoiseGain.gain.setTargetAtTime(0.03 + car.throttle * 0.08 + coastBlend * 0.05, now, 0.1);
+            // Tighten the LPF on coast — engine braking is more "whoosh", less "growl".
+            if (coastBlend > 0) {
+              var coastCutoff = 220 + Math.abs(car.speed) * 18;
+              a._engineLPF.frequency.setTargetAtTime(coastCutoff, now, 0.18);
+            }
+            // LFO intensity — wobble more at idle, less when revving (smoother combustion).
+            var lfoAmt = car.throttle < 0.1 ? 1.8 : Math.max(0.3, 1.5 - car.throttle * 2);
+            a._engineLFOGain.gain.setTargetAtTime(lfoAmt, now, 0.15);
+            // Master volume — audible but never dominant.
+            var targetGain = Math.min(0.09, 0.018 + car.throttle * 0.055 + Math.abs(car.speed) * 0.0012);
+            a.engineGain.gain.setTargetAtTime(targetGain, now, 0.1);
+            // Gear-shift detection — clunk on any P/R/D transition.
+            var curGear = gearRef.current;
+            if (a._lastGear === undefined) a._lastGear = curGear;
+            if (curGear !== a._lastGear) {
+              playGearShift();
+              a._lastGear = curGear;
+            }
+            // Reverse rumble — extra low-frequency layer when in R, since real
+            // automatics sound throatier in reverse (transmission whine + low gear).
+            if (curGear === 'R') {
+              if (!a._reverseOsc) {
+                a._reverseOsc = a.ctx.createOscillator();
+                a._reverseOsc.type = 'sine';
+                a._reverseOsc.frequency.value = 90;
+                a._reverseGain = a.ctx.createGain();
+                a._reverseGain.gain.value = 0;
+                a._reverseOsc.connect(a._reverseGain).connect(a.ctx.destination);
+                a._reverseOsc.start();
+              }
+              a._reverseOsc.frequency.setTargetAtTime(75 + Math.abs(car.speed) * 6, now, 0.1);
+              a._reverseGain.gain.setTargetAtTime(0.025 + car.throttle * 0.04, now, 0.1);
+            } else if (a._reverseGain) {
+              a._reverseGain.gain.setTargetAtTime(0, now, 0.15);
+            }
+            // Wildlife ambience — rural day = bird-band hiss with slow gating;
+            // night = narrow cricket-band with a faster pulse. One node each so
+            // we can fade them based on biome/time without churning.
+            var isRural = false;
+            try {
+              if (infiniteWorldRef.current) {
+                var ciHere = Math.floor(car.y / CHUNK_SIZE);
+                var biomeHere = infiniteWorldRef.current.getChunk(ciHere).biome;
+                isRural = biomeHere === 'rural';
+              } else if (currentScenario.id === 'rural' || currentScenario.id === 'dawn') {
+                isRural = true;
+              }
+            } catch (eAmb) {}
+            var isNightAmb = currentScenario.time === 'night' || currentScenario.id === 'night';
+            // Day birds — high band-pass filtered noise, slow LFO gate.
+            if (isRural && !isNightAmb) {
+              if (!a._ambDayNode) {
+                var dbBufLen = a.ctx.sampleRate * 2;
+                var dbBuf = a.ctx.createBuffer(1, dbBufLen, a.ctx.sampleRate);
+                var dbData = dbBuf.getChannelData(0);
+                for (var dbi = 0; dbi < dbBufLen; dbi++) dbData[dbi] = (Math.random() * 2 - 1) * 0.6;
+                a._ambDayNode = a.ctx.createBufferSource();
+                a._ambDayNode.buffer = dbBuf;
+                a._ambDayNode.loop = true;
+                a._ambDayBP = a.ctx.createBiquadFilter();
+                a._ambDayBP.type = 'bandpass';
+                a._ambDayBP.frequency.value = 3200;
+                a._ambDayBP.Q.value = 8;
+                a._ambDayGain = a.ctx.createGain();
+                a._ambDayGain.gain.value = 0;
+                a._ambDayNode.connect(a._ambDayBP).connect(a._ambDayGain).connect(a.ctx.destination);
+                a._ambDayNode.start();
+              }
+              // Slow LFO-style gain so the chirp comes in waves.
+              var dbWave = 0.5 + 0.5 * Math.sin(timeRef.current * 0.7);
+              a._ambDayGain.gain.setTargetAtTime(0.025 * dbWave, now, 0.4);
+              // Filter freq drifts so it sounds like multiple birds.
+              a._ambDayBP.frequency.setTargetAtTime(2800 + Math.sin(timeRef.current * 1.3) * 700, now, 0.3);
+            } else if (a._ambDayGain) {
+              a._ambDayGain.gain.setTargetAtTime(0, now, 0.4);
+            }
+            // Night crickets — narrow band-pass + faster pulse.
+            if (isNightAmb && (isRural || currentScenario.id === 'night')) {
+              if (!a._ambNightNode) {
+                var cnBufLen = a.ctx.sampleRate * 2;
+                var cnBuf = a.ctx.createBuffer(1, cnBufLen, a.ctx.sampleRate);
+                var cnData = cnBuf.getChannelData(0);
+                for (var cni = 0; cni < cnBufLen; cni++) cnData[cni] = (Math.random() * 2 - 1) * 0.6;
+                a._ambNightNode = a.ctx.createBufferSource();
+                a._ambNightNode.buffer = cnBuf;
+                a._ambNightNode.loop = true;
+                a._ambNightBP = a.ctx.createBiquadFilter();
+                a._ambNightBP.type = 'bandpass';
+                a._ambNightBP.frequency.value = 4500;
+                a._ambNightBP.Q.value = 18;
+                a._ambNightGain = a.ctx.createGain();
+                a._ambNightGain.gain.value = 0;
+                a._ambNightNode.connect(a._ambNightBP).connect(a._ambNightGain).connect(a.ctx.destination);
+                a._ambNightNode.start();
+              }
+              // Cricket chirp pulses — a square-ish gate at ~3 Hz.
+              var crGate = Math.max(0, Math.sin(timeRef.current * 8));
+              a._ambNightGain.gain.setTargetAtTime(0.03 * crGate * crGate, now, 0.05);
+            } else if (a._ambNightGain) {
+              a._ambNightGain.gain.setTargetAtTime(0, now, 0.4);
+            }
+            // Wiper swoosh — filtered noise gated by a sweep, only in rain/snow.
+            // Two passes per cycle (out + back), so gain peaks twice every period.
+            var wiperOn = currentScenario.weather === 'rain' || currentScenario.weather === 'snow';
+            if (wiperOn) {
+              if (!a._wiperNode) {
+                var wpLen = a.ctx.sampleRate * 1;
+                var wpBuf = a.ctx.createBuffer(1, wpLen, a.ctx.sampleRate);
+                var wpData = wpBuf.getChannelData(0);
+                for (var wpi = 0; wpi < wpLen; wpi++) wpData[wpi] = (Math.random() * 2 - 1) * 0.4;
+                a._wiperNode = a.ctx.createBufferSource();
+                a._wiperNode.buffer = wpBuf;
+                a._wiperNode.loop = true;
+                a._wiperBP = a.ctx.createBiquadFilter();
+                a._wiperBP.type = 'bandpass';
+                a._wiperBP.frequency.value = 1200;
+                a._wiperBP.Q.value = 2.5;
+                a._wiperGain = a.ctx.createGain();
+                a._wiperGain.gain.value = 0;
+                a._wiperNode.connect(a._wiperBP).connect(a._wiperGain).connect(a.ctx.destination);
+                a._wiperNode.start();
+              }
+              // 0.7 Hz wipe cycle → two peaks per cycle (sin² of 2× phase).
+              var wpPhase = Math.abs(Math.sin(timeRef.current * Math.PI * 0.7));
+              var wpGate = wpPhase * wpPhase;
+              a._wiperGain.gain.setTargetAtTime(0.022 * wpGate, now, 0.04);
+              // Filter sweeps high → low on each pass to suggest direction.
+              a._wiperBP.frequency.setTargetAtTime(800 + wpGate * 1400, now, 0.05);
+            } else if (a._wiperGain) {
+              a._wiperGain.gain.setTargetAtTime(0, now, 0.3);
+            }
             // Skid screech: short high burst while skidding
             if (skidRef.current.active && !a._skidOsc) {
               a._skidOsc = a.ctx.createOscillator();
@@ -3134,6 +3797,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var oldOsc = a._skidOsc;
               setTimeout(function() { try { oldOsc.stop(); } catch(e){} }, 200);
               a._skidOsc = null;
+            }
+            // Brake squeal — thin high-Q tone that builds as brakes engage at speed.
+            // Persistent node; fades in/out rather than spawning on each press.
+            if (!a._brakeOsc) {
+              a._brakeOsc = a.ctx.createOscillator();
+              a._brakeOsc.type = 'sawtooth';
+              a._brakeOsc.frequency.value = 2400;
+              a._brakeFilter = a.ctx.createBiquadFilter();
+              a._brakeFilter.type = 'bandpass';
+              a._brakeFilter.frequency.value = 2400;
+              a._brakeFilter.Q.value = 14;
+              a._brakeGain = a.ctx.createGain();
+              a._brakeGain.gain.value = 0;
+              a._brakeOsc.connect(a._brakeFilter).connect(a._brakeGain).connect(a.ctx.destination);
+              a._brakeOsc.start();
+            }
+            // Squeal only when braking hard AND at speed — no squeal at parking-lot speeds.
+            var speedMph = Math.abs(car.speed) * 2.237;
+            var squealAmt = (car.brake > 0.4 && speedMph > 12) ? (car.brake - 0.4) * 0.06 * Math.min(1, (speedMph - 12) / 25) : 0;
+            a._brakeGain.gain.setTargetAtTime(squealAmt, a.ctx.currentTime, 0.05);
+            // Pitch drops slightly as speed drops (rotor gets slower) — subtle but real.
+            a._brakeFilter.frequency.setTargetAtTime(1800 + speedMph * 18, a.ctx.currentTime, 0.1);
+            // Turn signal click — discrete tick on the leading edge of each
+            // blinker flash. State machine mirrors the visual flash (1.5 Hz).
+            if (blinkerRef.current !== 0) {
+              var blinkPhase = (timeRef.current * 1.5) % 1;
+              if (a._signalPhasePrev === undefined) a._signalPhasePrev = blinkPhase;
+              // Fire one click when the phase wraps from ~1 back to ~0 (flash on),
+              // and one lower-pitch click on the off edge (flash off at ~0.5).
+              var fireClick = null;
+              if (blinkPhase < a._signalPhasePrev) fireClick = { f: 2400, d: 0.06 };
+              else if (a._signalPhasePrev < 0.5 && blinkPhase >= 0.5) fireClick = { f: 1600, d: 0.05 };
+              if (fireClick) {
+                try {
+                  var sc = a.ctx.createOscillator();
+                  var sg = a.ctx.createGain();
+                  sc.type = 'square';
+                  sc.frequency.value = fireClick.f;
+                  sg.gain.value = 0;
+                  sc.connect(sg).connect(a.ctx.destination);
+                  sc.start();
+                  var tNow = a.ctx.currentTime;
+                  sg.gain.setValueAtTime(0, tNow);
+                  sg.gain.linearRampToValueAtTime(0.05, tNow + 0.003);
+                  sg.gain.exponentialRampToValueAtTime(0.0001, tNow + fireClick.d);
+                  sc.stop(tNow + fireClick.d + 0.02);
+                } catch (bse) {}
+              }
+              a._signalPhasePrev = blinkPhase;
+            } else {
+              a._signalPhasePrev = undefined;
             }
             // Wind / road noise: white noise filtered, volume scales with speed
             if (!a._windNode) {
@@ -3161,6 +3875,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var windCutoff = 200 + car.speed * 20;
             a._windGain.gain.setTargetAtTime(windVol, a.ctx.currentTime, 0.1);
             a._windFilter.frequency.setTargetAtTime(windCutoff, a.ctx.currentTime, 0.1);
+            // Tire-on-surface noise — separate noise layer, filter tuning depends
+            // on the cell the car is currently over: asphalt = narrow mid-band,
+            // grass = wider+lower (muffled), gravel/shoulder = crunchy higher-Q.
+            // Weather modulates: rain adds sizzling top end; snow damps everything.
+            if (!a._tireNode) {
+              var tBufSize = a.ctx.sampleRate * 1.5;
+              var tBuf = a.ctx.createBuffer(1, tBufSize, a.ctx.sampleRate);
+              var tData = tBuf.getChannelData(0);
+              for (var tni = 0; tni < tBufSize; tni++) tData[tni] = (Math.random() * 2 - 1) * 0.6;
+              a._tireNode = a.ctx.createBufferSource();
+              a._tireNode.buffer = tBuf;
+              a._tireNode.loop = true;
+              a._tireFilter = a.ctx.createBiquadFilter();
+              a._tireFilter.type = 'bandpass';
+              a._tireFilter.frequency.value = 600;
+              a._tireFilter.Q.value = 0.8;
+              a._tireGain = a.ctx.createGain();
+              a._tireGain.gain.value = 0;
+              a._tireNode.connect(a._tireFilter).connect(a._tireGain).connect(a.ctx.destination);
+              a._tireNode.start();
+            }
+            // Sample the surface cell under the car. Cell values: 0=road, 2=grass,
+            // 3=centerline (still road), 4=sidewalk, 5=tree (blocked — treat as grass).
+            var tireCell = 0;
+            if (infiniteWorldRef.current) {
+              tireCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
+            } else if (mapRef.current) {
+              var tcy = Math.floor(car.y), tcx = Math.floor(car.x);
+              if (tcy >= 0 && tcy < MAP_SIZE && tcx >= 0 && tcx < MAP_SIZE) tireCell = mapRef.current[tcy][tcx];
+            }
+            var onRoad = (tireCell === 0 || tireCell === 3);
+            var onSidewalk = (tireCell === 4);
+            var weather = currentScenario.weather;
+            // Center freq + Q vary by surface
+            var tireFreq, tireQ, tireVolMult;
+            if (onRoad) { tireFreq = 550 + Math.abs(car.speed) * 12; tireQ = 0.7; tireVolMult = 1.0; }
+            else if (onSidewalk) { tireFreq = 900 + Math.abs(car.speed) * 18; tireQ = 1.4; tireVolMult = 1.3; }
+            else { tireFreq = 280 + Math.abs(car.speed) * 6; tireQ = 0.5; tireVolMult = 1.15; } // grass/off-road
+            if (weather === 'rain') { tireFreq *= 1.4; tireVolMult *= 1.25; }
+            else if (weather === 'snow') { tireFreq *= 0.7; tireVolMult *= 0.55; }
+            var tireVol = Math.min(0.08, Math.abs(car.speed) * 0.0022 * tireVolMult);
+            a._tireGain.gain.setTargetAtTime(tireVol, a.ctx.currentTime, 0.08);
+            a._tireFilter.frequency.setTargetAtTime(tireFreq, a.ctx.currentTime, 0.08);
+            a._tireFilter.Q.setTargetAtTime(tireQ, a.ctx.currentTime, 0.15);
+            // Cross-cell impacts: fire splash/thump as we cross into a new cell.
+            // Cells aren't physically marked as puddles/potholes — synthesize via
+            // hash so the same world position always sounds the same. Speed-gated
+            // (no thumps when crawling).
+            var cellKey = Math.floor(car.x) * 65537 + Math.floor(car.y);
+            if (a._lastCellKey === undefined) a._lastCellKey = cellKey;
+            if (cellKey !== a._lastCellKey && Math.abs(car.speed) > 4 && onRoad) {
+              var hash = (cellKey * 2654435761) >>> 0;
+              // Splash: only in rain, ~1 in 14 road cells.
+              if (weather === 'rain' && (hash % 14) === 0) {
+                playSplash(Math.min(8, Math.abs(car.speed) * 0.5));
+              }
+              // Pothole thump: ~1 in 60 road cells, intensity scales with speed.
+              else if (weather !== 'snow' && (hash % 60) === 0) {
+                playThump(Math.min(8, Math.abs(car.speed) * 0.6));
+              }
+              a._lastCellKey = cellKey;
+            } else if (cellKey === a._lastCellKey) {
+              // No change — leave key as-is.
+            } else {
+              a._lastCellKey = cellKey;
+            }
             // Rain ambient (if raining — constant patter)
             if (currentScenario.weather === 'rain' && !a._rainNode) {
               var rainBuf = a.ctx.createBuffer(1, a.ctx.sampleRate * 2, a.ctx.sampleRate);
@@ -3446,6 +4226,259 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           else if (isDawn) { scene.fog = new T.Fog(0xe8875c, 15, 80); }
           else { scene.fog = new T.Fog(scene.background.getHex(), 30, 120); }
 
+          // ─── SKYDOME: inward-facing sphere with a vertex-colored zenith→horizon
+          // gradient. Replaces the flat scene.background so the sky actually has
+          // depth. fog: false keeps the gradient visible through the fog volume.
+          (function() {
+            var zenith, horizon;
+            if (isNight && !isDawn) { zenith = new T.Color(0x050a1a); horizon = new T.Color(0x1a2548); }
+            else if (isDawn) { zenith = new T.Color(0x3a2a5a); horizon = new T.Color(0xff9a55); }
+            else if (isFog) { zenith = new T.Color(0xa8b4c2); horizon = new T.Color(0x94a3b8); }
+            else if (isSnow) { zenith = new T.Color(0xdde3ed); horizon = new T.Color(0xcbd5e1); }
+            else if (isRain) { zenith = new T.Color(0x334155); horizon = new T.Color(0x64748b); }
+            else { zenith = new T.Color(0x4a86d4); horizon = new T.Color(0xcfe4f5); }
+            var skyGeo = new T.SphereGeometry(180, 24, 16);
+            // Per-vertex color: interpolate by Y (altitude). Sphere vertices with
+            // positive Y are sky-top; negative Y are ground-band (we hide that
+            // half behind the ground plane anyway).
+            var posAttr = skyGeo.getAttribute('position');
+            var colors = new Float32Array(posAttr.count * 3);
+            for (var vi = 0; vi < posAttr.count; vi++) {
+              var vy = posAttr.getY(vi);
+              var t = Math.max(0, Math.min(1, vy / 180)); // 0 = horizon, 1 = zenith
+              // Ease so the horizon band is tight and most of the dome is zenith color.
+              var tt = t * t * (3 - 2 * t);
+              var r = horizon.r + (zenith.r - horizon.r) * tt;
+              var g = horizon.g + (zenith.g - horizon.g) * tt;
+              var b = horizon.b + (zenith.b - horizon.b) * tt;
+              colors[vi * 3 + 0] = r;
+              colors[vi * 3 + 1] = g;
+              colors[vi * 3 + 2] = b;
+            }
+            skyGeo.setAttribute('color', new T.BufferAttribute(colors, 3));
+            var skyMat = new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide, fog: false, depthWrite: false });
+            var skyMesh = new T.Mesh(skyGeo, skyMat);
+            skyMesh.name = 'skydome';
+            scene.add(skyMesh);
+
+            // Distant silhouette ring — low-poly "mountains" ~140 units out. Only
+            // render for outdoor clear / dawn / night scenarios where you can see
+            // them; fog/snow/rain hide the horizon anyway.
+            if (!isFog && !isSnow && !isRain) {
+              var mtnSeg = 48;
+              var mtnGeo = new T.BufferGeometry();
+              var mtnVerts = [];
+              var mtnIdx = [];
+              var mtnSeed = 20240415;
+              function mtnRng() { mtnSeed = (mtnSeed * 1103515245 + 12345) & 0x7fffffff; return (mtnSeed >>> 16) / 32768; }
+              // Two vertices per segment: top (random height) and bottom (y=0).
+              // Triangulated as a strip.
+              for (var mi = 0; mi <= mtnSeg; mi++) {
+                var ang = (mi / mtnSeg) * Math.PI * 2;
+                var mx = Math.cos(ang) * 140;
+                var mz = Math.sin(ang) * 140;
+                var peakHeight = 6 + mtnRng() * 14;
+                mtnVerts.push(mx, 0, mz);
+                mtnVerts.push(mx, peakHeight, mz);
+              }
+              for (var mj = 0; mj < mtnSeg; mj++) {
+                var a = mj * 2, b = mj * 2 + 1, c = mj * 2 + 2, d = mj * 2 + 3;
+                mtnIdx.push(a, c, b, b, c, d);
+              }
+              mtnGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(mtnVerts), 3));
+              mtnGeo.setIndex(mtnIdx);
+              mtnGeo.computeVertexNormals();
+              var mtnColor = isNight && !isDawn ? 0x1a2240 : isDawn ? 0x5a3a5a : 0x4a6a8a;
+              var mtnMat = new T.MeshBasicMaterial({ color: mtnColor, fog: false, depthWrite: false });
+              var mtnMesh = new T.Mesh(mtnGeo, mtnMat);
+              mtnMesh.name = 'mountain_ring';
+              scene.add(mtnMesh);
+
+              // Forest ring — lower, closer band of darker jagged silhouette
+              // between the player and the mountains. Adds a depth layer that
+              // sells the horizon even when no trees are near the road.
+              var fSeg = 80;
+              var fVerts = [];
+              var fIdx = [];
+              var fSeed = 99173;
+              function fRng() { fSeed = (fSeed * 1103515245 + 12345) & 0x7fffffff; return (fSeed >>> 16) / 32768; }
+              for (var fi = 0; fi <= fSeg; fi++) {
+                var fAng = (fi / fSeg) * Math.PI * 2;
+                var fx = Math.cos(fAng) * 95;
+                var fz = Math.sin(fAng) * 95;
+                // Jagged top — alternating tall/short for a dense tree silhouette.
+                var fTop = 2.5 + fRng() * 4.5 + ((fi % 3 === 0) ? 2 : 0);
+                fVerts.push(fx, 0, fz);
+                fVerts.push(fx, fTop, fz);
+              }
+              for (var fj = 0; fj < fSeg; fj++) {
+                var fa = fj * 2, fb = fj * 2 + 1, fc = fj * 2 + 2, fd = fj * 2 + 3;
+                fIdx.push(fa, fc, fb, fb, fc, fd);
+              }
+              var fGeo = new T.BufferGeometry();
+              fGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(fVerts), 3));
+              fGeo.setIndex(fIdx);
+              fGeo.computeVertexNormals();
+              var fColor = isNight && !isDawn ? 0x0a1a18 : isDawn ? 0x3a2a3a : 0x1e4a2a;
+              var fMat = new T.MeshBasicMaterial({ color: fColor, fog: false, depthWrite: false });
+              var fMesh = new T.Mesh(fGeo, fMat);
+              fMesh.name = 'forest_ring';
+              scene.add(fMesh);
+            }
+
+            // High-altitude parallax cloud band — large flat puffs at y≈60, ~120u
+            // out, drifting slowly. Distinct from the low cloudGroup so we get two
+            // depths of cloud motion. Hidden in fog/snow/rain (overcast already).
+            if (!isFog && !isSnow && !isRain) {
+              var hiCloudGroup = new T.Group();
+              hiCloudGroup.name = 'hi_clouds';
+              var hcColor = isNight && !isDawn ? 0x2a3050 : isDawn ? 0xffb088 : 0xf0f4fa;
+              var hcMat = new T.MeshBasicMaterial({ color: hcColor, transparent: true, opacity: isNight && !isDawn ? 0.4 : 0.7, fog: false, depthWrite: false });
+              var hcSeed = 19287;
+              function hcRng() { hcSeed = (hcSeed * 1103515245 + 12345) & 0x7fffffff; return (hcSeed >>> 16) / 32768; }
+              for (var hci = 0; hci < 18; hci++) {
+                var hcAng = (hci / 18) * Math.PI * 2 + hcRng() * 0.2;
+                var hcDist = 110 + hcRng() * 25;
+                var hcW = 18 + hcRng() * 14;
+                var hcH = 4 + hcRng() * 3;
+                var hcPlane = new T.Mesh(new T.PlaneGeometry(hcW, hcH), hcMat);
+                hcPlane.position.set(Math.cos(hcAng) * hcDist, 55 + hcRng() * 10, Math.sin(hcAng) * hcDist);
+                hcPlane.lookAt(0, hcPlane.position.y, 0); // face center
+                hcPlane._driftAng = hcAng;
+                hcPlane._driftDist = hcDist;
+                hcPlane._driftSpeed = 0.003 + hcRng() * 0.003;
+                hiCloudGroup.add(hcPlane);
+              }
+              scene.add(hiCloudGroup);
+            }
+
+            // Halo around the sun/moon so the celestial body reads as a light source
+            // rather than a flat disc. Three concentric soft circles, additive.
+            // The existing sun/moon meshes live elsewhere; halos register by name and
+            // are positioned to follow them in the per-frame update.
+            var haloColor;
+            if (isNight && !isDawn) haloColor = 0xc4d0e8;
+            else if (isDawn) haloColor = 0xffd2a0;
+            else haloColor = 0xfff0c4;
+            var haloGroup = new T.Group();
+            haloGroup.name = 'celestial_halo';
+            for (var hi = 0; hi < 3; hi++) {
+              var hSize = 4 + hi * 3.5;
+              var hMat = new T.MeshBasicMaterial({ color: haloColor, transparent: true, opacity: 0.18 - hi * 0.05, fog: false, depthWrite: false, blending: T.AdditiveBlending });
+              var hRing = new T.Mesh(new T.CircleGeometry(hSize, 24), hMat);
+              haloGroup.add(hRing);
+            }
+            scene.add(haloGroup);
+
+            // Starfield — several hundred tiny bright points on a sphere just
+            // inside the skydome. Night + dawn twilight only.
+            if ((isNight && !isDawn) || isDawn) {
+              var starCount = isDawn ? 120 : 420;
+              var starGeo = new T.BufferGeometry();
+              var starPos = new Float32Array(starCount * 3);
+              var starCol = new Float32Array(starCount * 3);
+              var stSeed = 77213;
+              function stRng() { stSeed = (stSeed * 1103515245 + 12345) & 0x7fffffff; return (stSeed >>> 16) / 32768; }
+              for (var sti = 0; sti < starCount; sti++) {
+                // Uniform on upper hemisphere so no stars under the ground.
+                var stPhi = stRng() * Math.PI * 2;
+                var stTheta = Math.acos(stRng() * 0.85 + 0.15);
+                var stR = 175;
+                starPos[sti * 3 + 0] = stR * Math.sin(stTheta) * Math.cos(stPhi);
+                starPos[sti * 3 + 1] = stR * Math.cos(stTheta);
+                starPos[sti * 3 + 2] = stR * Math.sin(stTheta) * Math.sin(stPhi);
+                // Slight color variance: blue-white, warm white, pale yellow.
+                var palette = stRng();
+                var scR = palette < 0.6 ? 1 : palette < 0.85 ? 1 : 0.95;
+                var scG = palette < 0.6 ? 1 : palette < 0.85 ? 0.95 : 0.88;
+                var scB = palette < 0.6 ? 1 : palette < 0.85 ? 0.85 : 0.7;
+                var scDim = 0.6 + stRng() * 0.4;
+                starCol[sti * 3 + 0] = scR * scDim;
+                starCol[sti * 3 + 1] = scG * scDim;
+                starCol[sti * 3 + 2] = scB * scDim;
+              }
+              starGeo.setAttribute('position', new T.BufferAttribute(starPos, 3));
+              starGeo.setAttribute('color', new T.BufferAttribute(starCol, 3));
+              var starMat = new T.PointsMaterial({ size: isDawn ? 0.6 : 0.9, vertexColors: true, fog: false, transparent: true, opacity: isDawn ? 0.4 : 1 });
+              var stars = new T.Points(starGeo, starMat);
+              stars.name = 'starfield';
+              scene.add(stars);
+
+              // Shooting star — single long bright line that streaks across the
+              // sky periodically. Start inert; the update loop repositions it.
+              if (isNight && !isDawn) {
+                var ssGeo = new T.BufferGeometry();
+                var ssPts = new Float32Array([0, 0, 0, 0, 0, 0]);
+                ssGeo.setAttribute('position', new T.BufferAttribute(ssPts, 3));
+                var ssMat = new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, fog: false });
+                var shooting = new T.Line(ssGeo, ssMat);
+                shooting.name = 'shooting_star';
+                shooting._nextAt = 3; // seconds until next streak
+                shooting._active = false;
+                scene.add(shooting);
+              }
+            }
+
+            // Dawn light shafts — wide, soft, angled planes emanating from the
+            // low sun direction. Additive blending over the sky gradient gives
+            // the god-ray effect without needing a real volumetric light pass.
+            if (isDawn) {
+              var shaftGroup = new T.Group();
+              shaftGroup.name = 'dawn_shafts';
+              var shaftMat = new T.MeshBasicMaterial({
+                color: 0xffb880,
+                transparent: true,
+                opacity: 0.12,
+                blending: T.AdditiveBlending,
+                side: T.DoubleSide,
+                fog: false,
+                depthWrite: false
+              });
+              // Fan of long rectangles tilted at shallow angles — each one is a
+              // light shaft spreading from the sun position.
+              for (var si = 0; si < 6; si++) {
+                var shaft = new T.Mesh(new T.PlaneGeometry(30, 140), shaftMat);
+                // Rotate around Z so each shaft points outward at a slightly
+                // different angle, and tilt around X so they lean toward horizon.
+                shaft.rotation.z = (si - 2.5) * 0.08;
+                shaft.rotation.x = Math.PI / 2.2;
+                // Offset so shafts originate near the low sun position (dawn
+                // sun is positioned at sun.position ≈ (60, 5, -10) in scene setup).
+                shaft.position.set(50, 30, -8);
+                shaftGroup.add(shaft);
+              }
+              scene.add(shaftGroup);
+            }
+
+            // Birds — tiny V-shaped silhouettes flying in a loose formation.
+            // Day/dawn only (night has different ambient; fog/rain too murky).
+            if (!isNight && !isFog && !isRain && !isSnow) {
+              var birdGroup = new T.Group();
+              birdGroup.name = 'birds';
+              var birdMat = new T.MeshBasicMaterial({ color: isDawn ? 0x4a3050 : 0x1a1a2a, fog: false });
+              for (var bdi = 0; bdi < 7; bdi++) {
+                // Each bird = two tiny triangles shaped like a V.
+                var bdGeo = new T.BufferGeometry();
+                var bv = new Float32Array([
+                  -0.18, 0, 0,
+                   0,    0.04, 0,
+                   0.18, 0, 0
+                ]);
+                bdGeo.setAttribute('position', new T.BufferAttribute(bv, 3));
+                bdGeo.setIndex([0, 1, 2]);
+                var bd = new T.Mesh(bdGeo, birdMat);
+                // Start each bird at a random position in a slow-drift flock.
+                bd._flockAng = (bdi / 7) * Math.PI * 2;
+                bd._flockRad = 40 + (bdi % 3) * 8;
+                bd._flockY = 22 + (bdi % 2) * 4;
+                bd._flapPhase = bdi * 0.7;
+                bd._flockSpeed = 0.04 + (bdi % 3) * 0.01;
+                birdGroup.add(bd);
+              }
+              scene.add(birdGroup);
+            }
+          })();
+
           var camera = new T.PerspectiveCamera(65, W / H, 0.1, 200);
           var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true });
           renderer.setSize(W, H);
@@ -3470,10 +4503,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           scene.add(sun);
 
           // ── Ground plane (road + grass) ──
+          // Subdivided + vertex-colored so the grass reads as a real meadow with
+          // patchy variation instead of a flat green rectangle. Light-frequency
+          // sine displacement adds gentle rolling even in scenario mode.
           var map = mapRef.current;
-          var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2);
-          var grassColor = isSnow ? 0xd0d8e0 : 0x2d6a1e;
-          var groundMat = new T.MeshLambertMaterial({ color: grassColor });
+          var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, 48, 48);
+          var grassBase = isSnow ? [0xd0d8e0, 0xe8ecf0, 0xb8c4d0]
+                                 : [0x2d6a1e, 0x3a7a26, 0x1f5a16, 0x4a8a2e];
+          var gPos = groundGeo.getAttribute('position');
+          var gCol = new Float32Array(gPos.count * 3);
+          for (var gvi = 0; gvi < gPos.count; gvi++) {
+            var gx = gPos.getX(gvi);
+            var gy = gPos.getY(gvi);
+            // Plane is in XY before rotation; Z is "up" post-displacement.
+            var bump = Math.sin(gx * 0.08) * 0.3 + Math.cos(gy * 0.11) * 0.25 + Math.sin((gx + gy) * 0.05) * 0.2;
+            gPos.setZ(gvi, bump);
+            // Pick one of the palette colors via spatial hash so patches feel natural.
+            var pIdx = ((Math.floor(gx * 0.3) * 73 + Math.floor(gy * 0.3) * 37) % grassBase.length + grassBase.length) % grassBase.length;
+            var cH = grassBase[pIdx];
+            gCol[gvi * 3 + 0] = ((cH >> 16) & 0xff) / 255;
+            gCol[gvi * 3 + 1] = ((cH >>  8) & 0xff) / 255;
+            gCol[gvi * 3 + 2] = ( cH        & 0xff) / 255;
+          }
+          groundGeo.setAttribute('color', new T.BufferAttribute(gCol, 3));
+          groundGeo.computeVertexNormals();
+          var groundMat = new T.MeshLambertMaterial({ vertexColors: true });
           var ground = new T.Mesh(groundGeo, groundMat);
           ground.rotation.x = -Math.PI / 2;
           ground.receiveShadow = true;
@@ -4381,6 +5435,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             playerCarGroup.add(headlightR);
             playerCarGroup.add(headlightR.target);
           }
+          // Visible headlight beam cones — a stretched cone per headlight with
+          // additive blending. Shows up best at night + fog; hidden by day.
+          if (isNight || isFog || isRain) {
+            var beamColor = isFog ? 0xf0e0a0 : 0xfff5cc;
+            var beamOpacity = isFog ? 0.18 : isRain ? 0.10 : 0.14;
+            var beamMat = new T.MeshBasicMaterial({ color: beamColor, transparent: true, opacity: beamOpacity, blending: T.AdditiveBlending, depthWrite: false, fog: false });
+            // Cone geometry opens along +Y by default; we'll aim it along +X.
+            var beamGeo = new T.ConeGeometry(1.8, 9, 12, 1, true);
+            [-0.3, 0.3].forEach(function(zOff) {
+              var beam = new T.Mesh(beamGeo, beamMat);
+              beam.rotation.z = -Math.PI / 2; // point along +X
+              beam.position.set(0.95 + 4.5, 0.5, zOff);
+              playerCarGroup.add(beam);
+            });
+          }
           // Brake lights
           var brakeMat = new T.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.3 });
           var brakeL = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
@@ -4520,7 +5589,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Wet road surface overlay (rain makes road shinier) ──
           if (isRain) {
             var wetOverlayGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
-            var wetOverlayMat = new T.MeshBasicMaterial({ color: 0x556677, transparent: true, opacity: 0.15 });
+            // MeshPhongMaterial with high shininess creates a visible specular
+            // highlight that approximates the wet-glare you see on rainy roads.
+            var wetOverlayMat = new T.MeshPhongMaterial({
+              color: 0x445566, specular: 0x88aacc, shininess: 80,
+              transparent: true, opacity: 0.25, depthWrite: false
+            });
             var wetOverlay = new T.Mesh(wetOverlayGeo, wetOverlayMat);
             wetOverlay.rotation.x = -Math.PI / 2;
             wetOverlay.position.set(centerX - MAP_SIZE / 2, 0.018, 0);
@@ -4543,6 +5617,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             tireSprayParticles = new T.Points(sprayGeo, sprayMat);
             scene.add(tireSprayParticles);
           }
+
+          // ── Off-road dust particle system (active any time the car is on grass) ──
+          // Points float up and fade behind the car; pool is cycled via _dustIdx.
+          var dustCount = 80;
+          var dustGeo = new T.BufferGeometry();
+          var dustPos = new Float32Array(dustCount * 3);
+          for (var dsi = 0; dsi < dustCount; dsi++) {
+            dustPos[dsi * 3] = 0;
+            dustPos[dsi * 3 + 1] = -999;
+            dustPos[dsi * 3 + 2] = 0;
+          }
+          dustGeo.setAttribute('position', new T.BufferAttribute(dustPos, 3));
+          var dustMat = new T.PointsMaterial({ color: 0xb8a078, size: 0.14, transparent: true, opacity: 0.55, depthWrite: false });
+          var dustParticles = new T.Points(dustGeo, dustMat);
+          dustParticles.name = 'dust_particles';
+          scene.add(dustParticles);
 
           // ── Rain puddles (reflective patches on road surface) ──
           if (isRain) {
@@ -4616,7 +5706,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             digitalSpeedCanvas: null, // will be created on first update
             digitalSpeedMesh: null,
             cloudGroup: cloudGroup,
-            tireSprayParticles: tireSprayParticles
+            tireSprayParticles: tireSprayParticles,
+            dustParticles: dustParticles
           };
         }
 
@@ -4629,9 +5720,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var carWorldX = car.x - MAP_SIZE / 2;
           var carWorldZ = car.y - MAP_SIZE / 2;
 
-          // Position player car
-          s3.playerCarGroup.position.set(carWorldX, car._suspY || 0, carWorldZ);
+          // Position player car. Add road elevation so the car rides over hills
+          // instead of phasing through them. infiniteWorldRef is null in scenario
+          // mode (flat terrain), so the lookup is gated.
+          var roadH = (infiniteWorldRef.current && infiniteWorldRef.current.roadHeightAtY)
+            ? infiniteWorldRef.current.roadHeightAtY(car.y) : 0;
+          s3.playerCarGroup.position.set(carWorldX, roadH + (car._suspY || 0), carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
+          // Pitch the car along the road grade so it visually follows hills.
+          // rotation.x = pitch (positive = nose up in Three.js default orientation).
+          // The car model faces +X, so rotation around Z is pitch. car._pitch has
+          // both grade + accel-induced weight transfer combined.
+          s3.playerCarGroup.rotation.z = car._pitch || 0;
+
+          // Tire tracks in snow — drop a pair of small dark planes behind the
+          // car each "tick". Ring buffer of ~200 tracks to bound memory; oldest
+          // recycled as new tracks are dropped. Only in snow weather and while moving.
+          if (scn.weather === 'snow' && Math.abs(car.speed) > 2) {
+            if (!s3._trackGroup) {
+              s3._trackGroup = new T.Group();
+              s3._trackGroup.name = 'tire_tracks';
+              s3._trackPool = [];
+              s3._trackNext = 0;
+              s3.scene.add(s3._trackGroup);
+            }
+            if (!s3._trackTickCooldown) s3._trackTickCooldown = 0;
+            s3._trackTickCooldown -= 0.016;
+            if (s3._trackTickCooldown <= 0) {
+              s3._trackTickCooldown = 0.05; // drop a pair every 50ms
+              var trackMat = s3._trackMat || (s3._trackMat = new T.MeshBasicMaterial({ color: 0x7a848e, transparent: true, opacity: 0.55, depthWrite: false }));
+              [-0.45, 0.45].forEach(function(off) {
+                var tr;
+                if (s3._trackPool.length >= 200) {
+                  // Recycle oldest
+                  tr = s3._trackPool[s3._trackNext];
+                  s3._trackNext = (s3._trackNext + 1) % 200;
+                } else {
+                  tr = new T.Mesh(new T.PlaneGeometry(0.18, 0.4), trackMat);
+                  tr.rotation.x = -Math.PI / 2;
+                  s3._trackGroup.add(tr);
+                  s3._trackPool.push(tr);
+                }
+                // Place behind the car along its heading axis, offset laterally.
+                var tx = carWorldX - Math.cos(car.heading) * 0.8 - Math.sin(-car.heading) * off;
+                var tz = carWorldZ - Math.sin(car.heading) * 0.8 - Math.cos(-car.heading) * off;
+                tr.position.set(tx, 0.019, tz);
+                tr.rotation.z = -car.heading;
+              });
+            }
+          }
+          // Skydome + mountain ring follow the car so the infinite world never
+          // reaches their edge. Y stays at 0 — only translate horizontally.
+          if (!s3._skyRef) s3._skyRef = s3.scene.getObjectByName('skydome');
+          if (s3._skyRef) s3._skyRef.position.set(carWorldX, 0, carWorldZ);
+          if (!s3._mtnRef) s3._mtnRef = s3.scene.getObjectByName('mountain_ring');
+          if (s3._mtnRef) s3._mtnRef.position.set(carWorldX, 0, carWorldZ);
+          if (!s3._forestRef) s3._forestRef = s3.scene.getObjectByName('forest_ring');
+          if (s3._forestRef) s3._forestRef.position.set(carWorldX, 0, carWorldZ);
           // Weight transfer: body pitch (brake/accel) and roll (turns)
           s3.playerCarGroup.rotation.x = car._pitch || 0;
           s3.playerCarGroup.rotation.z = car._roll || 0;
@@ -4651,27 +5796,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var isFogNow = scn.weather === 'fog';
           var isSnowNow = scn.weather === 'snow';
           var isRainNow = scn.weather === 'rain';
-          // Update fog dynamically
+          // Recolor the skydome's vertex gradient to match the current weather.
+          // Called only when fog params actually change below so we don't churn
+          // vertex buffers every frame.
+          var recolorSky = function() {
+            var sky = s3._skyRef || s3.scene.getObjectByName('skydome');
+            if (!sky || !sky.geometry || !sky.geometry.getAttribute('color')) return;
+            var zenith, horizon;
+            if (isNightNow) { zenith = new T.Color(0x050a1a); horizon = new T.Color(0x1a2548); }
+            else if (isFogNow) { zenith = new T.Color(0xa8b4c2); horizon = new T.Color(0x94a3b8); }
+            else if (isSnowNow) { zenith = new T.Color(0xdde3ed); horizon = new T.Color(0xcbd5e1); }
+            else if (isRainNow) { zenith = new T.Color(0x334155); horizon = new T.Color(0x64748b); }
+            else { zenith = new T.Color(0x4a86d4); horizon = new T.Color(0xcfe4f5); }
+            var pos = sky.geometry.getAttribute('position');
+            var col = sky.geometry.getAttribute('color');
+            for (var vi = 0; vi < pos.count; vi++) {
+              var vy = pos.getY(vi);
+              var t = Math.max(0, Math.min(1, vy / 180));
+              var tt = t * t * (3 - 2 * t);
+              col.setXYZ(vi,
+                horizon.r + (zenith.r - horizon.r) * tt,
+                horizon.g + (zenith.g - horizon.g) * tt,
+                horizon.b + (zenith.b - horizon.b) * tt);
+            }
+            col.needsUpdate = true;
+          };
+          // Update fog + skydome dynamically.
           if (isFogNow && (!s3.scene.fog || s3.scene.fog.far !== 40)) {
             s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
             s3.scene.background = new T.Color(0x94a3b8);
+            recolorSky();
           } else if (isSnowNow && (!s3.scene.fog || s3.scene.fog.far !== 60)) {
             s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
             s3.scene.background = new T.Color(0xcbd5e1);
+            recolorSky();
           } else if (isRainNow && (!s3.scene.fog || s3.scene.fog.far !== 50)) {
             s3.scene.fog = new T.Fog(0x475569, 8, 50);
             s3.scene.background = new T.Color(0x475569);
+            recolorSky();
           } else if (isNightNow && (!s3.scene.fog || s3.scene.fog.far !== 120)) {
             s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
             s3.scene.background = new T.Color(0x0a0f1e);
+            recolorSky();
           } else if (!isFogNow && !isSnowNow && !isRainNow && !isNightNow && s3.scene.fog && s3.scene.fog.far !== 120) {
             s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
             s3.scene.background = new T.Color(0x87ceeb);
+            recolorSky();
           }
-          // Update ambient light intensity for time-of-day
+          // Update ambient light intensity for time-of-day, plus cloud-shadow
+          // modulation during clear day (subtle 2-3% dimming as imaginary clouds
+          // pass overhead — makes the outdoors feel less static).
+          var cloudShadow = (!isNightNow && !isFogNow && !isSnowNow && !isRainNow)
+            ? (1 - 0.06 * (0.5 + 0.5 * Math.sin(timeRef.current * 0.12)))
+            : 1;
           s3.scene.children.forEach(function(child) {
             if (child.isAmbientLight) {
-              child.intensity = isNightNow ? 0.15 : 0.5;
+              var baseInt = isNightNow ? 0.15 : 0.5;
+              child.intensity = baseInt * cloudShadow;
               child.color.setHex(isNightNow ? 0x1a1a3a : 0xffffff);
             }
           });
@@ -4716,7 +5897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Combine head swivel with turn look-ahead
             var totalLookOffset = lookAheadBias + hc.swivel;
             var fpTargetX = carWorldX + Math.cos(car.heading) * 0.3 + bobX + shakeX;
-            var fpTargetY = 1.1 + bobY;
+            var fpTargetY = roadH + 1.1 + bobY;
             var fpTargetZ = carWorldZ + Math.sin(car.heading) * 0.3 + shakeZ;
             // Lerp position for smoother micro-motion
             if (!s3.camera._lastFpX) { s3.camera._lastFpX = fpTargetX; s3.camera._lastFpY = fpTargetY; s3.camera._lastFpZ = fpTargetZ; }
@@ -4726,7 +5907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.camera.position.set(s3.camera._lastFpX, s3.camera._lastFpY, s3.camera._lastFpZ);
             s3.camera.lookAt(
               carWorldX + Math.cos(car.heading + totalLookOffset) * 10,
-              0.95,
+              roadH + 0.95,
               carWorldZ + Math.sin(car.heading + totalLookOffset) * 10
             );
             s3.playerCarGroup.visible = false;
@@ -4741,7 +5922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var chaseBackHeading = car.heading - chaseLagBias;
             var chaseTargetX = carWorldX - Math.cos(chaseBackHeading) * 5.5;
             var chaseTargetZ = carWorldZ - Math.sin(chaseBackHeading) * 5.5;
-            var chaseTargetY = 2.8;
+            var chaseTargetY = roadH + 2.8;
             // Lerp current position toward target — more responsive at high speed
             var chaseLerpRate = 0.08 + Math.min(0.05, chaseSpeedMph * 0.0008);
             s3.camera.position.x += (chaseTargetX - s3.camera.position.x) * chaseLerpRate;
@@ -4751,24 +5932,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var chaseLookAhead = 2 + Math.min(4, chaseSpeedMph * 0.05);
             var lookAheadX = carWorldX + Math.cos(car.heading) * chaseLookAhead;
             var lookAheadZ = carWorldZ + Math.sin(car.heading) * chaseLookAhead;
-            s3.camera.lookAt(lookAheadX, 0.6, lookAheadZ);
+            s3.camera.lookAt(lookAheadX, roadH + 0.6, lookAheadZ);
             s3.playerCarGroup.visible = true;
           } else if (camMode === 'rearview') {
-            // Looking backward from driver position
             s3.camera.position.set(
               carWorldX - Math.cos(car.heading) * 0.2,
-              1.1,
+              roadH + 1.1,
               carWorldZ - Math.sin(car.heading) * 0.2
             );
             s3.camera.lookAt(
               carWorldX - Math.cos(car.heading) * 10,
-              1.0,
+              roadH + 1.0,
               carWorldZ - Math.sin(car.heading) * 10
             );
             s3.playerCarGroup.visible = false;
           } else { // overhead
-            s3.camera.position.set(carWorldX, 25, carWorldZ + 0.1);
-            s3.camera.lookAt(carWorldX, 0, carWorldZ);
+            s3.camera.position.set(carWorldX, roadH + 25, carWorldZ + 0.1);
+            s3.camera.lookAt(carWorldX, roadH, carWorldZ);
             s3.playerCarGroup.visible = true;
           }
 
@@ -4998,7 +6178,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               tGroup.add(cg);
               m = cg;
             }
-            m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
+            var tRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(t.y) : 0;
+            m.position.set(t.x - MAP_SIZE / 2, tRoadH, t.y - MAP_SIZE / 2);
             m.rotation.y = -t.heading;
             // Wheel spin + blinker on traffic vehicles
             if (m.children) {
@@ -5078,11 +6259,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var legR = new T.Mesh(legGeo, legMat);
               legR.position.set(0, 0.45, -0.08); legR.name = 'legR';
               pg.add(legR);
+              // Kind-specific details: scale kids down, add jogger headband,
+              // attach a dog sibling mesh for dog walkers.
+              if (p.kind === 'kid') {
+                pg.scale.setScalar(0.65);
+              } else if (p.kind === 'jogger') {
+                var band = new T.Mesh(new T.BoxGeometry(0.3, 0.06, 0.32), new T.MeshLambertMaterial({ color: 0xef4444 }));
+                band.position.y = 1.62;
+                pg.add(band);
+              } else if (p.kind === 'dogWalker') {
+                // Small dog — box body + head + 4 tiny legs on a cross-mounted group.
+                var dog = new T.Group();
+                var dogMat = new T.MeshLambertMaterial({ color: 0x78451a });
+                var dogBody = new T.Mesh(new T.BoxGeometry(0.28, 0.14, 0.12), dogMat);
+                dogBody.position.y = 0.22; dog.add(dogBody);
+                var dogHead = new T.Mesh(new T.BoxGeometry(0.12, 0.12, 0.12), dogMat);
+                dogHead.position.set(0.18, 0.3, 0); dog.add(dogHead);
+                var tailDog = new T.Mesh(new T.BoxGeometry(0.1, 0.04, 0.04), dogMat);
+                tailDog.position.set(-0.18, 0.26, 0); dog.add(tailDog);
+                var dLegMat = new T.MeshLambertMaterial({ color: 0x5a3214 });
+                [[-0.1, 0.05], [-0.1, -0.05], [0.1, 0.05], [0.1, -0.05]].forEach(function(lp2) {
+                  var dlg = new T.Mesh(new T.BoxGeometry(0.04, 0.18, 0.04), dLegMat);
+                  dlg.position.set(lp2[0], 0.08, lp2[1]);
+                  dog.add(dlg);
+                });
+                dog.position.set(0.7, 0, 0); // on a leash length ahead
+                dog.name = 'dog';
+                pg.add(dog);
+              }
               pg.castShadow = true;
               pGroup.add(pg);
               m = pg;
             }
-            m.position.set(p.x - MAP_SIZE / 2, 0, p.y - MAP_SIZE / 2);
+            var pRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(p.y) : 0;
+            m.position.set(p.x - MAP_SIZE / 2, pRoadH, p.y - MAP_SIZE / 2);
             // Walking animation — swing legs and arms
             var walkPhase = Math.sin(timeRef.current * 4 + pi * 2.5) * 0.3;
             m.children.forEach(function(child) {
@@ -5118,7 +6328,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cGroup.add(cg);
               m = cg;
             }
-            m.position.set(cy.x - MAP_SIZE / 2, 0, cy.y - MAP_SIZE / 2);
+            var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
+            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH, cy.y - MAP_SIZE / 2);
             m.rotation.y = -cy.heading;
           });
 
@@ -5231,7 +6442,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               stripe.position.set(0, bodyH * 0.6, 0.51);
               eGrp.add(stripe);
             }
-            eGrp.position.set(em.x - MAP_SIZE / 2, 0, em.y - MAP_SIZE / 2);
+            var emRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(em.y) : 0;
+            eGrp.position.set(em.x - MAP_SIZE / 2, emRoadH, em.y - MAP_SIZE / 2);
             eGrp.rotation.y = -em.heading;
             eGroup.add(eGrp);
           }
@@ -5257,6 +6469,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             spPos.needsUpdate = true;
             s3.tireSprayParticles.material.opacity = Math.min(0.5, Math.abs(car.speed) * 0.025);
+          }
+
+          // Off-road dust — only when car is on grass (not road) and moving.
+          if (s3.dustParticles) {
+            var dpPos = s3.dustParticles.geometry.attributes.position;
+            var onGrassDust = false;
+            if (infiniteWorldRef.current) {
+              var dustCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
+              onGrassDust = (dustCell === 2 || dustCell === 4);
+            } else if (mapRef.current) {
+              var dcy = Math.floor(car.y), dcx = Math.floor(car.x);
+              if (dcy >= 0 && dcy < MAP_SIZE && dcx >= 0 && dcx < MAP_SIZE) {
+                var dcV = mapRef.current[dcy][dcx];
+                onGrassDust = (dcV === 2 || dcV === 4);
+              }
+            }
+            if (onGrassDust && Math.abs(car.speed) > 2 && scn.weather !== 'snow') {
+              var dpIdx = Math.floor(timeRef.current * 40) % dpPos.count;
+              var rearXd = carWorldX - Math.cos(car.heading) * 1.0;
+              var rearZd = carWorldZ - Math.sin(car.heading) * 1.0;
+              dpPos.setXYZ(dpIdx, rearXd + (Math.random() - 0.5) * 0.7, 0.05 + Math.random() * 0.2, rearZd + (Math.random() - 0.5) * 0.7);
+              for (var dpi = 0; dpi < dpPos.count; dpi++) {
+                var dpy = dpPos.getY(dpi);
+                if (dpy > -1 && dpy < 2.5) {
+                  dpPos.setY(dpi, dpy + 0.02);
+                  dpPos.setX(dpi, dpPos.getX(dpi) - Math.cos(car.heading) * 0.02);
+                  dpPos.setZ(dpi, dpPos.getZ(dpi) - Math.sin(car.heading) * 0.02);
+                } else if (dpy >= 2.5) {
+                  dpPos.setY(dpi, -999);
+                }
+              }
+              dpPos.needsUpdate = true;
+              s3.dustParticles.material.opacity = Math.min(0.6, Math.abs(car.speed) * 0.035);
+            } else {
+              // Let existing dust finish rising/fading but don't spawn new.
+              for (var dpi2 = 0; dpi2 < dpPos.count; dpi2++) {
+                var dpy2 = dpPos.getY(dpi2);
+                if (dpy2 > -1 && dpy2 < 2.5) {
+                  dpPos.setY(dpi2, dpy2 + 0.025);
+                  if (dpy2 >= 2.45) dpPos.setY(dpi2, -999);
+                }
+              }
+              dpPos.needsUpdate = true;
+              s3.dustParticles.material.opacity *= 0.95;
+            }
           }
 
           // Exhaust particles
@@ -5312,33 +6569,150 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var chunkWorldZ = ci * CHUNK_SIZE - MAP_SIZE / 2;
               // Build 3D objects for this chunk
               var buildMats = [new T.MeshLambertMaterial({ color: 0xb08c64 }), new T.MeshLambertMaterial({ color: 0xa09078 }), new T.MeshLambertMaterial({ color: 0x8c7a62 })];
-              var treeTMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
-              var treeLMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xc8d0d8 : 0x2a7e2a });
+              // Tree palette varies by species. Materials reused across all trees
+              // in a chunk for batching. Snow biomes desaturate everything.
+              var snowy = scn.weather === 'snow';
+              var pineLeaf = new T.MeshLambertMaterial({ color: snowy ? 0xb8c4d0 : 0x1f5d2c });
+              var maple    = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : 0x3a8a3a });
+              var maple2   = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : 0x6ba84f });
+              var birch    = new T.MeshLambertMaterial({ color: snowy ? 0xd6dde6 : 0xa8c66c });
+              var darkBark = new T.MeshLambertMaterial({ color: 0x4a2e18 });
+              var lightBark= new T.MeshLambertMaterial({ color: 0xe8e0d4 });
               for (var cy = 0; cy < CHUNK_SIZE; cy++) {
                 for (var cx = 0; cx < MAP_SIZE; cx++) {
                   var cellVal = chunk.cells[cy][cx];
                   var wx = cx - MAP_SIZE / 2;
                   var wz = chunkWorldZ + cy;
                   if (cellVal === 1) {
-                    // Building
-                    var bH = 3 + ((cx * 37 + cy * 73) % 5);
-                    var bGeo = new T.BoxGeometry(1, bH, 1);
-                    var bMesh = new T.Mesh(bGeo, buildMats[(cx + cy) % 3]);
-                    bMesh.position.set(wx, bH / 2, wz);
+                    // Building — main box + roof cap + window belt. Style varies
+                    // by biome: commercial gets flat roofs + storefront awning,
+                    // residential gets peaked roofs, industrial gets corrugated flat tops.
+                    var bHash = (cx * 37 + cy * 73);
+                    var bH = 3 + (bHash % 5);
+                    var bW = 1 + (chunk.biome === 'commercial' ? 0.3 : 0);
+                    var bMat = buildMats[(cx + cy) % 3];
+                    var bMesh = new T.Mesh(new T.BoxGeometry(bW, bH, bW), bMat);
+                    var terrainYb = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) * 0.5 : 0;
+                    bMesh.position.set(wx, terrainYb + bH / 2, wz);
                     bMesh.castShadow = true;
                     chunkGroup.add(bMesh);
+                    // Roof
+                    if (chunk.biome === 'residential' || chunk.biome === 'suburban') {
+                      // Peaked roof
+                      var rfMat = new T.MeshLambertMaterial({ color: (bHash & 1) ? 0x7a2a1a : 0x3a2a1a });
+                      var rfGeo = new T.ConeGeometry(bW * 0.85, bH * 0.35, 4);
+                      var rf = new T.Mesh(rfGeo, rfMat);
+                      rf.rotation.y = Math.PI / 4;
+                      rf.position.set(wx, terrainYb + bH + bH * 0.175, wz);
+                      chunkGroup.add(rf);
+                    } else if (chunk.biome === 'industrial') {
+                      // Flat roof with a mechanical box on top
+                      var mBox = new T.Mesh(new T.BoxGeometry(bW * 0.4, 0.35, bW * 0.4), new T.MeshLambertMaterial({ color: 0x55606a }));
+                      mBox.position.set(wx, terrainYb + bH + 0.175, wz);
+                      chunkGroup.add(mBox);
+                    } else if (chunk.biome === 'commercial') {
+                      // Flat roof + small parapet cap
+                      var cap = new T.Mesh(new T.BoxGeometry(bW + 0.08, 0.12, bW + 0.08), new T.MeshLambertMaterial({ color: 0x2a2a2a }));
+                      cap.position.set(wx, terrainYb + bH + 0.06, wz);
+                      chunkGroup.add(cap);
+                    }
+                    // Chimney + rising smoke — residential/suburban only, and only
+                    // when it would feel motivated (cold morning or snow). Keeps
+                    // density of plumes deterministic per cell so animation per-
+                    // frame doesn't have to invent state.
+                    if ((chunk.biome === 'residential' || chunk.biome === 'suburban')
+                        && (currentScenario.id === 'dawn' || scn.weather === 'snow')
+                        && (bHash & 3) === 0) {
+                      var chimMat = new T.MeshLambertMaterial({ color: 0x8a5a48 });
+                      var chimney = new T.Mesh(new T.BoxGeometry(0.18, 0.65, 0.18), chimMat);
+                      chimney.position.set(wx + 0.25, terrainYb + bH + 0.32, wz + 0.18);
+                      chunkGroup.add(chimney);
+                      // Three offset puff spheres rising — animated softly via
+                      // chunk-walk by their `smoke_puff` name.
+                      var puffMat = new T.MeshBasicMaterial({ color: 0xd0d4d8, transparent: true, opacity: 0.55, depthWrite: false });
+                      for (var spi = 0; spi < 3; spi++) {
+                        var puff = new T.Mesh(new T.SphereGeometry(0.18 + spi * 0.06, 6, 5), puffMat);
+                        puff.position.set(wx + 0.25, terrainYb + bH + 0.95 + spi * 0.55, wz + 0.18);
+                        puff.name = 'smoke_puff';
+                        puff._sBaseY = puff.position.y;
+                        puff._sPhase = (bHash + spi * 17) * 0.13;
+                        chunkGroup.add(puff);
+                      }
+                    }
+                    // Snow caps on roofs during snow weather — thin white layer
+                    // sitting just above the roof peak/flat.
+                    if (scn.weather === 'snow') {
+                      var snowCapMat = new T.MeshLambertMaterial({ color: 0xf8fafc });
+                      var snowCap = new T.Mesh(new T.BoxGeometry(bW + 0.14, 0.10, bW + 0.14), snowCapMat);
+                      var capY = (chunk.biome === 'residential' || chunk.biome === 'suburban') ? bH + bH * 0.35 + 0.05
+                                 : chunk.biome === 'industrial' ? bH + 0.4 : bH + 0.18;
+                      snowCap.position.set(wx, terrainYb + capY, wz);
+                      chunkGroup.add(snowCap);
+                    }
+                    // Windows: bright dots at night, dark squares by day.
+                    var isNightWin = currentScenario.time === 'night' || currentScenario.id === 'night';
+                    var winColor = isNightWin ? ((bHash & 3) === 0 ? 0x1a1a2e : 0xfff0a8) : 0x3a4a5e;
+                    var winMat = new T.MeshBasicMaterial({ color: winColor });
+                    var windowRows = Math.max(1, Math.floor(bH / 1.1));
+                    for (var wri = 0; wri < windowRows; wri++) {
+                      var wrY = terrainYb + 0.9 + wri * 1.1;
+                      if (wrY > terrainYb + bH - 0.3) break;
+                      [-1, 1].forEach(function(wFace) {
+                        var w1 = new T.Mesh(new T.PlaneGeometry(bW * 0.22, 0.4), winMat);
+                        w1.position.set(wx + wFace * (bW / 2 + 0.002), wrY, wz);
+                        w1.rotation.y = wFace > 0 ? -Math.PI / 2 : Math.PI / 2;
+                        chunkGroup.add(w1);
+                      });
+                    }
                   } else if (cellVal === 5) {
-                    // Tree
+                    // Tree — species picked deterministically from cell position so
+                    // the same chunk always renders the same forest. Lift by terrain
+                    // height (rolling but softer than the road) so trees follow hills.
+                    var hashTree = (cx * 73856093) ^ (cy * 19349663);
+                    var speciesRoll = (hashTree & 0xff) / 255;
                     var tH = 2 + ((cx * 47 + cy * 83) % 3);
-                    var trGeo = new T.CylinderGeometry(0.1, 0.15, tH * 0.5, 5);
-                    var tr = new T.Mesh(trGeo, treeTMat);
-                    tr.position.set(wx, tH * 0.25, wz);
-                    chunkGroup.add(tr);
-                    var lfGeo = new T.ConeGeometry(0.7, tH * 0.6, 5);
-                    var lf = new T.Mesh(lfGeo, treeLMat);
-                    lf.position.set(wx, tH * 0.55 + tH * 0.3, wz);
-                    lf.castShadow = true;
-                    chunkGroup.add(lf);
+                    var terrainY = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) * 0.5 : 0;
+                    // Bias species by biome.
+                    var pickPine, pickBirch;
+                    if (chunk.biome === 'rural') { pickPine = speciesRoll < 0.55; pickBirch = !pickPine && speciesRoll < 0.80; }
+                    else if (chunk.biome === 'suburban' || chunk.biome === 'residential') { pickPine = false; pickBirch = speciesRoll < 0.20; }
+                    else { pickPine = false; pickBirch = false; } // commercial/industrial: maples
+                    if (pickPine) {
+                      // Conifer: tall trunk + stacked cones for that fir-tree silhouette.
+                      var pTrunk = new T.Mesh(new T.CylinderGeometry(0.12, 0.18, tH * 0.55, 6), darkBark);
+                      pTrunk.position.set(wx, terrainY + tH * 0.275, wz);
+                      chunkGroup.add(pTrunk);
+                      var coneCount = 3;
+                      for (var pcc = 0; pcc < coneCount; pcc++) {
+                        var pcRad = 0.85 - pcc * 0.20;
+                        var pcH = tH * 0.4 - pcc * 0.05;
+                        var pc = new T.Mesh(new T.ConeGeometry(pcRad, pcH, 7), pineLeaf);
+                        pc.position.set(wx, terrainY + tH * 0.55 + pcc * (tH * 0.22), wz);
+                        pc.castShadow = true;
+                        chunkGroup.add(pc);
+                      }
+                    } else if (pickBirch) {
+                      // Birch: pale trunk, sparse rounded canopy.
+                      var bTrunk = new T.Mesh(new T.CylinderGeometry(0.08, 0.10, tH * 0.85, 6), lightBark);
+                      bTrunk.position.set(wx, terrainY + tH * 0.425, wz);
+                      chunkGroup.add(bTrunk);
+                      var bCan = new T.Mesh(new T.SphereGeometry(0.55 + (hashTree & 7) * 0.04, 7, 5), birch);
+                      bCan.position.set(wx, terrainY + tH * 0.95, wz);
+                      bCan.scale.y = 1.2;
+                      bCan.castShadow = true;
+                      chunkGroup.add(bCan);
+                    } else {
+                      // Maple/deciduous: short trunk + irregular spherical canopy.
+                      var mTrunk = new T.Mesh(new T.CylinderGeometry(0.13, 0.18, tH * 0.5, 6), darkBark);
+                      mTrunk.position.set(wx, terrainY + tH * 0.25, wz);
+                      chunkGroup.add(mTrunk);
+                      var mLeaf = (hashTree & 1) ? maple : maple2;
+                      var mCan = new T.Mesh(new T.SphereGeometry(0.7 + ((hashTree >> 3) & 7) * 0.04, 8, 6), mLeaf);
+                      mCan.position.set(wx, terrainY + tH * 0.7, wz);
+                      mCan.scale.set(1.0 + ((hashTree >> 6) & 3) * 0.08, 0.85, 1.0 + ((hashTree >> 9) & 3) * 0.08);
+                      mCan.castShadow = true;
+                      chunkGroup.add(mCan);
+                    }
                   }
                   // Landmark cell value 7 is handled separately below after the grid loop
                 }
@@ -5805,90 +7179,688 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               } // end isMediumLOD gate
 
-              // Road surface for this chunk (main N-S road)
-              var roadGeo = new T.PlaneGeometry(7, CHUNK_SIZE);
-              var roadMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
+              // ─── ROADSIDE FURNITURE ────────────────────────────────────
+              // Mile markers, mailboxes, and guardrails on tight curves.
+              // All anchored to the spline so they line the road on bends.
+              if (isHighLOD && iw.spline) {
+                var furnRng = seededRandom(chunk.index * 33391 + 7);
+                var chunkBY = ci * CHUNK_SIZE;
+                var lookupCenterAtZ = function(worldZ) {
+                  return iw.spline.centerAt(worldZ - chunkWorldZ + chunkBY) - MAP_SIZE / 2;
+                };
+                var lookupHeightAtZ = function(worldZ) {
+                  return iw.spline.heightAt(worldZ - chunkWorldZ + chunkBY);
+                };
+                // Guardrails on tight curves: place on the OUTSIDE of any bend
+                // where |heading| exceeds a threshold. Two visual elements per
+                // segment — post + horizontal beam — so it reads as W-beam rail.
+                var grMat = new T.MeshLambertMaterial({ color: 0xa8b0bc });
+                var grPostMat = new T.MeshLambertMaterial({ color: 0x4a4a52 });
+                var crackMat = new T.MeshBasicMaterial({ color: 0x16181c, transparent: true, opacity: 0.55 });
+                for (var grZ = chunkWorldZ + 2; grZ < chunkWorldZ + CHUNK_SIZE - 2; grZ += 2) {
+                  var grHd = iw.spline.headingAt(grZ - chunkWorldZ + chunkBY);
+                  if (Math.abs(grHd) < 0.18) continue;
+                  var grSide = grHd > 0 ? 1 : -1;
+                  var grCx = lookupCenterAtZ(grZ);
+                  var grHy = lookupHeightAtZ(grZ);
+                  var grPost = new T.Mesh(new T.BoxGeometry(0.08, 0.7, 0.08), grPostMat);
+                  grPost.position.set(grCx + grSide * 4.0, grHy + 0.35, grZ);
+                  chunkGroup.add(grPost);
+                  var grRail = new T.Mesh(new T.BoxGeometry(0.06, 0.18, 2.0), grMat);
+                  grRail.position.set(grCx + grSide * 4.0, grHy + 0.55, grZ);
+                  chunkGroup.add(grRail);
+                  // Crack on the outside wheel track — stress fractures form where
+                  // tires track the tightest radius. Skip snow (covered anyway).
+                  if (scn.weather !== 'snow' && furnRng() < 0.6) {
+                    var crLen = 0.8 + furnRng() * 1.0;
+                    var crWid = 0.04 + furnRng() * 0.04;
+                    var cr = new T.Mesh(new T.PlaneGeometry(crWid, crLen), crackMat);
+                    cr.rotation.x = -Math.PI / 2;
+                    cr.rotation.z = (furnRng() - 0.5) * 0.6;
+                    cr.position.set(grCx + grSide * (1.5 + furnRng() * 0.9), grHy + 0.016, grZ + (furnRng() - 0.5) * 1.5);
+                    chunkGroup.add(cr);
+                  }
+                  // Skid streak — long thin black smear on the inside line where
+                  // braking-while-turning leaves rubber. Less common than cracks.
+                  if (scn.weather !== 'snow' && furnRng() < 0.3) {
+                    var skidMat = new T.MeshBasicMaterial({ color: 0x0a0a10, transparent: true, opacity: 0.5 });
+                    var skid = new T.Mesh(new T.PlaneGeometry(0.18, 2.4 + furnRng() * 1.5), skidMat);
+                    skid.rotation.x = -Math.PI / 2;
+                    skid.rotation.z = grHd; // align with the road tangent
+                    skid.position.set(grCx + (grHd > 0 ? -1 : 1) * (1.6 + furnRng() * 0.5), grHy + 0.017, grZ);
+                    chunkGroup.add(skid);
+                  }
+                }
+                // Mile markers — small reflective post every ~16 cells, alternating sides
+                for (var mmZ = chunkWorldZ + 4; mmZ < chunkWorldZ + CHUNK_SIZE - 4; mmZ += 16) {
+                  var mmCx = lookupCenterAtZ(mmZ);
+                  var mmHy = lookupHeightAtZ(mmZ);
+                  var mmSide = ((Math.floor(mmZ) >> 4) & 1) ? 1 : -1;
+                  var mmPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 5), grPostMat);
+                  mmPost.position.set(mmCx + mmSide * 4.2, mmHy + 0.45, mmZ);
+                  chunkGroup.add(mmPost);
+                  var mmTop = new T.Mesh(new T.BoxGeometry(0.12, 0.18, 0.04), new T.MeshBasicMaterial({ color: 0xffffff }));
+                  mmTop.position.set(mmCx + mmSide * 4.2, mmHy + 0.85, mmZ);
+                  chunkGroup.add(mmTop);
+                }
+                // Deer at the forest edge (rural only). Box-body + cylinder neck
+                // + small head + four leg cylinders. Stand quiet — visual only,
+                // no AI. Players who already learned about Maine moose risk see
+                // the same scan-the-treeline cue here.
+                if (chunk.biome === 'rural' && furnRng() < 0.32) {
+                  var deerCount = 1 + Math.floor(furnRng() * 2);
+                  var deerMat = new T.MeshLambertMaterial({ color: 0x8a5a32 });
+                  var deerWhite = new T.MeshLambertMaterial({ color: 0xefe0c8 });
+                  for (var di = 0; di < deerCount; di++) {
+                    var dZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
+                    var dSide = furnRng() < 0.5 ? -1 : 1;
+                    var dCx = lookupCenterAtZ(dZ);
+                    var dHy = lookupHeightAtZ(dZ);
+                    var dDist = 7 + furnRng() * 4;
+                    var dxw = dCx + dSide * dDist;
+                    var dGroup = new T.Group();
+                    var dBody = new T.Mesh(new T.BoxGeometry(1.1, 0.45, 0.4), deerMat);
+                    dBody.position.set(0, 0.85, 0);
+                    dGroup.add(dBody);
+                    var dRump = new T.Mesh(new T.BoxGeometry(0.18, 0.18, 0.42), deerWhite);
+                    dRump.position.set(-0.55, 0.95, 0);
+                    dGroup.add(dRump);
+                    var dNeck = new T.Mesh(new T.CylinderGeometry(0.12, 0.16, 0.5, 6), deerMat);
+                    dNeck.position.set(0.5, 1.15, 0);
+                    dNeck.rotation.z = -Math.PI / 4;
+                    dGroup.add(dNeck);
+                    var dHead = new T.Mesh(new T.BoxGeometry(0.32, 0.18, 0.18), deerMat);
+                    dHead.position.set(0.78, 1.4, 0);
+                    dGroup.add(dHead);
+                    // Four legs
+                    [[-0.45, 0.18], [-0.45, -0.18], [0.45, 0.18], [0.45, -0.18]].forEach(function(lp) {
+                      var leg = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 0.7, 5), deerMat);
+                      leg.position.set(lp[0], 0.35, lp[1]);
+                      dGroup.add(leg);
+                    });
+                    // Face the road so the silhouette reads from the player's POV.
+                    dGroup.position.set(dxw, dHy, dZ);
+                    dGroup.rotation.y = dSide < 0 ? 0 : Math.PI;
+                    chunkGroup.add(dGroup);
+                  }
+                }
+                // Wildflowers & grass tufts in rural/residential shoulders.
+                // Tiny billboards so they read as color specks without adding geometry cost.
+                if (chunk.biome === 'rural' || chunk.biome === 'residential') {
+                  var flowerColors = [0xf5e050, 0xe85a7a, 0xb050e0, 0xffffff, 0xff9040];
+                  var tuftMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xeef2f7 : 0x5a8a3a });
+                  var flowerCount = chunk.biome === 'rural' ? 14 : 6;
+                  for (var fli = 0; fli < flowerCount; fli++) {
+                    var flZ = chunkWorldZ + 1 + furnRng() * (CHUNK_SIZE - 2);
+                    var flSide = furnRng() < 0.5 ? -1 : 1;
+                    var flDist = 3.7 + furnRng() * 3.5;
+                    var flCx = lookupCenterAtZ(flZ);
+                    var flHy = lookupHeightAtZ(flZ);
+                    if (furnRng() < 0.4 && scn.weather !== 'snow') {
+                      // Flower: colored sphere on tiny stem
+                      var petalMat = new T.MeshBasicMaterial({ color: flowerColors[Math.floor(furnRng() * flowerColors.length)] });
+                      var petal = new T.Mesh(new T.SphereGeometry(0.06, 4, 3), petalMat);
+                      petal.position.set(flCx + flSide * flDist, flHy + 0.18, flZ);
+                      chunkGroup.add(petal);
+                    } else {
+                      // Grass tuft: tiny flat triangle
+                      var tuft = new T.Mesh(new T.ConeGeometry(0.08, 0.22, 4), tuftMat);
+                      tuft.position.set(flCx + flSide * flDist, flHy + 0.11, flZ);
+                      chunkGroup.add(tuft);
+                    }
+                  }
+                }
+                // Streetlights (commercial/suburban/industrial) — tall curved arm
+                // with a lamp head. At night the head emits a soft glow sphere.
+                if (chunk.biome === 'commercial' || chunk.biome === 'suburban' || chunk.biome === 'industrial') {
+                  var isNightSL = scn.time === 'night' || scn.id === 'night';
+                  var slPoleMat = new T.MeshLambertMaterial({ color: 0x2a2e34 });
+                  for (var slZ = chunkWorldZ + 6; slZ < chunkWorldZ + CHUNK_SIZE - 6; slZ += 10) {
+                    var slSide = ((Math.floor(slZ) / 10) & 1) ? 1 : -1;
+                    var slCx = lookupCenterAtZ(slZ);
+                    var slHy = lookupHeightAtZ(slZ);
+                    // Vertical pole
+                    var slPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.08, 5.5, 6), slPoleMat);
+                    slPole.position.set(slCx + slSide * 4.5, slHy + 2.75, slZ);
+                    chunkGroup.add(slPole);
+                    // Curved arm over the road
+                    var slArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 2.5, 4), slPoleMat);
+                    slArm.position.set(slCx + slSide * 3.3, slHy + 5.4, slZ);
+                    slArm.rotation.z = Math.PI / 2;
+                    chunkGroup.add(slArm);
+                    // Lamp head
+                    var slHead = new T.Mesh(new T.BoxGeometry(0.4, 0.14, 0.22), new T.MeshLambertMaterial({ color: 0x1a1a1a }));
+                    slHead.position.set(slCx + slSide * 2.1, slHy + 5.3, slZ);
+                    chunkGroup.add(slHead);
+                    // Glowing bulb + sodium-halo sphere at night
+                    if (isNightSL) {
+                      var slBulb = new T.Mesh(new T.SphereGeometry(0.12, 8, 6), new T.MeshBasicMaterial({ color: 0xffdc8a }));
+                      slBulb.position.set(slCx + slSide * 2.1, slHy + 5.22, slZ);
+                      chunkGroup.add(slBulb);
+                      var slHalo = new T.Mesh(new T.SphereGeometry(0.6, 8, 6), new T.MeshBasicMaterial({ color: 0xffdc8a, transparent: true, opacity: 0.25, blending: T.AdditiveBlending, depthWrite: false }));
+                      slHalo.position.set(slCx + slSide * 2.1, slHy + 5.22, slZ);
+                      chunkGroup.add(slHalo);
+                    }
+                  }
+                }
+                // Utility poles & drooping wires (residential/rural) — wooden pole
+                // + crossbar + two droop-shaped line segments per span.
+                if (chunk.biome === 'residential' || chunk.biome === 'rural') {
+                  var upMat = new T.MeshLambertMaterial({ color: 0x6a4a2e });
+                  var wireMat = new T.MeshBasicMaterial({ color: 0x1a1a1a });
+                  var upSpacing = 12;
+                  var upStarts = [];
+                  for (var upZ = chunkWorldZ + 3; upZ < chunkWorldZ + CHUNK_SIZE - 3; upZ += upSpacing) {
+                    var upSide = 1; // always on same side for a clean wire line
+                    var upCx = lookupCenterAtZ(upZ);
+                    var upHy = lookupHeightAtZ(upZ);
+                    var upX = upCx + upSide * 5.2;
+                    upStarts.push({ x: upX, y: upHy, z: upZ });
+                    var upPole = new T.Mesh(new T.CylinderGeometry(0.09, 0.13, 6.5, 6), upMat);
+                    upPole.position.set(upX, upHy + 3.25, upZ);
+                    chunkGroup.add(upPole);
+                    var upBar = new T.Mesh(new T.BoxGeometry(0.08, 0.08, 1.4), upMat);
+                    upBar.position.set(upX, upHy + 5.8, upZ);
+                    chunkGroup.add(upBar);
+                  }
+                  // Draw wires between consecutive poles — a thin slightly-drooping
+                  // cylinder approximates a catenary without per-chunk shader cost.
+                  var crowMat = new T.MeshLambertMaterial({ color: 0x0a0a10 });
+                  for (var wi = 0; wi < upStarts.length - 1; wi++) {
+                    var pA = upStarts[wi], pB = upStarts[wi + 1];
+                    [-0.45, 0.45].forEach(function(attach) {
+                      var wLen = Math.hypot(pB.z - pA.z, pB.y - pA.y);
+                      var wMid = new T.Mesh(new T.CylinderGeometry(0.015, 0.015, wLen, 3), wireMat);
+                      wMid.position.set(pA.x, (pA.y + pB.y) / 2 + 5.7, (pA.z + pB.z) / 2);
+                      wMid.rotation.x = Math.PI / 2;
+                      wMid.position.z = (pA.z + pB.z) / 2;
+                      wMid.position.x = pA.x + attach * 0.001;
+                      chunkGroup.add(wMid);
+                    });
+                    // Crows: 30% chance per span, 1-3 birds spaced along the wire.
+                    if (furnRng() < 0.3) {
+                      var crowCount = 1 + Math.floor(furnRng() * 3);
+                      for (var ci2 = 0; ci2 < crowCount; ci2++) {
+                        var crT = (ci2 + 1) / (crowCount + 1) + (furnRng() - 0.5) * 0.1;
+                        var crZ = pA.z + (pB.z - pA.z) * crT;
+                        var crY = pA.y + 5.7;
+                        // Body
+                        var crBody = new T.Mesh(new T.BoxGeometry(0.18, 0.16, 0.12), crowMat);
+                        crBody.position.set(pA.x, crY + 0.13, crZ);
+                        crBody.rotation.y = furnRng() * Math.PI * 0.4 - 0.2;
+                        chunkGroup.add(crBody);
+                        // Tiny beak
+                        var crBeak = new T.Mesh(new T.ConeGeometry(0.025, 0.08, 4), new T.MeshLambertMaterial({ color: 0x4a3a20 }));
+                        crBeak.rotation.z = -Math.PI / 2;
+                        crBeak.position.set(pA.x + 0.12, crY + 0.16, crZ);
+                        chunkGroup.add(crBeak);
+                      }
+                    }
+                  }
+                }
+                // Rural lake — occasional distant water body. Blue ellipse disc
+                // with a darker shore ring so it reads as a lake surrounded by mud/rocks.
+                if (chunk.biome === 'rural' && furnRng() < 0.18) {
+                  var lkSide = furnRng() < 0.5 ? -1 : 1;
+                  var lkZ = chunkWorldZ + CHUNK_SIZE / 2;
+                  var lkCx = lookupCenterAtZ(lkZ);
+                  var lkHy = lookupHeightAtZ(lkZ);
+                  var lkX = lkCx + lkSide * 28;
+                  var lkR = 6 + furnRng() * 4;
+                  // Shore ring
+                  var shoreMat = new T.MeshLambertMaterial({ color: 0x7a6644 });
+                  var shore = new T.Mesh(new T.CircleGeometry(lkR + 1.1, 24), shoreMat);
+                  shore.rotation.x = -Math.PI / 2;
+                  shore.position.set(lkX, lkHy - 0.02, lkZ);
+                  chunkGroup.add(shore);
+                  // Water surface (MeshBasicMaterial so it glows faintly on its own)
+                  var waterMat = new T.MeshBasicMaterial({ color: scn.weather === 'snow' ? 0x6a8abc : 0x3f6b9e, transparent: true, opacity: 0.9 });
+                  var water = new T.Mesh(new T.CircleGeometry(lkR, 28), waterMat);
+                  water.rotation.x = -Math.PI / 2;
+                  water.position.set(lkX, lkHy + 0.01, lkZ);
+                  water.scale.z = 0.7; // make lakes oval
+                  water.name = 'lake_surface';
+                  water._basePhase = furnRng() * Math.PI * 2;
+                  chunkGroup.add(water);
+                  // A couple of dockside reeds as vertical accents
+                  var reedMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xc4caca : 0x5a7a3a });
+                  for (var rdi = 0; rdi < 4; rdi++) {
+                    var rdAng = rdi / 4 * Math.PI * 2 + furnRng() * 0.5;
+                    var reed = new T.Mesh(new T.BoxGeometry(0.05, 0.9, 0.05), reedMat);
+                    reed.position.set(lkX + Math.cos(rdAng) * (lkR + 0.4), lkHy + 0.45, lkZ + Math.sin(rdAng) * (lkR + 0.4));
+                    chunkGroup.add(reed);
+                  }
+                }
+                // Overhead bridge — concrete span crossing the road. Once per
+                // ~15 chunks; positioned mid-chunk and not on intersections.
+                if (!chunk.hasIntersection && (Math.floor(chunk.index) % 17) === 5) {
+                  var bgZ = chunkWorldZ + CHUNK_SIZE / 2;
+                  var bgCx = lookupCenterAtZ(bgZ);
+                  var bgHy = lookupHeightAtZ(bgZ);
+                  var bridgeMat = new T.MeshLambertMaterial({ color: 0x9aa3ad });
+                  var bridgeShade = new T.MeshLambertMaterial({ color: 0x6f7882 });
+                  // Span deck — wide enough to clear a crossing road; thick slab
+                  var deck = new T.Mesh(new T.BoxGeometry(20, 0.6, 4), bridgeMat);
+                  deck.position.set(bgCx, bgHy + 5.0, bgZ);
+                  deck.castShadow = true;
+                  chunkGroup.add(deck);
+                  // Underside shadow strip
+                  var deckU = new T.Mesh(new T.BoxGeometry(20, 0.05, 3.8), bridgeShade);
+                  deckU.position.set(bgCx, bgHy + 4.65, bgZ);
+                  chunkGroup.add(deckU);
+                  // Two abutments either side of the road
+                  [-1, 1].forEach(function(abS) {
+                    var abut = new T.Mesh(new T.BoxGeometry(2.5, 5, 4), bridgeMat);
+                    abut.position.set(bgCx + abS * 7.5, bgHy + 2.5, bgZ);
+                    abut.castShadow = true;
+                    chunkGroup.add(abut);
+                  });
+                  // Guard parapet on top edges
+                  [-1, 1].forEach(function(pS) {
+                    var par = new T.Mesh(new T.BoxGeometry(20, 0.5, 0.2), bridgeMat);
+                    par.position.set(bgCx, bgHy + 5.55, bgZ + pS * 1.9);
+                    chunkGroup.add(par);
+                  });
+                }
+                // Rural farm structures — occasional red barn + silo set back from
+                // the road. Placed at most once per chunk to avoid barn-row effect.
+                if (chunk.biome === 'rural' && furnRng() < 0.35) {
+                  var barnSide = furnRng() < 0.5 ? -1 : 1;
+                  var barnZ = chunkWorldZ + 6 + furnRng() * (CHUNK_SIZE - 12);
+                  var barnCx = lookupCenterAtZ(barnZ);
+                  var barnHy = lookupHeightAtZ(barnZ);
+                  var barnX = barnCx + barnSide * 12;
+                  var barnMat = new T.MeshLambertMaterial({ color: 0xa82828 });
+                  var barnRoofMat = new T.MeshLambertMaterial({ color: 0x3a2418 });
+                  var barnBody = new T.Mesh(new T.BoxGeometry(3.5, 2.6, 4.5), barnMat);
+                  barnBody.position.set(barnX, barnHy + 1.3, barnZ);
+                  barnBody.castShadow = true;
+                  chunkGroup.add(barnBody);
+                  var barnRoof = new T.Mesh(new T.ConeGeometry(2.3, 1.8, 4), barnRoofMat);
+                  barnRoof.rotation.y = Math.PI / 4;
+                  barnRoof.position.set(barnX, barnHy + 3.5, barnZ);
+                  barnRoof.scale.set(1.4, 1, 1);
+                  chunkGroup.add(barnRoof);
+                  var barnDoor = new T.Mesh(new T.PlaneGeometry(1.0, 1.6), new T.MeshLambertMaterial({ color: 0xf5f0e0 }));
+                  barnDoor.position.set(barnX + (barnSide < 0 ? 1.76 : -1.76), barnHy + 0.8, barnZ);
+                  barnDoor.rotation.y = barnSide < 0 ? -Math.PI / 2 : Math.PI / 2;
+                  chunkGroup.add(barnDoor);
+                  var siloMat = new T.MeshLambertMaterial({ color: 0xbcc4cc });
+                  var silo = new T.Mesh(new T.CylinderGeometry(0.9, 0.9, 4.5, 14), siloMat);
+                  silo.position.set(barnX + barnSide * 2.8, barnHy + 2.25, barnZ - 1.2);
+                  silo.castShadow = true;
+                  chunkGroup.add(silo);
+                  var siloCap = new T.Mesh(new T.SphereGeometry(0.9, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), siloMat);
+                  siloCap.position.set(barnX + barnSide * 2.8, barnHy + 4.5, barnZ - 1.2);
+                  chunkGroup.add(siloCap);
+                  var hayMat = new T.MeshLambertMaterial({ color: 0xd4b564 });
+                  for (var hbi = 0; hbi < 2; hbi++) {
+                    var hay = new T.Mesh(new T.CylinderGeometry(0.45, 0.45, 0.8, 10), hayMat);
+                    hay.rotation.z = Math.PI / 2;
+                    hay.position.set(barnX - barnSide * 2.8, barnHy + 0.45, barnZ + 2 + hbi * 1.0);
+                    chunkGroup.add(hay);
+                  }
+                  // Farmhouse window glow + halo at night — sells "someone's home"
+                  // and gives players landmarks to navigate by in pitch dark.
+                  if (scn.time === 'night' || scn.id === 'night') {
+                    var farmWinMat = new T.MeshBasicMaterial({ color: 0xffd070 });
+                    var farmWin = new T.Mesh(new T.PlaneGeometry(0.5, 0.5), farmWinMat);
+                    farmWin.position.set(barnX + (barnSide < 0 ? 1.77 : -1.77), barnHy + 1.6, barnZ + 0.8);
+                    farmWin.rotation.y = barnSide < 0 ? -Math.PI / 2 : Math.PI / 2;
+                    chunkGroup.add(farmWin);
+                    var farmHalo = new T.Mesh(new T.SphereGeometry(0.9, 8, 6), new T.MeshBasicMaterial({ color: 0xffd070, transparent: true, opacity: 0.18, blending: T.AdditiveBlending, depthWrite: false }));
+                    farmHalo.position.copy(farmWin.position);
+                    farmHalo.name = 'farm_glow';
+                    farmHalo._twPhase = furnRng() * Math.PI * 2;
+                    chunkGroup.add(farmHalo);
+                  }
+                }
+                // Fence lines along pasture-adjacent rural stretches.
+                // White picket-style posts every 2m on one side for ~half the chunk.
+                if (chunk.biome === 'rural' && furnRng() < 0.6) {
+                  var fnMat = new T.MeshLambertMaterial({ color: 0xe8e4d6 });
+                  var fnSide = furnRng() < 0.5 ? -1 : 1;
+                  var fnStart = chunkWorldZ + 2;
+                  var fnEnd = chunkWorldZ + CHUNK_SIZE / 2 + furnRng() * (CHUNK_SIZE / 2 - 4);
+                  for (var fnZ = fnStart; fnZ < fnEnd; fnZ += 1.4) {
+                    var fnCx = lookupCenterAtZ(fnZ);
+                    var fnHy = lookupHeightAtZ(fnZ);
+                    var fnPost = new T.Mesh(new T.BoxGeometry(0.06, 0.6, 0.06), fnMat);
+                    fnPost.position.set(fnCx + fnSide * 5.5, fnHy + 0.3, fnZ);
+                    chunkGroup.add(fnPost);
+                  }
+                  // Two horizontal rails spanning the fence.
+                  var fnRailLen = fnEnd - fnStart;
+                  [0.22, 0.48].forEach(function(fnY) {
+                    var fnRail = new T.Mesh(new T.BoxGeometry(0.05, 0.05, fnRailLen), fnMat);
+                    fnRail.position.set(lookupCenterAtZ((fnStart + fnEnd) / 2) + fnSide * 5.5,
+                      lookupHeightAtZ((fnStart + fnEnd) / 2) + fnY, (fnStart + fnEnd) / 2);
+                    chunkGroup.add(fnRail);
+                  });
+                }
+                // Speed limit sign — one per chunk on alternating sides. The
+                // posted speed matches the biome so the player can self-check.
+                // White rectangle with black text, on a metal post.
+                var slBiomeMph = chunk.biome === 'rural' ? 45 : chunk.biome === 'residential' ? 25
+                  : chunk.biome === 'suburban' ? 35 : chunk.biome === 'commercial' ? 30 : 35;
+                (function() {
+                  var slZ = chunkWorldZ + 6;
+                  var slSide = (chunk.index % 2 === 0) ? 1 : -1;
+                  var slCx = lookupCenterAtZ(slZ);
+                  var slHy = lookupHeightAtZ(slZ);
+                  var slX = slCx + slSide * (roadHalfW + 1.5);
+                  // Post
+                  var postMat = new T.MeshLambertMaterial({ color: 0x808888 });
+                  var post = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 2.4, 5), postMat);
+                  post.position.set(slX, slHy + 1.2, slZ);
+                  chunkGroup.add(post);
+                  // Face — white rectangle with canvas-textured number.
+                  try {
+                    var sc = document.createElement('canvas');
+                    sc.width = 128; sc.height = 160;
+                    var sx = sc.getContext('2d');
+                    sx.fillStyle = '#ffffff';
+                    sx.fillRect(0, 0, 128, 160);
+                    sx.strokeStyle = '#000000';
+                    sx.lineWidth = 6;
+                    sx.strokeRect(3, 3, 122, 154);
+                    sx.fillStyle = '#000000';
+                    sx.font = 'bold 22px system-ui, sans-serif';
+                    sx.textAlign = 'center';
+                    sx.fillText('SPEED', 64, 36);
+                    sx.fillText('LIMIT', 64, 58);
+                    sx.font = 'bold 64px system-ui, sans-serif';
+                    sx.fillText('' + slBiomeMph, 64, 124);
+                    var sTex = new T.CanvasTexture(sc);
+                    var sMat = new T.MeshBasicMaterial({ map: sTex, side: T.DoubleSide });
+                    var sFace = new T.Mesh(new T.PlaneGeometry(0.55, 0.7), sMat);
+                    sFace.position.set(slX, slHy + 2.3, slZ);
+                    sFace.rotation.y = slSide < 0 ? Math.PI / 2 : -Math.PI / 2;
+                    chunkGroup.add(sFace);
+                  } catch (signErr) {}
+                })();
+                // Driveways in residential/suburban — small asphalt pads cutting
+                // from the curb into the yard, at semi-regular intervals.
+                if (chunk.biome === 'residential' || chunk.biome === 'suburban') {
+                  var dwMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8090a0 : 0x444a50 });
+                  var dwCount = chunk.biome === 'residential' ? 3 : 2;
+                  for (var dwI = 0; dwI < dwCount; dwI++) {
+                    var dwZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
+                    var dwSide = furnRng() < 0.5 ? -1 : 1;
+                    var dwCx = lookupCenterAtZ(dwZ);
+                    var dwHy = lookupHeightAtZ(dwZ);
+                    var dwOff = roadHalfW + 0.5;
+                    var dw = new T.Mesh(new T.PlaneGeometry(3.5, 1.5), dwMat);
+                    dw.rotation.x = -Math.PI / 2;
+                    dw.position.set(dwCx + dwSide * (dwOff + 1.75), dwHy + 0.008, dwZ);
+                    chunkGroup.add(dw);
+                  }
+                }
+                // Mailboxes in residential/rural biomes — small box on a stick.
+                if (chunk.biome === 'residential' || chunk.biome === 'rural') {
+                  var mbCount = chunk.biome === 'residential' ? 3 : 1;
+                  var mbBoxMat = new T.MeshLambertMaterial({ color: 0x9a8a72 });
+                  var mbPostMat = new T.MeshLambertMaterial({ color: 0x6a4a2a });
+                  for (var mbI = 0; mbI < mbCount; mbI++) {
+                    var mbZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
+                    var mbSide = furnRng() < 0.5 ? -1 : 1;
+                    var mbCx = lookupCenterAtZ(mbZ);
+                    var mbHy = lookupHeightAtZ(mbZ);
+                    var mbPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.0, 5), mbPostMat);
+                    mbPost.position.set(mbCx + mbSide * 4.0, mbHy + 0.5, mbZ);
+                    chunkGroup.add(mbPost);
+                    var mbBox = new T.Mesh(new T.BoxGeometry(0.35, 0.2, 0.18), mbBoxMat);
+                    mbBox.position.set(mbCx + mbSide * 4.0, mbHy + 1.05, mbZ);
+                    chunkGroup.add(mbBox);
+                  }
+                }
+              }
+
+              // Road surface for this chunk — built as a curved ribbon following
+              // chunk.roadCenters[cy]. Two verts per row (left edge, right edge);
+              // the strip is triangulated via two triangles between consecutive rows.
+              // Road width matches the biome cell carving: commercial/suburban
+              // carve 4 cells each side (= 8+1 cells), others 3 (= 6+1 cells).
+              var roadHalfW = (chunk.biome === 'commercial' || chunk.biome === 'suburban') ? 4.5 : 3.5;
+              // Vertex-colored asphalt: each row gets a slightly different shade
+              // seeded by world Y, so the road reads as patched/weathered instead
+              // of a single flat gray. Snow biomes desaturate the palette.
+              var roadMat = new T.MeshLambertMaterial({ vertexColors: true });
+              var asphaltBase = scn.weather === 'snow' ? [0x8c9ba8, 0x7d8c9a, 0x9aa7b4] : [0x333842, 0x2a2f38, 0x3c424c, 0x2e333d];
+              var ribbonRows = CHUNK_SIZE + 1;
+              var ribbonVerts = new Float32Array(ribbonRows * 2 * 3);
+              var ribbonUvs = new Float32Array(ribbonRows * 2 * 2);
+              var ribbonCols = new Float32Array(ribbonRows * 2 * 3);
+              var ribbonIdx = new Uint16Array((ribbonRows - 1) * 6);
+              var ribbonChunkBaseY = ci * CHUNK_SIZE;
+              for (var rr = 0; rr < ribbonRows; rr++) {
+                var sampleY = ribbonChunkBaseY + rr;
+                var cellCenter = iw.spline ? iw.spline.centerAt(sampleY) : (chunk.roadCenters[Math.min(rr, CHUNK_SIZE - 1)]);
+                var worldCx = cellCenter - MAP_SIZE / 2;
+                var worldZ = chunkWorldZ + rr;
+                // Elevation: same heightAt() that the player car samples, so the car
+                // stays planted on the road instead of floating or sinking into hills.
+                var rowH = iw.spline ? iw.spline.heightAt(sampleY) : 0;
+                // Banking: tilt the strip around its tangent on tight curves.
+                // bank ≈ -heading × factor → outside edge raised, inside lowered (proper superelevation).
+                var rowHd = iw.spline ? iw.spline.headingAt(sampleY) : 0;
+                var bank = -rowHd * 0.6; // radians of roll; gentle so it reads as banking, not a wall
+                var bankLift = Math.sin(bank) * roadHalfW;
+                ribbonVerts[(rr * 2 + 0) * 3 + 0] = worldCx - roadHalfW;
+                ribbonVerts[(rr * 2 + 0) * 3 + 1] = rowH + 0.011 - bankLift;
+                ribbonVerts[(rr * 2 + 0) * 3 + 2] = worldZ;
+                ribbonVerts[(rr * 2 + 1) * 3 + 0] = worldCx + roadHalfW;
+                ribbonVerts[(rr * 2 + 1) * 3 + 1] = rowH + 0.011 + bankLift;
+                ribbonVerts[(rr * 2 + 1) * 3 + 2] = worldZ;
+                ribbonUvs[(rr * 2 + 0) * 2 + 0] = 0;
+                ribbonUvs[(rr * 2 + 0) * 2 + 1] = rr / ribbonRows;
+                ribbonUvs[(rr * 2 + 1) * 2 + 0] = 1;
+                ribbonUvs[(rr * 2 + 1) * 2 + 1] = rr / ribbonRows;
+                // Per-vertex asphalt shade. Pick from the palette via a hash of
+                // world Y so the same stretch always renders the same wear.
+                var asphIdx = ((sampleY * 9301 + 49297) % asphaltBase.length + asphaltBase.length) % asphaltBase.length;
+                var asphC = asphaltBase[asphIdx];
+                var ar = ((asphC >> 16) & 0xff) / 255;
+                var ag = ((asphC >>  8) & 0xff) / 255;
+                var ab = ( asphC        & 0xff) / 255;
+                ribbonCols[(rr * 2 + 0) * 3 + 0] = ar;
+                ribbonCols[(rr * 2 + 0) * 3 + 1] = ag;
+                ribbonCols[(rr * 2 + 0) * 3 + 2] = ab;
+                ribbonCols[(rr * 2 + 1) * 3 + 0] = ar;
+                ribbonCols[(rr * 2 + 1) * 3 + 1] = ag;
+                ribbonCols[(rr * 2 + 1) * 3 + 2] = ab;
+              }
+              for (var ri = 0; ri < ribbonRows - 1; ri++) {
+                var a = ri * 2, b = ri * 2 + 1, c = (ri + 1) * 2, d = (ri + 1) * 2 + 1;
+                ribbonIdx[ri * 6 + 0] = a;
+                ribbonIdx[ri * 6 + 1] = c;
+                ribbonIdx[ri * 6 + 2] = b;
+                ribbonIdx[ri * 6 + 3] = b;
+                ribbonIdx[ri * 6 + 4] = c;
+                ribbonIdx[ri * 6 + 5] = d;
+              }
+              var roadGeo = new T.BufferGeometry();
+              roadGeo.setAttribute('position', new T.BufferAttribute(ribbonVerts, 3));
+              roadGeo.setAttribute('uv', new T.BufferAttribute(ribbonUvs, 2));
+              roadGeo.setAttribute('color', new T.BufferAttribute(ribbonCols, 3));
+              roadGeo.setIndex(new T.BufferAttribute(ribbonIdx, 1));
+              roadGeo.computeVertexNormals();
               var road = new T.Mesh(roadGeo, roadMat);
-              road.rotation.x = -Math.PI / 2;
-              road.position.set(0, 0.011, chunkWorldZ + CHUNK_SIZE / 2);
               road.receiveShadow = true;
               chunkGroup.add(road);
 
               // ─── ROAD MARKINGS (painted on the road surface) ───
               // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
+              // Each mark is positioned at the spline center for its Z, plus a lateral
+              // offset, so markings curve with the road instead of running off the edge.
               if (scn.weather !== 'snow' && isHighLOD) { // markings hidden by snow; only render near
-                // Yellow DASHED center line (double yellow for rural = no passing, single dash elsewhere)
                 var centerLineMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
-                var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection; // double yellow near intersections
-                // Skip center line markings at the intersection area (keeps intersection clean)
+                var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection;
                 var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
                 var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
+                var markCenterAtZ = function(worldZ) {
+                  // worldZ → world Y (cells), spline → world X.
+                  return iw.spline ? (iw.spline.centerAt(worldZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+                };
                 for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
-                  if (mlZ > skipZ1 && mlZ < skipZ2) continue; // skip intersection region
+                  if (mlZ > skipZ1 && mlZ < skipZ2) continue;
+                  var ctrX = markCenterAtZ(mlZ);
+                  var mlHt = iw.spline ? iw.spline.heightAt(mlZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   if (isNoPass) {
-                    // Double solid yellow (no-pass zone)
                     var dyL = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
                     dyL.rotation.x = -Math.PI / 2;
-                    dyL.position.set(-0.25, 0.014, mlZ);
+                    dyL.position.set(ctrX - 0.25, mlHt + 0.014, mlZ);
                     chunkGroup.add(dyL);
                     var dyR = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
                     dyR.rotation.x = -Math.PI / 2;
-                    dyR.position.set(0.25, 0.014, mlZ);
+                    dyR.position.set(ctrX + 0.25, mlHt + 0.014, mlZ);
                     chunkGroup.add(dyR);
                   } else {
-                    // Single dashed yellow (passing allowed)
                     var dyD = new T.Mesh(new T.PlaneGeometry(0.15, 1.2), centerLineMat);
                     dyD.rotation.x = -Math.PI / 2;
-                    dyD.position.set(0, 0.014, mlZ);
+                    dyD.position.set(ctrX, mlHt + 0.014, mlZ);
                     chunkGroup.add(dyD);
                   }
                 }
-                // Solid WHITE edge lines (shoulder markers) — both sides
+                // Solid white edge lines: short segments tracking the spline rather
+                // than one long straight plane (so they bend with the road).
                 var edgeLineMat = new T.MeshBasicMaterial({ color: 0xffffff });
-                [-3.2, 3.2].forEach(function(edgeX) {
-                  var edge = new T.Mesh(new T.PlaneGeometry(0.12, CHUNK_SIZE - 2), edgeLineMat);
-                  edge.rotation.x = -Math.PI / 2;
-                  edge.position.set(edgeX, 0.013, chunkWorldZ + CHUNK_SIZE / 2);
-                  chunkGroup.add(edge);
-                });
-                // Lane dividers (for commercial/suburban with wider roads) — dashed white
+                var edgeLineOff = roadHalfW - 0.3; // paint line inside the ribbon edge
+                for (var elZ = chunkWorldZ + 1; elZ < chunkWorldZ + CHUNK_SIZE - 1; elZ += 1.5) {
+                  var elCtr = markCenterAtZ(elZ);
+                  var elHt = iw.spline ? iw.spline.heightAt(elZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-edgeLineOff, edgeLineOff].forEach(function(elOff) {
+                    var edge = new T.Mesh(new T.PlaneGeometry(0.12, 1.5), edgeLineMat);
+                    edge.rotation.x = -Math.PI / 2;
+                    edge.position.set(elCtr + elOff, elHt + 0.013, elZ);
+                    chunkGroup.add(edge);
+                  });
+                }
                 if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
-                  [-1.5, 1.5].forEach(function(laneX) {
-                    for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
-                      if (ldZ > skipZ1 && ldZ < skipZ2) continue;
+                  for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
+                    if (ldZ > skipZ1 && ldZ < skipZ2) continue;
+                    var ldCtr = markCenterAtZ(ldZ);
+                    var ldHt = iw.spline ? iw.spline.heightAt(ldZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                    [-1.5, 1.5].forEach(function(laneOff) {
                       var ld = new T.Mesh(new T.PlaneGeometry(0.1, 1.5), edgeLineMat);
                       ld.rotation.x = -Math.PI / 2;
-                      ld.position.set(laneX, 0.013, ldZ);
+                      ld.position.set(ldCtr + laneOff, ldHt + 0.013, ldZ);
                       chunkGroup.add(ld);
-                    }
+                    });
+                  }
+                }
+                // Shoulder/curb strips — thin raised concrete-colored ribbons
+                // along both road edges so the boundary between asphalt and grass
+                // reads clearly. Short segments tracking the spline.
+                // Grass shoulder strip — mowed lighter green between curb and
+                // the wild grass/tree line. Short ribbon segments.
+                var shoulderMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xd8dde4 : 0x4a8a3a });
+                var shOff = roadHalfW + 0.4;
+                for (var shZ = chunkWorldZ + 0.5; shZ < chunkWorldZ + CHUNK_SIZE - 0.5; shZ += 1.5) {
+                  var shCtr = markCenterAtZ(shZ);
+                  var shHt = iw.spline ? iw.spline.heightAt(shZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-1, 1].forEach(function(shSide) {
+                    var sh = new T.Mesh(new T.PlaneGeometry(1.6, 1.5), shoulderMat);
+                    sh.rotation.x = -Math.PI / 2;
+                    sh.position.set(shCtr + shSide * (shOff + 0.8), shHt + 0.005, shZ);
+                    chunkGroup.add(sh);
                   });
+                }
+                var curbMat = new T.MeshLambertMaterial({ color: 0xb8b8b0 });
+                var edgeOff = roadHalfW + 0.1; // just outside the ribbon edge
+                for (var cbZ = chunkWorldZ + 0.5; cbZ < chunkWorldZ + CHUNK_SIZE - 0.5; cbZ += 1.0) {
+                  var cbCtr = markCenterAtZ(cbZ);
+                  var cbHt = iw.spline ? iw.spline.heightAt(cbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-edgeOff, edgeOff].forEach(function(cbSide) {
+                    var curb = new T.Mesh(new T.BoxGeometry(0.12, 0.08, 1.0), curbMat);
+                    curb.position.set(cbCtr + cbSide, cbHt + 0.04, cbZ);
+                    chunkGroup.add(curb);
+                  });
+                }
+                // Road-edge reflectors (cat's eyes) — small beads every 4m.
+                // Amber on the right edge, white on the left (US convention).
+                // Use MeshBasicMaterial so they glow independent of scene lighting.
+                var isNightRef = scn.time === 'night' || scn.id === 'night';
+                var amberMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffc040 : 0xbc7a1a });
+                var whiteRefMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffffff : 0xcccccc });
+                var refLineOff = roadHalfW - 0.2;
+                for (var refZ = chunkWorldZ + 2; refZ < chunkWorldZ + CHUNK_SIZE - 2; refZ += 4) {
+                  var refCtr = markCenterAtZ(refZ);
+                  var refHt = iw.spline ? iw.spline.heightAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var amber = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), amberMat);
+                  amber.position.set(refCtr + refLineOff, refHt + 0.02, refZ);
+                  chunkGroup.add(amber);
+                  var whiteR = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), whiteRefMat);
+                  whiteR.position.set(refCtr - refLineOff, refHt + 0.02, refZ);
+                  chunkGroup.add(whiteR);
                 }
               }
 
               // ─── WEATHER-REACTIVE DETAILS ───
+              // splineCenterAtZ: shared helper so puddles, snow piles, and other
+              // shoulder details ride the curve instead of floating in the grass.
+              var splineCenterAtZ = function(worldZ) {
+                return iw.spline ? (iw.spline.centerAt(worldZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+              };
               var weatherRng = seededRandom(chunk.index * 91349 + 11);
               if (scn.weather === 'rain') {
-                // Puddles on shoulders and occasional road spots
                 var puddleMat = new T.MeshBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.6 });
+                var rippleMat = new T.MeshBasicMaterial({ color: 0xa0c0d8, transparent: true, opacity: 0.4, side: T.DoubleSide });
                 for (var pI = 0; pI < 3; pI++) {
                   if (weatherRng() < 0.6) {
                     var pudSide = weatherRng() < 0.5 ? -1 : 1;
-                    var pudX = pudSide * (2.8 + weatherRng() * 1.0); // on shoulder edge
                     var pudZ = chunkWorldZ + 4 + pI * 8 + weatherRng() * 3;
+                    var pudX = splineCenterAtZ(pudZ) + pudSide * (2.8 + weatherRng() * 1.0);
                     var pudRadius = 0.4 + weatherRng() * 0.5;
                     var puddle = new T.Mesh(new T.CircleGeometry(pudRadius, 10), puddleMat);
                     puddle.rotation.x = -Math.PI / 2;
                     puddle.position.set(pudX, 0.015, pudZ);
                     chunkGroup.add(puddle);
+                    // Ripple ring — animated in the update loop. Stored name so
+                    // we can cheaply find+expand all ripples per frame.
+                    var ripple = new T.Mesh(new T.RingGeometry(0.05, 0.08, 16), rippleMat);
+                    ripple.rotation.x = -Math.PI / 2;
+                    ripple.position.set(pudX, 0.017, pudZ);
+                    ripple.name = 'ripple';
+                    ripple._maxR = pudRadius;
+                    ripple._phase = weatherRng() * Math.PI * 2;
+                    chunkGroup.add(ripple);
                   }
                 }
               } else if (scn.weather === 'snow') {
-                // Snow piles along the shoulder (plowed snow)
+                // Road dusting — a semi-transparent white overlay following the
+                // ribbon, broken up by Y-striped opacity so it reads as partial
+                // coverage instead of a second pristine road.
+                var dustMat = new T.MeshBasicMaterial({ color: 0xf0f4f8, transparent: true, opacity: 0.45, depthWrite: false });
+                var dustRows = CHUNK_SIZE + 1;
+                var dustVerts = new Float32Array(dustRows * 2 * 3);
+                var dustIdx = new Uint16Array((dustRows - 1) * 6);
+                for (var dr = 0; dr < dustRows; dr++) {
+                  var dsY = ribbonChunkBaseY + dr;
+                  var dsC = iw.spline ? (iw.spline.centerAt(dsY) - MAP_SIZE / 2) : 0;
+                  var dsH = iw.spline ? iw.spline.heightAt(dsY) : 0;
+                  dustVerts[(dr * 2 + 0) * 3 + 0] = dsC - 3.2;
+                  dustVerts[(dr * 2 + 0) * 3 + 1] = dsH + 0.018;
+                  dustVerts[(dr * 2 + 0) * 3 + 2] = chunkWorldZ + dr;
+                  dustVerts[(dr * 2 + 1) * 3 + 0] = dsC + 3.2;
+                  dustVerts[(dr * 2 + 1) * 3 + 1] = dsH + 0.018;
+                  dustVerts[(dr * 2 + 1) * 3 + 2] = chunkWorldZ + dr;
+                }
+                for (var dj = 0; dj < dustRows - 1; dj++) {
+                  var da = dj * 2, db = dj * 2 + 1, dc = (dj + 1) * 2, dd = (dj + 1) * 2 + 1;
+                  dustIdx[dj * 6 + 0] = da; dustIdx[dj * 6 + 1] = dc; dustIdx[dj * 6 + 2] = db;
+                  dustIdx[dj * 6 + 3] = db; dustIdx[dj * 6 + 4] = dc; dustIdx[dj * 6 + 5] = dd;
+                }
+                var dustGeo = new T.BufferGeometry();
+                dustGeo.setAttribute('position', new T.BufferAttribute(dustVerts, 3));
+                dustGeo.setIndex(new T.BufferAttribute(dustIdx, 1));
+                dustGeo.computeVertexNormals();
+                chunkGroup.add(new T.Mesh(dustGeo, dustMat));
                 var snowPileMat = new T.MeshLambertMaterial({ color: 0xf0f4f8 });
                 for (var sI = 0; sI < 5; sI++) {
                   var snSide = sI % 2 === 0 ? -1 : 1;
-                  var snX = snSide * (MAX_ROAD_WIDTH + 0.5);
                   var snZ = chunkWorldZ + 3 + sI * 6 + weatherRng() * 2;
+                  var snX = splineCenterAtZ(snZ) + snSide * (MAX_ROAD_WIDTH + 0.5);
                   var snHeight = 0.4 + weatherRng() * 0.3;
                   var snLength = 1.5 + weatherRng() * 1.5;
                   var snPile = new T.Mesh(new T.BoxGeometry(0.6, snHeight, snLength), snowPileMat);
@@ -5923,52 +7895,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
               // Cross street road surface (if intersection)
+              // Use a flat-color material — roadMat uses vertexColors which
+              // would render the cross-street black (no color attribute on a
+              // simple PlaneGeometry).
               if (chunk.hasIntersection) {
                 var crossZ = chunkWorldZ + chunk.intersectionY;
+                var crossCenterX = splineCenterAtZ(crossZ);
+                var crossRoadFlatMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
                 var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, 6);
-                var crossRoad = new T.Mesh(crossRoadGeo, roadMat);
+                var crossRoad = new T.Mesh(crossRoadGeo, crossRoadFlatMat);
                 crossRoad.rotation.x = -Math.PI / 2;
-                crossRoad.position.set(0, 0.012, crossZ);
+                // Lift the cross-street slightly above the main ribbon so it
+                // doesn't z-fight; the main road sits at ~0.011.
+                var crossHt = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + chunk.intersectionY) : 0;
+                crossRoad.position.set(0, crossHt + 0.013, crossZ);
                 crossRoad.receiveShadow = true;
                 chunkGroup.add(crossRoad);
-                // Cross street center dashes
+                // Cross street center dashes — skip the section overlapping the main road
+                // (gap stays centered on the spline, not on world X = 0).
                 var crossDashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
                 for (var cdx = -MAP_SIZE / 2; cdx < MAP_SIZE / 2; cdx += 3) {
-                  if (Math.abs(cdx) < 5) continue; // skip over main road intersection
+                  if (Math.abs(cdx - crossCenterX) < 5) continue;
                   var cdGeo = new T.PlaneGeometry(1.5, 0.12);
                   var cd = new T.Mesh(cdGeo, crossDashMat);
                   cd.rotation.x = -Math.PI / 2;
                   cd.position.set(cdx, 0.02, crossZ);
                   chunkGroup.add(cd);
                 }
-                // Traffic light OR stop sign at intersection (alternates by chunk index)
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;
                 if (isTrafficLight) {
-                  // Overhead traffic light on the cross street
                   var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
-                  sigPole.position.set(4.0, 2.1, crossZ);
+                  sigPole.position.set(crossCenterX + 4.0, crossHt + 2.1, crossZ);
                   chunkGroup.add(sigPole);
                   var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
-                  sigArm.position.set(1.8, 4.0, crossZ);
+                  sigArm.position.set(crossCenterX + 1.8, crossHt + 4.0, crossZ);
                   sigArm.rotation.z = Math.PI / 2;
                   chunkGroup.add(sigArm);
                   var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
-                  sigHousing.position.set(0, 3.5, crossZ);
+                  sigHousing.position.set(crossCenterX, crossHt + 3.5, crossZ);
                   chunkGroup.add(sigHousing);
-                  // Three lights (red/yellow/green) — one glowing based on signal state
                   var lightColors = [0xef4444, 0xfbbf24, 0x22c55e];
                   for (var lci = 0; lci < 3; lci++) {
                     var lightMesh = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: lightColors[lci] }));
-                    lightMesh.position.set(0.16, 3.75 - lci * 0.25, crossZ);
+                    lightMesh.position.set(crossCenterX + 0.16, crossHt + 3.75 - lci * 0.25, crossZ);
                     chunkGroup.add(lightMesh);
                   }
                 } else {
                   // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text
-                  // Place on both sides of the approach for the main road
+                  // Place on both sides of the approach for the main road, offset by spline center.
                   [-1, 1].forEach(function(sgSide) {
                     var ssPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    ssPole.position.set(sgSide * 4.5, 1.15, crossZ + sgSide * 3.5);
+                    ssPole.position.set(crossCenterX + sgSide * 4.5, crossHt + 1.15, crossZ + sgSide * 3.5);
                     chunkGroup.add(ssPole);
                     // Octagonal face via canvas texture
                     try {
@@ -5993,22 +7971,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var ssTex = new T.CanvasTexture(ssCan);
                       var ssMat = new T.MeshBasicMaterial({ map: ssTex, transparent: true, side: T.DoubleSide });
                       var ssFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), ssMat);
-                      ssFace.position.set(sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      ssFace.position.set(crossCenterX + sgSide * 4.5, crossHt + 2.2, crossZ + sgSide * 3.5);
                       ssFace.rotation.y = sgSide === 1 ? Math.PI : 0;
                       chunkGroup.add(ssFace);
                     } catch (ssErr) {
                       // Fallback: plain red octagon plane
                       var fbMat = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide });
                       var fbFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), fbMat);
-                      fbFace.position.set(sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      fbFace.position.set(crossCenterX + sgSide * 4.5, crossHt + 2.2, crossZ + sgSide * 3.5);
                       fbFace.rotation.y = sgSide === 1 ? Math.PI : 0;
                       chunkGroup.add(fbFace);
                     }
                   });
-                  // Also place stop signs on the CROSS street
+                  // Also place stop signs on the CROSS street (offset by spline center).
                   [-1, 1].forEach(function(ccSide) {
                     var csPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    csPole.position.set(ccSide * 3.5, 1.15, crossZ + ccSide * 4.5);
+                    csPole.position.set(crossCenterX + ccSide * 3.5, crossHt + 1.15, crossZ + ccSide * 4.5);
                     chunkGroup.add(csPole);
                     try {
                       var cs_can = document.createElement('canvas');
@@ -6031,26 +8009,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var cs_tex = new T.CanvasTexture(cs_can);
                       var cs_mat = new T.MeshBasicMaterial({ map: cs_tex, transparent: true, side: T.DoubleSide });
                       var cs_face = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), cs_mat);
-                      cs_face.position.set(ccSide * 3.5, 2.2, crossZ + ccSide * 4.5);
+                      cs_face.position.set(crossCenterX + ccSide * 3.5, crossHt + 2.2, crossZ + ccSide * 4.5);
                       cs_face.rotation.y = Math.PI / 2;
                       chunkGroup.add(cs_face);
                     } catch (ccErr) { /* fallback omitted */ }
                   });
                 }
-                // Crosswalk stripes
+                // Crosswalk stripes — span the curved main road, elevation-aware.
                 var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                var cwCtrZ = crossZ - 3.5;
+                var cwCtrX = splineCenterAtZ(cwCtrZ);
                 for (var cwi = -3; cwi <= 3; cwi++) {
                   var cwGeo = new T.PlaneGeometry(0.25, 0.7);
                   var cw = new T.Mesh(cwGeo, cwMat);
                   cw.rotation.x = -Math.PI / 2;
-                  cw.position.set(cwi * 0.7, 0.022, crossZ - 3.5);
+                  cw.position.set(cwCtrX + cwi * 0.7, crossHt + 0.022, cwCtrZ);
                   chunkGroup.add(cw);
                 }
-                // Stop line
+                // Street name sign — green rectangle with white text.
+                // Names are deterministic per chunk index so the same intersection
+                // always has the same name on revisit.
+                (function() {
+                  var streets = ['Main St', 'Oak Ave', 'Maple Dr', 'Pine Rd', 'Elm St',
+                    'School St', 'Water St', 'Bridge Rd', 'Park Ave', 'Mill Rd',
+                    'Church St', 'Center St', 'High St', 'River Rd', 'Harbor Dr',
+                    'Birch Ln', 'Lake Rd', 'Hill St', 'Shore Rd', 'Forest Ave'];
+                  var stName = streets[((chunk.index * 7 + 13) & 0x7fffffff) % streets.length];
+                  try {
+                    var nc = document.createElement('canvas');
+                    nc.width = 256; nc.height = 64;
+                    var nx = nc.getContext('2d');
+                    nx.fillStyle = '#166534';
+                    nx.fillRect(0, 0, 256, 64);
+                    nx.strokeStyle = '#ffffff';
+                    nx.lineWidth = 3;
+                    nx.strokeRect(2, 2, 252, 60);
+                    nx.fillStyle = '#ffffff';
+                    nx.font = 'bold 30px system-ui, sans-serif';
+                    nx.textAlign = 'center';
+                    nx.textBaseline = 'middle';
+                    nx.fillText(stName, 128, 32);
+                    var nTex = new T.CanvasTexture(nc);
+                    var nMat = new T.MeshBasicMaterial({ map: nTex, side: T.DoubleSide });
+                    var nSign = new T.Mesh(new T.PlaneGeometry(1.2, 0.3), nMat);
+                    nSign.position.set(crossCenterX + 4.2, crossHt + 3.0, crossZ);
+                    nSign.rotation.y = Math.PI / 2;
+                    chunkGroup.add(nSign);
+                  } catch (snErr) {}
+                })();
+                // Stop line — elevation-aware.
+                var slZ = crossZ - 4;
                 var slGeo = new T.PlaneGeometry(6, 0.2);
                 var sl = new T.Mesh(slGeo, cwMat);
                 sl.rotation.x = -Math.PI / 2;
-                sl.position.set(0, 0.021, crossZ - 4);
+                sl.position.set(splineCenterAtZ(slZ), crossHt + 0.021, slZ);
                 chunkGroup.add(sl);
               }
               s3.scene.add(chunkGroup);
@@ -6097,15 +8109,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (cg.position.x > 120) cg.position.x = -120;
             });
           }
-
-          // Tree wind sway (gentle rocking based on weather)
-          var windStrength = scn.weather === 'rain' ? 0.04 : scn.weather === 'snow' ? 0.02 : scn.weather === 'fog' ? 0.01 : 0.015;
-          s3.scene.children.forEach(function(child) {
-            if (child.isMesh && child.geometry && child.geometry.type === 'ConeGeometry' && child.position.y > 1.5) {
-              child.rotation.z = Math.sin(timeRef.current * 1.5 + child.position.x * 2 + child.position.z) * windStrength;
-              child.rotation.x = Math.cos(timeRef.current * 1.2 + child.position.z * 1.5) * windStrength * 0.5;
+          // High-altitude parallax clouds — orbit slowly around the player so
+          // they persist regardless of how far the car drives. Slower than the
+          // low cloudGroup ⇒ visual depth.
+          if (!s3._hiCloudRef) s3._hiCloudRef = s3.scene.getObjectByName('hi_clouds');
+          if (s3._hiCloudRef) {
+            s3._hiCloudRef.position.set(carWorldX, 0, carWorldZ);
+            s3._hiCloudRef.children.forEach(function(hc) {
+              hc._driftAng = (hc._driftAng || 0) + (hc._driftSpeed || 0.004) * 0.016;
+              hc.position.x = Math.cos(hc._driftAng) * hc._driftDist;
+              hc.position.z = Math.sin(hc._driftAng) * hc._driftDist;
+              hc.lookAt(carWorldX, hc.position.y, carWorldZ);
+            });
+          }
+          // Birds — slow circular drift around the player + wing-flap Y wobble.
+          // Rain puddle ripples — scale pulse + opacity fade. One cycle ≈ 1.5s.
+          if (scn.weather === 'rain') {
+            s3.scene.traverse(function(obj) {
+              if (obj.name === 'ripple' && obj.scale) {
+                var tt = ((timeRef.current + (obj._phase || 0)) * 0.7) % 1;
+                obj.scale.set(0.2 + tt * 8, 0.2 + tt * 8, 1);
+                if (obj.material) obj.material.opacity = 0.5 * (1 - tt);
+              }
+            });
+          }
+          // Starfield: follow player, gentle twinkle by modulating material opacity.
+          if (!s3._starsRef) s3._starsRef = s3.scene.getObjectByName('starfield');
+          if (s3._starsRef) {
+            s3._starsRef.position.set(carWorldX, 0, carWorldZ);
+            if (s3._starsRef.material) {
+              s3._starsRef.material.opacity = 0.75 + Math.sin(timeRef.current * 0.7) * 0.15 + Math.sin(timeRef.current * 1.9) * 0.08;
             }
-          });
+          }
+          // Shooting star: idle timer, then fire a quick streak across a random
+          // sky direction and fade out over ~1.2s.
+          if (!s3._shootRef) s3._shootRef = s3.scene.getObjectByName('shooting_star');
+          if (s3._shootRef) {
+            var sh = s3._shootRef;
+            sh.position.set(carWorldX, 0, carWorldZ);
+            if (!sh._active) {
+              sh._nextAt -= 0.016;
+              if (sh._nextAt <= 0) {
+                // Kick off a new streak.
+                var shA = Math.random() * Math.PI * 2;
+                var shE = 0.3 + Math.random() * 0.4; // elevation (rad)
+                var shR = 160;
+                var sx = Math.cos(shA) * Math.cos(shE) * shR;
+                var sy = Math.sin(shE) * shR;
+                var sz = Math.sin(shA) * Math.cos(shE) * shR;
+                // End point offset a short distance along a random tangent.
+                var tanA = shA + Math.PI / 2;
+                var ex = sx + Math.cos(tanA) * 22;
+                var ey = sy - 4;
+                var ez = sz + Math.sin(tanA) * 22;
+                var pos = sh.geometry.getAttribute('position');
+                pos.setXYZ(0, sx, sy, sz);
+                pos.setXYZ(1, ex, ey, ez);
+                pos.needsUpdate = true;
+                sh.material.opacity = 1;
+                sh._active = true;
+                sh._fadeT = 1.2;
+              }
+            } else {
+              sh._fadeT -= 0.016;
+              sh.material.opacity = Math.max(0, sh._fadeT / 1.2);
+              if (sh._fadeT <= 0) {
+                sh._active = false;
+                sh._nextAt = 6 + Math.random() * 12;
+              }
+            }
+          }
+          // Dawn shafts follow the player, with a slow sway so the light feels alive.
+          if (!s3._shaftRef) s3._shaftRef = s3.scene.getObjectByName('dawn_shafts');
+          if (s3._shaftRef) {
+            s3._shaftRef.position.set(carWorldX, 0, carWorldZ);
+            s3._shaftRef.rotation.y = Math.sin(timeRef.current * 0.08) * 0.05;
+          }
+          if (!s3._birdRef) s3._birdRef = s3.scene.getObjectByName('birds');
+          if (s3._birdRef) {
+            s3._birdRef.position.set(carWorldX, 0, carWorldZ);
+            s3._birdRef.children.forEach(function(bd) {
+              bd._flockAng += (bd._flockSpeed || 0.05) * 0.016;
+              bd.position.x = Math.cos(bd._flockAng) * bd._flockRad;
+              bd.position.z = Math.sin(bd._flockAng) * bd._flockRad;
+              bd.position.y = bd._flockY + Math.sin(timeRef.current * 6 + (bd._flapPhase || 0)) * 0.4;
+              // Face tangent to orbit (direction of motion)
+              bd.rotation.y = -bd._flockAng + Math.PI / 2;
+            });
+          }
+          // Celestial halo: snap to whichever sun/moon mesh exists, billboard to camera.
+          if (!s3._haloRef) s3._haloRef = s3.scene.getObjectByName('celestial_halo');
+          if (s3._haloRef) {
+            // Find the brightest celestial body — the original sun/moon meshes were
+            // added in the scene with characteristic emissive materials. Cheap
+            // heuristic: pick the highest-Y MeshBasicMaterial sphere in the scene.
+            if (!s3._haloTarget) {
+              var best = null, bestY = -Infinity;
+              s3.scene.traverse(function(obj) {
+                if (obj.isMesh && obj.geometry && obj.geometry.type === 'SphereGeometry'
+                  && obj.material && obj.material.color && obj.position.y > 8 && obj.position.y > bestY
+                  && obj !== s3._haloRef) {
+                  // skip dome/halo/players
+                  if (obj.name === 'skydome' || obj.name === 'celestial_halo') return;
+                  best = obj; bestY = obj.position.y;
+                }
+              });
+              s3._haloTarget = best;
+            }
+            if (s3._haloTarget) {
+              s3._haloRef.position.copy(s3._haloTarget.position);
+              s3._haloRef.lookAt(s3.camera.position);
+            }
+          }
+
+          // Tree wind sway + grass tuft shimmer + lake surface ripple.
+          // Walk chunk groups since trees and tufts live inside them, not directly
+          // on the scene. Cheaper than scene.traverse: skip far chunks entirely.
+          var windStrength = scn.weather === 'rain' ? 0.04 : scn.weather === 'snow' ? 0.02 : scn.weather === 'fog' ? 0.01 : 0.015;
+          var t_now = timeRef.current;
+          if (s3._loadedChunks) {
+            Object.keys(s3._loadedChunks).forEach(function(ck) {
+              var cgrp = s3._loadedChunks[ck];
+              if (!cgrp) return;
+              cgrp.children.forEach(function(child) {
+                if (!child.isMesh || !child.geometry) return;
+                var gt = child.geometry.type;
+                if (gt === 'ConeGeometry' && child.position.y > 1.5) {
+                  // Tree canopy / pine cone — main rocking motion.
+                  child.rotation.z = Math.sin(t_now * 1.5 + child.position.x * 2 + child.position.z) * windStrength;
+                  child.rotation.x = Math.cos(t_now * 1.2 + child.position.z * 1.5) * windStrength * 0.5;
+                } else if (gt === 'SphereGeometry' && child.position.y > 1.0 && child.position.y < 6.0) {
+                  // Maple/birch round canopies — subtler tilt.
+                  child.rotation.z = Math.sin(t_now * 1.1 + child.position.x * 1.7 + child.position.z) * windStrength * 0.6;
+                } else if (gt === 'ConeGeometry' && child.position.y < 0.3) {
+                  // Grass tufts — shimmer via Y-scale wobble.
+                  child.scale.y = 1 + Math.sin(t_now * 4 + child.position.x * 6) * 0.15;
+                } else if (child.name === 'lake_surface') {
+                  // Lake — gentle vertical bob + scale pulse for surface life.
+                  var lp = child._basePhase || 0;
+                  child.position.y = (child.position.y || 0) + Math.sin(t_now * 1.4 + lp) * 0.0008;
+                  child.scale.x = 1 + Math.sin(t_now * 0.8 + lp) * 0.01;
+                } else if (child.name === 'smoke_puff') {
+                  // Smoke rises slowly + fades + drifts on wind. When it tops out
+                  // (~3m above start), recycle to the base position.
+                  var sp = child._sPhase || 0;
+                  var rise = ((t_now * 0.45 + sp) % 3.0);
+                  child.position.y = (child._sBaseY || 0) + rise;
+                  child.position.x += Math.sin(t_now * 0.6 + sp) * 0.002;
+                  if (child.material) child.material.opacity = 0.55 * (1 - rise / 3.0);
+                  child.scale.setScalar(1 + rise * 0.4);
+                } else if (child.name === 'farm_glow' && child.material) {
+                  // Farmhouse halo twinkle — slow flicker so the light feels
+                  // hand-lit rather than uniform.
+                  var fp = child._twPhase || 0;
+                  child.material.opacity = 0.14 + 0.08 * (0.5 + 0.5 * Math.sin(t_now * 1.6 + fp)) + 0.04 * Math.sin(t_now * 7 + fp);
+                }
+              });
+            });
+          }
 
           // Lightning flash during rain (random bright flash)
           if (scn.weather === 'rain') {
@@ -6144,6 +8305,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Render
           s3.renderer.render(s3.scene, s3.camera);
+
+          // Rear-view mirror — small viewport in cockpit mode showing what's behind.
+          // Uses scissor test to render a second pass into a top-center rectangle.
+          if (cameraModeRef.current === 'cockpit') {
+            if (!s3._mirrorCam) {
+              s3._mirrorCam = new T.PerspectiveCamera(55, 3.2, 0.1, 100);
+            }
+            var mc = s3._mirrorCam;
+            // Position at driver head, look backward.
+            mc.position.copy(s3.camera.position);
+            var behindX = carWorldX - Math.cos(car.heading) * 8;
+            var behindZ = carWorldZ - Math.sin(car.heading) * 8;
+            mc.lookAt(behindX, roadH + 0.9, behindZ);
+            // Scissor rectangle: centered top, ~20% width × 8% height.
+            var rW = s3.renderer.domElement.width;
+            var rH = s3.renderer.domElement.height;
+            var mw = Math.floor(rW * 0.22);
+            var mh = Math.floor(rH * 0.10);
+            var mx = Math.floor((rW - mw) / 2);
+            var my = rH - mh - Math.floor(rH * 0.02); // top of canvas (WebGL Y is from bottom)
+            s3.renderer.setScissorTest(true);
+            s3.renderer.setScissor(mx, my, mw, mh);
+            s3.renderer.setViewport(mx, my, mw, mh);
+            s3.playerCarGroup.visible = false;
+            s3.renderer.render(s3.scene, mc);
+            // Restore
+            s3.renderer.setScissorTest(false);
+            s3.renderer.setViewport(0, 0, rW, rH);
+          }
         }
 
         // ── 2D HUD overlay (drawn on the separate 2D canvas) ──
