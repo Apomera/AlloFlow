@@ -2759,7 +2759,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Drag and rolling resist always oppose motion
           var resistSign = car.speed >= 0 ? 1 : -1;
           var brakeForce = brakeInput * veh.mass * mu * 9.81 * 0.95;
-          var netForce = thrust - (Fd + Fr + brakeForce) * resistSign;
+          // Hill grade: slope of road height at the car's position. Positive
+          // slope = uphill (opposes forward motion), negative = downhill (assists).
+          // Grade force = m * g * sin(atan(slope)) ≈ m * g * slope for small angles.
+          var gradeForce = 0;
+          if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+            var sp = infiniteWorldRef.current.spline;
+            var hHere = sp.heightAt(car.y);
+            var hAhead = sp.heightAt(car.y + 1);
+            var slope = (hAhead - hHere); // rise per 1 cell
+            gradeForce = veh.mass * 9.81 * slope * 0.18; // scaled down — full gravity grade is too harsh for gameplay
+          }
+          var netForce = thrust - (Fd + Fr + brakeForce) * resistSign - gradeForce * resistSign;
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
           // Extra brake clamping: if braking and speed is very low, snap to zero (prevents creeping)
@@ -2783,8 +2794,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (gear === 'R' && car.speed < -15 * MPH_TO_MS) car.speed = -15 * MPH_TO_MS;
           // Reverse auto-stop when throttle released and nearly stopped
           if (gear === 'R' && Math.abs(car.speed) < 0.5 && throttleInput === 0 && brakeInput === 0) car.speed = 0;
-          // Weight transfer (affects car pitch — visible in 3D)
-          car._pitchTarget = accel * 0.003; // nose dips on brake, lifts on accel
+          // Weight transfer (affects car pitch — visible in 3D) PLUS road grade.
+          // Grade pitch tilts the whole car to follow the slope; accel pitch adds
+          // the suspension nose-dip/lift on top.
+          var gradePitch = 0;
+          if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+            var spP = infiniteWorldRef.current.spline;
+            gradePitch = Math.atan2(spP.heightAt(car.y + 1) - spP.heightAt(car.y), 1);
+          }
+          car._pitchTarget = accel * 0.003 + gradePitch * 0.5;
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
           car._rollTarget = -car.steering * Math.abs(car.speed) * 0.003; // body rolls in turns
           car._roll = (car._roll || 0) + (car._rollTarget - (car._roll || 0)) * dt * 4;
