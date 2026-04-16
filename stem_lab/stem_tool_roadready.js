@@ -1952,6 +1952,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var wildlifeRef = useRef(null); // { kind, x, y, vx, vy, icon, mass, warn }
       var cyclistsRef = useRef([]);
       var audioRef = useRef({ ctx: null, engineOsc: null, engineGain: null, started: false });
+      // Two-tone horn: major-third stack (≈400 + ≈500 Hz) with a square wave for
+      // bite and a tiny attack ramp. Closer to a real car than a single beep.
+      var playHorn = function(dur) {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var hn = dur || 0.35;
+          [440, 554].forEach(function(freq, idx) {
+            var osc = ac.createOscillator();
+            var gn = ac.createGain();
+            osc.type = 'square';
+            osc.frequency.value = freq;
+            var t0 = ac.currentTime;
+            gn.gain.setValueAtTime(0, t0);
+            gn.gain.linearRampToValueAtTime(idx === 0 ? 0.08 : 0.05, t0 + 0.015);
+            gn.gain.setTargetAtTime(0, t0 + Math.max(0.05, hn - 0.08), 0.05);
+            // Slight pitch droop at the tail — authentic mechanical decay.
+            osc.frequency.setTargetAtTime(freq * 0.97, t0 + hn - 0.08, 0.1);
+            osc.connect(gn).connect(ac.destination);
+            osc.start();
+            osc.stop(t0 + hn);
+          });
+        } catch (hornErr) {}
+      };
+      // Door-close thud: short filtered noise burst. Fires when drivingRef flips on.
+      var playDoorClose = function() {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var blen = Math.floor(ac.sampleRate * 0.25);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 2);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var lpf = ac.createBiquadFilter();
+          lpf.type = 'lowpass';
+          lpf.frequency.value = 220;
+          var gn = ac.createGain();
+          gn.gain.value = 0.35;
+          src.connect(lpf).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.25);
+        } catch (dcErr) {}
+      };
       var skidRef = useRef({ active: false, intensity: 0 });
       var eventToastRef = useRef({ msg: null, until: 0 });
       var drivingRef = useRef(false);
@@ -2009,22 +2054,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 'e') blinkerRef.current = blinkerRef.current === -1 ? 0 : -1;
           if (e.key.toLowerCase() === 'v') blinkerRef.current = blinkerRef.current === 1 ? 0 : 1;
           if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
-          // Horn — quick beep on 'q'
-          if (e.key.toLowerCase() === 'q') {
-            try {
-              var ac = audioRef.current.ctx;
-              if (ac) {
-                var horn = ac.createOscillator();
-                var hGain = ac.createGain();
-                horn.type = 'square'; horn.frequency.value = 440;
-                hGain.gain.value = 0.08;
-                horn.connect(hGain); hGain.connect(ac.destination);
-                horn.start();
-                hGain.gain.setTargetAtTime(0, ac.currentTime + 0.25, 0.05);
-                horn.stop(ac.currentTime + 0.3);
-              }
-            } catch (e2) {}
-          }
+          // Horn — quick two-tone beep on 'q'
+          if (e.key.toLowerCase() === 'q') playHorn(0.35);
           if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
@@ -2165,14 +2196,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Stop and disconnect all oscillators and buffer sources
           ['engineOsc', '_engineHarm', '_engineOct', '_engineNoise', '_engineLFO',
            '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode',
-           '_rumbleOsc', '_brakeOsc', '_signalOsc'].forEach(function(key) {
+           '_rumbleOsc', '_brakeOsc', '_signalOsc', '_tireNode'].forEach(function(key) {
             if (a[key]) { try { a[key].stop(); } catch(e2){} a[key] = null; }
           });
           // Zero all gains
           ['engineGain', '_engineFundGain', '_engineHarmGain', '_engineOctGain',
            '_engineNoiseGain', '_engineLFOGain',
            '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain',
-           '_rumbleGain', '_brakeGain', '_signalGain'].forEach(function(key) {
+           '_rumbleGain', '_brakeGain', '_signalGain', '_tireGain'].forEach(function(key) {
             if (a[key]) { try { a[key].gain.value = 0; a[key].disconnect(); } catch(e3){} a[key] = null; }
           });
           // Reset audio state so next drive creates fresh nodes
@@ -2282,7 +2313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (axes.length > 4 && axes[4] > 0) ltVal = Math.max(ltVal, (axes[4] + 1) / 2);
             k._gpBrake = ltVal;
             // Buttons (edge-triggered)
-            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; /* horn */ try { var ac = audioRef.current.ctx; if (ac) { var h2 = ac.createOscillator(); var hg = ac.createGain(); h2.type = 'square'; h2.frequency.value = 440; hg.gain.value = 0.08; h2.connect(hg); hg.connect(ac.destination); h2.start(); hg.gain.setTargetAtTime(0, ac.currentTime + 0.25, 0.05); h2.stop(ac.currentTime + 0.3); } } catch(e2){} }
+            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; playHorn(0.35); }
             else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
             if (buttons[1] && buttons[1].pressed && !k._gpB) { k._gpB = true; var modes = ['cockpit','chase','overhead','rearview']; cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current)+1)%modes.length]; }
             else if (!buttons[1] || !buttons[1].pressed) k._gpB = false;
@@ -3373,6 +3404,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var oldOsc = a._skidOsc;
               setTimeout(function() { try { oldOsc.stop(); } catch(e){} }, 200);
               a._skidOsc = null;
+            }
+            // Brake squeal — thin high-Q tone that builds as brakes engage at speed.
+            // Persistent node; fades in/out rather than spawning on each press.
+            if (!a._brakeOsc) {
+              a._brakeOsc = a.ctx.createOscillator();
+              a._brakeOsc.type = 'sawtooth';
+              a._brakeOsc.frequency.value = 2400;
+              a._brakeFilter = a.ctx.createBiquadFilter();
+              a._brakeFilter.type = 'bandpass';
+              a._brakeFilter.frequency.value = 2400;
+              a._brakeFilter.Q.value = 14;
+              a._brakeGain = a.ctx.createGain();
+              a._brakeGain.gain.value = 0;
+              a._brakeOsc.connect(a._brakeFilter).connect(a._brakeGain).connect(a.ctx.destination);
+              a._brakeOsc.start();
+            }
+            // Squeal only when braking hard AND at speed — no squeal at parking-lot speeds.
+            var speedMph = Math.abs(car.speed) * 2.237;
+            var squealAmt = (car.brake > 0.4 && speedMph > 12) ? (car.brake - 0.4) * 0.06 * Math.min(1, (speedMph - 12) / 25) : 0;
+            a._brakeGain.gain.setTargetAtTime(squealAmt, a.ctx.currentTime, 0.05);
+            // Pitch drops slightly as speed drops (rotor gets slower) — subtle but real.
+            a._brakeFilter.frequency.setTargetAtTime(1800 + speedMph * 18, a.ctx.currentTime, 0.1);
+            // Turn signal click — discrete tick on the leading edge of each
+            // blinker flash. State machine mirrors the visual flash (1.5 Hz).
+            if (blinkerRef.current !== 0) {
+              var blinkPhase = (timeRef.current * 1.5) % 1;
+              if (a._signalPhasePrev === undefined) a._signalPhasePrev = blinkPhase;
+              // Fire one click when the phase wraps from ~1 back to ~0 (flash on),
+              // and one lower-pitch click on the off edge (flash off at ~0.5).
+              var fireClick = null;
+              if (blinkPhase < a._signalPhasePrev) fireClick = { f: 2400, d: 0.06 };
+              else if (a._signalPhasePrev < 0.5 && blinkPhase >= 0.5) fireClick = { f: 1600, d: 0.05 };
+              if (fireClick) {
+                try {
+                  var sc = a.ctx.createOscillator();
+                  var sg = a.ctx.createGain();
+                  sc.type = 'square';
+                  sc.frequency.value = fireClick.f;
+                  sg.gain.value = 0;
+                  sc.connect(sg).connect(a.ctx.destination);
+                  sc.start();
+                  var tNow = a.ctx.currentTime;
+                  sg.gain.setValueAtTime(0, tNow);
+                  sg.gain.linearRampToValueAtTime(0.05, tNow + 0.003);
+                  sg.gain.exponentialRampToValueAtTime(0.0001, tNow + fireClick.d);
+                  sc.stop(tNow + fireClick.d + 0.02);
+                } catch (bse) {}
+              }
+              a._signalPhasePrev = blinkPhase;
+            } else {
+              a._signalPhasePrev = undefined;
             }
             // Wind / road noise: white noise filtered, volume scales with speed
             if (!a._windNode) {

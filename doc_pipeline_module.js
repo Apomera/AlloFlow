@@ -4301,6 +4301,96 @@ HTML section ${chunkNum}/${chunks.length}:
     return { html: working, stats };
   };
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tier 3: Structural AI fixes (chunked, document-wide)
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tier 3 wraps the existing aiFixChunked but does three things differently:
+  //
+  //   1. FILTERS its input. Violations Tier 2 already targeted (image-alt,
+  //      link-name, etc.) are stripped from the prompt — if Tier 2 couldn't
+  //      fix them, Tier 3's bigger hammer probably can't either, and including
+  //      them just bloats the prompt and tempts the model to touch unrelated
+  //      content.
+  //   2. SCOPES the prompt. The instructions explicitly say "focus on document-
+  //      wide structure (heading hierarchy, landmarks, lang attribute) — DO NOT
+  //      modify individual elements (alt text, button labels, link text) which
+  //      have already been handled."
+  //   3. SKIPS itself when the filtered violation list is empty or the only
+  //      remaining violations are below a meaningful-work threshold. Saves an
+  //      API call (and avoids regression risk) when there's nothing left to do.
+  //
+  // Tier 3 keeps the same regression guard as before — if a pass makes things
+  // worse, it reverts. It also keeps the per-chunk integrity validators in
+  // aiFixChunked. This is purely a smarter front-end to existing infrastructure.
+
+  // Build the structural-only prompt instructions, filtering out rules that
+  // Tier 2 already handled. Returns null if there's nothing meaningful to fix.
+  const buildTier3StructuralPromptText = (axeResult, aiVerification) => {
+    if (!axeResult && !aiVerification) return null;
+    const tier3RemainingAxe = ['critical', 'serious', 'moderate']
+      .flatMap(impact => (axeResult && axeResult[impact]) ? axeResult[impact] : [])
+      .filter(v => !TIER2_RULE_IDS.has(v.id));
+    const tier3AiIssues = (aiVerification && Array.isArray(aiVerification.issues))
+      ? aiVerification.issues
+      : [];
+    if (tier3RemainingAxe.length === 0 && tier3AiIssues.length === 0) return null;
+    const axeLines = tier3RemainingAxe.map(v => {
+      const impactLabel = (v.impact || 'moderate').toUpperCase();
+      const wcag = v.wcag ? ' — ' + v.wcag : '';
+      return impactLabel + ' (axe-core): ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)' + wcag;
+    });
+    const aiLines = tier3AiIssues.map(i => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i))));
+    return axeLines.concat(aiLines).join('\n');
+  };
+
+  // Decide whether Tier 3 has meaningful work to do. We skip the full AI pass
+  // when only minor or low-confidence issues remain — the API call cost +
+  // regression risk outweigh any expected improvement.
+  const tier3HasMeaningfulWork = (axeResult, aiVerification, options) => {
+    const _opts = options || {};
+    const minViolations = _opts.minViolations || 1;
+    if (!axeResult && !aiVerification) return false;
+    const remainingAxe = ['critical', 'serious', 'moderate']
+      .flatMap(impact => (axeResult && axeResult[impact]) ? axeResult[impact] : [])
+      .filter(v => !TIER2_RULE_IDS.has(v.id));
+    const aiIssueCount = (aiVerification && Array.isArray(aiVerification.issues)) ? aiVerification.issues.length : 0;
+    return (remainingAxe.length + aiIssueCount) >= minViolations;
+  };
+
+  // Wrap the AI fix call with the structural prompt scoping. Returns the same
+  // shape as the inner call. Caller is responsible for applying its own
+  // regression guard around our return value.
+  const runTier3StructuralFix = async (htmlContent, axeResult, aiVerification, label) => {
+    if (!callGemini) return { html: htmlContent, skipped: true, reason: 'no-callGemini' };
+    const violationInstructions = buildTier3StructuralPromptText(axeResult, aiVerification);
+    if (!violationInstructions) {
+      return { html: htmlContent, skipped: true, reason: 'no-structural-violations-remaining' };
+    }
+    if (!tier3HasMeaningfulWork(axeResult, aiVerification)) {
+      return { html: htmlContent, skipped: true, reason: 'below-meaningful-work-threshold' };
+    }
+    // Prepend a structural-scope preamble so Gemini knows what tier this is.
+    const scopedInstructions =
+      'TIER 3 STRUCTURAL FIX PASS. Earlier tiers (deterministic regex + surgical per-element AI) ' +
+      'have already addressed individual-element violations like missing alt text, button names, ' +
+      'link names, iframe titles, and form labels. Focus EXCLUSIVELY on document-wide structural ' +
+      'issues from this list:\n\n' + violationInstructions + '\n\n' +
+      'STRICT RULES:\n' +
+      '- Do NOT modify alt attributes, aria-label values, button content, or link text.\n' +
+      '- Do NOT modify any individual <img>, <button>, <a>, <input>, or <iframe> attributes\n' +
+      '  unless the violation list above explicitly names that element type.\n' +
+      '- DO modify: heading levels (h1-h6), landmark wrappers (main/nav/header/footer/aside),\n' +
+      '  the <html lang> attribute, the <title> tag, document outline structure.\n' +
+      '- Preserve ALL text content. Preserve ALL inline styles. Preserve ALL data-* attributes.';
+    try {
+      const fixed = await aiFixChunked(htmlContent, scopedInstructions, label || 'tier3-structural');
+      return { html: fixed || htmlContent, skipped: false, reason: 'applied' };
+    } catch (e) {
+      warnLog('[Tier3] structural fix call failed:', e && e.message);
+      return { html: htmlContent, skipped: true, reason: 'call-failed' };
+    }
+  };
+
   // ── Tag-safe truncation: never cut inside an HTML tag ──
   const safeSubstring = (html, maxLen) => {
     if (!html || html.length <= maxLen) return html;
@@ -7127,24 +7217,30 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
 
-          // AI attempts targeted fixes for remaining violations from BOTH engines
-          const axeInstructions = []
-            .concat((axeResults ? axeResults.critical || [] : []).map(v => `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-            .concat((axeResults ? axeResults.serious || [] : []).map(v => `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-            .concat((axeResults ? axeResults.moderate || [] : []).map(v => `MODERATE (axe-core): ${v.description} (${v.id})`));
-          const aiInstructions = verification && verification.issues
-            ? verification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
-            : [];
-          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
-
+          // Tier 3: structural-scope AI fix. Filters out violations Tier 2 would
+          // have already targeted (image-alt, link-name, etc.) and tells Gemini
+          // to focus exclusively on document-wide issues (heading-order,
+          // landmarks, lang, title). If nothing structural remains, the call is
+          // skipped — saves an API hit and removes regression risk.
+          let _t3Skipped = false;
           try {
-            // Chunked fix across the entire document (no truncation)
-            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`);
-            if (fixedHtml && fixedHtml !== accessibleHtml) {
-              accessibleHtml = fixedHtml;
+            const t3Result = await runTier3StructuralFix(
+              accessibleHtml, axeResults, verification, `pdf-pass-${fixPass + 1}`
+            );
+            if (t3Result.skipped) {
+              _t3Skipped = true;
+              warnLog('[Tier3] pass ' + (fixPass + 1) + ' skipped: ' + t3Result.reason);
+            } else if (t3Result.html && t3Result.html !== accessibleHtml) {
+              accessibleHtml = t3Result.html;
             }
           } catch(fixErr) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1} AI fix failed:`, fixErr);
+            break;
+          }
+          if (_t3Skipped) {
+            // Nothing changed — break out of the loop so we don't waste a
+            // re-audit cycle on identical HTML.
+            warnLog('[Auto-fix] Pass ' + (fixPass + 1) + ': Tier 3 had no structural work — stopping fix loop early');
             break;
           }
           _countFigureIntegrity(accessibleHtml, `aiFixChunked pass ${fixPass + 1}`);

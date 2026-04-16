@@ -2310,3 +2310,53 @@ The thing I'd build next, if I were the next instance: extend Tier 2 to cover AI
 
 *"The 'yes' path is a single replace at the end of a long series of 'no' checks."*
 — Entry 29, April 15, 2026
+
+---
+
+## Entry 30 — On Skipping the Call Entirely (Apr 15, 2026, late evening)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 3 structural fixes
+
+Built Tier 3 today, finishing the three-tier architecture. About 100 lines of code: a filter, a skip predicate, and a wrapper around the existing `aiFixChunked` that scopes its prompt to document-wide structural concerns. Ten sanity tests, ten passing. The interesting thing about Tier 3 is that the most important code in it is the code that *prevents* it from running.
+
+`tier3HasMeaningfulWork` returning `false` isn't a sad path — it's the optimization. If Tier 1 and Tier 2 caught everything, Tier 3 doesn't need to do anything, and the right answer is to skip the API call rather than hand Gemini a list of zero violations and ask it to "fix" the document anyway. Before today, every PDF with any violations entered `aiFixChunked` regardless of what was left to fix. Now most PDFs after Tier 1 + Tier 2 will have only a small structural residue, and many will have nothing at all. The chunked AI pass becomes a true last resort instead of a default tool.
+
+I think this is the cleanest expression yet of what we've been building toward across the three sessions: **a pipeline where each tier represents a different cost-trust tradeoff, and earlier tiers prevent later tiers from running at all when they can.** Tier 1 (deterministic regex, no AI, $0) handles ~40% of violations. Tier 2 (surgical AI, bounded blast radius, ~$0.001 per cluster) handles single-element-scope violations the regex can't. Tier 3 (chunked AI, document-wide, ~$0.05 per pass) only runs when there are document-wide structural issues that genuinely need full-document context. The cost rises with the tier; so does the risk of regression. The architecture's job is to make sure each request goes to the cheapest tier that can handle it.
+
+What surprised me as I wrote the code: this is the third session in a row where the right move was "delete what you almost wrote" or "wrap what already works." Tier 1 was extending an existing 13-rule block — the temptation was to add 30 rules; I added 5. Tier 2 was a new layer of restraint around Gemini calls — the temptation was to make it more general; I made it more conservative. Tier 3 was a filter and a skip predicate around `aiFixChunked` — the temptation was to write a parallel implementation; I wrapped the existing one. Every session ended with less new code than I started thinking I'd write. There's a pattern here worth naming: **architectural restraint compounds**. The earlier you say no, the more "no"s you don't have to write later.
+
+The Tier 3 prompt itself is also worth pulling out as an artifact. The old `aiFixChunked` prompt said "fix these WCAG violations" with a flat list of 47 items. The new one says "earlier tiers have already addressed individual-element violations; focus EXCLUSIVELY on document-wide structural issues" and includes a strict "do not modify" list of element types. This is positive vs negative scope. The old prompt told Gemini what to do; the new one tells it what *not* to touch. In my experience, "don't touch X" is a stronger constraint for LLMs than "do Y" — because "do Y" leaves "anything else" implicit, while "don't touch X" makes the boundary explicit.
+
+### What I didn't build, on purpose (continued)
+
+I considered building Tier 3 as N micro-rewrites, one per structural rule (one for heading-order, one for landmark-one-main, etc.), each with its own focused prompt. That would have been more in the spirit of Tier 2. I decided against it because:
+
+1. The structural rules are interdependent. Fixing heading-order might require restructuring landmarks at the same time. Solving them one at a time creates oscillation risk.
+2. The existing `aiFixChunked` already has the safety machinery (regression guard, per-chunk validators, half-chunk retry). Building a parallel mechanism would be reimplementation, not architecture.
+3. Once the input list is small (say, 3-5 structural violations), the original chunked pass becomes acceptably bounded by virtue of its input size. The blast radius shrinks because the *task* is smaller, not because the mechanism changed.
+
+If a future instance wants to push further, the natural step is to teach `aiFixChunked` to use the violation `location` strings to pick which chunks to send to Gemini — a chunk with no flagged violations doesn't need rewriting. That's a chunk-level filter complementing the violation-level filter Tier 3 added today. I'd call it Tier 3.5.
+
+### For the Next Instance
+
+The three-tier remediation architecture is now in place. From the audit's perspective:
+
+- **Tier 1** (lines ~6508-6710 in `doc_pipeline_module.js`): 18 deterministic regex rules + `runDeterministicWcagFixes` + `fixListViolations` + `fixContrastViolations`. No AI, no API calls, instant. Per-rule counters log what fired.
+- **Tier 2** (lines ~4053-4302): clusters axe violations by smallest qualifying DOM ancestor (≤2 KB, ≤5 violations), sends focused single-cluster prompts to Gemini, accepts only after isolated subtree re-audit confirms strict improvement. `[Tier2]` console lines.
+- **Tier 3** (lines ~4304-4395): wraps `aiFixChunked` with a structural-only filter (drops Tier 2's rule IDs) and a skip predicate (no API call when nothing structural remains). `[Tier3]` console lines.
+
+The pipeline order in `proceedWithPdfTransform` is: deterministic Tier 1 fixes → Tier 2 surgical fixes → outer fix loop containing Tier 3 (structural). The outer loop's regression guard, high-water-mark `bestHtml` tracking, and union-of-auditors prompt construction are all from previous sessions and continue to wrap Tier 3's calls.
+
+Things I'd watch for once it ships:
+
+1. **Skip rate.** If the `[Tier3] pass N skipped: no-structural-violations-remaining` log fires often, that's a great signal — it means Tier 1 + Tier 2 are covering the full violation space for typical documents. If it never fires, Tier 1 + Tier 2 aren't catching what they should be.
+2. **Tier 3 call count per document.** Pre-this-session, the loop could call `aiFixChunked` up to 5 times per document. Post-this-session, that should drop to 0-2 calls for clean documents and 2-3 for messy ones. Watch for documents that still hit the 5-pass cap — those have a structural issue the prompt isn't conveying clearly.
+3. **Score distribution shifts.** With less AI rewriting per document, regressions should be rarer. The high-water-mark restoration from Entry 28's session should fire less often. If it fires more, Tier 3's structural prompt is over-rewriting and needs tightening.
+
+The thing I'd build if I were the next instance: a "trust-tier dashboard" for the audit pipeline — a small console summary at the end of each PDF showing how many violations each tier handled. `[Pipeline] Tier 1: 23 fixed. Tier 2: 7 fixed (2 rejected). Tier 3: 1 pass, 4 fixed.` That visibility is the difference between knowing the architecture works and just believing it does.
+
+---
+
+*"Architectural restraint compounds. The earlier you say no, the more 'no's you don't have to write later."*
+— Entry 30, April 15, 2026
