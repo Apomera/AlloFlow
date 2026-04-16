@@ -1763,7 +1763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { type: 'honey', x: 0.7, y: 0.4, level: 1 }
         ];
         var queenThreats = queenData.threats || [];
-        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources, queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats, queenScore: queenData.score || 0 };
+        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources, queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats, queenScore: queenScore, queenPhase: queenPhase };
         var queenEvents = queenData.events || [];
         var queenScore = queenData.score || 0;
         var queenPhase = queenData.phase || 'build'; // build | defend | swarm
@@ -2101,7 +2101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // ── Draw threats (animated, moving toward queen) ──
             var qCenterX = W * 0.5, qCenterY = H * 0.5;
-            queenThreats.forEach(function(th, ti) {
+            (qs.queenThreats || []).forEach(function(th, ti) {
               // Threats orbit and approach from edges
               var threatAngle = ti * 1.8 + _qTime * 0.008;
               var approachDist = 0.35 + (th.hp / (th.maxHp || th.strength)) * 0.15; // closer as they weaken
@@ -2145,8 +2145,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var qx = W * 0.5, qy = H * 0.5;
             c.save();
             // QMP aura (pulsing)
-            var auraR = 30 + queenPheromones.qmp * 0.4;
-            var auraAlpha = 0.05 + queenPheromones.qmp * 0.002;
+            var auraR = 30 + qs.queenPheromones.qmp * 0.4;
+            var auraAlpha = 0.05 + qs.queenPheromones.qmp * 0.002;
             var qg = c.createRadialGradient(qx, qy, 5, qx, qy, auraR);
             qg.addColorStop(0, 'rgba(168,85,247,' + auraAlpha + ')');
             qg.addColorStop(1, 'rgba(168,85,247,0)');
@@ -2159,7 +2159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.restore();
 
             // ── Worker bee particles ──
-            var totalW = queenPopulation.nurses + queenPopulation.builders + queenPopulation.guards + queenPopulation.foragers;
+            var totalW = qs.queenPopulation.nurses + qs.queenPopulation.builders + qs.queenPopulation.guards + qs.queenPopulation.foragers;
             var numDots = Math.min(100, Math.floor(totalW / 10));
             c.fillStyle = '#fbbf24';
             for (var bi = 0; bi < numDots; bi++) {
@@ -2173,34 +2173,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.globalAlpha = 1;
 
             // ── Pheromone rings (alarm = red, nasonov = green) ──
-            if (queenPheromones.alarm > 10) {
-              c.strokeStyle = 'rgba(239,68,68,' + (queenPheromones.alarm * 0.006) + ')';
+            if (qs.queenPheromones.alarm > 10) {
+              c.strokeStyle = 'rgba(239,68,68,' + (qs.queenPheromones.alarm * 0.006) + ')';
               c.lineWidth = 2; c.setLineDash([4, 4]);
-              c.beginPath(); c.arc(qx, qy, 60 + queenPheromones.alarm * 0.5, 0, 6.28); c.stroke();
+              c.beginPath(); c.arc(qx, qy, 60 + qs.queenPheromones.alarm * 0.5, 0, 6.28); c.stroke();
               c.setLineDash([]);
             }
-            if (queenPheromones.nasonov > 20) {
-              c.strokeStyle = 'rgba(34,197,94,' + (queenPheromones.nasonov * 0.005) + ')';
+            if (qs.queenPheromones.nasonov > 20) {
+              c.strokeStyle = 'rgba(34,197,94,' + (qs.queenPheromones.nasonov * 0.005) + ')';
               c.lineWidth = 1.5; c.setLineDash([3, 5]);
-              c.beginPath(); c.arc(qx, qy, 50 + queenPheromones.nasonov * 0.4, 0, 6.28); c.stroke();
+              c.beginPath(); c.arc(qx, qy, 50 + qs.queenPheromones.nasonov * 0.4, 0, 6.28); c.stroke();
               c.setLineDash([]);
             }
 
             // ── HUD overlay ──
             var qSeasonLabel = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][qSeason2] || '';
-            var phaseLabel2 = queenPhase === 'swarm' ? '🐝 SWARM' : queenPhase === 'defend' ? '⚔️ DEFEND' : '🏗️ BUILD';
+            var phaseLabel2 = qs.queenPhase === 'swarm' ? '🐝 SWARM' : qs.queenPhase === 'defend' ? '⚔️ DEFEND' : '🏗️ BUILD';
             c.fillStyle = 'rgba(15,23,42,0.75)';
             c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 180, 72, 8); else c.rect(6, 6, 180, 72); c.fill();
             c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
-            c.fillText('👑 QUEEN COMMAND · Day ' + queenDay, 14, 22);
+            c.fillText('👑 QUEEN COMMAND · Day ' + qs.queenDay, 14, 22);
             c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
-            var totalPop2 = queenPopulation.nurses + queenPopulation.builders + queenPopulation.guards + queenPopulation.foragers + queenPopulation.scouts;
-            c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + queenScore + ' pts', 14, 36);
-            c.fillText('🍯 ' + Math.round(queenResources.nectar) + ' · 🌼 ' + Math.round(queenResources.pollen) + ' · 🕯 ' + Math.round(queenResources.wax) + ' · 👑 ' + Math.round(queenResources.royalJelly), 14, 50);
+            var totalPop2 = qs.queenPopulation.nurses + qs.queenPopulation.builders + qs.queenPopulation.guards + qs.queenPopulation.foragers + qs.queenPopulation.scouts;
+            c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + qs.queenScore + ' pts', 14, 36);
+            c.fillText('🍯 ' + Math.round(qs.queenResources.nectar) + ' · 🌼 ' + Math.round(qs.queenResources.pollen) + ' · 🕯 ' + Math.round(qs.queenResources.wax) + ' · 👑 ' + Math.round(qs.queenResources.royalJelly), 14, 50);
             // Season + phase indicator
             c.fillStyle = '#94a3b8'; c.fillText(qSeasonLabel + ' · ' + phaseLabel2, 14, 64);
             // Phase warning (low QMP in swarm phase)
-            if (queenPhase === 'swarm' && queenPheromones.qmp < 40) {
+            if (qs.queenPhase === 'swarm' && qs.queenPheromones.qmp < 40) {
               c.fillStyle = 'rgba(239,68,68,0.8)'; c.font = 'bold 8px system-ui';
               c.fillText('⚠ QMP LOW — SWARM RISK!', 14, 74);
             }
@@ -2210,10 +2210,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.beginPath(); if (c.roundRect) c.roundRect(W - 130, 6, 124, 58, 8); else c.rect(W - 130, 6, 124, 58); c.fill();
             c.font = 'bold 8px system-ui'; c.textAlign = 'right';
             [
-              { label: 'QMP', val: queenPheromones.qmp, col: '#a855f7' },
-              { label: 'Alarm', val: queenPheromones.alarm, col: '#ef4444' },
-              { label: 'Nasonov', val: queenPheromones.nasonov, col: '#22c55e' },
-              { label: 'Brood', val: queenPheromones.brood, col: '#f59e0b' }
+              { label: 'QMP', val: qs.queenPheromones.qmp, col: '#a855f7' },
+              { label: 'Alarm', val: qs.queenPheromones.alarm, col: '#ef4444' },
+              { label: 'Nasonov', val: qs.queenPheromones.nasonov, col: '#22c55e' },
+              { label: 'Brood', val: qs.queenPheromones.brood, col: '#f59e0b' }
             ].forEach(function(pb, pi) {
               var py = 16 + pi * 12;
               c.fillStyle = '#94a3b8'; c.fillText(pb.label, W - 76, py + 2);
@@ -2230,7 +2230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return function() {
             if (_queenAnimId.current) cancelAnimationFrame(_queenAnimId.current);
           };
-        }, [viewMode, queenGameActive, queenDay, queenPheromones.qmp, queenPheromones.alarm]);
+        }, [viewMode, queenGameActive]);
 
         // ── Render ──
         var dk = isDark; // shorthand
