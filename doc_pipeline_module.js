@@ -588,165 +588,300 @@ var createDocPipeline = function(deps) {
     return null;
   };
 
-  // Factory-scope surgical tools (pure functions). Deterministic micro-operations that apply
-  // targeted fixes from Gemini-generated JSON directives. Used by remediateSurgicallyThenAI.
-  // (Legacy local copy inside processSinglePdfForBatch kept for backward compat with that path.)
-  const SHARED_SURGICAL_TOOLS = {
-    fix_alt_text: function(html, p) {
-      if (!p.index && p.index !== 0) return html;
-      let idx = 0;
-      return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== p.index) return m;
-        if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
-        return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_heading: function(html, p) {
-      if (!p.newLevel) return html;
-      let idx = 0;
-      return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
-      });
-    },
-    fix_link_text: function(html, p) {
-      if (!p.newText) return html;
-      let idx = 0;
-      return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
-        if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
-          return '<a' + attrs + '>' + p.newText + '</a>';
-        }
-        return m;
-      });
-    },
-    fix_table_caption: function(html, p) {
-      if (!p.caption) return html;
-      let idx = 0;
-      return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        return '<table' + attrs + '><caption>' + p.caption + '</caption>';
-      });
-    },
-    fix_aria_label: function(html, p) {
-      if (!p.tag || !p.label) return html;
-      let idx = 0;
-      var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
-      return html.replace(re, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-        return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_lang: function(html, p) {
-      if (!p.lang) return html;
-      return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
-                 .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
-    },
-    fix_th_scope: function(html, p) {
-      var scope = p.scope || 'col';
-      let idx = 0;
-      return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
-        if (p.index !== undefined && idx++ !== p.index) return m;
-        return '<th scope="' + scope + '"' + attrs + '>';
-      });
-    },
-    fix_remove_empty_heading: function(html, p) {
-      let idx = 0;
-      return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
-        if (p.index !== undefined && idx++ !== p.index) return m;
-        return '';
-      });
-    },
-    fix_input_label: function(html, p) {
-      if (!p.label) return html;
-      let idx = 0;
-      return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-        return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_button_name: function(html, p) {
-      if (!p.label) return html;
-      let idx = 0;
-      return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (content.trim()) return m;
-        return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
-      });
-    },
-    fix_iframe_title: function(html, p) {
-      if (!p.title) return html;
-      let idx = 0;
-      return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
-        return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
-      });
-    },
-    fix_add_landmark: function(html, p) {
-      var tag = p.tag || 'section';
-      var label = p.label || 'Content';
-      var selector = p.selector || 'body';
-      if (selector === 'body' && !html.includes('<main')) {
-        return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
-      }
-      return html;
-    },
-    fix_duplicate_id: function(html, p) {
-      if (!p.id) return html;
-      let count = 0;
-      return html.replace(new RegExp('id="' + p.id + '"', 'g'), function(m) {
-        count++;
-        if (count === 1) return m;
-        return 'id="' + p.id + '-' + count + '"';
-      });
-    },
-    fix_figcaption: function(html, p) {
-      if (!p.caption) return html;
-      let idx = 0;
-      return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/<figcaption/i.test(content)) return m;
-        return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
-      });
-    },
-    fix_title: function(html, p) {
-      if (!p.title) return html;
-      if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
-      return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
-    },
-    fix_contrast: function(html, p) {
-      if (!p.oldColor || !p.newColor) return html;
-      return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
-    },
-    fix_table_header_row: function(html, p) {
-      let idx = 0;
-      return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
-        if (idx++ !== (p.index || 0)) return m;
-        if (/<thead/i.test(content)) return m;
-        var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
-          var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
-          return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
+  // Shared helper: escape a string for safe interpolation into a RegExp source.
+  const escapeForRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // HTML tag names are restricted; validate before trusting AI-supplied values.
+  const SAFE_TAG_NAME = /^[a-z][a-z0-9]*$/i;
+
+  // ── Surgical tool registry ──
+  // Deterministic micro-operations that apply targeted fixes from Gemini-generated JSON
+  // directives. Single source of truth for: (1) the executor functions, (2) the prompt
+  // catalog sent to Gemini for diagnosis, and (3) collaborator-facing documentation.
+  //
+  // Each entry has: { category, params, wcag, fn }. The prompt is derived from this object
+  // (see SURGICAL_TOOL_PROMPT below) so adding or renaming a tool updates the AI diagnosis
+  // prompt automatically — no chance of the prompt drifting out of sync with the implementation.
+  //
+  // Referenced by remediateSurgicallyThenAI, processSinglePdfForBatch, and the chunked fix paths
+  // via the runSurgical() helper (handles both new {fn} entries and legacy direct-function entries).
+  const SURGICAL_TOOL_REGISTRY = {
+    fix_alt_text: {
+      category: 'CONTENT', wcag: '1.1.1', params: '{index, alt}',
+      fn: function(html, p) {
+        if (!p.index && p.index !== 0) return html;
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== p.index) return m;
+          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
+          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
         });
-        return '<table' + attrs + '>' + fixed + '</table>';
-      });
+      }
     },
-    fix_image_decorative: function(html, p) {
-      let idx = 0;
-      return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-        if (idx++ !== (p.index || 0)) return m;
-        var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
-        return '<img alt="" role="presentation"' + cleaned + '>';
-      });
+    fix_heading: {
+      category: 'CONTENT', wcag: '1.3.1', params: '{index, newLevel}',
+      fn: function(html, p) {
+        if (!p.newLevel) return html;
+        let idx = 0;
+        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
+        });
+      }
     },
-    fix_skip_nav: function(html) {
-      if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
-      return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+    fix_link_text: {
+      category: 'CONTENT', wcag: '2.4.4', params: '{index, newText, force?}',
+      fn: function(html, p) {
+        if (!p.newText) return html;
+        let idx = 0;
+        return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
+          if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
+            return '<a' + attrs + '>' + p.newText + '</a>';
+          }
+          return m;
+        });
+      }
+    },
+    fix_figcaption: {
+      category: 'CONTENT', wcag: '1.3.1', params: '{index, caption}',
+      fn: function(html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<figcaption/i.test(content)) return m;
+          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
+        });
+      }
+    },
+    fix_table_caption: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index, caption}',
+      fn: function(html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
+        });
+      }
+    },
+    fix_th_scope: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index?, scope}',
+      fn: function(html, p) {
+        var scope = p.scope || 'col';
+        let idx = 0;
+        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '<th scope="' + scope + '"' + attrs + '>';
+        });
+      }
+    },
+    fix_table_header_row: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index}',
+      fn: function(html, p) {
+        let idx = 0;
+        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<thead/i.test(content)) return m;
+          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
+            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
+            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
+          });
+          return '<table' + attrs + '>' + fixed + '</table>';
+        });
+      }
+    },
+    fix_input_label: {
+      category: 'FORM', wcag: '3.3.2', params: '{index, label}',
+      fn: function(html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      }
+    },
+    fix_button_name: {
+      category: 'FORM', wcag: '4.1.2', params: '{index, label}',
+      fn: function(html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (content.trim()) return m;
+          return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
+        });
+      }
+    },
+    fix_iframe_title: {
+      category: 'FORM', wcag: '2.4.1', params: '{index, title}',
+      fn: function(html, p) {
+        if (!p.title) return html;
+        let idx = 0;
+        return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
+          return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      }
+    },
+    fix_aria_label: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{tag, index, label}',
+      fn: function(html, p) {
+        if (!p.tag || !p.label) return html;
+        if (!SAFE_TAG_NAME.test(p.tag)) return html;
+        let idx = 0;
+        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
+        return html.replace(re, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      }
+    },
+    fix_add_landmark: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{tag, label}',
+      fn: function(html, p) {
+        var label = p.label || 'Content';
+        var selector = p.selector || 'body';
+        if (selector === 'body' && !html.includes('<main')) {
+          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+        }
+        return html;
+      }
+    },
+    fix_remove_empty_heading: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{index}',
+      fn: function(html, p) {
+        let idx = 0;
+        return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '';
+        });
+      }
+    },
+    fix_duplicate_id: {
+      category: 'STRUCTURE', wcag: '4.1.1', params: '{id}',
+      fn: function(html, p) {
+        if (!p.id) return html;
+        let count = 0;
+        return html.replace(new RegExp('id="' + escapeForRegex(p.id) + '"', 'g'), function(m) {
+          count++;
+          if (count === 1) return m;
+          return 'id="' + p.id + '-' + count + '"';
+        });
+      }
+    },
+    fix_skip_nav: {
+      category: 'STRUCTURE', wcag: '2.4.1', params: '{}',
+      fn: function(html) {
+        if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
+        return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+      }
+    },
+    fix_title: {
+      category: 'STRUCTURE', wcag: '2.4.2', params: '{title}',
+      fn: function(html, p) {
+        if (!p.title) return html;
+        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
+        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
+      }
+    },
+    fix_lang: {
+      category: 'STRUCTURE', wcag: '3.1.1', params: '{lang}',
+      fn: function(html, p) {
+        if (!p.lang) return html;
+        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
+                   .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+      }
+    },
+    fix_lang_span: {
+      category: 'STRUCTURE', wcag: '3.1.2', params: '{text, lang}',
+      fn: function(html, p) {
+        if (!p.text || !p.lang) return html;
+        return html.replace(new RegExp(escapeForRegex(p.text)), '<span lang="' + p.lang + '">' + p.text + '</span>');
+      }
+    },
+    fix_contrast: {
+      category: 'VISUAL', wcag: '1.4.3', params: '{oldColor, newColor}',
+      fn: function(html, p) {
+        if (!p.oldColor || !p.newColor) return html;
+        return html.replace(new RegExp(escapeForRegex(p.oldColor), 'gi'), p.newColor);
+      }
+    },
+    fix_image_decorative: {
+      category: 'VISUAL', wcag: '1.1.1', params: '{index}',
+      fn: function(html, p) {
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
+          return '<img alt="" role="presentation"' + cleaned + '>';
+        });
+      }
+    },
+    fix_abbreviation: {
+      category: 'VISUAL', wcag: '3.1.4', params: '{abbr, title}',
+      fn: function(html, p) {
+        if (!p.abbr || !p.title) return html;
+        var re = new RegExp('\\b' + escapeForRegex(p.abbr) + '\\b');
+        var replaced = false;
+        return html.replace(re, function(m) {
+          if (replaced) return m;
+          replaced = true;
+          return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
+        });
+      }
+    },
+    fix_text_spacing: {
+      category: 'VISUAL', wcag: '1.4.12', params: '{letterSpacing?, lineHeight?, wordSpacing?}',
+      fn: function(html, p) {
+        var css = '';
+        if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
+        if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
+        if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
+        if (!css) return html;
+        var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
+        if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
+        return style + html;
+      }
+    },
+    fix_list_wrap: {
+      category: 'LIST', wcag: '1.3.1', params: '{ordered?}',
+      fn: function(html, p) {
+        var tag = (p && p.ordered) ? 'ol' : 'ul';
+        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
+          var before = html.substring(Math.max(0, offset - 100), offset);
+          if (/<[uo]l[^>]*>\s*$/i.test(before)) return m;
+          return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
+        });
+      }
     },
   };
+
+  // Derive the Gemini diagnosis prompt from the registry so prompt and tools can never drift.
+  // Tools group by category preserving registry order (insertion order per MDN spec).
+  const SURGICAL_TOOL_PROMPT = (function() {
+    const byCategory = {};
+    const order = [];
+    Object.keys(SURGICAL_TOOL_REGISTRY).forEach(function(name) {
+      const t = SURGICAL_TOOL_REGISTRY[name];
+      if (!byCategory[t.category]) { byCategory[t.category] = []; order.push(t.category); }
+      byCategory[t.category].push(name + ' ' + t.params);
+    });
+    return order.map(function(cat) { return cat + ': ' + byCategory[cat].join(', '); }).join('\n');
+  })();
+
+  // Backwards-compatible flat executor map. Call sites use SHARED_SURGICAL_TOOLS[fix.tool](html, p).
+  // Delegates to registry entry's .fn, so adding new tools to the registry makes them immediately
+  // callable everywhere without touching call sites.
+  const SHARED_SURGICAL_TOOLS = Object.keys(SURGICAL_TOOL_REGISTRY).reduce(function(acc, name) {
+    acc[name] = SURGICAL_TOOL_REGISTRY[name].fn;
+    return acc;
+  }, {});
 
   // ── Stage 3: Surgical-then-AI remediation for second-pass "Fix Remaining" ──
   // Layered defense: (1) strip base64 data URLs, (2) chunk on tag boundaries,
@@ -797,12 +932,7 @@ var createDocPipeline = function(deps) {
           'KNOWN VIOLATIONS:\n' + violationText + '\n\n' +
           'HTML SECTION ' + (ci + 1) + '/' + chunks.length + ':\n"""\n' + chunk.substring(0, 5000) + '\n"""\n\n' +
           'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' +
-          'CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n' +
-          'TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n' +
-          'FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n' +
-          'STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n' +
-          'VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}\n' +
-          'STRUCTURE: fix_skip_nav {}\n' +
+          SURGICAL_TOOL_PROMPT + '\n' +
           'Return ONLY a JSON array. Be specific — use the actual document content.';
         const surgRaw = await callGemini(surgPrompt, true);
         const directives = repairAndParseJsonShared(surgRaw);
@@ -1255,14 +1385,19 @@ Return ONLY valid JSON:
       const ci95Lower = Math.max(0, Math.round(rawMean - 1.96 * (rawSD / Math.sqrt(n))));
       const ci95Upper = Math.min(100, Math.round(rawMean + 1.96 * (rawSD / Math.sqrt(n))));
 
-      // Agreement Score: 1 - (SD / 50) using raw unrounded SD
-      // SD=0 → 1.00 (perfect), SD=5 → 0.90, SD=10 → 0.80, SD=25 → 0.50
-      // Display to 2 decimal places — never round to 1.00 unless SD is truly 0
+      // Auditor Consistency (ICC-like): custom formula 1 - (SD / 50) using raw unrounded SD.
+      // NOT the textbook intraclass correlation coefficient — this is a lightweight agreement
+      // index scaled for small auditor panels (n=2–10) where true ICC requires ANOVA components
+      // we don't compute. Scale: SD=0 → 1.00 (perfect), SD=5 → 0.90, SD=10 → 0.80, SD=25 → 0.50.
+      // Display to 2 decimal places — never round to 1.00 unless SD is truly 0.
+      // Variable kept named `icc` for backwards compatibility with saved project files.
       const rawAgreement = n > 1 ? Math.max(0, 1 - (rawSD / 50)) : 1;
       const icc = rawSD === 0 ? 1 : Math.round(rawAgreement * 100) / 100;
 
-      // Consistency Score: uses raw SD and pairwise proximity
-      // Combines CV-based estimate with weighted pairwise agreement
+      // Auditor Consistency (Cronbach-like): NOT textbook Cronbach's α (which needs per-item
+      // variance components we don't have). Instead combines CV-based estimate with weighted
+      // pairwise agreement — a pragmatic hybrid for small n. Variable kept named `cronbachAlpha`
+      // for backwards compatibility with saved project files.
       let cronbachAlpha = null;
       if (n >= 3) {
         // Method 1: CV-based (how small is the spread relative to the mean?)
@@ -1405,7 +1540,11 @@ Return ONLY valid JSON:
         }
       } catch (axeErr) {
         warnLog('[PDF Audit] Baseline axe-core failed (non-blocking):', axeErr);
-        // Keep the AI-only score — axe-core is optional at this stage
+        // Dual-engine guarantee broken at baseline — flag so Fix & Verify can warn.
+        triangulated._baselineAxeFailed = true;
+        if (!_skipUi) {
+          setPdfAuditResult(prev => ({ ...prev, _baselineAxeFailed: true }));
+        }
       }
       if (!_skipUi) setPdfAuditLoading(false);
       return triangulated;
@@ -2207,217 +2346,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     // Runs BEFORE the full AI rewrite loop — cheaper, safer, more precise.
     // Whatever remains after this goes to the full rewrite loop (Phase 5).
     log('Phase 3c: Surgical AI-diagnosed fixes...');
-    const surgicalTools = {
-      fix_alt_text: function(html, p) {
-        if (!p.index && p.index !== 0) return html;
-        let idx = 0;
-        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== p.index) return m;
-          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
-          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      fix_heading: function(html, p) {
-        if (!p.newLevel) return html;
-        let idx = 0;
-        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
-        });
-      },
-      fix_link_text: function(html, p) {
-        if (!p.newText) return html;
-        let idx = 0;
-        return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
-          if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
-            return '<a' + attrs + '>' + p.newText + '</a>';
-          }
-          return m;
-        });
-      },
-      fix_table_caption: function(html, p) {
-        if (!p.caption) return html;
-        let idx = 0;
-        return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
-        });
-      },
-      fix_aria_label: function(html, p) {
-        if (!p.tag || !p.label) return html;
-        let idx = 0;
-        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
-        return html.replace(re, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      fix_lang: function(html, p) {
-        if (!p.lang) return html;
-        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"')
-                   .replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
-      },
-      // Add scope to a specific table header
-      fix_th_scope: function(html, p) {
-        var scope = p.scope || 'col';
-        let idx = 0;
-        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
-          if (p.index !== undefined && idx++ !== p.index) return m;
-          return '<th scope="' + scope + '"' + attrs + '>';
-        });
-      },
-      // Remove an empty heading by index
-      fix_remove_empty_heading: function(html, p) {
-        let idx = 0;
-        return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
-          if (p.index !== undefined && idx++ !== p.index) return m;
-          return '';
-        });
-      },
-      // Add label to a form input by index
-      fix_input_label: function(html, p) {
-        if (!p.label) return html;
-        let idx = 0;
-        return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-          return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      // Add accessible name to a button by index
-      fix_button_name: function(html, p) {
-        if (!p.label) return html;
-        let idx = 0;
-        return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (content.trim()) return m; // has content, leave it
-          return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
-        });
-      },
-      // Add title to an iframe by index
-      fix_iframe_title: function(html, p) {
-        if (!p.title) return html;
-        let idx = 0;
-        return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
-          return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
-        });
-      },
-      // Wrap orphaned content in a landmark
-      fix_add_landmark: function(html, p) {
-        var tag = p.tag || 'section';
-        var label = p.label || 'Content';
-        var selector = p.selector || 'body';
-        // Simple: wrap first non-landmarked block of content
-        if (selector === 'body' && !html.includes('<main')) {
-          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
-        }
-        return html;
-      },
-      // Fix duplicate ID by appending suffix
-      fix_duplicate_id: function(html, p) {
-        if (!p.id) return html;
-        let count = 0;
-        return html.replace(new RegExp('id="' + p.id + '"', 'g'), function(m) {
-          count++;
-          if (count === 1) return m;
-          return 'id="' + p.id + '-' + count + '"';
-        });
-      },
-      // Add figcaption to a figure by index
-      fix_figcaption: function(html, p) {
-        if (!p.caption) return html;
-        let idx = 0;
-        return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/<figcaption/i.test(content)) return m; // already has one
-          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
-        });
-      },
-      // Set document title
-      fix_title: function(html, p) {
-        if (!p.title) return html;
-        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
-        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
-      },
-      // Wrap text in a lang span for multilingual content
-      fix_lang_span: function(html, p) {
-        if (!p.text || !p.lang) return html;
-        // Escape regex special chars in text to prevent crash on content like "Dr. Smith (PhD)"
-        var escaped = p.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return html.replace(new RegExp(escaped), '<span lang="' + p.lang + '">' + p.text + '</span>');
-      },
-      // Change a specific element's text color for contrast compliance
-      fix_contrast: function(html, p) {
-        if (!p.oldColor || !p.newColor) return html;
-        return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
-      },
-      // Promote first row of a table to thead with th elements
-      fix_table_header_row: function(html, p) {
-        let idx = 0;
-        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/<thead/i.test(content)) return m; // already has thead
-          // Convert first <tr> with <td> to <thead> with <th>
-          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
-            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
-            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
-          });
-          return '<table' + attrs + '>' + fixed + '</table>';
-        });
-      },
-      // Wrap an acronym/abbreviation in <abbr> with expansion
-      fix_abbreviation: function(html, p) {
-        if (!p.abbr || !p.title) return html;
-        var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
-        var replaced = false;
-        return html.replace(re, function(m) {
-          if (replaced) return m; // only wrap first occurrence
-          replaced = true;
-          return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
-        });
-      },
-      // Mark an image as decorative (empty alt + role=presentation)
-      fix_image_decorative: function(html, p) {
-        let idx = 0;
-        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
-          return '<img alt="" role="presentation"' + cleaned + '>';
-        });
-      },
-      // Wrap orphaned list items in a proper list container
-      fix_list_wrap: function(html, p) {
-        var tag = p.ordered ? 'ol' : 'ul';
-        // Find orphaned <li> and wrap them
-        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
-          // Check if already inside a list (use offset param instead of indexOf for O(1))
-          var before = html.substring(Math.max(0, offset - 100), offset);
-          if (/<[uo]l[^>]*>\s*$/i.test(before)) return m; // already wrapped
-          return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
-        });
-      },
-      // Add skip-to-content link if missing
-      fix_skip_nav: function(html) {
-        if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
-        return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
-      },
-      // Set text spacing for readability (letter-spacing, word-spacing, line-height)
-      fix_text_spacing: function(html, p) {
-        var css = '';
-        if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
-        if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
-        if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
-        if (!css) return html;
-        var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
-        if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
-        return style + html;
-      },
-    };
+    const surgicalTools = SHARED_SURGICAL_TOOLS;
 
     // Run surgical diagnosis (1 API call) + deterministic execution
     try {
@@ -4247,12 +4176,7 @@ Return ONLY the complete fixed HTML.`, true);
                 `KNOWN VIOLATIONS IN FULL DOCUMENT:\n${violationInstructions}\n\n` +
                 `HTML SECTION ${chi + 1}/${bodyChunks.length} (apply relevant fixes):\n"""\n${chunkTextPreview}\n"""\n\n` +
                 `Prescribe fixes using these tools (return ONLY a JSON array):\n\n` +
-                `CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n` +
-                `TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n` +
-                `FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n` +
-                `STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n` +
-                `VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}, fix_abbreviation {abbr, title}, fix_text_spacing {letterSpacing?, lineHeight?}\n` +
-                `LIST: fix_list_wrap {ordered}, fix_skip_nav {}\n` +
+                SURGICAL_TOOL_PROMPT + `\n` +
                 `Be specific — use the actual document content. Return ONLY a valid JSON array, no explanation.`, true);
 
               const parseSurg = (raw) => {
@@ -4265,7 +4189,7 @@ Return ONLY the complete fixed HTML.`, true);
               if (Array.isArray(chunkSurgFixes)) {
                 for (let sfi = 0; sfi < chunkSurgFixes.length; sfi++) {
                   const fix = chunkSurgFixes[sfi];
-                  const tool = fix && fix.tool && surgicalTools[fix.tool];
+                  const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
                   if (tool) {
                     const before = preFixedChunk;
                     preFixedChunk = tool(preFixedChunk, fix);
@@ -4717,12 +4641,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         `KNOWN VIOLATIONS:\n${violationInstructions}\n\n` +
         `HTML SECTION ${chunkIndex + 1}/${totalChunks}:\n"""\n${chunkPreview}\n"""\n\n` +
         `Prescribe fixes using these tools (return ONLY a JSON array):\n` +
-        `CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n` +
-        `TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n` +
-        `FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n` +
-        `STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n` +
-        `VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}, fix_abbreviation {abbr, title}, fix_text_spacing {letterSpacing?, lineHeight?}\n` +
-        `LIST: fix_list_wrap {ordered}, fix_skip_nav {}\n` +
+        SURGICAL_TOOL_PROMPT + `\n` +
         `Return ONLY a valid JSON array, no explanation.`, true);
 
       let surgFixes = [];
@@ -4731,7 +4650,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
       if (Array.isArray(surgFixes)) {
         for (const fix of surgFixes) {
-          const tool = fix && fix.tool && surgicalTools[fix.tool];
+          const tool = fix && fix.tool && SHARED_SURGICAL_TOOLS[fix.tool];
           if (tool) {
             const before = preFixedChunk;
             preFixedChunk = tool(preFixedChunk, fix);
@@ -6813,11 +6732,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
       let finalAfterScore = verification ? verification.score : afterScore;
       const axeScoreAvailable = axeResults && typeof axeResults.score === 'number';
+      let axeCoreFailed = false;
       if (finalAfterScore !== null && axeScoreAvailable) {
         const blendedFinal = Math.round((finalAfterScore + axeResults.score) / 2);
         warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + axe ${axeResults.score} = ${blendedFinal}`);
         finalAfterScore = blendedFinal;
       } else if (!axeScoreAvailable) {
+        // Dual-engine guarantee is broken — surface this to the UI so the banner can warn users.
+        axeCoreFailed = true;
         warnLog(`[PDF Fix] WARNING: axe-core score unavailable — final score is AI-only (${finalAfterScore}). Results may be less reliable.`);
       }
 
@@ -6891,6 +6813,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         afterScore: finalAfterScore,
         axeScore: axeResults ? axeResults.score : null,
         axeViolations: axeResults ? axeResults.totalViolations : 0,
+        _axeCoreFailed: axeCoreFailed,
+        _scoreIsBlended: !axeCoreFailed && finalAfterScore !== null,
         autoFixPasses,
         needsExpertReview,
         docStyle, // extracted color palette for auto brand match in preview
@@ -6924,6 +6848,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       setPdfFixResult(_result);
       setPdfFixLoading(false);
       setPdfFixStep('');
+
+      // Dual-engine guarantee broken: surface clearly so users don't think an AI-only score is blended.
+      if (axeCoreFailed) {
+        addToast('⚠ axe-core verification failed — final score is AI-only. Re-run Fix & Verify for the 50/50 blended score.', 'warning');
+      }
 
       const scoreGain = finalAfterScore !== null ? finalAfterScore - beforeScore : null;
       const fixNote = autoFixPasses > 0 ? ` (${autoFixPasses} auto-fix pass${autoFixPasses > 1 ? 'es' : ''})` : '';
@@ -7048,8 +6977,8 @@ tr { page-break-inside: avoid; }
       html += `<h2>Reliability Metrics</h2><div class="meta-grid">
         <div class="meta-card"><div class="meta-val">${audit.ci95 ? audit.ci95[0] + '&ndash;' + audit.ci95[1] : 'N/A'}</div><div class="meta-label">95% Confidence Interval</div></div>
         <div class="meta-card"><div class="meta-val">${audit.scoreSD ?? 'N/A'}</div><div class="meta-label">Standard Deviation</div></div>
-        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Agreement Score</div></div>
-        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Consistency Score</div></div>' : ''}
+        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Auditor Consistency (ICC-like)</div></div>
+        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Auditor Consistency (Cronbach-like)</div></div>' : ''}
       </div>
       <p style="font-size:12px;color:#64748b">Auditors: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>`;
     }

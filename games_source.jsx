@@ -1185,16 +1185,23 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     </div>
   );
 });
-const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete }) => {
+const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [buckets, setBuckets] = useState([]);
   const [isChecked, setIsChecked] = useState(false);
   const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
+  const [attempts, setAttempts] = useState(0);
   const [draggedItem, setDraggedItem] = useState(null);
   const [newItemText, setNewItemText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [hasUsedKeyboardCard, setHasUsedKeyboardCard] = useState(false);
+  const [explanations, setExplanations] = useState({}); // itemId -> text | 'loading'
+  const [imageFailCount, setImageFailCount] = useState(0);
+  const deckScrollRef = useRef(null);
+  const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
   const menuRef = useRef(null);
   const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
   const pastelColors = [
@@ -1224,7 +1231,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   useEffect(() => {
     if (!data) return;
     setBuckets(data.categories || []);
-    const initItems = (data.items || []).map((item, i) => ({
+    const rawItems = data.items || [];
+    const initItems = rawItems.map((item, i) => ({
         ...item,
         currentContainer: 'deck',
         colorIdx: Math.floor(Math.random() * pastelColors.length)
@@ -1233,10 +1241,18 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         const j = Math.floor(Math.random() * (i + 1));
         [initItems[i], initItems[j]] = [initItems[j], initItems[i]];
     }
+    // Detect partial image coverage: if SOME items have images but not all, the rest failed.
+    const withImg = rawItems.filter(it => it.image).length;
+    const failed = (withImg > 0 && withImg < rawItems.length) ? (rawItems.length - withImg) : 0;
+    setImageFailCount(failed);
     setItems(initItems);
     setIsChecked(false);
     setScore(0);
+    setBestScore(0);
+    setAttempts(0);
+    setExplanations({});
     setKeyboardSelectedItemId(null);
+    setHasUsedKeyboardCard(false);
   }, [data]);
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -1263,6 +1279,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
               setKeyboardSelectedItemId(null);
           } else {
               setKeyboardSelectedItemId(item.id);
+              setHasUsedKeyboardCard(true);
               if (playSound) playSound('click');
           }
       }
@@ -1320,6 +1337,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     const earnedPoints = Math.max(0, (correctCount * 20) - (incorrectCount * 5));
     const total = items.length;
     setScore(earnedPoints);
+    setBestScore(prev => Math.max(prev, earnedPoints));
     setIsChecked(true);
     if (onScoreUpdate && correctCount === total) onScoreUpdate(earnedPoints, "Concept Sort Complete");
     if (correctCount === total) {
@@ -1329,12 +1347,30 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             score: earnedPoints,
             correctPlacements: correctCount,
             totalItems: total,
-            isPerfect: incorrectCount === 0
+            isPerfect: incorrectCount === 0,
+            attempts: attempts + 1,
+            bestScore: Math.max(bestScore, earnedPoints)
           });
         }
     } else {
         if(playSound) playSound('reveal');
     }
+  };
+  const handleExplainClick = async (item) => {
+      if (!onExplainIncorrect) return;
+      if (explanations[item.id] && explanations[item.id] !== 'loading') {
+          setExplanations(prev => { const next = { ...prev }; delete next[item.id]; return next; });
+          return;
+      }
+      setExplanations(prev => ({ ...prev, [item.id]: 'loading' }));
+      try {
+          const correct = buckets.find(b => b.id === item.categoryId);
+          const chosen = buckets.find(b => b.id === item.currentContainer);
+          const text = await onExplainIncorrect(item, correct, chosen);
+          setExplanations(prev => ({ ...prev, [item.id]: text || "No explanation available." }));
+      } catch (e) {
+          setExplanations(prev => ({ ...prev, [item.id]: "Couldn't generate an explanation right now." }));
+      }
   };
   const reset = () => {
     const resetItems = items.map(i => ({ ...i, currentContainer: 'deck' }));
@@ -1345,6 +1381,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     setItems(resetItems);
     setIsChecked(false);
     setScore(0);
+    setAttempts(prev => prev + 1);
+    setExplanations({});
   };
   const renderCard = (item) => {
     let statusClass = `${pastelColors[item.colorIdx % pastelColors.length]} border-2`;
@@ -1400,6 +1438,20 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                <div className="mt-1 text-[10px] font-bold text-red-600 text-center leading-tight">
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
+               {onExplainIncorrect && (
+                 <button
+                   onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
+                   className="mt-1 w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
+                   aria-label="Explain why this was incorrect"
+                 >
+                   {explanations[item.id] === 'loading' ? '…' : (explanations[item.id] ? 'Hide why' : 'Why?')}
+                 </button>
+               )}
+               {explanations[item.id] && explanations[item.id] !== 'loading' && (
+                 <div className="mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[10px] text-indigo-900 leading-snug text-left">
+                   {explanations[item.id]}
+                 </div>
+               )}
              </>
         )}
         {isChecked && item.currentContainer === item.categoryId && (
@@ -1412,6 +1464,30 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     );
   };
   const deckItems = useMemo(() => items.filter(i => i.currentContainer === 'deck'), [items]);
+  const resolveBucketStyles = (rawColor) => {
+      const fallbackKey = 'blue';
+      if (!rawColor) return bucketColorMap[fallbackKey];
+      const cleaned = String(rawColor).replace(/^bg-/, '').replace(/-\d+$/, '').trim().toLowerCase();
+      if (bucketColorMap[cleaned]) return bucketColorMap[cleaned];
+      if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[ConceptSort] Unknown bucket color:', rawColor, '— falling back to blue');
+      }
+      return bucketColorMap[fallbackKey];
+  };
+  useEffect(() => {
+      const el = deckScrollRef.current;
+      if (!el) return;
+      const checkScroll = () => {
+          setDeckCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 4);
+      };
+      checkScroll();
+      el.addEventListener('scroll', checkScroll, { passive: true });
+      window.addEventListener('resize', checkScroll);
+      return () => {
+          el.removeEventListener('scroll', checkScroll);
+          window.removeEventListener('resize', checkScroll);
+      };
+  }, [deckItems.length]);
   return (
     <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
@@ -1433,9 +1509,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       <div className="flex-grow overflow-y-auto p-6 relative">
            <div className="flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]">
                {buckets.map((bucket) => {
-                   const rawColor = bucket.color || 'blue';
-                   const colorKey = rawColor.replace('bg-', '').replace('-500', '').trim();
-                   const styles = bucketColorMap[colorKey] || bucketColorMap['default'];
+                   const styles = resolveBucketStyles(bucket.color);
                    return (
                        <div
                             key={bucket.id}
@@ -1485,9 +1559,31 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 onDrop={(e) => handleDrop(e, 'deck')}
                 className={`bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-transform duration-300 ${isChecked ? '' : 'hover:bg-slate-50'}`}
             >
-               <div className="max-w-6xl mx-auto">
+               <div className="max-w-6xl mx-auto relative">
                    <div className="flex justify-between items-start mb-2">
-                       <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                       <div className="flex items-center gap-3 flex-wrap">
+                           <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                           {keyboardSelectedItemId && !hasUsedKeyboardCard && (
+                               <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                                   Now pick a category to drop this card into.
+                               </span>
+                           )}
+                           {!keyboardSelectedItemId && !hasUsedKeyboardCard && items.length > 0 && (
+                               <span className="text-[11px] text-slate-500 italic">
+                                   Tip: press Enter on a card to sort with the keyboard.
+                               </span>
+                           )}
+                           {attempts > 0 && (
+                               <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                   Try {attempts + 1} · Best: {bestScore} pts
+                               </span>
+                           )}
+                           {imageFailCount > 0 && (
+                               <span className="text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+                                   {imageFailCount} card visual{imageFailCount === 1 ? '' : 's'} couldn't load — text only.
+                               </span>
+                           )}
+                       </div>
                        <div className="flex gap-2">
                            <button
                                 data-help-key="concept_sort_reset"
@@ -1508,7 +1604,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </button>
                        </div>
                    </div>
-                   <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px]">
+                   <div ref={deckScrollRef} className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative">
                        <div className="min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group">
                            {isAdding ? (
                                <div className="text-center text-indigo-500 text-xs font-bold animate-pulse">{t('concept_sort.generating_item')}</div>
@@ -1546,6 +1642,18 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </div>
                        )}
                    </div>
+                   {deckCanScrollRight && (
+                       <button
+                           onClick={() => {
+                               const el = deckScrollRef.current;
+                               if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                           }}
+                           className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
+                           aria-label="Scroll deck right to see more cards"
+                       >
+                           ›
+                       </button>
+                   )}
                </div>
            </div>
            <div ref={menuRef} className="sr-only">

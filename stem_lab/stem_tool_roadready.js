@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════
 // stem_tool_roadready.js — RoadReady: Driver's Ed & Automotive Science Lab
 // Teaches US driver's ed curriculum (Maine state focus), fuel efficiency physics,
-// stopping distance, and real-time driving via pseudo-3D raycaster simulator.
-// Canvas-based rendering, no external dependencies.
+// stopping distance, and real-time driving in a Three.js r128 3D world with a
+// 2D canvas HUD overlay. Three.js is loaded on demand from a CDN at scenario start.
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -1306,7 +1306,170 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'maine_explorer', icon: '🗽', name: 'Maine Explorer', desc: 'Visit a lighthouse in Free Explore.' },
     { id: 'civic_scholar', icon: '🎓', name: 'Civic Scholar', desc: 'Visit a school, library, and post office.' },
     { id: 'safe_return', icon: '🏠', name: 'Safe Return', desc: 'Visit 3+ landmarks in one drive without crashing.' },
-    { id: 'bus_respect', icon: '🚌', name: 'Bus Respect', desc: 'Stop for a school bus with its stop-arm extended.' }
+    { id: 'bus_respect', icon: '🚌', name: 'Bus Respect', desc: 'Stop for a school bus with its stop-arm extended.' },
+    // ── Free Explore challenge card achievements ──
+    { id: 'first_challenge', icon: '🎯', name: 'Challenge Accepted', desc: 'Complete your first Free Explore challenge card.' },
+    { id: 'five_challenges', icon: '🎖️', name: 'Challenger', desc: 'Complete 5 Free Explore challenges.' },
+    { id: 'biome_tourist', icon: '🌎', name: 'Biome Tourist', desc: 'Pass through 4 different biomes in one drive.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9e-bis: FREE EXPLORE CHALLENGE CARDS
+  // ─────────────────────────────────────────────────────────
+  // Each card has: id, icon, title, desc (one-sentence goal), duration (seconds),
+  // and a check(stats, car, scn, elapsed) → { progress: 0-1, failed?, passed? }.
+  // The spawner offers cards every ~90s during Free Explore drives. Students can
+  // Accept (card becomes active) or Decline (no penalty, next card re-rolled).
+  // On pass: small safety/eco bonus + toast. On fail: no penalty (low-stakes UDL).
+  var CHALLENGES = [
+    {
+      id: 'deer_watch', icon: '🦌', title: 'Deer Watch',
+      desc: 'Drive 25 seconds without exceeding 40 mph in a rural biome.',
+      duration: 25, biome: 'rural',
+      check: function(ctx) {
+        var mph = Math.abs(ctx.car.speed) * ctx.MS_TO_MPH;
+        if (mph > 40) return { failed: true, reason: 'Went over 40 mph.' };
+        if (ctx.elapsed >= 25) return { passed: true };
+        return { progress: ctx.elapsed / 25 };
+      }
+    },
+    {
+      id: 'wet_brake', icon: '🌧️', title: 'Wet Braking',
+      desc: 'While it is raining or snowing, brake from 35+ mph down to 5 mph without skidding.',
+      duration: 30, weather: ['rain', 'snow'],
+      check: function(ctx) {
+        var mph = Math.abs(ctx.car.speed) * ctx.MS_TO_MPH;
+        if (!ctx._armed && mph >= 35) { ctx._armed = true; }
+        if (ctx._armed && ctx.stats.skidSeconds - (ctx._startSkid || 0) > 0.3) return { failed: true, reason: 'You skidded.' };
+        if (ctx._armed && mph <= 5) return { passed: true };
+        if (ctx.elapsed >= 30) return { failed: true, reason: 'Time ran out.' };
+        return { progress: ctx._armed ? Math.min(1, (35 - mph) / 30) : 0 };
+      },
+      onArm: function(ctx) { ctx._startSkid = ctx.stats.skidSeconds; }
+    },
+    {
+      id: 'smooth_operator', icon: '🕊️', title: 'Smooth Operator',
+      desc: 'Drive 30 seconds with zero hard brakes and zero jackrabbit starts.',
+      duration: 30,
+      check: function(ctx) {
+        if (ctx._startHB === undefined) { ctx._startHB = ctx.stats.hardBrakes; ctx._startJR = ctx.stats.jackrabbits || 0; }
+        if (ctx.stats.hardBrakes > ctx._startHB) return { failed: true, reason: 'Hard brake.' };
+        if ((ctx.stats.jackrabbits || 0) > ctx._startJR) return { failed: true, reason: 'Jackrabbit start.' };
+        if (ctx.elapsed >= 30) return { passed: true };
+        return { progress: ctx.elapsed / 30 };
+      }
+    },
+    {
+      id: 'hypermile_short', icon: '⛽', title: 'Mini Hypermile',
+      desc: 'Average 45+ MPG over 0.3 miles of driving.',
+      duration: 90,
+      check: function(ctx) {
+        if (ctx._startDist === undefined) { ctx._startDist = ctx.stats.distance; ctx._fuelStart = ctx.stats.fuelUsed || 0; }
+        var miles = (ctx.stats.distance - ctx._startDist) / 1609;
+        var gal = Math.max(0.0001, (ctx.stats.fuelUsed || 0) - ctx._fuelStart);
+        if (miles >= 0.3) {
+          var mpg = miles / gal;
+          if (mpg >= 45) return { passed: true, extra: 'Avg ' + mpg.toFixed(1) + ' MPG' };
+          return { failed: true, reason: 'Only ' + mpg.toFixed(1) + ' MPG.' };
+        }
+        if (ctx.elapsed >= 90) return { failed: true, reason: 'Time ran out before 0.3 mi.' };
+        return { progress: miles / 0.3 };
+      }
+    },
+    {
+      id: 'three_landmarks', icon: '📍', title: 'Three Stops',
+      desc: 'Visit 3 landmarks without crashing or skidding.',
+      duration: 300,
+      check: function(ctx) {
+        if (ctx._startLM === undefined) { ctx._startLM = ctx._visitCount(ctx.stats); ctx._startCrashes = ctx.stats.crashes; ctx._startSkidT = ctx.stats.skidSeconds; }
+        if (ctx.stats.crashes > ctx._startCrashes) return { failed: true, reason: 'Crash.' };
+        if (ctx.stats.skidSeconds - ctx._startSkidT > 0.5) return { failed: true, reason: 'Skid.' };
+        var gained = ctx._visitCount(ctx.stats) - ctx._startLM;
+        if (gained >= 3) return { passed: true };
+        if (ctx.elapsed >= 300) return { failed: true, reason: 'Time ran out.' };
+        return { progress: gained / 3 };
+      }
+    },
+    {
+      id: 'night_cruise', icon: '🌙', title: 'Night Cruise',
+      desc: 'At night, keep within 5 mph of the posted limit for 30 seconds.',
+      duration: 30, time: 'night',
+      check: function(ctx) {
+        var mph = Math.abs(ctx.car.speed) * ctx.MS_TO_MPH;
+        var lim = ctx.scn.speedLimit || 35;
+        if (Math.abs(mph - lim) > 5) { ctx._off = (ctx._off || 0) + ctx.dt; if (ctx._off > 3) return { failed: true, reason: 'Off-pace too long.' }; }
+        else { ctx._off = 0; }
+        if (ctx.elapsed >= 30) return { passed: true };
+        return { progress: ctx.elapsed / 30 };
+      }
+    },
+    {
+      id: 'moose_miss', icon: '🫎', title: 'Moose Miss',
+      desc: 'Encounter wildlife and pass it without a crash or swerve off-road.',
+      duration: 45,
+      check: function(ctx) {
+        if (ctx._startCrashes === undefined) ctx._startCrashes = ctx.stats.crashes;
+        if (ctx.stats.crashes > ctx._startCrashes) return { failed: true, reason: 'Crash.' };
+        if (!ctx._saw && ctx.wildlife) ctx._saw = true;
+        if (ctx._saw && !ctx.wildlife) return { passed: true };
+        if (ctx.elapsed >= 45) return { failed: true, reason: 'No wildlife appeared.' };
+        return { progress: ctx._saw ? 0.8 : 0.2 };
+      }
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9e-tri: FREE EXPLORE ROAD TRIPS
+  // ─────────────────────────────────────────────────────────
+  // A Trip is a curated chain of landmark types to visit in order. The engine
+  // auto-targets the quest system at the next landmark of the required type.
+  // On full completion → trip badge + journal entry. Declining mid-trip is free.
+  var TRIPS = [
+    {
+      id: 'lighthouse_loop', icon: '🗼', name: 'Maine Lighthouse Loop',
+      desc: 'A Maine classic. Fuel up, grab a bite, then head to the lighthouse.',
+      goals: [
+        { landmarkId: 'gas', label: 'Fill the tank' },
+        { landmarkId: 'diner', label: 'Grab a bite' },
+        { landmarkId: 'lighthouse', label: 'Reach the lighthouse' }
+      ]
+    },
+    {
+      id: 'school_run', icon: '🏫', name: 'Morning School Run',
+      desc: 'The parent commute. Post office, pharmacy, then school — all before the bell.',
+      goals: [
+        { landmarkId: 'post', label: 'Drop off mail' },
+        { landmarkId: 'pharmacy', label: 'Pick up a prescription' },
+        { landmarkId: 'school', label: 'Arrive at school (slow for zone!)' }
+      ]
+    },
+    {
+      id: 'civic_tour', icon: '🎓', name: 'Civic Tour',
+      desc: 'Library, post office, and police station — the heart of a small town.',
+      goals: [
+        { landmarkId: 'library', label: 'Visit the library' },
+        { landmarkId: 'post', label: 'Stop at the post office' },
+        { landmarkId: 'police', label: 'Pass the police station' }
+      ]
+    },
+    {
+      id: 'errand_run', icon: '🛒', name: 'Weekend Errands',
+      desc: 'Classic Saturday — market, pharmacy, then home.',
+      goals: [
+        { landmarkId: 'market', label: 'Grocery shop' },
+        { landmarkId: 'pharmacy', label: 'Stop at the pharmacy' },
+        { landmarkId: 'home', label: 'Return home' }
+      ]
+    },
+    {
+      id: 'emergency_route', icon: '🚒', name: 'Emergency Responder Route',
+      desc: 'Fire station → hospital → police. Feel what first responders do.',
+      goals: [
+        { landmarkId: 'fire', label: 'Start at the fire station' },
+        { landmarkId: 'hospital', label: 'Reach the hospital' },
+        { landmarkId: 'police', label: 'Check in at police HQ' }
+      ]
+    }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1974,6 +2137,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         _lastSpokenRef.current = now;
         callTTS(text, null, 1.0, { force: true }).catch(function() {});
       };
+      // Photo Mode: composite the WebGL 3D canvas + 2D HUD onto an offscreen canvas,
+      // then trigger a PNG download. Requires preserveDrawingBuffer on the WebGLRenderer.
+      // Guarded with a 1.5 s cooldown so a held K key doesn't spam downloads.
+      var _lastPhoto = 0;
+      var takePhoto = function() {
+        var now = Date.now();
+        if (now - _lastPhoto < 1500) return;
+        _lastPhoto = now;
+        try {
+          var gl3d = canvas3dRef.current;
+          var hud = canvasRef.current;
+          if (!gl3d) { addToast('Photo: 3D canvas not ready.'); return; }
+          var w = gl3d.width, hH = gl3d.height;
+          var off = document.createElement('canvas');
+          off.width = w; off.height = hH;
+          var octx = off.getContext('2d');
+          octx.drawImage(gl3d, 0, 0, w, hH);
+          if (hud) octx.drawImage(hud, 0, 0, w, hH);
+          // Watermark — small, non-intrusive, helps kids share their shot.
+          octx.fillStyle = 'rgba(0,0,0,0.5)';
+          octx.fillRect(10, hH - 30, 180, 22);
+          octx.fillStyle = '#fbbf24';
+          octx.font = 'bold 12px sans-serif';
+          octx.fillText('🚗 RoadReady · ' + (currentScenario.name || ''), 16, hH - 14);
+          var dataUrl = off.toDataURL('image/png');
+          var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          var a = document.createElement('a');
+          a.href = dataUrl; a.download = 'roadready_photo_' + stamp + '.png'; a.click();
+          addToast('📸 Photo saved');
+        } catch (phErr) {
+          addToast('Photo failed: ' + (phErr && phErr.message ? phErr.message : 'unknown'));
+        }
+      };
 
       var view = d.view || 'menu';
       var selectedVehicle = d.vehicle || 'sedan';
@@ -1991,6 +2187,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var threeRef = useRef(null); // { scene, camera, renderer, objects... }
       var animRef = useRef(null);
       var keysRef = useRef({});
+      // Ride-Along autopilot: accessibility mode for blind/low-vision + keyboard-only users.
+      // When active, physics ignores keyboard input and a lookahead controller steers
+      // to the spline centerline while TTS narrates hazards, signals, and scenario beats.
+      var rideAlongRef = useRef(!!(d && d.rideAlong));
+      var rideAlongStateRef = useRef({ lastNarration: 0, lastSignalId: null, lastCellAnnounced: -999, announcedHazards: {} });
       var carRef = useRef({ x: 32, y: 50, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 });
       var mapRef = useRef(null);
       var trafficRef = useRef([]);
@@ -2198,8 +2399,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var drivePathRef = useRef([]); // full drive path for debrief map (sampled every 0.5s)
       var infiniteWorldRef = useRef(null); // procedural infinite world (Free Explore only)
       var questRef = useRef(null); // { destination: {name, x, y, icon}, distanceMi, completed, reward }
+      // Challenge cards: spawner state + active challenge. offered = waiting for Accept/Decline.
+      // active = running; null when no challenge. completedCount accrues per-session for the
+      // five_challenges achievement. biomesVisited tracks unique biomes for biome_tourist.
+      var challengeRef = useRef({ nextOfferAt: 0, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0 });
+      // Driver's Journal: per-drive event log. Each entry: { t: seconds, kind, icon, text }.
+      // Persisted back to d.journal on drive end so the menu can export it as Markdown.
+      // Doubles as Maine's 70-hour supervised driving log when printed.
+      var journalRef = useRef({ entries: [], startedAt: 0, scenario: null, vehicle: null });
+      // Active Road Trip. When set, the quest system auto-targets the next landmark
+      // of the required type. null = no trip active (normal Free Explore).
+      var tripRef = useRef(null);
+      var journalLog = function(kind, icon, text) {
+        var j = journalRef.current;
+        if (!j) return;
+        j.entries.push({ t: Math.round(timeRef.current * 10) / 10, kind: kind, icon: icon, text: text });
+        if (j.entries.length > 300) j.entries.splice(0, j.entries.length - 300); // cap runaway logs
+      };
+      var permitGateRef = useRef({}); // tracks per-question cooldown timeouts so we don't double-schedule
       var rearviewRef = useRef(null); // canvas ref for mirror
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
+      // Tracked setTimeout IDs — cancelled on drive exit so spooky callbacks don't fire after teardown.
+      var timeoutsRef = useRef([]);
+      var safeTimeout = useCallback(function(fn, ms) {
+        var id = setTimeout(function() {
+          // Self-prune from tracker on fire
+          var arr = timeoutsRef.current;
+          var idx = arr.indexOf(id);
+          if (idx !== -1) arr.splice(idx, 1);
+          fn();
+        }, ms);
+        timeoutsRef.current.push(id);
+        return id;
+      }, []);
+      // prefers-reduced-motion: vestibular-safe mode. User toggle overrides system pref.
+      var reducedMotionRef = useRef(
+        (d && typeof d.reducedMotion === 'boolean') ? d.reducedMotion :
+        (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      );
       var earnedBadges = d.badges || {};
       var scenariosDriven = d.scenariosDriven || {};
       var weathersDriven = d.weathersDriven || {};
@@ -2216,6 +2453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           if (e.key.toLowerCase() === 'h') showHUDRef.current = !showHUDRef.current;
           if (e.key.toLowerCase() === 'l') upd('highBeams', !d.highBeams);
+          if (e.key.toLowerCase() === 'k') takePhoto();
           // Gear shifting: F = drive, G = reverse, P = park (only when stopped or slow)
           if (e.key.toLowerCase() === 'f') {
             if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D';
@@ -2281,7 +2519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
         eventToastRef.current = introMsg ? { msg: introMsg, until: 10 } : { msg: null, until: 0 };
         // Speak the intro aloud after a short delay
-        if (introMsg) setTimeout(function() { speak(introMsg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim()); }, 1500);
+        if (introMsg) safeTimeout(function() { speak(introMsg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim()); }, 1500);
         timeRef.current = 0;
         // Init audio lazily on start
         try {
@@ -2351,6 +2589,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
         carRef.current = { x: startX, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
+        // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
+        challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0 };
+        // Reset per-drive journal and seed the first entry.
+        journalRef.current = {
+          entries: [{ t: 0, kind: 'start', icon: '🔑', text: 'Drive started — ' + scn.name + ' (' + scn.weather + ', ' + scn.time + ') in ' + veh.name }],
+          startedAt: Date.now(), scenario: scn.name, vehicle: veh.name,
+          conditions: { weather: scn.weather, time: scn.time, traffic: scn.traffic, speedLimit: scn.speedLimit },
+          freeExplore: !!d.freeExplore
+        };
+        // If the user selected a trip on the Free Explore setup, arm it now.
+        if (d.freeExplore && d.freeExploreTrip) {
+          var tdef = TRIPS.find(function(t) { return t.id === d.freeExploreTrip; });
+          if (tdef) {
+            tripRef.current = { def: tdef, goalIndex: 0, completedGoals: [], startedAt: Date.now() };
+            journalLog('trip_start', tdef.icon, 'Started trip: ' + tdef.name);
+          } else {
+            tripRef.current = null;
+          }
+        } else {
+          tripRef.current = null;
+        }
         gearRef.current = 'P'; // start in Park
         blinkerRef.current = 0;
         laneChangeRef.current = { lastLane: null };
@@ -2363,8 +2622,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         updMulti({ view: 'driving', scenario: scn.id, vehicle: veh.id });
         // Door-thud when the session starts, then engine crank a beat later.
         // Delay so the audio ctx (only resumes on user gesture) has settled.
-        setTimeout(function() { playDoorClose(); }, 80);
-        setTimeout(function() { playEngineStart(); }, 450);
+        safeTimeout(function() { playDoorClose(); }, 80);
+        safeTimeout(function() { playEngineStart(); }, 450);
       }, []);
 
       var exitDriving = useCallback(function() {
@@ -2391,13 +2650,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Reset audio state so next drive creates fresh nodes
           a.started = false;
         } catch (e) {}
+        // Cancel any pending tracked timeouts (audio fades, intros, landmark resets)
+        try {
+          timeoutsRef.current.forEach(function(id) { clearTimeout(id); });
+          timeoutsRef.current = [];
+        } catch (e) {}
         emergencyRef.current = null;
         var s = statsRef.current;
         var minutes = Math.floor((Date.now() - s.startTime) / 60000);
         var seconds = Math.floor(((Date.now() - s.startTime) % 60000) / 1000);
         var avgMPG = s.mpgSamples > 0 ? (s.mpgSum / s.mpgSamples) : 0;
+        // Seal the journal with a closing entry and persist so the menu can export it.
+        journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / 1609).toFixed(2) + ' mi');
+        var sealedJournal = Object.assign({}, journalRef.current, { endedAt: Date.now(), durationSec: Math.round((Date.now() - journalRef.current.startedAt) / 1000) });
         updMulti({
           view: 'debrief',
+          lastJournal: sealedJournal,
           drivingStats: {
             scenario: currentScenario.name,
             vehicle: currentVehicle.name,
@@ -2557,8 +2825,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
                 if (candidates.length > 0) {
-                  // Pick one of the closer landmarks (first 3) — slight randomness keeps it interesting
+                  // Pick one of the closer landmarks (first 3) — slight randomness keeps it interesting.
+                  // If a Road Trip is active, filter candidates to the required landmark type first.
                   candidates.sort(function(a, b) { return a.dist - b.dist; });
+                  var tripActive = tripRef.current;
+                  if (tripActive && tripActive.goalIndex < tripActive.def.goals.length) {
+                    var needId = tripActive.def.goals[tripActive.goalIndex].landmarkId;
+                    var typed = candidates.filter(function(c) { return c.chunk.landmark.type.id === needId; });
+                    if (typed.length > 0) candidates = typed;
+                  }
                   var pick = candidates[Math.min(candidates.length - 1, Math.floor(Math.random() * Math.min(3, candidates.length)))];
                   var lmDest = pick.chunk.landmark;
                   questRef.current = {
@@ -2602,6 +2877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   q.questsCompleted = (q.questsCompleted || 0) + 1;
                   addToast('✅ Arrived at ' + q.icon + ' ' + q.name + '! Quest #' + q.questsCompleted + ' complete.');
                   speak('You arrived at ' + q.name + '. Nice driving!');
+                  journalLog('landmark', q.icon, 'Reached ' + q.name);
                   statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 3);
                   // ── Track landmark visits for achievements ──
                   if (q.isLandmark) {
@@ -2624,12 +2900,145 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     if (totalVisits >= 3 && statsRef.current.crashes === 0 && !liveBadges.safe_return) { liveBadges.safe_return = true; addToast('🏅 Achievement: Safe Return 🏠'); awarded = true; }
                     if (awarded) upd('badges', liveBadges);
                   }
+                  // ── Road Trip goal advancement ──
+                  // If a trip is active and the arrived landmark matches the current goal's type,
+                  // advance the trip. On final goal, mark trip complete and record in d.completedTrips.
+                  var tr = tripRef.current;
+                  if (tr && tr.goalIndex < tr.def.goals.length) {
+                    // Match by landmark type name (q.name is the landmark.type.name, e.g. "Elementary School")
+                    var goalDef = tr.def.goals[tr.goalIndex];
+                    var expectedType = LANDMARK_TYPES.find(function(lt) { return lt.id === goalDef.landmarkId; });
+                    if (expectedType && q.name === expectedType.name) {
+                      tr.completedGoals.push({ landmarkId: goalDef.landmarkId, t: timeRef.current });
+                      tr.goalIndex++;
+                      journalLog('trip_goal', tr.def.icon, 'Trip goal ' + tr.completedGoals.length + '/' + tr.def.goals.length + ': ' + goalDef.label);
+                      if (tr.goalIndex >= tr.def.goals.length) {
+                        // Trip complete!
+                        addToast('🏆 Trip complete: ' + tr.def.name + '!');
+                        speak('Trip complete. ' + tr.def.name + '. Well done!');
+                        journalLog('trip_done', '🏆', 'Completed trip: ' + tr.def.name);
+                        statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
+                        var completed = Object.assign({}, d.completedTrips || {});
+                        completed[tr.def.id] = { at: Date.now(), timeSec: Math.round((Date.now() - tr.startedAt) / 1000) };
+                        upd('completedTrips', completed);
+                        tripRef.current = null;
+                      } else {
+                        var nextGoal = tr.def.goals[tr.goalIndex];
+                        addToast('🎯 Next: ' + nextGoal.label);
+                        speak('Next stop: ' + nextGoal.label);
+                      }
+                    }
+                  }
                 }
                 // Announce when getting close
                 if (!q.announced && qdist < 18) {
                   q.announced = true;
                   addToast(q.icon + ' ' + q.name + ' is just ahead!');
                 }
+              }
+            }
+
+            // ── Free Explore: Challenge Cards ──
+            // Low-stakes curated mini-goals. Offers appear every ~90s; Accept moves them to
+            // active state and the check() runs each frame with (stats, car, scn, elapsed).
+            if (d.freeExplore) {
+              var ch = challengeRef.current;
+              var curT = timeRef.current;
+              // Track biomes for biome_tourist achievement + milestone announcements below.
+              if (infiniteWorldRef.current) {
+                var biomeChunk = infiniteWorldRef.current.getChunk(Math.floor(carRef.current.y / CHUNK_SIZE));
+                var currentBiome = biomeChunk ? biomeChunk.biome : null;
+                if (currentBiome && currentBiome !== ch.lastBiome) {
+                  if (ch.lastBiome !== null) {
+                    // ── Biome milestone: crossing from one biome to another ──
+                    ch.biomesVisited[currentBiome] = true;
+                    var biomeHazards = {
+                      rural: 'Rural roads. Watch for moose at dawn and dusk. Shoulders are narrow.',
+                      residential: 'Residential area. Kids and pets. 25 mph limit.',
+                      suburban: 'Suburban zone. Expect signals and driveways every block.',
+                      commercial: 'Commercial district. Dense traffic and pedestrians. Slow your scan.',
+                      industrial: 'Industrial area. Trucks, blind spots, and loading zones.'
+                    };
+                    var biomeIcon = { rural: '🌲', residential: '🏘️', suburban: '🏙️', commercial: '🏢', industrial: '🏭' };
+                    addToast((biomeIcon[currentBiome] || '🌎') + ' Entering ' + currentBiome + ' biome');
+                    if (biomeHazards[currentBiome]) speak(biomeHazards[currentBiome]);
+                    journalLog('biome', biomeIcon[currentBiome] || '🌎', 'Entered ' + currentBiome + ' biome');
+                    // Biome Tourist achievement — 4 unique biomes in one drive.
+                    if (Object.keys(ch.biomesVisited).length >= 4 && !(d.badges && d.badges.biome_tourist)) {
+                      var btBadges = Object.assign({}, d.badges || {});
+                      btBadges.biome_tourist = true;
+                      upd('badges', btBadges);
+                      addToast('🏅 Achievement: Biome Tourist 🌎');
+                    }
+                  } else {
+                    ch.biomesVisited[currentBiome] = true;
+                  }
+                  ch.lastBiome = currentBiome;
+                }
+              }
+              // Tick the active challenge.
+              if (ch.active) {
+                var act = ch.active;
+                act.elapsed += dt;
+                var tickCtx = {
+                  stats: statsRef.current, car: carRef.current, scn: currentScenario,
+                  elapsed: act.elapsed, dt: dt, MS_TO_MPH: MS_TO_MPH,
+                  wildlife: wildlifeRef.current,
+                  _armed: act._armed, _off: act._off, _saw: act._saw,
+                  _startHB: act._startHB, _startJR: act._startJR, _startSkid: act._startSkid,
+                  _startDist: act._startDist, _fuelStart: act._fuelStart,
+                  _startLM: act._startLM, _startCrashes: act._startCrashes, _startSkidT: act._startSkidT,
+                  _visitCount: function(s) { return s.landmarkVisits ? Object.values(s.landmarkVisits).reduce(function(a,b){return a+b;}, 0) : 0; }
+                };
+                var result = act.def.check(tickCtx);
+                // Persist any fields the check() mutated back onto the active challenge.
+                ['_armed','_off','_saw','_startHB','_startJR','_startSkid','_startDist','_fuelStart','_startLM','_startCrashes','_startSkidT'].forEach(function(k) {
+                  if (tickCtx[k] !== undefined) act[k] = tickCtx[k];
+                });
+                act.progress = result.progress || 0;
+                if (result.passed) {
+                  addToast('🏅 Challenge complete: ' + act.def.title + (result.extra ? ' — ' + result.extra : ''));
+                  speak('Challenge complete. ' + act.def.title + '.');
+                  journalLog('challenge', act.def.icon, 'Challenge passed: ' + act.def.title + (result.extra ? ' (' + result.extra + ')' : ''));
+                  statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 2);
+                  statsRef.current.efficiencyScore = Math.min(100, statsRef.current.efficiencyScore + 2);
+                  ch.completedCount++;
+                  var chBadges = Object.assign({}, d.badges || {});
+                  var chAwarded = false;
+                  if (!chBadges.first_challenge) { chBadges.first_challenge = true; addToast('🏅 Achievement: Challenge Accepted 🎯'); chAwarded = true; }
+                  if (ch.completedCount >= 5 && !chBadges.five_challenges) { chBadges.five_challenges = true; addToast('🏅 Achievement: Challenger 🎖️'); chAwarded = true; }
+                  if (chAwarded) upd('badges', chBadges);
+                  ch.active = null;
+                  ch.nextOfferAt = curT + 60; // cooldown before next offer
+                } else if (result.failed) {
+                  addToast('❌ Challenge failed: ' + (result.reason || 'Try again.'));
+                  ch.active = null;
+                  ch.nextOfferAt = curT + 45;
+                }
+              }
+              // Offer a new challenge if no active and no pending offer.
+              if (!ch.active && !ch.offered && curT >= ch.nextOfferAt) {
+                // Filter challenges to ones whose preconditions match current conditions.
+                var eligible = CHALLENGES.filter(function(c) {
+                  if (c.biome && ch.lastBiome !== c.biome) return false;
+                  if (c.weather && c.weather.indexOf(currentScenario.weather) === -1) return false;
+                  if (c.time && c.time !== currentScenario.time) return false;
+                  return true;
+                });
+                if (eligible.length > 0) {
+                  var pickCh = eligible[Math.floor(Math.random() * eligible.length)];
+                  ch.offered = { def: pickCh, offeredAt: curT };
+                  addToast('🎯 Challenge offered: ' + pickCh.title);
+                  speak('New challenge available. ' + pickCh.title + '. ' + pickCh.desc);
+                } else {
+                  // No matching challenge now — try again in 20s.
+                  ch.nextOfferAt = curT + 20;
+                }
+              }
+              // Offer times out after 15s if ignored.
+              if (ch.offered && curT - ch.offered.offeredAt > 15) {
+                ch.offered = null;
+                ch.nextOfferAt = curT + 30;
               }
             }
 
@@ -2729,6 +3138,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var brakeInput = Math.max((k['s'] || k['arrowdown']) ? 1 : 0, gpBrake);
           var steerLeft = (k['a'] || k['arrowleft']) ? 1 : 0;
           var steerRight = (k['d'] || k['arrowright']) ? 1 : 0;
+          // ─── Ride-Along autopilot override ───
+          // Replaces human input with a lookahead spline-follower + target-speed cruise.
+          // The physics, hazards, and narration pipeline are unchanged — this just feeds
+          // synthetic throttle/brake/steer so the rest of the sim behaves identically.
+          if (rideAlongRef.current && gear !== 'P' && gear !== 'R') {
+            var raSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var raSpeedMph = Math.abs(car.speed) * MS_TO_MPH;
+            // Target speed: posted limit minus a 3 mph comfort buffer, reduced for weather.
+            var raTarget = Math.max(15, (scn.speedLimit || 25) - 3);
+            if (scn.weather === 'snow') raTarget *= 0.55;
+            else if (scn.weather === 'rain' || scn.weather === 'fog') raTarget *= 0.75;
+            // Nearest upcoming signal — slow for red/yellow, resume on green.
+            // Car moves toward decreasing y (heading=-π/2 → sin=-1), so "ahead" = lower y.
+            var sigList = signalsRef.current || [];
+            for (var rsi = 0; rsi < sigList.length; rsi++) {
+              var sig = sigList[rsi];
+              if (!sig || sig.type !== 'light') continue;
+              var dySig = car.y - sig.y; // positive = ahead (lower y)
+              if (dySig > 0 && dySig < 12) {
+                if (sig.state === 'red' || sig.state === 'yellow') raTarget = Math.min(raTarget, dySig < 3 ? 0 : 10);
+                break;
+              }
+            }
+            // Nearest traffic car ahead in the same direction — maintain following distance.
+            var tList = trafficRef.current || [];
+            for (var rti = 0; rti < tList.length; rti++) {
+              var tc = tList[rti];
+              if (!tc) continue;
+              var dyT = car.y - tc.y;
+              var sameLaneX = Math.abs((tc.x || 0) - car.x) < 2.5;
+              if (dyT > 0 && dyT < 8 && sameLaneX) {
+                raTarget = Math.min(raTarget, Math.max(0, (tc.speed || 0) * MS_TO_MPH - 2));
+              }
+            }
+            // Wildlife / pedestrian in path → brake hard.
+            var wl = wildlifeRef.current;
+            if (wl && Math.abs(wl.x - car.x) < 4 && (car.y - wl.y) > 0 && (car.y - wl.y) < 14) raTarget = 0;
+            // Throttle/brake as a simple cruise controller.
+            var raErr = raTarget - raSpeedMph;
+            if (raErr > 2) { throttleInput = Math.min(1, raErr / 10); brakeInput = 0; }
+            else if (raErr < -3) { throttleInput = 0; brakeInput = Math.min(1, -raErr / 15); }
+            else { throttleInput = 0.1; brakeInput = 0; }
+            // Steering: look ~8 cells ahead on the spline and steer toward the centerline.
+            if (raSpline) {
+              var raLook = Math.max(4, Math.min(12, raSpeedMph * 0.15));
+              var targetX = raSpline.centerAt(car.y - raLook);
+              // Bias slightly right-of-center for right-lane driving (road is ~3 cells each side).
+              targetX += 1.2;
+              var dx = targetX - car.x;
+              // Heading offset from due-north. Positive dx → need to steer toward +x (right turn).
+              var desiredHeading = Math.atan2(-raLook, dx); // heading vector (dx, -raLook)
+              var headingErr = desiredHeading - car.heading;
+              // Normalize to [-π, π]
+              while (headingErr > Math.PI) headingErr -= Math.PI * 2;
+              while (headingErr < -Math.PI) headingErr += Math.PI * 2;
+              var raSteer = Math.max(-1, Math.min(1, headingErr * 1.2));
+              steerLeft = raSteer < 0 ? -raSteer : 0;
+              steerRight = raSteer > 0 ? raSteer : 0;
+            } else {
+              // No spline (finite map) — just hold straight.
+              steerLeft = 0; steerRight = 0;
+            }
+            // Auto-shift to D if sitting in P.
+            if (gear === 'P') { gearRef.current = gear = 'D'; }
+            // ─── Narration: announce what the driver would be noticing ───
+            // Uses the shared speak() helper (Gemini TTS via ctx.callTTS). The helper already
+            // throttles to once per 5 s, so we just call it with the relevant cue strings.
+            var ras = rideAlongStateRef.current;
+            var rNow = timeRef.current;
+            // Approaching signal
+            for (var nsi = 0; nsi < sigList.length; nsi++) {
+              var nsig = sigList[nsi];
+              if (!nsig || nsig.type !== 'light') continue;
+              var dySigN = car.y - nsig.y;
+              if (dySigN > 4 && dySigN < 10) {
+                var sigKey = 'sig_' + nsig.y + '_' + nsig.state;
+                if (ras.lastSignalId !== sigKey) {
+                  ras.lastSignalId = sigKey;
+                  if (nsig.state === 'red') speak('Red light ahead. Coming to a complete stop.');
+                  else if (nsig.state === 'yellow') speak('Yellow light. Slowing to stop safely.');
+                  else if (nsig.state === 'green') speak('Green light. Proceeding through the intersection.');
+                }
+                break;
+              }
+            }
+            // Wildlife callout (once per creature)
+            if (wl && !ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)]) {
+              if (Math.abs(wl.x - car.x) < 6 && (car.y - wl.y) > 0 && (car.y - wl.y) < 20) {
+                ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)] = true;
+                if (wl.kind === 'moose') speak('Moose on the road edge. Braking straight, not swerving. Never swerve around a moose.');
+                else if (wl.kind === 'deer') speak('Deer detected. Slowing and scanning for more — deer travel in groups.');
+                else speak('Animal in the road. Braking.');
+              }
+            }
+            // Target-speed narration on big changes (rate-limited to 8 s)
+            if (rNow - ras.lastNarration > 8) {
+              var gap = raTarget - raSpeedMph;
+              if (raTarget < 5 && raSpeedMph > 8) { speak('Slowing to a stop.'); ras.lastNarration = rNow; }
+              else if (gap > 12) { speak('Accelerating toward posted speed of ' + Math.round(raTarget) + '.'); ras.lastNarration = rNow; }
+            }
+          }
           // In Park: no movement at all
           if (gear === 'P') { throttleInput = 0; car.speed *= 0.9; if (car.speed < 0.1) car.speed = 0; }
           // In Reverse: W = reverse thrust, S = brake
@@ -2848,8 +3358,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   ar._rumbleOsc.frequency.setValueAtTime(45 + Math.sin(timeRef.current * 30) * 8, ar.ctx.currentTime);
                 }
               } catch (rErr) { /* non-blocking */ }
-              // Visual: shake the car slightly
-              car._suspY += Math.sin(timeRef.current * 40) * 0.02;
+              // Visual: shake the car slightly (suppressed in reduced-motion mode for vestibular safety)
+              if (!reducedMotionRef.current) {
+                car._suspY += Math.sin(timeRef.current * 40) * 0.02;
+              }
               // Gentle nudge toast (once every 10s max)
               if (!statsRef.current._lastRumble || timeRef.current - statsRef.current._lastRumble > 10) {
                 statsRef.current._lastRumble = timeRef.current;
@@ -2911,6 +3423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var impactMph = Math.abs(car.speed) * MS_TO_MPH;
                 if (impactMph > 5) {
                   statsRef.current.crashes++;
+                  journalLog('crash', '💥', 'Crash at ' + Math.round(impactMph) + ' mph');
                   var dmg = impactMph > 30 ? 40 : impactMph > 15 ? 25 : 15;
                   statsRef.current.safetyScore -= dmg;
                   addToast('💥 Crash at ' + Math.round(impactMph) + ' mph! -' + dmg + ' safety');
@@ -3061,7 +3574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       if (addToast) addToast(evt.icon + ' ' + evt.warn);
                       speak(evt.warn.replace(/[^a-zA-Z0-9 ,.!?']/g, ' '));
                       // Reward for slowing down
-                      setTimeout(function() { statsRef.current._landmarkEventActive = false; }, 8000);
+                      safeTimeout(function() { statsRef.current._landmarkEventActive = false; }, 8000);
                     }
                     break;
                   }
@@ -3501,7 +4014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (em.life <= 0 || em.y < car.y - 20) {
             try {
               if (audioRef.current._sirenGain) audioRef.current._sirenGain.gain.setTargetAtTime(0, audioRef.current.ctx.currentTime, 0.05);
-              setTimeout(function() { try { if (audioRef.current._sirenOsc) { audioRef.current._sirenOsc.stop(); audioRef.current._sirenOsc = null; } } catch(e){} }, 200);
+              safeTimeout(function() { try { if (audioRef.current._sirenOsc) { audioRef.current._sirenOsc.stop(); audioRef.current._sirenOsc = null; } } catch(e){} }, 200);
             } catch (e) {}
             emergencyRef.current = null;
           }
@@ -3795,7 +4308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else if (!skidRef.current.active && a._skidOsc) {
               a._skidGain.gain.setTargetAtTime(0, a.ctx.currentTime, 0.05);
               var oldOsc = a._skidOsc;
-              setTimeout(function() { try { oldOsc.stop(); } catch(e){} }, 200);
+              safeTimeout(function() { try { oldOsc.stop(); } catch(e){} }, 200);
               a._skidOsc = null;
             }
             // Brake squeal — thin high-Q tone that builds as brakes engage at speed.
@@ -4480,7 +4993,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           })();
 
           var camera = new T.PerspectiveCamera(65, W / H, 0.1, 200);
-          var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true });
+          // preserveDrawingBuffer enables canvas.toDataURL() for Photo Mode (K key).
+          // Small perf cost (~5%) but needed — without it the WebGL buffer is cleared
+          // before the screenshot can be read back.
+          var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true, preserveDrawingBuffer: true });
           renderer.setSize(W, H);
           renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
           renderer.shadowMap.enabled = true;
@@ -5865,12 +6381,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           if (camMode === 'cockpit') {
             // Camera bob from road vibration (subtle, speed-dependent)
-            var bobAmp = Math.min(0.03, car.speed * 0.002);
+            // Reduced-motion mode disables both bob and skid-shake for vestibular safety.
+            var rmActive = !!reducedMotionRef.current;
+            var bobAmp = rmActive ? 0 : Math.min(0.03, car.speed * 0.002);
             var bobY = Math.sin(timeRef.current * 8) * bobAmp;
             var bobX = Math.sin(timeRef.current * 5.3) * bobAmp * 0.3;
             // Skid shake
             var shakeX = 0, shakeZ = 0;
-            if (skidRef.current.active) {
+            if (skidRef.current.active && !rmActive) {
               var si = skidRef.current.intensity * 0.15;
               shakeX = (Math.random() - 0.5) * si;
               shakeZ = (Math.random() - 0.5) * si;
@@ -8105,7 +8623,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Cloud drift animation
           if (s3.cloudGroup) {
             s3.cloudGroup.children.forEach(function(cg) {
-              cg.position.x += (cg._drift || 0.3) * 0.016;
+              if (!reducedMotionRef.current) {
+                cg.position.x += (cg._drift || 0.3) * 0.016;
+              }
               if (cg.position.x > 120) cg.position.x = -120;
             });
           }
@@ -8116,9 +8636,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (s3._hiCloudRef) {
             s3._hiCloudRef.position.set(carWorldX, 0, carWorldZ);
             s3._hiCloudRef.children.forEach(function(hc) {
-              hc._driftAng = (hc._driftAng || 0) + (hc._driftSpeed || 0.004) * 0.016;
-              hc.position.x = Math.cos(hc._driftAng) * hc._driftDist;
-              hc.position.z = Math.sin(hc._driftAng) * hc._driftDist;
+              if (!reducedMotionRef.current) {
+                hc._driftAng = (hc._driftAng || 0) + (hc._driftSpeed || 0.004) * 0.016;
+                hc.position.x = Math.cos(hc._driftAng) * hc._driftDist;
+                hc.position.z = Math.sin(hc._driftAng) * hc._driftDist;
+              }
               hc.lookAt(carWorldX, hc.position.y, carWorldZ);
             });
           }
@@ -8603,32 +9125,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText('REARVIEW', W / 2, mirrorY - 4);
 
           // ── Mini-map radar (bottom-left corner) ──
-          var mmSize = 90;
-          var mmX = 10, mmY = H - 200;
-          var mmScale = 1.4; // world units per pixel
+          // Free Explore gets a larger map with infinite-world road sampling + landmark pips.
+          var isFE = !!d.freeExplore;
+          var mmSize = isFE ? 140 : 90;
+          var mmX = 10, mmY = H - (isFE ? 250 : 200);
+          var mmScale = isFE ? 0.9 : 1.4; // world units per pixel — tighter zoom in FE
           gfx.fillStyle = 'rgba(0,0,0,0.7)';
           gfx.fillRect(mmX, mmY, mmSize, mmSize);
           gfx.strokeStyle = '#334155'; gfx.lineWidth = 1;
           gfx.strokeRect(mmX, mmY, mmSize, mmSize);
-          // Draw road on minimap
+          // Helper: rotate world point into car-relative minimap space.
+          var _cosH = Math.cos(-car.heading + Math.PI / 2);
+          var _sinH = Math.sin(-car.heading + Math.PI / 2);
+          var mmCx = mmX + mmSize / 2, mmCy = mmY + mmSize / 2;
+          var worldToMM = function(wx, wy) {
+            var relX = (wx - car.x) / mmScale;
+            var relY = (wy - car.y) / mmScale;
+            return { x: mmCx + relX * _cosH - relY * _sinH, y: mmCy + relX * _sinH + relY * _cosH };
+          };
+          // Draw road on minimap — branches on finite map vs infinite world.
           var map = mapRef.current;
-          if (map) {
-            var mmCx = mmX + mmSize / 2;
-            var mmCy = mmY + mmSize / 2;
+          var iwMM = infiniteWorldRef.current;
+          if (iwMM) {
+            // Sample the infinite world in a box around the car.
+            var span = Math.ceil(mmSize * mmScale / 2) + 2;
+            for (var iy = -span; iy <= span; iy += 2) {
+              for (var ix = -span; ix <= span; ix += 2) {
+                var wx = Math.floor(car.x) + ix;
+                var wy = Math.floor(car.y) + iy;
+                var iwCell = iwMM.getCell(wx, wy);
+                if (iwCell !== 0 && iwCell !== 3 && iwCell !== 4) continue;
+                var p = worldToMM(wx, wy);
+                if (p.x < mmX || p.x > mmX + mmSize || p.y < mmY || p.y > mmY + mmSize) continue;
+                gfx.fillStyle = iwCell === 3 ? '#facc15' : iwCell === 4 ? '#6b7280' : '#475569';
+                gfx.fillRect(p.x - 0.5, p.y - 0.5, 1.6, 1.6);
+              }
+            }
+            // Landmark icons: scan chunks near the car and plot their anchor.
+            // landmark.centerY is CHUNK-RELATIVE, so world Y = chunkIndex * CHUNK_SIZE + centerY.
+            var ciHereMM = Math.floor(car.y / CHUNK_SIZE);
+            for (var dci = -3; dci <= 3; dci++) {
+              var lmChunk = iwMM.chunks && iwMM.chunks[ciHereMM + dci];
+              if (!lmChunk || !lmChunk.landmark) continue;
+              var lmWorldY = (ciHereMM + dci) * CHUNK_SIZE + lmChunk.landmark.centerY;
+              var lmW = worldToMM(lmChunk.landmark.centerX, lmWorldY);
+              if (lmW.x < mmX + 2 || lmW.x > mmX + mmSize - 2 || lmW.y < mmY + 2 || lmW.y > mmY + mmSize - 2) continue;
+              gfx.font = '10px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(lmChunk.landmark.type.icon, lmW.x, lmW.y);
+            }
+          } else if (map) {
             for (var mmy = 0; mmy < MAP_SIZE; mmy += 2) {
               for (var mmxx = 0; mmxx < MAP_SIZE; mmxx += 2) {
                 var cell = map[mmy][mmxx];
                 if (cell !== 0 && cell !== 3 && cell !== 4) continue;
-                var relX = (mmxx - car.x) / mmScale;
-                var relY = (mmy - car.y) / mmScale;
-                // Rotate relative to car heading
-                var cosH = Math.cos(-car.heading + Math.PI / 2);
-                var sinH = Math.sin(-car.heading + Math.PI / 2);
-                var screenMX = mmCx + relX * cosH - relY * sinH;
-                var screenMY = mmCy + relX * sinH + relY * cosH;
-                if (screenMX < mmX || screenMX > mmX + mmSize || screenMY < mmY || screenMY > mmY + mmSize) continue;
+                var pp = worldToMM(mmxx, mmy);
+                if (pp.x < mmX || pp.x > mmX + mmSize || pp.y < mmY || pp.y > mmY + mmSize) continue;
                 gfx.fillStyle = cell === 3 ? '#facc15' : cell === 4 ? '#6b7280' : '#475569';
-                gfx.fillRect(screenMX - 0.5, screenMY - 0.5, 1.5, 1.5);
+                gfx.fillRect(pp.x - 0.5, pp.y - 0.5, 1.5, 1.5);
               }
             }
           }
@@ -8894,6 +9447,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           drivingRef.current = false;
           if (animRef.current) cancelAnimationFrame(animRef.current);
           window.removeEventListener('resize', onResize);
+          // Cancel any pending tracked timeouts on unmount (covers nav-without-exit)
+          try {
+            timeoutsRef.current.forEach(function(id) { clearTimeout(id); });
+            timeoutsRef.current = [];
+          } catch (e) {}
           if (threeRef.current && threeRef.current.renderer) {
             // Dispose all geometries and materials in the scene to free GPU memory
             if (threeRef.current.scene) {
@@ -9227,7 +9785,160 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           drivingStats ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', fontSize: '11px', color: '#94a3b8' } },
             h('div', { style: { color: '#22d3ee', fontWeight: 700, marginBottom: '4px' } }, 'Last drive: ' + drivingStats.scenario),
             h('div', null, 'Safety ' + drivingStats.safetyScore + ' · Eco ' + drivingStats.efficiencyScore + ' · ' + drivingStats.avgMPG + ' MPG avg · ' + drivingStats.distance_mi + ' mi')
-          ) : null
+          ) : null,
+          // ── Accessibility (UDL) panel ──
+          // Reduced-motion suppresses cloud drift, camera bob, skid-shake, and rumble jitter.
+          // Defaults to the OS preference; user can override either way and we persist the choice.
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginTop: '12px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#a78bfa', marginBottom: '8px' } }, '♿ Accessibility'),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#cbd5e1', cursor: 'pointer', marginBottom: '8px' } },
+              h('input', { type: 'checkbox', checked: !!reducedMotionRef.current,
+                onChange: function(e) {
+                  reducedMotionRef.current = e.target.checked;
+                  upd('reducedMotion', e.target.checked);
+                }
+              }),
+              h('span', null, 'Reduced motion'),
+              h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— stops cloud drift, camera bob, and skid-shake')
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#cbd5e1', cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: !!rideAlongRef.current,
+                onChange: function(e) {
+                  rideAlongRef.current = e.target.checked;
+                  upd('rideAlong', e.target.checked);
+                }
+              }),
+              h('span', null, '🎧 Ride-Along mode'),
+              h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— the car drives itself and narrates aloud (for blind/low-vision and keyboard-only learners)')
+            )
+          ),
+          // ── Progress Save/Load panel ──
+          // Exports a JSON snapshot of badges, scenarios driven, weathers driven, last drive stats,
+          // and accessibility prefs. Families can keep the file, email it, or carry it between a
+          // School Box and a home install — no account required (zero-PII by design).
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginTop: '12px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, '💾 Progress'),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '10px', lineHeight: '1.5' } },
+              'Save a JSON file of your badges and scenario history. Load it on another device to pick up where you left off. No account, no PII.'),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() {
+                  var payload = {
+                    tool: 'roadReady',
+                    version: 1,
+                    savedAt: new Date().toISOString(),
+                    badges: earnedBadges,
+                    scenariosDriven: scenariosDriven,
+                    weathersDriven: weathersDriven,
+                    totalDrives: d.totalDrives || 0,
+                    drivingStats: drivingStats || null,
+                    worldSeed: d.worldSeed || null,
+                    reducedMotion: !!d.reducedMotion,
+                    rideAlong: !!d.rideAlong,
+                    lastJournal: d.lastJournal || null,
+                    completedTrips: d.completedTrips || {}
+                  };
+                  try {
+                    var json = JSON.stringify(payload, null, 2);
+                    var blob = new Blob([json], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var stamp = new Date().toISOString().slice(0, 10);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'roadready_progress_' + stamp + '.json'; a.click();
+                    URL.revokeObjectURL(url);
+                    addToast('💾 Progress saved');
+                  } catch (saveErr) {
+                    addToast('Save failed: ' + (saveErr && saveErr.message ? saveErr.message : 'unknown'));
+                  }
+                },
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              }, '📤 Save Progress'),
+              // Driver's Journal export — requires a completed drive so there's content to write.
+              h('button', {
+                disabled: !d.lastJournal,
+                onClick: function() {
+                  var j = d.lastJournal;
+                  if (!j) { addToast('No journal yet — complete a drive first.'); return; }
+                  var lines = [];
+                  lines.push('# RoadReady Driver\'s Journal');
+                  lines.push('');
+                  lines.push('**Scenario:** ' + j.scenario);
+                  lines.push('**Vehicle:** ' + j.vehicle);
+                  if (j.conditions) {
+                    lines.push('**Conditions:** ' + j.conditions.weather + ', ' + j.conditions.time + ', ' + j.conditions.traffic + ' traffic, ' + j.conditions.speedLimit + ' mph limit');
+                  }
+                  lines.push('**Duration:** ' + Math.floor((j.durationSec || 0) / 60) + 'm ' + ((j.durationSec || 0) % 60) + 's');
+                  lines.push('**Date:** ' + new Date(j.startedAt || Date.now()).toLocaleString());
+                  lines.push('');
+                  lines.push('## Event Log');
+                  lines.push('');
+                  (j.entries || []).forEach(function(e) {
+                    var mm = Math.floor(e.t / 60);
+                    var ss = Math.floor(e.t % 60);
+                    lines.push('- `' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss + '` ' + e.icon + ' ' + e.text);
+                  });
+                  lines.push('');
+                  lines.push('---');
+                  lines.push('*This log can be used as supporting evidence for Maine\'s 70-hour supervised driving requirement when paired with a parent/guardian signature.*');
+                  lines.push('');
+                  lines.push('Parent/Guardian signature: ____________________  Date: __________');
+                  try {
+                    var md = lines.join('\n');
+                    var blob = new Blob([md], { type: 'text/markdown' });
+                    var url = URL.createObjectURL(blob);
+                    var stamp = new Date().toISOString().slice(0, 10);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'roadready_journal_' + stamp + '.md'; a.click();
+                    URL.revokeObjectURL(url);
+                    addToast('📓 Journal exported');
+                  } catch (jErr) {
+                    addToast('Export failed.');
+                  }
+                },
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid ' + (d.lastJournal ? '#10b981' : '#334155'), background: d.lastJournal ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: d.lastJournal ? '#10b981' : '#475569', fontSize: '12px', fontWeight: 700, cursor: d.lastJournal ? 'pointer' : 'not-allowed' }
+              }, '📓 Export Journal'),
+              h('label', {
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-block' }
+              }, '📥 Load Progress',
+                h('input', {
+                  type: 'file', accept: 'application/json,.json',
+                  style: { display: 'none' },
+                  onChange: function(e) {
+                    var file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                      try {
+                        var parsed = JSON.parse(ev.target.result);
+                        if (!parsed || parsed.tool !== 'roadReady') {
+                          addToast('Not a RoadReady save file.'); return;
+                        }
+                        var toApply = {};
+                        if (parsed.badges) toApply.badges = parsed.badges;
+                        if (parsed.scenariosDriven) toApply.scenariosDriven = parsed.scenariosDriven;
+                        if (parsed.weathersDriven) toApply.weathersDriven = parsed.weathersDriven;
+                        if (typeof parsed.totalDrives === 'number') toApply.totalDrives = parsed.totalDrives;
+                        if (parsed.drivingStats) toApply.drivingStats = parsed.drivingStats;
+                        if (typeof parsed.worldSeed === 'number') toApply.worldSeed = parsed.worldSeed;
+                        if (typeof parsed.reducedMotion === 'boolean') toApply.reducedMotion = parsed.reducedMotion;
+                        if (typeof parsed.rideAlong === 'boolean') toApply.rideAlong = parsed.rideAlong;
+                        if (parsed.lastJournal) toApply.lastJournal = parsed.lastJournal;
+                        if (parsed.completedTrips) toApply.completedTrips = parsed.completedTrips;
+                        updMulti(toApply);
+                        if (typeof parsed.reducedMotion === 'boolean') reducedMotionRef.current = parsed.reducedMotion;
+                        if (typeof parsed.rideAlong === 'boolean') rideAlongRef.current = parsed.rideAlong;
+                        addToast('📥 Loaded ' + Object.keys(parsed.badges || {}).length + ' badges');
+                      } catch (loadErr) {
+                        addToast('Invalid save file.');
+                      }
+                    };
+                    reader.readAsText(file);
+                    e.target.value = ''; // allow re-loading the same file
+                  }
+                })
+              )
+            )
+          )
         );
       }
 
@@ -9302,6 +10013,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   })
                 )
               )
+            )
+          ),
+          // ── Road Trip picker ──
+          // Optional: attach a curated multi-stop trip. The quest system will auto-target
+          // each landmark in order and issue a completion badge at the end.
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', marginBottom: '8px' } }, '🗺️ Road Trip (optional)'),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '8px' } }, 'Pick a curated chain of stops, or leave blank for open exploration.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' } },
+              [{ id: null, icon: '❌', name: 'No trip', desc: 'Open exploration' }].concat(TRIPS).map(function(trip) {
+                var sel = (trip.id || null) === (d.freeExploreTrip || null);
+                var done = trip.id && d.completedTrips && d.completedTrips[trip.id];
+                return h('button', { key: trip.id || 'none',
+                  onClick: function() { upd('freeExploreTrip', trip.id); },
+                  style: { padding: '8px', borderRadius: '6px', border: '1px solid ' + (sel ? '#f59e0b' : '#334155'), background: sel ? 'rgba(245,158,11,0.15)' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', textAlign: 'left' }
+                },
+                  h('div', { style: { fontWeight: 800, marginBottom: '2px' } }, trip.icon + ' ' + trip.name + (done ? ' ✓' : '')),
+                  h('div', { style: { color: '#94a3b8', fontSize: '9px', lineHeight: '1.3' } }, trip.desc || ''),
+                  trip.goals ? h('div', { style: { color: '#64748b', fontSize: '9px', marginTop: '3px' } }, trip.goals.length + ' stops') : null
+                );
+              })
             )
           ),
           h('button', { onClick: function() {
@@ -9403,10 +10135,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📷 Camera'),
             h('button', { onClick: function() { upd('highBeams', !d.highBeams); },
-              style: { padding: '6px 10px', borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW')
+              style: { padding: '6px 10px', borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW'),
+            h('button', { onClick: takePhoto, title: 'Snap a screenshot (K)',
+              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(168,139,250,0.3)', color: '#fff', border: '1px solid #a78bfa', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📸 Photo')
           ),
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: '#cbd5e1', fontSize: '10px', zIndex: 10 } },
-            'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · Q Horn · SPACE Pause'
+            'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · K Photo · Q Horn · SPACE Pause'
           ),
           // ── Touch controls for mobile/tablet ──
           h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
@@ -9460,6 +10194,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, 'Signal ►')
           ),
           // Free Explore live condition toolbar
+          // ── Free Explore: Road Trip progress HUD ──
+          // Small panel top-left showing current goal + progress dots for the active trip.
+          d.freeExplore && tripRef.current ? (function() {
+            var tr = tripRef.current;
+            var gi = tr.goalIndex;
+            var cur = tr.def.goals[gi];
+            return h('div', {
+              style: { position: 'absolute', top: '10px', left: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '2px solid #f59e0b', zIndex: 24, color: '#fff', minWidth: '180px', maxWidth: '240px' },
+              role: 'status', 'aria-live': 'polite'
+            },
+              h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' } }, tr.def.icon + ' ' + tr.def.name),
+              // Progress dots — filled for completed, outline for remaining, current with ring.
+              h('div', { style: { display: 'flex', gap: '5px', margin: '4px 0 6px 0' } },
+                tr.def.goals.map(function(g, idx) {
+                  var state = idx < gi ? 'done' : idx === gi ? 'current' : 'future';
+                  return h('div', { key: idx, title: g.label,
+                    style: { width: '14px', height: '14px', borderRadius: '50%', background: state === 'done' ? '#10b981' : state === 'current' ? '#f59e0b' : 'transparent', border: '2px solid ' + (state === 'done' ? '#10b981' : state === 'current' ? '#fbbf24' : '#475569'), boxShadow: state === 'current' ? '0 0 0 2px rgba(245,158,11,0.4)' : 'none' }
+                  });
+                })
+              ),
+              cur ? h('div', { style: { fontSize: '11px', color: '#fde68a' } }, 'Next: ' + cur.label) : null,
+              // Abandon button
+              h('button', {
+                onClick: function() {
+                  tripRef.current = null;
+                  addToast('Trip abandoned.');
+                  journalLog('trip_abandon', '🚪', 'Trip abandoned');
+                },
+                style: { marginTop: '6px', padding: '3px 8px', borderRadius: '5px', border: '1px solid #64748b', background: 'transparent', color: '#94a3b8', fontSize: '9px', cursor: 'pointer' }
+              }, 'Abandon trip')
+            );
+          })() : null,
+          // ── Free Explore: Challenge card HUD ──
+          // Shows offered card (with Accept/Decline) OR active card (with progress bar).
+          // Rendered as an overlay near the top-center so it doesn't clobber the steering HUD.
+          d.freeExplore && (challengeRef.current.offered || challengeRef.current.active) ? h('div', {
+            style: { position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', padding: '12px 16px', borderRadius: '12px', background: 'rgba(0,0,0,0.92)', border: '2px solid ' + (challengeRef.current.active ? '#22d3ee' : '#fbbf24'), zIndex: 25, minWidth: '280px', maxWidth: '420px', color: '#fff', boxShadow: '0 4px 14px rgba(0,0,0,0.6)' },
+            role: 'status', 'aria-live': 'polite'
+          },
+            (function() {
+              var ch = challengeRef.current;
+              if (ch.active) {
+                var pct = Math.round((ch.active.progress || 0) * 100);
+                return [
+                  h('div', { key: 'h', style: { fontSize: '11px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '🎯 Active Challenge'),
+                  h('div', { key: 't', style: { fontSize: '14px', fontWeight: 800 } }, ch.active.def.icon + ' ' + ch.active.def.title),
+                  h('div', { key: 'd', style: { fontSize: '10px', color: '#94a3b8', marginTop: '3px', lineHeight: '1.4' } }, ch.active.def.desc),
+                  h('div', { key: 'pb', style: { height: '6px', background: '#1e293b', borderRadius: '3px', marginTop: '8px', overflow: 'hidden' } },
+                    h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #22d3ee, #10b981)', transition: 'width 0.2s' } })
+                  ),
+                  h('div', { key: 'pt', style: { fontSize: '9px', color: '#64748b', marginTop: '2px', textAlign: 'right' } }, pct + '% · ' + Math.max(0, Math.ceil((ch.active.def.duration || 30) - ch.active.elapsed)) + 's left')
+                ];
+              }
+              if (ch.offered) {
+                return [
+                  h('div', { key: 'h', style: { fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '🎯 Challenge Offered'),
+                  h('div', { key: 't', style: { fontSize: '14px', fontWeight: 800 } }, ch.offered.def.icon + ' ' + ch.offered.def.title),
+                  h('div', { key: 'd', style: { fontSize: '10px', color: '#cbd5e1', marginTop: '3px', lineHeight: '1.4' } }, ch.offered.def.desc),
+                  h('div', { key: 'btns', style: { display: 'flex', gap: '8px', marginTop: '10px' } },
+                    h('button', {
+                      onClick: function() {
+                        var cr = challengeRef.current;
+                        if (!cr.offered) return;
+                        var def = cr.offered.def;
+                        cr.active = { def: def, elapsed: 0, progress: 0 };
+                        if (def.onArm) def.onArm(cr.active);
+                        cr.offered = null;
+                        addToast('🎯 Accepted: ' + def.title);
+                      },
+                      style: { flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #22c55e', background: 'rgba(34,197,94,0.25)', color: '#4ade80', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                    }, '✓ Accept'),
+                    h('button', {
+                      onClick: function() {
+                        var cr = challengeRef.current;
+                        cr.offered = null;
+                        cr.nextOfferAt = timeRef.current + 30;
+                      },
+                      style: { flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #64748b', background: 'rgba(100,116,139,0.2)', color: '#cbd5e1', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                    }, 'Decline')
+                  )
+                ];
+              }
+              return null;
+            })()
+          ) : null,
           d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '110px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 15, minWidth: '160px' } },
             h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '6px', textAlign: 'center' } }, '🌎 FREE EXPLORE'),
             // Weather row
@@ -9584,7 +10403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', fontSize: '11px', color: '#cbd5e1', textAlign: 'left', marginBottom: '16px' } },
               h('div', { style: { marginBottom: '6px' } }, '• 20 questions per session (real test: 40)'),
               h('div', { style: { marginBottom: '6px' } }, '• Pass at 16 correct (80%)'),
-              h('div', { style: { marginBottom: '6px' } }, '• Each wrong answer shows the explanation'),
+              h('div', { style: { marginBottom: '6px' } }, '• Wrong answers pause for 3s on the explanation — read it'),
               h('div', null, '• Maine-specific rules mixed with federal basics')
             ),
             h('button', { onClick: function() {
@@ -9646,32 +10465,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 onClick: function() {
                   var isCorrect = i === q.correct;
                   var newAnswers = permitState.answers.slice();
-                  newAnswers[permitState.index] = { chosen: i, correct: isCorrect };
+                  // Stamp answer time so wrong answers force a 3s mandatory-explanation cooldown.
+                  newAnswers[permitState.index] = { chosen: i, correct: isCorrect, answeredAt: Date.now() };
                   upd('permit', Object.assign({}, permitState, { answers: newAnswers, score: permitState.score + (isCorrect ? 1 : 0) }));
                 },
                 style: { display: 'block', width: '100%', padding: '10px 14px', marginBottom: '6px', borderRadius: '8px', border: '1px solid ' + border, background: bg, color: '#fff', cursor: showResult ? 'default' : 'pointer', textAlign: 'left', fontSize: '12px' }
               }, String.fromCharCode(65 + i) + '. ' + opt);
             }),
-            lastAns ? h('div', { style: { marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' } },
-              h('b', null, lastAns.correct ? '✓ Correct. ' : '✗ Incorrect. '), q.exp
+            // Explanation panel: always shown after answering. Wrong answers get a louder visual treatment
+            // and a "WHY THIS MATTERS" header so the learner can't gloss over it.
+            lastAns ? h('div', {
+              style: lastAns.correct
+                ? { marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' }
+                : { marginTop: '10px', padding: '12px', borderRadius: '8px', background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: '12px', color: '#fecaca', lineHeight: '1.55' }
+            },
+              lastAns.correct
+                ? h('span', null, h('b', null, '✓ Correct. '), q.exp)
+                : h('div', null,
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#ef4444', marginBottom: '6px', letterSpacing: '0.05em' } }, '✗ INCORRECT — WHY THIS MATTERS'),
+                    h('div', null, q.exp)
+                  )
             ) : null
           ),
-          lastAns ? h('button', { onClick: function() {
-            if (permitState.index + 1 >= permitState.questions.length) {
-              upd('permit', Object.assign({}, permitState, { done: true }));
-              // Award permit_pass badge if 80%+ (16/20)
-              if (permitState.score >= 16) {
-                var b = Object.assign({}, earnedBadges);
-                b.permit_pass = true;
-                upd('badges', b);
-                addToast('🏅 Permit Pass badge earned!');
+          // Next button: gated by a 3-second cooldown on wrong answers so the learner is forced
+          // to read the explanation. Correct answers can advance immediately.
+          (function() {
+            if (!lastAns) return null;
+            var cooldownMs = lastAns.correct ? 0 : 3000;
+            var elapsed = Date.now() - (lastAns.answeredAt || 0);
+            var remaining = Math.max(0, cooldownMs - elapsed);
+            var ready = remaining <= 0;
+            // Schedule a single re-render exactly when the cooldown expires.
+            if (!ready) {
+              var pendingKey = permitState.index + '@' + lastAns.answeredAt;
+              if (permitGateRef.current[pendingKey] !== true) {
+                permitGateRef.current[pendingKey] = true;
+                safeTimeout(function() { upd('permitTick', Date.now()); }, remaining + 30);
               }
-            } else {
-              upd('permit', Object.assign({}, permitState, { index: permitState.index + 1 }));
             }
-          },
-            style: { padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#22d3ee', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer', width: '100%' }
-          }, permitState.index + 1 >= permitState.questions.length ? 'Finish Test →' : 'Next Question →') : null
+            var label = permitState.index + 1 >= permitState.questions.length ? 'Finish Test →' : 'Next Question →';
+            if (!ready) label = 'Read the explanation… ' + Math.ceil(remaining / 1000) + 's';
+            return h('button', {
+              disabled: !ready,
+              onClick: ready ? function() {
+                if (permitState.index + 1 >= permitState.questions.length) {
+                  upd('permit', Object.assign({}, permitState, { done: true }));
+                  // Award permit_pass badge if 80%+ (16/20)
+                  if (permitState.score >= 16) {
+                    var b = Object.assign({}, earnedBadges);
+                    b.permit_pass = true;
+                    upd('badges', b);
+                    addToast('🏅 Permit Pass badge earned!');
+                  }
+                } else {
+                  upd('permit', Object.assign({}, permitState, { index: permitState.index + 1 }));
+                }
+              } : undefined,
+              style: {
+                padding: '10px 24px', borderRadius: '8px', border: 'none',
+                background: ready ? '#22d3ee' : '#475569',
+                color: ready ? '#0f172a' : '#cbd5e1',
+                fontSize: '13px', fontWeight: 800,
+                cursor: ready ? 'pointer' : 'not-allowed',
+                width: '100%', opacity: ready ? 1 : 0.85
+              }
+            }, label);
+          })()
         );
       }
 

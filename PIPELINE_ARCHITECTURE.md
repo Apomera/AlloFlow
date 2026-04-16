@@ -1,8 +1,11 @@
 # AlloFlow Document Accessibility Remediation Pipeline
 ## Architecture Guide for Collaborators
 
+> **Canonical architecture reference.** This is the authoritative document for the remediation pipeline as of April 2026. `PDF_Pipeline_Architecture.md` is a deprecated historical snapshot and should not be used for new work.
+
 **Author:** Aaron Pomeranz, PsyD  
 **Version:** April 2026  
+**Status:** Canonical  
 **Purpose:** This document explains how the remediation pipeline works in plain language so that accessibility experts, learning designers, and institutional partners can understand, evaluate, and help improve the system.
 
 ---
@@ -196,8 +199,8 @@ Each auditor's self-reported score is validated against a rubric calculation. If
 - Standard Deviation (SD) — how much auditors disagree
 - Standard Error of Mean (SEM) — precision of the average
 - 95% Confidence Interval — range containing the true score
-- Intraclass Correlation Coefficient (ICC) — agreement strength
-- Cronbach's Alpha — consistency across auditors
+- Auditor Consistency (ICC-like) — custom `1 − (SD/50)` index, scaled for small auditor panels (n=2–10). Not the textbook intraclass correlation coefficient, which requires ANOVA components the pipeline does not compute.
+- Auditor Consistency (Cronbach-like) — hybrid of CV-based dispersion and weighted pairwise proximity. Pragmatic substitute for Cronbach's α on score vectors (no per-item variance available).
 
 **Adaptive auditing:** If auditors diverge by more than 20 points or any auditor reports low confidence, up to 2 additional auditors are automatically added.
 
@@ -368,8 +371,8 @@ Output: Accessible HTML + Audit Report + Alternative Formats
 
 | File | Size | Purpose |
 |------|------|---------|
-| `doc_pipeline_source.jsx` | 5,098 lines (328 KB) | All pipeline logic — auditing, fixes, scoring, reports, exports |
-| `doc_pipeline_module.js` | 337 KB (compiled) | Browser-ready version loaded via CDN |
+| `doc_pipeline_source.jsx` | ~8,500 lines | All pipeline logic — auditing, fixes, scoring, reports, exports |
+| `doc_pipeline_module.js` | compiled | Browser-ready version loaded via CDN |
 | `AlloFlowANTI.txt` (pipeline UI sections) | ~3,500 lines | Score display, audit panels, preview, style seed picker, AI restyle, settings |
 
 ---

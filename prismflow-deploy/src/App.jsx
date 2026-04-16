@@ -12851,6 +12851,7 @@ Return only the corrected version of this exact text:`;
   const [conceptInput, setConceptInput] = useState('');
   const [selectedConcepts, setSelectedConcepts] = useState([]);
   const [conceptItemCount, setConceptItemCount] = useState(10);
+  const [conceptImageMode, setConceptImageMode] = useState('auto'); // 'auto' | 'always' | 'never'
   const [languageInput, setLanguageInput] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
@@ -28432,15 +28433,36 @@ Return ONLY JSON.`;
                  case 'analysis':
                        return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('export.unknown_level')}. ${t('export.key_concepts_label')} ${d.concepts?.join(', ')}.`;
                  default:
-                     return JSON.stringify(d).substring(0, 500);
+                     try { return JSON.stringify(d).substring(0, 500); }
+                     catch (circErr) { return `[${item.type} content]`; }
+             }
+         };
+         const safeGetAuditText = (item) => {
+             try {
+                 const txt = getAuditText(item);
+                 if (typeof txt === 'string') return txt;
+                 try { return JSON.stringify(txt).substring(0, 500); }
+                 catch (circErr) { return `[${item.type} content]`; }
+             } catch (e) {
+                 warnLog(`[Alignment] Failed to serialize ${item.type} artifact:`, e);
+                 return `[${item.type} content could not be serialized for audit]`;
              }
          };
          let comprehensiveContext = "";
+         const MAX_TOTAL_CONTEXT = 30000;
+         let contextOverflowed = false;
          artifactsToAudit.forEach((item, index) => {
+             if (contextOverflowed) return;
              const label = item.title || getDefaultTitle(item.type);
-             let contentStr = getAuditText(item);
+             let contentStr = safeGetAuditText(item);
              if (contentStr.length > 2500) contentStr = contentStr.substring(0, 2500) + "... [truncated]";
-             comprehensiveContext += `\n--- ARTIFACT ${index + 1}: ${label.toUpperCase()} (${item.type}) ---\n${contentStr}\n`;
+             const chunk = `\n--- ARTIFACT ${index + 1}: ${label.toUpperCase()} (${item.type}) ---\n${contentStr}\n`;
+             if (comprehensiveContext.length + chunk.length > MAX_TOTAL_CONTEXT) {
+                 comprehensiveContext += `\n--- [Additional ${artifactsToAudit.length - index} artifact(s) omitted to fit audit window] ---\n`;
+                 contextOverflowed = true;
+                 return;
+             }
+             comprehensiveContext += chunk;
          });
          const prompt = `
             Act as a strict District Curriculum Administrator conducting a **Holistic Lesson Plan Audit**.
@@ -28492,8 +28514,16 @@ Return ONLY JSON.`;
              content = JSON.parse(cleanJson(result));
              metaInfo = `Standards: ${standardsPromptString}`;
          } catch (parseErr) {
-             warnLog("Alignment Report Parse Error:", parseErr);
-             throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+             warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
+             try {
+                 const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
+                 const retryResult = await callGemini(retryPrompt, true);
+                 content = JSON.parse(cleanJson(retryResult));
+                 metaInfo = `Standards: ${standardsPromptString}`;
+             } catch (retryErr) {
+                 warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
+                 throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+             }
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
@@ -28759,9 +28789,16 @@ Return ONLY JSON.`;
              content = JSON.parse(cleanJson(result));
              if (!content.categories) content.categories = [];
              if (!content.items) content.items = [];
-             if (isLowerGrade && content.items) {
+             // Image gate: drive by item length, not grade — with teacher override.
+             const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
+             const itemsAreShort = content.items.length > 0 && content.items.every(it => wordCount(it.content) <= 6);
+             const shouldGenerateImages =
+                 conceptImageMode === 'always' ||
+                 (conceptImageMode === 'auto' && itemsAreShort);
+             if (shouldGenerateImages && content.items.length > 0) {
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
+                 let imgFailCount = 0;
                  content.items = await Promise.all(content.items.map(async (item) => {
                      try {
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. Educational style. No text.`;
@@ -28769,12 +28806,16 @@ Return ONLY JSON.`;
                          return { ...item, image: imageUrl };
                      } catch (e) {
                          warnLog("Card image gen failed", e);
+                         imgFailCount++;
                          return item;
                      }
                  }));
+                 if (imgFailCount > 0) {
+                     addToast(`${imgFailCount} of ${content.items.length} card visuals couldn't be generated. Cards will show text only.`, "warning");
+                 }
              }
              const catCount = content.categories.length;
-             metaInfo = isLowerGrade
+             metaInfo = shouldGenerateImages
                 ? t('meta.categories_visual', { count: catCount })
                 : t('meta.categories_text', { count: catCount });
          } catch (parseErr) {
@@ -30742,11 +30783,18 @@ Return ONLY JSON:
                return null;
           }
           if (!classification.categoryId) throw new Error("Failed to classify");
-          const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
+          const newWordCount = String(classification.content || '').trim().split(/\s+/).filter(Boolean).length;
+          const shouldGenerateImage =
+              conceptImageMode === 'always' ||
+              (conceptImageMode === 'auto' && newWordCount <= 6);
           let imageUrl = null;
-          if (isLowerGrade) {
-              const imgPrompt = `Simple, clear vector icon or illustration of: "${classification.content}". White background. Educational style. No text.`;
-              imageUrl = await callImagen(imgPrompt);
+          if (shouldGenerateImage) {
+              try {
+                  const imgPrompt = `Simple, clear vector icon or illustration of: "${classification.content}". White background. Educational style. No text.`;
+                  imageUrl = await callImagen(imgPrompt);
+              } catch (imgErr) {
+                  warnLog("Added-item image gen failed", imgErr);
+              }
           }
           return {
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -30759,7 +30807,25 @@ Return ONLY JSON:
           addToast(t('toasts.categorize_failed'), "error");
           return null;
       }
-  }, [gradeLevel, callGemini, callImagen]);
+  }, [gradeLevel, callGemini, callImagen, conceptImageMode]);
+  const handleExplainConceptSortItem = useCallback(async (item, correctCategory, chosenCategory) => {
+      try {
+          const prompt = `
+            A ${gradeLevel} student placed the item "${item.content}" into the category "${chosenCategory?.label || 'unknown'}".
+            The correct category is "${correctCategory?.label || 'unknown'}".
+            Write a brief, encouraging 2-3 sentence explanation for the student.
+            - State which category is correct and why.
+            - Point out one concrete feature of the item that signals the right category.
+            - Avoid shaming language; stay warm and instructive.
+            Return plain text only, no markdown, no quotes.
+          `;
+          const result = await callGemini(prompt, false);
+          return (result || '').trim();
+      } catch (e) {
+          warnLog("Explain concept sort item failed", e);
+          return "Couldn't generate an explanation right now. Try again in a moment.";
+      }
+  }, [gradeLevel, callGemini]);
   const handleMoveToUnit = (itemId, targetUnitId) => {
       setHistory(prev => prev.map(item =>
           item.id === itemId
@@ -36833,6 +36899,20 @@ Return ONLY JSON:
                                 onChange={(e) => setConceptItemCount(parseInt(e.target.value) || 10)}
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
                             />
+                        </div>
+                        <div className="mt-2">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">Card visuals</label>
+                            <select
+                                aria-label="Card visuals"
+                                data-help-key="concept_sort_image_mode"
+                                value={conceptImageMode}
+                                onChange={(e) => setConceptImageMode(e.target.value)}
+                                className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+                            >
+                                <option value="auto">Auto (only on short items)</option>
+                                <option value="always">Always generate images</option>
+                                <option value="never">Never (text-only cards)</option>
+                            </select>
                         </div>
                     </div>
                     <button
@@ -45220,9 +45300,9 @@ Return only the corrected version of this exact text:`;
                     </div>
                   </div>
                 )}
-                {activeView === 'alignment-report' && isTeacherMode && generatedContent?.data.reports && (
+                {activeView === 'alignment-report' && isTeacherMode && Array.isArray(generatedContent?.data?.reports) && generatedContent.data.reports.length > 0 && (
                   <div className="space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
-                      {generatedContent?.data.reports.map((report, idx) => (
+                      {generatedContent.data.reports.map((report, idx) => (
                       <div key={idx} className="animate-in slide-in-from-bottom-4 duration-500">
                           <div className="bg-slate-800 text-white px-4 py-2 rounded-t-xl font-bold text-xs uppercase tracking-wider flex items-center justify-between">
                               <span>{t('alignment.audit_report')} {idx + 1}</span>
@@ -45243,11 +45323,11 @@ Return only the corrected version of this exact text:`;
                               <div className="mt-6 pt-6 border-t border-black/10 grid grid-cols-1 md:grid-cols-2 gap-6">
                                   <div>
                                       <h4 className="text-xs font-bold uppercase text-slate-600 mb-1">{t('alignment.cognitive_demand')}</h4>
-                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown.cognitiveDemand}</p>
+                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown?.cognitiveDemand || "—"}</p>
                                   </div>
                                   <div>
                                       <h4 className="text-xs font-bold uppercase text-slate-600 mb-1">{t('alignment.content_focus')}</h4>
-                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown.contentFocus}</p>
+                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown?.contentFocus || "—"}</p>
                                   </div>
                               </div>
                           </div>
@@ -45255,19 +45335,19 @@ Return only the corrected version of this exact text:`;
                               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2"><BookOpen size={18} className="text-indigo-600"/> {t('alignment.text_alignment')}</h3>
-                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis.textAlignment.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                          {report.analysis.textAlignment.status}
+                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis?.textAlignment?.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                          {report.analysis?.textAlignment?.status || "N/A"}
                                       </span>
                                   </div>
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-600"><Quote size={16} className="fill-current"/></div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
-                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.textAlignment.evidence}"</p>
+                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis?.textAlignment?.evidence || "—"}"</p>
                                       </div>
                                       <div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
-                                          <p className="text-slate-600 leading-relaxed">{report.analysis.textAlignment.notes}</p>
+                                          <p className="text-slate-600 leading-relaxed">{report.analysis?.textAlignment?.notes || "—"}</p>
                                       </div>
                                   </div>
                               </div>
@@ -45295,19 +45375,19 @@ Return only the corrected version of this exact text:`;
                               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2"><CheckSquare size={18} className="text-teal-600"/> {t('alignment.assessment')}</h3>
-                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis.assessmentAlignment.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                          {report.analysis.assessmentAlignment.status}
+                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis?.assessmentAlignment?.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                          {report.analysis?.assessmentAlignment?.status || "N/A"}
                                       </span>
                                   </div>
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-600"><Quote size={16} className="fill-current"/></div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
-                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.assessmentAlignment.evidence}"</p>
+                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis?.assessmentAlignment?.evidence || "—"}"</p>
                                       </div>
                                       <div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
-                                          <p className="text-slate-600 leading-relaxed">{report.analysis.assessmentAlignment.notes}</p>
+                                          <p className="text-slate-600 leading-relaxed">{report.analysis?.assessmentAlignment?.notes || "—"}</p>
                                       </div>
                                   </div>
                               </div>
@@ -45327,11 +45407,11 @@ Return only the corrected version of this exact text:`;
                               <div>
                                   <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 flex items-center gap-1"><Sparkles size={12}/> {t('alignment.recommendation')}</h4>
                                   <div className="bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900 leading-relaxed border border-indigo-100 font-medium">
-                                      {report.adminRecommendation}
+                                      {report.adminRecommendation || "No recommendation was generated for this standard."}
                                   </div>
                               </div>
                           </div>
-                          {idx < generatedContent?.data.reports.length - 1 && (
+                          {idx < (generatedContent?.data?.reports?.length || 0) - 1 && (
                               <hr className="my-8 border-slate-300" />
                           )}
                       </div>
@@ -45593,6 +45673,7 @@ Return only the corrected version of this exact text:`;
                                     onGenerateItem={handleGenerateConceptItem}
                                     onScoreUpdate={handleGameScoreUpdate}
                                     onGameComplete={handleGameCompletion}
+                                    onExplainIncorrect={handleExplainConceptSortItem}
                                 />
                             </ErrorBoundary>
                         )}

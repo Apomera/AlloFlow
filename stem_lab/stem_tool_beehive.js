@@ -77,9 +77,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var upd = function(key, val) { var _k = {}; _k[key] = val; setLabToolData(function(prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive || {}, _k) }); }); };
         var updAll = function(patch) { setLabToolData(function(prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive || {}, patch) }); }); };
 
+        // ── Simulation Parameters (tuning knobs for colony dynamics) ──
+        var SIMULATION_PARAMS = {
+          foragerRatio: 0.4,            // fraction of workers that forage each day
+          nectarPerForager: 0.0002,     // lbs nectar per forager per day (base)
+          pollenPerForager: 0.00008,    // lbs pollen per forager per day (base)
+          honeyConsumePerWorker: 0.00015, // lbs honey consumed per worker per day (base)
+          pollenConsumePerBrood: 0.0001,  // lbs pollen consumed per brood per day
+          pollenConsumePerWorker: 0.00003,
+          baseBroodPerDay: 1500,        // max eggs/day at 100% queen health
+          broodEmergeRate: 0.05,        // fraction of brood emerging daily
+          baseWorkerMortality: 0.005,   // base daily worker death rate
+          varroaMortalityDivisor: 50,   // higher = varroa has less mortality impact
+          droneEvictionRate: 0.1,       // autumn drone eviction
+          droneBaseMortality: 0.02,
+          droneBirthRate: 0.05,         // fraction of newBrood that become drones (non-autumn/winter)
+          varroaGrowthBase: 0.3,
+          varroaGrowthPerBrood: 10000,  // scale factor for brood-driven varroa growth
+          varroaDecayNoBrood: -0.5,
+          pesticideChronicDivisor: 1000,
+          pesticideVarroaBoost: 0.2,
+          pesticideDecayPerDay: 0.3,
+          habitatBoostThreshold: 70,
+          habitatPenaltyThreshold: 30,
+          habitatBoostMult: 1.2,
+          habitatPenaltyMult: 0.6,
+          randomEventChance: 0.12,      // per-day chance of a hive event (after day 3)
+          actionPointsPerDay: 3
+        };
+
         // ── Colony State ──
         var day = d.day || 0;
-        var season = Math.floor((day % 120) / 30); // 0=spring, 1=summer, 2=autumn, 3=winter
+        var season = Math.max(0, Math.min(3, Math.floor((day % 120) / 30))); // 0=spring, 1=summer, 2=autumn, 3=winter
         var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
 
         // Population
@@ -138,7 +167,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { id: 'thriving', icon: '✨', label: 'Thriving Colony', desc: 'Reach 80+ colony health', check: function() { return colonyHealth >= 80; } },
           { id: 'big_colony', icon: '🐝', label: 'Mega Hive', desc: 'Grow colony to 25,000+ workers', check: function() { return workers >= 25000; } },
           { id: 'quiz_master', icon: '🎓', label: 'Bee Scholar', desc: 'Score 8+ on the Bee Knowledge Quiz', check: function() { return (d.bestQuizScore || 0) >= 8; } },
-          { id: 'inspector', icon: '🔬', label: 'Hive Inspector', desc: 'View all 6 inspection layers', check: function() { return (d.layersViewed || []).length >= 6; } },
+          { id: 'inspector', icon: '🔬', label: 'Hive Inspector', desc: 'View all 8 inspection layers', check: function() { return (d.layersViewed || []).length >= 8; } },
+          { id: 'weather_wise', icon: '🌦️', label: 'Weather Wise', desc: 'Survive 3 weather events', check: function() { return (d.weatherEventsHandled || 0) >= 3; } },
+          { id: 'varietal_master', icon: '🍯', label: 'Varietal Master', desc: 'Harvest 4 different honey varietals', check: function() { return Object.keys(d.varietals || {}).length >= 4; } },
           { id: 'event_handler', icon: '⚡', label: 'Crisis Manager', desc: 'Handle 5 colony events', check: function() { return (d.eventsHandled || 0) >= 5; } }
         ];
         // Check & award new badges
@@ -203,7 +234,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { id: 'pesticide_drift', emoji: '☠️', label: 'Pesticide Drift', desc: 'Nearby agricultural spraying has contaminated foraging areas. Workers are returning disoriented or dying.', effect: { workers: -2000, foragingEfficiency: -20, morale: -20 }, lesson: 'Neonicotinoid pesticides (imidacloprid, clothianidin) are systemic — they spread through the entire plant, including pollen and nectar. Sub-lethal doses impair bee navigation, memory, and learning. Colony Collapse Disorder (CCD) is linked to a combination of pesticides, varroa mites, habitat loss, and nutritional stress.' },
           { id: 'bear_visit', emoji: '🐻', label: 'Bear Sighting!', desc: 'A black bear has been spotted near the apiary, attracted by the smell of honey.', effect: { honey: -10, wax: -3, morale: -10 }, lesson: 'Bears are the most destructive large predators of honeybee colonies. They seek both honey and protein-rich brood. Electric fencing is the most effective deterrent. Interestingly, bears seem immune to bee stings on their faces due to thick fur, so bees target the nose and eyes.' },
           { id: 'good_queen', emoji: '👑', label: 'Queen Laying Strongly', desc: 'The queen is healthy and laying up to 2,000 eggs per day — her own body weight in eggs!', effect: { brood: 2000, queenHealth: 10, morale: 10 }, lesson: 'A queen bee mates once in her life during a "nuptial flight" with 10-20 drones at 200+ feet altitude. She stores millions of sperm and can lay fertilized (worker/queen) or unfertilized (drone) eggs at will. She produces pheromones (Queen Mandibular Pheromone) that maintain colony cohesion and suppress worker reproduction.' },
-          { id: 'robbing', emoji: '⚔️', label: 'Robbing Attempt', desc: 'A weaker nearby colony is trying to steal your honey stores! Guard bees are fighting at the entrance.', effect: { honey: -5, workers: -500, morale: -5 }, lesson: 'Robbing behavior occurs when nectar is scarce (dearth). Bees from other colonies probe for weak hive defenses. Guard bees identify intruders by colony-specific pheromone signatures. Reducing the entrance size during dearth periods helps guards defend more effectively.' }
+          { id: 'robbing', emoji: '⚔️', label: 'Robbing Attempt', desc: 'A weaker nearby colony is trying to steal your honey stores! Guard bees are fighting at the entrance.', effect: { honey: -5, workers: -500, morale: -5 }, lesson: 'Robbing behavior occurs when nectar is scarce (dearth). Bees from other colonies probe for weak hive defenses. Guard bees identify intruders by colony-specific pheromone signatures. Reducing the entrance size during dearth periods helps guards defend more effectively.' },
+          // ── Weather / climate events ──
+          { id: 'heatwave', emoji: '🔥', label: 'Heatwave', desc: 'Outside temperatures have spiked past 100°F (38°C). Water foragers are working overtime to cool the hive.', effect: { workers: -800, honey: -3, foragingEfficiency: -10, morale: -8 }, weather: true, lesson: 'Honeybees maintain the brood nest at exactly 35°C even when outside air exceeds 40°C. Water foragers collect droplets and spread them on comb while fanner bees beat wings at 230/sec to evaporate the water — a physiological air conditioner. Climate change is lengthening heatwaves; colonies near water sources survive better.' },
+          { id: 'drought', emoji: '🏜️', label: 'Drought', desc: 'Prolonged dry weather has wilted flowers across the foraging range. Nectar flow has collapsed.', effect: { foragingEfficiency: -25, honey: -4, pollen: -2, morale: -10 }, weather: true, lesson: 'During drought, plants close stomata and stop producing nectar to conserve water. Foragers return empty-handed and may resort to robbing other colonies. Drought-resistant native plants (goldenrod, sunflower, sage, coneflower) are a bee lifeline. Providing shallow water with pebble landing zones saves lives.' },
+          { id: 'late_frost', emoji: '🥶', label: 'Late Spring Frost', desc: 'A sudden overnight frost has killed early blossoms and trapped foragers caught outside.', effect: { workers: -1500, foragingEfficiency: -15, honey: -2, morale: -12 }, weather: true, lesson: 'Honeybees cannot fly below ~10°C (50°F) — their flight muscles seize. A late frost after bloom kills flowers AND foragers who cannot make it home. Climate instability is increasing frost-after-bloom events, a leading cause of spring colony loss. Fruit growers rely on honeybee pollination within tight bloom windows.' },
+          { id: 'flood', emoji: '🌊', label: 'Heavy Rain / Flood', desc: 'Days of heavy rain have waterlogged the ground and grounded all foragers. Moisture is seeping into the hive.', effect: { foragingEfficiency: -20, honey: -3, morale: -8, diseaseRisk: 10 }, weather: true, lesson: 'Bees cannot fly in rain — their wings are too thin and droplets hit with hurricane force at their scale. Prolonged wet weather means no income, rising humidity inside the hive, and bacterial/fungal disease risk (Nosema, chalkbrood). Elevated hive stands and good ventilation are critical. Flash floods can destroy ground-nesting native bees entirely.' }
         ];
 
         // ── Gameplay Systems ──
@@ -252,33 +288,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           ][season];
 
           // Foraging (workers collect nectar/pollen)
-          var foragers = Math.round(workers * 0.4); // 40% of workers forage
+          var foragers = Math.round(workers * SIMULATION_PARAMS.foragerRatio);
           var efficiency = (foragingEfficiency + gardenBonus) / 100;
-          var nectarCollected = foragers * 0.0002 * sf.forageMult * efficiency; // lbs
-          var pollenCollected = foragers * 0.00008 * sf.forageMult * efficiency;
+          var nectarCollected = foragers * SIMULATION_PARAMS.nectarPerForager * sf.forageMult * efficiency; // lbs
+          var pollenCollected = foragers * SIMULATION_PARAMS.pollenPerForager * sf.forageMult * efficiency;
 
           // Consumption
-          var honeyConsumed = workers * 0.00015 * sf.consumeRate;
-          var pollenConsumed = (brood * 0.0001 + workers * 0.00003) * sf.consumeRate;
+          var honeyConsumed = workers * SIMULATION_PARAMS.honeyConsumePerWorker * sf.consumeRate;
+          var pollenConsumed = (brood * SIMULATION_PARAMS.pollenConsumePerBrood + workers * SIMULATION_PARAMS.pollenConsumePerWorker) * sf.consumeRate;
 
           // Brood development
-          var newBrood = Math.round(queenHealth / 100 * 1500 * sf.broodRate);
-          var emergingWorkers = Math.round(brood * 0.05); // 5% of brood emerges per day
-          var dyingWorkers = Math.round(workers * 0.005 * (1 + varroaLevel / 50)); // natural + varroa mortality
-          var dyingDrones = season === 2 ? Math.round(drones * 0.1) : Math.round(drones * 0.02); // autumn drone eviction
+          var newBrood = Math.round(queenHealth / 100 * SIMULATION_PARAMS.baseBroodPerDay * sf.broodRate);
+          var emergingWorkers = Math.round(brood * SIMULATION_PARAMS.broodEmergeRate);
+          var dyingWorkers = Math.round(workers * SIMULATION_PARAMS.baseWorkerMortality * (1 + varroaLevel / SIMULATION_PARAMS.varroaMortalityDivisor)); // natural + varroa mortality
+          var dyingDrones = season === 2 ? Math.round(drones * SIMULATION_PARAMS.droneEvictionRate) : Math.round(drones * SIMULATION_PARAMS.droneBaseMortality);
 
           // Varroa growth
-          var varroaGrowth = brood > 0 ? 0.3 * (1 + brood / 10000) : -0.5;
+          var varroaGrowth = brood > 0 ? SIMULATION_PARAMS.varroaGrowthBase * (1 + brood / SIMULATION_PARAMS.varroaGrowthPerBrood) : SIMULATION_PARAMS.varroaDecayNoBrood;
           var newVarroa = Math.max(0, Math.min(100, varroaLevel + varroaGrowth));
 
           // Pesticide damage (cumulative — the real danger)
           if (pesticideExposure > 20) {
-            dyingWorkers += Math.round(workers * pesticideExposure / 1000); // chronic die-off
-            newVarroa = Math.min(100, newVarroa + 0.2); // weakened immune = more mites
+            dyingWorkers += Math.round(workers * pesticideExposure / SIMULATION_PARAMS.pesticideChronicDivisor);
+            newVarroa = Math.min(100, newVarroa + SIMULATION_PARAMS.pesticideVarroaBoost);
           }
           // Habitat affects foraging quality
-          if (habitat > 70) { nectarCollected *= 1.2; pollenCollected *= 1.2; }
-          else if (habitat < 30) { nectarCollected *= 0.6; pollenCollected *= 0.6; }
+          if (habitat > SIMULATION_PARAMS.habitatBoostThreshold) { nectarCollected *= SIMULATION_PARAMS.habitatBoostMult; pollenCollected *= SIMULATION_PARAMS.habitatBoostMult; }
+          else if (habitat < SIMULATION_PARAMS.habitatPenaltyThreshold) { nectarCollected *= SIMULATION_PARAMS.habitatPenaltyMult; pollenCollected *= SIMULATION_PARAMS.habitatPenaltyMult; }
 
           // Morale
           var moraleDelta = 0;
@@ -293,7 +329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           var newWorkers = Math.max(0, workers + emergingWorkers - dyingWorkers);
           var newBroodCount = Math.max(0, brood + newBrood - emergingWorkers);
-          var newDrones = Math.max(0, drones + (season < 2 ? Math.round(newBrood * 0.05) : 0) - dyingDrones);
+          var newDrones = Math.max(0, drones + (season < 2 ? Math.round(newBrood * SIMULATION_PARAMS.droneBirthRate) : 0) - dyingDrones);
           var newHoney = Math.max(0, honey + nectarCollected - honeyConsumed);
           var newPollen = Math.max(0, pollen + pollenCollected - pollenConsumed);
           var newWax = wax;
@@ -302,7 +338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Random events
           var newEvent = activeEvent;
-          if (!activeEvent && day > 3 && Math.random() < 0.12) {
+          if (!activeEvent && day > 3 && Math.random() < SIMULATION_PARAMS.randomEventChance) {
             var ev = HIVE_EVENTS[Math.floor(Math.random() * HIVE_EVENTS.length)];
             newEvent = ev;
             playSfx(sfxAlert);
@@ -313,7 +349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (ev.effect.brood) newBroodCount = Math.max(0, newBroodCount + ev.effect.brood);
               if (ev.effect.honey) newHoney = Math.max(0, newHoney + ev.effect.honey);
               if (ev.effect.pollen) newPollen = Math.max(0, newPollen + ev.effect.pollen);
-              if (ev.effect.wax) newWax = Math.max(0, wax + (ev.effect.wax || 0));
+              if (ev.effect.wax) newWax = Math.max(0, newWax + ev.effect.wax);
               if (ev.effect.morale) newMorale = Math.max(0, Math.min(100, newMorale + ev.effect.morale));
               if (ev.effect.foragingEfficiency) newForagingEff = Math.max(0, Math.min(100, newForagingEff + ev.effect.foragingEfficiency));
               if (ev.effect.queenHealth) newQueenHealth = Math.max(0, Math.min(100, newQueenHealth + ev.effect.queenHealth));
@@ -321,11 +357,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
 
           // Pesticide natural decay (slow)
-          var newPesticide = Math.max(0, pesticideExposure - 0.3);
+          var newPesticide = Math.max(0, pesticideExposure - SIMULATION_PARAMS.pesticideDecayPerDay);
 
           // Record history (keep last 120 days for sparkline)
           var newHistory = history.concat([{ d: day + 1, w: Math.round(newWorkers), h: Math.round(newHoney * 10) / 10, v: Math.round(newVarroa), m: Math.round(newMorale) }]);
           if (newHistory.length > 120) newHistory = newHistory.slice(-120);
+
+          // Estimated flower visits today (each forager hits 50–1,000 flowers per trip, 1–2 trips/day)
+          var foragersToday = Math.round(workers * SIMULATION_PARAMS.foragerRatio * sf.forageMult);
+          var flowerVisits = Math.round(foragersToday * 300 * ((foragingEfficiency + gardenBonus) / 100));
 
           updAll({
             day: day + 1,
@@ -345,6 +385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             habitat: habitat,
             pesticideExposure: Math.round(newPesticide),
             totalHoney: totalHoney + Math.max(0, nectarCollected),
+            totalFlowerVisits: (d.totalFlowerVisits || 0) + flowerVisits,
             history: newHistory
           });
         }
@@ -352,6 +393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ── Advance Multiple Days (pure-functional, reads from prev state) ──
         function advanceDays(n) {
           if (!colonySurvived) return;
+          if (actionPoints <= 0) { if (addToast) addToast('No action points left today. Advance to next day first.', 'info'); return; }
           setLabToolData(function(prev) {
             var b = Object.assign({}, prev.beehive || {});
             for (var step = 0; step < n; step++) {
@@ -378,20 +420,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { broodRate: 0.0, forageMult: 0.0, consumeRate: 0.6 }
               ][bSeason];
               var eff = (bFE + gardenBonus) / 100;
-              var foragers = Math.round(bWorkers * 0.4);
-              var nectarIn = foragers * 0.0002 * sf.forageMult * eff;
-              var pollenIn = foragers * 0.00008 * sf.forageMult * eff;
-              var honeyOut = bWorkers * 0.00015 * sf.consumeRate;
-              var pollenOut = (bBrood * 0.0001 + bWorkers * 0.00003) * sf.consumeRate;
-              var newBrood = Math.round(bQH / 100 * 1500 * sf.broodRate);
-              var emerging = Math.round(bBrood * 0.05);
-              var dying = Math.round(bWorkers * 0.005 * (1 + bVarroa / 50));
-              var dyingD = bSeason === 2 ? Math.round(bDrones * 0.1) : Math.round(bDrones * 0.02);
-              var vGrow = bBrood > 0 ? 0.3 * (1 + bBrood / 10000) : -0.5;
+              var foragers = Math.round(bWorkers * SIMULATION_PARAMS.foragerRatio);
+              var nectarIn = foragers * SIMULATION_PARAMS.nectarPerForager * sf.forageMult * eff;
+              var pollenIn = foragers * SIMULATION_PARAMS.pollenPerForager * sf.forageMult * eff;
+              var honeyOut = bWorkers * SIMULATION_PARAMS.honeyConsumePerWorker * sf.consumeRate;
+              var pollenOut = (bBrood * SIMULATION_PARAMS.pollenConsumePerBrood + bWorkers * SIMULATION_PARAMS.pollenConsumePerWorker) * sf.consumeRate;
+              var newBrood = Math.round(bQH / 100 * SIMULATION_PARAMS.baseBroodPerDay * sf.broodRate);
+              var emerging = Math.round(bBrood * SIMULATION_PARAMS.broodEmergeRate);
+              var dying = Math.round(bWorkers * SIMULATION_PARAMS.baseWorkerMortality * (1 + bVarroa / SIMULATION_PARAMS.varroaMortalityDivisor));
+              var dyingD = bSeason === 2 ? Math.round(bDrones * SIMULATION_PARAMS.droneEvictionRate) : Math.round(bDrones * SIMULATION_PARAMS.droneBaseMortality);
+              var vGrow = bBrood > 0 ? SIMULATION_PARAMS.varroaGrowthBase * (1 + bBrood / SIMULATION_PARAMS.varroaGrowthPerBrood) : SIMULATION_PARAMS.varroaDecayNoBrood;
               var nv = Math.max(0, Math.min(100, bVarroa + vGrow));
-              if (bPestExp > 20) { dying += Math.round(bWorkers * bPestExp / 1000); nv = Math.min(100, nv + 0.2); }
-              if (bHabitat > 70) { nectarIn *= 1.2; pollenIn *= 1.2; }
-              else if (bHabitat < 30) { nectarIn *= 0.6; pollenIn *= 0.6; }
+              if (bPestExp > 20) { dying += Math.round(bWorkers * bPestExp / SIMULATION_PARAMS.pesticideChronicDivisor); nv = Math.min(100, nv + SIMULATION_PARAMS.pesticideVarroaBoost); }
+              if (bHabitat > SIMULATION_PARAMS.habitatBoostThreshold) { nectarIn *= SIMULATION_PARAMS.habitatBoostMult; pollenIn *= SIMULATION_PARAMS.habitatBoostMult; }
+              else if (bHabitat < SIMULATION_PARAMS.habitatPenaltyThreshold) { nectarIn *= SIMULATION_PARAMS.habitatPenaltyMult; pollenIn *= SIMULATION_PARAMS.habitatPenaltyMult; }
               var md = 0;
               if (bHoney > 30) md += 2; if (bHoney < 10) md -= 5;
               if (bVarroa > 30) md -= 3; if (bQH > 80) md += 1;
@@ -399,16 +441,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (bPestExp > 30) md -= 4;
 
               // Random event (simplified for batch — no toast/XP side effects)
-              if (!b.activeEvent && bDay > 3 && Math.random() < 0.12) {
+              if (!b.activeEvent && bDay > 3 && Math.random() < SIMULATION_PARAMS.randomEventChance) {
                 var ev = HIVE_EVENTS[Math.floor(Math.random() * HIVE_EVENTS.length)];
                 b.activeEvent = ev;
                 if (ev.effect) {
                   if (ev.effect.varroaLevel) nv = Math.max(0, Math.min(100, nv + ev.effect.varroaLevel));
-                  if (ev.effect.workers) bWorkers += ev.effect.workers;
-                  if (ev.effect.brood) bBrood += ev.effect.brood;
-                  if (ev.effect.honey) bHoney += ev.effect.honey;
-                  if (ev.effect.pollen) bPollen += ev.effect.pollen;
-                  if (ev.effect.wax) bWax += ev.effect.wax;
+                  if (ev.effect.workers) bWorkers = Math.max(0, bWorkers + ev.effect.workers);
+                  if (ev.effect.brood) bBrood = Math.max(0, bBrood + ev.effect.brood);
+                  if (ev.effect.honey) bHoney = Math.max(0, bHoney + ev.effect.honey);
+                  if (ev.effect.pollen) bPollen = Math.max(0, bPollen + ev.effect.pollen);
+                  if (ev.effect.wax) bWax = Math.max(0, bWax + ev.effect.wax);
                   if (ev.effect.morale) md += ev.effect.morale;
                   if (ev.effect.foragingEfficiency) bFE = Math.max(0, Math.min(100, bFE + ev.effect.foragingEfficiency));
                   if (ev.effect.queenHealth) bQH = Math.max(0, Math.min(100, bQH + ev.effect.queenHealth));
@@ -418,7 +460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               b.day = bDay + 1;
               b.workers = Math.max(0, Math.round(bWorkers + emerging - dying));
               b.brood = Math.max(0, Math.round(bBrood + newBrood - emerging));
-              b.drones = Math.max(0, Math.round(bDrones + (bSeason < 2 ? Math.round(newBrood * 0.05) : 0) - dyingD));
+              b.drones = Math.max(0, Math.round(bDrones + (bSeason < 2 ? Math.round(newBrood * SIMULATION_PARAMS.droneBirthRate) : 0) - dyingD));
               b.honey = Math.round(Math.max(0, bHoney + nectarIn - honeyOut) * 10) / 10;
               b.pollen = Math.round(Math.max(0, bPollen + pollenIn - pollenOut) * 10) / 10;
               b.wax = Math.round(bWax * 10) / 10;
@@ -428,8 +470,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               b.queenHealth = Math.round(bQH);
               b.score = (b.score || 0) + Math.round(nectarIn * 10);
               b.actionPoints = 3;
-              b.pesticideExposure = Math.max(0, Math.round(bPestExp - 0.3));
+              b.pesticideExposure = Math.max(0, Math.round(bPestExp - SIMULATION_PARAMS.pesticideDecayPerDay));
               b.totalHoney = (b.totalHoney || 0) + Math.max(0, nectarIn);
+              // Flower visits this simulated day
+              var batchForagers = Math.round(bWorkers * SIMULATION_PARAMS.foragerRatio * sf.forageMult);
+              var batchVisits = Math.round(batchForagers * 300 * ((bFE + gardenBonus) / 100));
+              b.totalFlowerVisits = (b.totalFlowerVisits || 0) + batchVisits;
             }
             return Object.assign({}, prev, { beehive: b });
           });
@@ -449,12 +495,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           playSfx(sfxBeeBuzz); if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
         }
+        // Identify the honey varietal based on season + garden pollinators
+        function identifyVarietal() {
+          // Garden-dominant: if gardenPollinators >= 3, specific cultivar honey
+          if (gardenPollinators >= 6) return { id: 'garden_wildflower', name: 'Garden Wildflower', emoji: '🌼', color: 'amber', note: 'A multifloral honey from a diverse pollinator garden — the richest phenolic profile and highest antioxidant content.' };
+          if (season === 0) return { id: 'spring_clover', name: 'Spring Clover', emoji: '🍀', color: 'lime', note: 'Pale gold, mild and grassy. White clover (Trifolium repens) is the classic North American table honey. Dominant in April–May.' };
+          if (season === 1 && gardenPollinators >= 2) return { id: 'summer_lavender', name: 'Summer Lavender', emoji: '💜', color: 'purple', note: 'Aromatic purple-tinged honey with a floral finish. Prized in Mediterranean cuisine for its gentle herbal sweetness.' };
+          if (season === 1) return { id: 'wildflower', name: 'Summer Wildflower', emoji: '🌸', color: 'amber', note: 'Multifloral blend — each harvest tastes slightly different based on bloom mix within flight range. The "terroir" of honey.' };
+          if (season === 2) return { id: 'buckwheat', name: 'Autumn Buckwheat', emoji: '🌾', color: 'orange', note: 'Dark, molasses-like honey with robust malty notes. Rich in iron and antioxidants. Buckwheat (Fagopyrum) blooms late summer into autumn.' };
+          if (season === 3) return { id: 'stored_wildflower', name: 'Stored Wildflower', emoji: '❄️', color: 'amber', note: 'Winter harvest from stored surplus — crystallized into creamy fondant. Harvest sparingly: the colony needs these reserves.' };
+          return { id: 'wildflower', name: 'Wildflower', emoji: '🌸', color: 'amber', note: 'A multifloral honey — a snapshot of whatever was blooming within flight range.' };
+        }
+
         function harvestHoney() {
           if (honey < 15) { playSfx(sfxBeeWaggle); if (addToast) addToast('⚠️ Not enough surplus honey to harvest safely. Leave 15+ lbs for the bees.', 'info'); return; }
           var harvested = Math.round((honey - 15) * 10) / 10;
-          updAll({ honey: 15, score: score + Math.round(harvested * 20), totalHarvested: (d.totalHarvested || 0) + harvested });
-          playSfx(sfxBeeCollect); if (addToast) addToast('🍯 Harvested ' + harvested + ' lbs of honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
-          if (awardStemXP) awardStemXP('beehive', 15, 'Harvested honey');
+          var varietal = identifyVarietal();
+          var prevVarietals = d.varietals || {};
+          var newVarietals = Object.assign({}, prevVarietals);
+          var prev = newVarietals[varietal.id] || { name: varietal.name, emoji: varietal.emoji, note: varietal.note, lbs: 0, jars: 0, firstDay: day };
+          prev.lbs = Math.round((prev.lbs + harvested) * 10) / 10;
+          prev.jars = (prev.jars || 0) + Math.max(1, Math.round(harvested)); // ~1 lb per jar
+          prev.lastDay = day;
+          newVarietals[varietal.id] = prev;
+          updAll({ honey: 15, score: score + Math.round(harvested * 20), totalHarvested: (d.totalHarvested || 0) + harvested, varietals: newVarietals });
+          playSfx(sfxBeeCollect); if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name + ' honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
+          if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
         }
         function feedBees() {
           updAll({ honey: honey + 5, morale: Math.min(100, morale + 5) });
@@ -462,14 +528,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
         }
         function dismissEvent() {
-          updAll({ activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 });
+          var patch = { activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 };
+          if (activeEvent && activeEvent.weather) patch.weatherEventsHandled = (d.weatherEventsHandled || 0) + 1;
+          updAll(patch);
           playSfx(sfxSuccess); if (awardStemXP) awardStemXP('beehive', 5, 'Handled event');
         }
 
         // ── Quiz Functions ──
         function startQuiz() {
-          // Shuffle questions — pick 10
-          var shuffled = QUIZ_QUESTIONS.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 10);
+          // Fisher-Yates shuffle, then pick 10
+          var shuffled = QUIZ_QUESTIONS.slice();
+          for (var i = shuffled.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+          }
+          shuffled = shuffled.slice(0, 10);
           updAll({ quizOpen: true, quizIdx: 0, quizScore: 0, quizAnswered: 0, quizFeedback: null, quizQuestions: shuffled });
         }
         function answerQuiz(optIdx) {
@@ -515,7 +588,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             { id: 'lifecycle', emoji: '🔄', label: 'Life Cycle' },
             { id: 'waggle', emoji: '💃', label: 'Waggle Dance' },
             { id: 'temperature', emoji: '🌡️', label: 'Thermoregulation' },
-            { id: 'pheromones', emoji: '💨', label: 'Pheromone Language' }
+            { id: 'pheromones', emoji: '💨', label: 'Pheromone Language' },
+            { id: 'anatomy', emoji: '🔬', label: 'Bee Anatomy' },
+            { id: 'native', emoji: '🌺', label: 'Native Bees' }
           ];
 
           // Worker age distribution (simplified model)
@@ -537,27 +612,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { upd('showInspect', false); }, 'aria-label': 'Return to colony view', className: 'px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, '← Colony View')),
             // Layer tabs — proper ARIA tablist with keyboard navigation
             h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': 'Hive inspection layers' },
-              layers.map(function(l, li) {
+              (function() {
+                function selectLayer(layerId) {
+                  var viewed = (d.layersViewed || []).slice();
+                  if (viewed.indexOf(layerId) === -1) viewed.push(layerId);
+                  updAll({ inspectLayer: layerId, layersViewed: viewed });
+                }
+                return layers.map(function(l, li) {
                 var active = inspectLayer === l.id;
                 return h('button', { key: l.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
                   'aria-label': l.label + ' inspection layer',
-                  onClick: function() {
-                    var viewed = (d.layersViewed || []).slice();
-                    if (viewed.indexOf(l.id) === -1) viewed.push(l.id);
-                    updAll({ inspectLayer: l.id, layersViewed: viewed });
-                  },
+                  onClick: function() { selectLayer(l.id); },
                   onKeyDown: function(ev) {
                     var nextIdx = li;
                     if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { ev.preventDefault(); nextIdx = (li + 1) % layers.length; }
                     else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { ev.preventDefault(); nextIdx = (li - 1 + layers.length) % layers.length; }
                     else return;
-                    var viewed2 = (d.layersViewed || []).slice();
-                    if (viewed2.indexOf(layers[nextIdx].id) === -1) viewed2.push(layers[nextIdx].id);
-                    updAll({ inspectLayer: layers[nextIdx].id, layersViewed: viewed2 });
+                    selectLayer(layers[nextIdx].id);
                   },
                   className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-amber-700 text-white' : 'bg-amber-800/50 text-amber-300 hover:bg-amber-700/50')
                 }, h('span', { 'aria-hidden': 'true' }, l.emoji), l.label);
-              })),
+              });
+              })()),
 
             // ── ROLES VIEW ──
             inspectLayer === 'roles' && h('div', { className: 'space-y-2' },
@@ -759,6 +835,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'bg-slate-800/50 rounded-lg p-3 border border-slate-600/30 text-center' },
                 h('div', { className: 'text-xs font-bold text-slate-300 mb-1' }, '🧠 The Chemical Brain'),
                 h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'A honeybee has 170+ odorant receptors (humans have ~400, but bees are 50× more sensitive to floral scents). The colony\'s pheromone system is essentially a distributed nervous system — each bee is a "neuron" that reads and writes chemical signals. The colony thinks, decides, and responds as one organism, without any centralized brain.'))
+            ),
+
+            // ── BEE ANATOMY VIEW ──
+            inspectLayer === 'anatomy' && h('div', { className: 'space-y-2' },
+              h('p', { className: 'text-xs text-amber-200 mb-1' }, 'Under the microscope: a worker bee is a marvel of miniature engineering. Each structure evolved for a specific job — navigation, collection, defense, or construction.'),
+              // Head structures
+              h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
+                h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, '🧠 Head — Sensory & Feeding'),
+                [
+                  { part: 'Compound Eyes', emoji: '👁️', desc: 'Two compound eyes with 6,900 hexagonal facets (ommatidia) each. Bees see UV light (invisible to humans) — flowers have "nectar guide" UV patterns that point to the nectar like runway lights.' },
+                  { part: 'Ocelli', emoji: '🔆', desc: 'Three simple eyes on top of the head detect light intensity and horizon orientation. They help the bee stay level during flight and detect sunrise/sunset.' },
+                  { part: 'Antennae', emoji: '📡', desc: '12 segments (workers/queens) or 13 (drones). Each antenna has ~170 odorant receptors, taste sensors, humidity detectors, and touch hairs. This is the bee\'s primary sensory organ.' },
+                  { part: 'Proboscis', emoji: '👅', desc: 'A retractable "tongue" up to 6.6mm long. Built from the glossa (hairy tip), labium, and maxillae that lock together. The hairs flick 10× per second to lap up nectar. Different bee species have different tongue lengths matched to specific flowers.' },
+                  { part: 'Mandibles', emoji: '🗡️', desc: 'Powerful jaws used to chew wax, clean the hive, bite intruders, and crush pollen. They also contain the 2-heptanone alarm pheromone gland.' }
+                ].map(function(p) {
+                  return h('div', { key: p.part, className: 'flex gap-2 items-start mt-1.5' },
+                    h('span', { className: 'text-lg' }, p.emoji),
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-bold text-amber-300' }, p.part),
+                      h('p', { className: 'text-[11px] text-amber-100/70 leading-relaxed' }, p.desc)));
+                })),
+              // Thorax structures
+              h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
+                h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, '💪 Thorax — Locomotion Power'),
+                [
+                  { part: 'Wings (2 pairs)', emoji: '🦋', desc: 'Forewings hook into hindwings via tiny "hamuli" to form one unified airfoil. Wings beat 230× per second (12,000 rpm). Muscles contract 5–10× per nerve impulse — one of the fastest motion systems in biology. Top speed: ~15 mph; range: up to 5 miles from home.' },
+                  { part: 'Flight Muscles', emoji: '⚡', desc: 'Indirect flight muscles don\'t attach to the wings directly — they deform the thorax, which snaps wings up and down. Can generate heat by shivering without moving wings (used for thermoregulation).' },
+                  { part: 'Legs (3 pairs)', emoji: '🦵', desc: 'Front legs clean antennae (special notch). Middle legs push pollen. Hind legs have the pollen basket (corbicula) — a shiny concave area ringed with hairs that packs pollen into a visible ball during foraging.' },
+                  { part: 'Corbicula', emoji: '🧺', desc: 'The pollen basket on the hind tibia. Can hold up to 15mg of pollen — one-third the bee\'s body weight. Foragers moisten pollen with nectar to make it stick.' }
+                ].map(function(p) {
+                  return h('div', { key: p.part, className: 'flex gap-2 items-start mt-1.5' },
+                    h('span', { className: 'text-lg' }, p.emoji),
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-bold text-amber-300' }, p.part),
+                      h('p', { className: 'text-[11px] text-amber-100/70 leading-relaxed' }, p.desc)));
+                })),
+              // Abdomen structures
+              h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
+                h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, '🐛 Abdomen — Chemistry & Defense'),
+                [
+                  { part: 'Honey Stomach (Crop)', emoji: '💧', desc: 'A separate storage sac from the digestive stomach. A valve (proventriculus) controls whether nectar goes into storage (for the hive) or digestion (for the bee). Capacity: ~40mg — nearly half the bee\'s weight.' },
+                  { part: 'Wax Glands', emoji: '🕯️', desc: 'Eight abdominal glands on workers aged 12–18 days secrete liquid wax that hardens into flakes. Bees chew and shape flakes into hexagonal cells — the most space-efficient shape in geometry (proven by the Honeycomb Conjecture).' },
+                  { part: 'Nasonov Gland', emoji: '🏠', desc: 'On the dorsal abdomen (near tail). Releases geraniol + citral (lemon scent) to mark the hive entrance and guide swarming bees. Workers raise their abdomens and fan wings to broadcast the signal.' },
+                  { part: 'Sting (Workers/Queens)', emoji: '🗡️', desc: 'A modified ovipositor. Worker stingers have barbs — once embedded in mammal skin, they rip from the bee\'s abdomen and she dies, but the pulsing venom sac keeps pumping apitoxin. Queens have smooth stings used only against rival queens.' },
+                  { part: 'Spiracles (Breathing Holes)', emoji: '💨', desc: 'Bees do not have lungs. They breathe through 10 pairs of spiracles connected to tracheal tubes that pipe oxygen directly to every cell. Air sacs pump like bellows when bees fly.' }
+                ].map(function(p) {
+                  return h('div', { key: p.part, className: 'flex gap-2 items-start mt-1.5' },
+                    h('span', { className: 'text-lg' }, p.emoji),
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-bold text-amber-300' }, p.part),
+                      h('p', { className: 'text-[11px] text-amber-100/70 leading-relaxed' }, p.desc)));
+                })),
+              // Fun scale panel
+              h('div', { className: 'bg-amber-800/30 rounded-lg p-3 border border-amber-600/30 text-center' },
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📏 By the Numbers'),
+                h('div', { className: 'grid grid-cols-2 gap-2 text-[11px]' },
+                  h('div', null, h('strong', { className: 'text-amber-400' }, '12–15mm'), h('div', { className: 'text-amber-100/70' }, 'worker body length')),
+                  h('div', null, h('strong', { className: 'text-amber-400' }, '~90mg'), h('div', { className: 'text-amber-100/70' }, 'worker body mass')),
+                  h('div', null, h('strong', { className: 'text-amber-400' }, '230/sec'), h('div', { className: 'text-amber-100/70' }, 'wing beats')),
+                  h('div', null, h('strong', { className: 'text-amber-400' }, '~960,000'), h('div', { className: 'text-amber-100/70' }, 'neurons (humans: 86 billion)'))))
+            ),
+
+            // ── NATIVE BEES VIEW ──
+            inspectLayer === 'native' && h('div', { className: 'space-y-2' },
+              h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
+                h('p', { className: 'text-xs text-amber-100/90 leading-relaxed' },
+                  h('strong', { className: 'text-amber-300' }, 'There are over 20,000 bee species worldwide '),
+                  '— and only 7 of them make honey. Everything you\'ve learned about ',
+                  h('em', null, 'Apis mellifera'),
+                  ' (the Western honeybee) is the tip of the iceberg. Most bees are ',
+                  h('strong', { className: 'text-amber-300' }, 'solitary, native, and ecologically irreplaceable'),
+                  '. Native bees pollinate ~75% of North American flowering plants — many crops honeybees cannot pollinate at all.')),
+              [
+                { name: 'Mason Bees', sci: 'Osmia spp.', emoji: '🧱', social: 'Solitary · cavity-nesting', trait: '100× more efficient pollinator than honeybees per individual', desc: 'Females build individual nest chambers in hollow stems or drilled wood and seal each with mud (hence "mason"). They carry pollen dry on their abdomen (scopa), dropping 10× more pollen than honeybees. Critical for orchard crops — apples, cherries, plums. Active only 4–6 weeks in early spring.', color: 'bg-orange-800/40 border-orange-600/40', textColor: 'text-orange-300' },
+                { name: 'Leafcutter Bees', sci: 'Megachile spp.', emoji: '🍃', social: 'Solitary · leaf-nesting', trait: 'Cut perfect circles from leaves to line nest cells', desc: 'Females snip oval leaf pieces and roll them into tubular cells. Key pollinator of alfalfa (the #1 livestock forage crop). Commercial leafcutter pollination in North America supports billions of dollars of alfalfa seed production.', color: 'bg-green-800/40 border-green-600/40', textColor: 'text-green-300' },
+                { name: 'Bumblebees', sci: 'Bombus spp.', emoji: '🧸', social: 'Social · annual colonies', trait: 'Can "buzz-pollinate" tomatoes, blueberries, cranberries', desc: 'Fuzzy, cold-tolerant, and powerful. Bumblebees vibrate their flight muscles at 400Hz to shake pollen loose from tomato and blueberry flowers — something honeybees cannot do. Annual colonies die in fall except the queen, who overwinters alone. Several species (e.g. rusty-patched bumblebee) are endangered.', color: 'bg-yellow-800/40 border-yellow-600/40', textColor: 'text-yellow-300' },
+                { name: 'Sweat Bees', sci: 'Halictidae', emoji: '✨', social: 'Varied · ground-nesting', trait: 'Metallic green/blue; attracted to human sweat for salt', desc: 'Iridescent, often mistaken for small flies or wasps. They nest in bare soil and are major pollinators of wildflowers and vegetable crops. Some species have primitive social behavior (a precursor to honeybee eusociality). They\'ll occasionally land on people to drink salty sweat.', color: 'bg-emerald-800/40 border-emerald-600/40', textColor: 'text-emerald-300' },
+                { name: 'Squash Bees', sci: 'Peponapis / Xenoglossa', emoji: '🎃', social: 'Solitary · ground-nesting', trait: 'Specialists — only pollinate squash/pumpkin/gourd flowers', desc: 'Males sleep inside closed squash blossoms overnight. Females forage at dawn before honeybees even wake up. Without squash bees, your jack-o\'-lantern, zucchini, and winter squash crops would fail. A textbook example of coevolution between plant and pollinator.', color: 'bg-orange-900/40 border-orange-700/40', textColor: 'text-orange-200' },
+                { name: 'Miner Bees', sci: 'Andrena spp.', emoji: '⛏️', social: 'Solitary · ground-nesting', trait: 'Dig burrows up to 12 inches deep in bare soil', desc: 'One of the largest bee genera (1,500+ species). Emerge very early in spring — often the first pollinators of the year. Completely harmless and don\'t defend their nests. If you see small mounds of dirt with holes in your lawn in April, you may be hosting miners!', color: 'bg-amber-900/40 border-amber-700/40', textColor: 'text-amber-300' },
+                { name: 'Carpenter Bees', sci: 'Xylocopa spp.', emoji: '🪵', social: 'Solitary · wood-nesting', trait: 'Chew tunnels in dead wood — the "bumblebee with a shiny butt"', desc: 'Females bore perfectly round tunnels in untreated wood. Males have no stinger and are often mistaken for aggressive — they just hover and stare. Effective pollinators of passionflower, beans, and eggplant. Sometimes accused of nectar-robbing (biting holes in flower bases to skip the pollination work).', color: 'bg-purple-900/40 border-purple-700/40', textColor: 'text-purple-300' }
+              ].map(function(b) {
+                return h('div', { key: b.name, className: 'rounded-lg p-2.5 border ' + b.color },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'text-xl' }, b.emoji),
+                    h('div', { className: 'flex-1' },
+                      h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                        h('span', { className: 'text-xs font-bold ' + b.textColor }, b.name),
+                        h('span', { className: 'text-[11px] italic text-amber-400/70' }, b.sci),
+                        h('span', { className: 'text-[11px] text-amber-300/60' }, '· ' + b.social)))),
+                  h('div', { className: 'text-[11px] font-bold mb-1 ' + b.textColor }, '🔑 ' + b.trait),
+                  h('p', { className: 'text-[11px] text-amber-100/75 leading-relaxed' }, b.desc));
+              }),
+              // Call to action
+              h('div', { className: 'bg-emerald-900/30 rounded-lg p-3 border border-emerald-600/30' },
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌍 How to Help Native Bees'),
+                h('ul', { className: 'text-[11px] text-emerald-100/80 space-y-0.5 pl-4 list-disc' },
+                  h('li', null, 'Leave patches of bare soil — 70% of native bees nest in the ground'),
+                  h('li', null, 'Build a bee hotel with hollow stems (6–8mm diameter) and drilled wood blocks'),
+                  h('li', null, 'Plant native flowers — exotic ornamentals often produce 4× less nectar'),
+                  h('li', null, 'Never use neonicotinoids — they are lethal to solitary bees at micro-doses'),
+                  h('li', null, 'Report sightings to Bumble Bee Watch or iNaturalist for research data'),
+                  h('li', null, 'Skip the honeybee hive in urban areas with scarce flowers — managed honeybees compete with struggling natives')))
             ));
         }
 
@@ -2380,7 +2558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
                   // Queen canvas
                   h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '350px', boxShadow: '0 0 20px rgba(147,51,234,0.1)' } },
-                    h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen RTS hive view — manage your colony through pheromone commands', style: { width: '100%', height: '100%', display: 'block' } })),
+                    h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen defense game: release pheromones and build structures to protect the colony from threats', style: { width: '100%', height: '100%', display: 'block' } })),
                   // Queen Actions bar
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
                     h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '👑 Pheromone Commands'),
@@ -2536,10 +2714,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-800') }, '🍯 ' + honey + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-yellow-900/40 text-yellow-300' : 'bg-yellow-100 text-yellow-800') }, '🌼 ' + pollen + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-100 text-purple-800') }, '⭐ ' + score + ' pts'),
-            gardenBonus > 0 && h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800') }, '🌱 Garden +' + gardenBonus + '%')),
+            gardenBonus > 0 && h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800') }, '🌱 Garden +' + gardenBonus + '%'),
+            // Current varietal preview (what the next harvest would produce)
+            honey >= 15 && (function() {
+              var vp = identifyVarietal();
+              return h('span', { title: vp.note + ' — Surplus ready to harvest: ' + Math.round((honey - 15) * 10) / 10 + ' lbs',
+                className: 'px-3 py-1 rounded-full cursor-help ' + (dk ? 'bg-orange-900/40 text-orange-300 border border-orange-600/40' : 'bg-orange-50 text-orange-800 border border-orange-200') },
+                vp.emoji + ' ' + vp.name + ' · ' + (Math.round((honey - 15) * 10) / 10) + ' lbs ready');
+            })()),
 
           // Colony Dashboard (beekeeper mode only)
-          viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
+          viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-live': 'polite', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
@@ -2672,6 +2857,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'text-xs ' + (dk ? 'text-emerald-300' : 'text-emerald-700') },
               h('strong', null, 'Garden Connection Active! '),
               gardenPollinators + ' pollinator plant' + (gardenPollinators !== 1 ? 's' : '') + ' detected in your Companion Planting garden. Your bees have ' + gardenBonus + '% better foraging. Plant more flowers to strengthen the connection!')),
+
+          // Honey Varietals Pantry (beekeeper only, only if any harvested)
+          viewMode === 'beekeeper' && d.varietals && Object.keys(d.varietals).length > 0 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/20 to-yellow-900/10 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), role: 'region', 'aria-label': 'Honey varietals pantry' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🍯 Honey Varietals Pantry · ' + Object.keys(d.varietals).length + ' type' + (Object.keys(d.varietals).length !== 1 ? 's' : '')),
+              h('div', { className: 'text-[11px] ' + (dk ? 'text-amber-400' : 'text-amber-600') }, 'Total: ' + (Math.round((d.totalHarvested || 0) * 10) / 10) + ' lbs')),
+            h('div', { className: 'grid grid-cols-2 gap-2' },
+              Object.keys(d.varietals).map(function(vid) {
+                var v = d.varietals[vid];
+                return h('div', { key: vid, className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-amber-700/30' : 'bg-white border-amber-200'), title: v.note },
+                  h('div', { className: 'flex items-center gap-1.5 mb-0.5' },
+                    h('span', { className: 'text-lg' }, v.emoji),
+                    h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, v.name),
+                    h('span', { className: 'text-[11px] ml-auto font-mono ' + (dk ? 'text-amber-400' : 'text-amber-600') }, v.lbs + ' lbs · ' + (v.jars || 0) + ' jars')),
+                  h('p', { className: 'text-[11px] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, v.note));
+              })),
+            h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-amber-500/80' : 'text-amber-700/80') }, 'Unifloral honeys (single flower source) are rare and prized. Most supermarket honey is multifloral blend. The flavor, color, and crystallization speed all come from the botanical source.')),
+
+          // ── Pollination Impact (beekeeper only) ──
+          viewMode === 'beekeeper' && (d.totalFlowerVisits || 0) > 0 && (function() {
+            var visits = d.totalFlowerVisits || 0;
+            // Approx: 2 million visits = 1 lb honey; also 2 million visits ~= fruit from 1 mature apple tree
+            var appleTrees = Math.round(visits / 2000000 * 10) / 10;
+            var acresPollinated = Math.round(visits / 8000000 * 100) / 100; // ~8M visits/acre of mixed crop
+            // USDA estimate: honeybee pollination delivers ~$15B/year; normalize per visit ≈ $0.000004
+            var ecoValue = Math.round(visits * 0.0000042 * 100) / 100;
+            var milesFlown = Math.round(visits * 0.004); // avg ~20 ft between flowers = ~0.004 mi/visit
+            return h('div', { key: 'pollination', className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-br from-green-900/20 to-emerald-900/10 border-green-700/40' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200'), role: 'region', 'aria-label': 'Pollination impact statistics' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', { className: 'text-xs font-bold ' + (dk ? 'text-green-300' : 'text-green-800') }, '🌸 Pollination Impact · Ecosystem Services'),
+                h('div', { className: 'text-[11px] ' + (dk ? 'text-green-400' : 'text-green-600') }, visits.toLocaleString() + ' flower visits')),
+              h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
+                [
+                  { v: appleTrees.toLocaleString() + '×', l: 'Apple trees worth of fruit', c: 'red' },
+                  { v: acresPollinated + ' ac', l: 'Crop acres pollinated', c: 'amber' },
+                  { v: '$' + ecoValue.toLocaleString(), l: 'Ecosystem service value', c: 'green' },
+                  { v: milesFlown.toLocaleString() + ' mi', l: 'Miles flown foraging', c: 'sky' }
+                ].map(function(m, mi) {
+                  return h('div', { key: mi, className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-' + m.c + '-700/30' : 'bg-white border-' + m.c + '-200') },
+                    h('div', { className: 'text-sm font-black ' + (dk ? 'text-' + m.c + '-300' : 'text-' + m.c + '-700') }, m.v),
+                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, m.l));
+                })),
+              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-green-400/80' : 'text-green-700/80') }, 'Every 3rd bite of food you eat depends on pollinators. Honeybees alone contribute ~$15 billion/year to U.S. agriculture — and that\'s before counting the 4,000+ native bee species that pollinate wild plants.'));
+          })(),
 
           // Colony collapsed state (beekeeper only)
           viewMode === 'beekeeper' && !colonySurvived && h('div', { className: 'rounded-xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-orange-900/20 border-red-700/50' : 'bg-gradient-to-b from-red-50 to-orange-50 border-red-300'), role: 'alert' },
