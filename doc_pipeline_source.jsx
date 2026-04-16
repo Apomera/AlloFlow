@@ -5391,6 +5391,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         return blocks.map((block, blockIdx) => {
           // Guard: skip invalid blocks
           if (!block || typeof block !== 'object') return '';
+          // ── Normalize alternate schemas ──
+          // Gemini sometimes returns {"tag":"p","class":"ds6","content":"..."} or
+          // {"element":"p","text":"..."} instead of {"type":"p","text":"..."}.
+          // Map all known variants to the canonical {type, text} schema.
+          if (!block.type && block.tag) block.type = block.tag;
+          if (!block.type && block.element) block.type = block.element;
+          if (!block.text && block.content) block.text = block.content;
+          if (!block.text && block.value) block.text = block.value;
+          if (!block.text && block.body) block.text = block.body;
+          // "fixed_html" or "output_html" as raw HTML content
+          if (!block.html && block.fixed_html) block.html = block.fixed_html;
+          if (!block.html && block.output_html) block.html = block.output_html;
+          if (!block.html && block.accessible_html) block.html = block.accessible_html;
           if (!block.type && !block.text && !block.html && !block.title && !block.items) return '';
           if (!block.type && block.text) block.type = 'p';
           if (!block.type && block.title) block.type = 'banner';

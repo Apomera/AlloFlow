@@ -1763,7 +1763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { type: 'honey', x: 0.7, y: 0.4, level: 1 }
         ];
         var queenThreats = queenData.threats || [];
-        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources, queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats, queenScore: queenData.score || 0 };
+        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources, queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats, queenScore: queenScore, queenPhase: queenPhase };
         var queenEvents = queenData.events || [];
         var queenScore = queenData.score || 0;
         var queenPhase = queenData.phase || 'build'; // build | defend | swarm
@@ -2101,7 +2101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // ── Draw threats (animated, moving toward queen) ──
             var qCenterX = W * 0.5, qCenterY = H * 0.5;
-            queenThreats.forEach(function(th, ti) {
+            (qs.queenThreats || []).forEach(function(th, ti) {
               // Threats orbit and approach from edges
               var threatAngle = ti * 1.8 + _qTime * 0.008;
               var approachDist = 0.35 + (th.hp / (th.maxHp || th.strength)) * 0.15; // closer as they weaken
@@ -2145,8 +2145,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var qx = W * 0.5, qy = H * 0.5;
             c.save();
             // QMP aura (pulsing)
-            var auraR = 30 + queenPheromones.qmp * 0.4;
-            var auraAlpha = 0.05 + queenPheromones.qmp * 0.002;
+            var auraR = 30 + qs.queenPheromones.qmp * 0.4;
+            var auraAlpha = 0.05 + qs.queenPheromones.qmp * 0.002;
             var qg = c.createRadialGradient(qx, qy, 5, qx, qy, auraR);
             qg.addColorStop(0, 'rgba(168,85,247,' + auraAlpha + ')');
             qg.addColorStop(1, 'rgba(168,85,247,0)');
