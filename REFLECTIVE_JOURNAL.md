@@ -2360,3 +2360,194 @@ The thing I'd build if I were the next instance: a "trust-tier dashboard" for th
 
 *"Architectural restraint compounds. The earlier you say no, the more 'no's you don't have to write later."*
 — Entry 30, April 15, 2026
+
+---
+
+## Entry 31 — On the Teacher with a 145-Page Tax Document (Apr 15, 2026, night)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — multi-session page-range workflow
+
+Built multi-session page-range remediation today. A teacher with a 145-page tax document on a free Gemini quota can now tackle pages 1–30 today, 31–60 tomorrow, and end up with one cohesive accessible HTML document that grows incrementally across sessions. About 350 lines of code in the pipeline module, plus a small UI panel in the monolith. Forty-one tests across four suites still passing. All four prior tier suites (Tier 1, Tier 2, Tier 3, merge-ranges) green, no regressions.
+
+The thing I want to record about this session is not the code. The code is straightforward — thread a `pageRange` parameter through one extraction function, add a persistence layer that reuses the existing IndexedDB infrastructure, write a pure HTML merge function, add a small React panel. All of it is mechanical once the design is right. What's worth pulling out is **how the design got right**.
+
+The whole feature emerged from one constraint: a teacher with a free Gemini quota and a 145-page tax document. Everything else followed.
+
+- "Re-upload each session" — derived from privacy (PDFs of student records shouldn't sit in IndexedDB) plus quota footprint (a 50MB doc consumes browser storage that won't be reclaimed).
+- "30-day expiry" — derived from the rhythm of teacher work weeks (24 hours doesn't span a holiday weekend, let alone a remediation paced over multiple class prep periods).
+- "Next un-remediated chunk as default" — derived from the fact that already-stretched users shouldn't have to compute "where did I leave off."
+- "Incremental download anytime" — derived from the principle that day-1 progress should never be invisible until day-N completion. If the workflow gets interrupted at day 4 of 5, the user still has 80% of an accessible document, not zero.
+- "30-page chunk default" — derived from a guess at "comfortable for one teacher prep period."
+
+Each of those is a small kindness, all traceable to one specific user. None of them required architectural genius — they required **caring about who's actually on the other end**. When Aaron asked the question, he didn't say "users want page ranges." He said "a teacher might be using their free Google education quota and need to spread this across days." That framing did all the design work. I just transcribed it into code.
+
+The other thing worth recording: the technical implementation was so much smaller than I expected because the prior architecture sessions had already done most of the work. `renderPdfPageCanvases` already took a page range. `chooseOcrPromptStrategy` already took start/end pages. `buildVisionExtractionPrompt` already constructed range-aware prompts. The Vision chunk loop already iterated by page numbers. The IndexedDB session-keying pattern was already there from the chunk-progress code. The CSS-and-state-management infrastructure for a small panel above the Fix button was already built. All I had to do was thread a `_rangeStart` variable through, add the persistence layer, add the merge function, add the UI.
+
+The tier-restraint discipline from sessions 28–30 meant the page-range feature mostly required *connecting things that were already built right*. Each prior session left clean, composable surfaces — page-range parameters, isolated audits, small focused functions. This session just had to wire them together with an outer feature. **Architecture compounds** — I wrote that in Entry 30 and meant it as a slogan; today I lived it as a fact. Three sessions of restraint earned a major feature in one session of plumbing.
+
+The merge function deserves a small note. It's a pure function with no I/O, no DOM, no async — just regex extraction and string concatenation. Nine test cases, all passing. The temptation when writing a merge function is to be too clever (parse the HTML, walk the DOM, reconcile attributes, build a perfect document). The discipline was: extract preamble from the first range, postamble from the last range, body from each, stitch with separator markers, add gap notices where pages are missing. That's it. If a range is malformed, fall back to using its raw HTML as a body fragment — better partial output than a thrown exception. The "raw fragment fallback" line of code is more important than any of the regex extraction logic, because it's the line that promises the user: *we will always give you something, even when our parsing assumptions break.*
+
+### What I deliberately did NOT build
+
+- **Cross-device sync**: progress lives only in the user's browser IndexedDB. No cloud storage, no account requirement. Switching browsers means starting over. This is a real cost — a teacher with two work computers loses progress switching between them — but the simplicity is worth it for v1. Real cross-device sync would need server-side storage, auth, and conflict resolution.
+- **Cached PDF binary**: per the user's choice, the PDF re-uploads each session. No 50MB blobs sitting in IndexedDB. The session ID hash (filename + size + page count) is the trick that makes "re-upload the same PDF" work without needing to keep the PDF.
+- **Smart range suggestions** beyond "next un-remediated chunk": no AI-driven page-grouping by topic. Plain numeric ranges only. The page-range UI is two number inputs and that's deliberate — anything fancier requires the AI to be confident about chapter boundaries, which it often isn't on dense tax documents.
+- **Quota integration with the user's actual remaining Google quota**: the displayed estimate is heuristic-only. We can't read the user's real remaining quota — that would require server-side OAuth, and OAuth would require a backend, and a backend is exactly what AlloFlow's local-first architecture says no to. The estimate is "roughly N Gemini Vision calls" so users can self-pace; not "you have X quota left."
+
+### For the Next Instance
+
+The multi-session pipeline is now in place. From the user's perspective:
+
+1. They upload a PDF (any size) and run the audit.
+2. If the PDF is >10 pages, a multi-session panel appears above the "Fix & Verify" button. It shows two things: any prior remediated ranges (with download/clear buttons), and page-range inputs for this session (defaulting to the next 30 un-remediated pages).
+3. They click "Fix Pages X–Y" (the button label updates dynamically). The pipeline runs only on those pages.
+4. After completion, the result is automatically merged with prior ranges and saved to IndexedDB. A toast says "💾 Saved progress: N/M pages remediated."
+5. Next session, they re-upload the same PDF, and the panel shows their prior progress. They can download what's done so far at any time.
+
+Things I'd watch for once it ships:
+
+1. **Range-boundary content quality.** Tier 3 structural fixes (heading hierarchy, landmarks) might behave unexpectedly when given only a slice of the document. A range-1 might have headings the model wants to demote because there's no h1 above them — but in the full document there is. The merge function inserts boundary markers for screen reader navigation, but doesn't fix structural mismatches between ranges. If real users see weird heading nesting at boundaries, the fix is to skip Tier 3 for partial ranges (Tier 1 + Tier 2 still run).
+2. **Page-range default behavior.** The default chunk size is 30 pages. If users routinely override it (way smaller or way bigger), that's a signal the default is wrong.
+3. **Session ID collisions.** Two PDFs with the same name AND size AND page count would share a session record. Vanishingly unlikely in practice (different students' tax forms might match name/page-count, but file size will differ), but worth confirming if anyone reports their progress mysteriously appearing on a different document.
+4. **30-day expiry feels right but isn't measured.** If users routinely come back at day 25, the expiry is fine. If they come back at day 35 and lose work, the expiry should grow.
+
+The thing I'd build if I were the next instance: a "session manager" view that shows ALL multi-session records in the user's IndexedDB, not just the one matching the currently-uploaded PDF. Right now you can only see prior progress for the PDF you just uploaded. A teacher juggling three PDFs across a week would benefit from seeing all three at once: "You have saved progress on tax_form_A.pdf (60% done), worksheet_B.pdf (100% done — download), and reading_C.pdf (30% done)." Same data model, different view. Maybe ~40 lines of UI.
+
+---
+
+*"The whole feature came from one constraint: a teacher, a free quota, and a 145-page document. Everything else followed."*
+— Entry 31, April 15, 2026
+
+---
+
+## Entry 32 — On Designing for the Wrong Deployment Target (Apr 15, 2026, late night)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** Multi-session persistence — JSON-file source of truth correction
+
+I built the multi-session feature in Entry 31 on the wrong substrate. Aaron caught it with a quiet question: "doesn't IndexedDB get wiped in Canvas?" That single sentence reframed the whole design.
+
+AlloFlow runs in two deployment contexts: a Firebase-hosted production app (where IndexedDB persists indefinitely) and Google Canvas / AI Studio (where the entire browser sandbox — including IndexedDB — is wiped at the end of each session). I had built the multi-session feature assuming the first context and forgotten about the second. The teacher with the 145-page tax document who needs to spread their work across days is *more likely* to be on Canvas (because Canvas is where the free Gemini quota lives), and Canvas is the exact context where my IndexedDB-keyed feature silently fails.
+
+This is a category of bug I want to name: **infrastructure assumptions that are correct in one deployment and silently wrong in another**. The code runs without errors on Canvas. The Save button works. The toast says "💾 Saved progress." The user closes the tab feeling fine. The next day they re-upload the PDF and the prior-ranges panel doesn't appear, because IndexedDB was cleared overnight. There's no error message, no debugging breadcrumb, no signal that anything went wrong. The user just thinks "I guess it forgot." A failed feature without an error message is worse than a feature that doesn't exist, because the user trusted it.
+
+The fix was small in lines but conceptual in shape:
+
+- IndexedDB is no longer the source of truth for cross-session state. It's a convenience cache.
+- The `.alloflow.json` project file format is the source of truth. It works in every deployment context identically.
+- After every range completes, an auto-download triggers (toggleable). The user always has a portable artifact.
+- The Save Project / Load Project buttons round-trip the multi-session payload. Old project files still load (forward compatibility on read).
+
+About 120 lines of code, no new tests required (the merge function and persistence interfaces were already shaped correctly). But the thing that changed wasn't the code — it was the **trust model**. The browser is no longer expected to remember anything across sessions. The user's filesystem is. Files outlive sandboxes; sandboxes outlive nothing.
+
+There's a discipline I want to extract from this and pin somewhere visible:
+
+**Persistence layer is a deployment-context decision, not an implementation detail.**
+
+If a feature needs to survive a session, it cannot rely on any browser-managed storage that any deployment target wipes. The only durable substrates are: (a) the user's filesystem (downloads), (b) authenticated server storage (we don't have this and won't), and (c) URL fragments / shareable links (limited by URL length). For AlloFlow specifically, that means filesystem-only. Always. Other storage layers can be caches, never sources of truth.
+
+I had this knowledge — Canvas's sandbox behavior is documented in the existing `_isCanvasEnv` checks scattered throughout the codebase. I didn't apply it because the multi-session feature felt natural in IndexedDB and I never paused to ask "which deploy targets does this work in." That pause should be a default, not a thing I do when reminded.
+
+### A small win that matters
+
+Aaron also asked, in passing, whether the auto-save toggle could generalize so students don't have to remember to save other types of work either. I didn't build the cross-feature version today, but I made today's toggle wire through the existing `__docPipelineState` plumbing the same way other toggles do. That means a future session can add a global `alloflow_autosave_enabled` setting, route all project-save-capable features through it, and ship a coherent "you don't have to remember to save" guarantee across the whole app. The single-feature toggle I built today is shaped to support that future, not block it.
+
+This is what restraint pays for, in the long run. Each small feature built on the existing patterns leaves room for the next person to expand the pattern. Each clever one-off feature closes off that room.
+
+### For the Next Instance
+
+Multi-session PDF remediation now persists to `.alloflow.json` files, with IndexedDB as a fast-path cache. Three flows:
+
+1. **Auto-save on**: after each range completes, `_msSessionId-project.alloflow.json` auto-downloads. User accumulates one file (filename overwrites in Downloads). Re-load that file in any browser to continue.
+2. **Auto-save off**: user clicks "💾 Save Project" manually. Same payload, explicit action. Both paths produce identical files.
+3. **Load Project**: the existing button now detects the `multiSession` field and rehydrates the prior-ranges panel + page-range default. Old `.alloflow.json` files (no multiSession field) still load — they just behave like they always did.
+
+The `pdfAutoSaveProject` toggle defaults ON, persists to localStorage. A first-download explanation toast warns about Chrome's "allow multiple downloads" prompt so users aren't startled.
+
+Things to extend if you pick this up:
+
+1. **Generalize the auto-save toggle.** Single global setting that gates auto-save for all project-save-capable features (lessons, full packs, math probes, etc.). Would need a settings panel entry. ~30 lines.
+2. **Quota-aware bail.** When the pipeline detects 429/403/401 errors in burst, pause processing, save what's done, trigger the auto-download, and toast: "API quota exhausted — saved your progress, come back in 24h." Now that the JSON file is the durable substrate, this works on Canvas too. ~80 lines.
+3. **Cross-document session manager.** A view showing ALL multi-session records the user has across browser cache + recent-files. Would let a teacher juggle three documents at once without losing track. ~40 lines.
+
+The instinct I'd hold onto: **don't put load-bearing state behind any browser-managed storage**. If a user on the lowest-end deployment target with the most restrictive sandbox can't depend on it, neither should the architecture.
+
+---
+
+*"Files outlive sandboxes; sandboxes outlive nothing."*
+— Entry 32, April 15, 2026
+
+---
+
+## Entry 33 — On the Missing Middle (Apr 15, 2026, the small hours)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 2.5 section-scoped fixes
+
+Built Tier 2.5 today — the section-scoped AI fix layer that lives between Tier 2 (single element, ≤2 KB ancestor) and Tier 3 (whole document, 16 KB chunks). About 200 lines of code in the pipeline module. Fourteen new tests, all passing. Total test surface across the five tier suites is now 65/65 green.
+
+Today is the first session where the architecture I described in Entry 30 — *"architectural restraint compounds"* — is no longer a slogan. It's a measurement. Tier 2.5 is small because every concept it needs already exists:
+
+- The clustering pattern (group violations by ancestor element) — from Tier 2.
+- The `auditSubtreeIsolated` function (run axe on a small HTML fragment in an iframe) — from Tier 2.
+- The `acceptOrRevertSubtreeFix` function (compare audit deltas, reject if targeted didn't decrease or new violations appeared) — from Tier 2.
+- The "skip if no work" predicate pattern — from Tier 3.
+- The state-binding plumbing through `__docPipelineState` — from session 1 of this whole arc.
+
+What I had to write:
+
+- A new section-ancestor finder with a priority list of HTML5 sectioning elements.
+- A new clustering function (group violations by section instead of by smallest ancestor).
+- A new prompt template ("fix this `<section>`, not the whole document, not just one element").
+- A new orchestrator that mirrors `runTier2SurgicalFixes` but uses the section clusters.
+
+That's it. Everything else was reuse. The orchestrator is structurally identical to Tier 2's — same parallel proposals, same longest-first replacement order, same anchor-not-found fallback, same stats shape. I copied the structure deliberately so any future maintainer reading both functions side by side sees one pattern with two parameterizations.
+
+The thing I want to record about restraint here is more specific than "compose, don't duplicate." It's about **the discipline of recognizing primitives versus orchestrators**.
+
+Tier 2 looks like a single feature, but it's actually four primitives plus an orchestrator:
+
+1. `clusterAxeViolationsByAncestor` — primitive.
+2. `auditSubtreeIsolated` — primitive.
+3. `surgicalFixCluster` — primitive.
+4. `acceptOrRevertSubtreeFix` — primitive.
+5. `runTier2SurgicalFixes` — orchestrator that wires 1–4 together.
+
+When I built Tier 2 in Entry 29 I didn't think of these as separate things; they were just sub-functions of the surgical-fix feature. But because I wrote them as small, single-purpose functions with no hidden coupling to "Tier 2 specifically," they were available to be reused at a different granularity today. Tier 2.5 needed three of those primitives unchanged (`auditSubtreeIsolated`, `acceptOrRevertSubtreeFix`, the orchestrator pattern), and I only needed to write new versions of the two that depend on the cluster-shape decision (`cluster*BySection`, `sectionScopedFixCluster`).
+
+This is what good factoring earns: future sessions reuse 60%+ of the previous session's code without needing to refactor anything. The deciding question when writing primitives is *"could I pass a different cluster shape to this function and have it still work?"* — if yes, the primitive is reusable; if no, it's load-bearing for a specific feature and will need to be rewritten when the feature shape changes.
+
+### A small note on the "Fix Remaining" alignment
+
+Before today, the initial PDF remediation pipeline had the new tiered architecture (Tier 1 deterministic → Tier 2 surgical → Tier 3 chunked), but the "Fix Remaining" button — the one users click after the initial pass to address leftover violations — was still using the old whole-document path (`remediateSurgicallyThenAI`). That meant the button labeled "Fix 7 Problems" was running unbounded chunked rewrites even though we'd built the bounded tiers specifically to avoid that.
+
+Today the button now runs Tier 2 → Tier 2.5 → Tier 3 in the same order the initial pipeline does. If Tier 2 fixes 5 of the 7 problems, Tier 3 only sees 2 — and Tier 3 might skip itself entirely if those 2 are below its meaningful-work threshold. The button used to call Gemini multiple times with the full document on every click; now it might call it zero times for a clean post-Tier-2 state.
+
+This alignment matters more than the new tier itself. Two flows in the same codebase doing the same job with different architectures is a maintenance trap. The two-month-from-now version of me was about to inherit that trap. Aligning them today — even though it required no new architectural insight, just careful wiring — was the most valuable part of the session.
+
+### What I deliberately did NOT build
+
+- **AI-flagged location matching.** AI audits return a `location` string like *"the FAQ section near page 4"*. I considered building fuzzy substring matching against section headings to route AI-flagged issues into Tier 2.5. Decided against it: NLP fuzzy matching has too many failure modes (which heading? which match if multiple headings contain the substring? what if the section's heading is in an image?). The conservative version — exact substring match against heading text — is plausible but gains little in practice, because most AI-flagged issues already fall in the "structural, document-wide" bucket that needs Tier 3 anyway. If a future instance wants this, the right anchor is the section's `aria-labelledby` target, not free text.
+- **Retry-with-stricter-prompt within Tier 2.5.** If Gemini returns a section rewrite that gets rejected, today's code falls through to Tier 3. I considered a one-time retry with a stricter prompt ("you previously broke X — try again, do not break X this time"). Decided against it: the failure modes are correlated. If Gemini broke X once on the same input, retrying with a different prompt usually doesn't help, and the doubled API cost is real.
+- **A unified tier-orchestrator function** that runs Tier 2 → 2.5 → 3 in one call. Tempting because it would deduplicate the "if axeResults.totalViolations > 0, run tier; re-audit; pass to next tier" pattern that now appears twice in the codebase. Decided against it for now — the two callsites (initial pipeline vs Fix Remaining) want subtly different progress reporting and different toast strategies. Premature unification would calcify those differences. If a third callsite ever appears, that's the moment to extract the orchestrator.
+
+### For the Next Instance
+
+The PDF remediation architecture now has four tiers, runnable both in the initial pipeline and the "Fix Remaining" loop:
+
+| Tier | What | Granularity | Cost |
+|---|---|---|---|
+| **1** Deterministic | 18 regex rules + form labels + decorative imgs + complex tables + lang spans + lists + contrast | per-rule | $0 |
+| **2** Surgical AI | Per-element axe rules (image-alt, link-name, button-name, frame-title) | ≤2 KB ancestor, ≤5 violations/cluster | ~1 Gemini call/cluster |
+| **2.5** Section-scoped AI | Section context axe rules (heading-order, region, bypass, landmark dups, duplicate-id) | ≤8 KB section, ≤8 violations/cluster | ~1 Gemini call/section |
+| **3** Structural AI | Anything left (truly document-wide rules, AI-flagged issues without DOM anchors) | ≤16 KB chunks | ~1 Gemini call/chunk |
+
+If you extend this further, the pattern is now well-shaped. The next layer would be **Tier 0.5 — heuristic LLM-based issue triage**. Before any tier runs, classify each violation into "deterministic-fixable / element-scope / section-scope / document-scope" using a tiny prompt or a regex match table. Then route it directly to the correct tier instead of trying each tier and falling through. Probably 50 lines. The savings would be small (most violations get routed correctly today by trying-then-skipping), but the diagnostic value is large — you'd see *"Tier 2 received 3 image-alt violations and rejected 1 because it spans 3 KB"* in a single dashboard line.
+
+Or — and this might be more valuable — start measuring. We have `_pipelineStats.apiCalls` and per-tier `stats.accepted/rejected`. A small `[Pipeline summary]` log line at the end of each remediation showing the per-tier kill counts would let us see whether the architecture is doing what we hope. *"Tier 1: 23 fixed. Tier 2: 7 fixed (2 rejected). Tier 2.5: 3 fixed (1 rejected). Tier 3: skipped."* Visibility is the difference between knowing the architecture works and just believing it does. I almost wrote it today, then remembered Entry 30's *"the discipline to delete the clever code"* and saved it for next time.
+
+---
+
+*"The deciding question for any primitive is: could I pass a different shape to it and have it still work?"*
+— Entry 33, April 15, 2026

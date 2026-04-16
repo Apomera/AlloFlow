@@ -658,14 +658,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return {
       seed: seed,
       samples: samples,
-      // Road center (X) at integer Y. Returns float; floor at the call site if needed.
+      // Road center (X) at any (possibly non-integer) Y. Linearly interpolates
+      // between adjacent integer samples — float Ys (e.g. world Z lookups from
+      // the renderer) would otherwise hit undefined slots in the samples map.
       centerAt: function(y) {
-        if (y >= 0) ensureUpTo(y); else ensureDownTo(y);
-        return samples[y].x;
+        var y0 = Math.floor(y);
+        var y1 = y0 + 1;
+        var t = y - y0;
+        if (y0 >= 0) ensureUpTo(y1); else ensureDownTo(y0);
+        var s0 = samples[y0], s1 = samples[y1];
+        if (!s0) return s1 ? s1.x : baseCenterX;
+        if (!s1) return s0.x;
+        return s0.x + (s1.x - s0.x) * t;
       },
       headingAt: function(y) {
-        if (y >= 0) ensureUpTo(y); else ensureDownTo(y);
-        return samples[y].heading;
+        var y0 = Math.floor(y);
+        var y1 = y0 + 1;
+        var t = y - y0;
+        if (y0 >= 0) ensureUpTo(y1); else ensureDownTo(y0);
+        var s0 = samples[y0], s1 = samples[y1];
+        if (!s0) return s1 ? s1.heading : 0;
+        if (!s1) return s0.heading;
+        return s0.heading + (s1.heading - s0.heading) * t;
       },
       heightAt: heightAt,
       // Drop samples far from the live window to bound memory. Always retain a small
@@ -1130,13 +1144,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Ensure mix of same-direction and oncoming (at least 30% each way)
       var direction = i < count * 0.35 ? 1 : i < count * 0.7 ? -1 : (Math.random() < 0.5 ? 1 : -1);
       var color = vType.colors[Math.floor(Math.random() * vType.colors.length)];
+      // Per-driver personality: speed bias (±10mph), following distance,
+      // lane-change aggressiveness, stop-sign rolling tendency. Deterministic
+      // per-vehicle (assigned at spawn) so the same car behaves consistently.
+      var prRoll = Math.random();
+      var personality;
+      if (prRoll < 0.15) personality = { speedBias: 1.12, followMult: 0.8, aggro: 0.7, rollsStops: 0.25 }; // aggressive
+      else if (prRoll < 0.35) personality = { speedBias: 0.92, followMult: 1.3, aggro: 0.15, rollsStops: 0.0 }; // cautious
+      else if (prRoll < 0.48) personality = { speedBias: 0.88, followMult: 1.5, aggro: 0.05, rollsStops: 0.0 }; // elderly/learner
+      else personality = { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0.05 }; // normal
       traffic.push({
         x: centerX + (direction === 1 ? -1.5 : 1.5),
         y: Math.random() * MAP_SIZE,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
-        speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS,
+        speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS * personality.speedBias,
         color: color,
-        type: vType.type
+        type: vType.type,
+        personality: personality
       });
     }
     // Cross-street traffic (on intersections — only for grid scenarios)
@@ -1175,19 +1199,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var side = i % 2 === 0 ? -1 : 1; // alternate sides
       // Spawn exactly ON the sidewalk
       var pedX = side === -1 ? sidewalkLeft : sidewalkRight;
+      // Pedestrian "kind" — changes appearance and speed. Kids are small and
+      // unpredictable (can dart), joggers move fast along sidewalk, dog walkers
+      // have a small dog that wanders on a short tether.
+      var kindRoll = Math.random();
+      var kind;
+      if (scenario.id === 'school_zone' && kindRoll < 0.55) kind = 'kid';
+      else if (kindRoll < 0.15) kind = 'kid';
+      else if (kindRoll < 0.30) kind = 'jogger';
+      else if (kindRoll < 0.45) kind = 'dogWalker';
+      else kind = 'adult';
+      var speedMult = kind === 'jogger' ? 3.5 : kind === 'kid' ? 1.6 : 1.0;
       peds.push({
         x: pedX,
         y: pedY,
-        homeX: pedX, // remember which sidewalk they belong to
+        homeX: pedX,
         vx: 0,
-        vy: nearIntersection ? 0 : (Math.random() - 0.5) * 0.08, // walk along sidewalk slowly
-        color: ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
+        vy: nearIntersection ? 0 : (Math.random() - 0.5) * 0.08 * speedMult,
+        color: kind === 'jogger' ? '#22c55e' : kind === 'kid' ? ['#fbbf24', '#ec4899', '#06b6d4'][i % 3] :
+               kind === 'dogWalker' ? '#6b7280' : ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
         crossing: false,
         waitingAtCrosswalk: nearIntersection,
         crosswalkY: nearIntersection ? crossYs[i % crossYs.length] : null,
         crossDirection: side,
         sidewalkLeft: sidewalkLeft,
-        sidewalkRight: sidewalkRight
+        sidewalkRight: sidewalkRight,
+        kind: kind,
+        dartCooldown: 0 // kids may dart into street
       });
     }
     return peds;
@@ -1976,6 +2014,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
         } catch (hornErr) {}
       };
+      // Tire splash — quick high-band noise burst, used when crossing a puddle.
+      var playSplash = function(intensity) {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var amp = Math.max(0.04, Math.min(0.18, intensity * 0.025));
+          var blen = Math.floor(ac.sampleRate * 0.22);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 1.6);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var bp = ac.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 2400;
+          bp.Q.value = 1.4;
+          var gn = ac.createGain();
+          gn.gain.value = amp;
+          src.connect(bp).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.22);
+        } catch (spErr) {}
+      };
+      // Pothole thump — short low filtered impulse with body resonance.
+      var playThump = function(intensity) {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var amp = Math.max(0.05, Math.min(0.22, intensity * 0.03));
+          // Filtered noise burst (impact).
+          var blen = Math.floor(ac.sampleRate * 0.18);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 2);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var lp = ac.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 180;
+          var gn = ac.createGain();
+          gn.gain.value = amp;
+          src.connect(lp).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.18);
+          // Body resonance — quick decaying sine to suggest the chassis ringing.
+          var ros = ac.createOscillator();
+          var rg = ac.createGain();
+          ros.type = 'sine';
+          ros.frequency.value = 65;
+          var t0 = ac.currentTime;
+          rg.gain.setValueAtTime(amp * 0.6, t0);
+          rg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.25);
+          ros.connect(rg).connect(ac.destination);
+          ros.start();
+          ros.stop(t0 + 0.27);
+        } catch (thErr) {}
+      };
+      // Gear-shift clunk: brief filtered noise pop with a faint pitched click.
+      // Mechanical-feeling without overstaying its welcome.
+      var playGearShift = function() {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var blen = Math.floor(ac.sampleRate * 0.12);
+          var b = ac.createBuffer(1, blen, ac.sampleRate);
+          var bd = b.getChannelData(0);
+          for (var i = 0; i < blen; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / blen, 1.5);
+          var src = ac.createBufferSource();
+          src.buffer = b;
+          var bp = ac.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 320;
+          bp.Q.value = 4;
+          var gn = ac.createGain();
+          gn.gain.value = 0.18;
+          src.connect(bp).connect(gn).connect(ac.destination);
+          src.start();
+          src.stop(ac.currentTime + 0.12);
+          // Mechanical click — short metallic blip on top of the noise pop.
+          var clk = ac.createOscillator();
+          var clkG = ac.createGain();
+          clk.type = 'square';
+          clk.frequency.value = 720;
+          var t0 = ac.currentTime;
+          clkG.gain.setValueAtTime(0.05, t0);
+          clkG.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+          clk.connect(clkG).connect(ac.destination);
+          clk.start(t0);
+          clk.stop(t0 + 0.06);
+        } catch (gsErr) {}
+      };
+      // Engine crank → catch sequence. 3 short low oscillator chugs at ~6 Hz
+      // then a rising pitch glide as the engine catches. Plays once at session
+      // start before the persistent engine layer ramps up.
+      var playEngineStart = function() {
+        try {
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac) return;
+          var t0 = ac.currentTime;
+          // Three crank chugs — low square pulses with noise overlay.
+          for (var k = 0; k < 3; k++) {
+            var osc = ac.createOscillator();
+            var gn = ac.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 28 + k * 2;
+            gn.gain.value = 0;
+            osc.connect(gn).connect(ac.destination);
+            var tk = t0 + k * 0.16;
+            gn.gain.setValueAtTime(0, tk);
+            gn.gain.linearRampToValueAtTime(0.07, tk + 0.02);
+            gn.gain.exponentialRampToValueAtTime(0.001, tk + 0.13);
+            osc.start(tk);
+            osc.stop(tk + 0.15);
+          }
+          // Catch — pitch glides up over 0.4s into idle.
+          var catchOsc = ac.createOscillator();
+          var catchGn = ac.createGain();
+          catchOsc.type = 'sawtooth';
+          catchOsc.frequency.setValueAtTime(35, t0 + 0.5);
+          catchOsc.frequency.exponentialRampToValueAtTime(70, t0 + 0.95);
+          catchOsc.frequency.exponentialRampToValueAtTime(45, t0 + 1.4);
+          catchGn.gain.setValueAtTime(0, t0 + 0.5);
+          catchGn.gain.linearRampToValueAtTime(0.06, t0 + 0.62);
+          catchGn.gain.exponentialRampToValueAtTime(0.001, t0 + 1.5);
+          catchOsc.connect(catchGn).connect(ac.destination);
+          catchOsc.start(t0 + 0.5);
+          catchOsc.stop(t0 + 1.55);
+        } catch (esErr) {}
+      };
       // Door-close thud: short filtered noise burst. Fires when drivingRef flips on.
       var playDoorClose = function() {
         try {
@@ -2185,9 +2352,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         drivingRef.current = true;
         pausedRef.current = false;
         updMulti({ view: 'driving', scenario: scn.id, vehicle: veh.id });
-        // Door-thud when the session starts. Delay slightly so the audio ctx
-        // (which only initializes on user gesture) has definitely resumed.
+        // Door-thud when the session starts, then engine crank a beat later.
+        // Delay so the audio ctx (only resumes on user gesture) has settled.
         setTimeout(function() { playDoorClose(); }, 80);
+        setTimeout(function() { playEngineStart(); }, 450);
       }, []);
 
       var exitDriving = useCallback(function() {
@@ -2199,14 +2367,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Stop and disconnect all oscillators and buffer sources
           ['engineOsc', '_engineHarm', '_engineOct', '_engineNoise', '_engineLFO',
            '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode',
-           '_rumbleOsc', '_brakeOsc', '_signalOsc', '_tireNode'].forEach(function(key) {
+           '_rumbleOsc', '_brakeOsc', '_signalOsc', '_tireNode',
+           '_reverseOsc', '_wiperNode', '_ambDayNode', '_ambNightNode'].forEach(function(key) {
             if (a[key]) { try { a[key].stop(); } catch(e2){} a[key] = null; }
           });
           // Zero all gains
           ['engineGain', '_engineFundGain', '_engineHarmGain', '_engineOctGain',
            '_engineNoiseGain', '_engineLFOGain',
            '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain',
-           '_rumbleGain', '_brakeGain', '_signalGain', '_tireGain'].forEach(function(key) {
+           '_rumbleGain', '_brakeGain', '_signalGain', '_tireGain',
+           '_reverseGain', '_wiperGain', '_ambDayGain', '_ambNightGain'].forEach(function(key) {
             if (a[key]) { try { a[key].gain.value = 0; a[key].disconnect(); } catch(e3){} a[key] = null; }
           });
           // Reset audio state so next drive creates fresh nodes
@@ -2953,22 +3123,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var signals = signalsRef.current;
           var scn = currentScenario;
           traffic.forEach(function(t, idx) {
+            // Default personality for legacy/cross-street cars that didn't get one.
+            var pers = t.personality || { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0 };
             // Look for nearest signal ahead in our direction of travel
             var slowFor = 0; // 0=clear, 1=slow, 2=stop
             signals.forEach(function(s) {
               var ahead = (t.heading > 0 ? s.y - t.y : t.y - s.y);
               if (ahead > 0 && ahead < 8 && Math.abs(s.x - t.x) < 3) {
-                if (s.type === 'stop' || s.state === 'red') slowFor = Math.max(slowFor, 2);
-                else if (s.state === 'yellow') slowFor = Math.max(slowFor, 1);
+                if (s.type === 'stop' || s.state === 'red') {
+                  // Some drivers roll stops — flag once per signal so they only
+                  // commit one rolling stop per encounter. Otherwise stop as normal.
+                  if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
+                    slowFor = Math.max(slowFor, 1); // slow but don't stop
+                  } else {
+                    slowFor = Math.max(slowFor, 2);
+                  }
+                } else if (s.state === 'yellow') {
+                  // Aggressive drivers gun it through yellow; cautious brake.
+                  slowFor = Math.max(slowFor, pers.aggro > 0.5 ? 0 : 1);
+                }
               }
             });
-            // Follow car ahead (other traffic)
+            // Follow car ahead — distance scaled by personality.followMult
+            // (aggressive tailgate, cautious leave space). Speed-aware: longer
+            // gap when moving fast, shorter at crawl speeds.
+            var followNear = 4 * pers.followMult + t.speed * 0.25 * pers.followMult;
+            var followFar  = 7 * pers.followMult + t.speed * 0.35 * pers.followMult;
             traffic.forEach(function(other, j) {
               if (j === idx) return;
               if (Math.abs(other.x - t.x) > 2) return;
               var ahead = (t.heading > 0 ? other.y - t.y : t.y - other.y);
-              if (ahead > 0 && ahead < 4) slowFor = Math.max(slowFor, 2);
-              else if (ahead > 0 && ahead < 7) slowFor = Math.max(slowFor, 1);
+              if (ahead > 0 && ahead < followNear) slowFor = Math.max(slowFor, 2);
+              else if (ahead > 0 && ahead < followFar) slowFor = Math.max(slowFor, 1);
             });
             // React to PLAYER car — slow down, honk, or rear-end
             var playerCar = carRef.current;
@@ -3027,14 +3213,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             t.speed += (targetSpeed - t.speed) * Math.min(1, dt * 2);
             // Turn signal on AI vehicles — blink when slowing for a signal
             t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
-            // Occasional lane change (non-cross-street only, highway/suburban)
+            // Lane-change: triggered when slow car ahead + aggressive personality.
+            // Aggressive drivers switch more readily and on less gap.
             if (!t.crossStreet && !t._laneChangeCooldown) t._laneChangeCooldown = 0;
-            if (!t.crossStreet && t._laneChangeCooldown <= 0 && Math.random() < 0.001) {
+            if (!t.crossStreet && t._laneChangeCooldown <= 0) {
               var centerXt = Math.floor(MAP_SIZE / 2);
-              var laneDir = t.x < centerXt ? 0.3 : -0.3;
-              t.x += laneDir;
-              t.blinker = laneDir > 0 ? 1 : -1;
-              t._laneChangeCooldown = 10; // seconds before next change
+              // Check for slower car 3-8 units directly ahead — reason to overtake.
+              var wantOvertake = false;
+              traffic.forEach(function(other2, j2) {
+                if (j2 === idx || wantOvertake) return;
+                if (Math.abs(other2.x - t.x) > 1.5) return;
+                var ah = (t.heading > 0 ? other2.y - t.y : t.y - other2.y);
+                if (ah > 3 && ah < 8 && other2.speed < t.speed * 0.8) wantOvertake = true;
+              });
+              // Aggressive drivers (aggro > 0.4) overtake; cautious drivers wait.
+              if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.02) {
+                var laneDir = t.x < centerXt ? 0.3 : -0.3;
+                t.x += laneDir;
+                t.blinker = laneDir > 0 ? 1 : -1;
+                t._laneChangeCooldown = 8;
+              } else if (!wantOvertake && Math.random() < 0.0008) {
+                // Idle lane drift (rare) — still happens occasionally.
+                var laneDir2 = t.x < centerXt ? 0.2 : -0.2;
+                t.x += laneDir2;
+                t._laneChangeCooldown = 10;
+              }
             }
             if (t._laneChangeCooldown > 0) t._laneChangeCooldown -= dt;
             // Move
@@ -3185,8 +3388,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   audioRef.current._sirenOsc.type = 'sine';
                   audioRef.current._sirenOsc.frequency.value = spawn.sirenFreq;
                   audioRef.current._sirenGain.gain.value = 0.06;
+                  // Stereo panner + low-pass — lets the siren feel directional.
+                  // LPF cutoff drops when the vehicle is further away (distance muffle).
+                  audioRef.current._sirenPan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+                  audioRef.current._sirenLPF = ac.createBiquadFilter();
+                  audioRef.current._sirenLPF.type = 'lowpass';
+                  audioRef.current._sirenLPF.frequency.value = 4000;
                   audioRef.current._sirenOsc.connect(audioRef.current._sirenGain);
-                  audioRef.current._sirenGain.connect(ac.destination);
+                  var tail = audioRef.current._sirenGain.connect(audioRef.current._sirenLPF);
+                  if (audioRef.current._sirenPan) tail = tail.connect(audioRef.current._sirenPan);
+                  tail.connect(ac.destination);
                   audioRef.current._sirenOsc.start();
                 }
               } catch (e) {}
@@ -3201,6 +3412,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (audioRef.current._sirenOsc) {
               var wob = em.sirenFreq + Math.sin(timeRef.current * 8) * 200;
               audioRef.current._sirenOsc.frequency.setTargetAtTime(wob, audioRef.current.ctx.currentTime, 0.05);
+              // Stereo pan tracks lateral offset of em relative to car heading.
+              // Transform em→car vector into the car's frame so "right" means
+              // right-of-player regardless of which way the car is facing.
+              var relX = em.x - car.x;
+              var relY = em.y - car.y;
+              var cosH = Math.cos(car.heading);
+              var sinH = Math.sin(car.heading);
+              // Forward axis = (cosH, sinH); lateral = (-sinH, cosH).
+              var lateral = -sinH * relX + cosH * relY;
+              var forward = cosH * relX + sinH * relY;
+              var dist = Math.hypot(relX, relY);
+              var panTarget = Math.max(-1, Math.min(1, lateral / 6));
+              if (audioRef.current._sirenPan) audioRef.current._sirenPan.pan.setTargetAtTime(panTarget, audioRef.current.ctx.currentTime, 0.08);
+              // Distance muffle — cutoff 1kHz far away, 5kHz when right next to you.
+              var cutoff = Math.max(800, 5000 - dist * 180);
+              if (audioRef.current._sirenLPF) audioRef.current._sirenLPF.frequency.setTargetAtTime(cutoff, audioRef.current.ctx.currentTime, 0.15);
+              // Doppler-ish pitch shift — higher when approaching (forward > 0 and
+              // closing), lower after it passes. Real Doppler needs velocity vectors;
+              // a quick approximation from forward distance still feels right.
+              var dopScale = forward > 0 ? 1.05 : 0.92;
+              audioRef.current._sirenOsc.frequency.setTargetAtTime(wob * dopScale, audioRef.current.ctx.currentTime, 0.06);
               // Fade out as it passes
               if (em.y < car.y - 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
             }
@@ -3382,16 +3614,147 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Open the filter under throttle — more rasp when accelerating.
             var lpfTarget = 280 + car.throttle * 1800 + Math.abs(car.speed) * 12;
             a._engineLPF.frequency.setTargetAtTime(lpfTarget, now, 0.12);
-            // Mix: more harmonic saw + octave square under load.
-            a._engineHarmGain.gain.setTargetAtTime(0.18 + car.throttle * 0.35, now, 0.1);
-            a._engineOctGain.gain.setTargetAtTime(0.02 + car.throttle * 0.18, now, 0.1);
-            a._engineNoiseGain.gain.setTargetAtTime(0.03 + car.throttle * 0.08, now, 0.1);
+            // Coast-down detection — off-throttle but still rolling fast. Engine
+            // braking has a tighter, less-rasp timbre than power-on (pumping vs
+            // combustion-led). Reduce harmonic gains; let the noise layer dominate
+            // softly. 0..1 weight makes the transition smooth.
+            var coast = (car.throttle < 0.06 && Math.abs(car.speed) > 4) ? 1 : 0;
+            var coastBlend = coast > 0 ? Math.min(1, (Math.abs(car.speed) - 4) / 12) : 0;
+            // Mix: more harmonic saw + octave square under load; less when coasting.
+            a._engineHarmGain.gain.setTargetAtTime(0.18 + car.throttle * 0.35 - coastBlend * 0.10, now, 0.1);
+            a._engineOctGain.gain.setTargetAtTime(0.02 + car.throttle * 0.18 - coastBlend * 0.015, now, 0.1);
+            a._engineNoiseGain.gain.setTargetAtTime(0.03 + car.throttle * 0.08 + coastBlend * 0.05, now, 0.1);
+            // Tighten the LPF on coast — engine braking is more "whoosh", less "growl".
+            if (coastBlend > 0) {
+              var coastCutoff = 220 + Math.abs(car.speed) * 18;
+              a._engineLPF.frequency.setTargetAtTime(coastCutoff, now, 0.18);
+            }
             // LFO intensity — wobble more at idle, less when revving (smoother combustion).
             var lfoAmt = car.throttle < 0.1 ? 1.8 : Math.max(0.3, 1.5 - car.throttle * 2);
             a._engineLFOGain.gain.setTargetAtTime(lfoAmt, now, 0.15);
             // Master volume — audible but never dominant.
             var targetGain = Math.min(0.09, 0.018 + car.throttle * 0.055 + Math.abs(car.speed) * 0.0012);
             a.engineGain.gain.setTargetAtTime(targetGain, now, 0.1);
+            // Gear-shift detection — clunk on any P/R/D transition.
+            var curGear = gearRef.current;
+            if (a._lastGear === undefined) a._lastGear = curGear;
+            if (curGear !== a._lastGear) {
+              playGearShift();
+              a._lastGear = curGear;
+            }
+            // Reverse rumble — extra low-frequency layer when in R, since real
+            // automatics sound throatier in reverse (transmission whine + low gear).
+            if (curGear === 'R') {
+              if (!a._reverseOsc) {
+                a._reverseOsc = a.ctx.createOscillator();
+                a._reverseOsc.type = 'sine';
+                a._reverseOsc.frequency.value = 90;
+                a._reverseGain = a.ctx.createGain();
+                a._reverseGain.gain.value = 0;
+                a._reverseOsc.connect(a._reverseGain).connect(a.ctx.destination);
+                a._reverseOsc.start();
+              }
+              a._reverseOsc.frequency.setTargetAtTime(75 + Math.abs(car.speed) * 6, now, 0.1);
+              a._reverseGain.gain.setTargetAtTime(0.025 + car.throttle * 0.04, now, 0.1);
+            } else if (a._reverseGain) {
+              a._reverseGain.gain.setTargetAtTime(0, now, 0.15);
+            }
+            // Wildlife ambience — rural day = bird-band hiss with slow gating;
+            // night = narrow cricket-band with a faster pulse. One node each so
+            // we can fade them based on biome/time without churning.
+            var isRural = false;
+            try {
+              if (infiniteWorldRef.current) {
+                var ciHere = Math.floor(car.y / CHUNK_SIZE);
+                var biomeHere = infiniteWorldRef.current.getChunk(ciHere).biome;
+                isRural = biomeHere === 'rural';
+              } else if (currentScenario.id === 'rural' || currentScenario.id === 'dawn') {
+                isRural = true;
+              }
+            } catch (eAmb) {}
+            var isNightAmb = currentScenario.time === 'night' || currentScenario.id === 'night';
+            // Day birds — high band-pass filtered noise, slow LFO gate.
+            if (isRural && !isNightAmb) {
+              if (!a._ambDayNode) {
+                var dbBufLen = a.ctx.sampleRate * 2;
+                var dbBuf = a.ctx.createBuffer(1, dbBufLen, a.ctx.sampleRate);
+                var dbData = dbBuf.getChannelData(0);
+                for (var dbi = 0; dbi < dbBufLen; dbi++) dbData[dbi] = (Math.random() * 2 - 1) * 0.6;
+                a._ambDayNode = a.ctx.createBufferSource();
+                a._ambDayNode.buffer = dbBuf;
+                a._ambDayNode.loop = true;
+                a._ambDayBP = a.ctx.createBiquadFilter();
+                a._ambDayBP.type = 'bandpass';
+                a._ambDayBP.frequency.value = 3200;
+                a._ambDayBP.Q.value = 8;
+                a._ambDayGain = a.ctx.createGain();
+                a._ambDayGain.gain.value = 0;
+                a._ambDayNode.connect(a._ambDayBP).connect(a._ambDayGain).connect(a.ctx.destination);
+                a._ambDayNode.start();
+              }
+              // Slow LFO-style gain so the chirp comes in waves.
+              var dbWave = 0.5 + 0.5 * Math.sin(timeRef.current * 0.7);
+              a._ambDayGain.gain.setTargetAtTime(0.025 * dbWave, now, 0.4);
+              // Filter freq drifts so it sounds like multiple birds.
+              a._ambDayBP.frequency.setTargetAtTime(2800 + Math.sin(timeRef.current * 1.3) * 700, now, 0.3);
+            } else if (a._ambDayGain) {
+              a._ambDayGain.gain.setTargetAtTime(0, now, 0.4);
+            }
+            // Night crickets — narrow band-pass + faster pulse.
+            if (isNightAmb && (isRural || currentScenario.id === 'night')) {
+              if (!a._ambNightNode) {
+                var cnBufLen = a.ctx.sampleRate * 2;
+                var cnBuf = a.ctx.createBuffer(1, cnBufLen, a.ctx.sampleRate);
+                var cnData = cnBuf.getChannelData(0);
+                for (var cni = 0; cni < cnBufLen; cni++) cnData[cni] = (Math.random() * 2 - 1) * 0.6;
+                a._ambNightNode = a.ctx.createBufferSource();
+                a._ambNightNode.buffer = cnBuf;
+                a._ambNightNode.loop = true;
+                a._ambNightBP = a.ctx.createBiquadFilter();
+                a._ambNightBP.type = 'bandpass';
+                a._ambNightBP.frequency.value = 4500;
+                a._ambNightBP.Q.value = 18;
+                a._ambNightGain = a.ctx.createGain();
+                a._ambNightGain.gain.value = 0;
+                a._ambNightNode.connect(a._ambNightBP).connect(a._ambNightGain).connect(a.ctx.destination);
+                a._ambNightNode.start();
+              }
+              // Cricket chirp pulses — a square-ish gate at ~3 Hz.
+              var crGate = Math.max(0, Math.sin(timeRef.current * 8));
+              a._ambNightGain.gain.setTargetAtTime(0.03 * crGate * crGate, now, 0.05);
+            } else if (a._ambNightGain) {
+              a._ambNightGain.gain.setTargetAtTime(0, now, 0.4);
+            }
+            // Wiper swoosh — filtered noise gated by a sweep, only in rain/snow.
+            // Two passes per cycle (out + back), so gain peaks twice every period.
+            var wiperOn = currentScenario.weather === 'rain' || currentScenario.weather === 'snow';
+            if (wiperOn) {
+              if (!a._wiperNode) {
+                var wpLen = a.ctx.sampleRate * 1;
+                var wpBuf = a.ctx.createBuffer(1, wpLen, a.ctx.sampleRate);
+                var wpData = wpBuf.getChannelData(0);
+                for (var wpi = 0; wpi < wpLen; wpi++) wpData[wpi] = (Math.random() * 2 - 1) * 0.4;
+                a._wiperNode = a.ctx.createBufferSource();
+                a._wiperNode.buffer = wpBuf;
+                a._wiperNode.loop = true;
+                a._wiperBP = a.ctx.createBiquadFilter();
+                a._wiperBP.type = 'bandpass';
+                a._wiperBP.frequency.value = 1200;
+                a._wiperBP.Q.value = 2.5;
+                a._wiperGain = a.ctx.createGain();
+                a._wiperGain.gain.value = 0;
+                a._wiperNode.connect(a._wiperBP).connect(a._wiperGain).connect(a.ctx.destination);
+                a._wiperNode.start();
+              }
+              // 0.7 Hz wipe cycle → two peaks per cycle (sin² of 2× phase).
+              var wpPhase = Math.abs(Math.sin(timeRef.current * Math.PI * 0.7));
+              var wpGate = wpPhase * wpPhase;
+              a._wiperGain.gain.setTargetAtTime(0.022 * wpGate, now, 0.04);
+              // Filter sweeps high → low on each pass to suggest direction.
+              a._wiperBP.frequency.setTargetAtTime(800 + wpGate * 1400, now, 0.05);
+            } else if (a._wiperGain) {
+              a._wiperGain.gain.setTargetAtTime(0, now, 0.3);
+            }
             // Skid screech: short high burst while skidding
             if (skidRef.current.active && !a._skidOsc) {
               a._skidOsc = a.ctx.createOscillator();
@@ -3529,6 +3892,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             a._tireGain.gain.setTargetAtTime(tireVol, a.ctx.currentTime, 0.08);
             a._tireFilter.frequency.setTargetAtTime(tireFreq, a.ctx.currentTime, 0.08);
             a._tireFilter.Q.setTargetAtTime(tireQ, a.ctx.currentTime, 0.15);
+            // Cross-cell impacts: fire splash/thump as we cross into a new cell.
+            // Cells aren't physically marked as puddles/potholes — synthesize via
+            // hash so the same world position always sounds the same. Speed-gated
+            // (no thumps when crawling).
+            var cellKey = Math.floor(car.x) * 65537 + Math.floor(car.y);
+            if (a._lastCellKey === undefined) a._lastCellKey = cellKey;
+            if (cellKey !== a._lastCellKey && Math.abs(car.speed) > 4 && onRoad) {
+              var hash = (cellKey * 2654435761) >>> 0;
+              // Splash: only in rain, ~1 in 14 road cells.
+              if (weather === 'rain' && (hash % 14) === 0) {
+                playSplash(Math.min(8, Math.abs(car.speed) * 0.5));
+              }
+              // Pothole thump: ~1 in 60 road cells, intensity scales with speed.
+              else if (weather !== 'snow' && (hash % 60) === 0) {
+                playThump(Math.min(8, Math.abs(car.speed) * 0.6));
+              }
+              a._lastCellKey = cellKey;
+            } else if (cellKey === a._lastCellKey) {
+              // No change — leave key as-is.
+            } else {
+              a._lastCellKey = cellKey;
+            }
             // Rain ambient (if raining — constant patter)
             if (currentScenario.weather === 'rain' && !a._rainNode) {
               var rainBuf = a.ctx.createBuffer(1, a.ctx.sampleRate * 2, a.ctx.sampleRate);
@@ -5201,6 +5586,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(tireSprayParticles);
           }
 
+          // ── Off-road dust particle system (active any time the car is on grass) ──
+          // Points float up and fade behind the car; pool is cycled via _dustIdx.
+          var dustCount = 80;
+          var dustGeo = new T.BufferGeometry();
+          var dustPos = new Float32Array(dustCount * 3);
+          for (var dsi = 0; dsi < dustCount; dsi++) {
+            dustPos[dsi * 3] = 0;
+            dustPos[dsi * 3 + 1] = -999;
+            dustPos[dsi * 3 + 2] = 0;
+          }
+          dustGeo.setAttribute('position', new T.BufferAttribute(dustPos, 3));
+          var dustMat = new T.PointsMaterial({ color: 0xb8a078, size: 0.14, transparent: true, opacity: 0.55, depthWrite: false });
+          var dustParticles = new T.Points(dustGeo, dustMat);
+          dustParticles.name = 'dust_particles';
+          scene.add(dustParticles);
+
           // ── Rain puddles (reflective patches on road surface) ──
           if (isRain) {
             var puddleMat = new T.MeshBasicMaterial({ color: 0x334455, transparent: true, opacity: 0.4 });
@@ -5273,7 +5674,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             digitalSpeedCanvas: null, // will be created on first update
             digitalSpeedMesh: null,
             cloudGroup: cloudGroup,
-            tireSprayParticles: tireSprayParticles
+            tireSprayParticles: tireSprayParticles,
+            dustParticles: dustParticles
           };
         }
 
@@ -5294,6 +5696,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           s3.playerCarGroup.position.set(carWorldX, roadH + (car._suspY || 0), carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
 
+          // Tire tracks in snow — drop a pair of small dark planes behind the
+          // car each "tick". Ring buffer of ~200 tracks to bound memory; oldest
+          // recycled as new tracks are dropped. Only in snow weather and while moving.
+          if (scn.weather === 'snow' && Math.abs(car.speed) > 2) {
+            if (!s3._trackGroup) {
+              s3._trackGroup = new T.Group();
+              s3._trackGroup.name = 'tire_tracks';
+              s3._trackPool = [];
+              s3._trackNext = 0;
+              s3.scene.add(s3._trackGroup);
+            }
+            if (!s3._trackTickCooldown) s3._trackTickCooldown = 0;
+            s3._trackTickCooldown -= 0.016;
+            if (s3._trackTickCooldown <= 0) {
+              s3._trackTickCooldown = 0.05; // drop a pair every 50ms
+              var trackMat = s3._trackMat || (s3._trackMat = new T.MeshBasicMaterial({ color: 0x7a848e, transparent: true, opacity: 0.55, depthWrite: false }));
+              [-0.45, 0.45].forEach(function(off) {
+                var tr;
+                if (s3._trackPool.length >= 200) {
+                  // Recycle oldest
+                  tr = s3._trackPool[s3._trackNext];
+                  s3._trackNext = (s3._trackNext + 1) % 200;
+                } else {
+                  tr = new T.Mesh(new T.PlaneGeometry(0.18, 0.4), trackMat);
+                  tr.rotation.x = -Math.PI / 2;
+                  s3._trackGroup.add(tr);
+                  s3._trackPool.push(tr);
+                }
+                // Place behind the car along its heading axis, offset laterally.
+                var tx = carWorldX - Math.cos(car.heading) * 0.8 - Math.sin(-car.heading) * off;
+                var tz = carWorldZ - Math.sin(car.heading) * 0.8 - Math.cos(-car.heading) * off;
+                tr.position.set(tx, 0.019, tz);
+                tr.rotation.z = -car.heading;
+              });
+            }
+          }
           // Skydome + mountain ring follow the car so the infinite world never
           // reaches their edge. Y stays at 0 — only translate horizontally.
           if (!s3._skyRef) s3._skyRef = s3.scene.getObjectByName('skydome');
@@ -5368,10 +5806,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.scene.background = new T.Color(0x87ceeb);
             recolorSky();
           }
-          // Update ambient light intensity for time-of-day
+          // Update ambient light intensity for time-of-day, plus cloud-shadow
+          // modulation during clear day (subtle 2-3% dimming as imaginary clouds
+          // pass overhead — makes the outdoors feel less static).
+          var cloudShadow = (!isNightNow && !isFogNow && !isSnowNow && !isRainNow)
+            ? (1 - 0.06 * (0.5 + 0.5 * Math.sin(timeRef.current * 0.12)))
+            : 1;
           s3.scene.children.forEach(function(child) {
             if (child.isAmbientLight) {
-              child.intensity = isNightNow ? 0.15 : 0.5;
+              var baseInt = isNightNow ? 0.15 : 0.5;
+              child.intensity = baseInt * cloudShadow;
               child.color.setHex(isNightNow ? 0x1a1a3a : 0xffffff);
             }
           });
@@ -5778,6 +6222,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var legR = new T.Mesh(legGeo, legMat);
               legR.position.set(0, 0.45, -0.08); legR.name = 'legR';
               pg.add(legR);
+              // Kind-specific details: scale kids down, add jogger headband,
+              // attach a dog sibling mesh for dog walkers.
+              if (p.kind === 'kid') {
+                pg.scale.setScalar(0.65);
+              } else if (p.kind === 'jogger') {
+                var band = new T.Mesh(new T.BoxGeometry(0.3, 0.06, 0.32), new T.MeshLambertMaterial({ color: 0xef4444 }));
+                band.position.y = 1.62;
+                pg.add(band);
+              } else if (p.kind === 'dogWalker') {
+                // Small dog — box body + head + 4 tiny legs on a cross-mounted group.
+                var dog = new T.Group();
+                var dogMat = new T.MeshLambertMaterial({ color: 0x78451a });
+                var dogBody = new T.Mesh(new T.BoxGeometry(0.28, 0.14, 0.12), dogMat);
+                dogBody.position.y = 0.22; dog.add(dogBody);
+                var dogHead = new T.Mesh(new T.BoxGeometry(0.12, 0.12, 0.12), dogMat);
+                dogHead.position.set(0.18, 0.3, 0); dog.add(dogHead);
+                var tailDog = new T.Mesh(new T.BoxGeometry(0.1, 0.04, 0.04), dogMat);
+                tailDog.position.set(-0.18, 0.26, 0); dog.add(tailDog);
+                var dLegMat = new T.MeshLambertMaterial({ color: 0x5a3214 });
+                [[-0.1, 0.05], [-0.1, -0.05], [0.1, 0.05], [0.1, -0.05]].forEach(function(lp2) {
+                  var dlg = new T.Mesh(new T.BoxGeometry(0.04, 0.18, 0.04), dLegMat);
+                  dlg.position.set(lp2[0], 0.08, lp2[1]);
+                  dog.add(dlg);
+                });
+                dog.position.set(0.7, 0, 0); // on a leash length ahead
+                dog.name = 'dog';
+                pg.add(dog);
+              }
               pg.castShadow = true;
               pGroup.add(pg);
               m = pg;
@@ -5957,6 +6429,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             spPos.needsUpdate = true;
             s3.tireSprayParticles.material.opacity = Math.min(0.5, Math.abs(car.speed) * 0.025);
+          }
+
+          // Off-road dust — only when car is on grass (not road) and moving.
+          if (s3.dustParticles) {
+            var dpPos = s3.dustParticles.geometry.attributes.position;
+            var onGrassDust = false;
+            if (infiniteWorldRef.current) {
+              var dustCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
+              onGrassDust = (dustCell === 2 || dustCell === 4);
+            } else if (mapRef.current) {
+              var dcy = Math.floor(car.y), dcx = Math.floor(car.x);
+              if (dcy >= 0 && dcy < MAP_SIZE && dcx >= 0 && dcx < MAP_SIZE) {
+                var dcV = mapRef.current[dcy][dcx];
+                onGrassDust = (dcV === 2 || dcV === 4);
+              }
+            }
+            if (onGrassDust && Math.abs(car.speed) > 2 && scn.weather !== 'snow') {
+              var dpIdx = Math.floor(timeRef.current * 40) % dpPos.count;
+              var rearXd = carWorldX - Math.cos(car.heading) * 1.0;
+              var rearZd = carWorldZ - Math.sin(car.heading) * 1.0;
+              dpPos.setXYZ(dpIdx, rearXd + (Math.random() - 0.5) * 0.7, 0.05 + Math.random() * 0.2, rearZd + (Math.random() - 0.5) * 0.7);
+              for (var dpi = 0; dpi < dpPos.count; dpi++) {
+                var dpy = dpPos.getY(dpi);
+                if (dpy > -1 && dpy < 2.5) {
+                  dpPos.setY(dpi, dpy + 0.02);
+                  dpPos.setX(dpi, dpPos.getX(dpi) - Math.cos(car.heading) * 0.02);
+                  dpPos.setZ(dpi, dpPos.getZ(dpi) - Math.sin(car.heading) * 0.02);
+                } else if (dpy >= 2.5) {
+                  dpPos.setY(dpi, -999);
+                }
+              }
+              dpPos.needsUpdate = true;
+              s3.dustParticles.material.opacity = Math.min(0.6, Math.abs(car.speed) * 0.035);
+            } else {
+              // Let existing dust finish rising/fading but don't spawn new.
+              for (var dpi2 = 0; dpi2 < dpPos.count; dpi2++) {
+                var dpy2 = dpPos.getY(dpi2);
+                if (dpy2 > -1 && dpy2 < 2.5) {
+                  dpPos.setY(dpi2, dpy2 + 0.025);
+                  if (dpy2 >= 2.45) dpPos.setY(dpi2, -999);
+                }
+              }
+              dpPos.needsUpdate = true;
+              s3.dustParticles.material.opacity *= 0.95;
+            }
           }
 
           // Exhaust particles

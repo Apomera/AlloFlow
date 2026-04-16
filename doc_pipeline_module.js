@@ -116,6 +116,7 @@ var createDocPipeline = function(deps) {
       projectName, studentNickname, isTeacherMode, isIndependentMode, isParentMode,
       currentUiLanguage, generatedContent,
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
+      pdfAutoSaveProject,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
       pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
@@ -140,6 +141,7 @@ var createDocPipeline = function(deps) {
     generatedContent = s.generatedContent;
     pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
     pdfFixResult = s.pdfFixResult; pdfAuditResult = s.pdfAuditResult;
+    pdfAutoSaveProject = (typeof s.pdfAutoSaveProject === 'boolean') ? s.pdfAutoSaveProject : true;
     pdfAutoFixPasses = s.pdfAutoFixPasses; pdfPolishPasses = s.pdfPolishPasses;
     pdfAuditorCount = s.pdfAuditorCount;
     pdfPreviewTheme = s.pdfPreviewTheme; pdfPreviewFontSize = s.pdfPreviewFontSize;
@@ -217,6 +219,104 @@ var createDocPipeline = function(deps) {
         tx.onerror = function() { reject(tx.error); };
       });
     }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
+  };
+
+  // ── Multi-session PDF remediation persistence ──
+  // Lets users tackle a long PDF over multiple days on a free Gemini quota.
+  // Each session runs the remediation pipeline on a page range, persists the
+  // remediated HTML to IndexedDB keyed by a stable doc fingerprint (filename +
+  // size + page count), and merges across sessions on demand.
+  //
+  // Reuses the existing _CHUNK_DB infrastructure — different namespace prefix
+  // ('msdoc_' vs 'chunk_') so the keys don't collide. Expiry is 30 days
+  // (vs. chunk-progress's 24 hours) because multi-day workflows are the point.
+  var _MULTI_SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+  var _MULTI_SESSION_SCHEMA = 1;
+
+  // Hash a filename + size + total page count into a stable session key that
+  // identifies the same PDF across uploads. Same algorithm as _chunkSessionId
+  // so the deterministic-hash discipline is consistent.
+  var _multiSessionId = function(filename, fileSize, pageCount) {
+    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
+    var hash = 0;
+    for (var i = 0; i < raw.length; i++) {
+      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+      hash |= 0;
+    }
+    return 'msdoc_' + Math.abs(hash).toString(36);
+  };
+
+  // Load the multi-session record for a given session ID. Returns null when
+  // there's no record, or when the record is older than the expiry window
+  // (in which case it's also cleared from disk so it doesn't sit around).
+  var loadMultiSession = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readonly');
+        var req = tx.objectStore(_CHUNK_STORE).get(sessionId);
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror = function() { reject(req.error); };
+      });
+    }).then(function(record) {
+      if (!record) return null;
+      if (record.schemaVersion !== _MULTI_SESSION_SCHEMA) {
+        warnLog('[MultiSession] Record schema version mismatch — discarding.');
+        return clearMultiSession(sessionId).then(function() { return null; });
+      }
+      var age = Date.now() - (record.lastUpdatedAt || record.createdAt || 0);
+      if (age > _MULTI_SESSION_EXPIRY_MS) {
+        warnLog('[MultiSession] Record expired (' + Math.round(age / (24 * 60 * 60 * 1000)) + ' days old) — clearing.');
+        return clearMultiSession(sessionId).then(function() { return null; });
+      }
+      return record;
+    }).catch(function(e) { warnLog('[MultiSession] Load failed:', e && e.message); return null; });
+  };
+
+  // Append (or replace, if pages overlap) one remediated range to a session
+  // record. Creates the record on first call. Does not merge HTML — that's
+  // the caller's job via mergeRangesToFullHtml.
+  var saveMultiSessionRange = function(sessionId, meta, rangeData) {
+    return loadMultiSession(sessionId).then(function(existing) {
+      var record = existing || {
+        schemaVersion: _MULTI_SESSION_SCHEMA,
+        sessionId: sessionId,
+        fileName: meta.fileName,
+        fileSize: meta.fileSize,
+        pageCount: meta.pageCount,
+        createdAt: Date.now(),
+        ranges: [],
+      };
+      // Replace any existing range that exactly matches the new one's
+      // [start, end] (re-running the same range overwrites). For overlap
+      // handling beyond exact match, mergeRangesToFullHtml will sort and
+      // resolve at merge time.
+      var newPages = rangeData.pages;
+      record.ranges = (record.ranges || []).filter(function(r) {
+        return !(r.pages && r.pages[0] === newPages[0] && r.pages[1] === newPages[1]);
+      });
+      record.ranges.push(Object.assign({ completedAt: Date.now() }, rangeData));
+      record.lastUpdatedAt = Date.now();
+      return _openChunkDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+          tx.objectStore(_CHUNK_STORE).put(record, sessionId);
+          tx.oncomplete = function() { resolve(record); };
+          tx.onerror = function() { reject(tx.error); };
+        });
+      });
+    }).catch(function(e) { warnLog('[MultiSession] Save failed:', e && e.message); return null; });
+  };
+
+  // Erase a session record entirely (the user clicked "Clear saved progress").
+  var clearMultiSession = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+        tx.objectStore(_CHUNK_STORE).delete(sessionId);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    }).catch(function(e) { warnLog('[MultiSession] Clear failed:', e && e.message); });
   };
 
   // ── Deterministic integrity helpers ──
@@ -1068,15 +1168,26 @@ var createDocPipeline = function(deps) {
   // Extract text from a PDF using pdf.js's native text layer. Zero AI calls, zero truncation.
   // Returns { fullText, pages, pageCount, sourceCharCount, isScanned }.
   // isScanned = true when the PDF has no text layer (< 50 chars/page average) — fall back to OCR.
-  const extractPdfTextDeterministic = async (base64) => {
+  // Optional pageRange = [startPage, endPage] (1-indexed, inclusive). When omitted,
+  // extracts the entire document for backward compatibility. When supplied, only
+  // pages within the range are read and returned. The PDF's true total pageCount
+  // is always reported in the result so callers can show "remediating pages X-Y
+  // of N" in the UI.
+  const extractPdfTextDeterministic = async (base64, pageRange) => {
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
       const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const totalPageCount = pdf.numPages;
+      // Resolve range. Defaults to full document. Clamp to valid bounds so a
+      // caller passing [1, 9999] on a 30-page PDF doesn't error out.
+      const startPage = Math.max(1, (pageRange && pageRange[0]) || 1);
+      const endPage = Math.min(totalPageCount, (pageRange && pageRange[1]) || totalPageCount);
+      const isPartial = startPage !== 1 || endPage !== totalPageCount;
       const pages = [];
-      for (let p = 1; p <= pdf.numPages; p++) {
+      for (let p = startPage; p <= endPage; p++) {
         const page = await pdf.getPage(p);
         const tc = await page.getTextContent();
         // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
@@ -1093,11 +1204,15 @@ var createDocPipeline = function(deps) {
         pages.push({ pageNum: p, text: pageText });
       }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
-      const avgCharsPerPage = pdf.numPages > 0 ? fullText.length / pdf.numPages : 0;
+      const extractedPageCount = pages.length;
+      const avgCharsPerPage = extractedPageCount > 0 ? fullText.length / extractedPageCount : 0;
       return {
         fullText,
         pages,
-        pageCount: pdf.numPages,
+        pageCount: totalPageCount,            // true total pages in the PDF
+        extractedPageCount,                    // pages actually read in this call
+        pageRange: [startPage, endPage],       // resolved range (clamped)
+        isPartial,                             // false when this was a whole-doc extract
         sourceCharCount: fullText.length,
         isScanned: avgCharsPerPage < 50,
       };
@@ -1114,7 +1229,7 @@ var createDocPipeline = function(deps) {
       } else {
         warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
       }
-      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt };
+      return { fullText: '', pages: [], pageCount: 0, extractedPageCount: 0, pageRange: null, isPartial: false, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt };
     }
   };
 
@@ -4302,6 +4417,197 @@ HTML section ${chunkNum}/${chunks.length}:
   };
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Tier 2.5: Section-scoped AI fixes
+  // ─────────────────────────────────────────────────────────────────────────
+  // The missing middle between Tier 2 (single-element, ≤2 KB ancestor) and
+  // Tier 3 (whole document, 16 KB chunks). For violations that *do* need
+  // structural context (heading hierarchy within a section, landmark wrapping,
+  // multi-element layout) but DON'T need the whole document, we send just the
+  // containing section to Gemini with a tight prompt and re-audit it in
+  // isolation. Same accept-or-revert discipline as Tier 2.
+  //
+  // What Tier 2.5 handles:
+  //   - axe rules that need section context: heading-order, region, bypass,
+  //     landmark-banner-is-top-level, landmark-no-duplicate-banner,
+  //     landmark-no-duplicate-contentinfo, page-has-heading-one
+  //     (when the violation lives inside a section)
+  //   - AI-flagged issues whose `location` string contains an exact substring
+  //     match against a heading inside one of the document's sections
+  //
+  // What Tier 2.5 does NOT handle:
+  //   - violations Tier 2 already addressed (image-alt, link-name, etc.) —
+  //     those are checked first and skipped here
+  //   - truly document-wide violations (html-has-lang, document-title,
+  //     landmark-one-main when there is no main anywhere) — those need Tier 3
+  const TIER2_5_SECTION_TAGS = ['section', 'article', 'aside', 'nav', 'header', 'footer', 'main'];
+  const TIER2_5_RULE_IDS = new Set([
+    'heading-order',
+    'region',
+    'bypass',
+    'landmark-banner-is-top-level',
+    'landmark-no-duplicate-banner',
+    'landmark-no-duplicate-contentinfo',
+    'landmark-complementary-is-top-level',
+    'page-has-heading-one',
+    'identical-links-same-purpose',
+    'duplicate-id',
+    'duplicate-id-aria',
+    'aria-required-children',
+    'aria-required-parent',
+  ]);
+
+  // Find the closest section-like ancestor of an element using the priority
+  // order. Returns null when no qualifying ancestor exists. Cap walk at 10
+  // levels so a deeply-nested element doesn't trigger O(N) walks repeatedly.
+  const _findSectionAncestor = (element) => {
+    let safety = 10;
+    let cur = element;
+    while (cur && cur.parentElement && safety-- > 0) {
+      const tag = (cur.tagName || '').toLowerCase();
+      if (TIER2_5_SECTION_TAGS.indexOf(tag) >= 0) return cur;
+      // Accept a div with id as a fallback — it's at least an addressable
+      // landmark, even if not semantically tagged.
+      if (tag === 'div' && cur.id) return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  };
+
+  // Cluster axe violations by section ancestor. Each cluster holds the
+  // section's outerHTML, the rule IDs targeted, and the count of violations.
+  // Skips violations Tier 2 already targets, sections too large to send
+  // (>8 KB), and clusters with too many violations (>8) — those are better
+  // handled by Tier 3.
+  const clusterAxeViolationsBySection = (htmlContent, axeResult) => {
+    if (!axeResult || typeof DOMParser === 'undefined') return [];
+    const all = []
+      .concat(axeResult.critical || [])
+      .concat(axeResult.serious || [])
+      .concat(axeResult.moderate || [])
+      .filter(v => TIER2_5_RULE_IDS.has(v.id));
+    if (all.length === 0) return [];
+    let doc;
+    try { doc = new DOMParser().parseFromString(htmlContent, 'text/html'); } catch { return []; }
+    if (!doc || !doc.body) return [];
+    const MAX_SECTION_BYTES = 8192;
+    const MAX_VIOLATIONS_PER_CLUSTER = 8;
+    const clusters = new Map(); // sectionElement → { ruleIds: Set, selectors: [], targetedRules: Set }
+    for (const v of all) {
+      const nodes = Array.isArray(v.nodeDetails) ? v.nodeDetails : [];
+      // For document-wide rules without nodeDetails (e.g. page-has-heading-one
+      // when there's literally no h1), there's no anchor — Tier 3 handles it.
+      if (nodes.length === 0) continue;
+      for (const nd of nodes) {
+        const sel = Array.isArray(nd.target) ? nd.target[0] : null;
+        if (!sel) continue;
+        let el;
+        try { el = doc.querySelector(sel); } catch { continue; }
+        if (!el) continue;
+        const section = _findSectionAncestor(el);
+        if (!section) continue;
+        if (!section.outerHTML || section.outerHTML.length > MAX_SECTION_BYTES) continue;
+        if (!clusters.has(section)) {
+          clusters.set(section, { ruleIds: new Set(), selectors: [], targetedRules: new Set() });
+        }
+        const c = clusters.get(section);
+        c.ruleIds.add(v.id);
+        c.targetedRules.add(v.id);
+        c.selectors.push(sel);
+      }
+    }
+    const result = [];
+    for (const [section, meta] of clusters.entries()) {
+      if (meta.selectors.length > MAX_VIOLATIONS_PER_CLUSTER) continue;
+      result.push({
+        sectionTag: (section.tagName || 'section').toLowerCase(),
+        sectionHtml: section.outerHTML,
+        ruleIds: Array.from(meta.ruleIds),
+        targetedRules: Array.from(meta.targetedRules),
+        violationCount: meta.selectors.length,
+        selectors: meta.selectors,
+      });
+    }
+    return result;
+  };
+
+  // Section-scoped Gemini prompt. Tighter than Tier 3's whole-document prompt;
+  // looser than Tier 2's single-element prompt. The model is told exactly what
+  // section it's seeing and exactly which violations to address.
+  const sectionScopedFixCluster = async (cluster) => {
+    if (!callGemini) return cluster.sectionHtml;
+    const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
+    const prompt =
+      'Fix ONLY the listed accessibility violations in this <' + cluster.sectionTag + '> element.\n' +
+      'Do NOT modify any text content (the words a human reads must remain identical).\n' +
+      'Do NOT modify alt attributes, aria-label values, or button/link text — those are\n' +
+      'handled by other tiers.\n' +
+      'You MAY modify: heading levels (h1-h6) within the section, landmark roles, the\n' +
+      'section\'s opening tag attributes (e.g. add aria-labelledby), nested element\n' +
+      'structure for landmark/region compliance.\n\n' +
+      'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
+      'SECTION:\n' + cluster.sectionHtml + '\n\n' +
+      'Return ONLY the rewritten <' + cluster.sectionTag + '> element. No explanation.\n' +
+      'No markdown fences. The opening and closing tag names must match the input.';
+    try {
+      let raw = await callGemini(prompt, true);
+      if (!raw) return cluster.sectionHtml;
+      raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      if (!raw.startsWith('<')) return cluster.sectionHtml;
+      const newTagMatch = raw.match(/^<([a-z][a-z0-9]*)/i);
+      if (!newTagMatch || newTagMatch[1].toLowerCase() !== cluster.sectionTag) {
+        warnLog('[Tier2.5] section tag mismatch (expected ' + cluster.sectionTag + ', got ' + (newTagMatch ? newTagMatch[1] : '?') + ') — reject');
+        return cluster.sectionHtml;
+      }
+      return raw;
+    } catch (e) {
+      warnLog('[Tier2.5] section fix call failed:', e && e.message);
+      return cluster.sectionHtml;
+    }
+  };
+
+  // Orchestrator. Same shape as runTier2SurgicalFixes — returns the modified
+  // HTML and a stats object. Reuses acceptOrRevertSubtreeFix for the verdict
+  // (the math is identical: targeted violations must strictly decrease, no new
+  // violations allowed).
+  const runTier2_5SectionScopedFixes = async (htmlContent, axeResult) => {
+    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
+    if (!htmlContent || !axeResult) return { html: htmlContent, stats };
+    const clusters = clusterAxeViolationsBySection(htmlContent, axeResult);
+    if (clusters.length === 0) return { html: htmlContent, stats };
+    stats.clustersConsidered = clusters.length;
+    warnLog('[Tier2.5] considering ' + clusters.length + ' section-scoped cluster(s)');
+    const proposals = await Promise.all(clusters.map(async (cluster) => {
+      const rewritten = await sectionScopedFixCluster(cluster);
+      const verdict = await acceptOrRevertSubtreeFix(cluster.sectionHtml, rewritten, cluster.targetedRules);
+      return { cluster, rewritten, verdict };
+    }));
+    let working = htmlContent;
+    proposals
+      .filter(p => p.verdict.accepted)
+      .sort((a, b) => b.cluster.sectionHtml.length - a.cluster.sectionHtml.length)
+      .forEach(p => {
+        const idx = working.indexOf(p.cluster.sectionHtml);
+        if (idx === -1) {
+          stats.rejected++;
+          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'section-not-found-after-prior-replacement' });
+          warnLog('[Tier2.5] section lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
+          return;
+        }
+        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.sectionHtml.length);
+        stats.accepted++;
+        stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
+        warnLog('[Tier2.5] accepted <' + p.cluster.sectionTag + '> cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+      });
+    proposals.filter(p => !p.verdict.accepted).forEach(p => {
+      stats.rejected++;
+      stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
+      warnLog('[Tier2.5] rejected <' + p.cluster.sectionTag + '> cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+    });
+    warnLog('[Tier2.5] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
+    return { html: working, stats };
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Tier 3: Structural AI fixes (chunked, document-wide)
   // ─────────────────────────────────────────────────────────────────────────
   // Tier 3 wraps the existing aiFixChunked but does three things differently:
@@ -4389,6 +4695,107 @@ HTML section ${chunkNum}/${chunks.length}:
       warnLog('[Tier3] structural fix call failed:', e && e.message);
       return { html: htmlContent, skipped: true, reason: 'call-failed' };
     }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Multi-session merge: assemble a cohesive HTML doc from N remediated ranges
+  // ─────────────────────────────────────────────────────────────────────────
+  // Pure function — no I/O, no DOM. Takes the ranges[] array stored on a
+  // multi-session record and produces a single accessible HTML document
+  // covering all completed pages, with explicit boundary markers between
+  // ranges and gap markers where the user hasn't remediated yet.
+  //
+  // Strategy:
+  //   1. Sort ranges by starting page.
+  //   2. Lift the preamble (DOCTYPE through first <main>/<body> open) from the
+  //      first range. Lift the postamble (closing </main>/</body>/</html>)
+  //      from the last range.
+  //   3. From each range, extract just the body/main inner content.
+  //   4. Stitch together with <hr data-multi-session-boundary> between ranges,
+  //      and <p data-gap> markers where pages are missing.
+  //
+  // Defensive: if any range is missing structural tags, fall back to using
+  // its raw HTML as a body fragment. We always produce *some* output, even
+  // for partial/malformed records — the user can still download what's there.
+  const mergeRangesToFullHtml = (ranges, totalPages) => {
+    if (!Array.isArray(ranges) || ranges.length === 0) return '';
+    const sorted = ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
+    // Helper: extract body inner content from a single remediated range's HTML.
+    // Tries <main>...</main> first (the preferred landmark), falls back to
+    // <body>...</body>, then to the raw string if neither is present.
+    const _extractBodyContent = (html) => {
+      if (!html) return '';
+      const mainMatch = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
+      if (mainMatch) return mainMatch[1];
+      const bodyMatch = html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
+      if (bodyMatch) return bodyMatch[1];
+      return html; // raw fragment — better than dropping it
+    };
+    // Helper: pull the document opening (DOCTYPE + html + head + opening body
+    // and main if present) from a complete HTML doc. Returns empty string when
+    // the input doesn't look like a full document.
+    const _extractPreamble = (html) => {
+      if (!html) return '';
+      const m = html.match(/^([\s\S]*?<main\b[^>]*>)/i);
+      if (m) return m[1];
+      const b = html.match(/^([\s\S]*?<body\b[^>]*>)/i);
+      if (b) return b[1];
+      return '';
+    };
+    const _extractPostamble = (html) => {
+      if (!html) return '';
+      const m = html.match(/(<\/main>[\s\S]*?<\/html>\s*)$/i);
+      if (m) return m[1];
+      const b = html.match(/(<\/body>[\s\S]*?<\/html>\s*)$/i);
+      if (b) return b[1];
+      return '';
+    };
+    const firstRange = sorted[0];
+    const lastRange = sorted[sorted.length - 1];
+    const preamble = _extractPreamble(firstRange.remediatedHtml) ||
+      '<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8"><title>Multi-session remediated document</title></head>\n<body>\n<main id="main-content" role="main">\n';
+    const postamble = _extractPostamble(lastRange.remediatedHtml) || '\n</main>\n</body>\n</html>\n';
+    const _boundary = (prevEnd, nextStart) => {
+      const gapStart = prevEnd + 1;
+      const gapEnd = nextStart - 1;
+      if (gapEnd >= gapStart) {
+        return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
+          '" data-gap="pages ' + gapStart + '-' + gapEnd + ' not yet remediated" ' +
+          'aria-label="Section break — pages ' + gapStart + ' to ' + gapEnd + ' not yet remediated">\n' +
+          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+          'Pages ' + gapStart + '\u2013' + gapEnd + ' have not yet been remediated in this session. ' +
+          'Re-upload this PDF and select that range to add them.' +
+          '</p>\n';
+      }
+      return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
+        '" aria-label="Section break — resumed remediation session">\n';
+    };
+    const bodies = [];
+    for (let i = 0; i < sorted.length; i++) {
+      const r = sorted[i];
+      bodies.push(
+        '<section data-page-range="' + r.pages[0] + '-' + r.pages[1] + '"' +
+        (r.completedAt ? ' data-completed-at="' + new Date(r.completedAt).toISOString() + '"' : '') +
+        '>\n' +
+        _extractBodyContent(r.remediatedHtml) +
+        '\n</section>'
+      );
+      if (i < sorted.length - 1) {
+        bodies.push(_boundary(r.pages[1], sorted[i + 1].pages[0]));
+      }
+    }
+    // Optional final gap notice if the last range doesn't reach totalPages.
+    let trailingNotice = '';
+    if (totalPages && lastRange.pages[1] < totalPages) {
+      const remStart = lastRange.pages[1] + 1;
+      trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
+        'aria-label="End of completed pages">\n' +
+        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+        'Pages ' + remStart + '\u2013' + totalPages + ' remain to be remediated. ' +
+        'Re-upload this PDF in a future session to continue.' +
+        '</p>\n';
+    }
+    return preamble + bodies.join('\n') + trailingNotice + postamble;
   };
 
   // ── Tag-safe truncation: never cut inside an HTML tag ──
@@ -5437,6 +5844,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _mimeType = _fileName.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : _fileName.endsWith('.pptx') ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
     const _auditResult = batchOverrides?.auditResult || pdfAuditResult;
     const _onProgress = batchOverrides?.onProgress || null;
+    // Optional [startPage, endPage] range. When omitted, the whole document is
+    // remediated (backward compatibility — no UI changes required for single-pass
+    // users). When supplied, only that page range is extracted and remediated;
+    // the resulting HTML covers just those pages and gets persisted to the
+    // multi-session store for cross-day workflows.
+    const _pageRange = batchOverrides?.pageRange || null;
     const _startTime = Date.now();
 
     // Reset pipeline telemetry for this run
@@ -5532,23 +5945,31 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
         } else if (isPdf) {
           updateProgress(1, 'Extracting PDF text layer deterministically...');
-          const det = await extractPdfTextDeterministic(_base64);
+          const det = await extractPdfTextDeterministic(_base64, _pageRange);
           if (det && !det.isScanned && det.sourceCharCount > 100) {
             extractedText = det.fullText;
             window.__lastGroundTruthCharCount = det.sourceCharCount;
             window.__lastGroundTruthPageMap = det.pages;
             window.__lastGroundTruthMethod = 'pdfjs';
-            if (det.pageCount > 0) effectivePageCount = det.pageCount;
-            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
-            warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
+            // For partial extracts, effectivePageCount must reflect the RANGE,
+            // not the whole-document page count. The Vision chunk loop later
+            // uses this to size its work; the multi-session merge uses it to
+            // record which pages this range actually covered.
+            if (det.extractedPageCount > 0) effectivePageCount = det.extractedPageCount;
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.extractedPageCount} pages` + (det.isPartial ? ` (range ${det.pageRange[0]}-${det.pageRange[1]} of ${det.pageCount})` : ''));
+            warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.extractedPageCount} pages` + (det.isPartial ? ` [range ${det.pageRange[0]}-${det.pageRange[1]} of ${det.pageCount}]` : '') + ` (avg ${Math.round(det.sourceCharCount / Math.max(1, det.extractedPageCount))}/page)`);
           } else if (det) {
-            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
+            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.extractedPageCount} pages) — falling through to Vision OCR`);
           }
         }
       } catch (detErr) {
         warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
       }
 
+      // For partial-range remediation, _rangeStart shifts the chunk page numbers
+      // so the Vision prompts say "extracting pages 50-51" instead of "1-2".
+      // OCR canvas rendering also uses this to render the right slice of the PDF.
+      const _rangeStart = _pageRange ? _pageRange[0] : 1;
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
 
@@ -5566,7 +5987,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _raw = _base64.includes(',') ? _base64.split(',')[1] : _base64;
           const _bytes = Uint8Array.from(atob(_raw), c => c.charCodeAt(0));
           const _pdfDoc = await window.pdfjsLib.getDocument({ data: _bytes }).promise;
-          const _pageCanvases = await renderPdfPageCanvases(_pdfDoc, [1, Math.min(effectivePageCount, _pdfDoc.numPages)]);
+          // For partial-range remediation, render only the requested slice.
+          const _renderEnd = Math.min(_rangeStart + effectivePageCount - 1, _pdfDoc.numPages);
+          const _pageCanvases = await renderPdfPageCanvases(_pdfDoc, [_rangeStart, _renderEnd]);
           _ocrLayer = await extractOcrLayer(_pageCanvases, updateProgress);
         } catch (ocrErr) {
           warnLog('[OCR] Assist failed, continuing with Vision-only:', ocrErr && ocrErr.message);
@@ -5580,11 +6003,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // Fall through to Step 1b (image extraction) with extractedText already populated
       } else if (numChunks <= 1 && effectivePageCount <= 2) {
         // Very short PDF (1-2 pages): single extraction pass is safe
-        const _strat1 = chooseOcrPromptStrategy(_ocrLayer, 1, effectivePageCount);
+        const _spStart = _rangeStart;
+        const _spEnd = _rangeStart + effectivePageCount - 1;
+        const _strat1 = chooseOcrPromptStrategy(_ocrLayer, _spStart, _spEnd);
         if (_ocrLayer) _pipeLog('OCR', 'Single-pass strategy: ' + _strat1.mode + (_strat1.confidence ? ' (' + Math.round(_strat1.confidence) + '% conf)' : ''));
         updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})${_strat1.mode !== 'vision-only' ? ' with OCR assist' : ''}...`);
         extractedText = await callGeminiVision(
-          buildVisionExtractionPrompt(1, effectivePageCount, _strat1),
+          buildVisionExtractionPrompt(_spStart, _spEnd, _strat1),
           _base64, _mimeType
         );
       } else {
@@ -5593,8 +6018,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         const MAX_PARALLEL = 5;
         const chunkPromises = [];
         for (let i = 0; i < numChunks; i++) {
-          const startPage = i * PAGES_PER_CHUNK + 1;
-          const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
+          const startPage = _rangeStart + i * PAGES_PER_CHUNK;
+          const endPage = Math.min(_rangeStart + (i + 1) * PAGES_PER_CHUNK - 1, _rangeStart + effectivePageCount - 1);
           const _stratN = chooseOcrPromptStrategy(_ocrLayer, startPage, endPage);
           if (_ocrLayer) _pipeLog('OCR', 'Chunk pp.' + startPage + '-' + endPage + ' strategy: ' + _stratN.mode + (_stratN.confidence ? ' (' + Math.round(_stratN.confidence) + '% conf)' : ''));
           if (_stratN.mode === 'vision-only' && _ocrLayer) {
@@ -7174,7 +7599,32 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             warnLog('[Tier2] no clusters accepted (' + t2.stats.clustersConsidered + ' considered, ' + t2.stats.rejected + ' rejected)');
           }
         } catch (t2Err) {
-          warnLog('[Tier2] surgical fix pass failed (continuing to Tier 3):', t2Err && t2Err.message);
+          warnLog('[Tier2] surgical fix pass failed (continuing to Tier 2.5):', t2Err && t2Err.message);
+        }
+      }
+
+      // ── Step 4e: Tier 2.5 section-scoped AI fixes ──
+      // The middle ground between Tier 2 (single element) and Tier 3 (whole
+      // doc). For violations that need section context (heading order within a
+      // section, landmark wrapping, etc.) but not whole-document context, we
+      // send just the containing <section>/<article>/<nav>/etc. to Gemini and
+      // re-audit the rewritten section in isolation. Same atomic accept/reject
+      // discipline as Tier 2.
+      if (axeResults && axeResults.totalViolations > 0) {
+        try {
+          updateProgress(4, 'Section-scoped AI fixes...');
+          const t25 = await runTier2_5SectionScopedFixes(accessibleHtml, axeResults);
+          if (t25 && t25.stats.accepted > 0) {
+            accessibleHtml = t25.html;
+            const postT25Axe = await runAxeAudit(accessibleHtml);
+            if (postT25Axe) axeResults = postT25Axe;
+            warnLog('[Tier2.5] applied — axe violations now ' + axeResults.totalViolations);
+            if (addToast) addToast('📐 Tier 2.5: fixed ' + t25.stats.violationsFixed + ' structural violation(s) in ' + t25.stats.accepted + ' section(s)', 'success');
+          } else if (t25) {
+            warnLog('[Tier2.5] no section clusters accepted (' + t25.stats.clustersConsidered + ' considered, ' + t25.stats.rejected + ' rejected)');
+          }
+        } catch (t25Err) {
+          warnLog('[Tier2.5] section fix pass failed (continuing to Tier 3):', t25Err && t25Err.message);
         }
       }
 
@@ -7772,6 +8222,127 @@ window.__insertUnplacedImage = function(idx) {
         axeViolations: axeResults ? axeResults.totalViolations : null,
         htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
       });
+
+      // ── Multi-session persistence (page-range workflows) ──
+      // When this run targeted a page range (rather than the whole document),
+      // append the remediated HTML to the multi-session record for this PDF
+      // and re-merge so the UI displays the cohesive cross-session document.
+      // Backward compatibility: when no _pageRange was supplied (the default
+      // single-pass UI path), we don't touch the multi-session store at all —
+      // existing users see no behavior change.
+      if (_pageRange && pendingPdfFile) {
+        try {
+          const _msMeta = {
+            fileName: _fileName,
+            fileSize: pendingPdfFile.size || 0,
+            pageCount: pageCount,
+          };
+          const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount);
+          const _rangeData = {
+            pages: [_pageRange[0], _pageRange[1]],
+            remediatedHtml: accessibleHtml,
+            apiCallsUsed: _pipelineStats.apiCalls || 0,
+            visionCallsUsed: _pipelineStats.visionCalls || 0,
+            finalScore: finalAfterScore,
+            axeViolations: _result.axeViolations || 0,
+          };
+          const _saved = await saveMultiSessionRange(_msSessionId, _msMeta, _rangeData);
+          if (_saved && Array.isArray(_saved.ranges)) {
+            const _mergedHtml = mergeRangesToFullHtml(_saved.ranges, pageCount);
+            // Compute coverage and surface a "come back tomorrow for the rest" toast
+            const _completedPages = _saved.ranges.reduce((acc, r) => {
+              const span = (r.pages[1] - r.pages[0] + 1);
+              return acc + Math.max(0, span);
+            }, 0);
+            const _remaining = Math.max(0, pageCount - _completedPages);
+            // Replace single-range HTML with merged cross-session HTML so the
+            // download / preview UI shows the cumulative document.
+            _result.accessibleHtml = _mergedHtml;
+            _result.multiSession = {
+              sessionId: _msSessionId,
+              ranges: _saved.ranges.map(r => ({
+                pages: r.pages,
+                completedAt: r.completedAt,
+                finalScore: r.finalScore,
+                apiCallsUsed: r.apiCallsUsed,
+                visionCallsUsed: r.visionCallsUsed,
+              })),
+              completedPages: _completedPages,
+              remainingPages: _remaining,
+              totalPages: pageCount,
+            };
+            warnLog('[MultiSession] Saved range ' + _pageRange[0] + '-' + _pageRange[1] + '. Total covered: ' + _completedPages + '/' + pageCount + ' pages.');
+            if (_remaining > 0 && !_isBatch && typeof addToast === 'function') {
+              addToast('💾 Saved progress: ' + _completedPages + '/' + pageCount + ' pages remediated. Re-upload this PDF in a future session to continue with the remaining ' + _remaining + ' pages.', 'success');
+            }
+            // ── Auto-download the project file ──
+            // Critical for Canvas users: IndexedDB is wiped per session there,
+            // so the .alloflow.json file is the durable source of truth. We
+            // build the same shape the Save Project button writes (so Load
+            // Project handles it without changes) and add the multiSession
+            // payload so the prior-ranges panel rehydrates from this file
+            // alone, even on a fresh browser. Gated on pdfAutoSaveProject so
+            // users who don't want it can opt out.
+            if (pdfAutoSaveProject !== false && !_isBatch && typeof document !== 'undefined') {
+              try {
+                const _projectPayload = {
+                  version: 1,
+                  savedAt: new Date().toISOString(),
+                  fileName: _fileName,
+                  // Mirror the Save Project shape so old loaders accept the file
+                  accessibleHtml: _result.accessibleHtml,
+                  beforeScore: _result.beforeScore,
+                  afterScore: _result.afterScore,
+                  axeAudit: _result.axeAudit,
+                  verificationAudit: _result.verificationAudit,
+                  docStyle: _result.docStyle,
+                  pageCount: _result.pageCount,
+                  imageCount: _result.imageCount,
+                  needsExpertReview: _result.needsExpertReview,
+                  // NEW: cross-session ranges + metadata. Old loaders ignore
+                  // this; new loaders use it to restore the prior-ranges panel.
+                  multiSession: {
+                    schemaVersion: 1,
+                    sessionId: _msSessionId,
+                    fileName: _msMeta.fileName,
+                    fileSize: _msMeta.fileSize,
+                    pageCount: _msMeta.pageCount,
+                    ranges: _saved.ranges,
+                    completedPages: _completedPages,
+                    remainingPages: _remaining,
+                  },
+                };
+                const _projBlob = new Blob([JSON.stringify(_projectPayload)], { type: 'application/json' });
+                const _projUrl = URL.createObjectURL(_projBlob);
+                const _a = document.createElement('a');
+                _a.href = _projUrl;
+                // Stable filename — overwrites the prior auto-save in the
+                // user's Downloads folder so they end up with one file, not N.
+                _a.download = (_fileName || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json';
+                document.body.appendChild(_a);
+                _a.click();
+                document.body.removeChild(_a);
+                setTimeout(function() { URL.revokeObjectURL(_projUrl); }, 1000);
+                warnLog('[MultiSession] Auto-saved project file: ' + _a.download);
+                // First-time explanation toast — Chrome will prompt about
+                // multiple downloads on the second auto-save. Surface this
+                // expectation up front so the prompt isn't a mystery.
+                try {
+                  const _shown = window.localStorage && window.localStorage.getItem('alloflow_autosave_explained_v1');
+                  if (!_shown && typeof addToast === 'function') {
+                    addToast('💾 Auto-saved your progress as a file. If your browser prompts to allow multiple downloads, click Allow — that lets us keep saving as you remediate more pages.', 'info');
+                    if (window.localStorage) window.localStorage.setItem('alloflow_autosave_explained_v1', '1');
+                  }
+                } catch { /* localStorage may be unavailable */ }
+              } catch (dlErr) {
+                warnLog('[MultiSession] Auto-download failed:', dlErr && dlErr.message);
+              }
+            }
+          }
+        } catch (msErr) {
+          warnLog('[MultiSession] Failed to persist range result:', msErr && msErr.message);
+        }
+      }
 
       // Batch mode: return result without touching React state
       if (_isBatch) return _result;
@@ -9514,6 +10085,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
+    // Multi-session helpers — exposed for the UI to inspect prior progress and
+    // clear records. The main entry point is fixAndVerifyPdf with a pageRange
+    // in batchOverrides; these are for the prior-session panel and reset button.
+    multiSessionId: _multiSessionId,
+    loadMultiSession: function(sid) { return loadMultiSession(sid); },
+    clearMultiSession: function(sid) { return clearMultiSession(sid); },
+    mergeRangesToFullHtml: _wrap(mergeRangesToFullHtml),
+    // Tier 2 / 2.5 / 3 helpers — exposed so the "Fix Remaining" UI can run the
+    // tiered cascade independently from the main remediation pipeline. Each
+    // tier has its own bounded blast radius and atomic accept/reject discipline.
+    runTier2SurgicalFixes: _wrapAsync(runTier2SurgicalFixes),
+    runTier2_5SectionScopedFixes: _wrapAsync(runTier2_5SectionScopedFixes),
+    runTier3StructuralFix: _wrapAsync(runTier3StructuralFix),
   };
 };
 
