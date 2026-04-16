@@ -5589,7 +5589,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Wet road surface overlay (rain makes road shinier) ──
           if (isRain) {
             var wetOverlayGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
-            var wetOverlayMat = new T.MeshBasicMaterial({ color: 0x556677, transparent: true, opacity: 0.15 });
+            // MeshPhongMaterial with high shininess creates a visible specular
+            // highlight that approximates the wet-glare you see on rainy roads.
+            var wetOverlayMat = new T.MeshPhongMaterial({
+              color: 0x445566, specular: 0x88aacc, shininess: 80,
+              transparent: true, opacity: 0.25, depthWrite: false
+            });
             var wetOverlay = new T.Mesh(wetOverlayGeo, wetOverlayMat);
             wetOverlay.rotation.x = -Math.PI / 2;
             wetOverlay.position.set(centerX - MAP_SIZE / 2, 0.018, 0);
@@ -5722,6 +5727,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ? infiniteWorldRef.current.roadHeightAtY(car.y) : 0;
           s3.playerCarGroup.position.set(carWorldX, roadH + (car._suspY || 0), carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
+          // Pitch the car along the road grade so it visually follows hills.
+          // rotation.x = pitch (positive = nose up in Three.js default orientation).
+          // The car model faces +X, so rotation around Z is pitch. car._pitch has
+          // both grade + accel-induced weight transfer combined.
+          s3.playerCarGroup.rotation.z = car._pitch || 0;
 
           // Tire tracks in snow — drop a pair of small dark planes behind the
           // car each "tick". Ring buffer of ~200 tracks to bound memory; oldest
@@ -5887,7 +5897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Combine head swivel with turn look-ahead
             var totalLookOffset = lookAheadBias + hc.swivel;
             var fpTargetX = carWorldX + Math.cos(car.heading) * 0.3 + bobX + shakeX;
-            var fpTargetY = 1.1 + bobY;
+            var fpTargetY = roadH + 1.1 + bobY;
             var fpTargetZ = carWorldZ + Math.sin(car.heading) * 0.3 + shakeZ;
             // Lerp position for smoother micro-motion
             if (!s3.camera._lastFpX) { s3.camera._lastFpX = fpTargetX; s3.camera._lastFpY = fpTargetY; s3.camera._lastFpZ = fpTargetZ; }
@@ -5897,7 +5907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.camera.position.set(s3.camera._lastFpX, s3.camera._lastFpY, s3.camera._lastFpZ);
             s3.camera.lookAt(
               carWorldX + Math.cos(car.heading + totalLookOffset) * 10,
-              0.95,
+              roadH + 0.95,
               carWorldZ + Math.sin(car.heading + totalLookOffset) * 10
             );
             s3.playerCarGroup.visible = false;
@@ -5912,7 +5922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var chaseBackHeading = car.heading - chaseLagBias;
             var chaseTargetX = carWorldX - Math.cos(chaseBackHeading) * 5.5;
             var chaseTargetZ = carWorldZ - Math.sin(chaseBackHeading) * 5.5;
-            var chaseTargetY = 2.8;
+            var chaseTargetY = roadH + 2.8;
             // Lerp current position toward target — more responsive at high speed
             var chaseLerpRate = 0.08 + Math.min(0.05, chaseSpeedMph * 0.0008);
             s3.camera.position.x += (chaseTargetX - s3.camera.position.x) * chaseLerpRate;
@@ -5922,24 +5932,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var chaseLookAhead = 2 + Math.min(4, chaseSpeedMph * 0.05);
             var lookAheadX = carWorldX + Math.cos(car.heading) * chaseLookAhead;
             var lookAheadZ = carWorldZ + Math.sin(car.heading) * chaseLookAhead;
-            s3.camera.lookAt(lookAheadX, 0.6, lookAheadZ);
+            s3.camera.lookAt(lookAheadX, roadH + 0.6, lookAheadZ);
             s3.playerCarGroup.visible = true;
           } else if (camMode === 'rearview') {
-            // Looking backward from driver position
             s3.camera.position.set(
               carWorldX - Math.cos(car.heading) * 0.2,
-              1.1,
+              roadH + 1.1,
               carWorldZ - Math.sin(car.heading) * 0.2
             );
             s3.camera.lookAt(
               carWorldX - Math.cos(car.heading) * 10,
-              1.0,
+              roadH + 1.0,
               carWorldZ - Math.sin(car.heading) * 10
             );
             s3.playerCarGroup.visible = false;
           } else { // overhead
-            s3.camera.position.set(carWorldX, 25, carWorldZ + 0.1);
-            s3.camera.lookAt(carWorldX, 0, carWorldZ);
+            s3.camera.position.set(carWorldX, roadH + 25, carWorldZ + 0.1);
+            s3.camera.lookAt(carWorldX, roadH, carWorldZ);
             s3.playerCarGroup.visible = true;
           }
 
@@ -6169,7 +6178,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               tGroup.add(cg);
               m = cg;
             }
-            m.position.set(t.x - MAP_SIZE / 2, 0, t.y - MAP_SIZE / 2);
+            var tRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(t.y) : 0;
+            m.position.set(t.x - MAP_SIZE / 2, tRoadH, t.y - MAP_SIZE / 2);
             m.rotation.y = -t.heading;
             // Wheel spin + blinker on traffic vehicles
             if (m.children) {
@@ -6281,7 +6291,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               pGroup.add(pg);
               m = pg;
             }
-            m.position.set(p.x - MAP_SIZE / 2, 0, p.y - MAP_SIZE / 2);
+            var pRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(p.y) : 0;
+            m.position.set(p.x - MAP_SIZE / 2, pRoadH, p.y - MAP_SIZE / 2);
             // Walking animation — swing legs and arms
             var walkPhase = Math.sin(timeRef.current * 4 + pi * 2.5) * 0.3;
             m.children.forEach(function(child) {
@@ -6317,7 +6328,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cGroup.add(cg);
               m = cg;
             }
-            m.position.set(cy.x - MAP_SIZE / 2, 0, cy.y - MAP_SIZE / 2);
+            var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
+            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH, cy.y - MAP_SIZE / 2);
             m.rotation.y = -cy.heading;
           });
 
@@ -6430,7 +6442,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               stripe.position.set(0, bodyH * 0.6, 0.51);
               eGrp.add(stripe);
             }
-            eGrp.position.set(em.x - MAP_SIZE / 2, 0, em.y - MAP_SIZE / 2);
+            var emRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(em.y) : 0;
+            eGrp.position.set(em.x - MAP_SIZE / 2, emRoadH, em.y - MAP_SIZE / 2);
             eGrp.rotation.y = -em.heading;
             eGroup.add(eGrp);
           }
@@ -7525,6 +7538,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chunkGroup.add(fnRail);
                   });
                 }
+                // Speed limit sign — one per chunk on alternating sides. The
+                // posted speed matches the biome so the player can self-check.
+                // White rectangle with black text, on a metal post.
+                var slBiomeMph = chunk.biome === 'rural' ? 45 : chunk.biome === 'residential' ? 25
+                  : chunk.biome === 'suburban' ? 35 : chunk.biome === 'commercial' ? 30 : 35;
+                (function() {
+                  var slZ = chunkWorldZ + 6;
+                  var slSide = (chunk.index % 2 === 0) ? 1 : -1;
+                  var slCx = lookupCenterAtZ(slZ);
+                  var slHy = lookupHeightAtZ(slZ);
+                  var slX = slCx + slSide * (roadHalfW + 1.5);
+                  // Post
+                  var postMat = new T.MeshLambertMaterial({ color: 0x808888 });
+                  var post = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 2.4, 5), postMat);
+                  post.position.set(slX, slHy + 1.2, slZ);
+                  chunkGroup.add(post);
+                  // Face — white rectangle with canvas-textured number.
+                  try {
+                    var sc = document.createElement('canvas');
+                    sc.width = 128; sc.height = 160;
+                    var sx = sc.getContext('2d');
+                    sx.fillStyle = '#ffffff';
+                    sx.fillRect(0, 0, 128, 160);
+                    sx.strokeStyle = '#000000';
+                    sx.lineWidth = 6;
+                    sx.strokeRect(3, 3, 122, 154);
+                    sx.fillStyle = '#000000';
+                    sx.font = 'bold 22px system-ui, sans-serif';
+                    sx.textAlign = 'center';
+                    sx.fillText('SPEED', 64, 36);
+                    sx.fillText('LIMIT', 64, 58);
+                    sx.font = 'bold 64px system-ui, sans-serif';
+                    sx.fillText('' + slBiomeMph, 64, 124);
+                    var sTex = new T.CanvasTexture(sc);
+                    var sMat = new T.MeshBasicMaterial({ map: sTex, side: T.DoubleSide });
+                    var sFace = new T.Mesh(new T.PlaneGeometry(0.55, 0.7), sMat);
+                    sFace.position.set(slX, slHy + 2.3, slZ);
+                    sFace.rotation.y = slSide < 0 ? Math.PI / 2 : -Math.PI / 2;
+                    chunkGroup.add(sFace);
+                  } catch (signErr) {}
+                })();
+                // Driveways in residential/suburban — small asphalt pads cutting
+                // from the curb into the yard, at semi-regular intervals.
+                if (chunk.biome === 'residential' || chunk.biome === 'suburban') {
+                  var dwMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8090a0 : 0x444a50 });
+                  var dwCount = chunk.biome === 'residential' ? 3 : 2;
+                  for (var dwI = 0; dwI < dwCount; dwI++) {
+                    var dwZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
+                    var dwSide = furnRng() < 0.5 ? -1 : 1;
+                    var dwCx = lookupCenterAtZ(dwZ);
+                    var dwHy = lookupHeightAtZ(dwZ);
+                    var dwOff = roadHalfW + 0.5;
+                    var dw = new T.Mesh(new T.PlaneGeometry(3.5, 1.5), dwMat);
+                    dw.rotation.x = -Math.PI / 2;
+                    dw.position.set(dwCx + dwSide * (dwOff + 1.75), dwHy + 0.008, dwZ);
+                    chunkGroup.add(dw);
+                  }
+                }
                 // Mailboxes in residential/rural biomes — small box on a stick.
                 if (chunk.biome === 'residential' || chunk.biome === 'rural') {
                   var mbCount = chunk.biome === 'residential' ? 3 : 1;
@@ -7681,6 +7752,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Shoulder/curb strips — thin raised concrete-colored ribbons
                 // along both road edges so the boundary between asphalt and grass
                 // reads clearly. Short segments tracking the spline.
+                // Grass shoulder strip — mowed lighter green between curb and
+                // the wild grass/tree line. Short ribbon segments.
+                var shoulderMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xd8dde4 : 0x4a8a3a });
+                var shOff = roadHalfW + 0.4;
+                for (var shZ = chunkWorldZ + 0.5; shZ < chunkWorldZ + CHUNK_SIZE - 0.5; shZ += 1.5) {
+                  var shCtr = markCenterAtZ(shZ);
+                  var shHt = iw.spline ? iw.spline.heightAt(shZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-1, 1].forEach(function(shSide) {
+                    var sh = new T.Mesh(new T.PlaneGeometry(1.6, 1.5), shoulderMat);
+                    sh.rotation.x = -Math.PI / 2;
+                    sh.position.set(shCtr + shSide * (shOff + 0.8), shHt + 0.005, shZ);
+                    chunkGroup.add(sh);
+                  });
+                }
                 var curbMat = new T.MeshLambertMaterial({ color: 0xb8b8b0 });
                 var edgeOff = roadHalfW + 0.1; // just outside the ribbon edge
                 for (var cbZ = chunkWorldZ + 0.5; cbZ < chunkWorldZ + CHUNK_SIZE - 0.5; cbZ += 1.0) {
@@ -7941,6 +8026,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   cw.position.set(cwCtrX + cwi * 0.7, crossHt + 0.022, cwCtrZ);
                   chunkGroup.add(cw);
                 }
+                // Street name sign — green rectangle with white text.
+                // Names are deterministic per chunk index so the same intersection
+                // always has the same name on revisit.
+                (function() {
+                  var streets = ['Main St', 'Oak Ave', 'Maple Dr', 'Pine Rd', 'Elm St',
+                    'School St', 'Water St', 'Bridge Rd', 'Park Ave', 'Mill Rd',
+                    'Church St', 'Center St', 'High St', 'River Rd', 'Harbor Dr',
+                    'Birch Ln', 'Lake Rd', 'Hill St', 'Shore Rd', 'Forest Ave'];
+                  var stName = streets[((chunk.index * 7 + 13) & 0x7fffffff) % streets.length];
+                  try {
+                    var nc = document.createElement('canvas');
+                    nc.width = 256; nc.height = 64;
+                    var nx = nc.getContext('2d');
+                    nx.fillStyle = '#166534';
+                    nx.fillRect(0, 0, 256, 64);
+                    nx.strokeStyle = '#ffffff';
+                    nx.lineWidth = 3;
+                    nx.strokeRect(2, 2, 252, 60);
+                    nx.fillStyle = '#ffffff';
+                    nx.font = 'bold 30px system-ui, sans-serif';
+                    nx.textAlign = 'center';
+                    nx.textBaseline = 'middle';
+                    nx.fillText(stName, 128, 32);
+                    var nTex = new T.CanvasTexture(nc);
+                    var nMat = new T.MeshBasicMaterial({ map: nTex, side: T.DoubleSide });
+                    var nSign = new T.Mesh(new T.PlaneGeometry(1.2, 0.3), nMat);
+                    nSign.position.set(crossCenterX + 4.2, crossHt + 3.0, crossZ);
+                    nSign.rotation.y = Math.PI / 2;
+                    chunkGroup.add(nSign);
+                  } catch (snErr) {}
+                })();
                 // Stop line — elevation-aware.
                 var slZ = crossZ - 4;
                 var slGeo = new T.PlaneGeometry(6, 0.2);
@@ -8189,6 +8305,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Render
           s3.renderer.render(s3.scene, s3.camera);
+
+          // Rear-view mirror — small viewport in cockpit mode showing what's behind.
+          // Uses scissor test to render a second pass into a top-center rectangle.
+          if (cameraModeRef.current === 'cockpit') {
+            if (!s3._mirrorCam) {
+              s3._mirrorCam = new T.PerspectiveCamera(55, 3.2, 0.1, 100);
+            }
+            var mc = s3._mirrorCam;
+            // Position at driver head, look backward.
+            mc.position.copy(s3.camera.position);
+            var behindX = carWorldX - Math.cos(car.heading) * 8;
+            var behindZ = carWorldZ - Math.sin(car.heading) * 8;
+            mc.lookAt(behindX, roadH + 0.9, behindZ);
+            // Scissor rectangle: centered top, ~20% width × 8% height.
+            var rW = s3.renderer.domElement.width;
+            var rH = s3.renderer.domElement.height;
+            var mw = Math.floor(rW * 0.22);
+            var mh = Math.floor(rH * 0.10);
+            var mx = Math.floor((rW - mw) / 2);
+            var my = rH - mh - Math.floor(rH * 0.02); // top of canvas (WebGL Y is from bottom)
+            s3.renderer.setScissorTest(true);
+            s3.renderer.setScissor(mx, my, mw, mh);
+            s3.renderer.setViewport(mx, my, mw, mh);
+            s3.playerCarGroup.visible = false;
+            s3.renderer.render(s3.scene, mc);
+            // Restore
+            s3.renderer.setScissorTest(false);
+            s3.renderer.setViewport(0, 0, rW, rH);
+          }
         }
 
         // ── 2D HUD overlay (drawn on the separate 2D canvas) ──

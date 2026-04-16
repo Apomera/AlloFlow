@@ -18096,7 +18096,7 @@ Return ONLY valid JSON:
     sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
     sourceVocabulary, resourceCount, targetStandards, dokLevel,
     selectedFont, includeSourceCitations,
-    interactionMode, revisionData,
+    interactionMode, revisionData, selectedVoice, voiceSpeed,
     standardsPromptString: targetStandards.join('; '),
     ai, webSearchProvider: WebSearchProvider,
     alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef,

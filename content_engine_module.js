@@ -306,7 +306,7 @@ var createContentEngine = function (deps) {
     return window.__contentEngineState || {};
   };
   var _bindState;
-  var inputText, gradeLevel, sourceTopic, generatedContent, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts, conceptInput, interestInput, languageInput, activeView, showSourceGen, generationStep, isGeneratingSource, selectionMenu, phonicsData, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceVocabulary, resourceCount, targetStandards, dokLevel, selectedFont, includeSourceCitations, interactionMode, revisionData, standardsPromptString, ai, webSearchProvider, setActiveView, setConceptInput, setError, setGeneratedContent, setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource, setLanguageInput, setLeveledTextLanguage, setSelectedConcepts, setSelectedLanguages, setShowSourceGen, setStudentInterests, setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen, setPhonicsData, setRevisionData, setSelectionMenu, setPlayingContentId, setPlaybackState;
+  var inputText, gradeLevel, sourceTopic, generatedContent, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts, conceptInput, interestInput, languageInput, activeView, showSourceGen, generationStep, isGeneratingSource, selectionMenu, phonicsData, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceVocabulary, resourceCount, targetStandards, dokLevel, selectedFont, includeSourceCitations, interactionMode, revisionData, standardsPromptString, ai, webSearchProvider, selectedVoice, voiceSpeed, setActiveView, setConceptInput, setError, setGeneratedContent, setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource, setLanguageInput, setLeveledTextLanguage, setSelectedConcepts, setSelectedLanguages, setShowSourceGen, setStudentInterests, setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen, setPhonicsData, setRevisionData, setSelectionMenu, setPlayingContentId, setPlaybackState;
   var alloBotRef = {
     current: null
   };
@@ -354,6 +354,8 @@ var createContentEngine = function (deps) {
     standardsPromptString = s.standardsPromptString || '';
     ai = s.ai || null;
     webSearchProvider = s.webSearchProvider || null;
+    selectedVoice = s.selectedVoice || 'Puck';
+    voiceSpeed = s.voiceSpeed || 1;
     alloBotRef = s.alloBotRef || {
       current: null
     };

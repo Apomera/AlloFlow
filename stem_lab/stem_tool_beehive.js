@@ -791,7 +791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones };
 
         React.useEffect(function() {
-          // Run only once on mount — animation loop reads _liveState.current for fresh values
+          if (viewMode !== 'beekeeper') return;
           var cv = _cvRef.current;
           if (!cv) return;
           var c = cv.getContext('2d');
@@ -1174,7 +1174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (_animId.current) cancelAnimationFrame(_animId.current);
             if (resizeObs) resizeObs.disconnect();
           };
-        }, []);
+        }, [viewMode]);
 
         // ── Keyboard shortcuts (ref-based to read latest state) ──
         var _keyState = React.useRef({});
@@ -1749,6 +1749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ═══════════════════════════════════════════════════════════
         var _queenCvRef = React.useRef(null);
         var _queenAnimId = React.useRef(0);
+        var _queenState = React.useRef({});
 
         var queenData = d.queen || {};
         var queenGameActive = queenData.active || false;
@@ -1762,6 +1763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { type: 'honey', x: 0.7, y: 0.4, level: 1 }
         ];
         var queenThreats = queenData.threats || [];
+        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources, queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats, queenScore: queenData.score || 0 };
         var queenEvents = queenData.events || [];
         var queenScore = queenData.score || 0;
         var queenPhase = queenData.phase || 'build'; // build | defend | swarm
@@ -2022,10 +2024,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var _qTime = 0;
           function queenFrame() {
             _qTime++;
+            var qs = _queenState.current;
             c.clearRect(0, 0, W, H);
 
             // ── Seasonal background tint ──
-            var qSeason2 = Math.floor(((queenDay || 0) % 120) / 30);
+            var qSeason2 = Math.floor(((qs.queenDay || 0) % 120) / 30);
             var combBase = ['#c9b040', '#d4aa40', '#b89030', '#a0a0b0'][qSeason2] || '#d4aa40';
             var combCell = ['#c0a530', '#c9a030', '#a87820', '#8090a0'][qSeason2] || '#c9a030';
             var combStroke = ['#7a5a08', '#8a6508', '#6a4a00', '#606878'][qSeason2] || '#8a6508';
@@ -2071,7 +2074,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // ── Draw structures ──
-            queenStructures.forEach(function(st) {
+            (qs.queenStructures || []).forEach(function(st) {
               var sx = st.x * W, sy = st.y * H;
               var sType = QUEEN_STRUCTURE_TYPES[st.type];
               if (!sType) return;
