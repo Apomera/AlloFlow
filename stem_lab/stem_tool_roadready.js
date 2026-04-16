@@ -658,18 +658,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return {
       seed: seed,
       samples: samples,
-      // Road center (X) at any (possibly non-integer) Y. Linearly interpolates
-      // between adjacent integer samples — float Ys (e.g. world Z lookups from
-      // the renderer) would otherwise hit undefined slots in the samples map.
+      // Road center (X) at any (possibly non-integer) Y. Catmull-Rom spline
+      // through 4 surrounding integer samples for C¹-smooth curves between
+      // rows — linear interp had visible faceting on the road ribbon.
       centerAt: function(y) {
-        var y0 = Math.floor(y);
-        var y1 = y0 + 1;
-        var t = y - y0;
-        if (y0 >= 0) ensureUpTo(y1); else ensureDownTo(y0);
-        var s0 = samples[y0], s1 = samples[y1];
-        if (!s0) return s1 ? s1.x : baseCenterX;
-        if (!s1) return s0.x;
-        return s0.x + (s1.x - s0.x) * t;
+        var y1 = Math.floor(y);
+        var y0 = y1 - 1, y2 = y1 + 1, y3 = y1 + 2;
+        var t = y - y1;
+        if (y0 >= 0) ensureUpTo(y3); else ensureDownTo(y0);
+        var s0 = samples[y0], s1 = samples[y1], s2 = samples[y2], s3 = samples[y3];
+        // Fall back gracefully if we're at the edge of the populated range.
+        if (!s1) return s2 ? s2.x : (s0 ? s0.x : baseCenterX);
+        if (!s2) return s1.x;
+        if (!s0) s0 = s1;
+        if (!s3) s3 = s2;
+        // Catmull-Rom basis (uniform, tension 0.5).
+        var p0 = s0.x, p1 = s1.x, p2 = s2.x, p3 = s3.x;
+        var a0 = -0.5 * p0 + 1.5 * p1 - 1.5 * p2 + 0.5 * p3;
+        var a1 = p0 - 2.5 * p1 + 2 * p2 - 0.5 * p3;
+        var a2 = -0.5 * p0 + 0.5 * p2;
+        var a3 = p1;
+        return ((a0 * t + a1) * t + a2) * t + a3;
       },
       headingAt: function(y) {
         var y0 = Math.floor(y);

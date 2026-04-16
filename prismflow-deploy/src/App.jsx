@@ -7866,27 +7866,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7902,7 +7902,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@77b9cdf/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d0af1f2/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -12887,6 +12887,62 @@ Return only the corrected version of this exact text:`;
   const pdfFixModeRef = useRef('');
   const [pdfFixStep, setPdfFixStep] = useState('');
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
+  // Multi-session page-range remediation: lets users tackle a long PDF over
+  // multiple days without burning their daily Gemini quota. pdfPageRange is
+  // {start, end} or null (null = remediate whole document, current behavior).
+  // pdfMultiSession is the loaded record of prior remediated ranges for this
+  // PDF (or null if no record / not loaded yet).
+  const [pdfPageRange, setPdfPageRange] = useState(null);
+  const [pdfMultiSession, setPdfMultiSession] = useState(null);
+  // Auto-save toggle: when on, every completed range triggers a project-file
+  // download so the user always has a portable artifact. Critical in Canvas,
+  // where IndexedDB is wiped per session — the JSON file is the only durable
+  // store. Default ON because forgetting to save 25 days into a workflow is a
+  // worse failure than a one-time browser "allow multiple downloads" prompt.
+  // Persisted to localStorage so the user's choice survives reloads.
+  const [pdfAutoSaveProject, setPdfAutoSaveProject] = useState(() => {
+    try { const v = localStorage.getItem('alloflow_pdf_autosave_project'); return v === null ? true : v === 'true'; } catch { return true; }
+  });
+  React.useEffect(() => {
+    try { localStorage.setItem('alloflow_pdf_autosave_project', String(pdfAutoSaveProject)); } catch {}
+  }, [pdfAutoSaveProject]);
+  // When the user uploads/audits a PDF, look up any prior multi-session record
+  // for that exact file (filename + size + page count). If found, the UI shows
+  // a "previously remediated ranges" panel and the page-range inputs default
+  // to the next un-remediated chunk.
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!pdfAuditResult || !pendingPdfFile || !_docPipeline || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
+      setPdfMultiSession(null);
+      return;
+    }
+    const sessionId = _docPipeline.multiSessionId(
+      pendingPdfFile.name || 'document.pdf',
+      pendingPdfFile.size || 0,
+      pdfAuditResult.pageCount || 1
+    );
+    _docPipeline.loadMultiSession(sessionId).then((record) => {
+      if (cancelled) return;
+      setPdfMultiSession(record);
+      // Default page-range input to the next un-remediated chunk so the user
+      // doesn't have to manually compute "where did I leave off." If no prior
+      // record, leave pdfPageRange null (= whole-document remediation, the
+      // existing behavior).
+      if (record && record.ranges && record.ranges.length > 0) {
+        const sorted = record.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
+        const lastEnd = sorted[sorted.length - 1].pages[1];
+        const totalPages = pdfAuditResult.pageCount || record.pageCount || 1;
+        if (lastEnd < totalPages) {
+          const nextStart = lastEnd + 1;
+          // Default chunk size of 30 pages — comfortable for one sitting on
+          // free-tier Gemini quota. User can override.
+          const nextEnd = Math.min(nextStart + 29, totalPages);
+          setPdfPageRange({ start: nextStart, end: nextEnd });
+        }
+      }
+    }).catch(() => { if (!cancelled) setPdfMultiSession(null); });
+    return () => { cancelled = true; };
+  }, [pdfAuditResult, pendingPdfFile]);
   // ── Regression safeguard helpers (Fix Remaining / Additional Sweep) ──
   const PDF_REGRESSION_TOLERANCE = 5;
   // Deep-copy plain-data audit objects so later in-place score mutations can't corrupt a snapshot.
@@ -18987,6 +19043,7 @@ Return ONLY valid JSON:
     // Added for generateFullPackHTML fallback path (used when iframe is empty)
     currentUiLanguage, isIndependentMode, isParentMode,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
+    pdfAutoSaveProject,
     pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
@@ -19011,6 +19068,10 @@ Return ONLY valid JSON:
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
   const remediateSurgicallyThenAI = _docPipeline ? _docPipeline.remediateSurgicallyThenAI : async (h) => ({ html: h, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 });
+  // Tier 2 / 2.5 / 3 cascade — used by Fix Remaining to favor cheaper, more
+  // bounded fixes before falling back to whole-document chunked rewrites.
+  const runTier2SurgicalFixes = _docPipeline ? _docPipeline.runTier2SurgicalFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
+  const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
@@ -51646,6 +51707,145 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   })()}
                   </>)}
 
+                  {/* ── Multi-session page-range remediation panel ────────
+                      Lets users tackle long PDFs over multiple days without
+                      burning their daily Gemini quota. Shown only before the
+                      first remediation completes (after that, the user can
+                      use the existing fix-remaining controls). */}
+                  {!pdfFixResult && pdfAuditResult && pdfAuditResult.pageCount > 10 && (
+                    <div className="mt-3 mb-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                      {pdfMultiSession && pdfMultiSession.ranges && pdfMultiSession.ranges.length > 0 && (
+                        <div className="mb-3 pb-3 border-b border-indigo-200">
+                          <div className="text-xs font-bold text-indigo-900 mb-1">📚 Prior remediated ranges (saved in your browser):</div>
+                          <ul className="text-xs text-indigo-800 space-y-0.5">
+                            {pdfMultiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0)).map((r, idx) => (
+                              <li key={idx}>
+                                ✓ Pages {r.pages[0]}–{r.pages[1]}
+                                {r.completedAt && <span className="text-indigo-600"> · {new Date(r.completedAt).toLocaleDateString()}</span>}
+                                {typeof r.finalScore === 'number' && <span className="text-indigo-600"> · score {r.finalScore}/100</span>}
+                              </li>
+                            ))}
+                          </ul>
+                          {(() => {
+                            const completed = pdfMultiSession.ranges.reduce((acc, r) => acc + Math.max(0, r.pages[1] - r.pages[0] + 1), 0);
+                            const remaining = Math.max(0, (pdfAuditResult.pageCount || 0) - completed);
+                            return (
+                              <div className="text-xs text-indigo-700 mt-1.5 font-bold">
+                                {remaining > 0 ? `${remaining} pages remaining of ${pdfAuditResult.pageCount}` : `✓ All ${pdfAuditResult.pageCount} pages complete`}
+                              </div>
+                            );
+                          })()}
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={async () => {
+                                if (!_docPipeline || !_docPipeline.mergeRangesToFullHtml) return;
+                                const merged = _docPipeline.mergeRangesToFullHtml(pdfMultiSession.ranges, pdfAuditResult.pageCount || pdfMultiSession.pageCount || 1);
+                                const blob = new Blob([merged], { type: 'text/html;charset=utf-8' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = (pendingPdfFile?.name?.replace(/\.pdf$/i, '') || 'document') + '_multi-session.html';
+                                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                                addToast('Downloaded merged HTML for completed ranges.', 'success');
+                              }}
+                              className="text-xs px-2 py-1 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700"
+                            >
+                              ⬇ Download progress so far
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!_docPipeline || !_docPipeline.clearMultiSession || !pdfMultiSession.sessionId) return;
+                                if (!window.confirm('Clear saved progress for this PDF? This cannot be undone.')) return;
+                                await _docPipeline.clearMultiSession(pdfMultiSession.sessionId);
+                                setPdfMultiSession(null);
+                                setPdfPageRange(null);
+                                addToast('Cleared saved progress for this PDF.', 'info');
+                              }}
+                              className="text-xs px-2 py-1 bg-white border border-red-300 text-red-700 rounded font-bold hover:bg-red-50"
+                            >
+                              🗑️ Clear saved progress
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="text-xs text-indigo-900 mb-2">
+                        <span className="font-bold">📖 Multi-session remediation</span> — for long PDFs you can tackle a page range now and finish later. The remediated HTML grows incrementally across sessions.
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <label className="text-xs text-indigo-900 font-bold">Pages:</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={pdfAuditResult.pageCount}
+                          value={pdfPageRange ? pdfPageRange.start : ''}
+                          placeholder={pdfMultiSession ? '' : '1'}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (isNaN(v)) { setPdfPageRange(null); return; }
+                            const end = pdfPageRange?.end || Math.min(v + 29, pdfAuditResult.pageCount);
+                            setPdfPageRange({ start: Math.max(1, Math.min(v, pdfAuditResult.pageCount)), end });
+                          }}
+                          aria-label="Start page"
+                          className="w-16 text-xs px-2 py-1 border border-indigo-300 rounded"
+                        />
+                        <span className="text-xs text-indigo-900">to</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={pdfAuditResult.pageCount}
+                          value={pdfPageRange ? pdfPageRange.end : ''}
+                          placeholder={pdfMultiSession ? '' : String(pdfAuditResult.pageCount)}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (isNaN(v)) { setPdfPageRange(null); return; }
+                            const start = pdfPageRange?.start || 1;
+                            setPdfPageRange({ start, end: Math.max(start, Math.min(v, pdfAuditResult.pageCount)) });
+                          }}
+                          aria-label="End page"
+                          className="w-16 text-xs px-2 py-1 border border-indigo-300 rounded"
+                        />
+                        <span className="text-xs text-indigo-700">of {pdfAuditResult.pageCount}</span>
+                        {pdfPageRange && (
+                          <button
+                            onClick={() => setPdfPageRange(null)}
+                            className="text-xs text-indigo-600 underline hover:text-indigo-900"
+                            aria-label="Clear page range and remediate whole document"
+                          >
+                            (clear — do all)
+                          </button>
+                        )}
+                      </div>
+                      {pdfPageRange && (
+                        <div className="text-xs text-indigo-700 mt-1.5">
+                          ⏱ Estimated quota: ~{Math.max(1, Math.ceil((pdfPageRange.end - pdfPageRange.start + 1) / 2))} Gemini Vision calls + extraction passes for this range.
+                        </div>
+                      )}
+                      {/* Auto-save toggle — critical for Canvas where IndexedDB
+                          is wiped per session. ON by default. When ON, after
+                          each completed range a project file auto-downloads to
+                          the user's Downloads folder (overwriting the prior
+                          auto-save) so they always have a portable artifact. */}
+                      <label className="flex items-start gap-2 mt-2 text-xs text-indigo-900 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={pdfAutoSaveProject}
+                          onChange={(e) => setPdfAutoSaveProject(e.target.checked)}
+                          className="mt-0.5 accent-indigo-600"
+                          aria-label="Auto-save project file after each completed range"
+                        />
+                        <span>
+                          <span className="font-bold">Auto-save project file after each range</span>
+                          <span className="block text-indigo-700">
+                            {pdfAutoSaveProject
+                              ? 'A .alloflow.json file will download after each completed range so you can resume across sessions or browsers.'
+                              : 'Off — your progress is saved only in this browser. Use the Save Project button manually to keep a portable file.'}
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
                   {/* Action buttons — transforms after pipeline has run */}
                   <div className="flex flex-wrap gap-2 pt-2">
                     {pdfFixResult ? (<>
@@ -51745,26 +51945,60 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               html = html.replace(/<img([^>]*)>/gi, (m, a) => /alt\s*=/.test(a) ? m : `<img alt="Document image"${a}>`);
                               html = html.replace(/<th(?![^>]*scope)/gi, '<th scope="col"');
                               html = html.replace(/<a([^>]*)>\s*<\/a>/gi, (m, a) => { const h = a.match(/href="([^"]*)"/); return `<a${a}>${h ? h[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`; });
-                              // ── Surgical-then-AI remediation (chunked, content-preserving, data-URL-safe) ──
-                              // Replaces the old whole-document Gemini round-trip.
-                              // Step 1: strip base64 data URLs → placeholders (protects images from Gemini corruption).
-                              // Step 2: chunk on tag boundaries.
-                              // Step 3 per chunk: surgical diagnosis (JSON directives → deterministic tools) THEN Gemini rewrite (integrity-gated).
-                              // Step 4: reassemble + restore base64.
+                              // ── Tiered cascade: Tier 2 → Tier 2.5 → Tier 3 ──
+                              // Each tier has its own bounded blast radius and atomic
+                              // accept/reject discipline. Earlier tiers handle what they
+                              // can without the next tier ever running. Same architecture
+                              // the main pipeline uses; this is "incremental remediation"
+                              // brought into structural alignment.
+                              //
+                              // Tier 2: per-element axe rules (image-alt, link-name,
+                              //         button-name, frame-title, etc.). ≤2 KB ancestor.
+                              // Tier 2.5: section-scoped axe rules (heading-order, region,
+                              //           bypass, landmark-* duplicates). ≤8 KB section.
+                              // Tier 3: chunked rewrite for everything else. ≤16 KB chunks.
                               try {
-                                setPdfFixStep(`Pass ${pass + 1}: surgical + AI remediation (${allIssues.length} issues)...`);
-                                const remResult = await remediateSurgicallyThenAI(html, {
-                                  aiIssues: (bestAi?.issues || []),
-                                  axeResult: bestAxe,
-                                  enableGeminiPass: true,
-                                  onProgress: (msg) => setPdfFixStep(`Pass ${pass + 1}: ${msg}`),
-                                });
-                                if (remResult && remResult.html) {
-                                  html = remResult.html;
-                                  warnLog(`[Fix Remaining] Pass ${pass + 1}: ${remResult.surgicalFixCount} surgical fixes, ${remResult.geminiPassCount} Gemini passes, ${remResult.rejectedChunks} rejected chunks`);
+                                if (bestAxe && bestAxe.totalViolations > 0) {
+                                  setPdfFixStep(`Pass ${pass + 1}: Tier 2 surgical fixes...`);
+                                  const t2 = await runTier2SurgicalFixes(html, bestAxe);
+                                  if (t2 && t2.stats && t2.stats.accepted > 0) {
+                                    html = t2.html;
+                                    // Re-audit so subsequent tiers see only what's left.
+                                    bestAxe = await runAxeAudit(html);
+                                    warnLog(`[Fix Remaining] Pass ${pass + 1}: Tier 2 fixed ${t2.stats.violationsFixed} violation(s) in ${t2.stats.accepted} cluster(s)`);
+                                  }
+                                }
+                                if (bestAxe && bestAxe.totalViolations > 0) {
+                                  setPdfFixStep(`Pass ${pass + 1}: Tier 2.5 section-scoped fixes...`);
+                                  const t25 = await runTier2_5SectionScopedFixes(html, bestAxe);
+                                  if (t25 && t25.stats && t25.stats.accepted > 0) {
+                                    html = t25.html;
+                                    bestAxe = await runAxeAudit(html);
+                                    warnLog(`[Fix Remaining] Pass ${pass + 1}: Tier 2.5 fixed ${t25.stats.violationsFixed} violation(s) in ${t25.stats.accepted} section(s)`);
+                                  }
+                                }
+                                // Tier 3: chunked Gemini for whatever's left. We re-use
+                                // remediateSurgicallyThenAI (the existing tested path)
+                                // rather than the simpler aiFixChunked, because Fix
+                                // Remaining benefits from the per-chunk integrity gates.
+                                const _afterCount = (bestAi?.issues?.length || 0) + (bestAxe?.totalViolations || 0);
+                                if (_afterCount > 0) {
+                                  setPdfFixStep(`Pass ${pass + 1}: Tier 3 chunked fix (${_afterCount} remaining)...`);
+                                  const remResult = await remediateSurgicallyThenAI(html, {
+                                    aiIssues: (bestAi?.issues || []),
+                                    axeResult: bestAxe,
+                                    enableGeminiPass: true,
+                                    onProgress: (msg) => setPdfFixStep(`Pass ${pass + 1}: ${msg}`),
+                                  });
+                                  if (remResult && remResult.html) {
+                                    html = remResult.html;
+                                    warnLog(`[Fix Remaining] Pass ${pass + 1}: Tier 3 ${remResult.surgicalFixCount} surgical fixes, ${remResult.geminiPassCount} Gemini passes, ${remResult.rejectedChunks} rejected chunks`);
+                                  }
+                                } else {
+                                  warnLog(`[Fix Remaining] Pass ${pass + 1}: Tier 3 skipped — no violations remaining after Tier 2/2.5`);
                                 }
                               } catch(remErr) {
-                                warnLog(`[Fix Remaining] Pass ${pass + 1}: surgical-then-AI failed, continuing with deterministic-only fixes: ${remErr?.message}`);
+                                warnLog(`[Fix Remaining] Pass ${pass + 1}: tiered cascade failed, continuing with deterministic-only fixes: ${remErr?.message}`);
                               }
                               cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
                               // Verify with 2 AI audits + axe (parallel — no extra time)
@@ -51830,8 +52064,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
                         </button>
                     </>) : (
-                      <button onClick={() => { console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult); fixAndVerifyPdf(); }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
-                        {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />} {pdfFixLoading ? (pdfFixStep || 'Fixing...') : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`}
+                      <button onClick={() => {
+                        console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
+                        // Pass pageRange when set (multi-session mode); otherwise call
+                        // with no args for backward-compatible whole-document remediation.
+                        if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
+                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end] });
+                        } else {
+                          fixAndVerifyPdf();
+                        }
+                      }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
+                        {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
+                        {pdfFixLoading ? (pdfFixStep || 'Fixing...') : (pdfPageRange ? `♿ Fix Pages ${pdfPageRange.start}–${pdfPageRange.end}` : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`)}
                       </button>
                     )}
                     {pdfFixLoading && (
@@ -53101,12 +53345,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             imageCount: pdfFixResult.imageCount,
                             needsExpertReview: pdfFixResult.needsExpertReview,
                           };
+                          // Include multi-session ranges when applicable. Old
+                          // loaders ignore this field; new loaders use it to
+                          // restore the prior-ranges panel and continue across
+                          // sessions on Canvas (where IndexedDB is wiped).
+                          if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
+                            project.multiSession = {
+                              schemaVersion: 1,
+                              sessionId: pdfMultiSession.sessionId,
+                              fileName: pdfMultiSession.fileName || project.fileName,
+                              fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
+                              pageCount: pdfMultiSession.pageCount || project.pageCount,
+                              ranges: pdfMultiSession.ranges,
+                            };
+                          }
                           const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-project.alloflow.json`;
                           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                          addToast('💾 Project saved — load it later to continue editing', 'success');
+                          addToast(project.multiSession ? '💾 Project saved (' + project.multiSession.ranges.length + ' range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ') — load it later to continue' : '💾 Project saved — load it later to continue editing', 'success');
                         }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
                           💾 Save Project
                         </button>
@@ -53135,8 +53393,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   remainingIssues: 0,
                                   autoFixPasses: 0,
                                 });
-                                setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
-                                addToast('📂 Project loaded: ' + (project.fileName || 'document') + ' — continue editing!', 'success');
+                                setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: project.multiSession?.fileSize || 0 });
+                                // Rehydrate multi-session state if the file
+                                // includes it. This is the cross-browser /
+                                // Canvas-safe path: the JSON file is the
+                                // source of truth, IndexedDB is just a cache.
+                                if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
+                                  setPdfMultiSession(project.multiSession);
+                                  // Default page-range input to the next un-remediated chunk
+                                  const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
+                                  const lastEnd = sortedR[sortedR.length - 1].pages[1];
+                                  const total = project.pageCount || project.multiSession.pageCount || 1;
+                                  if (lastEnd < total) {
+                                    const nextStart = lastEnd + 1;
+                                    const nextEnd = Math.min(nextStart + 29, total);
+                                    setPdfPageRange({ start: nextStart, end: nextEnd });
+                                  }
+                                  // Also seed the IndexedDB cache so the same
+                                  // browser doesn't need to re-load the file
+                                  // next time. Best-effort — Canvas may reject.
+                                  if (_docPipeline && _docPipeline.multiSessionId && pendingPdfFile) {
+                                    try {
+                                      // We rely on the natural fixAndVerifyPdf save path on the next
+                                      // remediation to re-populate IndexedDB; explicit pre-seed not needed.
+                                    } catch {}
+                                  }
+                                  addToast('📂 Project loaded: ' + (project.fileName || 'document') + ' — ' + project.multiSession.ranges.length + ' prior range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ' restored', 'success');
+                                } else {
+                                  setPdfMultiSession(null);
+                                  setPdfPageRange(null);
+                                  addToast('📂 Project loaded: ' + (project.fileName || 'document') + ' — continue editing!', 'success');
+                                }
                               } catch(err) { addToast('Failed to load project: ' + err.message, 'error'); }
                             };
                             reader.readAsText(file);
