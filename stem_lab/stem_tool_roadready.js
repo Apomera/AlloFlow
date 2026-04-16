@@ -7530,7 +7530,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Road surface for this chunk — built as a curved ribbon following
               // chunk.roadCenters[cy]. Two verts per row (left edge, right edge);
               // the strip is triangulated via two triangles between consecutive rows.
-              var roadHalfW = 3.5; // matches legacy 7-unit width
+              // Road width matches the biome cell carving: commercial/suburban
+              // carve 4 cells each side (= 8+1 cells), others 3 (= 6+1 cells).
+              var roadHalfW = (chunk.biome === 'commercial' || chunk.biome === 'suburban') ? 4.5 : 3.5;
               // Vertex-colored asphalt: each row gets a slightly different shade
               // seeded by world Y, so the road reads as patched/weathered instead
               // of a single flat gray. Snow biomes desaturate the palette.
@@ -7614,31 +7616,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
                   if (mlZ > skipZ1 && mlZ < skipZ2) continue;
                   var ctrX = markCenterAtZ(mlZ);
+                  var mlHt = iw.spline ? iw.spline.heightAt(mlZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   if (isNoPass) {
                     var dyL = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
                     dyL.rotation.x = -Math.PI / 2;
-                    dyL.position.set(ctrX - 0.25, 0.014, mlZ);
+                    dyL.position.set(ctrX - 0.25, mlHt + 0.014, mlZ);
                     chunkGroup.add(dyL);
                     var dyR = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
                     dyR.rotation.x = -Math.PI / 2;
-                    dyR.position.set(ctrX + 0.25, 0.014, mlZ);
+                    dyR.position.set(ctrX + 0.25, mlHt + 0.014, mlZ);
                     chunkGroup.add(dyR);
                   } else {
                     var dyD = new T.Mesh(new T.PlaneGeometry(0.15, 1.2), centerLineMat);
                     dyD.rotation.x = -Math.PI / 2;
-                    dyD.position.set(ctrX, 0.014, mlZ);
+                    dyD.position.set(ctrX, mlHt + 0.014, mlZ);
                     chunkGroup.add(dyD);
                   }
                 }
                 // Solid white edge lines: short segments tracking the spline rather
                 // than one long straight plane (so they bend with the road).
                 var edgeLineMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                var edgeLineOff = roadHalfW - 0.3; // paint line inside the ribbon edge
                 for (var elZ = chunkWorldZ + 1; elZ < chunkWorldZ + CHUNK_SIZE - 1; elZ += 1.5) {
                   var elCtr = markCenterAtZ(elZ);
-                  [-3.2, 3.2].forEach(function(edgeOff) {
+                  var elHt = iw.spline ? iw.spline.heightAt(elZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-edgeLineOff, edgeLineOff].forEach(function(elOff) {
                     var edge = new T.Mesh(new T.PlaneGeometry(0.12, 1.5), edgeLineMat);
                     edge.rotation.x = -Math.PI / 2;
-                    edge.position.set(elCtr + edgeOff, 0.013, elZ);
+                    edge.position.set(elCtr + elOff, elHt + 0.013, elZ);
                     chunkGroup.add(edge);
                   });
                 }
@@ -7646,13 +7651,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
                     if (ldZ > skipZ1 && ldZ < skipZ2) continue;
                     var ldCtr = markCenterAtZ(ldZ);
+                    var ldHt = iw.spline ? iw.spline.heightAt(ldZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                     [-1.5, 1.5].forEach(function(laneOff) {
                       var ld = new T.Mesh(new T.PlaneGeometry(0.1, 1.5), edgeLineMat);
                       ld.rotation.x = -Math.PI / 2;
-                      ld.position.set(ldCtr + laneOff, 0.013, ldZ);
+                      ld.position.set(ldCtr + laneOff, ldHt + 0.013, ldZ);
                       chunkGroup.add(ld);
                     });
                   }
+                }
+                // Shoulder/curb strips — thin raised concrete-colored ribbons
+                // along both road edges so the boundary between asphalt and grass
+                // reads clearly. Short segments tracking the spline.
+                var curbMat = new T.MeshLambertMaterial({ color: 0xb8b8b0 });
+                var edgeOff = roadHalfW + 0.1; // just outside the ribbon edge
+                for (var cbZ = chunkWorldZ + 0.5; cbZ < chunkWorldZ + CHUNK_SIZE - 0.5; cbZ += 1.0) {
+                  var cbCtr = markCenterAtZ(cbZ);
+                  var cbHt = iw.spline ? iw.spline.heightAt(cbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-edgeOff, edgeOff].forEach(function(cbSide) {
+                    var curb = new T.Mesh(new T.BoxGeometry(0.12, 0.08, 1.0), curbMat);
+                    curb.position.set(cbCtr + cbSide, cbHt + 0.04, cbZ);
+                    chunkGroup.add(curb);
+                  });
                 }
                 // Road-edge reflectors (cat's eyes) — small beads every 4m.
                 // Amber on the right edge, white on the left (US convention).
@@ -7660,13 +7680,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var isNightRef = scn.time === 'night' || scn.id === 'night';
                 var amberMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffc040 : 0xbc7a1a });
                 var whiteRefMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffffff : 0xcccccc });
+                var refLineOff = roadHalfW - 0.2;
                 for (var refZ = chunkWorldZ + 2; refZ < chunkWorldZ + CHUNK_SIZE - 2; refZ += 4) {
                   var refCtr = markCenterAtZ(refZ);
+                  var refHt = iw.spline ? iw.spline.heightAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var amber = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), amberMat);
-                  amber.position.set(refCtr + 3.3, 0.02, refZ);
+                  amber.position.set(refCtr + refLineOff, refHt + 0.02, refZ);
                   chunkGroup.add(amber);
                   var whiteR = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), whiteRefMat);
-                  whiteR.position.set(refCtr - 3.3, 0.02, refZ);
+                  whiteR.position.set(refCtr - refLineOff, refHt + 0.02, refZ);
                   chunkGroup.add(whiteR);
                 }
               }
@@ -7770,14 +7792,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
               // Cross street road surface (if intersection)
+              // Use a flat-color material — roadMat uses vertexColors which
+              // would render the cross-street black (no color attribute on a
+              // simple PlaneGeometry).
               if (chunk.hasIntersection) {
                 var crossZ = chunkWorldZ + chunk.intersectionY;
-                // Where the curved main road actually meets the cross street.
                 var crossCenterX = splineCenterAtZ(crossZ);
+                var crossRoadFlatMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
                 var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, 6);
-                var crossRoad = new T.Mesh(crossRoadGeo, roadMat);
+                var crossRoad = new T.Mesh(crossRoadGeo, crossRoadFlatMat);
                 crossRoad.rotation.x = -Math.PI / 2;
-                crossRoad.position.set(0, 0.012, crossZ);
+                // Lift the cross-street slightly above the main ribbon so it
+                // doesn't z-fight; the main road sits at ~0.011.
+                var crossHt = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + chunk.intersectionY) : 0;
+                crossRoad.position.set(0, crossHt + 0.013, crossZ);
                 crossRoad.receiveShadow = true;
                 chunkGroup.add(crossRoad);
                 // Cross street center dashes — skip the section overlapping the main road
@@ -7794,21 +7822,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;
                 if (isTrafficLight) {
-                  // Overhead traffic light — pole sits at the corner past the curved road.
                   var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
-                  sigPole.position.set(crossCenterX + 4.0, 2.1, crossZ);
+                  sigPole.position.set(crossCenterX + 4.0, crossHt + 2.1, crossZ);
                   chunkGroup.add(sigPole);
                   var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
-                  sigArm.position.set(crossCenterX + 1.8, 4.0, crossZ);
+                  sigArm.position.set(crossCenterX + 1.8, crossHt + 4.0, crossZ);
                   sigArm.rotation.z = Math.PI / 2;
                   chunkGroup.add(sigArm);
                   var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
-                  sigHousing.position.set(crossCenterX, 3.5, crossZ);
+                  sigHousing.position.set(crossCenterX, crossHt + 3.5, crossZ);
                   chunkGroup.add(sigHousing);
                   var lightColors = [0xef4444, 0xfbbf24, 0x22c55e];
                   for (var lci = 0; lci < 3; lci++) {
                     var lightMesh = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: lightColors[lci] }));
-                    lightMesh.position.set(crossCenterX + 0.16, 3.75 - lci * 0.25, crossZ);
+                    lightMesh.position.set(crossCenterX + 0.16, crossHt + 3.75 - lci * 0.25, crossZ);
                     chunkGroup.add(lightMesh);
                   }
                 } else {
@@ -7816,7 +7843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Place on both sides of the approach for the main road, offset by spline center.
                   [-1, 1].forEach(function(sgSide) {
                     var ssPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    ssPole.position.set(crossCenterX + sgSide * 4.5, 1.15, crossZ + sgSide * 3.5);
+                    ssPole.position.set(crossCenterX + sgSide * 4.5, crossHt + 1.15, crossZ + sgSide * 3.5);
                     chunkGroup.add(ssPole);
                     // Octagonal face via canvas texture
                     try {
@@ -7841,14 +7868,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var ssTex = new T.CanvasTexture(ssCan);
                       var ssMat = new T.MeshBasicMaterial({ map: ssTex, transparent: true, side: T.DoubleSide });
                       var ssFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), ssMat);
-                      ssFace.position.set(crossCenterX + sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      ssFace.position.set(crossCenterX + sgSide * 4.5, crossHt + 2.2, crossZ + sgSide * 3.5);
                       ssFace.rotation.y = sgSide === 1 ? Math.PI : 0;
                       chunkGroup.add(ssFace);
                     } catch (ssErr) {
                       // Fallback: plain red octagon plane
                       var fbMat = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide });
                       var fbFace = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), fbMat);
-                      fbFace.position.set(crossCenterX + sgSide * 4.5, 2.2, crossZ + sgSide * 3.5);
+                      fbFace.position.set(crossCenterX + sgSide * 4.5, crossHt + 2.2, crossZ + sgSide * 3.5);
                       fbFace.rotation.y = sgSide === 1 ? Math.PI : 0;
                       chunkGroup.add(fbFace);
                     }
@@ -7856,7 +7883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Also place stop signs on the CROSS street (offset by spline center).
                   [-1, 1].forEach(function(ccSide) {
                     var csPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.3, 6), sigPoleMat2);
-                    csPole.position.set(crossCenterX + ccSide * 3.5, 1.15, crossZ + ccSide * 4.5);
+                    csPole.position.set(crossCenterX + ccSide * 3.5, crossHt + 1.15, crossZ + ccSide * 4.5);
                     chunkGroup.add(csPole);
                     try {
                       var cs_can = document.createElement('canvas');
@@ -7879,13 +7906,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var cs_tex = new T.CanvasTexture(cs_can);
                       var cs_mat = new T.MeshBasicMaterial({ map: cs_tex, transparent: true, side: T.DoubleSide });
                       var cs_face = new T.Mesh(new T.PlaneGeometry(1.0, 1.0), cs_mat);
-                      cs_face.position.set(crossCenterX + ccSide * 3.5, 2.2, crossZ + ccSide * 4.5);
+                      cs_face.position.set(crossCenterX + ccSide * 3.5, crossHt + 2.2, crossZ + ccSide * 4.5);
                       cs_face.rotation.y = Math.PI / 2;
                       chunkGroup.add(cs_face);
                     } catch (ccErr) { /* fallback omitted */ }
                   });
                 }
-                // Crosswalk stripes — span the curved main road, not world center.
+                // Crosswalk stripes — span the curved main road, elevation-aware.
                 var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
                 var cwCtrZ = crossZ - 3.5;
                 var cwCtrX = splineCenterAtZ(cwCtrZ);
@@ -7893,15 +7920,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var cwGeo = new T.PlaneGeometry(0.25, 0.7);
                   var cw = new T.Mesh(cwGeo, cwMat);
                   cw.rotation.x = -Math.PI / 2;
-                  cw.position.set(cwCtrX + cwi * 0.7, 0.022, cwCtrZ);
+                  cw.position.set(cwCtrX + cwi * 0.7, crossHt + 0.022, cwCtrZ);
                   chunkGroup.add(cw);
                 }
-                // Stop line — same; ride the curve.
+                // Stop line — elevation-aware.
                 var slZ = crossZ - 4;
                 var slGeo = new T.PlaneGeometry(6, 0.2);
                 var sl = new T.Mesh(slGeo, cwMat);
                 sl.rotation.x = -Math.PI / 2;
-                sl.position.set(splineCenterAtZ(slZ), 0.021, slZ);
+                sl.position.set(splineCenterAtZ(slZ), crossHt + 0.021, slZ);
                 chunkGroup.add(sl);
               }
               s3.scene.add(chunkGroup);

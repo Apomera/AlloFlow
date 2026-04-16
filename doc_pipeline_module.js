@@ -5914,10 +5914,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 0: DETERMINISTIC EXTRACTION (no AI calls, no truncation risk) ──
       // For text-layer PDFs, DOCX, and PPTX we can extract the source text exactly from the file itself.
       // Only fall through to Gemini Vision OCR for scanned PDFs / images.
+      // Hoisted outside the try block so downstream code (OCR-assist, Vision
+      // fallback) can read isPdf without a block-scoping ReferenceError.
+      const isDocx = _fileName && /\.docx$/i.test(_fileName);
+      const isPptx = _fileName && /\.pptx$/i.test(_fileName);
+      const isPdf = !isDocx && !isPptx;
       try {
-        const isDocx = _fileName && /\.docx$/i.test(_fileName);
-        const isPptx = _fileName && /\.pptx$/i.test(_fileName);
-        const isPdf = !isDocx && !isPptx; // default to PDF path for unknown mime types
 
         if (isDocx) {
           updateProgress(1, 'Extracting DOCX text deterministically...');
