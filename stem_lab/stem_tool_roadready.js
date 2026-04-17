@@ -1310,7 +1310,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Free Explore challenge card achievements ──
     { id: 'first_challenge', icon: '🎯', name: 'Challenge Accepted', desc: 'Complete your first Free Explore challenge card.' },
     { id: 'five_challenges', icon: '🎖️', name: 'Challenger', desc: 'Complete 5 Free Explore challenges.' },
-    { id: 'biome_tourist', icon: '🌎', name: 'Biome Tourist', desc: 'Pass through 4 different biomes in one drive.' }
+    { id: 'biome_tourist', icon: '🌎', name: 'Biome Tourist', desc: 'Pass through 4 different biomes in one drive.' },
+    { id: 'pretrip_pro', icon: '✅', name: 'Pre-Trip Pro', desc: 'Complete a full pre-trip vehicle inspection (80%+).' },
+    { id: 'daily_streak_3', icon: '🔥', name: '3-Day Streak', desc: 'Complete Daily Challenges 3 days in a row.' },
+    { id: 'daily_streak_7', icon: '🔥', name: 'Week Streak', desc: 'Complete Daily Challenges 7 days in a row.' },
+    { id: 'daily_streak_30', icon: '🏆', name: 'Monthly Master', desc: 'Complete Daily Challenges 30 days in a row.' },
+    { id: 'peer_pro', icon: '🙅', name: 'Peer Pressure Pro', desc: 'Ace the peer pressure scenarios (6/8+).' },
+    { id: 'road_test_pass', icon: '🪪', name: 'Road Test Ready', desc: 'Pass the simulated Maine BMV road test (90+ pts).' },
+    { id: 'defensive_drill', icon: '🛡️', name: 'Defensive Driver', desc: 'Pass 5 defensive driving scenarios.' },
+    { id: 'logbook_starter', icon: '📔', name: 'Logbook Started', desc: 'Save your first 5 driving sessions to the logbook.' },
+    { id: 'logbook_ten_hr', icon: '🕙', name: '10 Hours Logged', desc: 'Accumulate 10 hours of practice in the logbook.' },
+    { id: 'maintenance_master', icon: '🔧', name: 'Maintenance Master', desc: 'Diagnose 8 dashboard warning lights correctly.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1417,6 +1427,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
     }
   ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9e-quad: MAINE TOWN DATABASE
+  // ─────────────────────────────────────────────────────────
+  // Real Maine towns grouped by biome character. The chunk generator picks a
+  // deterministic town from the matching list based on chunkIndex, so you get
+  // variety without randomness and the same seed always produces the same towns.
+  var MAINE_TOWNS = {
+    commercial: [
+      { name: 'Portland',    pop: '66,500', slogan: 'Yes. Life\'s good here.' },
+      { name: 'Bangor',      pop: '31,800', slogan: 'Queen City of the East' },
+      { name: 'Augusta',     pop: '18,900', slogan: 'The Capital City' },
+      { name: 'Lewiston',    pop: '36,200', slogan: 'All America City' },
+      { name: 'South Portland', pop: '25,500', slogan: 'Gateway to Casco Bay' }
+    ],
+    suburban: [
+      { name: 'Westbrook',   pop: '19,400', slogan: 'Presumpscot River Town' },
+      { name: 'Scarborough', pop: '22,100', slogan: 'Historic Coastal Town' },
+      { name: 'Falmouth',    pop: '12,400', slogan: 'Seaside Community' },
+      { name: 'Windham',     pop: '18,400', slogan: 'Gateway to the Sebago Region' },
+      { name: 'Gorham',      pop: '17,900', slogan: 'Small Town, Big Heart' }
+    ],
+    residential: [
+      { name: 'Cape Elizabeth', pop: '9,500', slogan: 'Home of Portland Head Light' },
+      { name: 'Yarmouth',    pop: '8,900', slogan: 'Historic Seaport' },
+      { name: 'Brunswick',   pop: '21,800', slogan: 'Home of Bowdoin College' },
+      { name: 'Kennebunk',   pop: '11,800', slogan: 'The Only Village of its Name' },
+      { name: 'Wells',       pop: '11,300', slogan: 'The Friendliest Town in Maine' }
+    ],
+    rural: [
+      { name: 'Millinocket', pop: '4,100', slogan: 'Gateway to Katahdin' },
+      { name: 'Greenville',  pop: '1,400', slogan: 'Moosehead Lake Region' },
+      { name: 'Rangeley',    pop: '1,100', slogan: 'Where the Mountains Meet the Lakes' },
+      { name: 'Bethel',      pop: '2,600', slogan: 'Maine\'s Most Beautiful Mountain Village' },
+      { name: 'Dover-Foxcroft', pop: '4,200', slogan: 'Piscataquis County Seat' },
+      { name: 'Bar Harbor',  pop: '5,500', slogan: 'Gateway to Acadia' },
+      { name: 'Eastport',    pop: '1,300', slogan: 'Easternmost City in the USA' },
+      { name: 'Lubec',       pop: '1,300', slogan: 'First to See the Sunrise' }
+    ],
+    industrial: [
+      { name: 'Rumford',     pop: '5,800', slogan: 'Paper Mill Town' },
+      { name: 'Madawaska',   pop: '3,800', slogan: 'Northern Doorway to Maine' },
+      { name: 'Jay',         pop: '4,700', slogan: 'Androscoggin River Valley' }
+    ]
+  };
+  // Deterministic town pick by chunk index and biome — same seed always produces same town sequence.
+  function townForChunk(chunkIndex, biome) {
+    var list = MAINE_TOWNS[biome] || MAINE_TOWNS.residential;
+    var abs = Math.abs(chunkIndex);
+    // Change towns every 3 chunks so you stay in each "town" for a while.
+    return list[Math.floor(abs / 3) % list.length];
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 9e-tri: FREE EXPLORE ROAD TRIPS
@@ -2247,6 +2309,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           src.stop(ac.currentTime + 0.22);
         } catch (spErr) {}
       };
+      // ── Radio: 4 stations, all procedural via WebAudio (no asset files needed) ──
+      // - 'music': 4-note major-7 chord pad, slow LFO swell. Easy listening.
+      // - 'talk':  pulsed pink-noise (mimics speech rhythm) at quiet volume.
+      // - 'weather' / 'traffic': silent ambient hiss; the stations periodically speak via callTTS.
+      var stopRadio = function() {
+        var r = radioRef.current;
+        if (r.oscNodes && r.oscNodes.length) {
+          r.oscNodes.forEach(function(n) { try { n.stop(); } catch(_) {} try { n.disconnect(); } catch(_) {} });
+        }
+        if (r.gainNode) { try { r.gainNode.disconnect(); } catch(_) {} }
+        r.oscNodes = []; r.gainNode = null;
+      };
+      var tuneRadio = function(stationId) {
+        try {
+          stopRadio();
+          var ac = audioRef.current && audioRef.current.ctx;
+          if (!ac || !stationId) { radioRef.current.station = stationId || null; return; }
+          var r = radioRef.current;
+          r.station = stationId;
+          var master = ac.createGain();
+          master.gain.value = 0.04; // gentle background level
+          master.connect(ac.destination);
+          r.gainNode = master;
+          if (stationId === 'music') {
+            // Cmaj7 pad (C, E, G, B) at low volume with a slow LFO on filter cutoff.
+            var notes = [261.63, 329.63, 392.00, 493.88];
+            var filter = ac.createBiquadFilter();
+            filter.type = 'lowpass'; filter.frequency.value = 900; filter.Q.value = 0.7;
+            filter.connect(master);
+            notes.forEach(function(f) {
+              var o = ac.createOscillator();
+              o.type = 'triangle'; o.frequency.value = f;
+              o.connect(filter);
+              o.start();
+              r.oscNodes.push(o);
+            });
+            // LFO that gently moves the cutoff for a "breathing" pad feel.
+            var lfo = ac.createOscillator(); lfo.frequency.value = 0.15;
+            var lfoGain = ac.createGain(); lfoGain.gain.value = 250;
+            lfo.connect(lfoGain).connect(filter.frequency);
+            lfo.start();
+            r.oscNodes.push(lfo);
+          } else if (stationId === 'talk') {
+            // Pulsed pink-ish noise — mimics speech rhythm without producing words.
+            var blen = Math.floor(ac.sampleRate * 4.0);
+            var buf = ac.createBuffer(1, blen, ac.sampleRate);
+            var bd = buf.getChannelData(0);
+            for (var ti = 0; ti < blen; ti++) {
+              // Pink-ish noise via simple low-pass approximation
+              var n = (Math.random() * 2 - 1) * 0.5;
+              bd[ti] = ti > 0 ? bd[ti - 1] * 0.92 + n * 0.08 : n * 0.08;
+              // Gate by a slow speech-like pulse pattern
+              var pulse = 0.5 + 0.5 * Math.sin(ti / ac.sampleRate * 4 + Math.sin(ti / ac.sampleRate * 0.7));
+              bd[ti] *= pulse;
+            }
+            var src = ac.createBufferSource();
+            src.buffer = buf; src.loop = true;
+            var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 0.8;
+            src.connect(bp).connect(master);
+            src.start();
+            r.oscNodes.push(src);
+          } else if (stationId === 'weather' || stationId === 'traffic') {
+            // Ambient hiss bed — these stations are mostly silent; they speak via TTS.
+            var hlen = Math.floor(ac.sampleRate * 1.0);
+            var hbuf = ac.createBuffer(1, hlen, ac.sampleRate);
+            var hd = hbuf.getChannelData(0);
+            for (var hi = 0; hi < hlen; hi++) hd[hi] = (Math.random() * 2 - 1) * 0.15;
+            var hsrc = ac.createBufferSource(); hsrc.buffer = hbuf; hsrc.loop = true;
+            var hf = ac.createBiquadFilter(); hf.type = 'highpass'; hf.frequency.value = 4500;
+            master.gain.value = 0.015; // even quieter
+            hsrc.connect(hf).connect(master);
+            hsrc.start();
+            r.oscNodes.push(hsrc);
+          }
+        } catch (radioErr) { /* audio unavailable */ }
+      };
       // Pothole thump — short low filtered impulse with body resonance.
       var playThump = function(intensity) {
         try {
@@ -2410,6 +2548,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Active Road Trip. When set, the quest system auto-targets the next landmark
       // of the required type. null = no trip active (normal Free Explore).
       var tripRef = useRef(null);
+      // Dynamic Weather: schedules realistic weather chains in Free Explore. Each entry:
+      // { startAt: seconds, weather, narration }. Engine compares timeRef.current and
+      // applies the next entry's weather to the live scenario object.
+      // Pattern examples — clear→cloudy→rain (Maine summer storm), clear→snow (winter front).
+      var weatherSysRef = useRef({ enabled: false, queue: [], lastApplied: null });
+      // Radio HUD: 4 procedural stations, plus the special "off" state. The station
+      // generates audio via WebAudio (talk = pulsed pink noise, music = chord pad).
+      // Weather and traffic stations are silent until they have something to announce
+      // (then they speak via callTTS). Persisted as d.radioStation so the toolbar
+      // remembers the last pick across drives.
+      var radioRef = useRef({ station: null, oscNodes: [], gainNode: null, lastTalkAt: 0, lastTrafficAt: 0, lastWeatherAt: 0 });
+      // Coach Mode: periodic AI feedback driven by the current driving stats.
+      // Sends a compact stats snapshot to callGemini every 35s with a prompt designed
+      // to elicit one short, specific, encouraging coaching line. Last response is shown
+      // briefly as a HUD card and spoken via callTTS. Strictly opt-in (d.coachMode).
+      var coachRef = useRef({ lastCallAt: 0, inFlight: false, lastTip: null, lastTipAt: 0 });
+      // Drive Reflection: async Gemini-generated coaching essay triggered from debrief view.
+      // Result is stored in d.lastReflection so it persists if user navigates away.
+      var reflectionRef = useRef({ inFlight: false });
+      // One-shot guard so the new-user tour auto-route only fires once per session.
+      var tourAutoRoutedRef = useRef(false);
+      // Parent Ride Check: a structured 2-minute eval mode. Parent taps a category
+      // button each time they see an error; engine logs it with timestamp + speed.
+      // On drive end (or 2-min timer), a summary screen shows error counts by category
+      // and a coaching priority. Persisted to d.lastParentReport.
+      var parentRef = useRef({ active: false, errors: [], startedAt: 0, durationSec: 120 });
+      // Road Test Simulator: Maine BMV-style scored eval. 100 pts to start; deductions
+      // for each violation. 90+ = pass. Tracks max speed, signal compliance, full stops,
+      // lane keeping, following distance over a fixed-duration scored drive.
+      var roadTestRef = useRef({ active: false, deductions: [], score: 100, startedAt: 0, durationSec: 240 });
       var journalLog = function(kind, icon, text) {
         var j = journalRef.current;
         if (!j) return;
@@ -2590,7 +2758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         carRef.current = { x: startX, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
-        challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0 };
+        challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
         journalRef.current = {
           entries: [{ t: 0, kind: 'start', icon: '🔑', text: 'Drive started — ' + scn.name + ' (' + scn.weather + ', ' + scn.time + ') in ' + veh.name }],
@@ -2598,6 +2766,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           conditions: { weather: scn.weather, time: scn.time, traffic: scn.traffic, speedLimit: scn.speedLimit },
           freeExplore: !!d.freeExplore
         };
+        // Road Test Simulator: arm scoring when entering the driving phase.
+        if (d.roadTestStage === 'drive') {
+          roadTestRef.current = { active: true, deductions: [], score: 100, startedAt: Date.now(), durationSec: 240, lastSampleAt: 0 };
+          journalLog('roadtest', '🪪', 'Road Test driving phase started');
+        } else {
+          roadTestRef.current = { active: false, deductions: [], score: 100, startedAt: 0, durationSec: 240 };
+        }
+        // Parent Ride Check: reset eval state when this mode is engaged.
+        if (d.parentRideMode) {
+          parentRef.current = { active: true, errors: [], startedAt: Date.now(), durationSec: 120 };
+          journalLog('parent_check', '👨‍👧', 'Parent Ride Check started (2 min)');
+        } else {
+          parentRef.current = { active: false, errors: [], startedAt: 0, durationSec: 120 };
+        }
+        // Dynamic weather: if enabled in Free Explore, build a 3-stage chain starting
+        // ~90s in. Pattern depends on initial weather and time of day.
+        weatherSysRef.current = { enabled: !!(d.freeExplore && d.dynamicWeather), queue: [], lastApplied: scn.weather };
+        if (weatherSysRef.current.enabled) {
+          var initW = scn.weather, initT = scn.time;
+          var queue = [];
+          // Maine-realistic chains.
+          if (initW === 'clear' && initT === 'day') {
+            queue = [
+              { startAt: 90, weather: 'rain', narration: 'A summer storm is rolling in. Wipers and headlights are required.' },
+              { startAt: 240, weather: 'fog', narration: 'The rain is settling into thick coastal fog. Slow down and use low beams only.' },
+              { startAt: 360, weather: 'clear', narration: 'The fog is breaking up. Clear conditions ahead.' }
+            ];
+          } else if (initW === 'clear' && initT === 'night') {
+            queue = [
+              { startAt: 100, weather: 'fog', narration: 'Night fog forming over the coast. Drop your speed by half.' },
+              { startAt: 280, weather: 'rain', narration: 'Light rain at night — toughest visibility conditions there are.' }
+            ];
+          } else if (initW === 'snow') {
+            queue = [
+              { startAt: 120, weather: 'fog', narration: 'Blowing snow is reducing visibility. Increase following distance to 6 seconds.' },
+              { startAt: 300, weather: 'snow', narration: 'Snow squall continuing. Stay smooth — no quick inputs on ice.' }
+            ];
+          } else {
+            // Default chain — drive into a clearing.
+            queue = [
+              { startAt: 150, weather: 'clear', narration: 'Conditions are improving.' }
+            ];
+          }
+          weatherSysRef.current.queue = queue;
+          journalLog('weather_dyn', '🌦️', 'Dynamic weather enabled');
+        }
         // If the user selected a trip on the Free Explore setup, arm it now.
         if (d.freeExplore && d.freeExploreTrip) {
           var tdef = TRIPS.find(function(t) { return t.id === d.freeExploreTrip; });
@@ -2629,6 +2843,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var exitDriving = useCallback(function() {
         drivingRef.current = false;
         if (animRef.current) cancelAnimationFrame(animRef.current);
+        // Stop the radio so its oscillators don't keep playing after exit.
+        try { stopRadio(); } catch(_) {}
+        // Clear one-shot drill flags so a normal next drive doesn't keep firing prompts.
+        if (d.nightVisionDrill) upd('nightVisionDrill', false);
+        if (d.parentRideMode) upd('parentRideMode', false);
+        // Road test stage is cleared only after result view renders (see roadTestResult view).
         // Stop ALL audio nodes (prevent memory leak from accumulated oscillators/buffers)
         try {
           var a = audioRef.current;
@@ -2660,9 +2880,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var minutes = Math.floor((Date.now() - s.startTime) / 60000);
         var seconds = Math.floor(((Date.now() - s.startTime) % 60000) / 1000);
         var avgMPG = s.mpgSamples > 0 ? (s.mpgSum / s.mpgSamples) : 0;
+        // Seal the road test result if the exam was running.
+        if (d.roadTestStage === 'drive') {
+          var rtFinalScore = Math.max(0, roadTestRef.current.score);
+          var rtPassed = rtFinalScore >= 90;
+          var rtReport = {
+            score: rtFinalScore,
+            passed: rtPassed,
+            deductions: roadTestRef.current.deductions.slice(),
+            scenario: currentScenario.name,
+            durationSec: Math.round((Date.now() - roadTestRef.current.startedAt) / 1000),
+            endedAt: Date.now()
+          };
+          updMulti({ lastRoadTest: rtReport, roadTestStage: 'result', view: 'roadTestResult' });
+          roadTestRef.current.active = false;
+          if (rtPassed) {
+            var rtBadges = Object.assign({}, d.badges || {});
+            if (!rtBadges.road_test_pass) { rtBadges.road_test_pass = true; upd('badges', rtBadges); }
+          }
+          journalLog('roadtest_done', rtPassed ? '🪪' : '❌', 'Road test ' + (rtPassed ? 'PASSED' : 'failed') + ' — score ' + rtFinalScore);
+        }
+        // Seal the parent report if a Parent Ride Check was running.
+        if (d.parentRideMode) {
+          var sealedReport = {
+            scenario: currentScenario.name,
+            errors: parentRef.current.errors.slice(),
+            durationSec: Math.round((Date.now() - parentRef.current.startedAt) / 1000),
+            startedAt: parentRef.current.startedAt,
+            endedAt: Date.now()
+          };
+          upd('lastParentReport', sealedReport);
+          parentRef.current.active = false;
+        }
         // Seal the journal with a closing entry and persist so the menu can export it.
         journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / 1609).toFixed(2) + ' mi');
         var sealedJournal = Object.assign({}, journalRef.current, { endedAt: Date.now(), durationSec: Math.round((Date.now() - journalRef.current.startedAt) / 1000) });
+        // ── Logbook: append this drive's journal to the running log, capped at 100 sessions ──
+        try {
+          var logbookNext = (d.logbook || []).slice();
+          logbookNext.push({
+            scenario: sealedJournal.scenario,
+            vehicle: sealedJournal.vehicle,
+            conditions: sealedJournal.conditions,
+            startedAt: sealedJournal.startedAt,
+            endedAt: sealedJournal.endedAt,
+            durationSec: sealedJournal.durationSec,
+            entries: (sealedJournal.entries || []).slice(-40), // cap entries to keep file size sane
+            safetyScore: Math.max(0, Math.round(s.safetyScore)),
+            efficiencyScore: Math.max(0, Math.round(s.efficiencyScore)),
+            freeExplore: sealedJournal.freeExplore
+          });
+          if (logbookNext.length > 100) logbookNext = logbookNext.slice(-100);
+          upd('logbook', logbookNext);
+          // Logbook achievements.
+          var lBadges = Object.assign({}, d.badges || {});
+          var lAwarded = false;
+          if (logbookNext.length >= 5 && !lBadges.logbook_starter) { lBadges.logbook_starter = true; lAwarded = true; addToast('🏅 Achievement: Logbook Started'); }
+          var totalHrs = logbookNext.reduce(function(sec, j) { return sec + (j.durationSec || 0); }, 0) / 3600;
+          if (totalHrs >= 10 && !lBadges.logbook_ten_hr) { lBadges.logbook_ten_hr = true; lAwarded = true; addToast('🏅 Achievement: 10 Hours Logged'); }
+          if (lAwarded) upd('badges', lBadges);
+          // Track bestSafety per scenario for Lesson Path unlock gating.
+          var drivenNext = Object.assign({}, d.scenariosDriven || {});
+          var sid = currentScenario.id;
+          var prevBest = (drivenNext[sid] && drivenNext[sid].bestSafety) || 0;
+          var curSafety = Math.max(0, Math.round(s.safetyScore));
+          drivenNext[sid] = Object.assign({}, drivenNext[sid] || {}, {
+            bestSafety: Math.max(prevBest, curSafety),
+            lastSafety: curSafety,
+            driveCount: ((drivenNext[sid] && drivenNext[sid].driveCount) || 0) + 1
+          });
+          upd('scenariosDriven', drivenNext);
+        } catch (lbErr) { /* logbook non-critical */ }
+        // ── Ghost Replay: if this Free Explore drive on this seed beat the previous best, save it ──
+        // Best is judged on combined safety+eco score. Stored per worldSeed so racing the right ghost.
+        if (d.freeExplore && drivePathRef.current && drivePathRef.current.length > 4) {
+          var combinedScore = Math.max(0, Math.round(s.safetyScore)) + Math.max(0, Math.round(s.efficiencyScore));
+          var seedKey = String(d.worldSeed || 'random');
+          var bestGhosts = Object.assign({}, d.bestGhosts || {});
+          var prev = bestGhosts[seedKey];
+          if (!prev || combinedScore > prev.score) {
+            bestGhosts[seedKey] = {
+              score: combinedScore,
+              path: drivePathRef.current.slice(0, 600), // cap for storage
+              durationSec: Math.round((Date.now() - statsRef.current.startTime) / 1000),
+              savedAt: Date.now(),
+              tripId: d.freeExploreTrip || null
+            };
+            upd('bestGhosts', bestGhosts);
+            addToast('👻 New best ghost saved for seed ' + seedKey + '!');
+            journalLog('ghost', '👻', 'New best run recorded (score ' + combinedScore + ')');
+          }
+        }
         updMulti({
           view: 'debrief',
           lastJournal: sealedJournal,
@@ -2930,7 +3238,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     }
                   }
                 }
-                // Announce when getting close
+                // ── Turn-by-turn GPS voice navigation ──
+                // Progressive distance-gated callouts. qdist is in world cells (~10 ft/cell).
+                // Approximate feet for natural announcements.
+                var qdistFt = Math.round(qdist * 10);
+                var qSide = (q.x > carRef.current.x + 1.5) ? 'right' : (q.x < carRef.current.x - 1.5) ? 'left' : 'ahead';
+                if (!q._gpsCalls) q._gpsCalls = {};
+                // 1500 ft: general heading
+                if (qdist < 150 && !q._gpsCalls.far) {
+                  q._gpsCalls.far = true;
+                  speak('In about ' + qdistFt + ' feet, ' + q.name + ' will be on your ' + qSide + '.');
+                }
+                // 500 ft: start slowing down, signal
+                if (qdist < 50 && !q._gpsCalls.mid) {
+                  q._gpsCalls.mid = true;
+                  speak('In 500 feet, ' + q.name + ' on your ' + qSide + '. Signal ' + qSide + ' and slow down.');
+                }
+                // 200 ft: arrival
+                if (qdist < 20 && !q._gpsCalls.near) {
+                  q._gpsCalls.near = true;
+                  speak('Arriving at ' + q.name + '. Pull in when safe.');
+                }
+                // Legacy toast
                 if (!q.announced && qdist < 18) {
                   q.announced = true;
                   addToast(q.icon + ' ' + q.name + ' is just ahead!');
@@ -2944,6 +3273,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (d.freeExplore) {
               var ch = challengeRef.current;
               var curT = timeRef.current;
+              // ── Radio: weather/traffic stations periodically broadcast relevant info ──
+              var rd = radioRef.current;
+              var nowMs = Date.now();
+              if (rd.station === 'weather' && nowMs - rd.lastWeatherAt > 45000) {
+                rd.lastWeatherAt = nowMs;
+                var nextEvt = (weatherSysRef.current.queue && weatherSysRef.current.queue[0]) || null;
+                if (nextEvt) {
+                  var etaMin = Math.max(0, Math.round((nextEvt.startAt - timeRef.current) / 60));
+                  speak('Weather radio: ' + nextEvt.weather + ' expected in about ' + (etaMin === 0 ? 'one' : etaMin) + ' minute' + (etaMin === 1 ? '' : 's') + '.');
+                } else {
+                  speak('Weather radio: ' + currentScenario.weather + ' conditions holding steady.');
+                }
+              }
+              if (rd.station === 'traffic' && nowMs - rd.lastTrafficAt > 35000) {
+                rd.lastTrafficAt = nowMs;
+                var em = emergencyRef.current;
+                if (em && !em.responded) {
+                  speak('Traffic alert: emergency vehicle in your area. Be ready to pull right and stop.');
+                } else {
+                  var trafficLevel = currentScenario.traffic || 'medium';
+                  speak('Traffic update: ' + trafficLevel + ' volume on your route. Drive defensively.');
+                }
+              }
+              // ── Dynamic weather: pop the next queued transition when its startAt elapses ──
+              var ws = weatherSysRef.current;
+              if (ws.enabled && ws.queue.length > 0 && curT >= ws.queue[0].startAt) {
+                var nextW = ws.queue.shift();
+                if (nextW.weather !== currentScenario.weather) {
+                  Object.assign(currentScenario, { weather: nextW.weather });
+                  ws.lastApplied = nextW.weather;
+                  var wIcon = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️' };
+                  addToast((wIcon[nextW.weather] || '🌦️') + ' Weather changing to ' + nextW.weather);
+                  speak(nextW.narration);
+                  journalLog('weather_change', wIcon[nextW.weather] || '🌦️', 'Weather → ' + nextW.weather);
+                  // If radio is on the Weather station, log a "forecast verified" line.
+                  if (radioRef.current.station === 'weather') {
+                    radioRef.current.lastWeatherAt = Date.now();
+                  }
+                }
+              }
               // Track biomes for biome_tourist achievement + milestone announcements below.
               if (infiniteWorldRef.current) {
                 var biomeChunk = infiniteWorldRef.current.getChunk(Math.floor(carRef.current.y / CHUNK_SIZE));
@@ -2960,9 +3329,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       industrial: 'Industrial area. Trucks, blind spots, and loading zones.'
                     };
                     var biomeIcon = { rural: '🌲', residential: '🏘️', suburban: '🏙️', commercial: '🏢', industrial: '🏭' };
-                    addToast((biomeIcon[currentBiome] || '🌎') + ' Entering ' + currentBiome + ' biome');
-                    if (biomeHazards[currentBiome]) speak(biomeHazards[currentBiome]);
-                    journalLog('biome', biomeIcon[currentBiome] || '🌎', 'Entered ' + currentBiome + ' biome');
+                    // Pick a Maine town for this chunk and announce it (populates the town tag in HUD too).
+                    var biomeChunkIdx = Math.floor(carRef.current.y / CHUNK_SIZE);
+                    var town = townForChunk(biomeChunkIdx, currentBiome);
+                    ch.currentTown = town;
+                    var townLabel = town ? town.name + ' · Pop. ' + town.pop : currentBiome;
+                    addToast((biomeIcon[currentBiome] || '🌎') + ' Entering ' + townLabel);
+                    if (town) {
+                      speak('Entering ' + town.name + '. ' + (biomeHazards[currentBiome] || ''));
+                    } else if (biomeHazards[currentBiome]) {
+                      speak(biomeHazards[currentBiome]);
+                    }
+                    journalLog('biome', biomeIcon[currentBiome] || '🌎', 'Entered ' + (town ? town.name : currentBiome) + ' (' + currentBiome + ')');
                     // Biome Tourist achievement — 4 unique biomes in one drive.
                     if (Object.keys(ch.biomesVisited).length >= 4 && !(d.badges && d.badges.biome_tourist)) {
                       var btBadges = Object.assign({}, d.badges || {});
@@ -3042,6 +3420,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
 
+            // ── Road Test scoring: sample once per second, deduct for violations ──
+            if (roadTestRef.current.active) {
+              var nowMsRT = Date.now();
+              if (nowMsRT - (roadTestRef.current.lastSampleAt || 0) >= 1000) {
+                roadTestRef.current.lastSampleAt = nowMsRT;
+                var rtCar = carRef.current;
+                var mphRT = Math.abs(rtCar.speed) * MS_TO_MPH;
+                var limRT = currentScenario.speedLimit;
+                // Speeding: -1/sec while 5+ over, -3/sec while 15+ over (capped at 10 events)
+                if (mphRT > limRT + 15 && roadTestRef.current.deductions.filter(function(x){return x.type==='severe_speed';}).length < 6) {
+                  roadTestRef.current.deductions.push({ type: 'severe_speed', pts: 3, t: timeRef.current, detail: Math.round(mphRT) + ' mph in ' + limRT + ' zone' });
+                  roadTestRef.current.score -= 3;
+                } else if (mphRT > limRT + 5 && roadTestRef.current.deductions.filter(function(x){return x.type==='speed';}).length < 10) {
+                  roadTestRef.current.deductions.push({ type: 'speed', pts: 1, t: timeRef.current, detail: Math.round(mphRT) + ' mph in ' + limRT + ' zone' });
+                  roadTestRef.current.score -= 1;
+                }
+              }
+              // Auto-end when duration elapses.
+              if (nowMsRT - roadTestRef.current.startedAt >= roadTestRef.current.durationSec * 1000) {
+                roadTestRef.current.active = false;
+                addToast('🪪 Road Test complete. Tap End Drive for results.');
+                speak('Road test complete. Tap end drive for your results.');
+              }
+            }
+            // ── Parent Ride Check: auto-end when 2 minutes elapses ──
+            if (parentRef.current.active && (Date.now() - parentRef.current.startedAt) >= parentRef.current.durationSec * 1000) {
+              parentRef.current.active = false;
+              addToast('⏱️ Parent Ride Check complete — 2 minutes elapsed.');
+              speak('Parent ride check complete. Tap End Drive to see the report.');
+            }
+            // ── Coach Mode: periodic AI driving advice (any scenario) ──
+            if (d.coachMode && callGemini && !coachRef.current.inFlight) {
+              var nowMsCo = Date.now();
+              if (nowMsCo - coachRef.current.lastCallAt > 35000) {
+                coachRef.current.lastCallAt = nowMsCo;
+                coachRef.current.inFlight = true;
+                var sCo = statsRef.current;
+                var snapshot = {
+                  speedMph: Math.round(Math.abs(carRef.current.speed) * MS_TO_MPH),
+                  speedLimit: currentScenario.speedLimit,
+                  weather: currentScenario.weather,
+                  time: currentScenario.time,
+                  hardBrakes: sCo.hardBrakes,
+                  jackrabbits: sCo.jackrabbits,
+                  speedViolations: sCo.speedViolations,
+                  closeFollows: sCo.closeFollows,
+                  unsignaledLaneChanges: sCo.unsignaledLaneChanges || 0,
+                  safetyScore: Math.max(0, Math.round(sCo.safetyScore)),
+                  efficiencyScore: Math.max(0, Math.round(sCo.efficiencyScore)),
+                  avgMpg: sCo.mpgSamples > 0 ? Math.round(sCo.mpgSum / sCo.mpgSamples) : 0
+                };
+                var coachPrompt = 'You are a calm, supportive driving coach speaking to a teen learner. '
+                  + 'Based on this 30-second snapshot, say ONE specific, kind, action-oriented coaching line under 25 words. '
+                  + 'No greetings, no preamble — just the advice. If everything looks great, encourage what they\'re doing. Snapshot:\n'
+                  + JSON.stringify(snapshot);
+                callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' })
+                  .then(function(resp) {
+                    coachRef.current.inFlight = false;
+                    var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
+                    text = String(text).trim().replace(/^["']|["']$/g, '');
+                    if (text) {
+                      coachRef.current.lastTip = text;
+                      coachRef.current.lastTipAt = Date.now();
+                      speak(text);
+                    }
+                  })
+                  .catch(function() { coachRef.current.inFlight = false; });
+              }
+            }
+            // ── Night Vision drill prompts (when d.nightVisionDrill is set) ──
+            if (d.nightVisionDrill && currentScenario.time === 'night') {
+              if (!statsRef.current._nvLastPrompt) statsRef.current._nvLastPrompt = 0;
+              if (!statsRef.current._nvIdx) statsRef.current._nvIdx = 0;
+              if (timeRef.current - statsRef.current._nvLastPrompt > 32) {
+                statsRef.current._nvLastPrompt = timeRef.current;
+                var nvPrompts = [
+                  'Scan the right shoulder. Pedestrians in dark clothes are nearly invisible until your headlights catch them.',
+                  'What is the posted speed limit you just passed? At night, sign reflectivity drops 30 percent.',
+                  'Check your beams. Low beams reach about 350 feet. At 60 mph that is just 4 seconds of vision.',
+                  'Glance at your gauges, then back to the road in one second. Long looks down kill night vision.',
+                  'Is anyone approaching? Switch to low beams 500 feet before oncoming cars.',
+                  'Watch for animal eyeshine off the shoulder. Brake straight if you see it. Never swerve.',
+                  'Take a deep breath. Night driving fatigue builds fast. Blink intentionally.',
+                  'How many cars are visible in your mirrors right now? Knowing matters.'
+                ];
+                speak(nvPrompts[statsRef.current._nvIdx % nvPrompts.length]);
+                statsRef.current._nvIdx++;
+              }
+            }
             // Contextual driving tips (gentle coaching, not penalties)
             if (!statsRef.current._lastTip) statsRef.current._lastTip = 0;
             if (timeRef.current - statsRef.current._lastTip > 20) {
@@ -3424,6 +3891,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (impactMph > 5) {
                   statsRef.current.crashes++;
                   journalLog('crash', '💥', 'Crash at ' + Math.round(impactMph) + ' mph');
+                  // A crash is an automatic major deduction on the road test (-25 pts, crash any speed = fail zone).
+                  if (roadTestRef.current.active) {
+                    roadTestRef.current.deductions.push({ type: 'crash', pts: 25, t: timeRef.current, detail: 'Crash at ' + Math.round(impactMph) + ' mph' });
+                    roadTestRef.current.score -= 25;
+                  }
                   var dmg = impactMph > 30 ? 40 : impactMph > 15 ? 25 : 15;
                   statsRef.current.safetyScore -= dmg;
                   addToast('💥 Crash at ' + Math.round(impactMph) + ' mph! -' + dmg + ' safety');
@@ -3638,6 +4110,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
                 statsRef.current.unsignaledLaneChanges++;
                 addToast('⚠️ Lane change without signal! -5');
+                if (roadTestRef.current.active) {
+                  roadTestRef.current.deductions.push({ type: 'no_signal', pts: 4, t: timeRef.current, detail: 'Lane change without signal' });
+                  roadTestRef.current.score -= 4;
+                }
               } else {
                 addToast('✓ Signaled lane change');
               }
@@ -5845,8 +6321,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Player car (visible in chase mode) — detailed low-poly ──
           var playerCarGroup = new T.Group();
+          // Player customization: pick up from d.carColor (hex string like '#22d3ee'); fallback = cyan.
+          // Hood gets a slightly darker shade derived from the body color.
+          var customColorStr = (d && d.carColor) || '#22d3ee';
+          var customColorHex = parseInt(customColorStr.replace('#', ''), 16);
+          // Darken by 12% for hood
+          var cr = (customColorHex >> 16) & 0xff, cg = (customColorHex >> 8) & 0xff, cb = customColorHex & 0xff;
+          var darkHex = (Math.floor(cr * 0.86) << 16) | (Math.floor(cg * 0.86) << 8) | Math.floor(cb * 0.86);
           // Main body
-          var bodyMat = new T.MeshLambertMaterial({ color: 0x22d3ee });
+          var bodyMat = new T.MeshLambertMaterial({ color: customColorHex });
           var bodyGeo = new T.BoxGeometry(1.9, 0.6, 0.95);
           var body = new T.Mesh(bodyGeo, bodyMat);
           body.position.y = 0.55;
@@ -5854,7 +6337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerCarGroup.add(body);
           // Hood (sloped front)
           var hoodGeo = new T.BoxGeometry(0.5, 0.15, 0.9);
-          var hoodMat = new T.MeshLambertMaterial({ color: 0x1ebbd4 });
+          var hoodMat = new T.MeshLambertMaterial({ color: darkHex });
           var hood = new T.Mesh(hoodGeo, hoodMat);
           hood.position.set(0.8, 0.78, 0);
           hood.rotation.z = -0.15;
@@ -6180,27 +6663,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // ── Weather particles ──
-          var weatherParticles = null;
-          if (isRain || isSnow) {
-            var pCount = isRain ? 2000 : 800;
-            var pGeo = new T.BufferGeometry();
-            var positions = new Float32Array(pCount * 3);
-            for (var pi = 0; pi < pCount; pi++) {
-              positions[pi * 3] = (Math.random() - 0.5) * 60;
-              positions[pi * 3 + 1] = Math.random() * 20;
-              positions[pi * 3 + 2] = (Math.random() - 0.5) * 60;
+          // ── Weather particles: always build for every weather type, toggle via visibility ──
+          // This supports dynamic weather transitions (storms rolling in mid-drive).
+          // Rain uses line-segments for streaks; snow uses points; fog is a scene.fog intensifier.
+          var weatherParticles = null;      // rain streaks (LineSegments)
+          var snowParticles = null;         // snow (Points)
+          var lightningLight = null;        // PointLight for flashes
+          // Rain as LineSegments so drops look like streaks, not dots.
+          (function() {
+            var rainCount = 2400;
+            var rGeo = new T.BufferGeometry();
+            var rPos = new Float32Array(rainCount * 6); // 2 vertices per line
+            for (var ri = 0; ri < rainCount; ri++) {
+              var rx = (Math.random() - 0.5) * 70;
+              var ry = Math.random() * 25;
+              var rz = (Math.random() - 0.5) * 70;
+              rPos[ri * 6] = rx; rPos[ri * 6 + 1] = ry; rPos[ri * 6 + 2] = rz;
+              rPos[ri * 6 + 3] = rx; rPos[ri * 6 + 4] = ry - 0.8; rPos[ri * 6 + 5] = rz;
             }
-            pGeo.setAttribute('position', new T.BufferAttribute(positions, 3));
-            var pMat = new T.PointsMaterial({
-              color: isRain ? 0xaaccff : 0xffffff,
-              size: isRain ? 0.08 : 0.15,
-              transparent: true,
-              opacity: isRain ? 0.6 : 0.8
-            });
-            weatherParticles = new T.Points(pGeo, pMat);
+            rGeo.setAttribute('position', new T.BufferAttribute(rPos, 3));
+            var rMat = new T.LineBasicMaterial({ color: 0xaaccff, transparent: true, opacity: 0.55 });
+            weatherParticles = new T.LineSegments(rGeo, rMat);
+            weatherParticles.visible = isRain;
             scene.add(weatherParticles);
-          }
+          })();
+          // Snow as soft round points.
+          (function() {
+            var snowCount = 1200;
+            var sGeo = new T.BufferGeometry();
+            var sPos = new Float32Array(snowCount * 3);
+            for (var si2 = 0; si2 < snowCount; si2++) {
+              sPos[si2 * 3] = (Math.random() - 0.5) * 70;
+              sPos[si2 * 3 + 1] = Math.random() * 25;
+              sPos[si2 * 3 + 2] = (Math.random() - 0.5) * 70;
+            }
+            sGeo.setAttribute('position', new T.BufferAttribute(sPos, 3));
+            var sMat = new T.PointsMaterial({ color: 0xffffff, size: 0.22, transparent: true, opacity: 0.9, sizeAttenuation: true });
+            snowParticles = new T.Points(sGeo, sMat);
+            snowParticles.visible = isSnow;
+            scene.add(snowParticles);
+          })();
+          // Lightning: an invisible point light that pulses during storms.
+          lightningLight = new T.PointLight(0xffffff, 0, 150, 1.5);
+          lightningLight.position.set(0, 80, 0);
+          scene.add(lightningLight);
 
           return {
             scene: scene, camera: camera, renderer: renderer,
@@ -6210,6 +6716,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             emergencyGroup: emergencyGroup,
             brakeMat: brakeMat, headlightL: headlightL, headlightR: headlightR,
             weatherParticles: weatherParticles,
+            snowParticles: snowParticles,
+            lightningLight: lightningLight,
+            _lightningTimer: 0,
+            _lightningNext: 3 + Math.random() * 8,
             skidMarksGroup: skidMarksGroup, skidMarkMat: skidMarkMat,
             blinkerMeshL: blinkerMeshL, blinkerMeshR: blinkerMeshR,
             blinkerMeshRL: blinkerMeshRL, blinkerMeshRR: blinkerMeshRR,
@@ -7056,20 +7566,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.exhaustParticles.material.opacity = Math.min(0.35, car.throttle * 0.3 + 0.05);
           }
 
-          // Weather particles
+          // ── Weather particle update: dynamic toggle + streak/flake motion + lightning ──
+          var weatherNow = scn.weather;
+          var rmActiveW = !!reducedMotionRef.current; // reduced-motion skips flashes
+          // RAIN (LineSegments): toggle visibility, animate streak fall.
           if (s3.weatherParticles) {
-            var pos = s3.weatherParticles.geometry.attributes.position;
-            for (var wpi = 0; wpi < pos.count; wpi++) {
-              var py = pos.getY(wpi);
-              py -= (scn.weather === 'rain' ? 0.5 : 0.1);
-              if (py < 0) py = 20;
-              pos.setY(wpi, py);
-              if (scn.weather === 'snow') {
-                pos.setX(wpi, pos.getX(wpi) + Math.sin(wpi + timeRef.current) * 0.01);
+            s3.weatherParticles.visible = (weatherNow === 'rain');
+            if (s3.weatherParticles.visible) {
+              var rpPos = s3.weatherParticles.geometry.attributes.position;
+              // Rain falls at ~1.2 units/frame (fast, slanted). Each line is 2 consecutive vertices.
+              for (var rpi = 0; rpi < rpPos.count; rpi += 2) {
+                var rry = rpPos.getY(rpi);
+                rry -= 1.1;
+                if (rry < 0) rry = 24 + Math.random() * 2;
+                rpPos.setY(rpi, rry);
+                rpPos.setY(rpi + 1, rry - 0.8);
+                // Slight wind shear
+                rpPos.setX(rpi, rpPos.getX(rpi) + 0.15);
+                rpPos.setX(rpi + 1, rpPos.getX(rpi + 1) + 0.12);
+                if (rpPos.getX(rpi) > 35) { rpPos.setX(rpi, -35); rpPos.setX(rpi + 1, -35); }
               }
+              rpPos.needsUpdate = true;
+              s3.weatherParticles.position.set(carWorldX, 0, carWorldZ);
             }
-            pos.needsUpdate = true;
-            s3.weatherParticles.position.set(carWorldX, 0, carWorldZ);
+          }
+          // SNOW (Points): drifting flakes.
+          if (s3.snowParticles) {
+            s3.snowParticles.visible = (weatherNow === 'snow');
+            if (s3.snowParticles.visible) {
+              var spPos = s3.snowParticles.geometry.attributes.position;
+              for (var spi = 0; spi < spPos.count; spi++) {
+                var spy = spPos.getY(spi) - 0.08;
+                if (spy < 0) spy = 22 + Math.random() * 3;
+                spPos.setY(spi, spy);
+                // Per-flake gentle drift (deterministic by index)
+                var drift = Math.sin(timeRef.current * 0.6 + spi * 0.5) * 0.04;
+                spPos.setX(spi, spPos.getX(spi) + drift);
+              }
+              spPos.needsUpdate = true;
+              s3.snowParticles.position.set(carWorldX, 0, carWorldZ);
+            }
+          }
+          // LIGHTNING: during rain only, roll for a flash every few seconds.
+          if (s3.lightningLight && !rmActiveW) {
+            if (weatherNow === 'rain') {
+              s3._lightningTimer = (s3._lightningTimer || 0) + dt;
+              if (s3._lightningTimer > (s3._lightningNext || 5)) {
+                s3._lightningTimer = 0;
+                s3._lightningNext = 6 + Math.random() * 14;
+                // Two-flash burst (real lightning usually flickers)
+                s3.lightningLight.position.set(carWorldX + (Math.random() - 0.5) * 80, 60 + Math.random() * 30, carWorldZ + (Math.random() - 0.5) * 80);
+                s3.lightningLight.intensity = 3.5;
+                var scn_ = s3.scene;
+                var originalBg = scn_.background;
+                scn_.background = new T.Color(0xccddff);
+                setTimeout(function() { if (s3.lightningLight) s3.lightningLight.intensity = 0.8; scn_.background = originalBg; }, 70);
+                setTimeout(function() { if (s3.lightningLight) s3.lightningLight.intensity = 2.8; scn_.background = new T.Color(0xaabbdd); }, 140);
+                setTimeout(function() { if (s3.lightningLight) s3.lightningLight.intensity = 0; scn_.background = originalBg; }, 260);
+                // Deep thunder rumble — random delay 1-6s after the flash (real physics: speed of sound).
+                try {
+                  var thunderDelay = 1000 + Math.random() * 5000;
+                  setTimeout(function() {
+                    var ac = audioRef.current && audioRef.current.ctx;
+                    if (!ac) return;
+                    var tBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * 1.8), ac.sampleRate);
+                    var tD = tBuf.getChannelData(0);
+                    for (var tbi = 0; tbi < tD.length; tbi++) {
+                      tD[tbi] = (Math.random() * 2 - 1) * Math.pow(1 - tbi / tD.length, 2);
+                    }
+                    var tSrc = ac.createBufferSource(); tSrc.buffer = tBuf;
+                    var tLp = ac.createBiquadFilter(); tLp.type = 'lowpass'; tLp.frequency.value = 140;
+                    var tGn = ac.createGain(); tGn.gain.value = 0.18;
+                    tSrc.connect(tLp).connect(tGn).connect(ac.destination);
+                    tSrc.start();
+                  }, thunderDelay);
+                } catch (_) {}
+              } else if (s3.lightningLight.intensity > 0) {
+                s3.lightningLight.intensity *= 0.85;
+              }
+            } else {
+              s3.lightningLight.intensity = 0;
+            }
           }
 
           // ── Dynamic chunk 3D generation for infinite world ──
@@ -8871,38 +9448,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var isNight = scn.time === 'night';
           var isFog = scn.weather === 'fog';
 
-          // Bottom HUD bar
-          gfx.fillStyle = 'rgba(0,0,0,0.75)';
-          gfx.fillRect(0, H - 90, W, 90);
-          gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 2;
-          gfx.strokeRect(0, H - 90, W, 90);
+          // ── Bottom HUD bar: modern digital instrument cluster ──
+          // Gradient backing instead of flat black — premium-car feel.
+          var hudGrad = gfx.createLinearGradient(0, H - 96, 0, H);
+          hudGrad.addColorStop(0, 'rgba(7,11,20,0.88)');
+          hudGrad.addColorStop(0.4, 'rgba(10,15,28,0.92)');
+          hudGrad.addColorStop(1, 'rgba(2,6,12,0.98)');
+          gfx.fillStyle = hudGrad;
+          gfx.fillRect(0, H - 96, W, 96);
+          // Thin cyan top bar — the "dashboard edge" light.
+          var edgeGrad = gfx.createLinearGradient(0, 0, W, 0);
+          edgeGrad.addColorStop(0, 'rgba(34,211,238,0)');
+          edgeGrad.addColorStop(0.5, 'rgba(34,211,238,0.9)');
+          edgeGrad.addColorStop(1, 'rgba(34,211,238,0)');
+          gfx.fillStyle = edgeGrad;
+          gfx.fillRect(0, H - 96, W, 2);
 
-          // Analog speedometer gauge
-          var gaugeX = 60, gaugeY = H - 50, gaugeR = 38;
+          // ── Speedometer: dual-ring digital gauge ──
+          var gaugeX = 62, gaugeY = H - 50, gaugeR = 40;
           var maxGauge = Math.max(80, scn.speedLimit + 30);
+          // Outer ring background (dim)
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, 0, false);
-          gfx.strokeStyle = '#1e293b'; gfx.lineWidth = 6; gfx.stroke();
+          gfx.strokeStyle = 'rgba(15,23,42,0.9)'; gfx.lineWidth = 10; gfx.stroke();
+          // Speed-colored arc (filled section) — progresses from green to amber to red based on limit zones.
           var limitAngle = Math.PI + (scn.speedLimit / maxGauge) * Math.PI;
           var overAngle = Math.PI + (Math.min(maxGauge, scn.speedLimit + 10) / maxGauge) * Math.PI;
-          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false); gfx.strokeStyle = '#22c55e'; gfx.lineWidth = 6; gfx.stroke();
-          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false); gfx.strokeStyle = '#f59e0b'; gfx.lineWidth = 6; gfx.stroke();
-          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false); gfx.strokeStyle = '#ef4444'; gfx.lineWidth = 6; gfx.stroke();
+          // Zone arcs (slimmer, behind needle)
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false); gfx.strokeStyle = 'rgba(34,197,94,0.35)'; gfx.lineWidth = 10; gfx.stroke();
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false); gfx.strokeStyle = 'rgba(245,158,11,0.45)'; gfx.lineWidth = 10; gfx.stroke();
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false); gfx.strokeStyle = 'rgba(239,68,68,0.55)'; gfx.lineWidth = 10; gfx.stroke();
+          // Active fill arc — bright, glowing, from 0 to current speed
           var needleAngle = Math.PI + (Math.min(speedMph, maxGauge) / maxGauge) * Math.PI;
-          gfx.strokeStyle = '#fff'; gfx.lineWidth = 2;
-          gfx.beginPath(); gfx.moveTo(gaugeX, gaugeY); gfx.lineTo(gaugeX + Math.cos(needleAngle) * (gaugeR - 8), gaugeY + Math.sin(needleAngle) * (gaugeR - 8)); gfx.stroke();
-          gfx.fillStyle = '#fff'; gfx.beginPath(); gfx.arc(gaugeX, gaugeY, 3, 0, Math.PI * 2); gfx.fill();
-          gfx.fillStyle = speedMph > scn.speedLimit + 5 ? '#ef4444' : speedMph > scn.speedLimit ? '#f59e0b' : '#4ade80';
-          gfx.font = 'bold 18px monospace'; gfx.textAlign = 'center';
-          gfx.fillText(speedMph, gaugeX, gaugeY - 8);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui';
-          gfx.fillText('MPH', gaugeX, gaugeY + 4);
+          var activeColor = speedMph > scn.speedLimit + 5 ? '#ef4444' : speedMph > scn.speedLimit ? '#f59e0b' : '#22d3ee';
+          gfx.shadowColor = activeColor; gfx.shadowBlur = 8;
+          gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, needleAngle, false);
+          gfx.strokeStyle = activeColor; gfx.lineWidth = 4; gfx.stroke();
+          gfx.shadowBlur = 0;
+          // Tick marks (every 10)
           for (var ti = 0; ti <= maxGauge; ti += 10) {
             var ta = Math.PI + (ti / maxGauge) * Math.PI;
-            gfx.strokeStyle = '#64748b'; gfx.lineWidth = 1;
-            gfx.beginPath(); gfx.moveTo(gaugeX + Math.cos(ta) * (gaugeR + 2), gaugeY + Math.sin(ta) * (gaugeR + 2)); gfx.lineTo(gaugeX + Math.cos(ta) * (gaugeR + 8), gaugeY + Math.sin(ta) * (gaugeR + 8)); gfx.stroke();
-            gfx.fillStyle = '#64748b'; gfx.font = '7px monospace'; gfx.textAlign = 'center';
-            gfx.fillText(ti, gaugeX + Math.cos(ta) * (gaugeR + 14), gaugeY + Math.sin(ta) * (gaugeR + 14) + 2);
+            var major = ti % 20 === 0;
+            gfx.strokeStyle = major ? '#94a3b8' : '#475569'; gfx.lineWidth = major ? 1.5 : 1;
+            gfx.beginPath();
+            gfx.moveTo(gaugeX + Math.cos(ta) * (gaugeR + 4), gaugeY + Math.sin(ta) * (gaugeR + 4));
+            gfx.lineTo(gaugeX + Math.cos(ta) * (gaugeR + (major ? 10 : 7)), gaugeY + Math.sin(ta) * (gaugeR + (major ? 10 : 7)));
+            gfx.stroke();
+            if (major) {
+              gfx.fillStyle = '#64748b'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
+              gfx.fillText(ti, gaugeX + Math.cos(ta) * (gaugeR + 17), gaugeY + Math.sin(ta) * (gaugeR + 17) + 2);
+            }
           }
+          // Digital speed readout in the center — big, bright, like a modern Tesla/Ford cluster.
+          gfx.shadowColor = activeColor; gfx.shadowBlur = 12;
+          gfx.fillStyle = activeColor;
+          gfx.font = 'bold 28px "Segoe UI", system-ui, sans-serif';
+          gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+          gfx.fillText(speedMph, gaugeX, gaugeY - 4);
+          gfx.shadowBlur = 0;
+          gfx.textBaseline = 'alphabetic';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui';
+          gfx.fillText('MPH', gaugeX, gaugeY + 14);
+          // Speed-limit chip (black-on-white, like a US road sign)
+          gfx.fillStyle = '#fff'; gfx.strokeStyle = '#000'; gfx.lineWidth = 1.5;
+          gfx.beginPath(); gfx.roundRect ? gfx.roundRect(gaugeX + gaugeR + 4, gaugeY - 24, 28, 34, 4) : gfx.rect(gaugeX + gaugeR + 4, gaugeY - 24, 28, 34);
+          gfx.fill(); gfx.stroke();
+          gfx.fillStyle = '#000'; gfx.font = 'bold 7px "Segoe UI"'; gfx.textAlign = 'center';
+          gfx.fillText('LIMIT', gaugeX + gaugeR + 18, gaugeY - 14);
+          gfx.font = 'bold 14px "Segoe UI"';
+          gfx.fillText(scn.speedLimit, gaugeX + gaugeR + 18, gaugeY + 3);
+
+          // ── Gear indicator + RPM-style bar (left of speedometer) ──
+          var gearTxt = gearRef.current || 'P';
+          var gearColors = { P: '#3b82f6', R: '#f59e0b', D: '#22c55e' };
+          gfx.fillStyle = 'rgba(15,23,42,0.8)';
+          gfx.beginPath();
+          if (gfx.roundRect) { gfx.roundRect(10, H - 80, 38, 22, 5); } else { gfx.rect(10, H - 80, 38, 22); }
+          gfx.fill();
+          ['P','R','D'].forEach(function(g, gi) {
+            var active = gearTxt === g;
+            gfx.fillStyle = active ? gearColors[g] : '#475569';
+            gfx.font = (active ? 'bold ' : '') + '11px "Segoe UI"';
+            gfx.fillText(g, 18 + gi * 12, H - 64);
+          });
+          // Warning light strip — shows active indicator lights like a real car
+          var warnX = 10, warnY = H - 54, warnW = 100, warnH = 18;
+          var warnIcons = [];
+          if (d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: 'High beams' });
+          if (blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: 'Left signal' });
+          if (blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: '#22c55e', title: 'Right signal' });
+          if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: '#ef4444', title: 'Braking' });
+          if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: '#f59e0b', title: 'Traction loss' });
+          if (scn.weather === 'fog' && !d.highBeams) warnIcons.push({ icon: '🌫', color: '#94a3b8', title: 'Fog — low beams OK' });
+          warnIcons.forEach(function(wi, widx) {
+            gfx.fillStyle = wi.color;
+            gfx.font = 'bold 14px system-ui';
+            gfx.textAlign = 'center';
+            gfx.fillText(wi.icon, warnX + 10 + widx * 22, warnY + 14);
+          });
 
           // Fuel gauge
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 20px monospace'; gfx.textAlign = 'center';
@@ -9092,6 +9734,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillStyle = '#4ade80'; gfx.font = '8px system-ui'; gfx.textAlign = 'left'; gfx.fillText('MPG', sparkX, sparkY + sparkH + 9);
             gfx.textAlign = 'right'; gfx.fillText(mHist[mHist.length - 1].toFixed(0), sparkX + sparkW, sparkY + sparkH + 9);
           }
+          // ── Physics literacy card: live drag, rolling, grade forces (right side of HUD) ──
+          // Helps students see WHY mass + speed matter. Bars are normalized to vehicle weight (kN).
+          var phX = W - 175, phY = H - 80, phW = 160;
+          var absSpeedHud = Math.abs(car.speed);
+          var dragF = dragForce(absSpeedHud, veh.cd, veh.area); // N
+          var rollF = rollingForce(veh.mass, rollingCoef(scn.weather, true)); // N
+          var gradeFhud = 0;
+          if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+            var spHud = infiniteWorldRef.current.spline;
+            var slopeHud = spHud.heightAt(car.y + 1) - spHud.heightAt(car.y);
+            gradeFhud = veh.mass * 9.81 * slopeHud * 0.18;
+          }
+          var refForce = Math.max(800, veh.mass * 9.81 * 0.15); // ~15% of weight as full bar
+          var bar = function(label, val, color, row) {
+            var bx = phX + 50, by = phY + row * 12, bw = phW - 60;
+            gfx.fillStyle = '#0f172a'; gfx.fillRect(bx, by + 1, bw, 6);
+            gfx.fillStyle = color;
+            var pct = Math.min(1, Math.abs(val) / refForce);
+            gfx.fillRect(bx, by + 1, bw * pct, 6);
+            gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText(label, phX, by + 7);
+            gfx.fillStyle = '#e2e8f0'; gfx.textAlign = 'right';
+            gfx.fillText((val / 1000).toFixed(2) + ' kN', phX + phW, by + 7);
+          };
+          gfx.fillStyle = 'rgba(0,0,0,0.55)'; gfx.fillRect(phX - 4, phY - 4, phW + 8, 50);
+          gfx.fillStyle = '#a78bfa'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'left';
+          gfx.fillText('PHYSICS · WHAT\'S RESISTING YOU', phX, phY + 1);
+          bar('Drag',  dragF,            '#22d3ee', 1);
+          bar('Roll',  rollF,            '#10b981', 2);
+          bar('Hill',  Math.abs(gradeFhud), gradeFhud >= 0 ? '#f59e0b' : '#a78bfa', 3);
 
           // Rearview mirror
           var mirrorW = Math.min(200, W * 0.25), mirrorH = 50;
@@ -9225,6 +9897,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.beginPath(); gfx.arc(qmx, qmy, 3, 0, Math.PI * 2); gfx.fill();
             gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1;
             gfx.beginPath(); gfx.arc(qmx, qmy, 5, 0, Math.PI * 2); gfx.stroke();
+          }
+          // ── Ghost Replay: faded trail of the best previous drive on this seed ──
+          if (isFE && d.bestGhosts) {
+            var ghKey = String(d.worldSeed || 'random');
+            var ghost = d.bestGhosts[ghKey];
+            if (ghost && ghost.path && ghost.path.length > 1) {
+              gfx.strokeStyle = 'rgba(168,139,250,0.55)'; gfx.lineWidth = 1.5;
+              gfx.beginPath();
+              for (var ghi = 0; ghi < ghost.path.length; ghi++) {
+                var gp = ghost.path[ghi];
+                var gpos = worldToMM(gp.x, gp.y);
+                if (gpos.x < mmX || gpos.x > mmX + mmSize || gpos.y < mmY || gpos.y > mmY + mmSize) {
+                  if (ghi > 0) gfx.stroke();
+                  gfx.beginPath();
+                  continue;
+                }
+                if (ghi === 0) gfx.moveTo(gpos.x, gpos.y); else gfx.lineTo(gpos.x, gpos.y);
+              }
+              gfx.stroke();
+              // Ghost car position — follow the path proportional to elapsed time vs duration.
+              var ghT = Math.min(1, timeRef.current / Math.max(1, ghost.durationSec));
+              var ghIdx = Math.floor(ghT * (ghost.path.length - 1));
+              var ghPt = ghost.path[ghIdx];
+              if (ghPt) {
+                var ghMM = worldToMM(ghPt.x, ghPt.y);
+                if (ghMM.x >= mmX && ghMM.x <= mmX + mmSize && ghMM.y >= mmY && ghMM.y <= mmY + mmSize) {
+                  gfx.fillStyle = 'rgba(168,139,250,0.85)';
+                  gfx.beginPath(); gfx.arc(ghMM.x, ghMM.y, 3, 0, Math.PI * 2); gfx.fill();
+                }
+              }
+            }
           }
           // Player car icon (always center, pointing up)
           gfx.fillStyle = '#22d3ee';
@@ -9473,14 +10176,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ═══════════════════════════════════════════
 
       // ── MENU VIEW ──
+      // Auto-route new users to the tour on the first menu visit per session.
+      // Ref-gated so we don't re-trigger after the user dismisses/completes.
+      if (view === 'menu' && !d.tourCompleted && !tourAutoRoutedRef.current) {
+        tourAutoRoutedRef.current = true;
+        setTimeout(function() { upd('view', 'tour'); }, 50);
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // FIRST-TIME ONBOARDING TOUR
+      // ══════════════════════════════════════════════════════════
+      if (view === 'tour') {
+        var tourStep = d.tourStep || 0;
+        var tourSteps = [
+          {
+            icon: '🚗', title: 'Welcome to RoadReady',
+            body: 'A 3D driving simulator built for teen learners in Maine and beyond. Free, private, and offline-capable. No account needed.',
+            cta: 'Let\'s start →'
+          },
+          {
+            icon: '🎨', title: 'Make It Yours',
+            body: 'Customize your ride: pick a paint color, put your name on it, and add a license plate. It shows up in the 3D sim and on certificates.',
+            cta: 'Next →'
+          },
+          {
+            icon: '🛣️', title: 'Drive Scenarios',
+            body: 'Pick from 14 scenarios — residential streets, highways, snow, fog, roundabouts, night, school zones. Each teaches specific skills. Start easy.',
+            cta: 'Next →'
+          },
+          {
+            icon: '📝', title: 'Study the Permit Test',
+            body: '80 Maine BMV-style questions. Try the full Road Test Simulator when you are ready — includes the pre-trip vehicle inspection.',
+            cta: 'Next →'
+          },
+          {
+            icon: '📔', title: 'Track Your Hours',
+            body: 'Every drive gets logged. Maine requires 70 supervised hours. Export your logbook as Markdown to share with a parent or instructor.',
+            cta: 'Next →'
+          },
+          {
+            icon: '🏆', title: 'Earn Achievements',
+            body: 'Over 30 badges across bronze, silver, and gold tiers. Pass the permit, master night driving, complete road trips, diagnose warning lights.',
+            cta: 'Start Driving! 🚗'
+          }
+        ];
+        var cur = tourSteps[Math.min(tourStep, tourSteps.length - 1)];
+        var isLast = tourStep >= tourSteps.length - 1;
+        return h('div', {
+          style: { padding: '20px', maxWidth: '560px', margin: '0 auto', color: '#e2e8f0', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }
+        },
+          h('style', null,
+            '@keyframes rrTourFade { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }' +
+            '@keyframes rrTourIcon { 0%,100%{transform:scale(1) rotate(0)} 50%{transform:scale(1.08) rotate(-3deg)} }'
+          ),
+          // Card
+          h('div', {
+            key: 'step-' + tourStep,
+            style: {
+              background: 'linear-gradient(135deg, #0c4a6e, #1e1b4b, #4c1d95)',
+              backgroundSize: '200% 200%',
+              animation: 'rrHeroPan 20s ease infinite, rrTourFade 0.5s ease-out',
+              borderRadius: '20px',
+              padding: '40px 28px',
+              textAlign: 'center',
+              border: '1px solid rgba(168,139,250,0.4)',
+              boxShadow: '0 12px 40px rgba(76,29,149,0.4)'
+            }
+          },
+            h('div', { style: { fontSize: '80px', animation: 'rrTourIcon 2.5s ease-in-out infinite', display: 'inline-block', marginBottom: '14px' } }, cur.icon),
+            h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '10px' } }, cur.title),
+            h('div', { style: { fontSize: '14px', color: '#e0e7ff', lineHeight: '1.6', marginBottom: '24px', padding: '0 10px' } }, cur.body),
+            // Progress dots
+            h('div', { style: { display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '18px' } },
+              tourSteps.map(function(_, si) {
+                var active = si === tourStep;
+                var done = si < tourStep;
+                return h('div', { key: si,
+                  style: { width: active ? '24px' : '8px', height: '8px', borderRadius: '4px', background: active ? '#fbbf24' : done ? '#a78bfa' : 'rgba(255,255,255,0.2)', transition: 'all 0.3s' }
+                });
+              })
+            ),
+            // Nav buttons
+            h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center' } },
+              tourStep > 0 ? h('button', {
+                onClick: function() { upd('tourStep', tourStep - 1); },
+                style: { padding: '10px 18px', borderRadius: '8px', border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              }, '← Back') : null,
+              h('button', {
+                onClick: function() {
+                  if (isLast) {
+                    updMulti({ tourCompleted: true, tourStep: 0, view: 'menu' });
+                  } else {
+                    upd('tourStep', tourStep + 1);
+                  }
+                },
+                style: { padding: '10px 22px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#0f172a', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 12px rgba(251,191,36,0.4)' }
+              }, cur.cta)
+            ),
+            h('button', {
+              onClick: function() { updMulti({ tourCompleted: true, tourStep: 0, view: 'menu' }); },
+              style: { marginTop: '16px', padding: '6px 10px', borderRadius: '5px', border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer', textDecoration: 'underline' }
+            }, 'Skip tour')
+          )
+        );
+      }
+
       if (view === 'menu') {
         return h('div', { style: { padding: '20px', maxWidth: '960px', margin: '0 auto', color: '#e2e8f0' } },
           // Header
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px' } }, '🚗'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'RoadReady'),
-            h('div', { style: { fontSize: '13px', color: '#94a3b8' } }, "Driver's Ed & Automotive Science — Maine edition"),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '4px' } }, "Learn the physics. Pass the test. Drive safer.")
+          // ── Animated hero: panning gradient + floating emoji particles ──
+          // Inline <style> injects the keyframes once; it's idempotent via the id selector.
+          h('style', null,
+            '@keyframes rrHeroPan { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }' +
+            '@keyframes rrHeroFloat { 0%{transform:translateY(0) translateX(0);opacity:0} 15%{opacity:0.8} 85%{opacity:0.8} 100%{transform:translateY(-80px) translateX(30px);opacity:0} }' +
+            '@keyframes rrHeroPulse { 0%,100%{opacity:0.9;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }'
+          ),
+          h('div', {
+            style: {
+              position: 'relative', textAlign: 'center', marginBottom: '20px', padding: '28px 20px 24px 20px', borderRadius: '18px',
+              overflow: 'hidden',
+              background: 'linear-gradient(120deg, #0c4a6e, #1e1b4b, #4c1d95, #0c4a6e)',
+              backgroundSize: '300% 300%',
+              animation: 'rrHeroPan 20s ease infinite',
+              border: '1px solid rgba(168,139,250,0.4)',
+              boxShadow: '0 8px 32px rgba(76, 29, 149, 0.3)'
+            }
+          },
+            // Floating emoji particles (6 of them, varied delays + positions).
+            ['🚗', '🛣️', '🌲', '🏠', '🦌', '🌅'].map(function(em, ei) {
+              var left = 10 + ei * 15;
+              var delay = ei * 1.7;
+              return h('div', { key: ei,
+                style: {
+                  position: 'absolute',
+                  left: left + '%',
+                  bottom: '-10px',
+                  fontSize: '20px',
+                  pointerEvents: 'none',
+                  animation: 'rrHeroFloat ' + (8 + (ei % 3) * 2) + 's linear ' + delay + 's infinite',
+                  opacity: 0
+                }
+              }, em);
+            }),
+            h('div', { style: { position: 'relative', zIndex: 2 } },
+              h('div', { style: { fontSize: '56px', animation: 'rrHeroPulse 3s ease-in-out infinite', display: 'inline-block' } }, '🚗'),
+              h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', background: 'linear-gradient(90deg, #fbbf24, #f472b6, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'RoadReady'),
+              h('div', { style: { fontSize: '13px', color: '#e2e8f0', fontWeight: 600 } }, "Driver's Ed & Automotive Science — Maine edition"),
+              h('div', { style: { fontSize: '11px', color: '#a5b4fc', marginTop: '4px' } }, "Learn the physics. Pass the test. Drive safer.")
+            )
           ),
           // Free Explore hero button
           h('button', { onClick: function() { upd('view', 'freeExploreSetup'); },
@@ -9544,6 +10387,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '❄️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Maine Winter Guide'),
               h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, 'Moose, ice, snow kit, tires')
+            ),
+            h('button', { onClick: function() { upd('view', 'nightVisionIntro'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🌃'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Night Vision Training'),
+              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, 'Progressive darkness drill — sign reading, ped scan')
+            ),
+            h('button', { onClick: function() { upd('view', 'parentRideCheck'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '👨‍👧'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Parent Ride Check'),
+              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, '2-min eval — tap to mark errors')
+            ),
+            h('button', { onClick: function() { upd('view', 'roadTestIntro'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🪪'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Road Test Simulator'),
+              h('div', { style: { fontSize: '10px', color: '#bbf7d0', marginTop: '2px' } }, 'Full Maine BMV-style scored exam')
+            ),
+            h('button', { onClick: function() { upd('view', 'logbook'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📔'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Driving Logbook'),
+              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, ((d.logbook && d.logbook.length) || 0) + ' sessions logged')
+            ),
+            h('button', { onClick: function() { upd('view', 'defensiveList'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #60a5fa', background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🛡️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Defensive Drills'),
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', marginTop: '2px' } }, 'Short hazard-response scenarios')
+            ),
+            h('button', { onClick: function() { upd('view', 'crashLab'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔬'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Crash Recon Lab'),
+              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, 'Physics of real crash types')
+            ),
+            h('button', { onClick: function() { upd('view', 'lessonPath'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🎓'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Lesson Path'),
+              h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, 'Guided 1→2→3 progression')
+            ),
+            h('button', { onClick: function() { upd('view', 'maintenanceGame'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🔧'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Maintenance Game'),
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, 'Diagnose dashboard warnings')
+            ),
+            h('button', { onClick: function() { upd('view', 'customize'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🎨'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'My Ride'),
+              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, 'Color, name, plate')
+            ),
+            h('button', { onClick: function() { upd('view', 'distractedLab'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #450a0a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📱'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Distracted Driving Lab'),
+              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, 'Feel the cost of a 3-second glance')
+            ),
+            h('button', { onClick: function() { upd('view', 'analytics'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #0ea5e9', background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📈'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Progress Analytics'),
+              h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, 'Charts of your growth over time')
+            ),
+            h('button', { onClick: function() { upd('view', 'emergencyHandbook'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🚨'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Emergency Handbook'),
+              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, 'What to do when things go wrong')
+            ),
+            h('button', { onClick: function() { upd('view', 'driverPledge'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📜'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Driver\'s Pledge'),
+              h('div', { style: { fontSize: '10px', color: '#d9f99d', marginTop: '2px' } }, d.pledgeSigned ? '✓ Signed' : 'Make your commitment')
+            ),
+            h('button', { onClick: function() { updMulti({ view: 'permitFlashcards', permitFlashIdx: 0 }); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🗂️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Permit Flashcards'),
+              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, 'Study mode — spaced repetition')
+            ),
+            h('button', { onClick: function() { updMulti({ view: 'rightOfWay', rowIdx: 0, rowAnswered: null }); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '↔️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Right-of-Way'),
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, '10 "who goes first?" scenarios')
+            ),
+            h('button', { onClick: function() { upd('view', 'stopDistCalc'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📐'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Stopping Distance'),
+              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, 'Live physics: v, μ, reaction time')
+            ),
+            h('button', { onClick: function() { upd('view', 'gdlTracker'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🪪'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Maine GDL Tracker'),
+              h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, 'Your license stage + restrictions')
+            ),
+            // ── Daily Challenge: highlighted hero tile (always on top) ──
+            (function() {
+              var today = new Date().toISOString().slice(0, 10);
+              var dailyState = d.dailyChallenge || {};
+              var doneToday = dailyState.date === today && dailyState.done;
+              var streak = dailyState.streak || 0;
+              return h('button', { onClick: function() { upd('view', 'dailyChallenge'); },
+                style: { padding: '16px', borderRadius: '12px', border: '2px solid ' + (doneToday ? '#4ade80' : '#fbbf24'), background: 'linear-gradient(135deg, ' + (doneToday ? '#14532d' : '#78350f') + ', #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left', position: 'relative' } },
+                streak >= 3 ? h('div', { style: { position: 'absolute', top: '6px', right: '6px', background: '#ef4444', color: '#fff', borderRadius: '10px', padding: '2px 6px', fontSize: '9px', fontWeight: 800 } }, '🔥 ' + streak) : null,
+                h('div', { style: { fontSize: '28px' } }, doneToday ? '✅' : '⭐'),
+                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Daily Challenge'),
+                h('div', { style: { fontSize: '10px', color: doneToday ? '#bbf7d0' : '#fde68a', marginTop: '2px' } }, doneToday ? 'Done! Come back tomorrow' : 'One task per day · Streak: ' + streak)
+              );
+            })(),
+            h('button', { onClick: function() { updMulti({ view: 'peerPressure', ppIdx: 0, ppAnswered: null, ppScore: 0 }); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🙅'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Peer Pressure'),
+              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, 'Practice saying no to "friend" pressure')
+            ),
+            h('button', { onClick: function() { updMulti({ view: 'reactionTest', rtPhase: 'intro', rtScore: null }); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #083344, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '⚡'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Reaction Test'),
+              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, 'Your baseline vs 0.08 BAC')
+            ),
+            h('button', { onClick: function() { upd('view', 'cheatSheet'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e5e7eb', background: 'linear-gradient(135deg, #475569, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📄'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Study Cheat Sheet'),
+              h('div', { style: { fontSize: '10px', color: '#e5e7eb', marginTop: '2px' } }, 'One-page printable summary')
+            ),
+            h('button', { onClick: function() { upd('view', 'seatSetup'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🪑'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Seat & Mirror Setup'),
+              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, 'Get seated like a pro')
+            ),
+            h('button', { onClick: function() { upd('view', 'postCrash'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, #450a0a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📞'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Post-Crash Protocol'),
+              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, 'First 10 minutes after a crash')
+            ),
+            h('button', { onClick: function() { upd('view', 'bikeAware'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #16a34a', background: 'linear-gradient(135deg, #14532d, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🚴'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Cyclist & Moto Awareness'),
+              h('div', { style: { fontSize: '10px', color: '#bbf7d0', marginTop: '2px' } }, '3-ft law, shared blind spots')
+            ),
+            h('button', { onClick: function() { upd('view', 'helpHub'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🧭'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Help & Directory'),
+              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, 'Find anything in RoadReady')
             ),
             h('button', { onClick: function() { upd('view', 'roundaboutGuide'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -9769,15 +10770,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               })()
             )
           ),
-          // Achievements strip
-          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-              ACHIEVEMENTS.map(function(ach) {
+          // ── Achievements preview (clickable card → full Gallery view) ──
+          // Inject the gallery's animation keyframes once here since the menu always renders.
+          h('style', null,
+            '@keyframes rrBadgeGlow { 0%,100%{box-shadow:0 0 8px rgba(251,191,36,0.4)} 50%{box-shadow:0 0 18px rgba(251,191,36,0.9)} }' +
+            '@keyframes rrBadgeSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }' +
+            '@keyframes rrBadgeBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }'
+          ),
+          h('button', {
+            onClick: function() { upd('view', 'achievementGallery'); },
+            style: { width: '100%', background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '12px', padding: '14px', border: '1px solid #fbbf24', marginBottom: '12px', cursor: 'pointer', textAlign: 'left', color: '#fff' }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase' } }, '🏆 Achievements'),
+              h('div', { style: { fontSize: '11px', color: '#fde68a' } }, Object.keys(earnedBadges).length + ' / ' + ACHIEVEMENTS.length + ' →')
+            ),
+            // Preview strip of most-recent 10 earned + a few unearned
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              ACHIEVEMENTS.slice(0, 14).map(function(ach) {
                 var earned = !!earnedBadges[ach.id];
-                return h('div', { key: ach.id, title: ach.name + ': ' + ach.desc,
-                  style: { padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#334155', border: '1px solid ' + (earned ? '#3b82f6' : '#1e293b'), cursor: 'default' }
-                }, ach.icon + ' ' + (earned ? ach.name : '???'));
+                return h('div', { key: ach.id, title: earned ? ach.name : '???',
+                  style: {
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '16px',
+                    background: earned ? 'radial-gradient(circle, #fbbf24, #d97706)' : '#1e293b',
+                    border: '2px solid ' + (earned ? '#fbbf24' : '#334155'),
+                    filter: earned ? 'none' : 'grayscale(1) opacity(0.4)',
+                    boxShadow: earned ? '0 2px 8px rgba(251,191,36,0.5)' : 'none'
+                  }
+                }, earned ? ach.icon : '🔒');
               })
             )
           ),
@@ -9810,6 +10832,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }),
               h('span', null, '🎧 Ride-Along mode'),
               h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— the car drives itself and narrates aloud (for blind/low-vision and keyboard-only learners)')
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#cbd5e1', cursor: 'pointer', marginTop: '8px' } },
+              h('input', { type: 'checkbox', checked: !!d.coachMode,
+                onChange: function(e) { upd('coachMode', e.target.checked); }
+              }),
+              h('span', null, '🧑‍🏫 Coach Mode'),
+              h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— a calm AI coach gives one specific tip every ~30s during drives')
             )
           ),
           // ── Progress Save/Load panel ──
@@ -9836,7 +10865,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     reducedMotion: !!d.reducedMotion,
                     rideAlong: !!d.rideAlong,
                     lastJournal: d.lastJournal || null,
-                    completedTrips: d.completedTrips || {}
+                    completedTrips: d.completedTrips || {},
+                    bestGhosts: d.bestGhosts || {},
+                    logbook: d.logbook || [],
+                    maintenanceGame: d.maintenanceGame || {},
+                    defensiveState: d.defensiveState || {},
+                    lastRoadTest: d.lastRoadTest || null,
+                    preTripChecks: d.preTripChecks || {},
+                    carColor: d.carColor || null,
+                    driverName: d.driverName || '',
+                    licensePlate: d.licensePlate || '',
+                    lastReflection: d.lastReflection || null,
+                    pledgeSigned: d.pledgeSigned || null,
+                    permitFlashHistory: d.permitFlashHistory || {},
+                    tourCompleted: !!d.tourCompleted,
+                    gdlBirthDate: d.gdlBirthDate || '',
+                    gdlPermitDate: d.gdlPermitDate || '',
+                    gdlIntermediateDate: d.gdlIntermediateDate || '',
+                    dailyChallenge: d.dailyChallenge || null
                   };
                   try {
                     var json = JSON.stringify(payload, null, 2);
@@ -9924,6 +10970,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         if (typeof parsed.rideAlong === 'boolean') toApply.rideAlong = parsed.rideAlong;
                         if (parsed.lastJournal) toApply.lastJournal = parsed.lastJournal;
                         if (parsed.completedTrips) toApply.completedTrips = parsed.completedTrips;
+                        if (parsed.bestGhosts) toApply.bestGhosts = parsed.bestGhosts;
+                        if (parsed.logbook) toApply.logbook = parsed.logbook;
+                        if (parsed.maintenanceGame) toApply.maintenanceGame = parsed.maintenanceGame;
+                        if (parsed.defensiveState) toApply.defensiveState = parsed.defensiveState;
+                        if (parsed.lastRoadTest) toApply.lastRoadTest = parsed.lastRoadTest;
+                        if (parsed.preTripChecks) toApply.preTripChecks = parsed.preTripChecks;
+                        if (parsed.carColor) toApply.carColor = parsed.carColor;
+                        if (parsed.driverName) toApply.driverName = parsed.driverName;
+                        if (parsed.licensePlate) toApply.licensePlate = parsed.licensePlate;
+                        if (parsed.lastReflection) toApply.lastReflection = parsed.lastReflection;
+                        if (parsed.pledgeSigned) toApply.pledgeSigned = parsed.pledgeSigned;
+                        if (parsed.permitFlashHistory) toApply.permitFlashHistory = parsed.permitFlashHistory;
+                        if (typeof parsed.tourCompleted === 'boolean') toApply.tourCompleted = parsed.tourCompleted;
+                        if (parsed.gdlBirthDate) toApply.gdlBirthDate = parsed.gdlBirthDate;
+                        if (parsed.gdlPermitDate) toApply.gdlPermitDate = parsed.gdlPermitDate;
+                        if (parsed.gdlIntermediateDate) toApply.gdlIntermediateDate = parsed.gdlIntermediateDate;
+                        if (parsed.dailyChallenge) toApply.dailyChallenge = parsed.dailyChallenge;
                         updMulti(toApply);
                         if (typeof parsed.reducedMotion === 'boolean') reducedMotionRef.current = parsed.reducedMotion;
                         if (typeof parsed.rideAlong === 'boolean') rideAlongRef.current = parsed.rideAlong;
@@ -9991,6 +11054,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     return h('button', { key: w[0], onClick: function() { upd('feWeather', w[0]); },
                       style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, w[1]);
                   })
+                ),
+                // Dynamic weather toggle — schedules realistic weather chains during the drive.
+                h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', fontSize: '10px', color: '#cbd5e1', cursor: 'pointer' } },
+                  h('input', { type: 'checkbox', checked: !!d.dynamicWeather,
+                    onChange: function(e) { upd('dynamicWeather', e.target.checked); }
+                  }),
+                  h('span', null, '🌦️ Dynamic weather (storms roll in)')
                 )
               ),
               h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
@@ -10194,6 +11264,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, 'Signal ►')
           ),
           // Free Explore live condition toolbar
+          // ── Road Test HUD: score + time remaining (when road test is active) ──
+          d.roadTestStage === 'drive' && roadTestRef.current.active ? h('div', {
+            style: { position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', padding: '8px 14px', borderRadius: '10px', background: 'rgba(20,83,45,0.95)', border: '2px solid #4ade80', zIndex: 26, color: '#fff', minWidth: '200px', textAlign: 'center' },
+            role: 'status', 'aria-live': 'polite'
+          },
+            (function() {
+              var elapsed = Math.round((Date.now() - roadTestRef.current.startedAt) / 1000);
+              var remaining = Math.max(0, roadTestRef.current.durationSec - elapsed);
+              var curScore = Math.max(0, roadTestRef.current.score);
+              return h('div', null,
+                h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#bbf7d0', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🪪 Road Test · ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0')),
+                h('div', { style: { fontSize: '24px', fontWeight: 900, color: curScore >= 90 ? '#4ade80' : curScore >= 75 ? '#fbbf24' : '#ef4444' } }, curScore + ' / 100')
+              );
+            })()
+          ) : null,
+          // ── Parent Ride Check overlay (bottom-center tap-to-mark error buttons) ──
+          d.parentRideMode && parentRef.current.active ? h('div', {
+            style: { position: 'absolute', top: '60px', right: '10px', padding: '8px 10px', borderRadius: '10px', background: 'rgba(131,24,67,0.92)', border: '2px solid #f472b6', zIndex: 22, color: '#fff', minWidth: '140px' },
+            role: 'region', 'aria-label': 'Parent error marking panel'
+          },
+            (function() {
+              var elapsed = Math.round((Date.now() - parentRef.current.startedAt) / 1000);
+              var remaining = Math.max(0, parentRef.current.durationSec - elapsed);
+              return h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbcfe8', textTransform: 'uppercase', marginBottom: '4px', textAlign: 'center' } },
+                '👨‍👧 ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0') + ' · ' + parentRef.current.errors.length + ' marked'
+              );
+            })(),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' } },
+              [['speed','🚦'],['signal','◄'],['following','🚗'],['lane','🛣️'],['scan','👀'],['stop','🛑']].map(function(c) {
+                return h('button', { key: c[0],
+                  onClick: function() {
+                    parentRef.current.errors.push({ cat: c[0], t: timeRef.current, speedMph: Math.abs(carRef.current.speed) * MS_TO_MPH });
+                    addToast(c[1] + ' Marked: ' + c[0]);
+                  },
+                  style: { padding: '5px 4px', borderRadius: '5px', border: '1px solid #f472b6', background: 'rgba(244,114,182,0.2)', color: '#fff', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
+                }, c[1] + ' ' + c[0]);
+              })
+            )
+          ) : null,
+          // ── Coach Mode tip card (top-right, fades after 12s) ──
+          d.coachMode && coachRef.current.lastTip && (Date.now() - coachRef.current.lastTipAt < 12000) ? h('div', {
+            style: { position: 'absolute', top: '60px', right: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(30,41,59,0.95)', border: '2px solid #38bdf8', zIndex: 24, color: '#fff', maxWidth: '260px', fontSize: '12px', lineHeight: '1.4', boxShadow: '0 4px 12px rgba(0,0,0,0.6)' },
+            role: 'status', 'aria-live': 'polite'
+          },
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, '🧑‍🏫 Coach'),
+            h('div', null, coachRef.current.lastTip)
+          ) : null,
           // ── Free Explore: Road Trip progress HUD ──
           // Small panel top-left showing current goal + progress dots for the active trip.
           d.freeExplore && tripRef.current ? (function() {
@@ -10319,13 +11436,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, t[1]);
               })
             ),
+            // ── Radio station picker ──
+            h('div', { style: { display: 'flex', gap: '3px', marginTop: '4px', justifyContent: 'center', flexWrap: 'wrap' } },
+              [['off','📻 Off'],['music','🎵'],['talk','🎙️'],['weather','🌦️'],['traffic','🚦']].map(function(rb) {
+                var stId = rb[0] === 'off' ? null : rb[0];
+                var on = (radioRef.current.station || null) === stId;
+                return h('button', { key: rb[0], title: 'Radio: ' + rb[0],
+                  onClick: function() { tuneRadio(stId); },
+                  style: { padding: '3px 6px', borderRadius: '4px', border: '1px solid ' + (on ? '#22d3ee' : '#334155'), background: on ? 'rgba(34,211,238,0.2)' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px' } }, rb[1]);
+              })
+            ),
             // Speed limit display
-            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center' } }, 'Limit: ' + currentScenario.speedLimit + ' mph'),
+            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '4px' } }, 'Limit: ' + currentScenario.speedLimit + ' mph'),
             // Distance driven
             h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi'),
-            // Infinite world info
-            infiniteWorldRef.current ? h('div', { style: { fontSize: '8px', color: '#a78bfa', textAlign: 'center', marginTop: '3px' } },
-              '🌍 Seed: ' + (d.worldSeed || '?') + (infiniteWorldRef.current.chunks[Math.floor(carRef.current.y / CHUNK_SIZE)] ? ' · ' + infiniteWorldRef.current.chunks[Math.floor(carRef.current.y / CHUNK_SIZE)].biome : '')
+            // Infinite world info + current town
+            infiniteWorldRef.current ? h('div', null,
+              challengeRef.current && challengeRef.current.currentTown ? h('div', { style: { fontSize: '10px', color: '#fbbf24', textAlign: 'center', marginTop: '3px', fontWeight: 700 } },
+                '📍 ' + challengeRef.current.currentTown.name + ' · ' + challengeRef.current.currentTown.pop
+              ) : null,
+              h('div', { style: { fontSize: '8px', color: '#a78bfa', textAlign: 'center', marginTop: '2px' } },
+                '🌍 Seed: ' + (d.worldSeed || '?') + (infiniteWorldRef.current.chunks[Math.floor(carRef.current.y / CHUNK_SIZE)] ? ' · ' + infiniteWorldRef.current.chunks[Math.floor(carRef.current.y / CHUNK_SIZE)].biome : '')
+              )
             ) : null
           ) : null
         );
@@ -10375,20 +11507,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── SIGNS VIEW ──
       if (view === 'signsView') {
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-          h('h3', { style: { fontSize: '18px', fontWeight: 900, marginBottom: '4px' } }, 'Road Signs: Color & Shape Semantics'),
-          h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '14px' } }, 'Recognize meaning at a glance, even before reading the words.'),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' } },
-            SIGN_CATEGORIES.map(function(s, i) {
-              return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', borderLeft: '4px solid ' + s.color } },
-                h('div', { style: { fontSize: '13px', fontWeight: 800, color: s.color, marginBottom: '4px' } }, s.category),
-                h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '6px' } }, s.colorName),
-                h('div', { style: { fontSize: '11px', color: '#cbd5e1', marginBottom: '6px', lineHeight: '1.5' } }, s.meaning),
-                h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'e.g., ' + s.examples.slice(0, 3).join(', '))
+        // Comprehensive sign library with SVG drawings. Grouped by MUTCD category.
+        var signLibrary = [
+          { cat: 'regulatory', name: 'Stop', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'30,5 70,5 95,30 95,70 70,95 30,95 5,70 5,30',fill:'#dc2626',stroke:'#fff',strokeWidth:3}),h('text',{x:50,y:60,textAnchor:'middle',fontSize:22,fontWeight:900,fill:'#fff'},'STOP'));}, meaning: 'Full stop. Count to 2. Yield to any traffic.', when: 'Every intersection with a stop sign.' },
+          { cat: 'regulatory', name: 'Yield', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'10,20 90,20 50,90',fill:'#fff',stroke:'#dc2626',strokeWidth:5}),h('text',{x:50,y:50,textAnchor:'middle',fontSize:13,fontWeight:900,fill:'#dc2626'},'YIELD'));}, meaning: 'Slow down. Give way to any cross traffic or pedestrians.', when: 'Entry to a highway, roundabout, or merge lane.' },
+          { cat: 'regulatory', name: 'Speed Limit', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('text',{x:50,y:30,textAnchor:'middle',fontSize:9,fontWeight:700,fill:'#000'},'SPEED'),h('text',{x:50,y:44,textAnchor:'middle',fontSize:9,fontWeight:700,fill:'#000'},'LIMIT'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:24,fontWeight:900,fill:'#000'},'55'));}, meaning: 'Maximum legal speed in ideal conditions. Slower if weather, traffic, or visibility dictate.', when: 'Posted along any highway.' },
+          { cat: 'regulatory', name: 'No U-Turn', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('path',{d:'M 30 70 L 30 45 Q 30 25 50 25 Q 70 25 70 45 L 70 60 L 80 60 L 65 75 L 50 60 L 60 60 L 60 45 Q 60 35 50 35 Q 40 35 40 45 L 40 70 Z',fill:'#000'}),h('line',{x1:15,y1:85,x2:85,y2:15,stroke:'#dc2626',strokeWidth:6}));}, meaning: 'You may not reverse direction at this point.', when: 'Busy intersections where U-turns would cause crashes.' },
+          { cat: 'regulatory', name: 'Do Not Enter', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('circle',{cx:50,cy:50,r:30,fill:'#dc2626'}),h('rect',{x:30,y:45,width:40,height:10,fill:'#fff'}));}, meaning: 'Wrong way. You are facing oncoming traffic. TURN AROUND.', when: 'One-way street facing the wrong way, or highway exit ramp.' },
+          { cat: 'regulatory', name: 'One Way', svg: function(){return h('svg',{viewBox:'0 0 140 60',width:70,height:30},h('rect',{x:2,y:2,width:136,height:56,fill:'#000',stroke:'#fff',strokeWidth:2}),h('path',{d:'M 18 30 L 100 30 M 90 20 L 100 30 L 90 40',stroke:'#fff',strokeWidth:4,fill:'none'}),h('text',{x:115,y:36,fontSize:11,fontWeight:900,fill:'#fff'},'ONE'),h('text',{x:115,y:48,fontSize:11,fontWeight:900,fill:'#fff'},'WAY'));}, meaning: 'All traffic flows in the arrow direction only.', when: 'Downtown grid streets.' },
+          { cat: 'warning', name: 'Curve Ahead', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 70 Q 30 40 50 40 Q 70 40 70 25',stroke:'#000',strokeWidth:4,fill:'none'}),h('polygon',{points:'70,25 65,30 75,30',fill:'#000'}));}, meaning: 'Road curves ahead. Slow to the advisory speed.', when: 'Before every curve sharp enough to need warning.' },
+          { cat: 'warning', name: 'Pedestrian Crossing', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('circle',{cx:50,cy:35,r:6,fill:'#000'}),h('path',{d:'M 50 42 L 50 62 M 50 50 L 40 60 M 50 50 L 60 60 M 50 62 L 42 75 M 50 62 L 58 75',stroke:'#000',strokeWidth:3,fill:'none'}));}, meaning: 'Pedestrians may cross here. Watch and slow.', when: 'Mid-block crosswalks, near schools, parks, shopping.' },
+          { cat: 'warning', name: 'Deer Crossing', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:60,textAnchor:'middle',fontSize:36,fill:'#000'},'🦌'));}, meaning: 'Deer commonly cross here. Scan shoulders, especially at dawn/dusk.', when: 'Rural Maine roads constantly.' },
+          { cat: 'warning', name: 'Slippery When Wet', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 30 Q 50 50 30 70 M 70 30 Q 50 50 70 70',stroke:'#000',strokeWidth:5,fill:'none'}),h('rect',{x:25,y:72,width:50,height:3,fill:'#000'}));}, meaning: 'Road surface loses grip in rain. Extend following distance 4+ seconds.', when: 'Bridges, painted markings, railroad crossings, shaded curves.' },
+          { cat: 'warning', name: 'Two-Way Traffic', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 40 20 L 40 70 M 60 80 L 60 30 M 35 30 L 40 20 L 45 30 M 55 70 L 60 80 L 65 70',stroke:'#000',strokeWidth:3,fill:'none'}));}, meaning: 'Divided road ends. Opposing traffic begins.', when: 'End of a highway, when exiting a one-way.' },
+          { cat: 'warning', name: 'Merge', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 80 Q 30 50 50 30 L 70 50',stroke:'#000',strokeWidth:4,fill:'none'}),h('polygon',{points:'50,30 45,40 55,40',fill:'#000'}));}, meaning: 'Another lane is about to join yours. Adjust speed to let them in.', when: 'Highway on-ramps, lane drops.' },
+          { cat: 'warning', name: 'Railroad Crossing', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('circle',{cx:50,cy:50,r:45,fill:'#fde047',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:45,textAnchor:'middle',fontSize:38,fontWeight:900,fill:'#000',fontFamily:'serif'},'R'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:22,fontWeight:900,fill:'#000',fontFamily:'serif'},'R'),h('line',{x1:20,y1:60,x2:80,y2:40,stroke:'#000',strokeWidth:4}));}, meaning: 'Train tracks ahead. Look, listen, stop if the crossarm is down.', when: '15-50 ft before any railroad crossing.' },
+          { cat: 'construction', name: 'Road Work Ahead', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#f97316',stroke:'#000',strokeWidth:3}),h('path',{d:'M 40 70 L 40 45 L 50 40 L 60 45 L 60 70 Z',fill:'#000'}),h('path',{d:'M 30 80 L 70 80',stroke:'#000',strokeWidth:4}));}, meaning: 'Work zone ahead. Fines doubled. Watch for workers.', when: 'Before any active construction.' },
+          { cat: 'construction', name: 'Flagger Ahead', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#f97316',stroke:'#000',strokeWidth:3}),h('circle',{cx:50,cy:35,r:6,fill:'#000'}),h('path',{d:'M 50 42 L 50 70 M 50 48 L 70 55 M 70 55 L 75 40',stroke:'#000',strokeWidth:3,fill:'none'}),h('rect',{x:72,y:35,width:12,height:12,fill:'#dc2626'}));}, meaning: 'Person directing traffic ahead. Obey them even over signals.', when: 'Construction zones with a worker controlling flow.' },
+          { cat: 'school', name: 'School Zone', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,8 88,30 88,70 50,92 12,70 12,30',fill:'#ca8a04',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 55 L 50 40 L 70 55 L 70 70 L 30 70 Z',fill:'#000'}),h('rect',{x:42,y:55,width:16,height:15,fill:'#ca8a04'}));}, meaning: 'Active school zone. Reduced speed when flashing or children present.', when: 'Within 1000 ft of any elementary school.' },
+          { cat: 'school', name: 'School Crossing', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,8 88,30 88,70 50,92 12,70 12,30',fill:'#ca8a04',stroke:'#000',strokeWidth:3}),h('circle',{cx:38,cy:35,r:5,fill:'#000'}),h('path',{d:'M 38 40 L 38 60 M 38 45 L 30 52 M 38 45 L 45 50 M 38 60 L 32 72 M 38 60 L 45 72',stroke:'#000',strokeWidth:3,fill:'none'}),h('circle',{cx:62,cy:42,r:4,fill:'#000'}));}, meaning: 'School children cross here. Always stop for crossing guard.', when: 'Any marked school crosswalk.' },
+          { cat: 'guide', name: 'Interstate Shield', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('path',{d:'M 50 5 L 95 25 L 95 55 Q 95 85 50 95 Q 5 85 5 55 L 5 25 Z',fill:'#1e3a8a',stroke:'#fff',strokeWidth:2}),h('text',{x:50,y:35,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#fff'},'INTERSTATE'),h('text',{x:50,y:70,textAnchor:'middle',fontSize:28,fontWeight:900,fill:'#fff'},'95'));}, meaning: 'Interstate highway. Limited access, 65-70 mph in Maine.', when: 'Every freeway entrance.' },
+          { cat: 'guide', name: 'US Route', svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('path',{d:'M 10 15 L 90 15 L 90 70 Q 90 85 50 95 Q 10 85 10 70 Z',fill:'#fff',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:35,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#000'},'US'),h('text',{x:50,y:70,textAnchor:'middle',fontSize:26,fontWeight:900,fill:'#000'},'1'));}, meaning: 'US numbered route — mix of surface + highway.', when: 'Main cross-state routes like US 1 along the coast.' }
+        ];
+        var selCat = d.signsCat || 'all';
+        var shown = selCat === 'all' ? signLibrary : signLibrary.filter(function(s) { return s.cat === selCat; });
+        var cats = [
+          { id: 'all', label: 'All', color: '#94a3b8' },
+          { id: 'regulatory', label: 'Regulatory', color: '#fff' },
+          { id: 'warning', label: 'Warning', color: '#fde047' },
+          { id: 'construction', label: 'Construction', color: '#f97316' },
+          { id: 'school', label: 'School', color: '#ca8a04' },
+          { id: 'guide', label: 'Guide', color: '#1e3a8a' }
+        ];
+        // Quiz mode state
+        var quizMode = !!d.signsQuizMode;
+        var quizIdx = d.signsQuizIdx || 0;
+        var quizScore = d.signsQuizScore || 0;
+        var quizAnswered = d.signsQuizAnswered;
+        return h('div', { style: { padding: '20px', maxWidth: '920px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { updMulti({ view: 'menu', signsQuizMode: false }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #4ade80' } },
+            h('div', { style: { fontSize: '42px' } }, '🪧'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Road Signs Reference'),
+            h('div', { style: { fontSize: '12px', color: '#bbf7d0' } }, signLibrary.length + ' common signs · Recognize meaning before reading words'),
+            // Mode toggle
+            h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '10px' } },
+              h('button', { onClick: function() { upd('signsQuizMode', false); },
+                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: !quizMode ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '📚 Browse'),
+              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null }); },
+                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: quizMode ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '🎯 Quiz')
+            )
+          ),
+          !quizMode ? h('div', null,
+            // Category pills
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
+              cats.map(function(c) {
+                var sel = c.id === selCat;
+                return h('button', { key: c.id, onClick: function() { upd('signsCat', c.id); },
+                  style: { padding: '6px 14px', borderRadius: '6px', border: '1px solid ' + (sel ? c.color : '#334155'), background: sel ? 'rgba(74,222,128,0.15)' : '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                }, c.label);
+              })
+            ),
+            // Sign grid
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' } },
+              shown.map(function(sign, si) {
+                return h('div', { key: si, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155' } },
+                  h('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+                    h('div', { style: { flexShrink: 0, padding: '6px', background: '#020617', borderRadius: '6px' } }, sign.svg()),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: '13px', fontWeight: 800, marginBottom: '4px' } }, sign.name),
+                      h('div', { style: { fontSize: '10px', color: '#cbd5e1', lineHeight: '1.5', marginBottom: '6px' } }, sign.meaning),
+                      h('div', { style: { fontSize: '9px', color: '#64748b', fontStyle: 'italic' } }, '→ ' + sign.when)
+                    )
+                  )
+                );
+              })
+            )
+          ) : (function() {
+            // Quiz mode
+            if (quizIdx >= 10) {
+              // Done
+              return h('div', { style: { background: 'linear-gradient(135deg, ' + (quizScore >= 7 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (quizScore >= 7 ? '#4ade80' : '#f59e0b') } },
+                h('div', { style: { fontSize: '56px' } }, quizScore >= 7 ? '🎉' : '📝'),
+                h('h3', { style: { fontSize: '20px', fontWeight: 900, marginTop: '8px' } }, 'Quiz Complete!'),
+                h('div', { style: { fontSize: '36px', fontWeight: 900, color: quizScore >= 7 ? '#4ade80' : '#f59e0b', margin: '8px 0' } }, quizScore + ' / 10'),
+                h('div', { style: { fontSize: '12px', color: '#cbd5e1' } }, quizScore >= 9 ? 'Excellent!' : quizScore >= 7 ? 'Good work — ready for the permit test.' : 'Keep studying. Switch to Browse mode to review.'),
+                h('button', { onClick: function() { updMulti({ signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null }); },
+                  style: { marginTop: '16px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                }, '↻ Try Again')
               );
-            })
-          )
+            }
+            // Deterministic question per quizIdx based on signLibrary
+            var qSign = signLibrary[(quizIdx * 3) % signLibrary.length];
+            // 4 choices: correct meaning + 3 random others
+            var otherMeanings = signLibrary.filter(function(s) { return s.name !== qSign.name; })
+              .slice(0, 3 + quizIdx).slice(-3).map(function(s) { return s.meaning; });
+            var choices = [qSign.meaning].concat(otherMeanings);
+            // Deterministic shuffle
+            var rng = function(i) { var x = (quizIdx + 1) * 9301 + i * 49297; return ((x % 233280) / 233280); };
+            choices.sort(function(a, b) { return rng(choices.indexOf(a)) - rng(choices.indexOf(b)); });
+            var correctIdx = choices.indexOf(qSign.meaning);
+            var answered = quizAnswered !== null && quizAnswered !== undefined;
+            return h('div', null,
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '11px' } },
+                h('span', { style: { color: '#94a3b8' } }, 'Question ' + (quizIdx + 1) + ' / 10'),
+                h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Score: ' + quizScore)
+              ),
+              h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '20px', border: '1px solid #334155', marginBottom: '10px', textAlign: 'center' } },
+                h('div', { style: { padding: '12px', background: '#020617', borderRadius: '8px', display: 'inline-block' } }, qSign.svg()),
+                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: '#fff' } }, 'What does this sign mean?')
+              ),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                choices.map(function(c, ci) {
+                  var isCorr = ci === correctIdx;
+                  var picked = quizAnswered === ci;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var correct = ci === correctIdx;
+                      updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
+                    },
+                    style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                  }, String.fromCharCode(65 + ci) + '. ' + c);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '12px', padding: '10px', background: '#020617', borderRadius: '6px', borderLeft: '3px solid #4ade80', fontSize: '11px', color: '#cbd5e1' } },
+                h('b', null, qSign.name + ': '), qSign.when
+              ) : null,
+              answered ? h('button', { onClick: function() { updMulti({ signsQuizIdx: quizIdx + 1, signsQuizAnswered: null }); },
+                style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+              }, quizIdx >= 9 ? 'See Results →' : 'Next Question →') : null
+            );
+          })()
         );
       }
 
@@ -10579,8 +11834,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             // Coaching tips
             h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '14px' } },
-              // Drive path map
-              drivingStats.drivePath && drivingStats.drivePath.length > 5 ? h('div', { style: { marginBottom: '14px' } },
+              // ── Cinematic Drive Path: animated SVG playback with event markers ──
+              drivingStats.drivePath && drivingStats.drivePath.length > 5 ? (function() {
+                var path = drivingStats.drivePath;
+                var minX = 999, maxX = -999, minY = 999, maxY = -999;
+                path.forEach(function(p) { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; });
+                var rangeX = Math.max(1, maxX - minX);
+                var rangeY = Math.max(1, maxY - minY);
+                var W = 600, H = 180, pad = 12;
+                var toX = function(wx) { return pad + (wx - minX) / rangeX * (W - pad * 2); };
+                var toY = function(wy) { return pad + (wy - minY) / rangeY * (H - pad * 2); };
+                // Build one polyline path string
+                var pathD = path.map(function(p, i) {
+                  return (i === 0 ? 'M ' : 'L ') + toX(p.x).toFixed(1) + ' ' + toY(p.y).toFixed(1);
+                }).join(' ');
+                // Harvest events from the sealed journal (d.lastJournal) matched to nearest path time.
+                var j = d.lastJournal;
+                var events = [];
+                if (j && j.entries && j.durationSec > 0) {
+                  j.entries.forEach(function(e) {
+                    // Map event time to path index proportionally
+                    var pi = Math.max(0, Math.min(path.length - 1, Math.floor(e.t / j.durationSec * path.length)));
+                    var pt = path[pi];
+                    if (pt && e.icon && e.kind !== 'start' && e.kind !== 'end') events.push({ x: toX(pt.x), y: toY(pt.y), icon: e.icon, label: e.text, t: e.t });
+                  });
+                }
+                return h('div', { style: { marginBottom: '14px' } },
+                  h('style', null,
+                    '@keyframes rrCineDraw { from{stroke-dashoffset:3000} to{stroke-dashoffset:0} }' +
+                    '@keyframes rrCineCar { 0%{offset-distance:0%} 100%{offset-distance:100%} }' +
+                    '@keyframes rrCineFadeIn { from{opacity:0;transform:scale(0)} to{opacity:1;transform:scale(1)} }'
+                  ),
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+                    h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase' } }, '🎬 Cinematic Replay'),
+                    h('div', { style: { fontSize: '10px', color: '#64748b' } }, events.length + ' events')
+                  ),
+                  h('svg', {
+                    viewBox: '0 0 ' + W + ' ' + H,
+                    width: '100%', height: '200',
+                    style: { background: 'linear-gradient(135deg, #0a1628, #0f172a)', borderRadius: '10px', border: '1px solid #1e293b' }
+                  },
+                    // Grid lines
+                    [0,1,2,3,4].map(function(gi) {
+                      return h('line', { key: 'gx'+gi, x1: pad + gi * (W - pad*2) / 4, y1: 0, x2: pad + gi * (W - pad*2) / 4, y2: H, stroke: 'rgba(255,255,255,0.04)', strokeWidth: 1 });
+                    }),
+                    [0,1,2,3].map(function(gi) {
+                      return h('line', { key: 'gy'+gi, x1: 0, y1: pad + gi * (H - pad*2) / 3, x2: W, y2: pad + gi * (H - pad*2) / 3, stroke: 'rgba(255,255,255,0.04)', strokeWidth: 1 });
+                    }),
+                    // The drive path — with draw-in animation
+                    h('path', {
+                      d: pathD, fill: 'none', stroke: '#22d3ee', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round',
+                      style: { strokeDasharray: 3000, strokeDashoffset: 3000, animation: 'rrCineDraw 4s ease-out forwards', filter: 'drop-shadow(0 0 4px #22d3ee)' }
+                    }),
+                    // Event markers (fade in)
+                    events.map(function(ev, ei) {
+                      return h('g', { key: ei,
+                        style: { animation: 'rrCineFadeIn 0.4s ease-out ' + (3 + ei * 0.2) + 's both', transformOrigin: ev.x + 'px ' + ev.y + 'px' }
+                      },
+                        h('circle', { cx: ev.x, cy: ev.y, r: 6, fill: '#fbbf24', opacity: 0.9 }),
+                        h('text', { x: ev.x, y: ev.y + 4, textAnchor: 'middle', fontSize: 12 }, ev.icon)
+                      );
+                    }),
+                    // Start marker (pulse)
+                    path.length > 0 ? h('g', null,
+                      h('circle', { cx: toX(path[0].x), cy: toY(path[0].y), r: 6, fill: '#22d3ee' }),
+                      h('text', { x: toX(path[0].x), y: toY(path[0].y) - 9, textAnchor: 'middle', fontSize: 9, fill: '#22d3ee' }, 'START')
+                    ) : null,
+                    // End marker
+                    path.length > 1 ? h('g', null,
+                      h('circle', { cx: toX(path[path.length-1].x), cy: toY(path[path.length-1].y), r: 6, fill: '#ef4444' }),
+                      h('text', { x: toX(path[path.length-1].x), y: toY(path[path.length-1].y) - 9, textAnchor: 'middle', fontSize: 9, fill: '#ef4444' }, 'END')
+                    ) : null,
+                    // Car travels along path (CSS motion path)
+                    h('circle', {
+                      r: 4, fill: '#fff',
+                      style: { offsetPath: 'path("' + pathD + '")', offsetRotate: 'auto', animation: 'rrCineCar 4s linear forwards', filter: 'drop-shadow(0 0 3px #fff)' }
+                    })
+                  ),
+                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '4px', textAlign: 'center' } }, '● START · ● END · 🏅 events')
+                );
+              })() : null,
+              // Legacy canvas path kept for users who want a static view
+              false && drivingStats.drivePath && drivingStats.drivePath.length > 5 ? h('div', { style: { marginBottom: '14px' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '6px' } }, '🗺️ Your Drive Path'),
                 h('canvas', {
                   ref: function(c) {
@@ -10646,6 +11981,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 parseFloat(drivingStats.avgMPG) > currentVehicle.cityMPG ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🌿 Beat the EPA sticker average. Hypermiling working!') : null
               )
             ),
+            // ── AI Drive Reflection: personalized coaching essay from callGemini ──
+            callGemini ? h('div', { style: { background: 'linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.6))', borderRadius: '10px', padding: '14px', border: '1px solid #38bdf8', marginTop: '12px', marginBottom: '14px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🧑‍🏫 AI Reflection'),
+                !d.lastReflection && !reflectionRef.current.inFlight ? h('button', {
+                  onClick: function() {
+                    if (reflectionRef.current.inFlight) return;
+                    reflectionRef.current.inFlight = true;
+                    upd('reflectionTick', Date.now()); // force rerender
+                    var snapshot = {
+                      scenario: drivingStats.scenario,
+                      vehicle: drivingStats.vehicle,
+                      duration: drivingStats.time,
+                      distanceMi: drivingStats.distance_mi,
+                      safetyScore: drivingStats.safetyScore,
+                      efficiencyScore: drivingStats.efficiencyScore,
+                      grade: gradeLetter,
+                      maxMph: drivingStats.maxSpeed,
+                      avgMPG: drivingStats.avgMPG,
+                      crashes: drivingStats.crashes,
+                      hardBrakes: drivingStats.hardBrakes,
+                      jackrabbits: drivingStats.jackrabbits,
+                      speedViolations: drivingStats.speedViolations,
+                      closeFollows: drivingStats.closeFollows,
+                      skidSeconds: drivingStats.skidSeconds,
+                      unsignaledLaneChanges: drivingStats.unsignaledLaneChanges,
+                      recentEvents: (d.lastJournal && d.lastJournal.entries || []).slice(-12).map(function(e){return e.text;})
+                    };
+                    var promptText = 'You are a warm, experienced teen-driver coach writing a short personalized reflection for a student who just finished a drive in a simulator.\n\n'
+                      + 'Tone: kind, specific, honest. Address them as "you". Mention 1-2 concrete things they did well, 1-2 things to work on next drive, and end with one sentence of encouragement.\n'
+                      + 'Length: 120-180 words. Plain prose, no bullet points, no markdown, no greetings.\n\n'
+                      + 'Drive data:\n' + JSON.stringify(snapshot);
+                    callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' })
+                      .then(function(resp) {
+                        reflectionRef.current.inFlight = false;
+                        var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
+                        text = String(text).trim().replace(/^["']|["']$/g, '');
+                        if (text) {
+                          upd('lastReflection', { text: text, at: Date.now() });
+                          speak('Your AI reflection is ready.');
+                        } else {
+                          addToast('Reflection failed — try again.');
+                          upd('reflectionTick', Date.now());
+                        }
+                      })
+                      .catch(function() {
+                        reflectionRef.current.inFlight = false;
+                        addToast('Reflection failed — try again.');
+                        upd('reflectionTick', Date.now());
+                      });
+                  },
+                  style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.2)', color: '#bae6fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                }, '✨ Generate') : null,
+                d.lastReflection ? h('button', { onClick: function() { upd('lastReflection', null); },
+                  style: { padding: '4px 8px', borderRadius: '5px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+                }, '↺ New') : null
+              ),
+              reflectionRef.current.inFlight ? h('div', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, 'Your coach is thinking...') :
+              d.lastReflection ? h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap' } }, d.lastReflection.text) :
+              h('div', { style: { fontSize: '11px', color: '#64748b', lineHeight: '1.5' } }, 'Tap Generate for a personalized coaching reflection based on this drive.')
+            ) : null,
             h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
               isFreeExplore ? h('button', { onClick: function() { upd('view', 'freeExploreSetup'); },
                 style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, '🌎 Explore Again') : null,
@@ -10717,6 +12113,2791 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'This is not opinion — it is v²/(2μg).'
             )
           )
+        );
+      }
+
+      // ── NIGHT VISION TRAINING INTRO ──
+      // Briefing for a focused night-driving drill. Starts a 'night' scenario with the
+      // d.nightVisionDrill flag so the in-drive engine can issue scan/sign prompts.
+      if (view === 'nightVisionIntro') {
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #818cf8', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🌃'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Night Vision Training'),
+            h('div', { style: { fontSize: '12px', color: '#c7d2fe' } }, 'A focused drill. Headlights, sign reading, and scanning for what the dark hides.')
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px', fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, 'What you\'ll practice:'),
+            h('ul', { style: { paddingLeft: '20px', margin: 0 } },
+              h('li', null, 'Reading speed limit signs at low light from your headlight cone.'),
+              h('li', null, 'Spotting pedestrians and cyclists wearing dark clothing.'),
+              h('li', null, 'Switching low/high beams correctly when cars approach.'),
+              h('li', null, 'Pacing yourself — at 50+ mph at night you outdrive your headlights.')
+            )
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #818cf8', marginBottom: '12px', fontSize: '12px', color: '#cbd5e1' } },
+            h('div', { style: { fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, '🎙️ Coach prompts during the drill:'),
+            h('div', null, 'Every 25–40 seconds your coach will issue a scanning prompt — what speed limit is up ahead, did you spot the pedestrian, etc. Answer aloud or just notice. The drill emphasizes habit, not grading.')
+          ),
+          h('button', { onClick: function() {
+            updMulti({ nightVisionDrill: true, freeExplore: false });
+            startDriving('night', selectedVehicle);
+          },
+            style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #4f46e5, #1e40af)', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
+          }, '🌃 Start Night Drill')
+        );
+      }
+
+      // ── PARENT RIDE CHECK INTRO ──
+      // 2-minute structured eval mode for parent supervisors. The student drives a
+      // real scenario; the parent taps category buttons each time they see an error.
+      // End-of-drive summary categorizes errors and suggests a coaching priority.
+      if (view === 'parentRideCheck') {
+        var prScenario = d.parentRideScenario || 'suburban';
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #1e293b)', borderRadius: '14px', padding: '24px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '👨‍👧'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Parent Ride Check'),
+            h('div', { style: { fontSize: '12px', color: '#fbcfe8' } }, 'A 2-minute structured eval. You ride along, tap to mark mistakes, get a clear coaching priority at the end.')
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px', fontSize: '12px', color: '#cbd5e1' } },
+            h('div', { style: { fontWeight: 800, color: '#fbcfe8', marginBottom: '8px' } }, 'How it works:'),
+            h('div', { style: { lineHeight: '1.6' } },
+              '1. Pick a scenario your learner is comfortable with.', h('br'),
+              '2. They drive — you watch.', h('br'),
+              '3. Tap one of the colored category buttons each time you see an issue (Speed, Signal, Following, Lane, Scan, Stop).', h('br'),
+              '4. After 2 minutes, you get a one-page coaching summary you can save or print.'
+            )
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbcfe8', textTransform: 'uppercase', marginBottom: '8px' } }, 'Choose scenario'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px' } },
+              ['residential', 'suburban', 'highway', 'rural', 'school_zone'].map(function(sid) {
+                var sObj = SCENARIOS.find(function(x) { return x.id === sid; });
+                if (!sObj) return null;
+                var sel = sid === prScenario;
+                return h('button', { key: sid, onClick: function() { upd('parentRideScenario', sid); },
+                  style: { padding: '10px', borderRadius: '8px', border: '1px solid ' + (sel ? '#f472b6' : '#334155'), background: sel ? 'rgba(244,114,182,0.15)' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' } },
+                  sObj.icon + ' ' + sObj.name
+                );
+              })
+            )
+          ),
+          h('button', { onClick: function() {
+            updMulti({ parentRideMode: true, freeExplore: false });
+            startDriving(prScenario, selectedVehicle);
+          },
+            style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #db2777, #831843)', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
+          }, '👨‍👧 Start 2-min Eval'),
+          d.lastParentReport ? h('button', { onClick: function() { upd('view', 'parentReport'); },
+            style: { width: '100%', marginTop: '10px', padding: '10px', borderRadius: '10px', border: '1px solid #f472b6', background: 'transparent', color: '#fbcfe8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, '📋 View Last Report') : null
+        );
+      }
+
+      // ── PARENT RIDE CHECK REPORT (post-drive summary) ──
+      if (view === 'parentReport' && d.lastParentReport) {
+        var pr = d.lastParentReport;
+        var catLabels = { speed: '🚦 Speed', signal: '◄► Signal', following: '🚗 Following', lane: '🛣️ Lane Position', scan: '👀 Scanning', stop: '🛑 Stop Sign' };
+        var totalErrs = (pr.errors || []).length;
+        var byCategory = {};
+        (pr.errors || []).forEach(function(e) { byCategory[e.cat] = (byCategory[e.cat] || 0) + 1; });
+        var sortedCats = Object.keys(byCategory).sort(function(a, b) { return byCategory[b] - byCategory[a]; });
+        var topCat = sortedCats[0];
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #1e293b)', borderRadius: '14px', padding: '24px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '📋'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Parent Ride Check Report'),
+            h('div', { style: { fontSize: '12px', color: '#fbcfe8' } }, pr.scenario + ' · ' + pr.durationSec + 's · ' + totalErrs + ' marked event' + (totalErrs === 1 ? '' : 's'))
+          ),
+          // Category breakdown bars
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbcfe8', textTransform: 'uppercase', marginBottom: '10px' } }, 'Errors by Category'),
+            Object.keys(catLabels).map(function(cat) {
+              var n = byCategory[cat] || 0;
+              var pct = totalErrs > 0 ? Math.round(n / totalErrs * 100) : 0;
+              return h('div', { key: cat, style: { marginBottom: '6px' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' } },
+                  h('span', { style: { color: '#cbd5e1' } }, catLabels[cat]),
+                  h('span', { style: { color: '#94a3b8' } }, n)
+                ),
+                h('div', { style: { height: '6px', background: '#1e293b', borderRadius: '3px', overflow: 'hidden' } },
+                  h('div', { style: { height: '100%', width: pct + '%', background: cat === topCat && n > 0 ? '#f472b6' : '#475569' } })
+                )
+              );
+            })
+          ),
+          // Coaching priority
+          totalErrs > 0 ? h('div', { style: { background: 'rgba(244,114,182,0.1)', borderRadius: '12px', padding: '16px', border: '1px solid #f472b6', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#f472b6', marginBottom: '6px' } }, '🎯 COACHING PRIORITY'),
+            h('div', { style: { fontSize: '13px', color: '#fce7f3', fontWeight: 700, marginBottom: '6px' } }, catLabels[topCat] + ' (' + byCategory[topCat] + ' events)'),
+            h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+              topCat === 'speed' ? 'Practice short drives where the only goal is speed-limit awareness. Cover the speedometer for 30-second stretches and have them estimate.' :
+              topCat === 'signal' ? 'Drill signaling on every turn AND every lane change. Make it a verbal rule: "signal-mirror-blind spot."' :
+              topCat === 'following' ? 'Use the 3-second rule out loud at every fixed object. Repeat until automatic, especially in rain (4 sec) and snow (6 sec).' :
+              topCat === 'lane' ? 'Practice lane keeping on a quiet straight road. Eyes high — look down the road, not just over the hood.' :
+              topCat === 'scan' ? 'Build a scanning habit: mirror, mirror, ahead, mirror, every ~5 seconds. Verbalize what they see.' :
+              topCat === 'stop' ? 'Practice complete stops at every stop sign. Count "one-Mississippi, two-Mississippi" before moving.' :
+              'Review the timestamps below with your learner.'
+            )
+          ) : h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #4ade80', marginBottom: '12px', color: '#bbf7d0' } },
+            '🌟 No errors marked! Great drive — keep practicing similar scenarios.'
+          ),
+          // Timeline
+          (pr.errors || []).length > 0 ? h('div', { style: { background: '#020617', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px', maxHeight: '200px', overflowY: 'auto' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' } }, 'TIMELINE'),
+            (pr.errors || []).map(function(e, i) {
+              var mm = Math.floor(e.t / 60); var ss = Math.floor(e.t % 60);
+              return h('div', { key: i, style: { fontSize: '11px', color: '#cbd5e1', padding: '3px 0', borderBottom: '1px solid #1e293b' } },
+                h('span', { style: { color: '#64748b', fontFamily: 'monospace', marginRight: '8px' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss),
+                h('span', null, catLabels[e.cat] || e.cat),
+                h('span', { style: { color: '#64748b', float: 'right' } }, Math.round(e.speedMph) + ' mph')
+              );
+            })
+          ) : null,
+          // Export as text
+          h('button', {
+            onClick: function() {
+              try {
+                var lines = ['# RoadReady — Parent Ride Check Report', '', 'Date: ' + new Date(pr.endedAt).toLocaleString(), 'Scenario: ' + pr.scenario, 'Duration: ' + pr.durationSec + ' seconds', 'Total events: ' + totalErrs, ''];
+                lines.push('## Errors by Category');
+                Object.keys(catLabels).forEach(function(c) { lines.push('- ' + catLabels[c] + ': ' + (byCategory[c] || 0)); });
+                lines.push('', '## Coaching Priority', topCat ? catLabels[topCat] + ' (' + byCategory[topCat] + ' events)' : 'No errors recorded');
+                lines.push('', '## Timeline');
+                (pr.errors || []).forEach(function(e) { var mm = Math.floor(e.t/60); var ss = Math.floor(e.t%60); lines.push('- `' + (mm<10?'0':'') + mm + ':' + (ss<10?'0':'') + ss + '` ' + (catLabels[e.cat] || e.cat) + ' at ' + Math.round(e.speedMph) + ' mph'); });
+                var blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = 'roadready_parent_check_' + new Date().toISOString().slice(0,10) + '.md'; a.click();
+                URL.revokeObjectURL(url);
+                addToast('📋 Report exported');
+              } catch(_) { addToast('Export failed.'); }
+            },
+            style: { width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #f472b6', background: 'rgba(244,114,182,0.1)', color: '#fbcfe8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, '📋 Export Report (Markdown)')
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ROAD TEST SIMULATOR (intro → pre-trip → drive → result)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'roadTestIntro') {
+        var rtStage = d.roadTestStage || 'pretrip';
+        var rtPretripOk = d.preTripChecks && Object.keys(d.preTripChecks).filter(function(k){return d.preTripChecks[k];}).length >= 20;
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #4ade80', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🪪'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Road Test Simulator'),
+            h('div', { style: { fontSize: '12px', color: '#bbf7d0' } }, 'A 4-minute scored exam modeled on the Maine BMV road test. 100 pts — 90+ passes.')
+          ),
+          // Stage 1: Pre-Trip
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (rtPretripOk ? '#4ade80' : '#334155'), marginBottom: '10px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              h('div', null,
+                h('div', { style: { fontSize: '13px', fontWeight: 800, color: rtPretripOk ? '#bbf7d0' : '#e2e8f0' } }, '1. Pre-Trip Inspection' + (rtPretripOk ? ' ✓' : '')),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, 'Walk-around vehicle check. 20+ items checked required.')
+              ),
+              h('button', { onClick: function() { updMulti({ view: 'preTrip', roadTestStage: 'pretrip' }); },
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #4ade80', background: rtPretripOk ? 'transparent' : 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              }, rtPretripOk ? 'Review →' : 'Start →')
+            )
+          ),
+          // Stage 2: Driving
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (rtPretripOk ? '#4ade80' : '#334155'), marginBottom: '10px', opacity: rtPretripOk ? 1 : 0.5 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              h('div', null,
+                h('div', { style: { fontSize: '13px', fontWeight: 800 } }, '2. Scored Driving (4 minutes)'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, 'Suburban scenario. Follow speed limits, signal all turns, full stops, keep lane.')
+              ),
+              h('button', {
+                disabled: !rtPretripOk,
+                onClick: function() {
+                  updMulti({ roadTestStage: 'drive', freeExplore: false });
+                  startDriving('suburban', selectedVehicle);
+                },
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #4ade80', background: rtPretripOk ? 'linear-gradient(135deg, #166534, #14532d)' : '#1e293b', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: rtPretripOk ? 'pointer' : 'not-allowed' }
+              }, 'Start Drive')
+            )
+          ),
+          // Scoring rubric
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } },
+            h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: '6px' } }, '📋 Scoring Rubric (Maine BMV style)'),
+            h('div', null, '• Starts at 100. 90+ = PASS.'),
+            h('div', null, '• Speeding 5-15 over: -1 per second (max -10).'),
+            h('div', null, '• Speeding 15+ over: -3 per second (auto-fail at -18).'),
+            h('div', null, '• Unsignaled lane change: -4 each.'),
+            h('div', null, '• Crash (any speed): -25 and typically auto-fail.'),
+            h('div', null, '• Hard brake, close follow, skid: each recorded.')
+          ),
+          d.lastRoadTest ? h('button', { onClick: function() { upd('view', 'roadTestResult'); },
+            style: { width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', border: '1px solid #4ade80', background: 'transparent', color: '#bbf7d0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, '📄 View Last Test Result') : null
+        );
+      }
+
+      if (view === 'roadTestResult' && d.lastRoadTest) {
+        var rtr = d.lastRoadTest;
+        var ded = rtr.deductions || [];
+        var byType = {};
+        ded.forEach(function(e) { byType[e.type] = (byType[e.type] || 0) + e.pts; });
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          // Big pass/fail banner
+          h('div', { style: { background: rtr.passed ? 'linear-gradient(135deg, #14532d, #166534)' : 'linear-gradient(135deg, #7f1d1d, #450a0a)', borderRadius: '14px', padding: '32px', border: '2px solid ' + (rtr.passed ? '#4ade80' : '#ef4444'), marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : '❌'),
+            h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : 'Not Yet — Try Again'),
+            h('div', { style: { fontSize: '48px', fontWeight: 900, margin: '8px 0', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.score + ' / 100'),
+            h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed ? 'You would pass the Maine BMV road test at this level. Great work.' : 'Need 90+ to pass. Review the deductions below and try again.')
+          ),
+          // Deductions breakdown
+          ded.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '10px' } }, 'Deductions — ' + ded.length + ' event' + (ded.length === 1 ? '' : 's')),
+            Object.keys(byType).map(function(t) {
+              var label = { speed: '5-15 mph over', severe_speed: '15+ mph over', no_signal: 'Unsignaled lane change', crash: 'Crash' }[t] || t;
+              return h('div', { key: t, style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#cbd5e1', padding: '4px 0', borderBottom: '1px solid #1e293b' } },
+                h('span', null, label),
+                h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '-' + byType[t] + ' pts')
+              );
+            })
+          ) : h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #4ade80', marginBottom: '12px', color: '#bbf7d0', textAlign: 'center' } },
+            '🌟 Clean drive — no deductions recorded.'
+          ),
+          // Timeline
+          ded.length > 0 ? h('div', { style: { background: '#020617', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px', maxHeight: '220px', overflowY: 'auto' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' } }, 'TIMELINE'),
+            ded.map(function(e, i) {
+              var mm = Math.floor(e.t / 60); var ss = Math.floor(e.t % 60);
+              return h('div', { key: i, style: { fontSize: '11px', color: '#cbd5e1', padding: '3px 0', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between' } },
+                h('span', { style: { fontFamily: 'monospace', color: '#64748b' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '')),
+                h('span', { style: { flex: 1, marginLeft: '10px' } }, e.detail),
+                h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '-' + e.pts)
+              );
+            })
+          ) : null,
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', { onClick: function() { updMulti({ view: 'roadTestIntro', roadTestStage: null }); },
+              style: { flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #166534, #14532d)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+            }, '🪪 Retry Test')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DRIVING LOGBOOK (browse all past journals)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'logbook') {
+        var logbook = (d.logbook || []).slice().reverse(); // newest first
+        var totalSec = logbook.reduce(function(s, j) { return s + (j.durationSec || 0); }, 0);
+        var totalHrs = (totalSec / 3600).toFixed(1);
+        return h('div', { style: { padding: '20px', maxWidth: '860px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '📔'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Driving Logbook'),
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours total · Maine needs 70 hours supervised')
+          ),
+          // Progress toward 70 hour goal
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Maine 70-hour supervised driving progress'),
+            h('div', { style: { height: '10px', background: '#1e293b', borderRadius: '5px', overflow: 'hidden' } },
+              h('div', { style: { height: '100%', width: Math.min(100, totalSec / 3600 / 70 * 100) + '%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } })
+            ),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px', textAlign: 'right' } }, totalHrs + ' / 70 hours (' + Math.round(totalSec / 3600 / 70 * 100) + '%)')
+          ),
+          logbook.length === 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' } },
+            '📝 No sessions yet. Complete a drive to start your logbook.'
+          ) : logbook.map(function(j, idx) {
+            var dt = new Date(j.endedAt || j.startedAt || Date.now());
+            var mm = Math.floor((j.durationSec || 0) / 60); var ss = (j.durationSec || 0) % 60;
+            return h('div', { key: idx, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155', marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' } },
+                h('div', { style: { fontSize: '13px', fontWeight: 800 } }, (j.scenario || 'Drive') + ' · ' + (j.vehicle || '')),
+                h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+              ),
+              h('div', { style: { fontSize: '11px', color: '#cbd5e1' } }, mm + 'm ' + ss + 's' +
+                (j.conditions ? ' · ' + j.conditions.weather + ' · ' + j.conditions.time : '') +
+                ' · ' + ((j.entries || []).length) + ' events'
+              )
+            );
+          }),
+          logbook.length > 0 ? h('button', {
+            onClick: function() {
+              var lines = ['# RoadReady Full Logbook', '', 'Total sessions: ' + logbook.length, 'Total supervised hours: ' + totalHrs, 'Date range: ' + new Date(logbook[logbook.length - 1].startedAt || Date.now()).toLocaleDateString() + ' — ' + new Date(logbook[0].endedAt || Date.now()).toLocaleDateString(), ''];
+              logbook.forEach(function(j, i) {
+                var dt = new Date(j.endedAt || j.startedAt);
+                lines.push('## Session ' + (logbook.length - i) + ' — ' + dt.toLocaleString());
+                lines.push('**Scenario:** ' + j.scenario + ' · **Vehicle:** ' + j.vehicle);
+                lines.push('**Duration:** ' + Math.floor((j.durationSec || 0) / 60) + 'm ' + ((j.durationSec || 0) % 60) + 's');
+                if (j.conditions) lines.push('**Conditions:** ' + j.conditions.weather + ', ' + j.conditions.time);
+                lines.push('');
+              });
+              lines.push('---');
+              lines.push('Parent/Guardian signature: ____________________  Date: __________');
+              try {
+                var blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = 'roadready_logbook_' + new Date().toISOString().slice(0,10) + '.md'; a.click();
+                URL.revokeObjectURL(url);
+                addToast('📔 Logbook exported');
+              } catch(_) { addToast('Export failed.'); }
+            },
+            style: { width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontSize: '12px', fontWeight: 700, cursor: 'pointer', marginTop: '12px' }
+          }, '📔 Export Full Logbook (Markdown)') : null
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DEFENSIVE DRIVING SCENARIOS LIBRARY
+      // ══════════════════════════════════════════════════════════
+      if (view === 'defensiveList') {
+        var defScenarios = [
+          { id: 'red_runner', icon: '🚦', title: 'Runaway Red', q: 'You enter an intersection on green. A car to your left blows the red light at 40 mph. What do you do?',
+            choices: ['Slam on the brakes and stop mid-intersection', 'Accelerate and swerve right', 'Brake hard AND steer right toward the shoulder', 'Honk and hold course'],
+            correct: 2, exp: 'Brake + steer right — most T-bones are on the driver\'s side. Moving right and slowing takes you out of the impact zone. Never stop in the intersection — you\'re a target.' },
+          { id: 'bike_swerve', icon: '🚴', title: 'Cyclist Swerve', q: 'You\'re passing a cyclist with 3 ft of clearance. They suddenly swerve left to avoid a pothole.',
+            choices: ['Brake hard', 'Swerve further left across the double-yellow', 'Brake AND steer slightly left within your lane', 'Honk'],
+            correct: 2, exp: 'Brake + slight left adjustment in your lane. Never cross the yellow line to avoid a cyclist — oncoming traffic is a worse crash. Maine law requires 3 ft clearance, which is why you already had it.' },
+          { id: 'tailgater', icon: '🚗', title: 'Rain Tailgater', q: 'It\'s raining. Someone is 1 car length behind you in heavy rain. You should:',
+            choices: ['Brake-check them', 'Speed up to escape', 'Move right when safe and let them pass', 'Ignore and keep driving'],
+            correct: 2, exp: 'Move right and let them pass. Speed-up encourages them; brake-check invites a rear-end that\'s legally your fault even if they\'re wrong. In rain, YOU need 4+ seconds of following distance; they need to be someone else\'s problem.' },
+          { id: 'deer_twilight', icon: '🦌', title: 'Deer at Dusk', q: 'Dusk on a rural Maine road, 50 mph. A deer freezes in the middle of your lane 200 ft ahead.',
+            choices: ['Swerve into the oncoming lane', 'Swerve onto the shoulder', 'Brake hard in a STRAIGHT line', 'Accelerate past it'],
+            correct: 2, exp: 'Brake straight. A 1,000 lb deer going through your windshield is bad; a head-on or a tree is worse. Swerving at 50 mph on wet fall leaves is a rollover waiting to happen. Stand on the brakes, aim for where the deer WAS.' },
+          { id: 'lane_merge', icon: '🛣️', title: 'Forced Merge', q: 'On the highway, a car is drifting into your lane from the right. You\'re in the middle lane with cars on your left.',
+            choices: ['Honk and hold your lane', 'Speed up to pass them', 'Brake hard to fall behind them', 'Move left'],
+            correct: 2, exp: 'Brake hard and fall behind. Speeding up in a closing gap is how people get sandwiched. Moving left into other traffic creates a new crash. Brake = escape downward.' },
+          { id: 'child_ball', icon: '⚽', title: 'Ball in Street', q: 'Driving past houses at 25 mph, a ball rolls into the street from between parked cars.',
+            choices: ['Keep going — it\'s just a ball', 'Stop completely and scan', 'Swerve around it', 'Honk'],
+            correct: 1, exp: 'STOP. A child follows a ball. Full stop, scan both sides carefully, proceed only when sure. This is exactly how kids get hit — the ball is the warning.' },
+          { id: 'hydroplane', icon: '🌧️', title: 'Hydroplane', q: 'You hit standing water at 55 mph and feel the steering go light. What do you do?',
+            choices: ['Brake immediately', 'Hold the wheel straight and ease off the gas', 'Turn into the slide hard', 'Downshift and accelerate'],
+            correct: 1, exp: 'Hands straight, foot off the gas, wait. Braking during hydroplane locks the wheels and spins you. Let friction return naturally, then steer gently. Hydroplane risk peaks at 45+ mph.' },
+          { id: 'ambulance', icon: '🚑', title: 'Ambulance Behind', q: 'Ambulance with siren approaches from behind on a 2-lane road.',
+            choices: ['Stop immediately where you are', 'Pull to the right when safe and stop', 'Speed up to get out of the way', 'Pull left'],
+            correct: 1, exp: 'Pull RIGHT and stop when you have space. Stopping in the middle of a travel lane creates a new obstacle. Never pull left — emergency vehicles expect right-side clearance.' }
+        ];
+        var defState = d.defensiveState || {}; // { scenarioId: { answered: idx, correct: bool } }
+        var passed = Object.keys(defState).filter(function(k){return defState[k].correct;}).length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🛡️'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Defensive Driving Drills'),
+            h('div', { style: { fontSize: '12px', color: '#bfdbfe' } }, passed + ' / ' + defScenarios.length + ' passed · Quick hazard-response scenarios')
+          ),
+          defScenarios.map(function(sc) {
+            var state = defState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, defState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('defensiveState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew >= 5) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.defensive_drill) { dBadges.defensive_drill = true; upd('badges', dBadges); addToast('🏅 Achievement: Defensive Driver'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #60a5fa', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, defState);
+                  delete ns[sc.id];
+                  upd('defensiveState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // CRASH RECONSTRUCTION LAB
+      // ══════════════════════════════════════════════════════════
+      if (view === 'crashLab') {
+        var crashTypes = [
+          { id: 'rear_end', icon: '💥', title: 'Rear-End Collision', desc: 'You\'re stopped at a light. A distracted driver behind you, going 35 mph, fails to brake.',
+            physics: [
+              { label: 'Impact speed', val: '35 mph → 15.6 m/s' },
+              { label: 'Combined mass (both cars)', val: '~3,000 kg' },
+              { label: 'Kinetic energy at impact', val: '½ × 3000 × 15.6² = 365,000 J' },
+              { label: 'TNT equivalent', val: '≈ 87 grams — that\'s a stick of dynamite' },
+              { label: 'Stopping gap needed', val: 'At 35 mph, dry: 110 ft. Distracted driver gap: 0 ft.' }
+            ],
+            prevention: 'The distracted driver needed 1.5 sec reaction + 2 sec braking = 3.5 sec. Looking at their phone for 3 seconds at 35 mph = 154 ft traveled blind. That\'s why phone use while driving = 4x crash risk.'
+          },
+          { id: 'tbone', icon: '✖️', title: 'T-Bone (Side Impact)', desc: 'Intersection crash. Driver A runs a red at 45 mph. Driver B has green, enters legally.',
+            physics: [
+              { label: 'Impact angle', val: '90° — no crumple zone protects sides' },
+              { label: 'Driver B speed', val: '30 mph' },
+              { label: 'Combined velocity change (ΔV)', val: '~28 mph — severe injury threshold is 20 mph' },
+              { label: 'Fatality risk (unbelted)', val: '50%+ at these speeds' },
+              { label: 'Belted + side airbag', val: '~8% — 6x safer' }
+            ],
+            prevention: 'Side airbags AND buckled belts cut fatality 6x. But prevention = always scan left-right-left when entering an intersection even on green. Red-runners exist. 2 seconds of scanning = life saved.'
+          },
+          { id: 'rollover', icon: '🔃', title: 'Rollover (SUV on curve)', desc: 'SUV enters a 35 mph curve at 55 mph. Center of gravity too high.',
+            physics: [
+              { label: 'Centripetal force needed', val: 'F = mv²/r — grows with SQUARE of speed' },
+              { label: 'At 35 mph', val: 'Within tire grip budget on dry pavement' },
+              { label: 'At 55 mph', val: '2.5x the force needed — exceeds grip' },
+              { label: 'Result', val: 'Sideways skid → tires catch curb/grass → rollover' },
+              { label: 'SUV rollover rate', val: '3x higher than sedans (higher CoG)' }
+            ],
+            prevention: 'Posted curve speeds are NOT suggestions. They\'re set for the average car. SUVs need MORE margin, not less. On curves, brake BEFORE you enter, not in the middle. The square law means 55 in a 35 zone isn\'t 1.5x worse — it\'s 2.5x worse.'
+          },
+          { id: 'hydroplane', icon: '💧', title: 'Hydroplane Loss of Control', desc: 'Sedan hits 1/2 inch of standing water at 55 mph. Steering input continues — car spins.',
+            physics: [
+              { label: 'Hydroplane speed threshold', val: 'v ≈ 10.35 × √(psi) — at 32 psi ≈ 59 mph' },
+              { label: 'At 55 mph, 1/2" water', val: 'Tire lifts off road, friction → 0' },
+              { label: 'Steering input with no friction', val: 'Car spins around yaw axis' },
+              { label: 'Old tires (tread < 4/32")', val: 'Hydroplane speed drops to ~40 mph' },
+              { label: 'Recovery time', val: '2-4 seconds of zero control' }
+            ],
+            prevention: 'Check tread depth monthly (penny test — if you see all of Lincoln\'s head, replace). Reduce speed BEFORE standing water — puddles visible ahead mean slow to 45 or below. If you hydroplane: hands straight, foot off gas, wait.'
+          }
+        ];
+        var picked = d.crashLabPicked || null;
+        var pickedType = picked ? crashTypes.find(function(c){return c.id === picked;}) : null;
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { updMulti({ view: 'menu', crashLabPicked: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🔬'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Crash Reconstruction Lab'),
+            h('div', { style: { fontSize: '12px', color: '#fecaca' } }, 'Pick a crash type. See the physics of what happened — and what would have prevented it.')
+          ),
+          !pickedType ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' } },
+            crashTypes.map(function(ct) {
+              return h('button', { key: ct.id, onClick: function() { upd('crashLabPicked', ct.id); },
+                style: { padding: '16px', borderRadius: '10px', border: '1px solid #7f1d1d', background: 'linear-gradient(135deg, #450a0a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+                h('div', { style: { fontSize: '32px' } }, ct.icon),
+                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, ct.title),
+                h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '4px', lineHeight: '1.4' } }, ct.desc)
+              );
+            })
+          ) : h('div', null,
+            h('button', { onClick: function() { upd('crashLabPicked', null); }, style: { marginBottom: '10px', fontSize: '11px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' } }, '← All crash types'),
+            h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '18px', border: '1px solid #7f1d1d', marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' } },
+                h('div', { style: { fontSize: '42px' } }, pickedType.icon),
+                h('div', null,
+                  h('div', { style: { fontSize: '16px', fontWeight: 900 } }, pickedType.title),
+                  h('div', { style: { fontSize: '11px', color: '#fca5a5', marginTop: '2px', lineHeight: '1.4' } }, pickedType.desc)
+                )
+              )
+            ),
+            h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '10px' } }, '🔬 The Physics'),
+              pickedType.physics.map(function(p, pi) {
+                return h('div', { key: pi, style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#cbd5e1', padding: '4px 0', borderBottom: '1px solid #1e293b' } },
+                  h('span', { style: { color: '#94a3b8' } }, p.label),
+                  h('span', { style: { fontWeight: 700, textAlign: 'right' } }, p.val)
+                );
+              })
+            ),
+            h('div', { style: { background: 'rgba(74,222,128,0.1)', borderRadius: '10px', padding: '14px', border: '1px solid #4ade80' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', marginBottom: '6px' } }, '🛡️ Prevention'),
+              h('div', { style: { fontSize: '12px', color: '#bbf7d0', lineHeight: '1.6' } }, pickedType.prevention)
+            )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // LESSON PATH (Drive-Through Difficulty Curve)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'lessonPath') {
+        // A 10-lesson progression. Unlocks when previous lesson's scenarioId is in scenariosDriven with decent score.
+        var lessons = [
+          { n: 1, icon: '🔑', title: 'First Drive', scenarioId: 'residential', minSafety: 60, desc: 'Quiet street, 25 mph, light traffic. Get comfortable with the controls.' },
+          { n: 2, icon: '🛣️', title: 'Lane Keeping', scenarioId: 'suburban', minSafety: 65, desc: '40 mph arterial. Practice lane discipline and signaling every change.' },
+          { n: 3, icon: '🛑', title: 'Signal Mastery', scenarioId: 'school_zone', minSafety: 70, desc: 'School zone. Full stops, 15 mph discipline, signal every turn.' },
+          { n: 4, icon: '🚗', title: 'Speed Management', scenarioId: 'highway', minSafety: 70, desc: 'I-295 merge. 65 mph, 3-second following, smooth acceleration.' },
+          { n: 5, icon: '🔄', title: 'Intersections', scenarioId: 'roundabout', minSafety: 70, desc: 'Roundabout drill. Yield on entry, signal on exit.' },
+          { n: 6, icon: '🌧️', title: 'Rain Driving', scenarioId: 'rain', minSafety: 65, desc: 'Wet pavement. μ drops 40%. Wipers + headlights.' },
+          { n: 7, icon: '🌙', title: 'Night Driving', scenarioId: 'night', minSafety: 65, desc: 'Headlights + reduced visibility. Slower speeds.' },
+          { n: 8, icon: '🌫️', title: 'Low Visibility', scenarioId: 'fog', minSafety: 60, desc: 'Coastal fog. Low beams only. Slow WAY down.' },
+          { n: 9, icon: '🏙️', title: 'Dense Urban', scenarioId: 'downtown', minSafety: 65, desc: 'Heavy pedestrians, signals, tight turns.' },
+          { n: 10, icon: '❄️', title: 'Winter Driving', scenarioId: 'snow', minSafety: 60, desc: 'Snow + ice. μ ≈ 0.2. The final test.' }
+        ];
+        var driven = d.scenariosDriven || {};
+        var lastBestForScenario = function(sid) {
+          return driven[sid] ? (driven[sid].bestSafety || 0) : 0;
+        };
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🎓'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Lesson Path'),
+            h('div', { style: { fontSize: '12px', color: '#99f6e4' } }, 'Guided 10-lesson progression. Each unlocks when you meet the safety score on the prior.')
+          ),
+          lessons.map(function(les, li) {
+            var prevOk = li === 0 || lastBestForScenario(lessons[li - 1].scenarioId) >= lessons[li - 1].minSafety;
+            var myBest = lastBestForScenario(les.scenarioId);
+            var passed = myBest >= les.minSafety;
+            var unlocked = prevOk;
+            return h('div', { key: les.n, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid ' + (passed ? '#4ade80' : unlocked ? '#14b8a6' : '#334155'), marginBottom: '8px', opacity: unlocked ? 1 : 0.5 } },
+              h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center' } },
+                h('div', { style: { fontSize: '32px', width: '40px', textAlign: 'center' } }, unlocked ? les.icon : '🔒'),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 800 } }, 'Lesson ' + les.n + ' · ' + les.title + (passed ? ' ✓' : '')),
+                  h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px', lineHeight: '1.4' } }, les.desc),
+                  h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, 'Goal: safety ' + les.minSafety + '+ · Best: ' + myBest)
+                ),
+                h('button', {
+                  disabled: !unlocked,
+                  onClick: function() { updMulti({ freeExplore: false }); startDriving(les.scenarioId, selectedVehicle); },
+                  style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + (unlocked ? '#14b8a6' : '#475569'), background: unlocked ? 'rgba(20,184,166,0.2)' : '#1e293b', color: unlocked ? '#5eead4' : '#475569', fontSize: '12px', fontWeight: 700, cursor: unlocked ? 'pointer' : 'not-allowed' }
+                }, unlocked ? 'Start' : 'Locked')
+              )
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // VEHICLE MAINTENANCE MINI-GAME
+      // ══════════════════════════════════════════════════════════
+      if (view === 'maintenanceGame') {
+        var warningLights = [
+          { id: 'oil', icon: '🛢️', name: 'Oil Pressure (red)', urgent: true, correct: 'Pull over NOW. Driving 1 minute with no oil pressure can destroy the engine. Check dipstick; tow if empty.',
+            choices: ['Finish your trip and check tomorrow', 'Pull over immediately and shut off engine', 'Add water', 'Drive faster to get home'] , correctIdx: 1 },
+          { id: 'temp', icon: '🌡️', name: 'Engine Temp (red)', urgent: true, correct: 'Pull over, shut off. Continuing can warp the head ($3,000+). Cool for 20 min, check coolant overflow tank (never the radiator cap when hot).',
+            choices: ['Open the radiator cap immediately', 'Pull over, shut off, let cool 20 min', 'Keep driving — it\'ll cool in the breeze', 'Add cold water to the engine NOW'], correctIdx: 1 },
+          { id: 'check_engine', icon: '⚙️', name: 'Check Engine (yellow)', urgent: false, correct: 'Yellow steady = drive to a shop soon. Yellow FLASHING = pull over. Get a free OBD-II scan at AutoZone to see what code.',
+            choices: ['Ignore it — it\'ll clear', 'Drive home; get it scanned within a few days', 'Immediately call a tow', 'Disconnect the battery to reset'] , correctIdx: 1 },
+          { id: 'battery', icon: '🔋', name: 'Battery/Alternator (red)', urgent: true, correct: 'Alternator is failing. You have 15-60 min on battery before the car dies. Drive directly to a shop, don\'t stop engine.',
+            choices: ['Pull over, shut off, and restart', 'Drive directly to a shop without stopping engine', 'Turn off headlights', 'Rev the engine hard'], correctIdx: 1 },
+          { id: 'brake', icon: '🛑', name: 'Brake System (red)', urgent: true, correct: 'Could be parking brake on, low brake fluid, or worse. Release parking brake first. If still on: pull over safely, pump brakes gently, tow to shop.',
+            choices: ['Drive harder to "break in" the brakes', 'Check parking brake first, then pull over if still on', 'Ignore it', 'Add coolant'], correctIdx: 1 },
+          { id: 'abs', icon: '🅰️🅱️', name: 'ABS (yellow)', urgent: false, correct: 'ABS anti-lock system is offline. Normal brakes still work. Drive carefully — no hard stops — to a shop within a few days.',
+            choices: ['Brakes are gone — park the car', 'Normal brakes still work; get it serviced within a week', 'ABS means speed up', 'Unplug a fuse'], correctIdx: 1 },
+          { id: 'tpms', icon: '🛞', name: 'Tire Pressure (yellow)', urgent: false, correct: 'One or more tires is 25% low. Pull off to check. Low tires = blowout risk + poor MPG. Fill to door-sticker PSI.',
+            choices: ['Ignore until next oil change', 'Check tire pressure at next safe stop', 'Add oil', 'Deflate tires further'] , correctIdx: 1 },
+          { id: 'airbag', icon: '💢', name: 'Airbag (yellow or red)', urgent: false, correct: 'SRS system fault — airbags may NOT deploy in a crash. Drive carefully, get scanned. Don\'t ignore — this is lifesaving hardware.',
+            choices: ['It\'s nothing, ignore it', 'Get the SRS system scanned soon — airbag may not deploy', 'Punch the steering wheel to test', 'Disconnect the battery'] , correctIdx: 1 },
+          { id: 'fuel', icon: '⛽', name: 'Low Fuel (yellow)', urgent: false, correct: 'Usually ~50 miles left. Plan to refuel. Running out of gas can damage the fuel pump on some cars.',
+            choices: ['You have 500 miles left', 'Refuel within 50 miles or so', 'Switch to premium only', 'Push the car'] , correctIdx: 1 },
+          { id: 'def', icon: '🧊', name: 'Defrost/Defog', urgent: false, correct: 'Rear or front defrost is malfunctioning. In winter this matters — get it fixed before the next snowstorm.',
+            choices: ['Drive with a scraper handy', 'Get it serviced before the next winter event', 'Throw hot water on the windshield', 'Ignore forever'] , correctIdx: 1 }
+        ];
+        var mgState = d.maintenanceGame || {};
+        var correctCt = Object.keys(mgState).filter(function(k){return mgState[k].correct;}).length;
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '42px' } }, '🔧'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Vehicle Maintenance'),
+            h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, 'Dashboard warning lights. Know what each one means — your engine depends on it. ' + correctCt + ' / ' + warningLights.length + ' correct.')
+          ),
+          warningLights.map(function(wl) {
+            var st = mgState[wl.id] || {};
+            var answered = st.answered !== undefined;
+            return h('div', { key: wl.id, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid ' + (st.correct ? '#4ade80' : answered ? '#ef4444' : wl.urgent ? '#ef4444' : '#334155'), marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' } },
+                h('span', { style: { fontSize: '24px' } }, wl.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, wl.name),
+                wl.urgent ? h('span', { style: { marginLeft: 'auto', fontSize: '9px', padding: '2px 6px', borderRadius: '3px', background: '#7f1d1d', color: '#fecaca', fontWeight: 800 } }, 'URGENT') : null
+              ),
+              h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, 'What do you do?'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px' } },
+                wl.choices.map(function(c, ci) {
+                  var picked = st.answered === ci;
+                  var isCorr = ci === wl.correctIdx;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.15)' : picked ? 'rgba(239,68,68,0.15)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, mgState);
+                      ns[wl.id] = { answered: ci, correct: ci === wl.correctIdx };
+                      upd('maintenanceGame', ns);
+                      if (ci === wl.correctIdx) {
+                        addToast('✓ Correct!');
+                        var newCorrect = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (newCorrect >= 8) {
+                          var mBadges = Object.assign({}, d.badges || {});
+                          if (!mBadges.maintenance_master) { mBadges.maintenance_master = true; upd('badges', mBadges); addToast('🏅 Achievement: Maintenance Master'); }
+                        }
+                      }
+                    },
+                    style: { padding: '6px 10px', borderRadius: '5px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + c);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '8px', padding: '8px 10px', background: '#020617', borderRadius: '5px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #f97316', lineHeight: '1.5' } }, wl.correct) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, mgState);
+                  delete ns[wl.id];
+                  upd('maintenanceGame', ns);
+                },
+                style: { marginTop: '6px', padding: '3px 8px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // EMERGENCY SCENARIOS HANDBOOK
+      // ══════════════════════════════════════════════════════════
+      if (view === 'emergencyHandbook') {
+        var emergencies = [
+          {
+            id: 'tire_blowout', icon: '💥', title: 'Tire Blowout at Highway Speed',
+            urgency: 'critical',
+            scenario: 'You\'re on I-295 at 65 mph. Sudden loud bang. The car pulls violently to one side.',
+            steps: [
+              'Grip the wheel FIRMLY with both hands.',
+              'DO NOT brake. Braking shifts weight forward and amplifies the pull.',
+              'Keep steering straight. Fight the pull gently.',
+              'Ease OFF the gas — let the car slow naturally.',
+              'Once below 30 mph, you can brake gently and signal.',
+              'Pull over as far to the right as possible. Turn on hazards.'
+            ],
+            never: 'Never slam on the brakes. Never jerk the wheel. A blown tire at 65 mph with heavy braking = rollover.'
+          },
+          {
+            id: 'brake_failure', icon: '🛑', title: 'Brake Failure',
+            urgency: 'critical',
+            scenario: 'You press the brake pedal. It goes to the floor with no resistance.',
+            steps: [
+              'Pump the brake pedal quickly — may restore pressure in older cars.',
+              'Downshift aggressively — manual to lowest gear, auto pull to L or 2.',
+              'Apply the parking brake GRADUALLY (not all at once = skid).',
+              'Use engine braking: release throttle completely.',
+              'If nothing works, steer into a gentle obstacle (bushes, uphill grass) to scrub speed.',
+              'Turn off the engine ONLY after stopped (power steering dies when off).'
+            ],
+            never: 'Never yank the parking brake at speed — rear wheels lock, car spins.'
+          },
+          {
+            id: 'stuck_tracks', icon: '🚂', title: 'Engine Stalls on Railroad Tracks',
+            urgency: 'critical',
+            scenario: 'Your engine dies while crossing train tracks. You see a train approaching.',
+            steps: [
+              'GET OUT. Everyone out of the vehicle, immediately.',
+              'Run AWAY from the tracks at a 45° angle AWAY from the oncoming train (toward it, not with it).',
+              'If you see the emergency phone at the crossing (blue sign), call the number.',
+              'Call 911. Give the crossing ID number from the blue sign.',
+              'DO NOT try to push or restart the car until a train has passed.'
+            ],
+            never: 'Never waste time trying to restart the engine. A train at 60 mph traveling a mile takes 60 seconds. Your car is replaceable.'
+          },
+          {
+            id: 'car_fire', icon: '🔥', title: 'Smoke / Fire from Engine',
+            urgency: 'critical',
+            scenario: 'You see or smell smoke coming from under the hood while driving.',
+            steps: [
+              'Pull over IMMEDIATELY. Off the road, away from vegetation.',
+              'Turn off the engine.',
+              'GET OUT. Move everyone at least 100 feet from the car.',
+              'Call 911.',
+              'Do NOT open the hood. Oxygen rushing in can flashover.',
+              'If you have an extinguisher and flames are small: spray from ground-up, aim at base of flames. Otherwise wait for fire crew.'
+            ],
+            never: 'Never drive a burning car "to get it somewhere safer." Electrical + fuel lines + hot metal = escalation in seconds.'
+          },
+          {
+            id: 'stuck_gas', icon: '📈', title: 'Sudden Unintended Acceleration',
+            urgency: 'critical',
+            scenario: 'You lift your foot off the gas. The car keeps accelerating.',
+            steps: [
+              'Shift to NEUTRAL immediately (N on automatic, depress clutch on manual).',
+              'The engine will rev harmlessly — it\'s disconnected from the wheels now.',
+              'Apply brakes FIRMLY and steadily until stopped.',
+              'Once stopped, turn off the engine.',
+              'Do NOT turn off the engine while moving — you\'ll lose power steering + brakes assist.',
+              'Have the car towed. Don\'t drive it again until diagnosed.'
+            ],
+            never: 'Never try to pull the floor mat out with your hand. Never turn off the key at highway speed. Shift to N and brake.'
+          },
+          {
+            id: 'flood_water', icon: '🌊', title: 'Approaching Flood Water',
+            urgency: 'critical',
+            scenario: 'You come around a bend and see water covering the road ahead.',
+            steps: [
+              'TURN AROUND. Do not drive through. This is not optional — cars drown in as little as 6 inches of moving water.',
+              'If water is unavoidable and still, and you can see the roadline: drive slowly (5 mph) in a single steady path.',
+              'If you MUST stop in water: unbuckle, unlock doors, open windows immediately (power dies fast).',
+              'If car begins to float: move to back seat — trunk air keeps the rear afloat longer.',
+              'Wait for water to equalize (when car fills halfway), then force doors open.',
+              'Call 911. Most flood drownings are in cars that drove around barricades.'
+            ],
+            never: 'Never drive around "Road Closed" flood barricades. 80% of flash-flood deaths are in vehicles.'
+          },
+          {
+            id: 'skid_loss', icon: '🧊', title: 'Skid / Loss of Control on Ice',
+            urgency: 'high',
+            scenario: 'The rear end of the car steps out mid-corner on Maine winter road.',
+            steps: [
+              'Take your foot OFF the gas. Do not brake.',
+              'Look where you want to GO (not where you\'re sliding).',
+              'Steer gently in the direction of the skid (if rear slides right, steer right).',
+              'As the car straightens, counter-steer gently back to center.',
+              'Resume normal driving at LOWER speed.',
+              'If ABS is working, you may brake gently once straight.'
+            ],
+            never: 'Never stomp the brakes or jerk the wheel. Both exceed the friction budget and make it worse.'
+          },
+          {
+            id: 'exhaust', icon: '☠️', title: 'Carbon Monoxide — Headache + Dizziness',
+            urgency: 'high',
+            scenario: 'You\'re driving with the windows up in winter. Headache, sleepy, nauseous, confused.',
+            steps: [
+              'OPEN WINDOWS immediately — all of them.',
+              'Pull over as soon as safely possible.',
+              'Get OUT of the car into fresh air.',
+              'Call 911 or have someone drive you to an ER. CO poisoning is not obvious — symptoms build.',
+              'Do NOT drive any further until the exhaust system is inspected.',
+              'Warning sign: every winter, people die in cars left running in garages. Never idle indoors.'
+            ],
+            never: 'Never warm up the car in a closed garage, even for 30 seconds. CO has no smell.'
+          }
+        ];
+        var opened = d.emergencyOpened || {};
+        return h('div', { style: { padding: '20px', maxWidth: '880px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #dc2626' } },
+            h('div', { style: { fontSize: '48px' } }, '🚨'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Emergency Handbook'),
+            h('div', { style: { fontSize: '12px', color: '#fecaca' } }, 'Read these BEFORE you need them. In the moment you won\'t have time to look up.')
+          ),
+          emergencies.map(function(em) {
+            var isOpen = !!opened[em.id];
+            return h('div', { key: em.id, style: { background: '#0f172a', borderRadius: '12px', border: '1px solid ' + (em.urgency === 'critical' ? '#dc2626' : '#fbbf24'), marginBottom: '10px', overflow: 'hidden' } },
+              h('button', {
+                onClick: function() {
+                  var next = Object.assign({}, opened);
+                  next[em.id] = !isOpen;
+                  upd('emergencyOpened', next);
+                },
+                style: { width: '100%', padding: '14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#fff' }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+                  h('span', { style: { fontSize: '30px' } }, em.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                      h('span', { style: { fontSize: '13px', fontWeight: 800 } }, em.title),
+                      h('span', { style: { fontSize: '8px', padding: '2px 6px', borderRadius: '3px', background: em.urgency === 'critical' ? '#7f1d1d' : '#78350f', color: em.urgency === 'critical' ? '#fecaca' : '#fde68a', fontWeight: 800, textTransform: 'uppercase' } }, em.urgency)
+                    ),
+                    h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, em.scenario)
+                  ),
+                  h('span', { style: { fontSize: '16px', color: '#94a3b8' } }, isOpen ? '▾' : '▸')
+                )
+              ),
+              isOpen ? h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #1e293b' } },
+                h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', margin: '12px 0 6px 0' } }, '✓ What to do:'),
+                h('ol', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7', paddingLeft: '18px', margin: 0 } },
+                  em.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: '4px' } }, s); })
+                ),
+                h('div', { style: { marginTop: '12px', padding: '10px', borderRadius: '6px', background: 'rgba(127,29,29,0.3)', border: '1px solid #7f1d1d', fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } },
+                  h('span', { style: { fontWeight: 800 } }, '✗ Never: '),
+                  em.never
+                )
+              ) : null
+            );
+          }),
+          // 911 reminder
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid #22c55e', marginTop: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' } }, '📞 In any real emergency'),
+            h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#4ade80', letterSpacing: '0.1em' } }, 'CALL 911'),
+            h('div', { style: { fontSize: '11px', color: '#bbf7d0', marginTop: '4px' } }, 'State your location first, then the situation. 911 dispatchers are trained — they\'ll help you think clearly.')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DRIVER'S PLEDGE
+      // ══════════════════════════════════════════════════════════
+      if (view === 'driverPledge') {
+        var pledgeItems = [
+          { icon: '📱', text: 'I will never text, call, or touch my phone while driving. Notifications wait. Texts wait. The deer will not.' },
+          { icon: '🔔', text: 'I will always wear my seatbelt. I will not start the car until every passenger is belted in.' },
+          { icon: '🚫', text: 'I will never drive impaired — not by alcohol, not by cannabis, not by medication that warns against it, not by lack of sleep.' },
+          { icon: '👀', text: 'I will scan my mirrors every 5-8 seconds. I will look 15 seconds down the road. I will shoulder-check before every lane change.' },
+          { icon: '⏱️', text: 'I will keep 3 seconds of following distance in clear weather, 4 seconds in rain, 6+ seconds in snow or fog.' },
+          { icon: '🛑', text: 'I will come to a complete stop at every stop sign. I will never run a yellow light.' },
+          { icon: '🚸', text: 'I will slow down for school zones, construction zones, and anywhere I see people.' },
+          { icon: '🚑', text: 'I will pull to the right and stop for emergency vehicles. I will slow down and move over for roadside workers.' },
+          { icon: '💛', text: 'I will be kind to other drivers — even when they aren\'t kind to me. Road rage has no winners.' }
+        ];
+        var pledgeSigned = !!d.pledgeSigned;
+        var pledgeDate = d.pledgeSigned ? new Date(d.pledgeSigned).toLocaleDateString() : null;
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #3f6212, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #84cc16' } },
+            h('div', { style: { fontSize: '48px' } }, '📜'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, "Driver's Pledge"),
+            h('div', { style: { fontSize: '12px', color: '#d9f99d' } }, 'Research shows signing a written pledge reduces teen crash rates. This is your commitment to yourself.')
+          ),
+          pledgeSigned ? h('div', { style: { background: 'linear-gradient(135deg, rgba(132,204,22,0.15), rgba(101,163,13,0.15))', borderRadius: '12px', padding: '20px', border: '2px solid #84cc16', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '32px', marginBottom: '6px' } }, '✅'),
+            h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#bef264', marginBottom: '4px' } }, 'Pledge Signed'),
+            h('div', { style: { fontSize: '12px', color: '#d9f99d' } }, 'Signed by ' + (d.driverName || 'you') + ' on ' + pledgeDate),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' } }, 'Keep your commitment. Read it again any time — revisit before a long drive, or after a close call.')
+          ) : null,
+          // Pledge text
+          h('div', { style: { background: '#fefce8', borderRadius: '12px', padding: '24px', border: '3px double #84cc16', color: '#1e293b', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '14px', fontWeight: 800, textAlign: 'center', marginBottom: '16px', letterSpacing: '0.05em' } }, 'I ' + (d.driverName || '_______________') + ', pledge:'),
+            pledgeItems.map(function(p, pi) {
+              return h('div', { key: pi, style: { display: 'flex', gap: '10px', fontSize: '12px', lineHeight: '1.6', marginBottom: '10px', padding: '8px', background: pi % 2 === 0 ? 'rgba(132,204,22,0.05)' : 'transparent', borderRadius: '6px' } },
+                h('span', { style: { fontSize: '18px', flexShrink: 0 } }, p.icon),
+                h('span', { style: { color: '#1e293b' } }, p.text)
+              );
+            }),
+            h('div', { style: { textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#64748b', fontStyle: 'italic' } }, 'Because my life, my passengers\' lives, and the lives of everyone on the road with me matter.'),
+            h('div', { style: { display: 'flex', justifyContent: 'space-around', marginTop: '20px', fontSize: '10px', color: '#64748b' } },
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { borderTop: '1px solid #1e293b', width: '180px', marginBottom: '4px' } }),
+                h('div', null, 'Signature (' + (d.driverName || 'name') + ')')
+              ),
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { borderTop: '1px solid #1e293b', width: '140px', marginBottom: '4px' } }),
+                h('div', null, 'Date')
+              )
+            )
+          ),
+          // Sign button
+          !pledgeSigned ? h('button', {
+            onClick: function() {
+              if (!d.driverName) {
+                addToast('Set your name first in My Ride.');
+                return;
+              }
+              upd('pledgeSigned', Date.now());
+              addToast('📜 Pledge signed. Drive like you mean it.');
+              speak('Pledge signed. Thank you for committing to safe driving.');
+            },
+            style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: d.driverName ? 'linear-gradient(135deg, #65a30d, #3f6212)' : '#1e293b', color: '#fff', fontSize: '14px', fontWeight: 900, cursor: d.driverName ? 'pointer' : 'not-allowed' }
+          }, d.driverName ? '✍️ Sign the Pledge' : 'Set your name in My Ride first →') : h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              onClick: function() {
+                try {
+                  var lines = ['# Driver\'s Pledge', '', '**Signed by:** ' + (d.driverName || 'Driver'), '**Date:** ' + pledgeDate, ''];
+                  pledgeItems.forEach(function(p) { lines.push('- ' + p.icon + ' ' + p.text); });
+                  lines.push('', '---', '', 'Signature: _____________________', 'Date: _______________');
+                  var blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+                  var url = URL.createObjectURL(blob);
+                  var a = document.createElement('a');
+                  a.href = url; a.download = 'drivers_pledge_' + (d.driverName || 'signed').replace(/\s+/g,'_') + '.md'; a.click();
+                  URL.revokeObjectURL(url);
+                  addToast('📜 Pledge exported');
+                } catch(_) { addToast('Export failed'); }
+              },
+              style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #84cc16', background: 'rgba(132,204,22,0.15)', color: '#bef264', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '📄 Export as Markdown'),
+            h('button', {
+              onClick: function() { upd('pledgeSigned', null); },
+              style: { padding: '12px 14px', borderRadius: '10px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+            }, '↺ Reset')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // PERMIT FLASHCARDS (Study Mode)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'permitFlashcards') {
+        var fcIdx = d.permitFlashIdx || 0;
+        var fcHistory = d.permitFlashHistory || {};
+        var fcFlipped = !!d.permitFlashFlipped;
+        // Build a study queue: questions user got wrong cycle back faster.
+        var studyQueue = PERMIT_BANK.map(function(q, i) {
+          var rec = fcHistory[i] || { correct: 0, wrong: 0, lastSeenIdx: -1 };
+          // Priority: unseen first, then wrong > correct, recent wrong highest.
+          var priority = rec.correct === 0 && rec.wrong === 0 ? 1000 :
+                         rec.wrong > rec.correct ? 500 + rec.wrong * 10 :
+                         100 - rec.correct * 5;
+          return { q: q, origIdx: i, priority: priority };
+        });
+        studyQueue.sort(function(a, b) { return b.priority - a.priority; });
+        var curCard = studyQueue[fcIdx % studyQueue.length];
+        var totalCorrect = Object.values(fcHistory).filter(function(r) { return r && r.correct > r.wrong; }).length;
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #fbbf24' } },
+            h('div', { style: { fontSize: '42px' } }, '🗂️'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Permit Flashcards'),
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Study mode · ' + totalCorrect + ' / ' + PERMIT_BANK.length + ' mastered · Harder questions cycle back faster')
+          ),
+          // Progress bar
+          h('div', { style: { height: '6px', background: '#1e293b', borderRadius: '3px', overflow: 'hidden', marginBottom: '16px' } },
+            h('div', { style: { height: '100%', width: (totalCorrect / PERMIT_BANK.length * 100) + '%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)', transition: 'width 0.3s' } })
+          ),
+          // Card
+          h('style', null,
+            '@keyframes rrCardFlip { from{transform:rotateY(90deg);opacity:0} to{transform:rotateY(0);opacity:1} }'
+          ),
+          h('div', {
+            key: 'card-' + fcIdx + '-' + fcFlipped,
+            onClick: function() { upd('permitFlashFlipped', !fcFlipped); },
+            style: {
+              minHeight: '260px',
+              background: fcFlipped ? 'linear-gradient(135deg, #0c4a6e, #1e3a5f)' : 'linear-gradient(135deg, #fef3c7, #fde68a)',
+              color: fcFlipped ? '#e2e8f0' : '#1e293b',
+              borderRadius: '16px',
+              padding: '32px',
+              border: '2px solid ' + (fcFlipped ? '#0ea5e9' : '#fbbf24'),
+              cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              animation: 'rrCardFlip 0.3s ease-out',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              marginBottom: '16px'
+            }
+          },
+            h('div', { style: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', color: fcFlipped ? '#38bdf8' : '#a07830', textAlign: 'center' } }, fcFlipped ? 'Answer' : 'Question ' + (fcIdx + 1)),
+            !fcFlipped ? h('div', { style: { fontSize: '16px', fontWeight: 700, lineHeight: '1.5', textAlign: 'center' } }, curCard.q.q) :
+              h('div', null,
+                h('div', { style: { fontSize: '17px', fontWeight: 800, marginBottom: '12px', color: '#4ade80', textAlign: 'center' } }, '✓ ' + curCard.q.a[curCard.q.correct]),
+                h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px', borderLeft: '3px solid #38bdf8' } }, curCard.q.exp)
+              ),
+            h('div', { style: { fontSize: '10px', textAlign: 'center', marginTop: '20px', color: fcFlipped ? '#94a3b8' : '#78716c', opacity: 0.7 } }, fcFlipped ? 'Tap to flip back' : 'Tap to reveal answer')
+          ),
+          // Action buttons (only when flipped)
+          fcFlipped ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
+            h('button', {
+              onClick: function() {
+                var next = Object.assign({}, fcHistory);
+                var rec = next[curCard.origIdx] || { correct: 0, wrong: 0 };
+                next[curCard.origIdx] = { correct: rec.correct, wrong: rec.wrong + 1, lastSeen: Date.now() };
+                updMulti({ permitFlashHistory: next, permitFlashIdx: fcIdx + 1, permitFlashFlipped: false });
+              },
+              style: { padding: '14px', borderRadius: '10px', border: '1px solid #ef4444', background: 'rgba(239,68,68,0.15)', color: '#fca5a5', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+            }, '📖 Review Again'),
+            h('button', {
+              onClick: function() {
+                var next = Object.assign({}, fcHistory);
+                var rec = next[curCard.origIdx] || { correct: 0, wrong: 0 };
+                next[curCard.origIdx] = { correct: rec.correct + 1, wrong: rec.wrong, lastSeen: Date.now() };
+                updMulti({ permitFlashHistory: next, permitFlashIdx: fcIdx + 1, permitFlashFlipped: false });
+              },
+              style: { padding: '14px', borderRadius: '10px', border: '1px solid #22c55e', background: 'rgba(34,197,94,0.15)', color: '#86efac', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+            }, '✅ Got It')
+          ) : h('button', {
+            onClick: function() { upd('permitFlashFlipped', true); },
+            style: { width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fde68a', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+          }, 'Reveal Answer'),
+          // Utility row
+          h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'space-between', marginTop: '12px' } },
+            h('button', { onClick: function() { updMulti({ permitFlashIdx: Math.max(0, fcIdx - 1), permitFlashFlipped: false }); },
+              style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+            }, '← Prev'),
+            h('button', { onClick: function() { updMulti({ permitFlashHistory: {}, permitFlashIdx: 0, permitFlashFlipped: false }); addToast('Progress reset'); },
+              style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+            }, '↺ Reset All'),
+            h('button', { onClick: function() { updMulti({ permitFlashIdx: fcIdx + 1, permitFlashFlipped: false }); },
+              style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+            }, 'Skip →')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // RIGHT-OF-WAY SCENARIOS (who goes first?)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'rightOfWay') {
+        // Each scenario has a visual SVG + question + 3 choices.
+        var rowScenarios = [
+          {
+            id: 'same_time_4way', title: '4-Way Stop, Same Time',
+            q: 'You and another car arrive at a 4-way stop at the same time. They are on your right. Who goes first?',
+            choices: ['You go first', 'Car on the right goes first', 'Whoever has the bigger vehicle'],
+            correct: 1,
+            exp: 'The car on the RIGHT has right-of-way at simultaneous 4-way stops. Remember: "R on R" — Right On Right.'
+          },
+          {
+            id: 'left_turn_oncoming', title: 'Left Turn with Oncoming',
+            q: 'You want to turn left at a green light. An oncoming car is going straight through the same intersection. Who goes first?',
+            choices: ['You turn — you had the green first', 'The oncoming car (they\'re going straight)', 'Whoever is closer'],
+            correct: 1,
+            exp: 'Turning traffic always yields to oncoming through-traffic, even on a green light. Wait for the gap, then turn.'
+          },
+          {
+            id: 'tjunction_thru', title: 'T-Intersection',
+            q: 'You are on the stem of a T-intersection. The road you want to turn onto has no stop signs. Who has right-of-way?',
+            choices: ['You — you were there first', 'Traffic on the through-road', 'Turn-signal decides'],
+            correct: 1,
+            exp: 'The through-road has right-of-way at a T-intersection. The stem traffic must yield or stop.'
+          },
+          {
+            id: 'pedestrian_cross', title: 'Pedestrian in Crosswalk',
+            q: 'You approach a crosswalk. A pedestrian has stepped off the curb. You have no stop sign. What do you do?',
+            choices: ['Honk and drive through — you have the road', 'Stop and let them cross', 'Swerve around them'],
+            correct: 1,
+            exp: 'Pedestrians always have right-of-way in crosswalks, marked or unmarked. Full stop. Never pass another car stopped at a crosswalk.'
+          },
+          {
+            id: 'ambulance_behind', title: 'Emergency Vehicle Approaching',
+            q: 'Siren and lights behind you on a 2-lane road. You are in the left lane.',
+            choices: ['Brake hard and stop in your lane', 'Pull to the RIGHT and stop when safe', 'Speed up to get out of the way'],
+            correct: 1,
+            exp: 'Pull RIGHT and stop when safe. Emergency vehicles expect right-side clearance. Never stop in a travel lane unless you have no choice.'
+          },
+          {
+            id: 'roundabout', title: 'Entering a Roundabout',
+            q: 'You approach a roundabout. A car is already circulating inside.',
+            choices: ['Enter — you have the momentum', 'Yield to circulating traffic', 'Stop completely'],
+            correct: 1,
+            exp: 'Traffic ALREADY IN the roundabout has right-of-way. Yield on entry, find your gap, then enter. Never stop inside.'
+          },
+          {
+            id: 'school_bus_red', title: 'School Bus with Red Flashing Lights',
+            q: 'A school bus ahead stops with red lights flashing and stop-arm extended. You are on a 2-lane road in the opposite direction.',
+            choices: ['Proceed at reduced speed — you\'re going the other way', 'STOP — both directions must stop', 'Pass carefully on the left'],
+            correct: 1,
+            exp: 'On a 2-lane (undivided) road, ALL traffic in BOTH directions must stop for a school bus with red flashers. This is non-negotiable federal law.'
+          },
+          {
+            id: 'uncontrolled_same', title: 'Uncontrolled Intersection, Same Time',
+            q: 'Two cars arrive at an uncontrolled intersection (no stop signs, no lights) at the same time. Other car is on your left.',
+            choices: ['You go first — they\'re on your left', 'They go first — they were there', 'Whoever is lighter'],
+            correct: 0,
+            exp: 'At uncontrolled intersections, the car on the RIGHT has right-of-way. So YOU go first because they\'re on your left.'
+          },
+          {
+            id: 'funeral', title: 'Funeral Procession',
+            q: 'You approach an intersection. A funeral procession is moving through on a cross street, with their headlights on.',
+            choices: ['Drive through — you have the green', 'Yield until the entire procession has passed', 'Honk to let them know you\'re coming'],
+            correct: 1,
+            exp: 'Funeral processions have right-of-way even through red lights (lead vehicle clears it). Do not break up a procession. Wait until it\'s passed.'
+          },
+          {
+            id: 'hill_narrow', title: 'Narrow Road on a Hill',
+            q: 'You\'re on a narrow mountain road where only one car can pass at a time. Another car approaches from below.',
+            choices: ['You go — you have momentum', 'The car going DOWNHILL must back up', 'The car going UPHILL goes first (has right-of-way)'],
+            correct: 2,
+            exp: 'Car going UPHILL has right-of-way. Backing downhill is much easier than backing uphill loaded. The descending driver yields.'
+          }
+        ];
+        var rIdx = d.rowIdx || 0;
+        var rScore = d.rowScore || 0;
+        var rAnswered = d.rowAnswered;
+        if (rIdx >= rowScenarios.length) {
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+            h('div', { style: { background: 'linear-gradient(135deg, ' + (rScore >= 8 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (rScore >= 8 ? '#4ade80' : '#f59e0b') } },
+              h('div', { style: { fontSize: '64px' } }, rScore >= 8 ? '🏆' : '📝'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, rScore >= 8 ? 'Right-of-Way Mastered!' : 'Keep Practicing'),
+              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 8 ? '#4ade80' : '#f59e0b', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
+              h('button', { onClick: function() { updMulti({ rowIdx: 0, rowScore: 0, rowAnswered: null }); },
+                style: { marginTop: '12px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+              }, '↻ Try Again')
+            )
+          );
+        }
+        var cur = rowScenarios[rIdx];
+        var answered = rAnswered !== null && rAnswered !== undefined;
+        return h('div', { style: { padding: '20px', maxWidth: '700px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #f59e0b' } },
+            h('div', { style: { fontSize: '36px' } }, '↔️'),
+            h('h2', { style: { fontSize: '18px', fontWeight: 900 } }, 'Right-of-Way Scenarios'),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px' } },
+              h('span', { style: { color: '#fed7aa' } }, 'Scenario ' + (rIdx + 1) + ' / ' + rowScenarios.length),
+              h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Score: ' + rScore)
+            )
+          ),
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '18px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '15px', fontWeight: 800, marginBottom: '12px' } }, cur.title),
+            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '16px', padding: '12px', background: '#020617', borderRadius: '6px' } }, cur.q),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              cur.choices.map(function(c, ci) {
+                var picked = rAnswered === ci;
+                var isCorr = ci === cur.correct;
+                var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                return h('button', { key: ci,
+                  disabled: answered,
+                  onClick: function() {
+                    if (answered) return;
+                    var correct = ci === cur.correct;
+                    updMulti({ rowAnswered: ci, rowScore: rScore + (correct ? 1 : 0) });
+                  },
+                  style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '12px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                }, String.fromCharCode(65 + ci) + '. ' + c);
+              })
+            ),
+            answered ? h('div', { style: { marginTop: '12px', padding: '10px', background: '#020617', borderRadius: '6px', borderLeft: '3px solid #f59e0b', fontSize: '11px', color: '#fed7aa', lineHeight: '1.6' } },
+              h('b', null, '✓ Explanation: '), cur.exp
+            ) : null,
+            answered ? h('button', { onClick: function() { updMulti({ rowIdx: rIdx + 1, rowAnswered: null }); },
+              style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+            }, rIdx >= rowScenarios.length - 1 ? 'See Results →' : 'Next →') : null
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // STOPPING DISTANCE CALCULATOR
+      // ══════════════════════════════════════════════════════════
+      if (view === 'stopDistCalc') {
+        var sdSpeed = d.sdSpeed || 45;
+        var sdWeather = d.sdWeather || 'dry';
+        var sdReaction = d.sdReaction || 1.5;
+        var sdTires = d.sdTires || 'good';
+        // Physics
+        var muMap = { dry: 0.7, wet: 0.4, snow: 0.22, ice: 0.1 };
+        var mu = muMap[sdWeather] * (sdTires === 'worn' ? 0.75 : 1);
+        var vMs = sdSpeed * 0.44704;
+        var reactionFt = sdReaction * vMs * 3.28084;
+        var brakingFt = (vMs * vMs) / (2 * mu * 9.81) * 3.28084;
+        var totalFt = reactionFt + brakingFt;
+        return h('div', { style: { padding: '20px', maxWidth: '860px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #06b6d4' } },
+            h('div', { style: { fontSize: '42px' } }, '📐'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Stopping Distance Calculator'),
+            h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, 'Real physics: reaction distance + braking distance (v² / 2μg)')
+          ),
+          // Inputs
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { marginBottom: '14px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
+                h('span', { style: { color: '#a5f3fc', fontWeight: 700 } }, '🚗 Speed'),
+                h('span', { style: { color: '#fff', fontWeight: 900 } }, sdSpeed + ' mph')
+              ),
+              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sdSpeed,
+                onChange: function(e) { upd('sdSpeed', parseInt(e.target.value)); }, style: { width: '100%' }
+              })
+            ),
+            h('div', { style: { marginBottom: '14px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
+                h('span', { style: { color: '#a5f3fc', fontWeight: 700 } }, '🧠 Reaction time'),
+                h('span', { style: { color: '#fff', fontWeight: 900 } }, sdReaction + ' sec')
+              ),
+              h('input', { type: 'range', min: 0.5, max: 3, step: 0.1, value: sdReaction,
+                onChange: function(e) { upd('sdReaction', parseFloat(e.target.value)); }, style: { width: '100%' }
+              }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' } },
+                h('span', null, '0.5 alert pro'), h('span', null, '1.5 typical'), h('span', null, '2.5 tired'), h('span', null, '3 drunk/texting')
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+              h('div', null,
+                h('div', { style: { fontSize: '11px', color: '#a5f3fc', fontWeight: 700, marginBottom: '6px' } }, '☁️ Weather'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                  [['dry','☀️ Dry (μ=0.7)'],['wet','🌧️ Wet (μ=0.4)'],['snow','❄️ Snow (μ=0.22)'],['ice','🧊 Ice (μ=0.10)']].map(function(w) {
+                    var sel = w[0] === sdWeather;
+                    return h('button', { key: w[0], onClick: function() { upd('sdWeather', w[0]); },
+                      style: { padding: '6px 8px', borderRadius: '5px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, w[1]);
+                  })
+                )
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: '11px', color: '#a5f3fc', fontWeight: 700, marginBottom: '6px' } }, '🛞 Tires'),
+                h('div', { style: { display: 'flex', gap: '4px' } },
+                  [['good','✓ Good'],['worn','⚠️ Worn (-25%)']].map(function(t) {
+                    var sel = t[0] === sdTires;
+                    return h('button', { key: t[0], onClick: function() { upd('sdTires', t[0]); },
+                      style: { padding: '6px 10px', borderRadius: '5px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, t[1]);
+                  })
+                )
+              )
+            )
+          ),
+          // Result + visualization
+          h('div', { style: { background: 'linear-gradient(135deg, rgba(22,78,99,0.3), rgba(6,182,212,0.1))', borderRadius: '14px', padding: '20px', border: '2px solid #06b6d4', marginBottom: '12px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '10px', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, 'Total Stopping Distance'),
+            h('div', { style: { fontSize: '56px', fontWeight: 900, color: '#67e8f9', lineHeight: 1 } }, Math.round(totalFt) + ' ft'),
+            h('div', { style: { fontSize: '11px', color: '#a5f3fc', marginTop: '6px' } },
+              'Reaction: ' + Math.round(reactionFt) + ' ft · Braking: ' + Math.round(brakingFt) + ' ft'
+            )
+          ),
+          // SVG scale diagram
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, '📏 To-scale diagram'),
+            (function() {
+              var maxFt = Math.max(totalFt, 200);
+              var svgW = 780;
+              var pxPerFt = svgW / maxFt;
+              var reactX = reactionFt * pxPerFt;
+              var brakeEndX = totalFt * pxPerFt;
+              return h('svg', { viewBox: '0 0 ' + svgW + ' 120', width: '100%', height: '120' },
+                // Road
+                h('rect', { x: 0, y: 45, width: svgW, height: 30, fill: '#334155' }),
+                h('line', { x1: 0, y1: 60, x2: svgW, y2: 60, stroke: '#fde047', strokeWidth: 2, strokeDasharray: '20 20' }),
+                // Reaction zone (amber)
+                h('rect', { x: 0, y: 45, width: reactX, height: 30, fill: 'rgba(251,191,36,0.4)' }),
+                h('text', { x: reactX / 2, y: 38, textAnchor: 'middle', fontSize: '9', fill: '#fbbf24' }, 'REACTION'),
+                h('text', { x: reactX / 2, y: 28, textAnchor: 'middle', fontSize: '10', fontWeight: 'bold', fill: '#fbbf24' }, Math.round(reactionFt) + ' ft'),
+                // Braking zone (red)
+                h('rect', { x: reactX, y: 45, width: brakingFt * pxPerFt, height: 30, fill: 'rgba(239,68,68,0.4)' }),
+                h('text', { x: reactX + (brakingFt * pxPerFt) / 2, y: 38, textAnchor: 'middle', fontSize: '9', fill: '#fca5a5' }, 'BRAKING'),
+                h('text', { x: reactX + (brakingFt * pxPerFt) / 2, y: 28, textAnchor: 'middle', fontSize: '10', fontWeight: 'bold', fill: '#fca5a5' }, Math.round(brakingFt) + ' ft'),
+                // Car at start
+                h('g', { transform: 'translate(0 52)' },
+                  h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#22d3ee' }),
+                  h('text', { x: 0, y: 90, textAnchor: 'middle', fontSize: '9', fill: '#22d3ee' }, 'Hazard spotted')
+                ),
+                // Car at end
+                h('g', { transform: 'translate(' + brakeEndX + ' 52)' },
+                  h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#ef4444' }),
+                  h('text', { x: 0, y: 90, textAnchor: 'middle', fontSize: '9', fill: '#ef4444' }, 'Fully stopped')
+                )
+              );
+            })()
+          ),
+          // Interpretation
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7' } },
+            h('div', { style: { fontWeight: 800, color: '#06b6d4', marginBottom: '6px' } }, '🎯 In context:'),
+            totalFt < 60 ? 'Short stopping distance — you could stop within a driveway. Conditions are ideal.' :
+            totalFt < 150 ? 'About half a football field. A typical city-driving stopping distance.' :
+            totalFt < 300 ? 'A full football field or more. You are now outdriving a typical block\'s sight line.' :
+            totalFt < 500 ? 'More than a football field. In heavy traffic, your follower may not have this much space.' :
+            'CATASTROPHIC stopping distance. At this combo you cannot respond to anything. Slow way down — the formula is v², so halving your speed quarters your stopping distance.'
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // MAINE GDL TRACKER
+      // ══════════════════════════════════════════════════════════
+      if (view === 'gdlTracker') {
+        var gdlBirth = d.gdlBirthDate || '';
+        var gdlPermit = d.gdlPermitDate || '';
+        var gdlIntermediate = d.gdlIntermediateDate || '';
+        // Compute ages from dates
+        var parseDate = function(s) { return s ? new Date(s) : null; };
+        var ageInYears = function(from, to) {
+          if (!from || !to) return null;
+          var ms = to - from;
+          return ms / (1000 * 60 * 60 * 24 * 365.25);
+        };
+        var now = new Date();
+        var birth = parseDate(gdlBirth);
+        var permit = parseDate(gdlPermit);
+        var intermediate = parseDate(gdlIntermediate);
+        var age = birth ? ageInYears(birth, now) : null;
+        var permitHeld = permit ? ageInYears(permit, now) : null;
+        var intermediateHeld = intermediate ? ageInYears(intermediate, now) : null;
+        // Determine stage + restrictions
+        var stage = 'unstarted';
+        var stageInfo = null;
+        if (!birth) stage = 'unstarted';
+        else if (age < 15) stage = 'tooyoung';
+        else if (!permit) stage = 'eligible_permit';
+        else if (permit && permitHeld < 0.5) stage = 'permit_hold';
+        else if (permit && permitHeld >= 0.5 && age < 16) stage = 'permit_waiting';
+        else if (permit && !intermediate && age >= 16) stage = 'eligible_intermediate';
+        else if (intermediate && intermediateHeld < 0.75) stage = 'intermediate_restricted';
+        else if (intermediate && intermediateHeld >= 0.75) stage = 'full_license';
+        var stages = {
+          unstarted: { title: 'Start tracking', icon: '📅', color: '#94a3b8', desc: 'Enter your birth date below to see your Maine GDL stage and what\'s next.' },
+          tooyoung: { title: 'Pre-permit', icon: '🌱', color: '#64748b', desc: 'You must be 15 to apply for a Maine learner\'s permit. Keep studying!' },
+          eligible_permit: { title: 'Eligible to apply for permit', icon: '📝', color: '#22d3ee', desc: 'You\'re 15+. Apply at the Maine BMV: pass the written test, vision test, $35 fee.' },
+          permit_hold: { title: 'Learner\'s Permit (holding period)', icon: '🪪', color: '#fbbf24', desc: 'You must hold the permit 6 months with NO violations. Keep logging practice hours!' },
+          permit_waiting: { title: 'Permit held 6+ months — waiting to be 16', icon: '⏳', color: '#fbbf24', desc: 'You\'ve cleared the 6-month hold. Once you\'re 16 AND have 70 supervised hours (including 10 night), apply for intermediate license.' },
+          eligible_intermediate: { title: 'Eligible for intermediate license', icon: '🔑', color: '#10b981', desc: 'You\'re 16 with permit + 6 months. Apply for intermediate license at the BMV. Road test required.' },
+          intermediate_restricted: { title: 'Intermediate License', icon: '🚗', color: '#0ea5e9', desc: 'You have a restricted license. See restrictions below. After 9 months violation-free, full license.' },
+          full_license: { title: 'Full License!', icon: '🎉', color: '#4ade80', desc: 'Congratulations. You have a full Maine driver\'s license. Drive responsibly — Maine roads count on you.' }
+        };
+        stageInfo = stages[stage];
+        // Restrictions for intermediate stage
+        var restrictions = [
+          { icon: '🕛', label: 'Curfew: Midnight - 5 AM (no driving) for first 9 months', active: stage === 'intermediate_restricted' && intermediateHeld < 0.75 },
+          { icon: '👥', label: 'No passengers under 20 (except family) for first 9 months', active: stage === 'intermediate_restricted' && intermediateHeld < 0.75 },
+          { icon: '📵', label: 'Zero handheld phone use (all ages in Maine)', active: stage === 'intermediate_restricted' || stage === 'full_license' },
+          { icon: '🍺', label: 'Zero tolerance — any BAC = license suspension (under 21)', active: age !== null && age < 21 }
+        ];
+        var totalHrs = ((d.logbook || []).reduce(function(s, j) { return s + (j.durationSec || 0); }, 0) / 3600);
+        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #10b981' } },
+            h('div', { style: { fontSize: '42px' } }, '🪪'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Maine GDL Tracker'),
+            h('div', { style: { fontSize: '12px', color: '#a7f3d0' } }, 'Graduated Driver License timeline — Maine specific')
+          ),
+          // Input form
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: '#a7f3d0', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, 'Your Dates (stored on your device only)'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', fontSize: '11px' } },
+              h('div', null,
+                h('label', { style: { display: 'block', color: '#94a3b8', marginBottom: '4px' } }, 'Birth date'),
+                h('input', { type: 'date', value: gdlBirth,
+                  onChange: function(e) { upd('gdlBirthDate', e.target.value); },
+                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #334155', background: '#020617', color: '#fff', fontSize: '12px' }
+                })
+              ),
+              h('div', null,
+                h('label', { style: { display: 'block', color: '#94a3b8', marginBottom: '4px' } }, 'Permit issued'),
+                h('input', { type: 'date', value: gdlPermit,
+                  onChange: function(e) { upd('gdlPermitDate', e.target.value); },
+                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #334155', background: '#020617', color: '#fff', fontSize: '12px' }
+                })
+              ),
+              h('div', null,
+                h('label', { style: { display: 'block', color: '#94a3b8', marginBottom: '4px' } }, 'Intermediate license'),
+                h('input', { type: 'date', value: gdlIntermediate,
+                  onChange: function(e) { upd('gdlIntermediateDate', e.target.value); },
+                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #334155', background: '#020617', color: '#fff', fontSize: '12px' }
+                })
+              )
+            )
+          ),
+          // Current stage card
+          h('div', { style: { background: 'linear-gradient(135deg, ' + stageInfo.color + '15, transparent)', borderRadius: '14px', padding: '20px', border: '2px solid ' + stageInfo.color, marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', color: stageInfo.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, 'Current stage'),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '42px' } }, stageInfo.icon),
+              h('div', null,
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: stageInfo.color } }, stageInfo.title),
+                birth ? h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, 'Age: ' + age.toFixed(1) + ' years' + (permitHeld !== null ? ' · Permit held ' + permitHeld.toFixed(1) + ' yrs' : '')) : null
+              )
+            ),
+            h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6' } }, stageInfo.desc)
+          ),
+          // Restrictions
+          birth ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: '#f59e0b', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, '⚠️ Your current restrictions'),
+            restrictions.filter(function(r) { return r.active; }).length === 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' } }, 'No active restrictions at this stage.') :
+            restrictions.filter(function(r) { return r.active; }).map(function(r, ri) {
+              return h('div', { key: ri, style: { display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 0', borderBottom: '1px solid #1e293b', fontSize: '11px', color: '#cbd5e1' } },
+                h('span', { style: { fontSize: '16px' } }, r.icon),
+                h('span', null, r.label)
+              );
+            })
+          ) : null,
+          // 70-hour progress
+          birth ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
+            h('div', { style: { fontSize: '11px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, '📔 70-Hour Supervised Driving Progress (from your RoadReady logbook)'),
+            h('div', { style: { height: '10px', background: '#1e293b', borderRadius: '5px', overflow: 'hidden', marginBottom: '4px' } },
+              h('div', { style: { height: '100%', width: Math.min(100, totalHrs / 70 * 100) + '%', background: 'linear-gradient(90deg, #10b981, #059669)' } })
+            ),
+            h('div', { style: { fontSize: '11px', color: '#a7f3d0', textAlign: 'right' } }, totalHrs.toFixed(1) + ' / 70 hours (' + Math.round(totalHrs / 70 * 100) + '%)'),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px', fontStyle: 'italic' } }, 'Note: the 70-hour Maine requirement is for real supervised driving. RoadReady simulator hours supplement but don\'t replace real road time.')
+          ) : null
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DAILY CHALLENGE (rotating task + streak counter)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'dailyChallenge') {
+        var today = new Date().toISOString().slice(0, 10);
+        var dayOfYear = (function() {
+          var dt = new Date();
+          var start = new Date(dt.getFullYear(), 0, 0);
+          return Math.floor((dt - start) / 86400000);
+        })();
+        // Pool of challenges — deterministic selection by day.
+        var dailyPool = [
+          { icon: '📝', title: '10 Permit Questions', desc: 'Take a 10-question mini permit quiz. Pass at 8/10.', action: 'quiz', goal: 'Get 8 or more correct' },
+          { icon: '🚗', title: 'Residential Run', desc: 'Complete a residential scenario drive with safety 85+.', action: 'drive', scenario: 'residential', goal: 'Safety score 85 or higher' },
+          { icon: '🌧️', title: 'Wet Pavement Master', desc: 'Complete a rain scenario with zero crashes and safety 75+.', action: 'drive', scenario: 'rain', goal: 'Safety 75+, no crashes' },
+          { icon: '🗂️', title: 'Flashcard Sprint', desc: 'Review 15 permit flashcards.', action: 'flashcards', goal: '15 flashcards in one session' },
+          { icon: '🛡️', title: 'Defensive Drill', desc: 'Complete 3 defensive driving scenarios correctly.', action: 'defensive', goal: '3 defensive scenarios passed' },
+          { icon: '🔧', title: 'Diagnose 3 Warnings', desc: 'Correctly identify 3 dashboard warning lights.', action: 'maintenance', goal: '3 correct in Maintenance Game' },
+          { icon: '↔️', title: 'Right-of-Way Review', desc: 'Nail 8/10 on the Right-of-Way scenarios.', action: 'row', goal: '8 or more on Right-of-Way' },
+          { icon: '🌃', title: 'Night Driving', desc: 'Complete a night drive with safety 75+.', action: 'drive', scenario: 'night', goal: 'Safety 75+' },
+          { icon: '🅿️', title: 'Parking Pro', desc: 'Finish the parallel parking drill.', action: 'parking', goal: 'Complete parallel parking' },
+          { icon: '🚦', title: 'Signs Quiz', desc: 'Score 8/10 on the road signs quiz.', action: 'signs', goal: '8 or more on signs quiz' },
+          { icon: '📱', title: 'Distracted Reality Check', desc: 'Visit the Distracted Driving Lab. Try 3 different speed/glance combos.', action: 'distracted', goal: 'Read the lab results' },
+          { icon: '⚡', title: 'Reaction Baseline', desc: 'Take the Reaction Test and record your baseline.', action: 'reaction', goal: 'Complete one reaction test' },
+          { icon: '🚨', title: 'Emergency Review', desc: 'Read 2 emergency scenarios from the handbook.', action: 'emergency', goal: 'Read 2 emergency procedures' }
+        ];
+        var todayChallenge = dailyPool[dayOfYear % dailyPool.length];
+        var state = d.dailyChallenge || {};
+        var doneToday = state.date === today && state.done;
+        var streak = state.streak || 0;
+        var lastDate = state.date;
+        // Check if streak broken
+        var isConsecutive = false;
+        if (lastDate) {
+          var yd = new Date();
+          yd.setDate(yd.getDate() - 1);
+          var yesterday = yd.toISOString().slice(0, 10);
+          isConsecutive = lastDate === today || lastDate === yesterday;
+        }
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '14px', border: '1px solid #fbbf24' } },
+            h('div', { style: { fontSize: '48px' } }, '⭐'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Daily Challenge'),
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })),
+            // Streak display
+            h('div', { style: { marginTop: '10px', display: 'inline-flex', gap: '8px', alignItems: 'center', background: streak >= 3 ? 'rgba(239,68,68,0.2)' : 'rgba(251,191,36,0.15)', padding: '6px 14px', borderRadius: '20px', border: '1px solid ' + (streak >= 3 ? '#ef4444' : '#fbbf24') } },
+              h('span', { style: { fontSize: '18px' } }, streak >= 3 ? '🔥' : '✨'),
+              h('span', { style: { fontSize: '12px', fontWeight: 800, color: streak >= 3 ? '#fca5a5' : '#fde68a' } }, streak + '-day streak')
+            )
+          ),
+          // Today's challenge card
+          h('div', { style: { background: doneToday ? 'linear-gradient(135deg, #14532d, #0f172a)' : '#0f172a', borderRadius: '14px', padding: '20px', border: '2px solid ' + (doneToday ? '#4ade80' : '#fbbf24'), marginBottom: '14px' } },
+            h('div', { style: { display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '12px' } },
+              h('div', { style: { fontSize: '56px' } }, todayChallenge.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: '10px', color: doneToday ? '#bbf7d0' : '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' } }, doneToday ? '✓ Completed' : "Today's Challenge"),
+                h('div', { style: { fontSize: '18px', fontWeight: 900 } }, todayChallenge.title)
+              )
+            ),
+            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '10px' } }, todayChallenge.desc),
+            h('div', { style: { padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#a78bfa', borderLeft: '3px solid #a78bfa' } },
+              h('b', null, '🎯 Goal: '), todayChallenge.goal
+            ),
+            // Action buttons
+            !doneToday ? h('div', { style: { display: 'flex', gap: '8px', marginTop: '14px' } },
+              h('button', {
+                onClick: function() {
+                  // Route to the appropriate view/action
+                  var act = todayChallenge.action;
+                  if (act === 'quiz') updMulti({ view: 'permitStart' });
+                  else if (act === 'drive') { updMulti({ freeExplore: false }); startDriving(todayChallenge.scenario, selectedVehicle); }
+                  else if (act === 'flashcards') updMulti({ view: 'permitFlashcards', permitFlashIdx: 0 });
+                  else if (act === 'defensive') upd('view', 'defensiveList');
+                  else if (act === 'maintenance') upd('view', 'maintenanceGame');
+                  else if (act === 'row') updMulti({ view: 'rightOfWay', rowIdx: 0, rowScore: 0, rowAnswered: null });
+                  else if (act === 'parking') upd('view', 'parking');
+                  else if (act === 'signs') updMulti({ view: 'signsView', signsQuizMode: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null });
+                  else if (act === 'distracted') upd('view', 'distractedLab');
+                  else if (act === 'reaction') updMulti({ view: 'reactionTest', rtPhase: 'intro' });
+                  else if (act === 'emergency') upd('view', 'emergencyHandbook');
+                },
+                style: { flex: 2, padding: '12px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#0f172a', fontSize: '13px', fontWeight: 900, cursor: 'pointer' }
+              }, '🚀 Start Challenge'),
+              h('button', {
+                onClick: function() {
+                  var newStreak = isConsecutive && state.date !== today ? streak + 1 : state.date === today ? streak : 1;
+                  upd('dailyChallenge', { date: today, done: true, streak: newStreak, challengeTitle: todayChallenge.title });
+                  var daily = Object.assign({}, d.badges || {});
+                  var dAwarded = false;
+                  if (newStreak >= 3 && !daily.daily_streak_3) { daily.daily_streak_3 = true; dAwarded = true; addToast('🔥 3-day streak!'); }
+                  if (newStreak >= 7 && !daily.daily_streak_7) { daily.daily_streak_7 = true; dAwarded = true; addToast('🔥🔥 Week streak!'); }
+                  if (newStreak >= 30 && !daily.daily_streak_30) { daily.daily_streak_30 = true; dAwarded = true; addToast('🏆 30-day streak!'); }
+                  if (dAwarded) upd('badges', daily);
+                  addToast('✅ Challenge marked complete!');
+                },
+                style: { padding: '12px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: '#4ade80', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '✓ Mark Done')
+            ) : h('div', { style: { marginTop: '14px', padding: '12px', background: 'rgba(74,222,128,0.1)', borderRadius: '8px', textAlign: 'center', fontSize: '12px', color: '#bbf7d0' } },
+              '🎉 You\'re done for today! Come back tomorrow for a new challenge.'
+            )
+          ),
+          // Streak calendar / history (last 7 days placeholder)
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7' } },
+            h('div', { style: { fontSize: '11px', color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, '🔥 Why streaks matter'),
+            'Daily practice beats cramming. 15 minutes a day for 30 days = 7.5 hours of spaced repetition — far more effective for passing the permit test than one 7-hour session.',
+            h('br'), h('br'),
+            'The streak also builds the habit of ', h('b', null, 'thinking about driving before you have to do it for real'), ' — which is exactly what good drivers do.'
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // SEAT & MIRROR SETUP GUIDE
+      // ══════════════════════════════════════════════════════════
+      if (view === 'seatSetup') {
+        var ssStep = d.ssStep || 0;
+        var setupSteps = [
+          {
+            icon: '📏', title: 'Step 1: Seat Distance',
+            goal: 'Pedals should be reachable without stretching your leg fully.',
+            detail: 'Press the brake pedal ALL THE WAY to the floor. Your knee should still have a SLIGHT bend (about 20-30°). If your knee locks, you\'re too far back. If it\'s too bent, you\'re too close.',
+            why: 'Locked knees transmit crash force directly to your hip. Bent knees act as shock absorbers.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('rect',{x:0,y:160,width:300,height:40,fill:'#334155'}),h('rect',{x:100,y:80,width:80,height:50,fill:'#8b5cf6'}),h('rect',{x:120,y:50,width:40,height:30,fill:'#c4b5fd'}),h('line',{x1:180,y1:110,x2:220,y2:155,stroke:'#22c55e',strokeWidth:6,strokeLinecap:'round'}),h('circle',{cx:220,cy:160,r:8,fill:'#22c55e'}),h('text',{x:240,y:150,fontSize:11,fill:'#22c55e',fontWeight:700},'✓ Slight bend'));}
+          },
+          {
+            icon: '🔁', title: 'Step 2: Seat Height + Back Angle',
+            goal: 'Eyes level with top of steering wheel. Backrest nearly vertical (100-110°).',
+            detail: 'Raise the seat until your EYES are level with the TOP of the steering wheel — you should see over it, not through it. Tilt the backrest slightly back (100-110° from vertical). Your back should touch the seat from tailbone to shoulders.',
+            why: 'Reclined seats throw your body forward in crashes (you slide under the belt — called submarining). Upright = belt stays on pelvis where it should.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('rect',{x:0,y:160,width:300,height:40,fill:'#334155'}),h('path',{d:'M 110 160 L 110 85 Q 110 75 120 75 L 175 75 L 175 130 L 180 160 Z',fill:'#8b5cf6'}),h('rect',{x:120,y:50,width:40,height:30,fill:'#c4b5fd'}),h('line',{x1:200,y1:65,x2:240,y2:65,stroke:'#22c55e',strokeWidth:3,strokeDasharray:'4 3'}),h('text',{x:220,y:55,fontSize:10,fill:'#22c55e',textAnchor:'middle',fontWeight:700},'eye level'));}
+          },
+          {
+            icon: '🧠', title: 'Step 3: Headrest Height',
+            goal: 'Top of headrest even with the TOP of your head — not your neck.',
+            detail: 'The headrest is actually a HEAD restraint — it catches your HEAD in a rear-end collision. Raise it until its top is level with the crown of your head. The face should be no more than 4 inches from the back of your head.',
+            why: 'Whiplash = your head snaps back further than your torso. Low headrest lets your head rotate unchecked → neck injury. Over 300,000 whiplash injuries a year in the US; most preventable.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('rect',{x:0,y:160,width:300,height:40,fill:'#334155'}),h('rect',{x:110,y:60,width:15,height:100,fill:'#8b5cf6'}),h('rect',{x:100,y:40,width:35,height:30,fill:'#8b5cf6',rx:4}),h('circle',{cx:155,cy:55,r:18,fill:'#c4b5fd'}),h('text',{x:200,y:50,fontSize:11,fill:'#22c55e',fontWeight:700},'← level w/ head top'),h('line',{x1:100,y1:40,x2:172,y2:40,stroke:'#22c55e',strokeWidth:1.5,strokeDasharray:'3 3'}));}
+          },
+          {
+            icon: '🎯', title: 'Step 4: Steering Wheel Position',
+            goal: 'Wheel 10-12 inches from chest. Hands at 9 and 3 o\'clock.',
+            detail: 'With a straight back, your wrist should rest on the TOP of the wheel when your arm is fully extended. That gives you 10-12 inches clearance to your chest — enough for the airbag to deploy without slamming into you.',
+            why: 'An airbag deploys at 200 mph. If your face is 6 inches from the wheel, it\'ll break your jaw. 10+ inches gives safe deceleration. Hands at 9/3 (not 10/2) avoids airbag-breaking-your-thumbs.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('rect',{x:0,y:160,width:300,height:40,fill:'#334155'}),h('circle',{cx:170,cy:100,r:35,fill:'none',stroke:'#8b5cf6',strokeWidth:4}),h('line',{x1:170,y1:100,x2:140,y2:90,stroke:'#8b5cf6',strokeWidth:3}),h('line',{x1:170,y1:100,x2:200,y2:90,stroke:'#8b5cf6',strokeWidth:3}),h('circle',{cx:140,cy:90,r:6,fill:'#22c55e'}),h('text',{x:140,y:82,fontSize:8,fill:'#22c55e',textAnchor:'middle',fontWeight:700},'9'),h('circle',{cx:200,cy:90,r:6,fill:'#22c55e'}),h('text',{x:200,y:82,fontSize:8,fill:'#22c55e',textAnchor:'middle',fontWeight:700},'3'),h('rect',{x:60,y:70,width:40,height:50,fill:'#c4b5fd'}),h('line',{x1:100,y1:100,x2:140,y2:100,stroke:'#f59e0b',strokeDasharray:'4 3',strokeWidth:2}),h('text',{x:120,y:130,fontSize:9,fill:'#f59e0b',textAnchor:'middle',fontWeight:700},'10-12 in'));}
+          },
+          {
+            icon: '👀', title: 'Step 5: Side Mirrors (BGE method)',
+            goal: 'You should NOT see your own car body in the side mirrors.',
+            detail: 'Most drivers set side mirrors to see the back of their own car — that doubles the rearview mirror. Instead: LEAN LEFT until your head almost touches the window, then adjust the left mirror until you just see your car\'s side. Repeat on the right by leaning right. When sitting normally, you\'ll see the lanes beside you — ELIMINATING BLIND SPOTS.',
+            why: 'Classic mirror setup leaves huge blind spots where a car can completely disappear. BGE (Blindspot and Glare Elimination) method extends your vision to cover those zones. Still shoulder-check — but you\'ll see most cars without it.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('rect',{x:50,y:60,width:200,height:100,fill:'#8b5cf6',stroke:'#422006',strokeWidth:2,rx:6}),h('rect',{x:60,y:90,width:180,height:50,fill:'#1e3a5f'}),h('rect',{x:30,y:85,width:18,height:12,fill:'#c4b5fd',stroke:'#000',strokeWidth:1}),h('rect',{x:252,y:85,width:18,height:12,fill:'#c4b5fd',stroke:'#000',strokeWidth:1}),h('text',{x:150,y:45,fontSize:11,fill:'#22c55e',textAnchor:'middle',fontWeight:700},'BGE: no car body in side mirrors'),h('line',{x1:48,y1:91,x2:5,y2:91,stroke:'#22c55e',strokeWidth:2,strokeDasharray:'3 3'}),h('line',{x1:270,y1:91,x2:295,y2:91,stroke:'#22c55e',strokeWidth:2,strokeDasharray:'3 3'}));}
+          },
+          {
+            icon: '🪞', title: 'Step 6: Rearview Mirror',
+            goal: 'Frame the ENTIRE rear window.',
+            detail: 'Adjust so you can see the full rear window without moving your head. In glare or night: flip the day/night tab (classic mirrors) or wait for auto-dim (newer cars).',
+            why: 'The rear mirror is for cars directly behind you. Side mirrors handle adjacent lanes. Together with shoulder checks, zero blind spots.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('rect',{x:70,y:50,width:160,height:50,fill:'#020617',stroke:'#c4b5fd',strokeWidth:3,rx:3}),h('rect',{x:80,y:60,width:140,height:30,fill:'#1e293b'}),h('circle',{cx:110,cy:75,r:5,fill:'#ef4444'}),h('circle',{cx:190,cy:75,r:5,fill:'#fbbf24'}),h('text',{x:150,y:130,fontSize:12,fill:'#22c55e',textAnchor:'middle',fontWeight:700},'Rear window framed'),h('text',{x:150,y:145,fontSize:9,fill:'#94a3b8',textAnchor:'middle'},'cars directly behind'));}
+          },
+          {
+            icon: '🔔', title: 'Step 7: Seatbelt',
+            goal: 'Belt low across hips (NOT stomach), shoulder belt across chest.',
+            detail: 'Lap belt should ride on your HIP BONES, never on your soft stomach. Shoulder belt should cross your collarbone at the center of your shoulder — never under the arm or behind the back. Pull any slack out.',
+            why: 'A belt on your belly transmits crash force to your liver/spleen instead of strong pelvic bones. Shoulder belt under the arm = broken ribs or lost in crash. No tucks — no exceptions.',
+            svg: function(){return h('svg',{viewBox:'0 0 300 200',width:'100%',height:160,style:{maxWidth:300,margin:'0 auto',display:'block'}},h('circle',{cx:150,cy:50,r:20,fill:'#c4b5fd'}),h('rect',{x:125,y:70,width:50,height:60,fill:'#8b5cf6',rx:6}),h('rect',{x:120,y:120,width:60,height:20,fill:'#8b5cf6'}),h('line',{x1:125,y1:80,x2:175,y2:115,stroke:'#ef4444',strokeWidth:5}),h('line',{x1:115,y1:125,x2:185,y2:125,stroke:'#ef4444',strokeWidth:5}),h('text',{x:235,y:90,fontSize:10,fill:'#22c55e',fontWeight:700},'shoulder'),h('text',{x:235,y:130,fontSize:10,fill:'#22c55e',fontWeight:700},'hips'));}
+          }
+        ];
+        var curStep = setupSteps[ssStep] || setupSteps[0];
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #8b5cf6' } },
+            h('div', { style: { fontSize: '42px' } }, '🪑'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Seat & Mirror Setup'),
+            h('div', { style: { fontSize: '12px', color: '#ddd6fe' } }, 'Step ' + (ssStep + 1) + ' of ' + setupSteps.length)
+          ),
+          // Progress dots
+          h('div', { style: { display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '14px' } },
+            setupSteps.map(function(_, si) {
+              var active = si === ssStep;
+              var done = si < ssStep;
+              return h('div', { key: si,
+                style: { width: active ? '24px' : '8px', height: '8px', borderRadius: '4px', background: active ? '#8b5cf6' : done ? '#c4b5fd' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s', cursor: 'pointer' },
+                onClick: function() { upd('ssStep', si); }
+              });
+            })
+          ),
+          // Current step
+          h('div', { style: { background: '#0f172a', borderRadius: '14px', padding: '20px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' } },
+              h('span', { style: { fontSize: '36px' } }, curStep.icon),
+              h('h3', { style: { fontSize: '16px', fontWeight: 900, margin: 0 } }, curStep.title)
+            ),
+            h('div', { style: { background: '#020617', borderRadius: '8px', padding: '12px', marginBottom: '12px' } }, curStep.svg()),
+            h('div', { style: { fontSize: '11px', color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, '🎯 Goal'),
+            h('div', { style: { fontSize: '13px', color: '#fff', fontWeight: 700, marginBottom: '10px' } }, curStep.goal),
+            h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '10px' } }, curStep.detail),
+            h('div', { style: { padding: '10px', background: 'rgba(168,139,250,0.1)', borderRadius: '6px', borderLeft: '3px solid #8b5cf6', fontSize: '11px', color: '#ddd6fe', lineHeight: '1.5' } },
+              h('b', { style: { color: '#a78bfa' } }, '🔬 Why it matters: '), curStep.why
+            )
+          ),
+          // Navigation
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', { disabled: ssStep === 0,
+              onClick: function() { upd('ssStep', Math.max(0, ssStep - 1)); },
+              style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: ssStep === 0 ? 'not-allowed' : 'pointer', opacity: ssStep === 0 ? 0.4 : 1 }
+            }, '← Back'),
+            h('button', {
+              onClick: function() {
+                if (ssStep >= setupSteps.length - 1) {
+                  upd('view', 'menu');
+                  addToast('✅ Seat setup reviewed!');
+                } else {
+                  upd('ssStep', ssStep + 1);
+                }
+              },
+              style: { flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+            }, ssStep >= setupSteps.length - 1 ? '✓ Done' : 'Next →')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // POST-CRASH PROTOCOL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'postCrash') {
+        var pcPhases = [
+          {
+            time: '0-30 sec', icon: '🛑', title: 'STOP & Breathe',
+            steps: [
+              'Take a deep breath. Do not leap out — first check YOURSELF for injury.',
+              'Feel your neck, back, head. If anything feels wrong, do NOT move.',
+              'Look at passengers. "Are you okay?"',
+              'If anyone is seriously hurt: stay put and call 911 immediately.'
+            ],
+            urgent: true
+          },
+          {
+            time: '30s - 2 min', icon: '📞', title: 'Call 911',
+            steps: [
+              'Dial 911 even for "minor" crashes. Maine law requires police for any crash with injury or over $1000 damage.',
+              'State LOCATION first: "I-295 northbound, mile 32, rest area side."',
+              'Then state: "Two-car crash. My car and one other. I think we\'re okay."',
+              'Stay on the line. Do not hang up first.'
+            ],
+            urgent: true
+          },
+          {
+            time: '2-5 min', icon: '🚨', title: 'Secure the Scene',
+            steps: [
+              'Turn on HAZARD LIGHTS — every car has a 4-way flasher button.',
+              'If the car is drivable AND blocking traffic: move it to the shoulder. Safety over "leaving evidence."',
+              'If NOT drivable: get out on the NON-traffic side. Stand behind the guardrail if possible.',
+              'Set out flares or triangles if you have them and it\'s safe to approach (work zones = 50+ ft behind the car).'
+            ],
+            urgent: true
+          },
+          {
+            time: '5-10 min', icon: '📸', title: 'Document Everything',
+            steps: [
+              'Photos: wide shots of both cars (see the whole scene), close-ups of damage, license plates, street signs, traffic control (lights/signs), skid marks, debris location.',
+              'Photo of the other driver\'s license and insurance card.',
+              'Video a slow 360° walk-around of your car and the scene.',
+              'Write down: time, weather, your speed, what they did, what you did. Memory fades fast.'
+            ],
+            urgent: false
+          },
+          {
+            time: '10-15 min', icon: '🤝', title: 'Exchange Info',
+            steps: [
+              'Get FROM the other driver: name, phone, address, driver\'s license #, insurance company + policy #, license plate #, car make/model.',
+              'Give them the same from you — but NOT your home address unless they\'re your parent\'s insurance holder.',
+              'Witnesses? Get their name + phone. Their statement might be crucial later.',
+              'Police will issue a report number — write it down. You\'ll need it for insurance.'
+            ],
+            urgent: false
+          },
+          {
+            time: 'The HARD rule', icon: '🛑', title: 'Never Say These Words',
+            steps: [
+              '❌ "I\'m so sorry" — even when you feel awful. This is interpreted as admission of fault.',
+              '❌ "I didn\'t see you" — admission. Say "Let\'s let the police sort it out."',
+              '❌ "I\'m not hurt" — your adrenaline is masking pain. Injuries show up 24-48 hrs later.',
+              '✓ "Are you okay? Let\'s wait for the police."',
+              '✓ "I\'d like to be checked out by a doctor to be sure."'
+            ],
+            urgent: true
+          },
+          {
+            time: 'After you leave', icon: '🏥', title: 'Next 24 Hours',
+            steps: [
+              'Get medically checked even if you feel fine. Concussion, whiplash, soft tissue damage: 24-48 hour delay is normal.',
+              'Call YOUR insurance within 24 hours. Give them the police report number. Do NOT give recorded statements to the OTHER driver\'s insurance without your agent present.',
+              'Do NOT post about it on social media. Insurance adjusters screenshot these. "Cool, I\'m totally fine!" can void your injury claim.',
+              'Keep every receipt: tow, rental, medical co-pays, lost work. All reimbursable.',
+              'Journal your pain and limitations daily. Memory fades; notes don\'t.'
+            ],
+            urgent: false
+          }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #450a0a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #dc2626' } },
+            h('div', { style: { fontSize: '48px' } }, '📞'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Post-Crash Protocol'),
+            h('div', { style: { fontSize: '12px', color: '#fecaca' } }, 'The first 10-15 minutes after a crash shape the next 6 months. Know this cold.')
+          ),
+          // Timeline phases
+          pcPhases.map(function(p, pi) {
+            return h('div', { key: pi, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (p.urgent ? '#dc2626' : '#f59e0b'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '28px' } }, p.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: p.urgent ? '#fecaca' : '#fed7aa', textTransform: 'uppercase', letterSpacing: '0.1em' } }, p.time),
+                  h('div', { style: { fontSize: '14px', fontWeight: 900 } }, p.title)
+                )
+              ),
+              h('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7' } },
+                p.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: '4px' } }, s); })
+              )
+            );
+          }),
+          // Export as checklist
+          h('button', { onClick: function() {
+            try {
+              var lines = ['# Post-Crash Protocol — Quick Reference', '', '**Keep this in your glove box. Read before you need it.**', ''];
+              pcPhases.forEach(function(p) {
+                lines.push('## ' + p.icon + ' ' + p.title + ' (' + p.time + ')');
+                p.steps.forEach(function(s) { lines.push('- ' + s); });
+                lines.push('');
+              });
+              lines.push('---', '', '**911 · Police non-emergency: [add your local number]**', '', 'Insurance: ____________________  Policy #: ____________________', 'Vehicle VIN: ____________________  Plate: ____________________');
+              var blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = url; a.download = 'post_crash_protocol.md'; a.click();
+              URL.revokeObjectURL(url);
+              addToast('📄 Protocol exported');
+            } catch(_) { addToast('Export failed.'); }
+          },
+            style: { width: '100%', marginTop: '12px', padding: '12px', borderRadius: '10px', border: '1px solid #dc2626', background: 'rgba(220,38,38,0.15)', color: '#fecaca', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, '📄 Export as Glove-Box Reference (Markdown)')
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // BICYCLIST & MOTORCYCLIST AWARENESS
+      // ══════════════════════════════════════════════════════════
+      if (view === 'bikeAware') {
+        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #16a34a' } },
+            h('div', { style: { fontSize: '48px' } }, '🚴'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Cyclist & Motorcyclist Awareness'),
+            h('div', { style: { fontSize: '12px', color: '#bbf7d0' } }, 'They\'re legal vehicles. They\'re small. They\'re vulnerable. You\'re responsible.')
+          ),
+          // 3-foot law card
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #065f46)', borderRadius: '12px', padding: '18px', border: '2px solid #22c55e', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#bbf7d0', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, '⚖️ Maine Law: 29-A M.R.S. §2070'),
+            h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#fff', margin: '0 0 8px 0' } }, '3-Foot Passing Law'),
+            h('div', { style: { fontSize: '12px', color: '#d1fae5', lineHeight: '1.6' } },
+              'When passing a bicyclist, Maine law requires you give AT LEAST 3 FEET of clearance between your vehicle and the cyclist. ',
+              h('b', null, 'You may cross the double yellow line'), ' to do it safely, as long as the oncoming lane is clear. ',
+              'Violation = $75 fine plus any crash liability.'
+            ),
+            // Visual
+            h('svg', { viewBox: '0 0 400 120', width: '100%', height: 120, style: { marginTop: '12px' } },
+              h('rect', { x: 0, y: 60, width: 400, height: 40, fill: '#334155' }),
+              h('line', { x1: 0, y1: 80, x2: 400, y2: 80, stroke: '#fde047', strokeWidth: 2, strokeDasharray: '20 20' }),
+              // Car
+              h('rect', { x: 50, y: 65, width: 60, height: 25, rx: 3, fill: '#22d3ee' }),
+              // Cyclist
+              h('g', { transform: 'translate(170 73)' },
+                h('circle', { cx: 0, cy: 10, r: 5, fill: '#000' }),
+                h('circle', { cx: 18, cy: 10, r: 5, fill: '#000' }),
+                h('line', { x1: 0, y1: 10, x2: 18, y2: 10, stroke: '#000', strokeWidth: 2 }),
+                h('circle', { cx: 9, cy: 3, r: 3, fill: '#f472b6' })
+              ),
+              // 3ft gap arrow
+              h('line', { x1: 110, y1: 55, x2: 165, y2: 55, stroke: '#22c55e', strokeWidth: 2 }),
+              h('polygon', { points: '110,55 115,52 115,58', fill: '#22c55e' }),
+              h('polygon', { points: '165,55 160,52 160,58', fill: '#22c55e' }),
+              h('text', { x: 137, y: 48, textAnchor: 'middle', fontSize: 12, fill: '#22c55e', fontWeight: 700 }, '3 ft min')
+            )
+          ),
+          // Key facts grid
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', marginBottom: '14px' } },
+            [
+              { icon: '🚴', title: 'Cyclists are vehicles', body: 'They can use the full lane, not just the shoulder. Especially when road surface or lane width makes shoulder-riding unsafe. Do NOT honk at cyclists taking the lane — they\'re legal.' },
+              { icon: '🏍️', title: 'Motorcyclists swerve for reasons', body: 'What looks like reckless lane weaving is usually: avoiding potholes, gravel, oil spots, grates, debris. A pothole that barely registers in your sedan can throw a motorcycle rider.' },
+              { icon: '🚪', title: 'Dooring kills cyclists', body: 'Before opening your door in traffic, USE YOUR LEFT HAND to grab the handle — the Dutch Reach. Your body naturally turns to check behind. Dooring injuries are 50% of urban cyclist crashes.' },
+              { icon: '👀', title: 'Shared blind spots', body: 'Motorcycles fit ENTIRELY in your A-pillar blind spot (the pillar between windshield and door). Bikes + cyclists do the same. Always lean to see past pillars at intersections.' },
+              { icon: '🛑', title: 'Turning across', body: 'The #1 driver-vs-cyclist crash is the RIGHT HOOK: driver turns right across a cyclist going straight in a bike lane. Before any right turn, shoulder-check for cyclists. Before left turns, scan for oncoming motorcycles.' },
+              { icon: '🌧️', title: 'Wet roads', body: 'Painted lines are slick in rain. Motorcyclists and cyclists will AVOID them — giving them extra space in rain is crucial. Don\'t tailgate — they\'re reading the road surface.' },
+              { icon: '👶', title: 'Kids on bikes', body: 'Children under 12 are wobbly, unpredictable, and often don\'t know signals. Add extra clearance, slow to a crawl in residential zones. Scan for balls, toys — kid WILL follow.' },
+              { icon: '🚨', title: 'Most crashes are "I didn\'t see them"', body: 'Cyclists + motorcyclists are not "hidden" — drivers aren\'t looking for them. Train yourself to scan for bikes specifically when approaching any intersection.' }
+            ].map(function(c, ci) {
+              return h('div', { key: ci, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155' } },
+                h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
+                  h('span', { style: { fontSize: '28px' } }, c.icon),
+                  h('div', null,
+                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' } }, c.title),
+                    h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } }, c.body)
+                  )
+                )
+              );
+            })
+          ),
+          // Right-hook danger illustration
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '16px', border: '1px solid #ef4444' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', marginBottom: '10px' } }, '⚠️ The Right-Hook — practice avoiding this'),
+            h('svg', { viewBox: '0 0 400 160', width: '100%', height: 160 },
+              // Road
+              h('rect', { x: 0, y: 40, width: 400, height: 80, fill: '#334155' }),
+              // Bike lane
+              h('rect', { x: 0, y: 95, width: 400, height: 25, fill: 'rgba(74,222,128,0.15)' }),
+              h('text', { x: 200, y: 112, textAnchor: 'middle', fontSize: 9, fill: '#4ade80' }, 'BIKE LANE'),
+              // Center line
+              h('line', { x1: 0, y1: 50, x2: 400, y2: 50, stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '15 10' }),
+              // Right turn arrow
+              h('path', { d: 'M 200 40 L 260 40 Q 290 40 290 20', fill: 'none', stroke: '#fde047', strokeWidth: 2, strokeDasharray: '4 3' }),
+              // Car (turning right)
+              h('g', { transform: 'translate(230 55)' },
+                h('rect', { x: 0, y: 0, width: 50, height: 28, rx: 3, fill: '#ef4444' }),
+                h('text', { x: 25, y: 18, textAnchor: 'middle', fontSize: 9, fill: '#fff', fontWeight: 700 }, 'RIGHT')
+              ),
+              // Cyclist going straight
+              h('g', { transform: 'translate(190 98)' },
+                h('circle', { cx: 0, cy: 10, r: 4, fill: '#000' }),
+                h('circle', { cx: 15, cy: 10, r: 4, fill: '#000' }),
+                h('line', { x1: 0, y1: 10, x2: 15, y2: 10, stroke: '#000', strokeWidth: 2 }),
+                h('circle', { cx: 7, cy: 3, r: 3, fill: '#22c55e' }),
+                h('polygon', { points: '22,7 28,10 22,13', fill: '#22c55e' })
+              ),
+              // Danger zone
+              h('rect', { x: 240, y: 78, width: 50, height: 35, fill: 'rgba(239,68,68,0.3)', stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('text', { x: 265, y: 140, textAnchor: 'middle', fontSize: 10, fill: '#ef4444', fontWeight: 700 }, '⚠️ Right-hook crash zone')
+            ),
+            h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginTop: '10px', lineHeight: '1.6' } },
+              h('b', null, 'Prevention: '), 'Signal 100 ft early. SHOULDER CHECK for cyclists before turning right. Yield to any bike that\'s going straight — they have the legal right-of-way.'
+            )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // HELP HUB / FEATURE DIRECTORY
+      // ══════════════════════════════════════════════════════════
+      if (view === 'helpHub') {
+        var helpQuery = (d.helpQuery || '').toLowerCase().trim();
+        var helpGoal = d.helpGoal || 'all';
+        var features = [
+          { view: 'permitStart', goal: 'permit', icon: '📝', name: 'Permit Test (20q quiz)', desc: 'Randomized 20-question practice test from 80+ Maine BMV-style questions.' },
+          { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: 'Permit Flashcards', desc: 'Spaced-repetition study mode for all 80 permit questions.' },
+          { view: 'cheatSheet', goal: 'permit', icon: '📄', name: 'Study Cheat Sheet', desc: 'Printable one-page summary of all key rules.' },
+          { view: 'signsView', goal: 'permit', icon: '🪧', name: 'Road Signs Reference', desc: '20 common signs with SVG illustrations + quiz mode.' },
+          { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: 'Right-of-Way Scenarios', desc: '10 "who goes first?" intersection puzzles.' },
+          { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (14 scenarios)', desc: 'Residential, highway, snow, fog, night, downtown, and more.' },
+          { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: 'Free Explore', desc: 'Open sandbox with landmarks, challenges, road trips, dynamic weather.' },
+          { view: 'lessonPath', goal: 'practice', icon: '🎓', name: 'Lesson Path', desc: 'Guided 10-lesson progression from beginner to winter expert.' },
+          { view: 'roadTestIntro', goal: 'practice', icon: '🪪', name: 'Road Test Simulator', desc: 'Full Maine BMV-style scored exam (pre-trip + 4min drive).' },
+          { view: 'parking', goal: 'practice', icon: '🅿️', name: 'Parallel Parking', desc: 'Step-by-step top-down parking practice.' },
+          { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: 'Night Vision Training', desc: 'Focused night-drive drill with coach prompts.' },
+          { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: 'Parent Ride Check', desc: '2-min structured eval — parent taps to mark errors.' },
+          { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: 'Defensive Drills', desc: '8 hazard-response scenarios with correct-answer reveals.' },
+          { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
+          { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
+          { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
+          { view: 'emergencyHandbook', goal: 'safety', icon: '🚨', name: 'Emergency Handbook', desc: 'Tire blowout, brake failure, hydroplane — 8 critical responses.' },
+          { view: 'postCrash', goal: 'safety', icon: '📞', name: 'Post-Crash Protocol', desc: 'First 10 minutes after a crash.' },
+          { view: 'bikeAware', goal: 'safety', icon: '🚴', name: 'Cyclist & Moto Awareness', desc: '3-ft law, shared blind spots, right-hook avoidance.' },
+          { view: 'crashLab', goal: 'science', icon: '🔬', name: 'Crash Reconstruction Lab', desc: 'Physics of real crashes: rear-end, T-bone, rollover, hydroplane.' },
+          { view: 'stopDistCalc', goal: 'science', icon: '📐', name: 'Stopping Distance Calculator', desc: 'Live v² / 2μg physics visualizer.' },
+          { view: 'lessonSelect', goal: 'science', icon: '📚', name: 'Auto Science Lessons', desc: 'Formal physics: drag, friction, MPG, kinetic energy.' },
+          { view: 'hypermilingLab', goal: 'science', icon: '🌿', name: 'Hypermiling Lab', desc: 'MPG vs speed graph — beat the EPA rating.' },
+          { view: 'vehicleCompare', goal: 'science', icon: '🔬', name: 'Vehicle Comparison', desc: 'Compare specs (Cd, mass, MPG) across vehicle types.' },
+          { view: 'seatSetup', goal: 'pre-drive', icon: '🪑', name: 'Seat & Mirror Setup', desc: '7-step ergonomics guide for before-drive setup.' },
+          { view: 'preTrip', goal: 'pre-drive', icon: '✅', name: 'Pre-Trip Inspection', desc: 'Interactive 27-point vehicle walkaround checklist.' },
+          { view: 'maintenanceGuide', goal: 'pre-drive', icon: '🔧', name: 'Maintenance Guide', desc: 'Oil changes, tire rotation, essential upkeep schedules.' },
+          { view: 'maintenanceGame', goal: 'pre-drive', icon: '🔧', name: 'Warning Lights Quiz', desc: '10 dashboard lights — diagnose and respond correctly.' },
+          { view: 'maineWinter', goal: 'maine', icon: '❄️', name: 'Maine Winter Guide', desc: 'Moose warnings, black ice, winter kit, studded tires.' },
+          { view: 'roundaboutGuide', goal: 'maine', icon: '🔄', name: 'Roundabout Tutorial', desc: 'Maine is adding these fast. Step-by-step how-to.' },
+          { view: 'gdlTracker', goal: 'maine', icon: '🪪', name: 'GDL Stage Tracker', desc: 'Maine Graduated Driver License timeline + restrictions.' },
+          { view: 'insuranceCalc', goal: 'maine', icon: '💰', name: 'Insurance Calculator', desc: 'Estimate what your actual rate will be.' },
+          { view: 'accidentProtocol', goal: 'maine', icon: '⚠️', name: 'Accident Protocol', desc: 'Maine-specific crash reporting & insurance steps.' },
+          { view: 'logbook', goal: 'progress', icon: '📔', name: 'Driving Logbook', desc: 'All drives logged with 70-hour Maine progress bar.' },
+          { view: 'analytics', goal: 'progress', icon: '📈', name: 'Analytics Dashboard', desc: 'Trend charts of safety/eco scores, bests, achievement timeline.' },
+          { view: 'achievementGallery', goal: 'progress', icon: '🏆', name: 'Achievement Gallery', desc: 'Bronze/silver/gold tiered badge collection.' },
+          { view: 'dailyChallenge', goal: 'progress', icon: '⭐', name: 'Daily Challenge', desc: 'One task per day, streak tracker.' },
+          { view: 'customize', goal: 'fun', icon: '🎨', name: 'My Ride', desc: 'Paint color, driver name, license plate.' },
+          { view: 'driverPledge', goal: 'fun', icon: '📜', name: "Driver's Pledge", desc: 'Sign your commitment to safe driving.' }
+        ];
+        var goals = [
+          { id: 'all', label: 'All', icon: '🧭' },
+          { id: 'permit', label: 'Study for permit', icon: '📝' },
+          { id: 'practice', label: 'Practice driving', icon: '🚗' },
+          { id: 'safety', label: 'Safety skills', icon: '🛡️' },
+          { id: 'science', label: 'Physics / science', icon: '🔬' },
+          { id: 'pre-drive', label: 'Pre-drive prep', icon: '✅' },
+          { id: 'maine', label: 'Maine-specific', icon: '🌲' },
+          { id: 'progress', label: 'Track progress', icon: '📈' },
+          { id: 'fun', label: 'Personalization', icon: '🎨' }
+        ];
+        var filtered = features.filter(function(f) {
+          if (helpGoal !== 'all' && f.goal !== helpGoal) return false;
+          if (helpQuery && (f.name.toLowerCase() + ' ' + f.desc.toLowerCase()).indexOf(helpQuery) === -1) return false;
+          return true;
+        });
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #06b6d4' } },
+            h('div', { style: { fontSize: '42px' } }, '🧭'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Help & Directory'),
+            h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, features.length + ' features. Search or filter by your goal.')
+          ),
+          // Search
+          h('input', { type: 'text', placeholder: '🔎 Search features...', value: d.helpQuery || '',
+            onChange: function(e) { upd('helpQuery', e.target.value); },
+            style: { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#fff', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box' }
+          }),
+          // Goal filter pills
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
+            goals.map(function(g) {
+              var sel = g.id === helpGoal;
+              return h('button', { key: g.id, onClick: function() { upd('helpGoal', g.id); },
+                style: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? 'rgba(6,182,212,0.15)' : '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, g.icon + ' ' + g.label);
+            })
+          ),
+          // Results count
+          h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '10px' } }, filtered.length + ' feature' + (filtered.length === 1 ? '' : 's')),
+          // Results
+          filtered.length === 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '28px', textAlign: 'center', color: '#64748b', fontSize: '12px' } },
+            'No matches. Try different keywords or switch to "All".'
+          ) : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px' } },
+            filtered.map(function(f) {
+              return h('button', { key: f.view, onClick: function() { upd('view', f.view); },
+                style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: '10px', alignItems: 'flex-start' }
+              },
+                h('span', { style: { fontSize: '26px', flexShrink: 0 } }, f.icon),
+                h('div', null,
+                  h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '3px' } }, f.name),
+                  h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: '1.5' } }, f.desc)
+                )
+              );
+            })
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // TEEN PEER-PRESSURE SCENARIOS
+      // ══════════════════════════════════════════════════════════
+      if (view === 'peerPressure') {
+        var ppScenarios = [
+          { id: 'text', friend: 'Alex', text: '"Just check my text real quick — it\'s from my mom, she\'s probably worried."',
+            context: 'You\'re driving on I-295, 55 mph. Your friend holds out their phone to you.',
+            choices: [
+              { text: 'Take the phone and glance at it quickly', safe: false, reply: '3 seconds of looking at a phone = 242 ft blind at 55 mph. That\'s not "quick." No texts, from anyone.' },
+              { text: 'Say "I can\'t look — if it\'s urgent, I\'ll pull off at the next exit."', safe: true, reply: 'Perfect. "I can\'t look while I\'m driving" is the answer to every phone request. Pulling off is an option. Glancing never is.' },
+              { text: 'Ask them to read it out loud', safe: true, reply: 'Great move. Your eyes stay on the road, the message gets answered. You can dictate a reply too.' }
+            ] },
+          { id: 'stop_sign', friend: 'Jordan', text: '"Just do a rolling stop — nobody\'s coming. Cops never pull you over for that here."',
+            context: 'You approach a stop sign on a quiet residential street. Your friend is in a hurry.',
+            choices: [
+              { text: 'Roll through — they\'re probably right', safe: false, reply: 'Rolling stops are #1 cause of auto-failing a Maine road test. Also: a kid on a bike you didn\'t see? That\'s why it\'s ALL stop signs, not just ones with cops.' },
+              { text: 'Full stop, count "one-Mississippi-two-Mississippi"', safe: true, reply: 'Correct. A full stop only costs you 2 seconds. Rolling costs you your license.' },
+              { text: 'Stop only if I see another car', safe: false, reply: 'A stop sign is a stop sign whether or not anyone is watching. And other drivers aren\'t the only hazard — pedestrians and cyclists are often the ones you can\'t see.' }
+            ] },
+          { id: 'race', friend: 'Sam', text: '"That guy just cut us off. Race him to the next light — we can totally beat him."',
+            context: 'You\'re in the right lane at 40 mph. Another driver just merged aggressively in front of you.',
+            choices: [
+              { text: 'Floor it and change lanes to pass', safe: false, reply: 'Street racing kills. Even accelerating to "prove a point" shortens everyone\'s reaction time and raises crash severity. That driver cutting you off was an aggressive driver — don\'t become one.' },
+              { text: 'Stay in lane, let distance build', safe: true, reply: 'Right call. Aggressive drivers are unpredictable — give them space. Let them have the road. Arriving late is better than not arriving.' },
+              { text: 'Honk and flip them off', safe: false, reply: 'Road rage escalates. You don\'t know if that driver has a weapon, is high, or is having the worst day of their life. De-escalate: breathe, ignore, keep driving.' }
+            ] },
+          { id: 'speed', friend: 'Riley', text: '"Nobody actually does 65 on 295 — everyone goes 75-80. You\'re gonna cause a pile-up going the limit."',
+            context: 'You\'re on I-295 at the 65 mph limit. Traffic is flowing at about 72.',
+            choices: [
+              { text: 'Speed up to 75 to match traffic', safe: false, reply: 'You choose the speed YOU can control. If you\'re uncomfortable at 75, you\'re a worse driver at 75 than a safe driver at 65. Move to the right lane instead.' },
+              { text: 'Move to the right lane, stay at 65', safe: true, reply: 'Exactly. The right lane is for slower traffic. You\'re legal AND out of the way. The flow will go around you.' },
+              { text: 'Pull over to the shoulder', safe: false, reply: 'Shoulders are for emergencies only. Pulling over creates a bigger hazard than driving the speed limit.' }
+            ] },
+          { id: 'drink', friend: 'Casey', text: '"I only had two beers, I\'m totally fine to drive. You\'re overreacting."',
+            context: 'After a party at 11 PM. Casey wants to drive home. You offered them a ride.',
+            choices: [
+              { text: 'Let them drive — they seem okay', safe: false, reply: 'Two beers puts most teens over .04 BAC — more than half the legal limit for adults, and Maine has ZERO tolerance for under 21. Not "okay" — impaired.' },
+              { text: 'Take their keys and drive them home yourself', safe: true, reply: 'Lifesaver move. This is the moment that saves their life — and possibly someone else\'s. Their momentary anger is worth nothing compared to their life.' },
+              { text: 'Call an Uber / rideshare for them', safe: true, reply: 'Another great option. Uber/Lyft are cheaper than a DUI, insurance hike, legal fees, or funerals. Most cities have free teen ride programs too.' }
+            ] },
+          { id: 'weed', friend: 'Pat', text: '"Weed actually makes me a BETTER driver — slower and more cautious. Seriously."',
+            context: 'Pat wants to drive to get food after smoking.',
+            choices: [
+              { text: 'That sounds reasonable, ride with them', safe: false, reply: 'False. THC impairs reaction time, judgment, and spatial awareness. Studies show cannabis doubles crash risk. "Slower and more cautious" feelings ≠ actually being slower to react.' },
+              { text: 'Drive them yourself or call a ride', safe: true, reply: 'Correct. Cannabis DUIs are increasing in Maine. Under 21 = any amount = immediate license suspension.' }
+            ] },
+          { id: 'curfew', friend: 'Morgan', text: '"It\'s only 12:30 AM, let\'s go get pizza. You\'re 17 — nobody checks GDL curfew anyway."',
+            context: 'You have a Maine intermediate (restricted) license. Curfew is midnight-5am.',
+            choices: [
+              { text: 'Go — it\'s unlikely you\'ll get caught', safe: false, reply: 'One traffic stop during curfew = $137 fine + 30-day license suspension in Maine. Not worth pizza. Also: a midnight crash with passengers you\'re not allowed to carry = much bigger consequences.' },
+              { text: 'Offer to go together in the morning', safe: true, reply: 'Smart. The restriction exists because midnight-to-dawn is the deadliest time for teen drivers. The rule is protecting your life, not inconveniencing you.' }
+            ] },
+          { id: 'passengers', friend: 'Taylor', text: '"Come on, just fit 5 of us — no one\'s gonna pull you over for that."',
+            context: 'You have a Maine intermediate license (no passengers under 20 except family for first 9 months). Four friends want a ride.',
+            choices: [
+              { text: 'Squeeze everyone in', safe: false, reply: 'Multiple passengers = top teen crash risk factor. Maine law exists because every additional teen passenger DOUBLES the crash rate. Plus: seatbelts required for every rider, period.' },
+              { text: 'Make two trips', safe: true, reply: 'Extra 15 minutes of driving beats a crash, ticket, or suspension. Making the right call here is leadership — your friends will respect you for it.' },
+              { text: 'Help them call rideshares', safe: true, reply: 'Great creative solution. You take some, Uber takes others. Everyone home safe.' }
+            ] }
+        ];
+        var ppIdx = d.ppIdx || 0;
+        var ppAnswered = d.ppAnswered;
+        var ppScore = d.ppScore || 0;
+        if (ppIdx >= ppScenarios.length) {
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+            h('div', { style: { background: 'linear-gradient(135deg, ' + (ppScore >= 6 ? '#14532d' : '#831843') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (ppScore >= 6 ? '#4ade80' : '#f472b6') } },
+              h('div', { style: { fontSize: '64px' } }, ppScore >= 6 ? '💪' : '🤔'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Peer Pressure Practice Complete'),
+              h('div', { style: { fontSize: '38px', fontWeight: 900, color: ppScore >= 6 ? '#4ade80' : '#f472b6', margin: '10px 0' } }, ppScore + ' / ' + ppScenarios.length),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6' } }, ppScore >= 6 ? 'Strong refusal skills. These exact situations will happen. You\'re ready.' : 'Review the ones you missed. The moment matters — practice the words now so they come out naturally when it counts.'),
+              h('button', { onClick: function() { updMulti({ ppIdx: 0, ppAnswered: null, ppScore: 0 }); },
+                style: { marginTop: '16px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#f472b6', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+              }, '↻ Try Again')
+            )
+          );
+        }
+        var cur = ppScenarios[ppIdx];
+        var answered = ppAnswered !== null && ppAnswered !== undefined;
+        var pickedChoice = answered ? cur.choices[ppAnswered] : null;
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #f472b6' } },
+            h('div', { style: { fontSize: '40px' } }, '🙅'),
+            h('h2', { style: { fontSize: '18px', fontWeight: 900 } }, 'Peer Pressure Practice'),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px' } },
+              h('span', { style: { color: '#fbcfe8' } }, 'Scenario ' + (ppIdx + 1) + ' / ' + ppScenarios.length),
+              h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Safe choices: ' + ppScore)
+            )
+          ),
+          // Friend speech bubble
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '10px', fontStyle: 'italic' } }, cur.context),
+            h('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } },
+              h('div', { style: { width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #f472b6, #be185d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 } }, '😐'),
+              h('div', { style: { flex: 1, padding: '12px 14px', background: '#1e293b', borderRadius: '12px', borderTopLeftRadius: '2px', position: 'relative' } },
+                h('div', { style: { fontSize: '10px', color: '#f472b6', fontWeight: 800, marginBottom: '4px' } }, cur.friend + ' says:'),
+                h('div', { style: { fontSize: '13px', color: '#fbcfe8', lineHeight: '1.5' } }, cur.text)
+              )
+            )
+          ),
+          h('div', { style: { fontSize: '12px', color: '#94a3b8', fontWeight: 700, marginBottom: '8px', textAlign: 'center' } }, '⬇ How do you respond? ⬇'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+            cur.choices.map(function(c, ci) {
+              var picked = ppAnswered === ci;
+              var isSafe = c.safe;
+              var bg = answered ? (picked ? (isSafe ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)') : '#1e293b') : '#1e293b';
+              var bd = answered ? (picked ? (isSafe ? '#4ade80' : '#ef4444') : '#334155') : '#334155';
+              return h('button', { key: ci,
+                disabled: answered,
+                onClick: function() {
+                  if (answered) return;
+                  updMulti({ ppAnswered: ci, ppScore: ppScore + (c.safe ? 1 : 0) });
+                },
+                style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '12px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+              }, String.fromCharCode(65 + ci) + '. ' + c.text);
+            })
+          ),
+          answered ? h('div', { style: { marginTop: '12px', padding: '12px', background: '#020617', borderRadius: '6px', borderLeft: '3px solid ' + (pickedChoice.safe ? '#4ade80' : '#ef4444'), fontSize: '11px', color: '#cbd5e1', lineHeight: '1.7' } },
+            h('b', { style: { color: pickedChoice.safe ? '#4ade80' : '#fca5a5' } }, (pickedChoice.safe ? '✓ Safe choice. ' : '✗ Risky choice. ')), pickedChoice.reply
+          ) : null,
+          answered ? h('button', { onClick: function() { updMulti({ ppIdx: ppIdx + 1, ppAnswered: null }); },
+            style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#f472b6', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+          }, ppIdx >= ppScenarios.length - 1 ? 'See Results →' : 'Next Scenario →') : null
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // REACTION TIME TEST (baseline vs simulated impairment)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'reactionTest') {
+        var rtPhase = d.rtPhase || 'intro';
+        var rtTrials = d.rtTrials || [];
+        var rtMode = d.rtMode || 'baseline'; // baseline | impaired
+        var rtStartTime = d.rtStartTime;
+        var rtTargetColor = d.rtTargetColor;
+        var rtWaitUntil = d.rtWaitUntil;
+        var colors = { red: '#ef4444', green: '#22c55e', blue: '#3b82f6', yellow: '#fbbf24' };
+        var avgOf = function(arr) { if (!arr.length) return 0; return Math.round(arr.reduce(function(a,b){return a+b;},0) / arr.length); };
+        if (rtPhase === 'intro') {
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+            h('div', { style: { background: 'linear-gradient(135deg, #083344, #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '1px solid #22d3ee' } },
+              h('div', { style: { fontSize: '56px' } }, '⚡'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, 'Reaction Time Test'),
+              h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '16px', lineHeight: '1.6' } }, 'Tap the colored circle as fast as you can when it appears. 5 trials baseline, then 5 with simulated 0.08 BAC lag. See the difference yourself.'),
+              h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', textAlign: 'left', marginBottom: '16px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.7' } },
+                h('b', { style: { color: '#22d3ee' } }, 'Why this matters: '),
+                'A 0.08 BAC (legal limit for adults) adds ~250-300ms to your reaction time. At 55 mph, that\'s 22 ft of extra stopping distance — often the difference between a close call and a crash.'
+              ),
+              h('button', { onClick: function() { updMulti({ rtPhase: 'waiting', rtMode: 'baseline', rtTrials: [], rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] }); },
+                style: { padding: '12px 28px', borderRadius: '10px', border: 'none', background: '#22d3ee', color: '#0f172a', fontSize: '14px', fontWeight: 900, cursor: 'pointer' }
+              }, 'Start Test →')
+            )
+          );
+        }
+        if (rtPhase === 'waiting' || rtPhase === 'react' || rtPhase === 'result') {
+          var isBaseline = rtMode === 'baseline';
+          var simulatedLag = isBaseline ? 0 : 280;
+          var trialsDone = rtTrials.length;
+          // Time-based phase transition
+          if (rtPhase === 'waiting' && Date.now() >= rtWaitUntil) {
+            // Use setTimeout because we shouldn't call upd during render
+            setTimeout(function() { updMulti({ rtPhase: 'react', rtStartTime: Date.now() }); }, 0);
+          }
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0', textAlign: 'center', minHeight: '500px' } },
+            h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, alignSelf: 'flex-start' } }, '← Cancel'),
+            h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '8px' } },
+              (isBaseline ? '🧠 BASELINE TEST' : '🍺 SIMULATED IMPAIRED') + ' · Trial ' + (trialsDone + 1) + ' / 5'
+            ),
+            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '20px' } }, isBaseline ? 'Sober reaction' : 'With 0.08 BAC (~280ms added lag)'),
+            h('div', { style: { background: '#0a1628', borderRadius: '16px', padding: '40px 20px', border: '1px solid #1e3a5f', minHeight: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+              rtPhase === 'waiting' ? h('div', { style: { fontSize: '18px', color: '#64748b' } }, 'Wait for the colored circle...') :
+              rtPhase === 'react' ? h('button', {
+                onClick: function() {
+                  var elapsed = Date.now() - rtStartTime;
+                  // Add simulated lag penalty for impaired mode
+                  var recordedMs = elapsed + (isBaseline ? 0 : simulatedLag);
+                  var newTrials = rtTrials.concat([recordedMs]);
+                  if (newTrials.length >= 5) {
+                    if (isBaseline) {
+                      updMulti({ rtPhase: 'intro_impaired', rtBaselineTrials: newTrials });
+                    } else {
+                      updMulti({ rtPhase: 'final', rtImpairedTrials: newTrials });
+                    }
+                  } else {
+                    updMulti({ rtPhase: 'waiting', rtTrials: newTrials, rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] });
+                  }
+                },
+                style: { width: '160px', height: '160px', borderRadius: '50%', border: 'none', background: colors[rtTargetColor] || '#22d3ee', cursor: 'pointer', boxShadow: '0 0 40px ' + (colors[rtTargetColor] || '#22d3ee'), animation: 'rrHeroPulse 0.8s ease-in-out infinite' }
+              }, h('div', { style: { fontSize: '16px', fontWeight: 900, color: '#fff' } }, 'TAP!')) :
+              null
+            ),
+            rtTrials.length > 0 ? h('div', { style: { marginTop: '16px', fontSize: '11px', color: '#94a3b8' } }, 'Times: ' + rtTrials.map(function(t) { return t + 'ms'; }).join(', ')) : null
+          );
+        }
+        if (rtPhase === 'intro_impaired') {
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+            h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+            h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #f59e0b' } },
+              h('div', { style: { fontSize: '48px' } }, '🍺'),
+              h('h2', { style: { fontSize: '20px', fontWeight: 900, margin: '8px 0' } }, 'Now: Simulated 0.08 BAC'),
+              h('div', { style: { fontSize: '13px', color: '#fde68a', marginBottom: '6px', fontWeight: 700 } }, 'Your baseline average: ' + avgOf(d.rtBaselineTrials || []) + 'ms'),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '16px', lineHeight: '1.6' } }, 'Same test. The simulator will add ~280ms to each response to show what your reaction would be if you\'d had 4 standard drinks.'),
+              h('button', { onClick: function() { updMulti({ rtPhase: 'waiting', rtMode: 'impaired', rtTrials: [], rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] }); },
+                style: { padding: '12px 28px', borderRadius: '10px', border: 'none', background: '#f59e0b', color: '#78350f', fontSize: '14px', fontWeight: 900, cursor: 'pointer' }
+              }, 'Start Impaired Test →')
+            )
+          );
+        }
+        if (rtPhase === 'final') {
+          var baseline = avgOf(d.rtBaselineTrials || []);
+          var impaired = avgOf(d.rtImpairedTrials || []);
+          var diff = impaired - baseline;
+          // Extra stopping distance at 55 mph from the lag
+          var extraFt = Math.round(55 * 1.467 * (diff / 1000));
+          return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
+            h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+            h('div', { style: { background: 'linear-gradient(135deg, #083344, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '14px', border: '1px solid #22d3ee' } },
+              h('div', { style: { fontSize: '48px' } }, '⚡'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Reaction Test Results'),
+              h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, 'How much slower are you when impaired?')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
+              h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #4ade80' } },
+                h('div', { style: { fontSize: '28px' } }, '🧠'),
+                h('div', { style: { fontSize: '10px', color: '#bbf7d0', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, 'Baseline (sober)'),
+                h('div', { style: { fontSize: '36px', fontWeight: 900, color: '#4ade80' } }, baseline + 'ms')
+              ),
+              h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #f59e0b' } },
+                h('div', { style: { fontSize: '28px' } }, '🍺'),
+                h('div', { style: { fontSize: '10px', color: '#fde68a', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, 'Impaired (0.08 BAC)'),
+                h('div', { style: { fontSize: '36px', fontWeight: 900, color: '#f59e0b' } }, impaired + 'ms')
+              )
+            ),
+            h('div', { style: { background: 'linear-gradient(135deg, rgba(127,29,29,0.3), rgba(239,68,68,0.1))', borderRadius: '14px', padding: '20px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+              h('div', { style: { fontSize: '10px', color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, 'Difference in stopping distance at 55 mph'),
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fca5a5' } }, '+' + extraFt + ' ft'),
+              h('div', { style: { fontSize: '11px', color: '#fecaca', marginTop: '4px' } }, 'That\'s how much FURTHER your car travels before you even start braking.')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7' } },
+              h('div', { style: { fontWeight: 800, color: '#22d3ee', marginBottom: '6px' } }, '🎯 What you just felt:'),
+              '0.08 BAC = four standard drinks for an average-size man, three for an average-size woman. It\'s the LEGAL limit for adults. Teens under 21 in Maine have ZERO tolerance — any amount.',
+              h('br'), h('br'),
+              'That ' + extraFt + ' feet of extra stopping distance is not theoretical. It\'s how far YOU would go before reacting. That\'s the pedestrian you hit. That\'s the rear-end collision. That\'s the "I didn\'t see them in time."'
+            ),
+            h('button', { onClick: function() { updMulti({ rtPhase: 'intro', rtTrials: [], rtBaselineTrials: null, rtImpairedTrials: null }); },
+              style: { width: '100%', marginTop: '14px', padding: '12px', borderRadius: '10px', border: '1px solid #22d3ee', background: 'rgba(34,211,238,0.15)', color: '#a5f3fc', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '↻ Test Again')
+          );
+        }
+        return null;
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // STUDY CHEAT SHEET (printable one-page summary)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'cheatSheet') {
+        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto', color: '#e2e8f0' } },
+          h('style', null,
+            '@media print { body * { visibility: hidden; } #rr-cheatsheet, #rr-cheatsheet * { visibility: visible; } #rr-cheatsheet { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; } .rr-nav { display: none !important; } }'
+          ),
+          h('div', { className: 'rr-nav', style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px' } },
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+            h('button', { onClick: function() { window.print(); },
+              style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#0f172a', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '🖨️ Print')
+          ),
+          h('div', { id: 'rr-cheatsheet', style: { background: '#fff', color: '#000', padding: '28px', borderRadius: '8px', fontSize: '11px', lineHeight: '1.5', fontFamily: '"Georgia", "Times New Roman", serif', border: '1px solid #e5e7eb' } },
+            // Header
+            h('div', { style: { borderBottom: '3px double #000', paddingBottom: '8px', marginBottom: '14px' } },
+              h('h1', { style: { fontSize: '22px', margin: 0, textAlign: 'center', fontWeight: 900 } }, 'RoadReady Study Cheat Sheet'),
+              h('div', { style: { textAlign: 'center', fontSize: '10px', fontStyle: 'italic', color: '#64748b', marginTop: '2px' } }, 'Maine BMV Permit Test · Condensed key points')
+            ),
+            // 3-column layout
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
+              // Left column
+              h('div', null,
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'SIGNS (shape = meaning)'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, h('b', null, 'Red octagon'), ' = STOP (full stop, count 2)'),
+                  h('li', null, h('b', null, 'Red triangle'), ' = YIELD (slow, give way)'),
+                  h('li', null, h('b', null, 'Yellow diamond'), ' = WARNING (curve, peds, hazard)'),
+                  h('li', null, h('b', null, 'Orange diamond'), ' = CONSTRUCTION (2× fines)'),
+                  h('li', null, h('b', null, 'Pentagon'), ' = SCHOOL ZONE (15 mph active)'),
+                  h('li', null, h('b', null, 'Red circle w/ slash'), ' = PROHIBITED'),
+                  h('li', null, h('b', null, 'Green'), ' = guide / directions'),
+                  h('li', null, h('b', null, 'Blue'), ' = services (hospital, gas)')
+                ),
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'RIGHT-OF-WAY'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, '4-way stop simultaneous: car on ', h('b', null, 'RIGHT'), ' goes first'),
+                  h('li', null, 'Left turn: ', h('b', null, 'yield to oncoming')),
+                  h('li', null, 'T-intersection: ', h('b', null, 'through-road'), ' has ROW'),
+                  h('li', null, 'Pedestrians ALWAYS have ROW in crosswalks'),
+                  h('li', null, 'Emergency vehicles: pull ', h('b', null, 'RIGHT'), ', stop'),
+                  h('li', null, 'Roundabout: yield to cars already in'),
+                  h('li', null, 'School bus red lights: BOTH directions stop (2-lane)'),
+                  h('li', null, 'Uphill > downhill on narrow roads')
+                ),
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'FOLLOWING DISTANCE'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, 'Dry road: ', h('b', null, '3+ seconds')),
+                  h('li', null, 'Wet road: ', h('b', null, '4+ seconds')),
+                  h('li', null, 'Snow/ice: ', h('b', null, '6+ seconds')),
+                  h('li', null, 'Count after front car passes a fixed point')
+                ),
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'STOPPING DISTANCE (typical)'),
+                h('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
+                  h('thead', null, h('tr', null,
+                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'left' } }, 'Speed'),
+                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Dry'),
+                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Wet'),
+                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Ice')
+                  )),
+                  h('tbody', null,
+                    h('tr', null, h('td', null, '25 mph'), h('td', { style: { textAlign: 'right' } }, '60 ft'), h('td', { style: { textAlign: 'right' } }, '95 ft'), h('td', { style: { textAlign: 'right' } }, '250 ft')),
+                    h('tr', null, h('td', null, '35 mph'), h('td', { style: { textAlign: 'right' } }, '105 ft'), h('td', { style: { textAlign: 'right' } }, '170 ft'), h('td', { style: { textAlign: 'right' } }, '470 ft')),
+                    h('tr', null, h('td', null, '55 mph'), h('td', { style: { textAlign: 'right' } }, '225 ft'), h('td', { style: { textAlign: 'right' } }, '385 ft'), h('td', { style: { textAlign: 'right' } }, '1100 ft')),
+                    h('tr', null, h('td', null, '65 mph'), h('td', { style: { textAlign: 'right' } }, '295 ft'), h('td', { style: { textAlign: 'right' } }, '510 ft'), h('td', { style: { textAlign: 'right' } }, '1500 ft'))
+                  )
+                ),
+                h('div', { style: { fontSize: '9px', fontStyle: 'italic', color: '#64748b', marginTop: '2px' } }, '1.5s reaction time. Braking doubles each ~20 mph.')
+              ),
+              // Right column
+              h('div', null,
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'MAINE LAWS (key)'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, h('b', null, 'Permit:'), ' age 15, hold 6 months no violations'),
+                  h('li', null, h('b', null, 'Intermediate:'), ' age 16, 70 hr supervised (10 night)'),
+                  h('li', null, h('b', null, 'Curfew (intermediate):'), ' 12 AM – 5 AM, first 9 months'),
+                  h('li', null, h('b', null, 'Passengers:'), ' none under 20 (except family), first 9 mo'),
+                  h('li', null, h('b', null, 'Phone:'), ' ALL handheld use banned. Texting $250.'),
+                  h('li', null, h('b', null, 'BAC:'), ' zero tolerance under 21; 0.08 adult'),
+                  h('li', null, h('b', null, 'Headlights:'), ' required when wipers on'),
+                  h('li', null, h('b', null, 'Move over:'), ' for stopped emergency/utility vehicles'),
+                  h('li', null, h('b', null, 'Snow law:'), ' clear ALL snow before driving ($137 fine)'),
+                  h('li', null, h('b', null, 'Studded tires:'), ' Oct 1 – May 1 only')
+                ),
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'EMERGENCY RESPONSES'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, h('b', null, 'Tire blowout:'), ' GRIP WHEEL, do NOT brake, ease off gas'),
+                  h('li', null, h('b', null, 'Brake failure:'), ' Pump, downshift, parking brake gradually'),
+                  h('li', null, h('b', null, 'Sudden acceleration:'), ' Shift to NEUTRAL, brake steady'),
+                  h('li', null, h('b', null, 'Hydroplane:'), ' Hands straight, off gas, wait'),
+                  h('li', null, h('b', null, 'Skid:'), ' Off gas, look where you want to GO, steer gently'),
+                  h('li', null, h('b', null, 'Stalled on tracks:'), ' GET OUT, run 45° toward approaching train')
+                ),
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'SPEED LIMITS (Maine defaults)'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, 'School zone (active): ', h('b', null, '15 mph')),
+                  h('li', null, 'Residential / business district: ', h('b', null, '25 mph')),
+                  h('li', null, 'Rural / undivided: ', h('b', null, '45 mph')),
+                  h('li', null, 'Interstate highway: ', h('b', null, '65-70 mph'))
+                ),
+                h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'WINTER + ANIMALS'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
+                  h('li', null, 'Moose: brake ', h('b', null, 'STRAIGHT'), ' — never swerve (1000 lb + rollover)'),
+                  h('li', null, 'Deer: brake straight, scan shoulders dawn/dusk'),
+                  h('li', null, 'Black ice: forms on bridges + shaded spots first'),
+                  h('li', null, 'Winter kit: blanket, shovel, sand, flashlight, water')
+                )
+              )
+            ),
+            // Footer
+            h('div', { style: { borderTop: '2px double #000', paddingTop: '6px', marginTop: '12px', textAlign: 'center', fontSize: '9px', fontStyle: 'italic', color: '#64748b' } },
+              'RoadReady · AlloFlow · Printed ' + new Date().toLocaleDateString() + ' · Study the official Maine Driver\'s Manual for complete rules.'
+            )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ANALYTICS DASHBOARD (progress charts from logbook data)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'analytics') {
+        var anaLog = (d.logbook || []).slice();
+        var hasData = anaLog.length > 0;
+        // Safety + eco trend arrays (oldest → newest)
+        var safetyTrend = anaLog.map(function(j) { return j.safetyScore || 0; });
+        var ecoTrend = anaLog.map(function(j) { return j.efficiencyScore || 0; });
+        // Scenario frequency
+        var scenCounts = {};
+        anaLog.forEach(function(j) { scenCounts[j.scenario] = (scenCounts[j.scenario] || 0) + 1; });
+        var scenEntries = Object.keys(scenCounts).map(function(k) { return { name: k, count: scenCounts[k] }; }).sort(function(a, b) { return b.count - a.count; });
+        // Per-scenario personal bests (safety)
+        var bests = {};
+        anaLog.forEach(function(j) {
+          if (!bests[j.scenario] || j.safetyScore > bests[j.scenario]) bests[j.scenario] = j.safetyScore;
+        });
+        var bestsEntries = Object.keys(bests).map(function(k) { return { scenario: k, best: bests[k] }; }).sort(function(a, b) { return b.best - a.best; });
+        // Hours by weekday
+        var weekdayMin = [0,0,0,0,0,0,0]; // Sun..Sat
+        anaLog.forEach(function(j) {
+          var dt = new Date(j.endedAt || j.startedAt || Date.now());
+          weekdayMin[dt.getDay()] += (j.durationSec || 0) / 60;
+        });
+        var maxWeekdayMin = Math.max.apply(null, weekdayMin) || 1;
+        // Renders a simple SVG line chart given values 0-100
+        var drawLineChart = function(values, color, label) {
+          if (values.length < 2) return h('div', { style: { fontSize: '11px', color: '#64748b', padding: '20px', textAlign: 'center' } }, 'Need 2+ drives');
+          var W = 600, H = 120, pad = 20;
+          var stepX = (W - pad * 2) / (values.length - 1);
+          var pathD = values.map(function(v, i) {
+            var x = pad + i * stepX;
+            var y = H - pad - (v / 100) * (H - pad * 2);
+            return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(1);
+          }).join(' ');
+          // Area fill beneath line
+          var fillD = pathD + ' L ' + (pad + (values.length - 1) * stepX).toFixed(1) + ' ' + (H - pad) + ' L ' + pad + ' ' + (H - pad) + ' Z';
+          return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: '140', style: { background: '#020617', borderRadius: '8px', border: '1px solid #1e293b' } },
+            // Grid lines at 50, 75, 90
+            [50, 75, 90].map(function(y, i) {
+              var py = H - pad - (y / 100) * (H - pad * 2);
+              return h('g', { key: i },
+                h('line', { x1: pad, y1: py, x2: W - pad, y2: py, stroke: y === 90 ? '#22c55e' : y === 75 ? '#fbbf24' : '#475569', strokeWidth: 0.5, strokeDasharray: '2 3', opacity: 0.5 }),
+                h('text', { x: 2, y: py + 3, fontSize: '9', fill: '#475569' }, y + '')
+              );
+            }),
+            h('path', { d: fillD, fill: color, opacity: 0.15 }),
+            h('path', { d: pathD, fill: 'none', stroke: color, strokeWidth: 2.5, strokeLinecap: 'round' }),
+            values.map(function(v, i) {
+              var x = pad + i * stepX;
+              var y = H - pad - (v / 100) * (H - pad * 2);
+              return h('circle', { key: i, cx: x, cy: y, r: 3, fill: color });
+            }),
+            h('text', { x: pad, y: 10, fontSize: '10', fontWeight: 'bold', fill: color }, label)
+          );
+        };
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #0ea5e9' } },
+            h('div', { style: { fontSize: '42px' } }, '📈'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Progress Analytics'),
+            h('div', { style: { fontSize: '12px', color: '#bae6fd' } }, anaLog.length + ' drives logged · ' + (anaLog.reduce(function(s,j){return s+(j.durationSec||0);},0)/3600).toFixed(1) + ' total hours')
+          ),
+          !hasData ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: '12px', border: '1px solid #334155' } },
+            '📊 No data yet. Complete some drives to see your growth charted over time.'
+          ) : h('div', null,
+            // Trend charts
+            h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', marginBottom: '8px' } }, '🛡️ Safety Score Trend'),
+              drawLineChart(safetyTrend, '#4ade80', 'Safety'),
+              h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + safetyTrend[safetyTrend.length - 1] + ' · Best: ' + Math.max.apply(null, safetyTrend))
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '8px' } }, '🌿 Eco Score Trend'),
+              drawLineChart(ecoTrend, '#fbbf24', 'Eco'),
+              h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + ecoTrend[ecoTrend.length - 1] + ' · Best: ' + Math.max.apply(null, ecoTrend))
+            ),
+            // Scenario donut + bests side by side
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
+              h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '10px' } }, '🎯 Favorite Scenarios'),
+                (function() {
+                  var total = anaLog.length || 1;
+                  var colors = ['#22d3ee', '#fbbf24', '#4ade80', '#f472b6', '#a78bfa', '#f97316', '#60a5fa', '#ef4444'];
+                  var cumulative = 0;
+                  return h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center' } },
+                    h('svg', { viewBox: '0 0 100 100', width: '100', height: '100' },
+                      scenEntries.slice(0, 8).map(function(e, ei) {
+                        var frac = e.count / total;
+                        var startAngle = cumulative * Math.PI * 2;
+                        cumulative += frac;
+                        var endAngle = cumulative * Math.PI * 2;
+                        var largeArc = frac > 0.5 ? 1 : 0;
+                        var cx = 50, cy = 50, r = 40;
+                        var x1 = cx + Math.cos(startAngle - Math.PI / 2) * r;
+                        var y1 = cy + Math.sin(startAngle - Math.PI / 2) * r;
+                        var x2 = cx + Math.cos(endAngle - Math.PI / 2) * r;
+                        var y2 = cy + Math.sin(endAngle - Math.PI / 2) * r;
+                        return h('path', { key: ei, d: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z', fill: colors[ei % colors.length] });
+                      }),
+                      h('circle', { cx: 50, cy: 50, r: 22, fill: '#0f172a' }),
+                      h('text', { x: 50, y: 55, textAnchor: 'middle', fontSize: '12', fontWeight: 'bold', fill: '#fff' }, total)
+                    ),
+                    h('div', { style: { flex: 1, fontSize: '10px' } },
+                      scenEntries.slice(0, 6).map(function(e, ei) {
+                        return h('div', { key: ei, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 0' } },
+                          h('div', { style: { width: '10px', height: '10px', borderRadius: '3px', background: colors[ei % colors.length] } }),
+                          h('span', { style: { color: '#cbd5e1', flex: 1 } }, e.name),
+                          h('span', { style: { color: '#64748b' } }, e.count)
+                        );
+                      })
+                    )
+                  );
+                })()
+              ),
+              h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '10px' } }, '🏆 Personal Bests'),
+                h('div', { style: { fontSize: '10px' } },
+                  bestsEntries.slice(0, 8).map(function(b, bi) {
+                    return h('div', { key: bi, style: { marginBottom: '6px' } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
+                        h('span', { style: { color: '#cbd5e1' } }, b.scenario),
+                        h('span', { style: { fontWeight: 700, color: b.best >= 90 ? '#4ade80' : b.best >= 75 ? '#fbbf24' : '#ef4444' } }, b.best)
+                      ),
+                      h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', overflow: 'hidden' } },
+                        h('div', { style: { height: '100%', width: b.best + '%', background: b.best >= 90 ? '#4ade80' : b.best >= 75 ? '#fbbf24' : '#ef4444' } })
+                      )
+                    );
+                  })
+                )
+              )
+            ),
+            // Hours by weekday
+            h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: '10px' } }, '📅 When You Practice'),
+              h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '6px', height: '100px' } },
+                ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(function(day, di) {
+                  var mins = weekdayMin[di];
+                  var pct = mins / maxWeekdayMin;
+                  return h('div', { key: di, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' } },
+                    h('div', { style: { fontSize: '9px', color: '#94a3b8', marginBottom: '2px' } }, Math.round(mins) + 'm'),
+                    h('div', { style: { width: '100%', height: Math.max(4, pct * 60) + 'px', background: 'linear-gradient(0deg, #f472b6, #ec4899)', borderRadius: '4px 4px 0 0' } }),
+                    h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, day)
+                  );
+                })
+              )
+            ),
+            // Achievement unlock timeline — most recent 10
+            Object.keys(earnedBadges).length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '10px' } }, '🏅 Achievement Timeline'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a, ai) {
+                  return h('div', { key: a.id,
+                    style: { padding: '6px 10px', borderRadius: '6px', background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.2))', border: '1px solid #fbbf24', fontSize: '11px', color: '#fde68a', display: 'flex', alignItems: 'center', gap: '4px' }
+                  },
+                    h('span', { style: { fontSize: '14px' } }, a.icon),
+                    h('span', null, a.name)
+                  );
+                })
+              )
+            ) : null
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DISTRACTED DRIVING LAB
+      // ══════════════════════════════════════════════════════════
+      if (view === 'distractedLab') {
+        var dlSpeed = d.distractedSpeed || 35;
+        var dlGlance = d.distractedGlance || 3;
+        // Distance traveled during glance: speed (mph) * 1.467 (ft/s per mph) * time (s)
+        var distFt = Math.round(dlSpeed * 1.467 * dlGlance);
+        // Reference markers
+        var refs = [
+          { ft: 60, label: 'A car length (10 ft) × 6' },
+          { ft: 120, label: 'Half a football field' },
+          { ft: 300, label: 'A full football field' },
+          { ft: 528, label: '1/10 of a mile' }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #450a0a, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #ef4444' } },
+            h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, '📱'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Distracted Driving Lab'),
+            h('div', { style: { fontSize: '12px', color: '#fecaca' } }, 'Every second your eyes leave the road, the car keeps going. Let\'s see how far.')
+          ),
+          // Sliders
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '18px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { marginBottom: '14px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
+                h('span', { style: { color: '#fecaca', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🚗 Your speed'),
+                h('span', { style: { color: '#fff', fontWeight: 900 } }, dlSpeed + ' mph')
+              ),
+              h('input', { type: 'range', min: 15, max: 85, step: 5, value: dlSpeed,
+                onChange: function(e) { upd('distractedSpeed', parseInt(e.target.value)); },
+                style: { width: '100%' }
+              }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' } },
+                h('span', null, '15 (school zone)'),
+                h('span', null, '35 (city)'),
+                h('span', null, '55'),
+                h('span', null, '85 (highway)')
+              )
+            ),
+            h('div', null,
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
+                h('span', { style: { color: '#fecaca', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '📱 Glance duration'),
+                h('span', { style: { color: '#fff', fontWeight: 900 } }, dlGlance + ' seconds')
+              ),
+              h('input', { type: 'range', min: 1, max: 8, step: 0.5, value: dlGlance,
+                onChange: function(e) { upd('distractedGlance', parseFloat(e.target.value)); },
+                style: { width: '100%' }
+              }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' } },
+                h('span', null, '1s (check mirror)'),
+                h('span', null, '3s (read a text)'),
+                h('span', null, '5s'),
+                h('span', null, '8s (type reply)')
+              )
+            )
+          ),
+          // Big result
+          h('div', { style: { background: 'linear-gradient(135deg, rgba(127,29,29,0.5), rgba(239,68,68,0.2))', borderRadius: '14px', padding: '20px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '10px', color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, 'You drove BLIND for'),
+            h('div', { style: { fontSize: '56px', fontWeight: 900, color: '#fca5a5', lineHeight: 1, marginBottom: '4px' } }, distFt + ' ft'),
+            h('div', { style: { fontSize: '13px', color: '#fecaca' } }, '= ' + (distFt / 5280).toFixed(3) + ' miles with eyes off the road')
+          ),
+          // Visual to-scale road
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '16px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '10px' } }, '📏 To-scale comparison'),
+            // SVG road with scale markers
+            (function() {
+              var maxFt = Math.max(distFt, 540);
+              var svgW = 720;
+              var pxPerFt = svgW / maxFt;
+              return h('svg', { viewBox: '0 0 ' + svgW + ' 120', width: '100%', height: '120', style: { display: 'block' } },
+                // Road surface
+                h('rect', { x: 0, y: 50, width: svgW, height: 30, fill: '#334155' }),
+                // Dashed center line
+                h('line', { x1: 0, y1: 65, x2: svgW, y2: 65, stroke: '#fde047', strokeWidth: 2, strokeDasharray: '20 20' }),
+                // Reference markers
+                refs.map(function(r, ri) {
+                  var x = r.ft * pxPerFt;
+                  if (x > svgW) return null;
+                  return h('g', { key: ri },
+                    h('line', { x1: x, y1: 30, x2: x, y2: 100, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('text', { x: x, y: 20, textAnchor: 'middle', fontSize: '9', fill: '#94a3b8' }, r.ft + ' ft'),
+                    h('text', { x: x, y: 115, textAnchor: 'middle', fontSize: '8', fill: '#64748b' }, r.label)
+                  );
+                }),
+                // Glance-distance red bar
+                h('rect', { x: 0, y: 50, width: distFt * pxPerFt, height: 30, fill: 'rgba(239,68,68,0.4)' }),
+                // Car at start
+                h('g', { transform: 'translate(0 55)' },
+                  h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#22d3ee', stroke: '#000', strokeWidth: 0.5 }),
+                  h('text', { x: 0, y: -6, textAnchor: 'middle', fontSize: '9', fill: '#22d3ee' }, 'Eyes off')
+                ),
+                // Car at end
+                h('g', { transform: 'translate(' + (distFt * pxPerFt) + ' 55)' },
+                  h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#ef4444', stroke: '#000', strokeWidth: 0.5 }),
+                  h('text', { x: 0, y: -6, textAnchor: 'middle', fontSize: '9', fill: '#ef4444' }, 'Eyes back')
+                )
+              );
+            })()
+          ),
+          // Context / stats
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, '⚠️ NHTSA data'),
+              h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } }, 'Texting while driving = ', h('b', null, '6× crash risk'), '. 3,142 distracted-driving deaths in the US in 2020 (most recent final data).')
+            ),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: '10px', color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, '⚖️ Maine law'),
+              h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.6' } }, 'ALL handheld phone use banned while driving (2019). Texting: ', h('b', null, '$250 fine'), ' first offense, primary enforcement. Under 18: zero tolerance.')
+            )
+          ),
+          // Interpretations
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #ef4444', fontSize: '12px', color: '#fecaca', lineHeight: '1.7' } },
+            h('div', { style: { fontWeight: 800, marginBottom: '6px', color: '#ef4444' } }, '🎯 What this means:'),
+            distFt < 100 ? 'Still dangerous — but manageable at this low speed + short glance. Keep your eyes on the road anyway.' :
+            distFt < 300 ? 'You just crossed multiple car lengths blind. That\'s the space a kid could run into.' :
+            distFt < 600 ? 'More than a football field blind. Anything could happen — a car brakes, a deer enters — and you won\'t see it until it\'s too late.' :
+            'Over a tenth of a mile of blind driving. This is catastrophic risk. At these combos, you are the reason crashes happen.'
+          ),
+          // Challenge
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid #22c55e', marginTop: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' } }, '💚 The habit that saves lives'),
+            h('div', { style: { fontSize: '12px', color: '#bbf7d0', lineHeight: '1.6' } }, 'Every notification: silence the phone or put it in Do Not Disturb + Driving mode (automatic on most phones). The text can wait. The deer can\'t.')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // VEHICLE CUSTOMIZATION (My Ride)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'customize') {
+        var curColor = d.carColor || '#22d3ee';
+        var curDriverName = d.driverName || '';
+        var curPlate = d.licensePlate || '';
+        var paintOptions = [
+          { color: '#22d3ee', name: 'Electric Cyan' },
+          { color: '#ef4444', name: 'Fire Red' },
+          { color: '#fbbf24', name: 'Maine Gold' },
+          { color: '#22c55e', name: 'Forest Green' },
+          { color: '#a78bfa', name: 'Sunset Purple' },
+          { color: '#f472b6', name: 'Hot Pink' },
+          { color: '#0f172a', name: 'Midnight Black' },
+          { color: '#f8fafc', name: 'Arctic White' },
+          { color: '#f97316', name: 'Blaze Orange' },
+          { color: '#1e40af', name: 'Navy Blue' },
+          { color: '#7f1d1d', name: 'Deep Burgundy' },
+          { color: '#78350f', name: 'Chestnut Brown' }
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          // Hero with live preview
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #0f172a)', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '18px', border: '1px solid #ec4899' } },
+            h('div', { style: { fontSize: '42px', marginBottom: '6px' } }, '🎨'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '8px' } }, 'My Ride'),
+            // Live SVG car preview — updates as you pick colors
+            h('svg', { viewBox: '0 0 200 80', width: '200', height: '80', style: { margin: '0 auto', display: 'block', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.5))' } },
+              // Body
+              h('rect', { x: 30, y: 28, width: 140, height: 30, rx: 6, fill: curColor, stroke: '#020617', strokeWidth: 1 }),
+              // Roof/cabin
+              h('path', { d: 'M 60 28 L 80 12 L 120 12 L 140 28 Z', fill: curColor, filter: 'brightness(0.86)', stroke: '#020617', strokeWidth: 1 }),
+              // Windows
+              h('path', { d: 'M 65 26 L 82 15 L 118 15 L 135 26 Z', fill: '#1e3a5f', opacity: 0.85 }),
+              // Wheels
+              h('circle', { cx: 55, cy: 62, r: 8, fill: '#0f172a', stroke: '#475569', strokeWidth: 1.5 }),
+              h('circle', { cx: 55, cy: 62, r: 3, fill: '#64748b' }),
+              h('circle', { cx: 145, cy: 62, r: 8, fill: '#0f172a', stroke: '#475569', strokeWidth: 1.5 }),
+              h('circle', { cx: 145, cy: 62, r: 3, fill: '#64748b' }),
+              // Headlights
+              h('circle', { cx: 168, cy: 35, r: 2.5, fill: '#fff' }),
+              h('circle', { cx: 168, cy: 45, r: 2.5, fill: '#fff' }),
+              // License plate preview
+              curPlate ? h('g', null,
+                h('rect', { x: 80, y: 52, width: 40, height: 10, rx: 2, fill: '#fff', stroke: '#000', strokeWidth: 0.5 }),
+                h('text', { x: 100, y: 60, textAnchor: 'middle', fontSize: '7', fontWeight: 'bold', fill: '#000', fontFamily: 'monospace' }, curPlate.slice(0, 7))
+              ) : null
+            ),
+            curDriverName ? h('div', { style: { fontSize: '13px', color: '#fbcfe8', marginTop: '6px', fontWeight: 700 } }, 'Driver: ' + curDriverName) : null
+          ),
+          // Color picker
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, 'Paint Color'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '8px' } },
+              paintOptions.map(function(po) {
+                var sel = po.color === curColor;
+                return h('button', { key: po.color, onClick: function() { upd('carColor', po.color); },
+                  style: { padding: '8px', borderRadius: '8px', border: '2px solid ' + (sel ? '#ec4899' : '#334155'), background: sel ? 'rgba(236,72,153,0.15)' : '#1e293b', cursor: 'pointer', textAlign: 'center' }
+                },
+                  h('div', { style: { width: '100%', height: '28px', borderRadius: '4px', background: po.color, marginBottom: '4px', border: '1px solid rgba(0,0,0,0.3)' } }),
+                  h('div', { style: { fontSize: '9px', color: '#cbd5e1' } }, po.name)
+                );
+              })
+            ),
+            // Custom color input
+            h('div', { style: { marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('label', { style: { fontSize: '10px', color: '#94a3b8' } }, 'Custom:'),
+              h('input', { type: 'color', value: curColor,
+                onChange: function(e) { upd('carColor', e.target.value); },
+                style: { width: '40px', height: '28px', border: 'none', background: 'transparent', cursor: 'pointer' }
+              }),
+              h('code', { style: { fontSize: '10px', color: '#94a3b8' } }, curColor.toUpperCase())
+            )
+          ),
+          // Driver name
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, 'Driver Name (optional)'),
+            h('input', { type: 'text', value: curDriverName, placeholder: 'Your first name',
+              maxLength: 20,
+              onChange: function(e) { upd('driverName', e.target.value); },
+              style: { width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#020617', color: '#fff', fontSize: '13px' }
+            }),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, 'Shows up on your debrief certificates and journal exports. Stays on your device only — no cloud.')
+          ),
+          // License plate
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, 'License Plate'),
+            h('input', { type: 'text', value: curPlate, placeholder: 'e.g. MAINE07',
+              maxLength: 7,
+              onChange: function(e) { upd('licensePlate', e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, '')); },
+              style: { width: '140px', padding: '10px 12px', borderRadius: '6px', border: '2px solid #000', background: '#fff', color: '#000', fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.1em' }
+            }),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, '7 characters max. Letters + numbers only. Pure personalization — no lookups or real data.')
+          ),
+          // Reset
+          h('button', { onClick: function() { updMulti({ carColor: null, driverName: '', licensePlate: '' }); },
+            style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+          }, '↺ Reset to Default')
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ACHIEVEMENT GALLERY
+      // ══════════════════════════════════════════════════════════
+      if (view === 'achievementGallery') {
+        // Tier assignment: first 10 = bronze, 11-20 = silver, 21+ = gold.
+        // Using order in ACHIEVEMENTS array — earlier = easier, later = harder.
+        var tierOf = function(idx) { return idx < 10 ? 'bronze' : idx < 22 ? 'silver' : 'gold'; };
+        var tierColors = {
+          bronze: { ring: '#b45309', glow: 'rgba(180,83,9,0.7)', bg: 'radial-gradient(circle, #fcd34d, #b45309)' },
+          silver: { ring: '#9ca3af', glow: 'rgba(156,163,175,0.7)', bg: 'radial-gradient(circle, #e5e7eb, #9ca3af)' },
+          gold:   { ring: '#facc15', glow: 'rgba(250,204,21,0.9)', bg: 'radial-gradient(circle, #fef08a, #ca8a04)' }
+        };
+        var byTier = { bronze: [], silver: [], gold: [] };
+        ACHIEVEMENTS.forEach(function(ach, idx) { byTier[tierOf(idx)].push(ach); });
+        var earnedCount = Object.keys(earnedBadges).length;
+        var pctEarned = Math.round(earnedCount / ACHIEVEMENTS.length * 100);
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('style', null,
+            '@keyframes rrGalGlow { 0%,100%{filter:drop-shadow(0 0 6px currentColor)} 50%{filter:drop-shadow(0 0 18px currentColor)} }' +
+            '@keyframes rrGalRise { 0%{transform:translateY(20px);opacity:0} 100%{transform:translateY(0);opacity:1} }' +
+            '@keyframes rrGalSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }' +
+            '.rrBadgeCard:hover{transform:translateY(-4px);transition:transform 0.2s}'
+          ),
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          // Hero
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #4c1d95, #0c4a6e)', backgroundSize: '200% 200%', animation: 'rrHeroPan 15s ease infinite', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '20px', border: '1px solid #fbbf24' } },
+            h('div', { style: { fontSize: '64px', animation: 'rrHeroPulse 3s ease-in-out infinite' } }, '🏆'),
+            h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px' } }, 'Achievement Gallery'),
+            h('div', { style: { fontSize: '14px', color: '#fde68a' } }, earnedCount + ' of ' + ACHIEVEMENTS.length + ' unlocked · ' + pctEarned + '% complete'),
+            // Progress ring
+            h('div', { style: { marginTop: '12px', display: 'flex', justifyContent: 'center' } },
+              h('div', { style: { position: 'relative', width: '80px', height: '80px' } },
+                h('svg', { width: '80', height: '80', viewBox: '0 0 80 80' },
+                  h('circle', { cx: '40', cy: '40', r: '34', fill: 'none', stroke: '#1e293b', strokeWidth: '6' }),
+                  h('circle', { cx: '40', cy: '40', r: '34', fill: 'none', stroke: '#fbbf24', strokeWidth: '6', strokeDasharray: (pctEarned * 2.136) + ' 213.6', transform: 'rotate(-90 40 40)', strokeLinecap: 'round' })
+                ),
+                h('div', { style: { position: 'absolute', top: 0, left: 0, width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 900, color: '#fbbf24' } }, pctEarned + '%')
+              )
+            )
+          ),
+          // Tier sections — bronze, silver, gold
+          ['bronze', 'silver', 'gold'].map(function(tier) {
+            var list = byTier[tier];
+            var c = tierColors[tier];
+            var tierEarned = list.filter(function(a) { return earnedBadges[a.id]; }).length;
+            return h('div', { key: tier, style: { marginBottom: '20px' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid ' + c.ring } },
+                h('div', { style: { fontSize: '14px', fontWeight: 900, color: c.ring, textTransform: 'uppercase', letterSpacing: '0.1em' } }, (tier === 'bronze' ? '🥉 ' : tier === 'silver' ? '🥈 ' : '🥇 ') + tier + ' Tier'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, tierEarned + ' / ' + list.length)
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' } },
+                list.map(function(ach) {
+                  var earned = !!earnedBadges[ach.id];
+                  return h('div', { key: ach.id, className: 'rrBadgeCard',
+                    style: {
+                      background: earned ? 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95))' : '#0f172a',
+                      borderRadius: '12px', padding: '14px 10px', textAlign: 'center',
+                      border: '2px solid ' + (earned ? c.ring : '#1e293b'),
+                      boxShadow: earned ? '0 4px 16px ' + c.glow : 'none',
+                      opacity: earned ? 1 : 0.55,
+                      cursor: 'default'
+                    }
+                  },
+                    // Badge icon with tier ring
+                    h('div', { style: { position: 'relative', width: '56px', height: '56px', margin: '0 auto 8px' } },
+                      h('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', background: earned ? c.bg : '#1e293b', animation: earned ? 'rrGalGlow 2.5s ease-in-out infinite' : 'none', color: c.ring } }),
+                      h('div', { style: { position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', filter: earned ? 'none' : 'grayscale(1)' } }, earned ? ach.icon : '🔒')
+                    ),
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fff' : '#64748b', marginBottom: '3px' } }, earned ? ach.name : '???'),
+                    h('div', { style: { fontSize: '9px', color: earned ? '#94a3b8' : '#475569', lineHeight: '1.4' } }, ach.desc)
+                  );
+                })
+              )
+            );
+          })
         );
       }
 
@@ -10823,20 +15004,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── PRE-TRIP INSPECTION CHECKLIST ──
       if (view === 'preTrip') {
+        // Each item has a stable id so we can persist the user's checks across renders.
         var checks = [
-          { area: 'Tires', icon: '🛞', items: ['Check pressure with gauge (door sticker PSI, not sidewall)', 'Tread depth: penny test — if you see all of Lincoln\'s head, replace', 'No bulges, cracks, or nails visible', 'Spare tire inflated and jack present'] },
-          { area: 'Lights', icon: '💡', items: ['Headlights: low beams + high beams working', 'Tail lights and brake lights (have someone press brake while you look)', 'Turn signals all four corners', 'Reverse lights', 'License plate light'] },
-          { area: 'Fluids', icon: '🧪', items: ['Engine oil: check dipstick, between min/max marks', 'Coolant: visible in overflow tank, NOT when hot', 'Brake fluid: reservoir at or above minimum line', 'Windshield washer fluid: top off', 'Transmission fluid: check with engine running (some cars)'] },
-          { area: 'Wipers & Glass', icon: '🪟', items: ['Wiper blades not torn or streaking', 'Windshield: no cracks in driver\'s line of sight', 'All mirrors adjusted: rearview + both side mirrors', 'Defrost/defog working (critical in Maine winters)'] },
-          { area: 'Safety Equipment', icon: '🛡️', items: ['Seatbelts: all buckles click and retract', 'Airbag light: goes off after engine start (if it stays on = problem)', 'Horn: working', 'Emergency kit: first aid, flashlight, blanket, jumper cables', 'Registration and insurance card in glove box'] },
-          { area: 'Before Moving', icon: '🔑', items: ['Seat position: can reach all pedals fully', 'Mirrors adjusted BEFORE driving', 'Seatbelt on', 'Parking brake released', 'Check surroundings: walk around the car, check for children/animals/obstacles behind'] }
+          { area: 'Tires', icon: '🛞', items: [
+            { id: 'tire_psi', t: 'Check pressure with gauge (door sticker PSI, not sidewall)' },
+            { id: 'tire_tread', t: 'Tread depth: penny test — if you see all of Lincoln\'s head, replace' },
+            { id: 'tire_damage', t: 'No bulges, cracks, or nails visible' },
+            { id: 'tire_spare', t: 'Spare tire inflated and jack present' }
+          ] },
+          { area: 'Lights', icon: '💡', items: [
+            { id: 'lights_head', t: 'Headlights: low beams + high beams working' },
+            { id: 'lights_brake', t: 'Tail lights and brake lights (have someone press brake while you look)' },
+            { id: 'lights_signal', t: 'Turn signals all four corners' },
+            { id: 'lights_reverse', t: 'Reverse lights' },
+            { id: 'lights_plate', t: 'License plate light' }
+          ] },
+          { area: 'Fluids', icon: '🧪', items: [
+            { id: 'fluid_oil', t: 'Engine oil: check dipstick, between min/max marks' },
+            { id: 'fluid_coolant', t: 'Coolant: visible in overflow tank, NOT when hot' },
+            { id: 'fluid_brake', t: 'Brake fluid: reservoir at or above minimum line' },
+            { id: 'fluid_washer', t: 'Windshield washer fluid: top off' },
+            { id: 'fluid_trans', t: 'Transmission fluid: check with engine running (some cars)' }
+          ] },
+          { area: 'Wipers & Glass', icon: '🪟', items: [
+            { id: 'wiper_blades', t: 'Wiper blades not torn or streaking' },
+            { id: 'glass_crack', t: 'Windshield: no cracks in driver\'s line of sight' },
+            { id: 'mirror_adjust', t: 'All mirrors adjusted: rearview + both side mirrors' },
+            { id: 'defog', t: 'Defrost/defog working (critical in Maine winters)' }
+          ] },
+          { area: 'Safety Equipment', icon: '🛡️', items: [
+            { id: 'safe_belts', t: 'Seatbelts: all buckles click and retract' },
+            { id: 'safe_airbag', t: 'Airbag light: goes off after engine start (if it stays on = problem)' },
+            { id: 'safe_horn', t: 'Horn: working' },
+            { id: 'safe_kit', t: 'Emergency kit: first aid, flashlight, blanket, jumper cables' },
+            { id: 'safe_papers', t: 'Registration and insurance card in glove box' }
+          ] },
+          { area: 'Before Moving', icon: '🔑', items: [
+            { id: 'seat_pos', t: 'Seat position: can reach all pedals fully' },
+            { id: 'mirror_drive', t: 'Mirrors adjusted BEFORE driving' },
+            { id: 'belt_on', t: 'Seatbelt on' },
+            { id: 'pbrake', t: 'Parking brake released' },
+            { id: 'walk_around', t: 'Check surroundings: walk around the car, check for children/animals/obstacles behind' }
+          ] }
         ];
+        var ptState = d.preTripChecks || {};
+        var totalItems = checks.reduce(function(s, c) { return s + c.items.length; }, 0);
+        var checkedCount = Object.keys(ptState).filter(function(k) { return ptState[k]; }).length;
+        var pctDone = Math.round(checkedCount / totalItems * 100);
+        var fromRoadTest = !!d.roadTestStage; // if launched as part of road test, show different completion CTA
         return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('button', { onClick: function() { upd('view', fromRoadTest ? 'roadTestIntro' : 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← ' + (fromRoadTest ? 'Road Test' : 'Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #3f6212, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #84cc16', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '✅'),
             h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Pre-Trip Vehicle Inspection'),
-            h('div', { style: { fontSize: '11px', color: '#d9f99d' } }, 'Walk-around checklist. Pro drivers do this every time. You should too.')
+            h('div', { style: { fontSize: '11px', color: '#d9f99d', marginBottom: '8px' } }, 'Tap each item as you complete the walk-around. Pros do this every time.'),
+            // Progress bar
+            h('div', { style: { height: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', overflow: 'hidden', marginTop: '8px' } },
+              h('div', { style: { height: '100%', width: pctDone + '%', background: pctDone === 100 ? '#22c55e' : '#84cc16', transition: 'width 0.3s' } })
+            ),
+            h('div', { style: { fontSize: '11px', color: '#d9f99d', marginTop: '4px', fontWeight: 700 } }, checkedCount + ' / ' + totalItems + ' completed (' + pctDone + '%)')
           ),
           checks.map(function(ch) {
             return h('div', { key: ch.area, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '8px' } },
@@ -10844,17 +15070,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('span', { style: { fontSize: '22px' } }, ch.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, ch.area)
               ),
-              ch.items.map(function(item, ii) {
-                return h('div', { key: ii, style: { display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5', marginBottom: '3px' } },
-                  h('span', { style: { color: '#84cc16', fontWeight: 700, flexShrink: 0 } }, '☐'),
-                  h('span', null, item)
+              ch.items.map(function(item) {
+                var done = !!ptState[item.id];
+                return h('button', { key: item.id,
+                  onClick: function() {
+                    var next = Object.assign({}, ptState);
+                    next[item.id] = !done;
+                    upd('preTripChecks', next);
+                  },
+                  style: { display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: '6px', border: 'none', background: done ? 'rgba(132,204,22,0.1)' : 'transparent', cursor: 'pointer', fontSize: '11px', color: done ? '#bef264' : '#cbd5e1', lineHeight: '1.5', marginBottom: '2px' }
+                },
+                  h('span', { style: { color: done ? '#84cc16' : '#475569', fontWeight: 700, flexShrink: 0, fontSize: '14px' } }, done ? '✅' : '☐'),
+                  h('span', { style: { textDecoration: done ? 'line-through' : 'none' } }, item.t)
                 );
               })
             );
           }),
-          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', fontSize: '11px', color: '#94a3b8' } },
-            h('div', { style: { fontWeight: 700, color: '#84cc16', marginBottom: '4px' } }, '💡 When to do this:'),
-            'Every time you drive a car you haven\'t driven in a while. Before long trips. After someone else used the car. After any maintenance. And honestly, a quick tire + lights + mirror check should be habit every single time.'
+          // Action row: complete + reset
+          h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
+            h('button', {
+              disabled: pctDone < 80,
+              onClick: function() {
+                if (pctDone < 80) return;
+                var pBadges = Object.assign({}, d.badges || {});
+                if (!pBadges.pretrip_pro) {
+                  pBadges.pretrip_pro = true;
+                  upd('badges', pBadges);
+                  addToast('🏅 Achievement: Pre-Trip Pro');
+                }
+                upd('preTripCompletedAt', Date.now());
+                addToast('✅ Pre-trip inspection complete!');
+                if (fromRoadTest) {
+                  // Advance road test to driving stage.
+                  updMulti({ view: 'roadTestIntro', roadTestStage: 'drive' });
+                }
+              },
+              style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: pctDone >= 80 ? 'linear-gradient(135deg, #65a30d, #3f6212)' : '#1e293b', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: pctDone >= 80 ? 'pointer' : 'not-allowed', opacity: pctDone >= 80 ? 1 : 0.5 }
+            }, pctDone >= 80 ? (fromRoadTest ? '✅ Continue to Driving Test' : '✅ Mark Inspection Complete') : 'Check 80%+ to continue'),
+            h('button', { onClick: function() { upd('preTripChecks', {}); },
+              style: { padding: '12px 16px', borderRadius: '10px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '↺ Reset')
+          ),
+          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', fontSize: '11px', color: '#94a3b8', marginTop: '12px' } },
+            h('div', { style: { fontWeight: 700, color: '#84cc16', marginBottom: '4px' } }, '💡 Why this matters:'),
+            'Maine BMV road test starts with a brief vehicle inspection. Examiners will check that signals, brakes, horn, wipers, and seat belts work. Failing this means the test is over before you even drive. Build the habit now.'
           )
         );
       }
@@ -11371,40 +15630,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── CERTIFICATE OF COMPLETION ──
       if (view === 'certificate' && drivingStats) {
         var certDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        return h('div', { style: { padding: '20px', maxWidth: '700px', margin: '0 auto' } },
+        var certName = d.driverName || 'Student Driver';
+        var certPlate = d.licensePlate || '';
+        var certColor = d.carColor || '#22d3ee';
+        var certCarCR = (parseInt(certColor.replace('#',''),16)>>16)&0xff, certCarCG = (parseInt(certColor.replace('#',''),16)>>8)&0xff, certCarCB = parseInt(certColor.replace('#',''),16)&0xff;
+        var certCarDark = '#' + [Math.floor(certCarCR*0.8), Math.floor(certCarCG*0.8), Math.floor(certCarCB*0.8)].map(function(v){var s=v.toString(16);return s.length<2?'0'+s:s;}).join('');
+        var certEarned = Object.keys(earnedBadges).length;
+        var certTotalSec = (d.logbook || []).reduce(function(s, j) { return s + (j.durationSec || 0); }, 0);
+        var certHours = (certTotalSec / 3600).toFixed(1);
+        var permitPassed = !!earnedBadges.permit_pass;
+        var roadTestPassed = !!earnedBadges.road_test_pass;
+        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Back'),
-          h('div', { id: 'roadready-certificate', style: { background: 'linear-gradient(135deg, #fefce8, #fff7ed)', borderRadius: '16px', padding: '40px', border: '3px solid #fbbf24', textAlign: 'center', color: '#1e293b', position: 'relative' } },
-            // Decorative border
-            h('div', { style: { position: 'absolute', top: '8px', left: '8px', right: '8px', bottom: '8px', border: '2px solid #d4a843', borderRadius: '12px', pointerEvents: 'none' } }),
-            h('div', { style: { fontSize: '14px', letterSpacing: '4px', color: '#a07830', fontWeight: 700, marginBottom: '8px' } }, 'CERTIFICATE OF COMPLETION'),
-            h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🚗'),
+          h('style', null,
+            '@media print { body * { visibility: hidden; } #roadready-certificate, #roadready-certificate * { visibility: visible; } #roadready-certificate { position: absolute; left: 0; top: 0; width: 100%; } }'
+          ),
+          h('div', { id: 'roadready-certificate', style: { background: 'linear-gradient(135deg, #fefce8, #fff7ed, #fef3c7)', borderRadius: '18px', padding: '42px 40px 30px 40px', border: '4px double #fbbf24', textAlign: 'center', color: '#1e293b', position: 'relative', boxShadow: '0 20px 60px rgba(251,191,36,0.2)' } },
+            // Decorative inner border
+            h('div', { style: { position: 'absolute', top: '12px', left: '12px', right: '12px', bottom: '12px', border: '1px solid #d4a843', borderRadius: '14px', pointerEvents: 'none' } }),
+            // Corner flourishes
+            ['top-left','top-right','bottom-left','bottom-right'].map(function(pos, pi) {
+              var styles = { position: 'absolute', fontSize: '28px', color: '#d4a843' };
+              if (pos.indexOf('top') >= 0) styles.top = '20px'; else styles.bottom = '20px';
+              if (pos.indexOf('left') >= 0) styles.left = '24px'; else styles.right = '24px';
+              return h('div', { key: pi, style: styles }, '✦');
+            }),
+            // Header
+            h('div', { style: { fontSize: '11px', letterSpacing: '8px', color: '#a07830', fontWeight: 700, marginBottom: '4px' } }, 'CERTIFICATE OF COMPLETION'),
+            // Custom SVG car illustration with user's color + plate
+            h('svg', { viewBox: '0 0 200 70', width: '160', height: '56', style: { margin: '4px auto 0' } },
+              h('rect', { x: 30, y: 22, width: 140, height: 28, rx: 6, fill: certColor, stroke: '#422006', strokeWidth: 1 }),
+              h('path', { d: 'M 58 22 L 78 8 L 122 8 L 142 22 Z', fill: certCarDark, stroke: '#422006', strokeWidth: 1 }),
+              h('path', { d: 'M 63 20 L 80 11 L 120 11 L 137 20 Z', fill: '#1e3a5f', opacity: 0.85 }),
+              h('circle', { cx: 55, cy: 54, r: 7, fill: '#1e293b', stroke: '#78716c', strokeWidth: 1 }),
+              h('circle', { cx: 145, cy: 54, r: 7, fill: '#1e293b', stroke: '#78716c', strokeWidth: 1 }),
+              certPlate ? h('g', null,
+                h('rect', { x: 78, y: 44, width: 44, height: 10, rx: 2, fill: '#fff', stroke: '#000', strokeWidth: 0.4 }),
+                h('text', { x: 100, y: 52, textAnchor: 'middle', fontSize: '7', fontWeight: 'bold', fill: '#000', fontFamily: 'monospace' }, certPlate.slice(0, 7))
+              ) : null
+            ),
             h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b', marginBottom: '4px' } }, 'RoadReady'),
-            h('div', { style: { fontSize: '13px', color: '#64748b', marginBottom: '16px' } }, "Driver's Education & Automotive Science"),
-            h('div', { style: { width: '60%', height: '1px', background: '#d4a843', margin: '0 auto 16px' } }),
-            h('div', { style: { fontSize: '12px', color: '#64748b', marginBottom: '4px' } }, 'This certifies that'),
-            h('div', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '16px', fontStyle: 'italic' } }, 'Student Driver'),
-            h('div', { style: { fontSize: '12px', color: '#64748b', marginBottom: '4px' } }, 'has successfully completed the RoadReady driving course with a grade of'),
-            h('div', { style: { fontSize: '36px', fontWeight: 900, color: '#a07830', marginBottom: '8px' } }, gradeLetter),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '16px' } },
-              'Scenario: ' + drivingStats.scenario + ' · Vehicle: ' + drivingStats.vehicle),
-            h('div', { style: { display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '16px' } },
-              h('div', { style: { textAlign: 'center' } },
-                h('div', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, drivingStats.safetyScore),
-                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Safety Score')
+            h('div', { style: { fontSize: '12px', color: '#64748b', marginBottom: '14px', fontStyle: 'italic' } }, "Driver's Education & Automotive Science"),
+            h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '0 auto 16px' } }),
+            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '2px' } }, 'This certifies that'),
+            h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', fontFamily: '"Georgia", "Times New Roman", serif', fontStyle: 'italic' } }, certName),
+            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '14px', maxWidth: '500px', margin: '0 auto 14px', lineHeight: '1.6' } },
+              'has completed the RoadReady driver\'s education curriculum including physics of stopping distance, Maine state laws, hazard recognition, and ' + certHours + ' hours of simulated supervised driving practice.'
+            ),
+            h('div', { style: { fontSize: '10px', color: '#a07830', fontWeight: 700, letterSpacing: '2px', marginBottom: '4px' } }, 'FINAL GRADE'),
+            h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#a07830', marginBottom: '12px', lineHeight: '1' } }, gradeLetter),
+            // Stats grid
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', margin: '12px auto', maxWidth: '520px' } },
+              [['🛡️', drivingStats.safetyScore, 'Safety'],
+               ['🌿', drivingStats.efficiencyScore, 'Eco'],
+               ['🏆', certEarned, 'Badges'],
+               ['🕙', certHours, 'Log hrs']
+              ].map(function(s, si) {
+                return h('div', { key: si, style: { textAlign: 'center', padding: '6px', background: 'rgba(212,168,67,0.1)', borderRadius: '6px', border: '1px solid #d4a843' } },
+                  h('div', { style: { fontSize: '14px' } }, s[0]),
+                  h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#422006' } }, s[1]),
+                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase' } }, s[2])
+                );
+              })
+            ),
+            // Seals row
+            h('div', { style: { display: 'flex', justifyContent: 'center', gap: '20px', margin: '14px 0', fontSize: '10px' } },
+              h('div', { style: { textAlign: 'center', opacity: permitPassed ? 1 : 0.3 } },
+                h('div', { style: { fontSize: '24px' } }, '📝'),
+                h('div', { style: { color: permitPassed ? '#15803d' : '#94a3b8', fontWeight: 700 } }, permitPassed ? 'PERMIT PASSED' : 'permit pending')
               ),
-              h('div', { style: { textAlign: 'center' } },
-                h('div', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, drivingStats.efficiencyScore),
-                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Eco Score')
+              h('div', { style: { textAlign: 'center', opacity: roadTestPassed ? 1 : 0.3 } },
+                h('div', { style: { fontSize: '24px' } }, '🪪'),
+                h('div', { style: { color: roadTestPassed ? '#15803d' : '#94a3b8', fontWeight: 700 } }, roadTestPassed ? 'ROAD TEST PASSED' : 'road test pending')
               ),
-              h('div', { style: { textAlign: 'center' } },
-                h('div', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, drivingStats.avgMPG),
-                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Avg MPG')
+              h('div', { style: { textAlign: 'center', opacity: certTotalSec >= 70*3600 ? 1 : certHours > 10 ? 0.7 : 0.3 } },
+                h('div', { style: { fontSize: '24px' } }, '🕙'),
+                h('div', { style: { color: certTotalSec >= 70*3600 ? '#15803d' : '#64748b', fontWeight: 700 } }, certTotalSec >= 70*3600 ? '70+ HOURS' : certHours + ' of 70 hrs')
               )
             ),
-            h('div', { style: { width: '60%', height: '1px', background: '#d4a843', margin: '0 auto 12px' } }),
-            h('div', { style: { fontSize: '11px', color: '#64748b' } }, certDate),
-            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } }, 'AlloFlow · RoadReady Driver\'s Ed · Portland, Maine'),
-            h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '8px' } }, 'This certificate is for educational simulation purposes and does not replace state-required driver\'s education.')
+            h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '14px auto' } }),
+            // Signature lines
+            h('div', { style: { display: 'flex', justifyContent: 'space-around', fontSize: '10px', color: '#64748b', marginTop: '10px' } },
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { borderTop: '1px solid #422006', width: '180px', marginBottom: '4px' } }),
+                h('div', null, 'Parent / Guardian Signature')
+              ),
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { borderTop: '1px solid #422006', width: '180px', marginBottom: '4px' } }),
+                h('div', null, 'Date')
+              )
+            ),
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '18px' } }, 'Issued ' + certDate + ' · AlloFlow RoadReady · Portland, Maine'),
+            h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'Simulation-based. Does not replace state-required driver\'s education or road test.')
           ),
           h('button', { onClick: function() {
             // Print the certificate

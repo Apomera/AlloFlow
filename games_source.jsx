@@ -135,7 +135,17 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const [gameMode, setGameMode] = useState('smart');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  const [mismatchIndices, setMismatchIndices] = useState([]);
+  const [scoreDelta, setScoreDelta] = useState(null);
   const cardRefs = useRef([]);
+  const gridRef = useRef(null);
+  const scoreDeltaTimerRef = useRef(null);
+  const flashScoreDelta = (delta) => {
+    if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
+    setScoreDelta(delta);
+    scoreDeltaTimerRef.current = setTimeout(() => setScoreDelta(null), 900);
+  };
+  useEffect(() => () => { if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current); }, []);
   useEffect(() => {
     initializeGame();
   }, [data, gameMode]);
@@ -216,6 +226,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
       const card2 = cards[newFlipped[1]];
       if (card1.pairId === card2.pairId) {
         setScore(s => s + 30);
+        flashScoreDelta(30);
         setTimeout(() => {
           setMatchedPairs(prev => {
             const newSet = new Set(prev);
@@ -227,10 +238,13 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         }, 500);
       } else {
         setScore(s => Math.max(0, s - 5));
+        flashScoreDelta(-5);
+        setMismatchIndices(newFlipped);
         setTimeout(() => {
           setFlippedIndices([]);
+          setMismatchIndices([]);
           setAnnouncement(t('memory.announcement_mismatch'));
-        }, 2500);
+        }, 1500);
       }
     }
   };
@@ -241,17 +255,15 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         return;
     }
     const getCols = () => {
-        const width = window.innerWidth;
-        if (isFullscreen) {
-            if (width >= 1024) return 6;
-            if (width >= 768) return 5;
-            if (width >= 640) return 4;
-            return 3;
-        } else {
-            if (width >= 768) return 4;
-            if (width >= 640) return 3;
-            return 2;
+        const grid = gridRef.current;
+        if (!grid || grid.children.length === 0) return 1;
+        const firstTop = grid.children[0].offsetTop;
+        let count = 0;
+        for (const child of grid.children) {
+            if (child.offsetTop === firstTop) count++;
+            else break;
         }
+        return count || 1;
     };
     const cols = getCols();
     const total = cards.length;
@@ -285,28 +297,46 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         });
       }
     }
-  }, [matchedPairs, cards.length, isWon, onScoreUpdate, score]);
+  }, [matchedPairs, cards.length, isWon, onScoreUpdate, onGameComplete, score, moves]);
+  const totalPairs = cards.length / 2;
+  const progressPct = totalPairs > 0 ? Math.round((matchedPairs.size / totalPairs) * 100) : 0;
   return (
-    <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative'}`}>
+    <div className={`p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100'}`}>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className={`flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-100/90 backdrop-blur-sm py-2 border-b border-slate-200' : ''}`}>
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10' : ''}`}>
         <div>
-          <h3 className="font-bold text-indigo-900 text-lg flex items-center gap-2">
+          <h3 className={`font-bold text-lg flex items-center gap-2 ${isFullscreen ? 'text-white' : 'text-indigo-900'}`}>
             <Brain size={20} /> {t('memory.title')}
           </h3>
-          <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-              <span>{t('memory.moves')}: {moves}</span>
-              <span className="w-px h-3 bg-slate-300"></span>
-              <span className="text-indigo-600 font-bold">{t('memory.score')}: {score}</span>
-              <span className="w-px h-3 bg-slate-300"></span>
-              <span>{t('memory.pairs')}: {matchedPairs.size}/{cards.length / 2}</span>
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+              <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-500'} /> {t('memory.moves')}: {moves}
+              </span>
+              <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full transition-all ${scoreDelta !== null ? (scoreDelta > 0 ? 'ring-2 ring-emerald-400 scale-105' : 'ring-2 ring-red-400 scale-105') : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
+                <Trophy size={10} className="text-yellow-500" /> {t('memory.score')}: {score}
+                {scoreDelta !== null && (
+                  <span className={`absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
+                    {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
+                  </span>
+                )}
+              </span>
+              <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+                <CheckCircle2 size={10} className="text-emerald-500" /> {t('memory.pairs')}: {matchedPairs.size}/{totalPairs}
+              </span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className={`flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? 'bg-white/10 border border-white/20 backdrop-blur-md' : 'bg-white border border-slate-200'}`}>
           <select aria-label={t('common.selection')}
             value={gameMode}
-            onChange={(e) => setGameMode(e.target.value)}
-            className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+            onChange={(e) => {
+                const next = e.target.value;
+                const inProgress = moves > 0 && !isWon;
+                if (inProgress && !window.confirm(t('memory.mode_switch_confirm') || 'Changing the mode will restart this round. Continue?')) {
+                    return;
+                }
+                setGameMode(next);
+            }}
+            className={`text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? 'bg-white/10 text-white border-0 [&>option]:text-slate-800' : 'bg-transparent text-indigo-700 border-0'}`}
             data-help-key="memory_mode_select"
           >
             <option value="smart">{t('memory.modes.smart')}</option>
@@ -317,7 +347,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </select>
           <button
             onClick={initializeGame}
-            className="text-xs flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full font-bold hover:bg-indigo-50 transition-colors"
+            className={`text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-indigo-600 hover:bg-indigo-50'}`}
             aria-label={t('memory.reset')}
             data-help-key="memory_reset_btn"
           >
@@ -325,40 +355,95 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </button>
           <button
             onClick={() => setIsFullscreen(prev => !prev)}
-            className="text-slate-500 hover:text-indigo-600 p-1.5 rounded-full hover:bg-indigo-50 transition-colors"
+            className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             aria-label={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             data-help-key="memory_fullscreen_btn"
           >
             {isFullscreen ? <Minimize size={18}/> : <Maximize size={18}/>}
           </button>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-600 p-1" aria-label={t('memory.close_aria')}><X size={18}/></button>
+          <button onClick={onClose} className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18}/></button>
         </div>
       </div>
-      {isWon ? (
-        <div className={`flex flex-col items-center justify-center py-12 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
-          {!useReducedMotion() && <ConfettiExplosion />}
-          <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-4 shadow-lg">
-            <Trophy size={40} className="fill-current" />
+      {!isWon && totalPairs > 0 && (
+        <div className={`mb-5 ${isFullscreen ? '' : ''}`}>
+          <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-300' : 'text-slate-500'}`}>
+            <span>{t('memory.pairs')}</span>
+            <span>{progressPct}%</span>
           </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-2">{t('memory.victory')}</h2>
-          <div className="text-lg font-bold text-indigo-600 mb-4 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100">
-              {t('memory.final_score')}: {score}
+          <div className={`h-2 w-full rounded-full overflow-hidden ${isFullscreen ? 'bg-white/10' : 'bg-slate-200'}`}>
+            <div
+              className={`h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-500 to-emerald-500 ${!useReducedMotion() ? 'transition-all duration-500 ease-out' : ''}`}
+              style={{ width: `${progressPct}%` }}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPct}
+            />
           </div>
-          <p className="text-slate-600 mb-6">{t('memory.cleared_message', { moves })}</p>
-          <button
-              aria-label={t('common.start_game')}
-            onClick={initializeGame}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-transform"
-          >
-            {t('memory.play_again')}
-          </button>
         </div>
-      ) : (
-        <div className={`grid gap-4 ${isFullscreen ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`} role="grid" aria-label={t('memory.board_aria')}>
+      )}
+      {isWon ? (() => {
+          const perfect = totalPairs > 0 && moves === totalPairs;
+          const great = totalPairs > 0 && moves <= Math.ceil(totalPairs * 1.5);
+          const stars = perfect ? 3 : great ? 2 : 1;
+          const accuracy = moves > 0 ? Math.round((totalPairs / moves) * 100) : 100;
+          const cardBg = isFullscreen ? 'bg-white/10 border-white/20 backdrop-blur-md' : 'bg-white border-slate-200';
+          const labelColor = isFullscreen ? 'text-slate-300' : 'text-slate-500';
+          const valueColor = isFullscreen ? 'text-white' : 'text-slate-900';
+          return (
+          <div className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
+            {!useReducedMotion() && <ConfettiExplosion />}
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? 'bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40' : 'bg-yellow-100 text-yellow-600'}`}>
+              <Trophy size={40} className="fill-current" />
+            </div>
+            <h2 className={`text-2xl font-black mb-3 ${isFullscreen ? 'text-white' : 'text-slate-800'}`}>{t('memory.victory')}</h2>
+            <div className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
+              {[0, 1, 2].map(i => (
+                <Star
+                  key={i}
+                  size={32}
+                  className={i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-md' : (isFullscreen ? 'text-white/20' : 'text-slate-300')}
+                  strokeWidth={1.5}
+                />
+              ))}
+            </div>
+            <div className={`grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6`}>
+              <div className={`rounded-xl border p-3 ${cardBg}`}>
+                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.score')}</div>
+                <div className={`text-xl font-black ${valueColor}`}>{score}</div>
+              </div>
+              <div className={`rounded-xl border p-3 ${cardBg}`}>
+                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.moves')}</div>
+                <div className={`text-xl font-black ${valueColor}`}>{moves}</div>
+              </div>
+              <div className={`rounded-xl border p-3 ${cardBg}`}>
+                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>Accuracy</div>
+                <div className={`text-xl font-black ${valueColor}`}>{accuracy}%</div>
+              </div>
+            </div>
+            <p className={`text-sm mb-6 ${isFullscreen ? 'text-slate-300' : 'text-slate-600'}`}>{t('memory.cleared_message', { moves })}</p>
+            <button
+                aria-label={t('common.start_game')}
+              onClick={initializeGame}
+              className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all active:scale-95"
+            >
+              {t('memory.play_again')}
+            </button>
+          </div>
+          );
+      })() : (
+        <div
+          ref={gridRef}
+          className="grid gap-2 sm:gap-3"
+          style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isFullscreen ? '130px' : '110px'}, 1fr))` }}
+          role="grid"
+          aria-label={t('memory.board_aria')}
+        >
           {cards.map((card, index) => {
             const isFlipped = flippedIndices.includes(index) || matchedPairs.has(card.pairId);
             const isMatched = matchedPairs.has(card.pairId);
+            const isMismatch = mismatchIndices.includes(index);
             let ariaLabel = `${t('memory.card_prefix')} ${index + 1}`;
             if (isMatched) {
                 ariaLabel += `, ${t('memory.matched_suffix')}: ${card.type === 'image' ? t('memory.modes.term_image') : card.content}`;
@@ -377,16 +462,19 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                 role="button"
                 aria-label={ariaLabel}
                 aria-disabled={isFlipped || isMatched}
-                className={`aspect-[3/4] cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl`}
+                className={`aspect-square cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} ${isMismatch && !useReducedMotion() ? 'animate-shake' : ''} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl transition-transform ${!isFlipped && !isMatched ? 'hover:-translate-y-1 hover:scale-[1.03]' : ''}`}
                 data-help-key="memory_card_item"
               >
-                <div className={`w-full h-full transition-all duration-500 transform-style-3d rounded-xl shadow-sm border-2 ${isFlipped ? 'rotate-y-180 border-indigo-300' : 'rotate-y-0 border-slate-300 bg-white'}`}>
-                  <div className="absolute inset-0 backface-hidden bg-indigo-100 flex items-center justify-center rounded-xl group-hover:bg-indigo-200 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600">
-                      <HelpCircle size={16} />
+                <div className={`w-full h-full transition-all duration-500 transform-style-3d rounded-xl border-2 ${isFlipped ? `rotate-y-180 ${isMismatch ? 'border-red-400 shadow-lg shadow-red-200' : isMatched ? 'border-green-400 shadow-lg shadow-green-200' : 'border-indigo-300 shadow-md'}` : 'rotate-y-0 border-slate-200 bg-white shadow-sm group-hover:shadow-md'}`}>
+                  <div className="absolute inset-0 backface-hidden flex items-center justify-center rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 via-indigo-100 to-indigo-200 group-hover:from-indigo-200 group-hover:to-indigo-300 transition-colors">
+                    <div className="absolute inset-0 opacity-40" style={{
+                      backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.6) 0, transparent 40%), radial-gradient(circle at 80% 80%, rgba(99,102,241,0.25) 0, transparent 45%)'
+                    }}></div>
+                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-inner ring-1 ring-indigo-200/60">
+                      <HelpCircle size={20} strokeWidth={2.25} />
                     </div>
                   </div>
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center p-3 text-center overflow-hidden">
+                  <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-xl flex items-center justify-center p-2 text-center overflow-hidden ${isMismatch ? 'bg-red-50' : isMatched ? 'bg-green-50' : 'bg-white'}`}>
                     {card.type === 'image' ? (
                       <img loading="lazy"
                         src={card.content}
@@ -395,8 +483,8 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                         decoding="async"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center overflow-y-auto custom-scrollbar">
-                          <p className={`font-bold text-slate-800 w-full ${card.isTerm ? 'text-sm sm:text-lg' : 'text-[10px] sm:text-xs font-normal text-slate-600 leading-snug'}`}>
+                      <div className="w-full h-full flex items-center justify-center overflow-y-auto custom-scrollbar px-1">
+                          <p className={`font-bold w-full leading-tight ${isMismatch ? 'text-red-900' : isMatched ? 'text-green-900' : 'text-slate-800'} ${card.isTerm ? 'text-xs sm:text-sm' : 'text-[10px] sm:text-[11px] font-normal text-slate-600 leading-snug'}`}>
                             {card.content}
                           </p>
                       </div>
@@ -807,6 +895,60 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     </div>
   );
 });
+const TIMELINE_PASTEL_COLORS = [
+  'bg-blue-50 border-blue-200 hover:border-blue-300 text-blue-900',
+  'bg-emerald-50 border-emerald-200 hover:border-emerald-300 text-emerald-900',
+  'bg-amber-50 border-amber-200 hover:border-amber-300 text-amber-900',
+  'bg-purple-50 border-purple-200 hover:border-purple-300 text-purple-900',
+  'bg-pink-50 border-pink-200 hover:border-pink-300 text-pink-900',
+  'bg-cyan-50 border-cyan-200 hover:border-cyan-300 text-cyan-900',
+  'bg-rose-50 border-rose-200 hover:border-rose-300 text-rose-900',
+  'bg-indigo-50 border-indigo-200 hover:border-indigo-300 text-indigo-900',
+  'bg-teal-50 border-teal-200 hover:border-teal-300 text-teal-900',
+  'bg-lime-50 border-lime-200 hover:border-lime-300 text-lime-900',
+  'bg-fuchsia-50 border-fuchsia-200 hover:border-fuchsia-300 text-fuchsia-900',
+  'bg-violet-50 border-violet-200 hover:border-violet-300 text-violet-900',
+  'bg-sky-50 border-sky-200 hover:border-sky-300 text-sky-900',
+  'bg-orange-50 border-orange-200 hover:border-orange-300 text-orange-900',
+  'bg-green-50 border-green-200 hover:border-green-300 text-green-900',
+  'bg-red-50 border-red-200 hover:border-red-300 text-red-900'
+];
+const createTimelineDerangement = (arr) => {
+  const n = arr.length;
+  if (n <= 1) return arr;
+  let attempts = 0;
+  const maxAttempts = 100;
+  while (attempts < maxAttempts) {
+    const next = [...arr];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [next[i], next[j]] = [next[j], next[i]];
+    }
+    if (next.every((item, idx) => item.originalIndex !== idx)) return next;
+    attempts++;
+  }
+  const rotated = [...arr];
+  const first = rotated.shift();
+  rotated.push(first);
+  return rotated;
+};
+const normalizeTimelineData = (data, fallbackLabel) => {
+  if (!data) return { itemsArray: [], label: fallbackLabel, labelEn: '' };
+  if (Array.isArray(data)) {
+    return { itemsArray: data, label: fallbackLabel, labelEn: '' };
+  }
+  return {
+    itemsArray: Array.isArray(data.items) ? data.items : [],
+    label: data.progressionLabel || fallbackLabel,
+    labelEn: data.progressionLabel_en || ''
+  };
+};
+const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
+    ...item,
+    originalIndex: i,
+    id: `evt-${i}`,
+    colorIdx: Math.floor(Math.random() * TIMELINE_PASTEL_COLORS.length)
+}));
 const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
@@ -817,73 +959,34 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [announcement, setAnnouncement] = useState('');
   const [keyboardLiftedIdx, setKeyboardLiftedIdx] = useState(null);
   const [progressionLabel, setProgressionLabel] = useState('');
+  const [progressionLabelEn, setProgressionLabelEn] = useState('');
   const itemRefs = useRef([]);
-  const pastelColors = [
-    'bg-blue-50 border-blue-200 hover:border-blue-300 text-blue-900',
-    'bg-emerald-50 border-emerald-200 hover:border-emerald-300 text-emerald-900',
-    'bg-amber-50 border-amber-200 hover:border-amber-300 text-amber-900',
-    'bg-purple-50 border-purple-200 hover:border-purple-300 text-purple-900',
-    'bg-pink-50 border-pink-200 hover:border-pink-300 text-pink-900',
-    'bg-cyan-50 border-cyan-200 hover:border-cyan-300 text-cyan-900',
-    'bg-rose-50 border-rose-200 hover:border-rose-300 text-rose-900',
-    'bg-indigo-50 border-indigo-200 hover:border-indigo-300 text-indigo-900',
-    'bg-teal-50 border-teal-200 hover:border-teal-300 text-teal-900',
-    'bg-lime-50 border-lime-200 hover:border-lime-300 text-lime-900',
-    'bg-fuchsia-50 border-fuchsia-200 hover:border-fuchsia-300 text-fuchsia-900',
-    'bg-violet-50 border-violet-200 hover:border-violet-300 text-violet-900',
-    'bg-sky-50 border-sky-200 hover:border-sky-300 text-sky-900',
-    'bg-orange-50 border-orange-200 hover:border-orange-300 text-orange-900',
-    'bg-green-50 border-green-200 hover:border-green-300 text-green-900',
-    'bg-red-50 border-red-200 hover:border-red-300 text-red-900'
-  ];
+  const normalizedItemsRef = useRef([]);
   useEffect(() => {
     if (!data) return;
-    let itemsArray = [];
-    let label = t('timeline.progression_label_default') || 'Sequential Order';
-    if (Array.isArray(data)) {
-      itemsArray = data;
-    } else if (data.items && Array.isArray(data.items)) {
-      itemsArray = data.items;
-      if (data.progressionLabel) label = data.progressionLabel;
-    }
+    const fallback = t('timeline.progression_label_default') || 'Sequential Order';
+    const { itemsArray, label, labelEn } = normalizeTimelineData(data, fallback);
+    normalizedItemsRef.current = itemsArray;
     setProgressionLabel(label);
-    const indexed = itemsArray.map((item, i) => ({
-        ...item,
-        originalIndex: i,
-        id: `evt-${i}`,
-        colorIdx: Math.floor(Math.random() * pastelColors.length)
-    }));
-    const createDerangement = (arr) => {
-      const n = arr.length;
-      if (n <= 1) return arr;
-      const result = [...arr];
-      let isDerangement = false;
-      let attempts = 0;
-      const maxAttempts = 100;
-      while (!isDerangement && attempts < maxAttempts) {
-        for (let i = n - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [result[i], result[j]] = [result[j], result[i]];
-        }
-        isDerangement = result.every((item, idx) => item.originalIndex !== idx);
-        attempts++;
-      }
-      if (!isDerangement && n > 1) {
-        const rotated = [...arr];
-        const first = rotated.shift();
-        rotated.push(first);
-        return rotated;
-      }
-      return result;
-    };
-    const shuffled = createDerangement(indexed);
-    setItems(shuffled);
+    setProgressionLabelEn(labelEn);
+    setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
     setIsWon(false);
     setAttempts(0);
     setScore(0);
     setAnnouncement(t('timeline.game.start_announcement'));
     setKeyboardLiftedIdx(null);
   }, [data]);
+  useEffect(() => {
+    if (keyboardLiftedIdx === null) return;
+    const el = itemRefs.current[keyboardLiftedIdx];
+    if (el && typeof el.focus === 'function') el.focus();
+  }, [keyboardLiftedIdx, items]);
+  useEffect(() => {
+    if (draggingIdx === null) return;
+    const blockScroll = (e) => { e.preventDefault(); };
+    document.addEventListener('touchmove', blockScroll, { passive: false });
+    return () => document.removeEventListener('touchmove', blockScroll);
+  }, [draggingIdx]);
   const handleDragStart = (e, index) => {
     setDraggingIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -970,18 +1073,12 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
               if (index > 0) {
                   moveItem(index, 'up');
                   setKeyboardLiftedIdx(index - 1);
-                  requestAnimationFrame(() => {
-                      if (itemRefs.current[index - 1]) itemRefs.current[index - 1].focus();
-                  });
               }
           } else if (e.key === 'ArrowDown') {
               e.preventDefault();
               if (index < items.length - 1) {
                   moveItem(index, 'down');
                   setKeyboardLiftedIdx(index + 1);
-                  requestAnimationFrame(() => {
-                      if (itemRefs.current[index + 1]) itemRefs.current[index + 1].focus();
-                  });
               }
           }
       }
@@ -1015,13 +1112,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     }
   };
   const reset = () => {
-     const indexed = data.map((item, i) => ({
-         ...item,
-         originalIndex: i,
-         id: `evt-${i}`,
-         colorIdx: Math.floor(Math.random() * pastelColors.length)
-     }));
-     setItems(fisherYatesShuffle(indexed));
+     const itemsArray = normalizedItemsRef.current || [];
+     setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
      setIsWon(false);
      setAttempts(0);
      setScore(0);
@@ -1056,8 +1148,13 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                            <ArrowDown size={14} /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} />
                        </div>
                        {progressionLabel && (
-                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
-                               <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
+                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
+                               <div className="flex items-center gap-2">
+                                   <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
+                               </div>
+                               {progressionLabelEn && progressionLabelEn !== progressionLabel && (
+                                   <div className="text-[10px] font-normal italic opacity-80">{progressionLabelEn}</div>
+                               )}
                            </div>
                        )}
                    </div>
@@ -1066,7 +1163,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <div className="absolute left-3 sm:left-1/2 top-0 bottom-0 w-1.5 bg-indigo-100 rounded-full -translate-x-1/2 z-0"></div>
                    <div className="space-y-6 sm:space-y-0" role="list">
                        {items.map((item, idx) => {
-                           const colorClass = pastelColors[item.colorIdx % pastelColors.length];
+                           const colorClass = TIMELINE_PASTEL_COLORS[item.colorIdx % TIMELINE_PASTEL_COLORS.length];
                            const isLeft = idx % 2 === 0;
                            const isDragging = draggingIdx === idx;
                            const isLifted = keyboardLiftedIdx === idx;
@@ -1076,7 +1173,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                ref={el => itemRefs.current[idx] = el}
                                tabIndex={isWon ? -1 : 0}
                                role="listitem"
-                               aria-grabbed={isLifted}
+                               aria-roledescription="draggable item"
+                               aria-pressed={isLifted}
                                aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
                                onKeyDown={(e) => handleKeyDown(e, idx)}
                                draggable={!isWon}

@@ -6394,6 +6394,9 @@ const GLOSS_INITIAL_STATE = {
   glossaryTier3Count: 6,
   glossaryDefinitionLevel: 'Same as Source Text',
   glossaryFilter: 'all',
+  includeEtymology: false,
+  etymologyScope: 'tier3',
+  isGeneratingEtymology: {},
 };
 function glossaryReducer(state, action) {
   if (action.type === 'GLOSS_SET') {
@@ -6465,7 +6468,7 @@ function uiChromeReducer(state, action) {
 const SETTINGS_INITIAL_STATE = {
   isProjectSettingsOpen: false,
         showAIBackendModal: false,
-  theme: 'light',
+  theme: (typeof safeGetItem === 'function' && ['light','dark','contrast'].includes(safeGetItem('allo_theme'))) ? safeGetItem('allo_theme') : 'light',
   showTextSettings: false,
   showVoiceSettings: false,
   wordSearchLang: 'English',
@@ -6995,7 +6998,7 @@ const AlloFlowContent = () => {
   const [settingsState, settingsDispatch] = useReducer(settingsReducer, SETTINGS_INITIAL_STATE);
   const { isProjectSettingsOpen, theme, showTextSettings, showVoiceSettings, wordSearchLang, standardDeckLang, targetTranslationLang } = settingsState;
   const setIsProjectSettingsOpen = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'isProjectSettingsOpen', value: v });
-  const setTheme = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'theme', value: v });
+  const setTheme = (v) => { try { safeSetItem('allo_theme', v); } catch {} settingsDispatch({ type: 'SETTINGS_SET', field: 'theme', value: v }); };
   const setShowTextSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showTextSettings', value: v });
   const setShowVoiceSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showVoiceSettings', value: v });
   const setWordSearchLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'wordSearchLang', value: v });
@@ -8472,7 +8475,7 @@ Return ONLY a valid JSON object:
   const setWordSoundsLanguage = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsLanguage', value: v });
   const setWordSoundsFeedback = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsFeedback', value: v });
   const [glossaryState, glossaryDispatch] = useReducer(glossaryReducer, GLOSS_INITIAL_STATE);
-  const { glossaryHealthCheck, isEditingGlossary, definitionData, personaDefinitionData, isGeneratingTermImage, glossaryRefinementInputs, newGlossaryTerm, glossaryImageStyle, isAddingTerm, glossaryImageSize, glossaryTier2Count, glossaryTier3Count, glossaryDefinitionLevel, glossaryFilter } = glossaryState;
+  const { glossaryHealthCheck, isEditingGlossary, definitionData, personaDefinitionData, isGeneratingTermImage, glossaryRefinementInputs, newGlossaryTerm, glossaryImageStyle, isAddingTerm, glossaryImageSize, glossaryTier2Count, glossaryTier3Count, glossaryDefinitionLevel, glossaryFilter, includeEtymology, etymologyScope, isGeneratingEtymology } = glossaryState;
   const setGlossaryHealthCheck = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryHealthCheck', value: v });
   const setIsEditingGlossary = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'isEditingGlossary', value: v });
   const setDefinitionData = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'definitionData', value: v });
@@ -8487,6 +8490,9 @@ Return ONLY a valid JSON object:
   const setGlossaryTier3Count = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryTier3Count', value: v });
   const setGlossaryDefinitionLevel = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryDefinitionLevel', value: v });
   const setGlossaryFilter = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryFilter', value: v });
+  const setIncludeEtymology = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'includeEtymology', value: v });
+  const setEtymologyScope = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'etymologyScope', value: v });
+  const setIsGeneratingEtymology = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'isGeneratingEtymology', value: v });
   const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
   const [wordSoundsBadges, setWordSoundsBadges] = useState(() => {
       if (typeof window !== 'undefined') {
@@ -9280,7 +9286,10 @@ Return ONLY a valid JSON object:
   const [disableAnimations, setDisableAnimations] = useState(() => {
     try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) { return false; }
   });
-  const [colorOverlay, setColorOverlay] = useState('none');
+  const [colorOverlay, _setColorOverlay] = useState(() => {
+      try { const v = safeGetItem('allo_color_overlay'); return ['none','blue','peach','yellow'].includes(v) ? v : 'none'; } catch { return 'none'; }
+  });
+  const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
   const [dyslexicFont, setDyslexicFont] = useState(false);
@@ -9315,7 +9324,14 @@ Return ONLY a valid JSON object:
       textSize: 18,
       lineFocus: false,
       wideText: false, bgColor: '#fdfbf7', fontColor: '#1e293b' });
-  const [readingTheme, setReadingTheme] = useState('default');
+  const [readingTheme, _setReadingTheme] = useState(() => {
+      try {
+          const v = safeGetItem('allo_reading_theme');
+          const valid = ['default','warm','sepia','dark','highContrast','blue','green','rose','dyslexia'];
+          return valid.includes(v) ? v : 'default';
+      } catch { return 'default'; }
+  });
+  const setReadingTheme = (v) => { try { safeSetItem('allo_reading_theme', v); } catch {} _setReadingTheme(v); };
   const [isAnalyzingPos, setIsAnalyzingPos] = useState(false);
   const [isDictationMode, setIsDictationMode] = useState(false);
   const recognitionRef = useRef(null);
@@ -9691,6 +9707,7 @@ Return ONLY a valid JSON object:
     'tour-tool-lesson-plan': 'lesson-plan',
     'glossary_standard_flashcards': 'glossary',
     'glossary_language_flashcards': 'glossary',
+    'glossary_etymology_info': 'glossary',
     'glossary_export_standard': 'glossary',
     'glossary_export_language': 'glossary',
     'glossary_puzzle_lang': 'glossary',
@@ -24207,6 +24224,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
         .secondary-text { font-size: 16px; color: #4f46e5; font-weight: bold; margin-top: 5px; }
         .def-text { font-size: 13px; color: #475569; line-height: 1.4; }
         .def-trans { font-size: 13px; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
+        .etym-text { font-size: 11px; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
         .set-header {
             background: #f1f5f9; color: #334155;
             padding: 15px; margin: 40px 0 20px 0;
@@ -24275,6 +24293,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
                 backContent = `
                     <div class="def-text"><strong>${t('languages.english')}:</strong> ${cleanText(item.def)}</div>
                     ${transDef ? `<div class="def-trans"><strong>${lang}:</strong> ${cleanText(transDef)}</div>` : ''}
+                    ${item.etymology ? `<div class="etym-text">📜 <strong>${t('glossary.etymology_label') || 'Roots'}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                 `;
             }
             htmlBody += `
@@ -27240,12 +27259,21 @@ Return ONLY JSON.`;
               1. An English definition. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
               3. Translations into: ${langsReq.join(', ')}.
+              ${includeEtymology ? `
+              4. Etymology / Word Roots ${etymologyScope === 'both' ? 'for every term' : 'for Tier 3 (Domain-Specific) terms only'}:
+                 Provide 1-3 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 - K-5 audiences: simple wording like "Comes from the Greek word photo meaning light."
+                 - 6-12 audiences: break into prefix/root/suffix where relevant and name the source language.
+                 - Skip terms with no meaningful etymology (proper nouns, recent coinages). If so, OMIT the etymology field.
+                 ${effectiveLanguage !== 'English' ? `Write the etymology in ${effectiveLanguage}.` : ''}
+                 Add to each qualifying term an "etymology" string field.
+              ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
               ${langsReq.length > 0 ? "STRICT DIALECT ADHERENCE: For any requested language that specifies a region (e.g. 'Brazilian Portuguese'), use that specific dialect's conventions." : ""}
               CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
               Format: "Translated Term: Translated Definition",
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" } }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -27259,9 +27287,17 @@ Return ONLY JSON.`;
               For each term, provide:
               1. An English definition. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
+              ${includeEtymology ? `
+              3. Etymology / Word Roots ${etymologyScope === 'both' ? 'for every term' : 'for Tier 3 (Domain-Specific) terms only'}:
+                 Provide 1-3 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 - K-5 audiences: simple wording like "Comes from the Greek word photo meaning light."
+                 - 6-12 audiences: break into prefix/root/suffix where relevant and name the source language.
+                 - Skip terms with no meaningful etymology (proper nouns, recent coinages). If so, OMIT the etymology field.
+                 Add to each qualifying term an "etymology" string field.
+              ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${includeEtymology ? ', "etymology": "..." (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -28406,7 +28442,7 @@ Return ONLY JSON.`;
                      return d.questions.map((q, i) => `Q${i+1}: ${q.question} (Correct: ${q.correctAnswer})`).join('\n');
                  case 'glossary':
                      if (!Array.isArray(d)) return t('export.no_terms');
-                     return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def_label')} ${gItem.def}`).join('; ');
+                     return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def_label')} ${gItem.def}${gItem.etymology ? ` — Roots: ${gItem.etymology}` : ''}`).join('; ');
                  case 'sentence-frames':
                      return d.mode === 'list'
                          ? (d.items ? d.items.map(i => i.text).join('\n') : '')
@@ -29537,16 +29573,21 @@ Return ONLY JSON:
   };
   const handleTimelineChange = (index, field, value, isEn = false) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
-    const newData = [...generatedContent?.data];
-    const updatedItem = { ...newData[index] };
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const updatedItem = { ...newItems[index] };
     if (isEn) {
          updatedItem[`${field}_en`] = value;
     } else {
          updatedItem[field] = value;
     }
-    newData[index] = updatedItem;
-    setGeneratedContent({ ...generatedContent, data: newData });
-    setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...generatedContent, data: newData } : item));
+    newItems[index] = updatedItem;
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
+    const updatedContent = { ...generatedContent, data: newData };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const handleGenerateOutcome = async () => {
       if (!generatedContent || generatedContent.type !== 'outline') return;
@@ -29595,17 +29636,21 @@ Return ONLY JSON:
     e.preventDefault();
     if (!generatedContent || generatedContent.type !== 'timeline') return;
     if (draggedTimelineIndex === null || draggedTimelineIndex === index) return;
-    const newData = [...generatedContent?.data];
-    const draggedItem = newData[draggedTimelineIndex];
-    newData.splice(draggedTimelineIndex, 1);
-    newData.splice(index, 0, draggedItem);
-    const renumberedData = newData.map((item, i) => {
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const draggedItem = newItems[draggedTimelineIndex];
+    newItems.splice(draggedTimelineIndex, 1);
+    newItems.splice(index, 0, draggedItem);
+    const renumberedItems = newItems.map((item, i) => {
         if (item.date && /^Step\s+\d+$/i.test(item.date)) {
             return { ...item, date: `Step ${i + 1}` };
         }
         return item;
     });
-    const updatedContent = { ...generatedContent, data: renumberedData };
+    const newData = isArrayShape ? renumberedItems : { ...data, items: renumberedItems };
+    const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setDraggedTimelineIndex(index);
   };
@@ -29617,21 +29662,29 @@ Return ONLY JSON:
   };
   const handleAddTimelineStep = () => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
-    const newData = [...generatedContent?.data];
-    newData.push({
-        date: t('timeline.default_step_label', { n: newData.length + 1 }),
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    newItems.push({
+        date: t('timeline.default_step_label', { n: newItems.length + 1 }),
         event: "",
         date_en: "",
         event_en: "",
     });
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const handleDeleteTimelineStep = (index) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
-    const newData = [...generatedContent?.data];
-    newData.splice(index, 1);
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    newItems.splice(index, 1);
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
@@ -30755,6 +30808,41 @@ Return ONLY JSON:
         addToast(t('glossary.actions.icon_failed'), "error");
     } finally {
         setIsGeneratingTermImage(prev => ({ ...prev, [index]: false }));
+    }
+  };
+  const handleGenerateTermEtymology = async (index, term) => {
+    if (!generatedContent || generatedContent.type !== 'glossary') return;
+    setIsGeneratingEtymology(prev => ({ ...prev, [index]: true }));
+    try {
+        const def = generatedContent?.data[index]?.def || "";
+        const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
+        const prompt = `
+          Give the etymology of "${term}" (context: ${def}) in 1-3 sentences,
+          at a reading level appropriate for a ${gradeLevel} student.
+          ${isElementary
+              ? 'Use simple wording like: "Comes from the Greek/Latin/Old English word X meaning Y."'
+              : 'Break into prefix/root/suffix where useful; name source languages.'}
+          ${effectiveLanguage && effectiveLanguage !== 'English' ? `Write in ${effectiveLanguage}.` : ''}
+          If the word has no meaningful etymology (proper noun, recent coinage), reply with exactly: NONE.
+          Return plain text only, no markdown, no quotes, no headers.
+        `;
+        const raw = await callGemini(prompt, false);
+        const result = (raw || '').trim();
+        if (!result || result === 'NONE') {
+            addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
+            return;
+        }
+        const newData = [...generatedContent?.data];
+        newData[index] = { ...newData[index], etymology: result };
+        const updatedContent = { ...generatedContent, data: newData };
+        setGeneratedContent(updatedContent);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        addToast(t('glossary.actions.etymology_generated') || "Word roots added.", "success");
+    } catch (e) {
+        warnLog("Etymology generation failed:", e);
+        addToast(t('glossary.actions.etymology_failed') || "Couldn't generate word roots right now.", "error");
+    } finally {
+        setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
     }
   };
   const handleGenerateConceptItem = useCallback(async (term, categories) => {
@@ -32577,9 +32665,9 @@ Return ONLY JSON:
         .theme-dark .text-slate-900,
         .theme-dark .text-slate-800,
         .theme-dark .text-slate-700 { color: #f8fafc !important; }
-        .theme-dark .text-slate-600 { color: #cbd5e1 !important; } /* Light Grey */
-        .theme-dark .text-slate-600 { color: #94a3b8 !important; } /* Medium Grey */
-        .theme-dark .text-slate-600 { color: #64748b !important; } /* Muted Grey */
+        .theme-dark .text-slate-600 { color: #cbd5e1 !important; } /* slate-300 — secondary text, AAA on dark bg */
+        .theme-dark .text-slate-500 { color: #94a3b8 !important; } /* slate-400 — helper/label text */
+        .theme-dark .text-slate-400 { color: #64748b !important; } /* slate-500 — muted/disabled text */
         .theme-dark .border-slate-100,
         .theme-dark .border-slate-200,
         .theme-dark .border-slate-300 { border-color: #334155 !important; }
@@ -32622,7 +32710,9 @@ Return ONLY JSON:
         .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #64748b !important; }
         .theme-dark input:focus, .theme-dark textarea:focus, .theme-dark select:focus {
             border-color: #818cf8 !important;
-            ring-color: #4338ca !important;
+            --tw-ring-color: #4338ca !important;
+            outline: 2px solid #818cf8 !important;
+            outline-offset: 1px !important;
         }
         .theme-dark .border-4.bg-white { background-color: #1e293b !important; border-color: #6366f1 !important; }
         .theme-dark .sort-card { background-color: #1e293b !important; border-color: #475569 !important; }
@@ -32643,8 +32733,31 @@ Return ONLY JSON:
         .theme-contrast button:hover { background-color: #00ff00 !important; color: #000000 !important; }
         .theme-contrast { color-scheme: dark; }
         /* Reading theme overrides — make child bg-white elements transparent so theme shows through */
-        [data-reading-theme]:not([data-reading-theme="default"]) .bg-white,
-        [data-reading-theme]:not([data-reading-theme="default"]) .bg-slate-50 { background-color: transparent !important; }
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-white,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-slate-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-indigo-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-blue-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-orange-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-green-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50 { background-color: transparent !important; }
+        /* Light reading themes win over dark-mode text remaps to prevent invisible-text collision */
+        [data-reading-theme="warm"], [data-reading-theme="warm"] *,
+        [data-reading-theme="sepia"], [data-reading-theme="sepia"] *,
+        [data-reading-theme="blue"], [data-reading-theme="blue"] *,
+        [data-reading-theme="green"], [data-reading-theme="green"] *,
+        [data-reading-theme="rose"], [data-reading-theme="rose"] *,
+        [data-reading-theme="dyslexia"], [data-reading-theme="dyslexia"] * {
+            color: inherit;
+        }
+        [data-reading-theme="warm"] { color: #5c4033 !important; }
+        [data-reading-theme="sepia"] { color: #5c4033 !important; }
+        [data-reading-theme="blue"] { color: #1b2631 !important; }
+        [data-reading-theme="green"] { color: #1b5e20 !important; }
+        [data-reading-theme="rose"] { color: #880e4f !important; }
+        [data-reading-theme="dyslexia"] { color: #1e293b !important; }
         [data-reading-theme="dark"] .bg-white, [data-reading-theme="dark"] .bg-slate-50 { background-color: rgba(26,26,46,0.5) !important; color: #e2e8f0 !important; }
         [data-reading-theme="dark"] h1, [data-reading-theme="dark"] h2, [data-reading-theme="dark"] h3, [data-reading-theme="dark"] p, [data-reading-theme="dark"] span, [data-reading-theme="dark"] li, [data-reading-theme="dark"] div { color: #e2e8f0 !important; }
         [data-reading-theme="highContrast"] .bg-white, [data-reading-theme="highContrast"] .bg-slate-50 { background-color: #000 !important; color: #ffff00 !important; }
@@ -32947,7 +33060,7 @@ Return ONLY JSON:
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
                                                     {[
                                                         { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
-                                                        { id: 'warm', label: 'Warm', bg: '#fdfbf7', fg: '#5c4033', border: '#f5e6d3', emoji: '☀️' },
+                                                        { id: 'warm', label: 'Warm', bg: '#fef3c7', fg: '#5c4033', border: '#fde68a', emoji: '☀️' },
                                                         { id: 'sepia', label: 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
                                                         { id: 'dark', label: 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
                                                         { id: 'highContrast', label: 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
@@ -35913,6 +36026,28 @@ Return ONLY JSON:
                                 <option value="College">{t('grades.college')}</option>
                             </select>
                         </div>
+                    </div>
+                    <div className="mb-3" data-help-key="glossary_etymology_info">
+                        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={includeEtymology}
+                                onChange={(e) => setIncludeEtymology(e.target.checked)}
+                                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                            />
+                            📜 {t('glossary.settings.include_etymology') || 'Include word roots / etymology'}
+                        </label>
+                        {includeEtymology && (
+                            <label className="flex items-center gap-2 text-[11px] font-medium text-slate-600 cursor-pointer select-none mt-1 ml-6">
+                                <input
+                                    type="checkbox"
+                                    checked={etymologyScope === 'both'}
+                                    onChange={(e) => setEtymologyScope(e.target.checked ? 'both' : 'tier3')}
+                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                                />
+                                {t('glossary.settings.etymology_scope_both') || 'Also include for academic (Tier 2) terms'}
+                            </label>
+                        )}
                     </div>
                     <div className="mb-3" data-help-key="glossary_custom_instructions">
                         <label className="block text-xs text-slate-600 mb-1 font-medium">
@@ -39113,9 +39248,9 @@ Return ONLY JSON:
             data-reading-theme={readingTheme}
             className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
             style={readingTheme !== 'default' ? {
-              backgroundColor: readingTheme === 'warm' ? '#fdfbf7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
-              color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : undefined,
-              fontFamily: readingTheme === 'dyslexia' && selectedFont === 'default' ? "'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif" : undefined,
+              backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
+              color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : readingTheme === 'warm' ? '#5c4033' : readingTheme === 'dyslexia' ? '#1e293b' : undefined,
+              fontFamily: readingTheme === 'dyslexia' ? "'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif" : undefined,
               letterSpacing: readingTheme === 'dyslexia' ? '0.05em' : undefined,
               lineHeight: readingTheme === 'dyslexia' ? '1.8' : undefined,
               transition: 'background-color 0.3s, color 0.3s',
@@ -40291,6 +40426,27 @@ Return only the corrected version of this exact text:`;
                                                             </p>
                                                         </div>
                                                     )}
+                                                    {generatedContent?.data[flashcardIndex]?.etymology && (
+                                                        <div className="mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2">
+                                                            <p className="text-xs font-bold text-blue-200 uppercase mb-1">📜 {t('glossary.etymology_label') || 'Word roots'}</p>
+                                                            <p
+                                                                className="text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer"
+                                                                onClick={(e) => { e.stopPropagation(); handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym'); }}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
+                                                                    }
+                                                                }}
+                                                                tabIndex={0}
+                                                                role="button"
+                                                                aria-label={t('glossary.etymology_label') || 'Word roots'}
+                                                            >
+                                                                {generatedContent.data[flashcardIndex].etymology}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </>
                                             ) : (
                                                 (() => {
@@ -40999,6 +41155,38 @@ Return only the corrected version of this exact text:`;
                                                 <button onClick={() => handleSpeak(item.def, `def-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `def-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
                                                 <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                             </div>
+                                            {!isEditingGlossary && (
+                                                item.etymology ? (
+                                                    <details className="mt-2 text-xs w-full" data-help-key="glossary_etymology_info">
+                                                        <summary className="cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none">
+                                                            📜 {t('glossary.etymology_label') || 'Word roots'}
+                                                        </summary>
+                                                        <div className="mt-1 flex items-start gap-1 pl-4 border-l-2 border-indigo-200">
+                                                            <p className="text-slate-700 leading-relaxed italic flex-1">{item.etymology}</p>
+                                                            <button
+                                                                onClick={() => handleSpeak(item.etymology, `etym-${idx}`)}
+                                                                disabled={isGeneratingAudio && playingContentId !== `etym-${idx}`}
+                                                                className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                                                aria-label={t('glossary.etymology_label') || 'Word roots'}
+                                                            >
+                                                                {playingContentId === `etym-${idx}` && isGeneratingAudio ? <RefreshCw size={12} className="animate-spin"/> : <Volume2 size={12} />}
+                                                            </button>
+                                                        </div>
+                                                    </details>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleGenerateTermEtymology(idx, item.term)}
+                                                        disabled={isGeneratingEtymology[idx]}
+                                                        className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1"
+                                                        data-help-key="glossary_etymology_info"
+                                                        title={t('glossary.etymology_label') || 'Word roots'}
+                                                    >
+                                                        {isGeneratingEtymology[idx]
+                                                            ? <><RefreshCw size={12} className="animate-spin"/> {t('glossary.actions.generating_etymology') || 'Finding roots…'}</>
+                                                            : <>📜 {t('glossary.actions.show_etymology') || 'Show word roots'}</>}
+                                                    </button>
+                                                )
+                                            )}
                                         </div>
                                     </td>
                                     {displayLanguages.map(lang => (
@@ -41479,8 +41667,8 @@ Return only the corrected version of this exact text:`;
                                             onClick={() => {
                                                 if (phonicsData.audioUrl) {
                                                     const audio = new Audio(phonicsData.audioUrl);
-                                                    audio.playbackRate = 0.5;
-                                                    audio.play();
+                                                    audio.playbackRate = voiceSpeed || 1;
+                                                    audio.play().catch(() => {});
                                                 }
                                             }}
                                             className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95"
@@ -41496,9 +41684,12 @@ Return only the corrected version of this exact text:`;
                                           </div>
                                           <div className="bg-slate-50 p-2 rounded border border-slate-100">
                                               <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div>
-                                              <div className="flex flex-wrap gap-1">
+                                              <div className="flex flex-wrap items-center gap-0.5">
                                                   {phonicsData.data.syllables.map((syl, i) => (
-                                                      <span key={i} className="bg-white px-1.5 rounded border border-slate-200 text-sm font-bold text-slate-700 shadow-sm">{syl}</span>
+                                                      <React.Fragment key={i}>
+                                                          {i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}
+                                                          <span className="bg-white px-1.5 rounded border border-slate-200 text-sm font-bold text-slate-700 shadow-sm">{syl}</span>
+                                                      </React.Fragment>
                                                   ))}
                                               </div>
                                           </div>

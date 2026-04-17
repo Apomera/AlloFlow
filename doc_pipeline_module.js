@@ -334,6 +334,31 @@ var createDocPipeline = function(deps) {
     return c.trim();
   };
 
+  const _JSON_HTML_KEYS = /^(?:html|content|text|fixed_html|output_html|accessible_html|body|section|fragment|\w*_?html)$/i;
+  const _isJsonWrapped = (s) => {
+    if (!s) return false;
+    const head = s.trimStart().slice(0, 200);
+    return /^[\[\{]\s*[\[\{]?\s*"(?:html|content|text|fixed_html|output_html|accessible_html|body|section|fragment|\w*_?html)"\s*:\s*"/i.test(head);
+  };
+  const _tryUnwrapJsonHtml = (s) => {
+    if (!s) return null;
+    try {
+      const parsed = JSON.parse(s.trim());
+      const pickHtml = (obj) => {
+        if (!obj || typeof obj !== 'object') return null;
+        for (const k of Object.keys(obj)) {
+          if (_JSON_HTML_KEYS.test(k) && typeof obj[k] === 'string' && obj[k].length > 0) return obj[k];
+        }
+        return null;
+      };
+      if (Array.isArray(parsed)) {
+        const joined = parsed.map(item => pickHtml(item) || (typeof item === 'string' ? item : '')).filter(Boolean).join('\n');
+        return joined || null;
+      }
+      return pickHtml(parsed);
+    } catch (e) { return null; }
+  };
+
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
   const aiFixChunked = async (html, violationsText, label) => {
@@ -383,7 +408,16 @@ var createDocPipeline = function(deps) {
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
       const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
       try {
-        const out = stripFence(await callGemini(prompt, true));
+        let out = stripFence(await callGemini(prompt, true));
+        if (_isJsonWrapped(out)) {
+          const unwrapped = _tryUnwrapJsonHtml(out);
+          if (unwrapped && unwrapped.length >= part.length * 0.9 && textCharCount(unwrapped) >= textCharCount(part) * 0.95) {
+            out = unwrapped;
+          } else {
+            warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} returned JSON wrapper — keeping original`);
+            return part;
+          }
+        }
         if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
           return out;
         } else if (part.length > 5000) {
@@ -392,7 +426,16 @@ var createDocPipeline = function(deps) {
           const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
             try {
               const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment.`;
-              const halfOut = stripFence(await callGemini(halfPrompt, true));
+              let halfOut = stripFence(await callGemini(halfPrompt, true));
+              if (_isJsonWrapped(halfOut)) {
+                const unwrappedHalf = _tryUnwrapJsonHtml(halfOut);
+                if (unwrappedHalf && unwrappedHalf.length >= half.length * 0.85 && textCharCount(unwrappedHalf) >= textCharCount(half) * 0.9) {
+                  halfOut = unwrappedHalf;
+                } else {
+                  warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} JSON wrapper — keeping original half`);
+                  return half;
+                }
+              }
               if (halfOut && halfOut.length >= half.length * 0.85 && textCharCount(halfOut) >= textCharCount(half) * 0.9) {
                 return halfOut;
               }
@@ -585,6 +628,7 @@ var createDocPipeline = function(deps) {
     try { return JSON.parse(repaired); } catch(e) {}
     const arrMatch = repaired.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
+    warnLog('[repairAndParseJsonShared] gave up — returning null. Raw head:', String(raw).slice(0, 200));
     return null;
   };
 
@@ -967,7 +1011,18 @@ var createDocPipeline = function(deps) {
             'RULES: Preserve ALL text content, ALL attributes (especially src= even if they look like placeholder tokens), ALL inline styles. Do NOT shorten, summarize, or drop content. Tokens matching __ALLOFLOW_DATAURL_N__ represent embedded images — preserve them verbatim.\n\n' +
             'HTML:\n"""\n' + chunk + '\n"""\n\n' +
             'Return ONLY the fixed fragment.';
-          const rewritten = stripFence(await callGemini(rewritePrompt, true));
+          let rewritten = stripFence(await callGemini(rewritePrompt, true));
+          if (_isJsonWrapped(rewritten)) {
+            const unwrappedRw = _tryUnwrapJsonHtml(rewritten);
+            if (unwrappedRw && unwrappedRw.length >= chunk.length * 0.9) {
+              rewritten = unwrappedRw;
+            } else {
+              rejectedChunks++;
+              warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' rewrite rejected (JSON wrapper, unrecoverable)');
+              fixedChunks[ci] = chunk;
+              continue;
+            }
+          }
           const tokensBefore = (chunk.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length;
           const tokensAfter = rewritten ? (rewritten.match(/__ALLOFLOW_DATAURL_\d+__/g) || []).length : 0;
           const lengthOk = rewritten && rewritten.length >= chunk.length * 0.9;
@@ -5386,8 +5441,23 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
             case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
             case 'banner': return `<div style="background:${docStyle.headerBg};color:${docStyle.headerText};padding:24px 28px;border-radius:12px;margin-bottom:24px"><div style="font-size:1.5em;font-weight:bold">${block.title || ''}</div>${block.subtitle ? '<div style="font-size:0.9em;opacity:0.85;margin-top:4px">' + block.subtitle + '</div>' : ''}</div>`;
-            case 'rawhtml': return block.html || '';
-            default: return `<div style="margin:0.6em 0">${block.text || ''}</div>`;
+            case 'rawhtml': {
+              // Strip scripts, styles, event handlers, and javascript: URLs before trusting model-supplied HTML.
+              const _rawHtml = String(block.html || '');
+              return _rawHtml
+                .replace(/<script[\s\S]*?<\/script>/gi, '')
+                .replace(/<style[\s\S]*?<\/style>/gi, '')
+                .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+                .replace(/javascript:/gi, '');
+            }
+            default: {
+              // Unknown block type — salvage any content field we recognize instead of silently dropping it,
+              // and log the type so we can extend the switch if Gemini starts emitting new shapes.
+              const _salvage = block.text || block.title || block.description || block.caption
+                || (Array.isArray(block.items) ? block.items.join(', ') : '');
+              if (block.type) warnLog('[renderJsonToHtml] unknown block type:', block.type, '— salvaged', _salvage.length, 'chars');
+              return `<div style="margin:0.6em 0">${_salvage}</div>`;
+            }
           }
           } catch (blockRenderErr) {
             console.warn('[PDF Fix] Block ' + blockIdx + ' render error (type=' + (block.type||'?') + '):', blockRenderErr);
@@ -6613,14 +6683,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           });
           accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:blockquote)"[^{}]*?"(?:text|content)"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
           accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"hr"\s*\}/g, '<hr>');
-          // Catch-all: any JSON object with a "text" or "content" field containing 10+ chars
-          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"\s*[^{}]*\}/g, '<p>$1</p>');
+          // Catch-all: only match JSON objects that ALSO have a type/tag/element/kind/role sibling —
+          // without that sibling, this regex used to match legit inline content like
+          // {"content": "a long quoted sentence..."} that appears mid-prose, capture only up to the
+          // first embedded quote, and greedily consume the rest with [^{}]*} — silently deleting
+          // paragraphs of document content.
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:type|tag|element|kind|role)"\s*:\s*"[^"]+"[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"[^{}]*\}/g, '<p>$1</p>');
+          accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"[^{}]*"(?:type|tag|element|kind|role)"\s*:\s*"[^"]+"[^{}]*\}/g, '<p>$1</p>');
           // Strip JSON wrappers — catch all known Gemini key variants including alternate schemas.
-          // Gemini has returned: {html, content, text, section, fixed_html, output_html, accessible_html,
-          // tag, class, element, value, body} — match any of these or any *_html key.
           var _jsonKeyPat = '(?:html|content|text|section|tag|class|element|value|body|fixed_html|output_html|accessible_html|\\w*_?html)';
-          accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[\\s*\\{[^}]*"' + _jsonKeyPat + '"\\s*:\\s*"', 'gm'), '');
-          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/gm, '');
+          // Empty-array prefix (e.g. "[\n]{\"html\":\"...\"}") — common when one chunk returned []
+          // and the next returned a bare object.
+          accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[\\s*\\]\\s*(?=\\{\\s*"' + _jsonKeyPat + '"\\s*:)', ''), '');
+          accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[?\\s*\\{[^}]*"' + _jsonKeyPat + '"\\s*:\\s*"', 'm'), '');
+          // Suffix: "}]" at end of document — use /s so \s* can span newlines.
+          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/s, '');
+          accessibleHtml = accessibleHtml.replace(/"\s*\}\s*$/s, '');
           // Strip JSON array transition fragments: "}{ or "][{ patterns that leak between concatenated
           // JSON objects when Gemini returns multiple blocks. These appear as visible garbage in the output.
           accessibleHtml = accessibleHtml.replace(new RegExp('"\\s*,\\s*\\{\\s*"' + _jsonKeyPat + '"\\s*:\\s*"', 'g'), '\n');

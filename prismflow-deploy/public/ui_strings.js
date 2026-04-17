@@ -1008,6 +1008,7 @@
                                                                                                                                                                                                                                                                                                                                                         "loaded_student_view": "Loaded student view.",
                                                                                                                                                                                                                                                                                                                                                           "nothing_to_copy": "Nothing to copy.",
                                                                                                                                                                                                                                                                                                                                                             "phonics_analyze_failed": "Phonics analysis failed.",
+                                                                                                                                                                                                                                                                                                                                                            "phonics_audio_failed": "Couldn't play audio — tap speaker to retry.",
                                                                                                                                                                                                                                                                                                                                                               "project_loaded": "Project loaded successfully!",
                                                                                                                                                                                                                                                                                                                                                                 "resource_assigned": "Resource assigned to group!",
                                                                                                                                                                                                                                                                                                                                                                   "storage_disabled": "Local storage is disabled or unavailable.",
@@ -1553,7 +1554,17 @@
                     "icon_generated": "Icon generated for {term}!",
                       "icon_failed": "Failed to generate icon.",
                         "no_image_refine": "No image found to refine.",
-                          "edit_failed": "Failed to edit image. Please try again."
+                          "edit_failed": "Failed to edit image. Please try again.",
+                            "generating_etymology": "Finding roots…",
+                              "etymology_generated": "Word roots added.",
+                                "etymology_none": "No useful etymology for this term.",
+                                  "etymology_failed": "Couldn't generate word roots right now.",
+                                    "show_etymology": "Show word roots"
+    },
+    "etymology_label": "Word roots",
+    "settings": {
+      "include_etymology": "Include word roots / etymology",
+        "etymology_scope_both": "Also include for academic (Tier 2) terms"
     },
     "popups": {
       "finding": "Finding definition...",

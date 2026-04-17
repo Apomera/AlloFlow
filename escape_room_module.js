@@ -625,8 +625,9 @@ inputText.substring(0, 6000) + '\n' +
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
       if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-      var normalizedUser = userAnswer.toLowerCase().trim();
-      var normalizedAnswer = puzzle.answer.toLowerCase().trim();
+      var normalizedUser = String(userAnswer || '').toLowerCase().trim();
+      var normalizedAnswer = String(puzzle.answer || '').toLowerCase().trim();
+      if (!normalizedAnswer) { handleWrongAnswer(puzzleId); return; }
       if (normalizedUser === normalizedAnswer) {
         handlePuzzleSolved(puzzleId);
       } else {
@@ -679,8 +680,9 @@ inputText.substring(0, 6000) + '\n' +
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
       if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-      var normalizedUser = userAnswer.toUpperCase().trim().replace(/\s/g, '');
-      var normalizedAnswer = puzzle.answer.toUpperCase().trim().replace(/\s/g, '');
+      var normalizedUser = String(userAnswer || '').toUpperCase().trim().replace(/\s/g, '');
+      var normalizedAnswer = String(puzzle.answer || '').toUpperCase().trim().replace(/\s/g, '');
+      if (!normalizedAnswer) { handleWrongAnswer(puzzleId); return; }
       if (normalizedUser === normalizedAnswer) {
         handlePuzzleSolved(puzzleId);
       } else {
@@ -1398,7 +1400,7 @@ inputText.substring(0, 6000) + '\n' +
               h('span', { className: 'text-2xl' }, '\uD83D\uDD2E'),
               h('p', { className: 'text-purple-300 text-sm font-bold uppercase tracking-wider' }, t('escape_room.riddle_challenge') || 'Riddle Challenge')
             ),
-            h('p', { className: 'text-xl text-white font-medium italic leading-relaxed' }, '"' + (puzzle.encodedText || puzzle.riddle) + '"')
+            h('p', { className: 'text-xl text-white font-medium italic leading-relaxed' }, '"' + (puzzle.encodedText || puzzle.riddle || '') + '"')
           )
         );
         if (puzzle.wordbank && puzzle.wordbank.length > 0) {
@@ -2059,14 +2061,16 @@ inputText.substring(0, 6000) + '\n' +
                 )
               );
               // Question input
+              var editField = puzzle.sentence != null ? 'sentence' : (puzzle.encodedText != null ? 'encodedText' : 'question');
+              var editLabel = editField === 'sentence' ? 'Sentence' : editField === 'encodedText' ? 'Riddle' : 'Question';
               puzzleChildren.push(
                 h('div', { key: 'q' },
-                  h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, 'Question'),
+                  h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, editLabel),
                   h('input', {
                     type: 'text',
-                    value: puzzle.question || puzzle.sentence || puzzle.encodedText || '',
+                    value: puzzle[editField] || '',
                     onChange: function(e) {
-                      handlers.updateEscapeRoomPuzzle(idx, puzzle.sentence ? 'sentence' : puzzle.encodedText ? 'encodedText' : 'question', e.target.value);
+                      handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
                     },
                     className: 'w-full mt-1 p-2 text-sm border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors'
                   })
