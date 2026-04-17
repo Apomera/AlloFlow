@@ -2161,9 +2161,32 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           if (c.startsWith('html\n') || c.startsWith('html\r\n')) c = c.substring(c.indexOf('\n') + 1);
           if (c.lastIndexOf('`' + '``') !== -1) c = c.substring(0, c.lastIndexOf('`' + '``'));
         }
-        return c.trim();
+        c = c.trim();
+        // Strip JSON array/object wrapper artifacts. Some Gemini responses return `["<html>..."]`
+        // or leave a trailing `[ "` fragment when truncated. Detect and unwrap/recover.
+        if (/^\s*\[\s*"/.test(c)) {
+          // Wrapped in JSON array-of-string form → unwrap leading `["` and trailing `"]`.
+          c = c.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
+          // Unescape common JSON escapes that survived the unwrap.
+          c = c.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        }
+        // Strip a stray trailing `[ "` or `[ "}` left by truncated JSON — common cause of the
+        // `[ "` fragment that occasionally appears at the bottom of a rendered page.
+        c = c.replace(/\[\s*"?\s*$/, '').replace(/"\s*\]\s*$/, '').trim();
+        // If a chunk is ENTIRELY partial JSON (no visible HTML tags), drop it with a recovery placeholder.
+        if (c && !/<[a-z][\s\S]*?>/i.test(c) && /^\s*[\[\{]/.test(c)) {
+          warnLog(`[Transform] Chunk ${i + 1} returned non-HTML JSON fragment — replacing with placeholder`);
+          return `<section aria-label="Fragment ${i + 1} recovery"><p>[Fragment ${i + 1} could not be transformed]</p></section>`;
+        }
+        return c;
       });
       accessibleHtml = cleanChunks.join('\n');
+      // Final sweep: nuke stray JSON fragments that leaked past chunk cleanup.
+      // Target: a trailing `[ "` or `[ "` at the end of the body (or just before a closing tag).
+      accessibleHtml = accessibleHtml
+        .replace(/>\s*\[\s*"?\s*(<\/[^>]+>)/g, '>$1') // `> [ "</tag>` → `></tag>`
+        .replace(/\[\s*"\s*<\//g, '</')               // `[ "</` → `</`
+        .replace(/^\s*\[\s*"\s*$/gm, '');             // standalone `[ "` line
       // Ensure the document is properly closed (in case the last chunk's AI forgot)
       if (!accessibleHtml.includes('</html>')) {
         if (!accessibleHtml.includes('</body>')) {

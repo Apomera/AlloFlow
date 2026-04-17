@@ -1279,7 +1279,16 @@
       };
       var callGemini = ctx.callGemini || null;
       var addToast = ctx.addToast;
-      var awardXP = ctx.awardXP;
+      // Wrap awardXP so the session-XP total is tracked on the engine for the HUD display.
+      // Persists across React renders via engine._sessionXP (not reset until lesson load).
+      var _rawAwardXP = ctx.awardXP;
+      var awardXP = _rawAwardXP ? function(toolId, amount, reason) {
+        var engine2 = window[engineKey];
+        if (engine2 && typeof amount === 'number' && amount > 0) {
+          engine2._sessionXP = (engine2._sessionXP || 0) + amount;
+        }
+        return _rawAwardXP(toolId, amount, reason);
+      } : null;
       var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
       // ── State from toolData ──
@@ -1366,10 +1375,13 @@
       var lastBadgeNotification = d.lastBadgeNotification || null;
 
       // Check achievements after key events (called from answer handlers, etc.)
+      // Reads earnedBadges from engine._badgesRef (fresh) rather than closure (stale when
+      // called via setTimeout from long-lived document/canvas handlers).
       function runAchievementCheck() {
         var eng = window[engineKey];
         if (!eng || !eng.sessionLog) return;
-        var result = checkAchievements(eng.sessionLog, Object.assign({}, earnedBadges));
+        var currentBadges = (eng._badgesRef) || earnedBadges;
+        var result = checkAchievements(eng.sessionLog, Object.assign({}, currentBadges));
         if (result.newBadges.length > 0) {
           var latest = result.newBadges[result.newBadges.length - 1];
           upd({ earnedBadges: result.badges, lastBadgeNotification: latest });
@@ -1532,9 +1544,13 @@
 
       // ── Collaborative Mode: Push block changes to Firestore ──
       function syncBlocksToFirestore() {
-        if (!collabMode) return;
-        var ref = getSessionRef();
+        // Read collab flag from engine bridge — closure's collabMode is stale because this
+        // function is captured in a long-lived setTimeout scheduled from the canvas mousedown
+        // handler (which itself was attached during one-shot initEngine).
         var eng = window[engineKey];
+        var isCollab = eng && eng._placeState && eng._placeState.collabMode;
+        if (!isCollab) return;
+        var ref = getSessionRef();
         if (!ref || !eng || !fb.updateDoc) return;
         var blocks = [];
         Object.keys(eng.blocks).forEach(function(key) {
@@ -2066,13 +2082,14 @@
           head.castShadow = true;
           engine.scene.add(head);
 
-          // Eyes — two small dark spheres
+          // Eyes — classic white-ring + pupil. Previously the white was BEHIND the pupil (z=0.22 vs 0.24)
+          // so it hid inside the head. Now white at the surface, pupil in front of it.
           var eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
-          var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
-          eyeL.position.set(-0.1, 0.04, 0.24);
+          var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
+          eyeL.position.set(-0.1, 0.04, 0.27);
           head.add(eyeL);
-          var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
-          eyeR.position.set(0.1, 0.04, 0.24);
+          var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
+          eyeR.position.set(0.1, 0.04, 0.27);
           head.add(eyeR);
 
           // Name label — cleaner with rounded background
@@ -2117,11 +2134,12 @@
             engine.scene.add(qMarkSprite);
           }
 
-          // Eye white/iris for expressiveness
-          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-          eyeWhiteL.position.set(-0.1, 0.04, 0.22); head.add(eyeWhiteL);
-          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-          eyeWhiteR.position.set(0.1, 0.04, 0.22); head.add(eyeWhiteR);
+          // Eye whites — positioned at the head surface so pupils (z=0.27) sit nicely in front.
+          // Slight inset gives the pupil a visible ring of white around it.
+          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          eyeWhiteL.position.set(-0.1, 0.04, 0.255); head.add(eyeWhiteL);
+          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          eyeWhiteR.position.set(0.1, 0.04, 0.255); head.add(eyeWhiteR);
 
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
@@ -2138,6 +2156,8 @@
           engine.completionTriggered = false;
           engine.completionProgress = 0;
           engine.blocksPlaced = 0;
+          engine._sessionXP = 0; // Reset session XP counter when switching lessons
+          engine._blockMilestones = {}; // Re-arm 10/50-block XP awards for the new lesson
           if (engine.stars) { engine.scene.remove(engine.stars); engine.stars = null; engine.starsCreated = false; }
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
           // Place ground and structures as indestructible lesson blocks
@@ -2224,13 +2244,25 @@
         }
         function makeDimLabel(text, color) {
           var THREE = window.THREE;
-          var c = document.createElement('canvas'); c.width = 128; c.height = 48;
+          // Hi-DPI canvas for crisper labels at distance
+          var c = document.createElement('canvas'); c.width = 256; c.height = 96;
           var cx = c.getContext('2d');
-          cx.clearRect(0, 0, 128, 48);
-          cx.fillStyle = 'rgba(0,0,0,0.6)';
-          cx.fillRect(4, 4, 120, 40);
-          cx.fillStyle = color || '#fff'; cx.font = 'bold 20px monospace'; cx.textAlign = 'center';
-          cx.fillText(text, 64, 32);
+          cx.clearRect(0, 0, 256, 96);
+          // Rounded pill background with subtle color-matched border
+          cx.fillStyle = 'rgba(15,23,42,0.88)';
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.fill(); } else { cx.fillRect(8, 8, 240, 80); }
+          if (cx.roundRect) {
+            cx.strokeStyle = color || '#ffffff';
+            cx.lineWidth = 3;
+            cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.stroke();
+          }
+          // Text with subtle shadow for contrast at distance
+          cx.shadowColor = 'rgba(0,0,0,0.5)'; cx.shadowBlur = 6;
+          cx.fillStyle = color || '#fff';
+          cx.font = 'bold 42px "SF Mono", "Consolas", monospace';
+          cx.textAlign = 'center'; cx.textBaseline = 'middle';
+          cx.fillText(text, 128, 52);
+          cx.shadowBlur = 0;
           var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
           spr.scale.set(1.6, 0.6, 1);
           return spr;
@@ -2493,12 +2525,16 @@
               if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
               break;
             case 'KeyQ': // Cycle through shapes
-              upd({ selectedShape: (selectedShape + 1) % BLOCK_SHAPES.length, blockRotation: 0 });
-              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[(selectedShape + 1) % BLOCK_SHAPES.length].name);
+              // Read latest shape from engine bridge (closure value is stale after first render)
+              var curShape = (engine._placeState && typeof engine._placeState.selectedShape === 'number') ? engine._placeState.selectedShape : 0;
+              var nextShape = (curShape + 1) % BLOCK_SHAPES.length;
+              upd({ selectedShape: nextShape, blockRotation: 0 });
+              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[nextShape].name);
               setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               break;
             case 'KeyR': // Rotate block 90° (for half/quarter shapes)
-              var newRot = (blockRotation + 1) % 4;
+              var curRot = (engine._placeState && typeof engine._placeState.blockRotation === 'number') ? engine._placeState.blockRotation : 0;
+              var newRot = (curRot + 1) % 4;
               upd('blockRotation', newRot);
               upd('actionFeedback', 'Rotate: ' + (newRot * 90) + '\u00b0');
               setTimeout(function() { upd('actionFeedback', ''); }, 1200);
@@ -2638,8 +2674,11 @@
                   } catch(e) {}
                 }
               }
-              if (engine.blocksPlaced === 10 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '10 blocks placed');
-              if (engine.blocksPlaced === 50 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '50 blocks placed');
+              // Award XP once per threshold per session. Undoing past a threshold and redoing
+              // previously caused duplicate awards; engine._blockMilestones tracks claimed flags.
+              if (!engine._blockMilestones) engine._blockMilestones = {};
+              if (engine.blocksPlaced >= 10 && !engine._blockMilestones.ten && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '10 blocks placed'); engine._blockMilestones.ten = true; }
+              if (engine.blocksPlaced >= 50 && !engine._blockMilestones.fifty && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '50 blocks placed'); engine._blockMilestones.fifty = true; }
               var ts3 = engine._tutorialState || {}; if (ts3.step === 3 && !ts3.dismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
               if (ps.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
@@ -3062,7 +3101,14 @@
               npc.body.position.x = npc.data.position[0] + 0.5;
             }
             npc.body.position.y = baseY + bobY;
+            // Sync head + floating sprites to body's CURRENT X/Z so the head doesn't drift
+            // when the body sway/shake animations offset the body.
+            npc.head.position.x = npc.body.position.x;
+            npc.head.position.z = npc.body.position.z;
             npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
+            if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.1 + bobY; }
+            if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
+            if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }
             // Face toward player when within 6 blocks
             if (engine.camera) {
               var dx = engine.camera.position.x - npc.body.position.x;
@@ -3206,12 +3252,16 @@
           }
 
           // ── Collaborative: render peer player avatars ──
-          if (collabMode && engine._peerAvatars === undefined) engine._peerAvatars = {};
-          if (collabMode) {
+          // Read from engine bridges (closure vars are stale — animate loop captured first render)
+          var _collabActive = engine._placeState && engine._placeState.collabMode;
+          var _collabPlayers = engine._collabPlayersRef || {};
+          var _playerName = engine._playerNameRef || playerName;
+          if (_collabActive && engine._peerAvatars === undefined) engine._peerAvatars = {};
+          if (_collabActive) {
             var THREE = window.THREE;
-            Object.keys(collabPlayers).forEach(function(key) {
-              var p = collabPlayers[key];
-              if (p.name === playerName || !p.position) return;
+            Object.keys(_collabPlayers).forEach(function(key) {
+              var p = _collabPlayers[key];
+              if (p.name === _playerName || !p.position) return;
               if (!engine._peerAvatars[key]) {
                 // Create avatar: colored cube head + body
                 var mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(p.color || '#34d399') });
@@ -3686,8 +3736,11 @@
       }
 
       // ── Auto-show lesson intro on first load ──
+      // Defer via setTimeout(0) so we don't call upd (state update) during render.
+      // _introShownOnce is flipped to true immediately to prevent re-queueing on re-renders
+      // that happen before the deferred upd lands.
       if (threeReady && !worldActive && !showLessonIntro && !d._introShownOnce) {
-        upd({ showLessonIntro: true, _introShownOnce: true });
+        setTimeout(function() { upd({ showLessonIntro: true, _introShownOnce: true }); }, 0);
       }
 
       // ── Typewriter effect: auto-advance character position ──
@@ -3771,6 +3824,7 @@
       // ── Helper: save lesson to localStorage library ──
       function saveToMyLessons(lesson) {
         try {
+          _myLessonsCache = null; // invalidate since storage is changing
           var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]');
           lesson._savedAt = Date.now();
           lesson._id = 'ai_' + Date.now();
@@ -3779,12 +3833,18 @@
           localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
         } catch(e) { console.warn('[GeoWorld] Failed to save lesson:', e); }
       }
+      // Memoize within this render: render tree calls getMyLessons() ~6× per render
+      // (dropdown, count badges, modal list). Parsing the same JSON 6 times is wasteful.
+      var _myLessonsCache = null;
       function getMyLessons() {
-        try { return JSON.parse(localStorage.getItem('gw_my_lessons') || '[]'); } catch(e) { return []; }
+        if (_myLessonsCache !== null) return _myLessonsCache;
+        try { _myLessonsCache = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]'); } catch(e) { _myLessonsCache = []; }
+        return _myLessonsCache;
       }
       function deleteMyLesson(id) {
         try {
-          var lib = getMyLessons().filter(function(l) { return l._id !== id; });
+          _myLessonsCache = null; // invalidate since storage is changing
+          var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]').filter(function(l) { return l._id !== id; });
           localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
         } catch(e) {}
       }
@@ -3969,6 +4029,13 @@
         // (attached once in initEngine) so they can't see number-key block switches,
         // shape cycling (Q), rotation (R), or collab-mode toggling.
         engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
+        // Badges bridge — runAchievementCheck called via setTimeout from stale closures
+        // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
+        engine._badgesRef = earnedBadges;
+        // Collab bridges — animate loop renders peer avatars per-frame but its closure
+        // captured first-render empty values. Sync live data so avatars appear/update.
+        engine._collabPlayersRef = collabPlayers;
+        engine._playerNameRef = playerName;
       }
 
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
@@ -4496,8 +4563,10 @@
               '💬 ' + Object.keys(answeredNpcs).length + '/' + totalQ),
             el('span', { title: 'Blocks placed this session', style: { color: '#fbbf24' } },
               '🧱 ' + ((engine && engine.blocksPlaced) || 0)),
-            el('span', { title: 'Session score', style: { color: '#34d399' } },
-              '⭐ ' + score)
+            el('span', { title: 'Correct answers this session', style: { color: '#34d399' } },
+              '⭐ ' + score),
+            ((engine && engine._sessionXP) || 0) > 0 && el('span', { title: 'XP earned this session', style: { color: '#c084fc' } },
+              '✨ +' + (engine._sessionXP) + ' XP')
           ),
           // NPC progress bar (only if there are NPCs in this lesson)
           totalQ > 0 && el('div', { style: { marginTop: '4px', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' } },
@@ -5036,7 +5105,7 @@
               onClick: function() { upd('selectedShape', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedShape', i); } },
               title: bs.name + ' (' + bs.desc + ')',
-              style: { width: '32px', height: '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '14px', cursor: 'pointer',
+              style: { width: isMobile ? '26px' : '32px', height: isMobile ? '26px' : '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer',
                 border: i === selectedShape ? '2px solid #fbbf24' : '2px solid transparent',
                 background: i === selectedShape ? 'rgba(251,191,36,0.2)' : 'transparent' }
             },
@@ -5058,7 +5127,7 @@
               onClick: function() { upd('selectedBlock', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedBlock', i); } },
               title: bt.name + ' (' + (i + 1) + ')',
-              style: { width: '38px', height: '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
+              style: { width: isMobile ? '30px' : '38px', height: isMobile ? '30px' : '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '14px' : '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                 border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.03)',
                 boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
@@ -5466,18 +5535,20 @@
             style: { width: '100%', height: '70px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', color: '#e2e8f0', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
           }),
           el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
+            // Primary action — saves if there's text, otherwise behaves like a quick confirm
             el('button', {
               onClick: function() {
                 upd('showReflection', false);
                 var eng = window[engineKey];
-                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title });
+                if (eng && eng.logEvent && reflectionText.trim()) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title });
               },
-              style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-            }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Skip'),
+              style: { background: reflectionText.trim() ? '#7c3aed' : 'rgba(124,58,237,0.5)', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }
+            }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Continue without writing'),
+            // Secondary "later" — dismisses without firing the save event
             el('button', {
               onClick: function() { upd('showReflection', false); },
               style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px', padding: '8px 16px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
-            }, 'Skip')
+            }, 'Maybe later')
           )
         ),
         // ── Lesson Completion overlay with Next Lesson ──
@@ -5519,7 +5590,7 @@
                 el('div', { style: { fontSize: '32px', marginBottom: '4px' } }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
                 el('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, 'All Lessons Complete!'),
                 el('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '8px' } },
-                  'You\u2019ve mastered all 9 geometry lessons! Here\u2019s your journey:'),
+                  'You\u2019ve mastered all ' + LESSON_ORDER.length + ' geometry lessons! Here\u2019s your journey:'),
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', color: '#cbd5e1' } },
                   el('div', { style: { background: 'rgba(124,58,237,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#a78bfa' } }, String(Object.keys(earnedBadges).length)),
@@ -5580,7 +5651,25 @@
               });
           }
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
-          return el('div', { style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: '16px', padding: '0', maxWidth: '440px', width: '90%', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' } },
+          return el('div', { style: {
+              position: 'absolute',
+              // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
+              bottom: isMobile ? '160px' : '60px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 30,
+              background: 'rgba(15,23,42,0.92)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(100,116,139,0.25)',
+              borderRadius: '16px',
+              padding: '0',
+              maxWidth: '440px',
+              width: isMobile ? '94%' : '90%',
+              // Clamp vertical size on mobile so it never eats the whole screen
+              maxHeight: isMobile ? 'calc(100vh - 220px)' : '70vh',
+              overflow: 'auto',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            } },
             // Header bar with NPC color accent
             el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
               // NPC avatar circle
@@ -5640,7 +5729,10 @@
                     onClick: function() {
                       if (ci === curQ.correct) {
                         sfxCorrect();
-                        upd('consecutiveWrong', 0);
+                        // Clear wrongs lesson-wide + this NPC's wrong count
+                        var clearedWrongs = Object.assign({}, d.npcWrongCount || {});
+                        delete clearedWrongs[dialogNpcIdx];
+                        upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs });
                         if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
                         var eng = window[engineKey];
                         if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep });
@@ -5702,13 +5794,22 @@
                         var eng2 = window[engineKey];
                         if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
                         if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct] });
-                        var newWrong = consecutiveWrong + 1;
-                        upd('consecutiveWrong', newWrong);
-                        checkFrustration(newWrong);
+                        // Track per-NPC wrong count (not global) so hint escalation is scoped.
+                        // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
+                        // trigger level-3 hints on the first wrong answer at NPC B. Also prevents
+                        // "farming" — wrong 3× on NPC A used to REVEAL the correct answer, which
+                        // students could exploit to bypass learning.
+                        var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
+                        npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
+                        var newWrong = npcWrongMap[dialogNpcIdx];
+                        var totalConsecutive = consecutiveWrong + 1;
+                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap });
+                        checkFrustration(totalConsecutive);
                         setTimeout(runAchievementCheck, 100);
                         var hintText = '\u274C Not quite. ';
+                        // Escalate scaffolding WITHOUT revealing the correct answer choice.
                         if (newWrong >= 3) {
-                          hintText += 'Let\u2019s break it down: ' + curQ.choices[curQ.correct] + '. Try measuring with M key!';
+                          hintText += 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?';
                         } else if (newWrong >= 2) {
                           hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!';
                         } else {
