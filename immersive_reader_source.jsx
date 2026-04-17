@@ -7,12 +7,14 @@ var useContext = React.useContext; var useMemo = React.useMemo; var useCallback 
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var ArrowLeft = _lazyIcon('ArrowLeft');
 var ArrowRight = _lazyIcon('ArrowRight');
+var BookOpen = _lazyIcon('BookOpen');
 var ChevronLeft = _lazyIcon('ChevronLeft');
 var ChevronRight = _lazyIcon('ChevronRight');
 var List = _lazyIcon('List');
 var Pause = _lazyIcon('Pause');
 var Play = _lazyIcon('Play');
 var Settings2 = _lazyIcon('Settings2');
+var Volume2 = _lazyIcon('Volume2');
 var X = _lazyIcon('X');
 var Zap = _lazyIcon('Zap');
 
@@ -156,7 +158,7 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode }) => {
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings(prev => ({...prev, [key]: !prev[key]})), [setSettings]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (
@@ -238,6 +240,30 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <List size={14} className="mr-1 inline"/> {(t('immersive.chunk_read') || 'Chunk Read')}
             </ToggleButton>
         </div>
+        {setInteractionMode && (
+          <>
+          <div className="h-4 w-px bg-slate-300 shrink-0"></div>
+          <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={t('immersive.tap_mode') || 'Tap action'}>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-2">{t('immersive.tap_mode') || 'Tap'}</span>
+            <button
+              onClick={() => setInteractionMode('read')}
+              aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
+              title={t('immersive.tap_speak') || 'Tap a word to hear it'}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode !== 'define' && interactionMode !== 'phonics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
+            >
+              <Volume2 size={12}/> {t('immersive.speak') || 'Speak'}
+            </button>
+            <button
+              onClick={() => setInteractionMode('define')}
+              aria-pressed={interactionMode === 'define'}
+              title={t('immersive.tap_define') || 'Tap a word to see its definition and picture'}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode === 'define' ? 'bg-yellow-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
+            >
+              <BookOpen size={12}/> {t('immersive.define') || 'Define'}
+            </button>
+          </div>
+          </>
+        )}
         {isChunkReaderActive && (
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>

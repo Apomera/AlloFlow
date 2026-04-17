@@ -1275,6 +1275,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 9e: ACHIEVEMENTS
   // ─────────────────────────────────────────────────────────
 
+  // ─────────────────────────────────────────────────────────
+  // SECTION 8b: DAILY MOTIVATIONAL QUOTES
+  // ─────────────────────────────────────────────────────────
+  // One rotates per day based on day-of-year. Mix of safety, science, patience.
+  var DAILY_QUOTES = [
+    { t: "Drive like your family is in every car you see.", a: "Safety adage" },
+    { t: "The slow driver is the one arriving at their destination. The fast driver is the one arriving at the hospital.", a: "Unknown" },
+    { t: "There are no bad drivers — just inexperienced ones.", a: "Driving instructor wisdom" },
+    { t: "A good driver is aware of what's happening around him. A great driver is aware of what's about to happen.", a: "Unknown" },
+    { t: "You can tell the size of a person by the size of the thing that makes them angry.", a: "William Lyon Phelps (on road rage)" },
+    { t: "It takes 8,000 nuts and bolts to put a car together, and one to scatter it all over the road.", a: "Unknown" },
+    { t: "Drivers don't share the road. Pedestrians and cyclists share the road. We all must.", a: "Safety advocate" },
+    { t: "You are one text away from changing everything, forever. Put it down.", a: "Mothers Against Drunk Driving" },
+    { t: "Speed thrills, but it also kills. Check your RPMs and your ego at the same time.", a: "Unknown" },
+    { t: "Good drivers don't brag. They arrive.", a: "Unknown" },
+    { t: "The best time to check your brakes is before you need them.", a: "Auto safety maxim" },
+    { t: "If you are going to drive like a superhero, make sure your car is bulletproof.", a: "Unknown" },
+    { t: "Don't drive as though you own the road; drive as though you own your life.", a: "Safety instructor" },
+    { t: "The life you save may be your own. The life you save is definitely somebody's.", a: "National Highway Safety" },
+    { t: "Patience is the road's best-kept secret.", a: "Unknown" },
+    { t: "You can replace a car. You can't replace a child.", a: "School zone campaign" },
+    { t: "Seat belts aren't for the crash you plan on. They're for the one you don't.", a: "NHTSA" },
+    { t: "The friction circle has a limited budget. Spend it wisely.", a: "Bob Bondurant (race driver)" },
+    { t: "Look 15 seconds down the road, not just at the car in front of you.", a: "Commercial driving instructor" },
+    { t: "A driver's license is a privilege that requires more responsibility than most jobs.", a: "Unknown" },
+    { t: "When in doubt, don't pull out.", a: "Rural Maine driver's saying" },
+    { t: "Every trip has two unannounced passengers: your habits and your mood. Check them before you drive.", a: "Unknown" },
+    { t: "Drive the car you have. Not the car you wish you had.", a: "Racing wisdom" },
+    { t: "It's better to arrive late than to never arrive.", a: "Traffic safety slogan" },
+    { t: "The road is patient. It will wait for you. So should you.", a: "Unknown" },
+    { t: "Experienced drivers anticipate. Inexperienced drivers react. Practice anticipation.", a: "Driving coach" },
+    { t: "Never drive angry. Never drive tired. Never drive impaired. These are the three preventable tragedies.", a: "Traffic safety researcher" },
+    { t: "Maine roads don't care about your schedule. Plan extra time in winter.", a: "Maine highway patrol" },
+    { t: "Moose don't understand headlights. Stop first, think second, swerve never.", a: "Maine wildlife officer" },
+    { t: "Winter driving is all about the inputs: gentle, smooth, and early.", a: "Winter driving instructor" },
+    { t: "Defensive driving is offense against bad luck.", a: "Unknown" },
+    { t: "A clean windshield is the cheapest safety feature on your car.", a: "Driving instructor" },
+    { t: "Turning without signaling is lying to other drivers. Don't lie at 40 mph.", a: "Unknown" },
+    { t: "The road is the ultimate classroom. Pay attention — your life is the final exam.", a: "Unknown" },
+    { t: "Your reaction time matters less than your anticipation. Scan further ahead.", a: "Bondurant racing school" },
+    { t: "No trip is so urgent that it justifies putting other people's lives at risk.", a: "Safety maxim" },
+    { t: "Behind every close call is an assumption that should not have been made.", a: "Traffic safety expert" }
+  ];
+
   var ACHIEVEMENTS = [
     { id: 'first_drive', icon: '🔑', name: 'First Drive', desc: 'Complete your first drive session.' },
     { id: 'no_crash', icon: '🛡️', name: 'No Scratch', desc: 'Complete a drive with zero crashes.' },
@@ -2183,6 +2227,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var useEffect = React.useEffect;
       var useRef = React.useRef;
       var useCallback = React.useCallback;
+      var useState = React.useState;
+      // CountUp helper component: animates numbers from 0 → target over ~800ms.
+      // Used on stat cards so numbers feel earned rather than just appearing.
+      function CountUp(props) {
+        var target = Number(props.value) || 0;
+        var duration = props.duration || 800;
+        var stateTuple = useState(0);
+        var shown = stateTuple[0], setShown = stateTuple[1];
+        var startRef = useRef(null);
+        useEffect(function() {
+          startRef.current = Date.now();
+          setShown(0);
+          var tick = function() {
+            var elapsed = Date.now() - startRef.current;
+            var t = Math.min(1, elapsed / duration);
+            // Ease-out cubic for a natural settle.
+            var eased = 1 - Math.pow(1 - t, 3);
+            setShown(eased * target);
+            if (t < 1) requestAnimationFrame(tick);
+            else setShown(target);
+          };
+          requestAnimationFrame(tick);
+        }, [target]);
+        var decimals = props.decimals || 0;
+        var formatted = decimals > 0 ? shown.toFixed(decimals) : Math.round(shown);
+        return h('span', { style: props.style || null }, (props.prefix || '') + formatted + (props.suffix || ''));
+      }
 
       var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
       var upd = function(key, val) { ctx.update('roadReady', key, val); };
@@ -2281,6 +2352,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           document.body.appendChild(confCvs);
         }
         confettiCanvasRef.current = confCvs;
+        return function() {
+          // Cleanup on unmount so navigating away from RoadReady doesn't leave globals behind.
+          try {
+            var s = document.getElementById(styleId); if (s) s.remove();
+            var c = document.getElementById(confId); if (c) c.remove();
+          } catch(_) {}
+        };
       }, []);
       // On view change: scroll to top of the tool container + briefly flag a fade-in.
       useEffect(function() {
@@ -10392,7 +10470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       if (view === 'menu') {
-        return h('div', { style: { padding: '20px', maxWidth: '960px', margin: '0 auto', color: '#e2e8f0' } },
+        return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '960px', margin: '0 auto', color: '#e2e8f0' } },
           // Header
           // ── Animated hero: panning gradient + floating emoji particles ──
           // Inline <style> injects the keyframes once; it's idempotent via the id selector.
@@ -10435,8 +10513,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '11px', color: '#a5b4fc', marginTop: '4px' } }, "Learn the physics. Pass the test. Drive safer.")
             )
           ),
+          // ── Daily driving quote ──
+          // Deterministic per day-of-year. Rotates through 37 quotes.
+          (function() {
+            var dt = new Date();
+            var start = new Date(dt.getFullYear(), 0, 0);
+            var doy = Math.floor((dt - start) / 86400000);
+            var q = DAILY_QUOTES[doy % DAILY_QUOTES.length];
+            return h('div', {
+              style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.8), rgba(30,41,59,0.6))', borderRadius: '10px', padding: '14px 18px', borderLeft: '4px solid #fbbf24', marginBottom: '14px', display: 'flex', gap: '12px', alignItems: 'flex-start' }
+            },
+              h('div', { style: { fontSize: '28px', flexShrink: 0, lineHeight: 1 } }, '💬'),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '4px' } }, "Today's Driving Thought"),
+                h('div', { style: { fontSize: '13px', color: '#e2e8f0', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '4px' } }, '"' + q.t + '"'),
+                h('div', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'right' } }, '— ' + q.a)
+              )
+            );
+          })(),
           // Free Explore hero button
-          h('button', { onClick: function() { upd('view', 'freeExploreSetup'); },
+          h('button', { 'data-rr-tile': 'true', className: 'rr-cta-pulse', onClick: function() { upd('view', 'freeExploreSetup'); },
             style: { width: '100%', padding: '18px 24px', borderRadius: '14px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #2e1065, #1e1b4b, #0c4a6e)', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' } },
             h('div', { style: { fontSize: '42px' } }, '🌎'),
             h('div', null,
@@ -10655,6 +10751,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '🧭'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Help & Directory'),
               h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, 'Find anything in RoadReady')
+            ),
+            h('button', { onClick: function() { upd('view', 'keyboardCheatSheet'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #64748b', background: 'linear-gradient(135deg, #334155, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '⌨️'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Keyboard Shortcuts'),
+              h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '2px' } }, 'All drive + menu controls')
             ),
             h('button', { onClick: function() { upd('view', 'roundaboutGuide'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -11415,7 +11517,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ) : null,
           // ── Coach Mode tip card (top-right, fades after 12s) ──
           d.coachMode && coachRef.current.lastTip && (Date.now() - coachRef.current.lastTipAt < 12000) ? h('div', {
-            style: { position: 'absolute', top: '60px', right: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(30,41,59,0.95)', border: '2px solid #38bdf8', zIndex: 24, color: '#fff', maxWidth: '260px', fontSize: '12px', lineHeight: '1.4', boxShadow: '0 4px 12px rgba(0,0,0,0.6)' },
+            key: 'coach-' + coachRef.current.lastTipAt,
+            style: { position: 'absolute', top: '60px', right: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(30,41,59,0.95)', border: '2px solid #38bdf8', zIndex: 24, color: '#fff', maxWidth: '260px', fontSize: '12px', lineHeight: '1.4', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', animation: 'rr-fade-in 0.4s ease-out' },
             role: 'status', 'aria-live': 'polite'
           },
             h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, '🧑‍🏫 Coach'),
@@ -14063,6 +14166,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginTop: '10px', lineHeight: '1.6' } },
               h('b', null, 'Prevention: '), 'Signal 100 ft early. SHOULDER CHECK for cyclists before turning right. Yield to any bike that\'s going straight — they have the legal right-of-way.'
             )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // KEYBOARD CHEAT SHEET (SVG keyboard diagram with all shortcuts)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'keyboardCheatSheet') {
+        // Every drive shortcut used in RoadReady. Color-coded by category.
+        var keyMap = {
+          w: { label: 'Accel', group: 'drive', color: '#22c55e' },
+          s: { label: 'Brake', group: 'drive', color: '#ef4444' },
+          a: { label: 'Steer ←', group: 'drive', color: '#60a5fa' },
+          d: { label: 'Steer →', group: 'drive', color: '#60a5fa' },
+          space: { label: 'Pause', group: 'meta', color: '#a78bfa' },
+          f: { label: 'Drive gear', group: 'gear', color: '#fbbf24' },
+          g: { label: 'Reverse', group: 'gear', color: '#fbbf24' },
+          p: { label: 'Park', group: 'gear', color: '#fbbf24' },
+          e: { label: 'Left signal', group: 'signal', color: '#10b981' },
+          v: { label: 'Right signal', group: 'signal', color: '#10b981' },
+          t: { label: 'Cancel signal', group: 'signal', color: '#10b981' },
+          c: { label: 'Cycle camera', group: 'view', color: '#06b6d4' },
+          l: { label: 'High/low beams', group: 'view', color: '#06b6d4' },
+          h: { label: 'Toggle HUD', group: 'view', color: '#06b6d4' },
+          k: { label: '📸 Photo', group: 'fun', color: '#ec4899' },
+          q: { label: 'Horn', group: 'fun', color: '#ec4899' },
+          z: { label: 'Look left (shoulder check)', group: 'sight', color: '#f59e0b' },
+          x: { label: 'Look right (shoulder check)', group: 'sight', color: '#f59e0b' }
+        };
+        // Physical key layout — rough QWERTY
+        var rows = [
+          ['q','w','e','r','t','y','u','i','o','p'],
+          ['a','s','d','f','g','h','j','k','l'],
+          ['z','x','c','v','b','n','m']
+        ];
+        var legend = [
+          { group: 'drive', color: '#22c55e', label: 'Drive / brake' },
+          { group: 'gear', color: '#fbbf24', label: 'Gears' },
+          { group: 'signal', color: '#10b981', label: 'Turn signals' },
+          { group: 'view', color: '#06b6d4', label: 'Camera / HUD' },
+          { group: 'sight', color: '#f59e0b', label: 'Shoulder check' },
+          { group: 'fun', color: '#ec4899', label: 'Photo / horn' },
+          { group: 'meta', color: '#a78bfa', label: 'Meta (pause)' }
+        ];
+        return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #64748b' } },
+            h('div', { style: { fontSize: '42px' } }, '⌨️'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Keyboard Shortcuts'),
+            h('div', { style: { fontSize: '12px', color: '#cbd5e1' } }, 'Every drive control. Click any key to see what it does.')
+          ),
+          // Legend
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginBottom: '16px' } },
+            legend.map(function(lg) {
+              return h('div', { key: lg.group, style: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: '#cbd5e1' } },
+                h('div', { style: { width: '12px', height: '12px', borderRadius: '2px', background: lg.color } }),
+                h('span', null, lg.label)
+              );
+            })
+          ),
+          // Keyboard
+          h('div', { style: { background: 'linear-gradient(180deg, #1e293b, #0f172a)', borderRadius: '12px', padding: '20px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('style', null, '.rr-kb-key { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 3px; border-radius: 6px; background: #334155; color: #e2e8f0; font-size: 14px; font-weight: 800; font-family: monospace; border: 2px solid #475569; box-shadow: 0 3px 0 #1e293b; cursor: default; transition: transform 0.12s; position: relative; } .rr-kb-key[data-active] { box-shadow: 0 0 12px currentColor, 0 3px 0 #1e293b; transform: translateY(-1px); cursor: help; } .rr-kb-key[data-active]:hover { transform: translateY(-3px); } .rr-kb-key[data-active]::after { content: attr(data-tooltip); position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: #020617; color: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; border: 1px solid currentColor; } .rr-kb-key[data-active]:hover::after { opacity: 1; }'),
+            rows.map(function(row, ri) {
+              return h('div', { key: ri, style: { display: 'flex', justifyContent: 'center', marginLeft: ri === 1 ? '20px' : ri === 2 ? '50px' : '0' } },
+                row.map(function(k) {
+                  var info = keyMap[k];
+                  if (info) {
+                    return h('div', { key: k, className: 'rr-kb-key', 'data-active': 'true', 'data-tooltip': info.label,
+                      style: { borderColor: info.color, color: info.color, background: 'rgba(' + parseInt(info.color.slice(1,3),16) + ',' + parseInt(info.color.slice(3,5),16) + ',' + parseInt(info.color.slice(5,7),16) + ',0.15)' }
+                    }, k.toUpperCase());
+                  } else {
+                    return h('div', { key: k, className: 'rr-kb-key' }, k.toUpperCase());
+                  }
+                })
+              );
+            }),
+            // Space bar
+            h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: '4px' } },
+              h('div', { className: 'rr-kb-key', 'data-active': 'true', 'data-tooltip': 'Pause / unpause',
+                style: { width: '280px', borderColor: '#a78bfa', color: '#a78bfa', background: 'rgba(167,139,250,0.15)' }
+              }, 'SPACE')
+            )
+          ),
+          // Grouped reference
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' } },
+            legend.map(function(lg) {
+              var keys = Object.keys(keyMap).filter(function(k) { return keyMap[k].group === lg.group; });
+              return h('div', { key: lg.group, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', borderLeft: '4px solid ' + lg.color } },
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: lg.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' } }, lg.label),
+                keys.map(function(k) {
+                  return h('div', { key: k, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0', fontSize: '11px' } },
+                    h('kbd', { style: { padding: '2px 8px', background: '#1e293b', border: '1px solid ' + lg.color, borderRadius: '4px', fontSize: '10px', fontWeight: 800, color: lg.color, fontFamily: 'monospace', minWidth: '24px', textAlign: 'center' } }, k === 'space' ? 'SPC' : k.toUpperCase()),
+                    h('span', { style: { color: '#cbd5e1' } }, keyMap[k].label)
+                  );
+                })
+              );
+            })
+          ),
+          // Tip
+          h('div', { style: { background: 'rgba(34,211,238,0.08)', borderRadius: '8px', padding: '12px', border: '1px solid #22d3ee', marginTop: '14px', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' } },
+            h('b', null, '💡 Gamepad support: '), 'RoadReady auto-detects a connected gamepad. Use the left stick for steering, right trigger for throttle, left trigger for brake, A for horn, B to cycle cameras, D-pad for signals, and Start to pause.'
           )
         );
       }

@@ -28599,6 +28599,8 @@ Return ONLY JSON.`;
          } catch (parseErr) {
              warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
              try {
+                 // Back off before retry to avoid immediately hammering a rate-limited endpoint.
+                 await new Promise(r => setTimeout(r, 750));
                  const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
                  const retryResult = await callGemini(retryPrompt, true);
                  content = JSON.parse(cleanJson(retryResult));
@@ -30851,11 +30853,21 @@ Return ONLY JSON:
                  warnLog("Auto-remove text failed for regenerated term:", term, editErr);
              }
         }
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...newData[index], image: imageUrl };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        // Race-safe write: look up the term's current index at write time.
+        // Handles the case where the glossary was edited/reordered mid-generation.
+        setGeneratedContent(prev => {
+            if (!prev || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+            const liveIdx = prev.data.findIndex(d => d && d.term === term);
+            if (liveIdx === -1) {
+                warnLog("Term no longer exists, discarding generated image for:", term);
+                return prev;
+            }
+            const newData = [...prev.data];
+            newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+            const updated = { ...prev, data: newData };
+            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+            return updated;
+        });
         addToast(t('glossary.actions.icon_generated', { term: term }), "success");
     } catch (e) {
         warnLog("Unhandled error:", e);
@@ -30867,6 +30879,12 @@ Return ONLY JSON:
   const handleGenerateTermEtymology = async (index, term) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
     setIsGeneratingEtymology(prev => ({ ...prev, [index]: true }));
+    // Safety: auto-clear loading state after 30s in case the request hangs
+    // (prevents stuck spinner if network stalls and the finally-block never runs).
+    const hangGuard = setTimeout(() => {
+        setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
+        warnLog("Etymology hang guard tripped for:", term);
+    }, 30000);
     try {
         const def = generatedContent?.data[index]?.def || "";
         const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
@@ -30878,24 +30896,36 @@ Return ONLY JSON:
               : 'Break into prefix/root/suffix where useful; name source languages.'}
           ${effectiveLanguage && effectiveLanguage !== 'English' ? `Write in ${effectiveLanguage}.` : ''}
           If the word has no meaningful etymology (proper noun, recent coinage), reply with exactly: NONE.
+          Hard limit: 250 characters total. Be concise.
           Return plain text only, no markdown, no quotes, no headers.
         `;
         const raw = await callGemini(prompt, false);
-        const result = (raw || '').trim();
+        let result = (raw || '').trim();
+        if (result.length > 400) result = result.substring(0, 397) + '…';
         if (!result || result === 'NONE') {
             addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
             return;
         }
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...newData[index], etymology: result };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        // Race-safe write — find the term's current index when the result arrives.
+        setGeneratedContent(prev => {
+            if (!prev || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+            const liveIdx = prev.data.findIndex(d => d && d.term === term);
+            if (liveIdx === -1) {
+                warnLog("Term no longer exists, discarding etymology for:", term);
+                return prev;
+            }
+            const newData = [...prev.data];
+            newData[liveIdx] = { ...newData[liveIdx], etymology: result };
+            const updated = { ...prev, data: newData };
+            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+            return updated;
+        });
         addToast(t('glossary.actions.etymology_generated') || "Word roots added.", "success");
     } catch (e) {
         warnLog("Etymology generation failed:", e);
         addToast(t('glossary.actions.etymology_failed') || "Couldn't generate word roots right now.", "error");
     } finally {
+        clearTimeout(hangGuard);
         setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
     }
   };
@@ -32921,6 +32951,9 @@ Return ONLY JSON:
         }
         .animate-shake {
           animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes dashflow {
+          to { stroke-dashoffset: -20; }
         }
         @keyframes pop {
           0% { transform: scale(0.95); }
@@ -41351,6 +41384,8 @@ Return only the corrected version of this exact text:`;
                                 setChunkReaderAutoPlay={setChunkReaderAutoPlay}
                                 chunkReaderSpeed={chunkReaderSpeed}
                                 setChunkReaderSpeed={setChunkReaderSpeed}
+                                interactionMode={interactionMode}
+                                setInteractionMode={setInteractionMode}
                                 totalSentences={(() => { const sbs = getSideBySideContent(generatedContent?.data); const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : (generatedContent?.data || '').split(new RegExp('\\n{2,}')); return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1; })()}
                             /><ErrorBoundary fallbackMessage="Speed reader encountered an error. Please close and reopen.">
                             <SpeedReaderOverlay

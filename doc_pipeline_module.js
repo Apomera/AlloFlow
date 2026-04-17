@@ -577,14 +577,27 @@ var createDocPipeline = function(deps) {
 
   // ── Shared helpers for surgical-then-AI remediation (Stage 3) ──
   // Placeholder-swap for base64 data URLs so Gemini never sees (and can't corrupt) image payloads.
+  // Handles double-quoted, single-quoted, unquoted, and srcset — the original single-regex version
+  // only caught src="data:..." with double quotes, so single-quoted or srcset data URLs leaked
+  // through and got mangled by the model.
   const _stripDataUrlsForAi = (html) => {
     if (!html) return { html: html, map: {} };
     const map = {};
     let counter = 0;
-    const out = html.replace(/(src|href)\s*=\s*"(data:[^"]+)"/gi, function(m, attr, dataUrl) {
+    const swap = (val, quote) => {
       const token = '__ALLOFLOW_DATAURL_' + (counter++) + '__';
-      map[token] = dataUrl;
-      return attr + '="' + token + '"';
+      map[token] = val;
+      return quote + token + quote;
+    };
+    let out = html;
+    out = out.replace(/(src|href|srcset)\s*=\s*"([^"]*data:[^"]+)"/gi, function(m, attr, val) {
+      return attr + '=' + swap(val, '"');
+    });
+    out = out.replace(/(src|href|srcset)\s*=\s*'([^']*data:[^']+)'/gi, function(m, attr, val) {
+      return attr + '=' + swap(val, "'");
+    });
+    out = out.replace(/(src|href)\s*=\s*(data:[^\s>]+)/gi, function(m, attr, val) {
+      return attr + '=' + swap(val, '"');
     });
     return { html: out, map: map };
   };
@@ -3913,9 +3926,19 @@ HTML section ${chunkNum}/${chunks.length}:
   // Stored after chunked remediation so the UI can offer "re-fix chunk N" without re-running the whole pipeline.
   let _chunkState = null; // { preamble, postamble, originalChunks[], fixedChunks[], chunkResults[], violationInstructions, headSection }
 
+  // Cheap fingerprint for distinguishing documents — avoids collisions between unrelated runs
+  // that share a _chunkState singleton.
+  const _docFingerprint = (html) => String((html || '').length) + ':' + String(html || '').slice(0, 200);
+
   // ── Auto-fix axe-core violations via targeted AI pass ──
   const autoFixAxeViolations = async (htmlContent, axeResult, maxPasses = 2) => {
     if (!callGemini || !axeResult || axeResult.totalViolations === 0) return { html: htmlContent, axe: axeResult, passes: 0 };
+    // Clear stale chunk state from an unrelated prior document.
+    const _currentDocKey = _docFingerprint(htmlContent);
+    if (_chunkState && _chunkState.docKey && _chunkState.docKey !== _currentDocKey) {
+      warnLog('[AutoFix] Clearing _chunkState from a different document (' + _chunkState.docKey.slice(0, 30) + '... → ' + _currentDocKey.slice(0, 30) + '...)');
+      _chunkState = null;
+    }
     let currentHtml = htmlContent;
     let currentAxe = axeResult;
     let passCount = 0;
@@ -4531,6 +4554,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
           // ── Persist chunk state for selective re-fixing ──
           _chunkState = {
+            docKey: _currentDocKey,
             preamble: preambleStr,
             postamble,
             originalChunks: bodyChunks.slice(), // raw originals before any fixing

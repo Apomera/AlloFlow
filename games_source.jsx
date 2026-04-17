@@ -515,19 +515,27 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const canvasRef = useRef(null);
   const termRefs = useRef({});
   const defRefs = useRef({});
+  const shuffleDefinitions = (validItems) => {
+      const defs = validItems.map(item => ({ id: item.term, text: item.def }));
+      if (defs.length <= 1) return defs;
+      const originalOrder = defs.map(d => d.id);
+      for (let attempt = 0; attempt < 20; attempt++) {
+          for (let i = defs.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [defs[i], defs[j]] = [defs[j], defs[i]];
+          }
+          if (defs.some((d, i) => d.id !== originalOrder[i])) return defs;
+      }
+      return defs;
+  };
   useEffect(() => {
     const validItems = data.filter(d => d.term && d.def).slice(0, 8).map((item, i) => ({
         id: item.term,
         term: item.term,
         def: item.def
     }));
-    const defs = validItems.map(item => ({ id: item.term, text: item.def }));
-    for (let i = defs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [defs[i], defs[j]] = [defs[j], defs[i]];
-    }
     setItems(validItems);
-    setRightCol(defs);
+    setRightCol(shuffleDefinitions(validItems));
     setConnections([]);
     setIsChecked(false);
     setSnapTarget(null);
@@ -638,7 +646,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                   const filtered = prev.filter(c => c.defId !== hitDefId);
                   return [...filtered, { termId, defId: hitDefId, status: 'pending' }];
               });
-              playSound('click');
+              if (playSound) playSound('click');
           }
           setTempLine(null);
           setSnapTarget(null);
@@ -656,8 +664,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       const earnedPoints = correctCount * 25;
       setScore(earnedPoints);
       if (onScoreUpdate && isPerfect) onScoreUpdate(earnedPoints, "Matching Worksheet Complete");
-      if (isPerfect) playSound('correct');
-      else playSound('incorrect');
+      if (playSound) playSound(isPerfect ? 'correct' : 'incorrect');
       if (onGameComplete) {
         onGameComplete('matching', {
           score: earnedPoints,
@@ -672,42 +679,47 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setIsChecked(false);
       setScore(0);
       setKeyboardSelectedTerm(null);
+      setRightCol(shuffleDefinitions(items));
+      setAnnouncement('');
   };
   return (
     <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-        <div className="bg-white border-b border-slate-200 p-4 flex justify-between items-center shadow-sm no-print z-20 relative">
+        <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative">
             <div>
                  <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
                      <GitMerge size={20} className="text-orange-500"/> {t('matching.title')}
                  </h3>
                  <p className="text-xs text-slate-500">{t('matching.instructions')}</p>
+                 <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                     <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full">
+                         <GitMerge size={10} className="text-slate-500"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
+                     </span>
+                     {isChecked && (
+                         <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in zoom-in duration-300' : ''}`}>
+                             <Trophy size={10} className="text-yellow-500"/> {t('matching.score_display')}: {score} pts
+                         </span>
+                     )}
+                 </div>
             </div>
-            <div className="flex items-center gap-4">
-                {isChecked && (
-                    <div className={`bg-indigo-900 text-yellow-400 px-4 py-1.5 rounded-full font-bold text-sm shadow-sm border border-indigo-700${useReducedMotion() ? '' : ' animate-in zoom-in'}`}>
-                        {t('matching.score_display')}: {score} pts
-                    </div>
-                )}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={reset}
-                        className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-                        title={t('matching.reset_aria')}
-                        aria-label={t('matching.reset_aria')}
-                        data-help-key="matching_reset_btn"
-                    >
-                        <RefreshCw size={18}/>
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-red-50 rounded-full text-slate-500 hover:text-red-500 transition-colors"
-                        title={t('common.close')}
-                        aria-label={t('matching.close_aria')}
-                    >
-                        <X size={20}/>
-                    </button>
-                </div>
+            <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-200 shadow-sm self-end sm:self-auto">
+                <button
+                    onClick={reset}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                    title={t('matching.reset_aria')}
+                    aria-label={t('matching.reset_aria')}
+                    data-help-key="matching_reset_btn"
+                >
+                    <RefreshCw size={14}/> {t('memory.reset') || 'Reset'}
+                </button>
+                <button
+                    onClick={onClose}
+                    className="p-1.5 hover:bg-red-50 rounded-full text-slate-500 hover:text-red-500 transition-colors"
+                    title={t('common.close')}
+                    aria-label={t('matching.close_aria')}
+                >
+                    <X size={18}/>
+                </button>
             </div>
         </div>
         <div
@@ -731,7 +743,13 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     className="max-w-4xl mx-auto relative min-h-[600px]"
                 >
                     <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 print:hidden">
-                        {connections.map((conn, i) => {
+                        <defs>
+                            <filter id="matching-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        {connections.map((conn) => {
                             const start = getDotPos(termRefs.current[conn.termId]);
                             const end = getDotPos(defRefs.current[conn.defId]);
                             let color = "#6366f1";
@@ -743,20 +761,28 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                             const midX = (start.x + end.x) / 2;
                             const midY = (start.y + end.y) / 2;
                             return (
-                                <g key={i}>
+                                <g key={`${conn.termId}-${conn.defId}`}>
                                     <line
                                         x1={start.x} y1={start.y}
                                         x2={end.x} y2={end.y}
                                         stroke={color}
-                                        strokeWidth="3"
+                                        strokeWidth={isCorrect ? "4" : "3"}
                                         strokeLinecap="round"
                                         strokeDasharray={isIncorrect ? "8,4" : "none"}
+                                        opacity={isIncorrect ? "0.75" : "1"}
+                                        filter={isCorrect ? "url(#matching-glow)" : undefined}
                                     />
                                     {isCorrect && (
-                                        <text x={midX} y={midY - 6} textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold" aria-hidden="true">✓</text>
+                                        <g>
+                                            <circle cx={midX} cy={midY} r="11" fill="#22c55e" opacity="0.15"/>
+                                            <text x={midX} y={midY + 5} textAnchor="middle" fill="#16a34a" fontSize="18" fontWeight="bold" aria-hidden="true">✓</text>
+                                        </g>
                                     )}
                                     {isIncorrect && (
-                                        <text x={midX} y={midY - 6} textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold" aria-hidden="true">✗</text>
+                                        <g>
+                                            <circle cx={midX} cy={midY} r="11" fill="#ef4444" opacity="0.15"/>
+                                            <text x={midX} y={midY + 5} textAnchor="middle" fill="#dc2626" fontSize="16" fontWeight="bold" aria-hidden="true">✗</text>
+                                        </g>
                                     )}
                                 </g>
                             );
@@ -765,10 +791,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                             <line
                                 x1={tempLine.start.x} y1={tempLine.start.y}
                                 x2={tempLine.end.x} y2={tempLine.end.y}
-                                stroke="#6366f1"
+                                stroke={snapTarget ? "#22c55e" : "#6366f1"}
                                 strokeWidth="3"
-                                strokeDasharray="5,5"
+                                strokeDasharray="6,4"
                                 strokeLinecap="round"
+                                style={!useReducedMotion() ? { animation: 'dashflow 0.6s linear infinite' } : undefined}
                             />
                         )}
                     </svg>
@@ -881,12 +908,29 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             />
           </div>
         )}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end no-print z-30">
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 no-print z-30">
+             <div className="flex-1 max-w-md">
+                 {!isChecked && items.length > 0 && (
+                     <div className="flex items-center gap-2">
+                         <div className="h-1.5 flex-grow rounded-full bg-slate-200 overflow-hidden">
+                             <div
+                                 className={`h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 ${!useReducedMotion() ? 'transition-all duration-500 ease-out' : ''}`}
+                                 style={{ width: `${Math.min(100, (connections.length / items.length) * 100)}%` }}
+                                 role="progressbar"
+                                 aria-valuemin={0}
+                                 aria-valuemax={items.length}
+                                 aria-valuenow={connections.length}
+                             />
+                         </div>
+                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 tabular-nums">{connections.length}/{items.length}</span>
+                     </div>
+                 )}
+             </div>
              <button
                  aria-label={t('common.check_answers')}
                 onClick={checkAnswers}
                 disabled={isChecked || connections.length === 0}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                className="bg-gradient-to-br from-indigo-600 to-indigo-700 hover:shadow-indigo-500/50 text-white font-bold py-2.5 px-6 rounded-full shadow-lg shadow-indigo-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none transition-all active:scale-95 flex items-center gap-2"
                 data-help-key="matching_check_btn"
              >
                  <CheckCircle2 size={18}/> {t('matching.check_answers')}
