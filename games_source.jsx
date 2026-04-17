@@ -993,17 +993,22 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
     id: `evt-${i}`,
     colorIdx: Math.floor(Math.random() * TIMELINE_PASTEL_COLORS.length)
 }));
-const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [isWon, setIsWon] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [draggingIdx, setDraggingIdx] = useState(null);
   const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const [keyboardLiftedIdx, setKeyboardLiftedIdx] = useState(null);
   const [progressionLabel, setProgressionLabel] = useState('');
   const [progressionLabelEn, setProgressionLabelEn] = useState('');
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [lastCorrectCount, setLastCorrectCount] = useState(null); // null until first check
+  const [explanations, setExplanations] = useState({}); // originalIndex -> text | 'loading'
+  const [hintHidden, setHintHidden] = useState(false);
   const itemRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
   useEffect(() => {
@@ -1017,6 +1022,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     setIsWon(false);
     setAttempts(0);
     setScore(0);
+    setBestScore(0);
+    setHintsUsed(0);
+    setLastCorrectCount(null);
+    setExplanations({});
+    setHintHidden(false);
     setAnnouncement(t('timeline.game.start_announcement'));
     setKeyboardLiftedIdx(null);
   }, [data]);
@@ -1133,36 +1143,83 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
         if (item.originalIndex === i) correctCount++;
     });
     const isCorrect = correctCount === items.length;
-    let currentScore = correctCount * 20;
+    const hintPenalty = hintsUsed * 15;
+    // Tuned bonus: linear decay 100 → 10 across attempts, no long plateau.
+    const attemptBonus = Math.max(10, 100 - (attempts * 12));
+    let currentScore = Math.max(0, (correctCount * 20) - hintPenalty);
+    setLastCorrectCount(correctCount);
     if (isCorrect) {
         setIsWon(true);
-        const bonus = Math.max(20, 100 - (attempts * 10));
-        const totalPoints = currentScore + bonus;
+        const totalPoints = Math.max(0, currentScore + attemptBonus);
         setScore(totalPoints);
+        setBestScore(prev => Math.max(prev, totalPoints));
+        setAnnouncement(t('timeline.game.win_announcement', { score: totalPoints }) || `Sequence complete! ${totalPoints} points.`);
         if (onScoreUpdate) onScoreUpdate(totalPoints, "Sequence Builder");
         if (onGameComplete) {
           onGameComplete('timeline', {
             score: totalPoints,
             eventsOrdered: items.length,
             totalEvents: items.length,
-            attempts: attempts + 1
+            attempts: attempts + 1,
+            hintsUsed,
+            bestScore: Math.max(bestScore, totalPoints)
           });
         }
         if (playSound) playSound('correct');
     } else {
         setAttempts(prev => prev + 1);
         setScore(currentScore);
+        setAnnouncement(
+            t('timeline.game.partial_correct', { correct: correctCount, total: items.length }) ||
+            `${correctCount} of ${items.length} in the correct position — keep trying!`
+        );
         if (playSound) playSound('incorrect');
     }
+  };
+  const handleExplainClick = async (item) => {
+      if (!onExplainIncorrect) return;
+      const key = item.originalIndex;
+      if (explanations[key] && explanations[key] !== 'loading') {
+          setExplanations(prev => { const next = { ...prev }; delete next[key]; return next; });
+          return;
+      }
+      setExplanations(prev => ({ ...prev, [key]: 'loading' }));
+      try {
+          const currentPosition = items.findIndex(i => i.originalIndex === item.originalIndex);
+          const correctPosition = item.originalIndex;
+          const sortedByCorrect = [...normalizedItemsRef.current];
+          const text = await onExplainIncorrect(item, correctPosition, currentPosition, progressionLabel, sortedByCorrect);
+          setExplanations(prev => ({ ...prev, [key]: text || t('timeline.game.why_none') || 'No explanation available.' }));
+      } catch (e) {
+          setExplanations(prev => ({ ...prev, [key]: t('timeline.game.why_failed') || "Couldn't generate an explanation right now." }));
+      }
+  };
+  const useHint = () => {
+      if (isWon) return;
+      // Find the first item that is NOT in its correct position; move it to where it belongs.
+      const wrongIdx = items.findIndex((it, i) => it.originalIndex !== i);
+      if (wrongIdx === -1) return;
+      const target = items[wrongIdx].originalIndex;
+      const next = [...items];
+      const [moved] = next.splice(wrongIdx, 1);
+      next.splice(target, 0, moved);
+      setItems(next);
+      setHintsUsed(prev => prev + 1);
+      setAnnouncement(t('timeline.game.hint_used', { item: moved.event }) || `Hint: "${moved.event}" moved to its correct spot.`);
+      if (playSound) playSound('click');
   };
   const reset = () => {
      const itemsArray = normalizedItemsRef.current || [];
      setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
      setIsWon(false);
-     setAttempts(0);
+     setAttempts(prev => prev + 1);
      setScore(0);
+     setHintsUsed(0);
+     setLastCorrectCount(null);
+     setExplanations({});
      setAnnouncement(t('timeline.game.reset_announcement'));
      setKeyboardLiftedIdx(null);
+     // bestScore intentionally preserved across resets within the same game session.
   };
   return (
     <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
@@ -1199,6 +1256,29 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                {progressionLabelEn && progressionLabelEn !== progressionLabel && (
                                    <div className="text-[10px] font-normal italic opacity-80">{progressionLabelEn}</div>
                                )}
+                           </div>
+                       )}
+                       <div className="flex flex-wrap gap-2 justify-center">
+                           {lastCorrectCount !== null && !isWon && (
+                               <div className="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                   {lastCorrectCount} / {items.length} {t('timeline.game.in_correct_position') || 'in correct position'}
+                               </div>
+                           )}
+                           {bestScore > 0 && (
+                               <div className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                   {t('timeline.game.best') || 'Best'}: {bestScore} pts
+                               </div>
+                           )}
+                           {hintsUsed > 0 && (
+                               <div className="bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                   {t('timeline.game.hints_used', { n: hintsUsed }) || `${hintsUsed} hint${hintsUsed === 1 ? '' : 's'} used`}
+                               </div>
+                           )}
+                       </div>
+                       {!hintHidden && attempts === 0 && keyboardLiftedIdx === null && items.length > 0 && (
+                           <div className="text-[11px] text-slate-500 italic flex items-center gap-2">
+                               <span>{t('timeline.game.keyboard_hint') || 'Keyboard: Enter to lift, ↑/↓ to move, Enter to drop.'}</span>
+                               <button onClick={() => setHintHidden(true)} className="underline hover:text-slate-700" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
                            </div>
                        )}
                    </div>
@@ -1254,6 +1334,14 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                    {item.date}
                                                </div>
                                            )}
+                                           {item.image && (
+                                               <img
+                                                   loading="lazy"
+                                                   src={item.image}
+                                                   alt={`${item.date || ''}: ${item.event || ''}`}
+                                                   className={`mx-auto mb-2 w-24 h-24 object-contain rounded-lg bg-white border ${isWon ? 'border-green-200' : 'border-slate-200'}`}
+                                               />
+                                           )}
                                            <div className={`text-sm font-bold leading-snug flex items-center gap-1 ${isWon ? 'text-green-900' : ''}`}>
                                                {item.event}
                                                {!isWon && <SpeakButton text={item.event} size={11} />}
@@ -1262,6 +1350,27 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-500'}`}>
                                                    {item.event_en}
                                                </div>
+                                           )}
+                                           {onExplainIncorrect && !isWon && lastCorrectCount !== null && item.originalIndex !== idx && (
+                                               <>
+                                                   <button
+                                                       onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
+                                                       className="mt-2 text-[10px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-2 py-0.5 transition-colors inline-flex items-center gap-1"
+                                                       aria-label={t('timeline.game.why_aria') || 'Explain why this is out of place'}
+                                                       aria-busy={explanations[item.originalIndex] === 'loading'}
+                                                   >
+                                                       {explanations[item.originalIndex] === 'loading'
+                                                           ? (t('timeline.game.why_loading') || '…')
+                                                           : (explanations[item.originalIndex]
+                                                               ? (t('timeline.game.why_hide') || 'Hide why')
+                                                               : (t('timeline.game.why_label') || 'Why?'))}
+                                                   </button>
+                                                   {explanations[item.originalIndex] && explanations[item.originalIndex] !== 'loading' && (
+                                                       <div className="mt-1 p-2 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-left">
+                                                           {explanations[item.originalIndex]}
+                                                       </div>
+                                                   )}
+                                               </>
                                            )}
                                        </div>
                                        {!isWon && (
@@ -1312,6 +1421,17 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                >
                    <RefreshCw size={14}/> {t('timeline.game.reset')}
                </button>
+               {!isWon && items.length > 0 && hintsUsed < Math.ceil(items.length / 3) && (
+                   <button
+                       onClick={useHint}
+                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-2"
+                       aria-label={t('timeline.game.hint_aria') || 'Use a hint'}
+                       title={t('timeline.game.hint_tooltip') || 'Move one item to its correct position (-15 pts)'}
+                       data-help-key="timeline_hint_btn"
+                   >
+                       💡 {t('timeline.game.hint') || 'Hint'} <span className="text-[10px] opacity-60">({Math.ceil(items.length / 3) - hintsUsed} {t('common.left') || 'left'})</span>
+                   </button>
+               )}
                {!isWon && (
                    <button
                        aria-label={t('common.check_order')}
@@ -1340,10 +1460,12 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const [isAdding, setIsAdding] = useState(false);
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [hasUsedKeyboardCard, setHasUsedKeyboardCard] = useState(false);
+  const [hintAutoHidden, setHintAutoHidden] = useState(false);
   const [explanations, setExplanations] = useState({}); // itemId -> text | 'loading'
   const [imageFailCount, setImageFailCount] = useState(0);
   const deckScrollRef = useRef(null);
   const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
+  const [deckCanScrollLeft, setDeckCanScrollLeft] = useState(false);
   const menuRef = useRef(null);
   const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
   const pastelColors = [
@@ -1559,7 +1681,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             <div className="flex flex-col items-center gap-2">
                 <img loading="lazy"
                     src={item.image}
-                    alt="visual"
+                    alt={item.content || ''}
                     className="w-16 h-16 object-contain rounded bg-white/50"
                     decoding="async"
                 />
@@ -1586,7 +1708,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                    className="mt-1 w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
                    aria-label="Explain why this was incorrect"
                  >
-                   {explanations[item.id] === 'loading' ? '…' : (explanations[item.id] ? 'Hide why' : 'Why?')}
+                   {explanations[item.id] === 'loading' ? (t('concept_sort.why_loading') || '…') : (explanations[item.id] ? (t('concept_sort.why_hide') || 'Hide why') : (t('concept_sort.why_label') || 'Why?'))}
                  </button>
                )}
                {explanations[item.id] && explanations[item.id] !== 'loading' && (
@@ -1621,6 +1743,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       if (!el) return;
       const checkScroll = () => {
           setDeckCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 4);
+          setDeckCanScrollLeft(el.scrollLeft > 4);
       };
       checkScroll();
       el.addEventListener('scroll', checkScroll, { passive: true });
@@ -1630,6 +1753,12 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           window.removeEventListener('resize', checkScroll);
       };
   }, [deckItems.length]);
+  // Auto-hide the keyboard tip after 15 seconds if user never engages with it.
+  useEffect(() => {
+      if (hasUsedKeyboardCard || hintAutoHidden) return;
+      const id = setTimeout(() => setHintAutoHidden(true), 15000);
+      return () => clearTimeout(id);
+  }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
     <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
@@ -1710,14 +1839,14 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                    Now pick a category to drop this card into.
                                </span>
                            )}
-                           {!keyboardSelectedItemId && !hasUsedKeyboardCard && items.length > 0 && (
+                           {!keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && (
                                <span className="text-[11px] text-slate-500 italic">
                                    Tip: press Enter on a card to sort with the keyboard.
                                </span>
                            )}
                            {attempts > 0 && (
                                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                                   Try {attempts + 1} · Best: {bestScore} pts
+                                   Try {attempts + 1}{bestScore > 0 ? ` · Best: ${bestScore} pts` : ''}
                                </span>
                            )}
                            {imageFailCount > 0 && (
@@ -1784,6 +1913,18 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </div>
                        )}
                    </div>
+                   {deckCanScrollLeft && (
+                       <button
+                           onClick={() => {
+                               const el = deckScrollRef.current;
+                               if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                           }}
+                           className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
+                           aria-label="Scroll deck left"
+                       >
+                           ‹
+                       </button>
+                   )}
                    {deckCanScrollRight && (
                        <button
                            onClick={() => {

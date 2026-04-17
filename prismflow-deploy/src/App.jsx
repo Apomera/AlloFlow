@@ -6483,6 +6483,66 @@ function settingsReducer(state, action) {
   if (action.type === 'SETTINGS_RESET') return { ...SETTINGS_INITIAL_STATE };
   return state;
 }
+// Sequence Builder mode definitions — ordering criterion + prompt guidance per mode.
+// Used for both explicit-mode generation and auto-detect selection.
+const TIMELINE_MODE_DEFINITIONS = {
+  chronological: {
+    label: 'Chronological',
+    description: 'Events by date/year/era',
+    examples: '"1776", "1865", "Colonial Era", "Industrial Revolution"',
+    guidance: 'Extract dated events. The "date" field should be a specific year, decade, era, or date. The "event" field describes what happened.',
+    labelTemplate: 'Timeline: Earliest → Latest'
+  },
+  procedural: {
+    label: 'Procedural Steps',
+    description: 'Ordered steps in a process',
+    examples: '"Step 1: Mix", "Step 2: Heat", "Step 3: Cool"',
+    guidance: 'Extract ordered procedural steps. The "date" field should be "Step 1", "Step 2", etc. The "event" field describes the action at that step.',
+    labelTemplate: 'Process Steps: First → Last'
+  },
+  lifecycle: {
+    label: 'Life Cycle / Developmental',
+    description: 'Biological or developmental stages',
+    examples: '"Egg", "Caterpillar", "Chrysalis", "Butterfly"',
+    guidance: 'Extract life-cycle or developmental stages in the order they occur. The "date" field should be the stage name or number. The "event" field describes what happens at that stage.',
+    labelTemplate: 'Life Cycle: Starting stage → Final stage'
+  },
+  size: {
+    label: 'Size / Scale',
+    description: 'Measurable physical magnitudes',
+    examples: '"Atom", "Molecule", "Cell", "Tissue", "Organ"',
+    guidance: 'Extract items ordered by measurable physical size (smallest to largest). The "date" field should be the size reference or category. The "event" field describes the item.',
+    labelTemplate: 'Size Scale: Smallest → Largest'
+  },
+  hierarchy: {
+    label: 'Hierarchy / Taxonomy',
+    description: 'Nested organizational levels',
+    examples: '"Kingdom", "Phylum", "Class", "Order" OR "City", "County", "State", "Nation"',
+    guidance: 'Extract nested hierarchical levels from broadest to most specific (or inverse if that matches source). The "date" field should be the level name. The "event" field describes what is at that level.',
+    labelTemplate: 'Hierarchy: Broadest → Most Specific'
+  },
+  'cause-effect': {
+    label: 'Cause → Effect',
+    description: 'Logical causal chain',
+    examples: '"Sunlight hits leaves", "Photosynthesis occurs", "Sugar is produced", "Plant grows"',
+    guidance: 'Extract a causal chain where each item causes the next. The "date" field should indicate the causal position (e.g. "Initial cause", "Step 2", "Final effect"). The "event" field describes what happens in that link of the chain. Each item must logically trigger the next.',
+    labelTemplate: 'Causal Chain: Initial cause → Final effect'
+  },
+  intensity: {
+    label: 'Intensity / Degree',
+    description: 'Measurable amounts (least → most)',
+    examples: '"0°C", "25°C", "50°C", "100°C" OR "Acidic", "Neutral", "Basic"',
+    guidance: 'Extract items ordered by a measurable intensity or degree, from least to most. The "date" field should be the measurable value. The "event" field describes the item.',
+    labelTemplate: 'Intensity: Least → Most'
+  },
+  narrative: {
+    label: 'Narrative Arc',
+    description: 'Story stages (exposition → resolution)',
+    examples: '"Exposition", "Rising Action", "Climax", "Falling Action", "Resolution"',
+    guidance: 'Extract narrative arc stages in story order. The "date" field should be the narrative stage name. The "event" field describes what happens at that stage in the story.',
+    labelTemplate: 'Narrative Arc: Exposition → Resolution'
+  }
+};
 const ADV_INITIAL_STATE = {
   isAdventureCloudEnabled: false,
   isSocialStoryMode: false,
@@ -8269,7 +8329,8 @@ IMPORTANT RULES:
 2. Maintain the same progressionLabel format unless the user explicitly asks to change it
 3. Keep the same JSON structure with progressionLabel and items array
 4. Each item must have "date" (position on axis) and "event" (description) fields
-5. If the original had _en translations, include those as well
+5. ${currentProgressionLabelEn ? 'The original has progressionLabel_en — you MUST include an updated progressionLabel_en that matches the new progressionLabel.' : 'No progressionLabel_en needed.'}
+6. ${currentItems[0]?.event_en ? 'The original items have _en translations (date_en, event_en) — preserve or translate them for every item.' : ''}
 Return ONLY a valid JSON object:
 {
     "progressionLabel": "Y-axis ordering principle",
@@ -8286,10 +8347,17 @@ Return ONLY a valid JSON object:
           `;
           const result = await callGemini(prompt, true);
           const parsed = JSON.parse(cleanJson(result));
-          const revisedItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
+          const revisedItemsRaw = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
+          // Revisions semantically rewrite items — drop stale images; regenerate below if toggle is on.
+          const revisedItems = revisedItemsRaw.map(({ image, ...rest }) => rest);
+          const labelChanged = parsed.progressionLabel && parsed.progressionLabel !== currentProgressionLabel;
+          // Don't carry over a stale _en if the main label changed but AI dropped _en.
+          const revisedLabelEn = parsed.progressionLabel_en
+              ? parsed.progressionLabel_en
+              : (labelChanged ? null : currentProgressionLabelEn);
           let revisedData = {
               progressionLabel: parsed.progressionLabel || currentProgressionLabel,
-              progressionLabel_en: parsed.progressionLabel_en || currentProgressionLabelEn || null,
+              progressionLabel_en: revisedLabelEn,
               items: revisedItems
           };
           setGeneratedContent(prev => ({
@@ -8298,6 +8366,44 @@ Return ONLY a valid JSON object:
           }));
           addToast(t('timeline.revision_success') || 'Sequence revised successfully!', 'success');
           setTimelineRevisionInput('');
+          // Post-revision: regenerate images if the toggle is on.
+          if (includeTimelineVisuals && revisedItems.length > 0) {
+              addToast(t('timeline.visuals.regenerating_batch') || 'Regenerating visuals...', 'info');
+              const POOL_SIZE = 5;
+              const MAX_RETRIES = 3;
+              const progression = revisedData.progressionLabel || 'sequential order';
+              let failCount = 0;
+              const generateOne = async (item) => {
+                  const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
+                  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                      try {
+                          if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+                          const imageUrl = await callImagen(imgPrompt);
+                          return { ...item, image: imageUrl };
+                      } catch (e) {
+                          if (attempt === MAX_RETRIES - 1) { failCount++; warnLog('Post-revise image gen failed', e); return item; }
+                      }
+                  }
+                  return item;
+              };
+              const output = new Array(revisedItems.length);
+              for (let i = 0; i < revisedItems.length; i += POOL_SIZE) {
+                  const batch = revisedItems.slice(i, i + POOL_SIZE);
+                  const results = await Promise.all(batch.map(generateOne));
+                  results.forEach((r, j) => { output[i + j] = r; });
+              }
+              setGeneratedContent(prev => {
+                  if (!prev || prev.type !== 'timeline') return prev;
+                  const nextData = { ...(prev.data || {}), items: output, progressionLabel: revisedData.progressionLabel, progressionLabel_en: revisedData.progressionLabel_en };
+                  const updated = { ...prev, data: nextData };
+                  setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+                  return updated;
+              });
+              if (failCount > 0) {
+                  const msg = t('timeline.visuals.failed', { failed: failCount, total: output.length });
+                  addToast((msg && msg !== 'timeline.visuals.failed') ? msg : `${failCount} of ${output.length} visuals couldn't be generated.`, 'warning');
+              }
+          }
       } catch (error) {
           warnLog("Timeline Revision Error:", error);
           addToast(t('timeline.revision_error') || 'Failed to revise sequence. Please try again.', 'error');
@@ -9829,6 +9935,7 @@ Return ONLY a valid JSON object:
     'timeline_topic_detailed': 'timeline',
     'timeline_count_detailed': 'timeline',
     'timeline_generate_button': 'timeline',
+    'timeline_visuals_info': 'timeline',
     'outline_structure': 'outline',
     'outline_custom_instructions': 'outline',
     'faq_count': 'faq',
@@ -13071,6 +13178,16 @@ Return only the corrected version of this exact text:`;
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
   const [pdfTargetScore, setPdfTargetScore] = useState(90);
+  // Auto-continue remediation until target score: runs multiple outer rounds of autoFixAxeViolations
+  // so stubborn violations don't require manual re-clicking. Preference persists across sessions.
+  const [pdfAutoContinue, setPdfAutoContinue] = useState(() => {
+    try { const v = localStorage.getItem('alloflow_pdf_auto_continue'); return v === null ? true : v === 'true'; } catch (e) { return true; }
+  });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_continue', String(pdfAutoContinue)); } catch (e) {} }, [pdfAutoContinue]);
+  const [pdfAutoContinueRunning, setPdfAutoContinueRunning] = useState(false);
+  const pdfAutoContinueAbortRef = useRef(false);
+  const pdfFixResultRef = useRef(null);
+  const lastAutoSaveHashRef = useRef('');
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
   const [pdfPreviewFontSize, setPdfPreviewFontSize] = useState(16);
@@ -13415,6 +13532,8 @@ Return only the corrected version of this exact text:`;
   const [bridgeStepCount, setBridgeStepCount] = useState(5);
   const [timelineTopic, setTimelineTopic] = useState('');
   const [timelineItemCount, setTimelineItemCount] = useState('');
+  const [includeTimelineVisuals, setIncludeTimelineVisuals] = useState(false);
+  const [isGeneratingTimelineImage, setIsGeneratingTimelineImage] = useState({});
   const [draggedTimelineIndex, setDraggedTimelineIndex] = useState(null);
   const [frameType, setFrameType] = useState('Sentence Starters');
   const [frameCustomInstructions, setFrameCustomInstructions] = useState('');
@@ -19139,6 +19258,112 @@ Return ONLY valid JSON:
   const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
+
+  React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
+
+  const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
+    pdfAutoContinueAbortRef.current = false;
+    setPdfAutoContinueRunning(true);
+    let cur = pdfFixResultRef.current;
+    try {
+      let lastViolations = Infinity;
+      for (let round = 0; round < maxRounds; round++) {
+        if (pdfAutoContinueAbortRef.current) break;
+        if (!cur || !cur.axeAudit) break;
+        if ((cur.afterScore || 0) >= pdfTargetScore) break;
+        if (cur.axeAudit.totalViolations === 0) break;
+        if (cur.axeAudit.totalViolations >= lastViolations) break;
+        lastViolations = cur.axeAudit.totalViolations;
+        setPdfFixLoading(true);
+        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + cur.axeAudit.totalViolations + ' violation' + (cur.axeAudit.totalViolations !== 1 ? 's' : '') + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
+        const result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+        if (pdfAutoContinueAbortRef.current) break;
+        const reVerify = await auditOutputAccessibility(result.html);
+        const newScore = reVerify ? reVerify.score : (cur.afterScore || 0);
+        cur = Object.assign({}, cur, {
+          accessibleHtml: result.html,
+          axeAudit: result.axe,
+          verificationAudit: reVerify || cur.verificationAudit,
+          afterScore: newScore,
+          autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
+          htmlChars: result.html.length,
+          chunkState: result.chunkState || cur.chunkState,
+          chunkWeightedScore: result.chunkWeightedScore || cur.chunkWeightedScore,
+        });
+        const snapshot = cur;
+        setPdfFixResult(prev => Object.assign({}, prev, {
+          accessibleHtml: snapshot.accessibleHtml,
+          axeAudit: snapshot.axeAudit,
+          verificationAudit: snapshot.verificationAudit,
+          afterScore: snapshot.afterScore,
+          autoFixPasses: snapshot.autoFixPasses,
+          htmlChars: snapshot.htmlChars,
+          chunkState: snapshot.chunkState,
+          chunkWeightedScore: snapshot.chunkWeightedScore,
+        }));
+      }
+      if (pdfAutoContinueAbortRef.current) {
+        addToast('⏸ Auto-continue stopped', 'info');
+      } else if (cur && cur.axeAudit && cur.axeAudit.totalViolations === 0) {
+        addToast('✅ All violations resolved (score ' + (cur.afterScore || 0) + ')', 'success');
+      } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
+        addToast('🎯 Target score reached: ' + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+      }
+    } finally {
+      setPdfFixLoading(false);
+      setPdfAutoContinueRunning(false);
+      setPdfFixStep('');
+      if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
+    }
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
+
+  const saveProjectToFile = React.useCallback((isAuto) => {
+    const cur = pdfFixResultRef.current;
+    if (!cur || !cur.accessibleHtml) return false;
+    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String((cur.axeAudit && cur.axeAudit.totalViolations) || 0);
+    if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
+    const project = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      fileName: pendingPdfFile?.name || 'document.pdf',
+      accessibleHtml: cur.accessibleHtml,
+      beforeScore: cur.beforeScore,
+      afterScore: cur.afterScore,
+      axeAudit: cur.axeAudit,
+      verificationAudit: cur.verificationAudit,
+      docStyle: cur.docStyle,
+      pageCount: cur.pageCount,
+      imageCount: cur.imageCount,
+      needsExpertReview: cur.needsExpertReview,
+    };
+    if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
+      project.multiSession = {
+        schemaVersion: 1,
+        sessionId: pdfMultiSession.sessionId,
+        fileName: pdfMultiSession.fileName || project.fileName,
+        fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
+        pageCount: pdfMultiSession.pageCount || project.pageCount,
+        ranges: pdfMultiSession.ranges,
+      };
+    }
+    try {
+      const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      if (isAuto) lastAutoSaveHashRef.current = hashKey;
+      const rangeCount = project.multiSession ? project.multiSession.ranges.length : 0;
+      const msg = isAuto
+        ? ('💾 Auto-saved project' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
+        : (project.multiSession
+            ? '💾 Project saved (' + rangeCount + ' range' + (rangeCount === 1 ? '' : 's') + ') — load it later to continue'
+            : '💾 Project saved — load it later to continue editing');
+      addToast(msg, 'success');
+      return true;
+    } catch (e) { return false; }
+  }, [pendingPdfFile, pdfMultiSession, addToast]);
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
@@ -28520,13 +28745,18 @@ Return ONLY JSON.`;
                      catch (circErr) { return `[${item.type} content]`; }
              }
          };
+         const failedTypes = [];
          const safeGetAuditText = (item) => {
              try {
                  const txt = getAuditText(item);
                  if (typeof txt === 'string') return txt;
                  try { return JSON.stringify(txt).substring(0, 500); }
-                 catch (circErr) { return `[${item.type} content]`; }
+                 catch (circErr) {
+                     failedTypes.push(item.type);
+                     return `[${item.type} content]`;
+                 }
              } catch (e) {
+                 failedTypes.push(item.type);
                  warnLog(`[Alignment] Failed to serialize ${item.type} artifact:`, e);
                  return `[${item.type} content could not be serialized for audit]`;
              }
@@ -28547,6 +28777,10 @@ Return ONLY JSON.`;
              }
              comprehensiveContext += chunk;
          });
+         if (failedTypes.length > 0) {
+             const uniq = Array.from(new Set(failedTypes));
+             warnLog(`[Alignment] ${failedTypes.length} artifact(s) could not be serialized. Types: ${uniq.join(', ')}`);
+         }
          const prompt = `
             Act as a strict District Curriculum Administrator conducting a **Holistic Lesson Plan Audit**.
             Your goal is to certify if the ENTIRE COLLECTION of generated resources aligns with the Target Standards.
@@ -28703,6 +28937,39 @@ Return ONLY JSON.`;
              } catch (retryErr) {
                  warnLog("Timeline Parse Error (attempt 2):", retryErr);
                  throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
+             }
+         }
+         // Optional: batched+pooled image generation with retry-with-backoff.
+         if (includeTimelineVisuals && content.items && content.items.length > 0) {
+             setGenerationStep(t('timeline.visuals.generating') || 'Generating sequence visuals...');
+             addToast(t('timeline.visuals.generating') || 'Generating sequence visuals...', 'info');
+             let failCount = 0;
+             const POOL_SIZE = 5;
+             const MAX_RETRIES = 3;
+             const progression = content.progressionLabel || 'sequential order';
+             const generateOne = async (item) => {
+                 const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
+                 for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                     try {
+                         if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+                         const imageUrl = await callImagen(imgPrompt);
+                         return { ...item, image: imageUrl };
+                     } catch (e) {
+                         if (attempt === MAX_RETRIES - 1) { failCount++; warnLog('Timeline image gen failed', e); return item; }
+                     }
+                 }
+                 return item;
+             };
+             const output = new Array(content.items.length);
+             for (let i = 0; i < content.items.length; i += POOL_SIZE) {
+                 const batch = content.items.slice(i, i + POOL_SIZE);
+                 const results = await Promise.all(batch.map(generateOne));
+                 results.forEach((r, j) => { output[i + j] = r; });
+             }
+             content.items = output;
+             if (failCount > 0) {
+                 const msg = t('timeline.visuals.failed', { failed: failCount, total: content.items.length });
+                 addToast((msg && msg !== 'timeline.visuals.failed') ? msg : `${failCount} of ${content.items.length} visuals couldn't be generated. Cards will show text only.`, 'warning');
              }
          }
       } else if (type === 'math') {
@@ -28891,7 +29158,9 @@ Return ONLY JSON.`;
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
                  let imgFailCount = 0;
-                 content.items = await Promise.all(content.items.map(async (item) => {
+                 // Pooled concurrency (max 5) to avoid hammering image rate limits on larger sorts.
+                 const POOL_SIZE = 5;
+                 const generateOne = async (item) => {
                      try {
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. Educational style. No text.`;
                          const imageUrl = await callImagen(imgPrompt);
@@ -28901,9 +29170,20 @@ Return ONLY JSON.`;
                          imgFailCount++;
                          return item;
                      }
-                 }));
+                 };
+                 const output = new Array(content.items.length);
+                 for (let i = 0; i < content.items.length; i += POOL_SIZE) {
+                     const batch = content.items.slice(i, i + POOL_SIZE);
+                     const results = await Promise.all(batch.map(generateOne));
+                     results.forEach((r, j) => { output[i + j] = r; });
+                 }
+                 content.items = output;
                  if (imgFailCount > 0) {
-                     addToast(`${imgFailCount} of ${content.items.length} card visuals couldn't be generated. Cards will show text only.`, "warning");
+                     const msg = t('concept_sort.visuals_failed', { failed: imgFailCount, total: content.items.length });
+                     addToast(
+                         (msg && msg !== 'concept_sort.visuals_failed') ? msg : `${imgFailCount} of ${content.items.length} card visuals couldn't be generated. Cards will show text only.`,
+                         "warning"
+                     );
                  }
              }
              const catCount = content.categories.length;
@@ -29722,9 +30002,10 @@ Return ONLY JSON:
     const isArrayShape = Array.isArray(data);
     const currentItems = isArrayShape ? data : (data?.items || []);
     const newItems = [...currentItems];
+    const newIdx = newItems.length;
     newItems.push({
         date: t('timeline.default_step_label', { n: newItems.length + 1 }),
-        event: "",
+        event: t('timeline.new_step_placeholder') || "New step — describe this position in the sequence",
         date_en: "",
         event_en: "",
     });
@@ -29732,6 +30013,20 @@ Return ONLY JSON:
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    // Auto-focus the new row's event input after React commits the update.
+    setTimeout(() => {
+        try {
+            const rows = document.querySelectorAll('[data-timeline-row]');
+            const row = rows[newIdx];
+            if (row) {
+                const input = row.querySelector('input[data-timeline-event]');
+                if (input && typeof input.focus === 'function') {
+                    input.focus();
+                    if (typeof input.select === 'function') input.select();
+                }
+            }
+        } catch {}
+    }, 50);
   };
   const handleDeleteTimelineStep = (index) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
@@ -29744,6 +30039,45 @@ Return ONLY JSON:
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+  };
+  const handleGenerateTimelineItemImage = async (index, event, date) => {
+    if (!generatedContent || generatedContent.type !== 'timeline') return;
+    setIsGeneratingTimelineImage(prev => ({ ...prev, [index]: true }));
+    const hangGuard = setTimeout(() => {
+        setIsGeneratingTimelineImage(prev => ({ ...prev, [index]: false }));
+        warnLog('Timeline image hang guard tripped for:', event);
+    }, 30000);
+    try {
+        const data = generatedContent.data;
+        const isArrayShape = Array.isArray(data);
+        const progression = (!isArrayShape && data?.progressionLabel) || 'sequential order';
+        const imgPrompt = `Simple vector icon/illustration of: "${event}" (sequence position: "${date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
+        const imageUrl = await callImagen(imgPrompt);
+        setGeneratedContent(prev => {
+            if (!prev || prev.type !== 'timeline') return prev;
+            const prevData = prev.data;
+            const prevIsArray = Array.isArray(prevData);
+            const prevItems = prevIsArray ? prevData : (prevData?.items || []);
+            const liveIdx = prevItems.findIndex(it => it && it.event === event);
+            if (liveIdx === -1) {
+                warnLog('Timeline item no longer exists, discarding image for:', event);
+                return prev;
+            }
+            const nextItems = [...prevItems];
+            nextItems[liveIdx] = { ...nextItems[liveIdx], image: imageUrl };
+            const nextData = prevIsArray ? nextItems : { ...prevData, items: nextItems };
+            const updated = { ...prev, data: nextData };
+            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+            return updated;
+        });
+        addToast(t('timeline.visuals.regen_success') || 'Image updated.', 'success');
+    } catch (e) {
+        warnLog('Timeline image regen failed', e);
+        addToast(t('timeline.visuals.regen_failed') || "Couldn't regenerate image right now.", 'error');
+    } finally {
+        clearTimeout(hangGuard);
+        setIsGeneratingTimelineImage(prev => ({ ...prev, [index]: false }));
+    }
   };
   const handleLessonPlanChange = (field, value, index = null) => {
       if (!generatedContent || generatedContent.type !== 'lesson-plan') return;
@@ -30980,6 +31314,36 @@ Return ONLY JSON:
           return null;
       }
   }, [gradeLevel, callGemini, callImagen, conceptImageMode]);
+  const handleExplainTimelineItem = useCallback(async (item, correctPosition, currentPosition, progressionLabel, allItems) => {
+      try {
+          const cleanLabel = progressionLabel || 'Sequential order';
+          const neighborHint = (() => {
+              if (!Array.isArray(allItems) || correctPosition < 0) return '';
+              const before = correctPosition > 0 ? allItems[correctPosition - 1] : null;
+              const after = correctPosition < allItems.length - 1 ? allItems[correctPosition + 1] : null;
+              const parts = [];
+              if (before) parts.push(`comes AFTER "${before.event}" (${before.date || ''})`);
+              if (after) parts.push(`comes BEFORE "${after.event}" (${after.date || ''})`);
+              return parts.length ? `Context: in the correct sequence, "${item.event}" ${parts.join(' and ')}.` : '';
+          })();
+          const prompt = `
+            A ${gradeLevel} student placed the item "${item.event}" (${item.date || ''}) at position ${currentPosition + 1}, but the correct position is ${correctPosition + 1}.
+            The ordering criterion is: ${cleanLabel}.
+            ${neighborHint}
+            Write a brief, encouraging 2-3 sentence explanation for the student.
+            - State the correct position and why.
+            - Reference the ordering criterion (date, size, step, etc.) with specifics.
+            - Avoid shaming language; stay warm and instructive.
+            Hard limit: 280 characters.
+            Return plain text only, no markdown, no quotes, no headers.
+          `;
+          const raw = await callGemini(prompt, false);
+          return (raw || '').trim();
+      } catch (e) {
+          warnLog("Explain timeline item failed", e);
+          return "Couldn't generate an explanation right now. Try again in a moment.";
+      }
+  }, [gradeLevel, callGemini]);
   const handleExplainConceptSortItem = useCallback(async (item, correctCategory, chosenCategory) => {
       try {
           const prompt = `
@@ -37088,6 +37452,20 @@ Return ONLY JSON:
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
                             />
                         </div>
+                        <div data-help-key="timeline_visuals_info">
+                            <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={includeTimelineVisuals}
+                                    onChange={(e) => setIncludeTimelineVisuals(e.target.checked)}
+                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                />
+                                🎨 {t('timeline.settings.include_visuals') || 'Include sequence visuals'}
+                            </label>
+                            <p className="text-[11px] text-slate-500 italic mt-1 ml-6">
+                                {t('timeline.settings.visuals_hint') || 'Generates an AI icon for each item. Adds ~30-50 seconds.'}
+                            </p>
+                        </div>
                     </div>
                     <button
                         aria-label={t('common.generate')}
@@ -41184,6 +41562,7 @@ Return only the corrected version of this exact text:`;
                                                             <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity gap-2 backdrop-blur-[1px]">
                                                                 <button
                                                                     aria-label={t('common.refresh')}
+                                                                    aria-busy={!!isGeneratingTermImage[idx]}
                                                                     onClick={() => handleGenerateTermImage(idx, item.term)}
                                                                     className="text-white p-1.5 hover:text-yellow-300 bg-white/10 rounded-full transition-colors"
                                                                     title={t('common.regenerate')}
@@ -41281,7 +41660,7 @@ Return only the corrected version of this exact text:`;
                                                 <button onClick={() => handleSpeak(item.def, `def-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `def-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
                                                 <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                             </div>
-                                            {!isEditingGlossary && (
+                                            {(
                                                 item.etymology ? (
                                                     <details className="mt-2 text-xs w-full" data-help-key="glossary_etymology_info">
                                                         <summary className="cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none">
@@ -41303,6 +41682,8 @@ Return only the corrected version of this exact text:`;
                                                     <button
                                                         onClick={() => handleGenerateTermEtymology(idx, item.term)}
                                                         disabled={isGeneratingEtymology[idx]}
+                                                        aria-busy={!!isGeneratingEtymology[idx]}
+                                                        aria-live="polite"
                                                         className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1"
                                                         data-help-key="glossary_etymology_info"
                                                         title={t('glossary.etymology_label') || 'Word roots'}
@@ -45822,6 +46203,7 @@ Return only the corrected version of this exact text:`;
                                     {(Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
                                         <div
                                             key={idx}
+                                            data-timeline-row
                                             draggable
                                             onDragStart={(e) => handleTimelineDragStart(e, idx)}
                                             onDragOver={(e) => handleTimelineDragOver(e, idx)}
@@ -45849,6 +46231,7 @@ Return only the corrected version of this exact text:`;
                                                     />
                                                     <input aria-label={t('common.text_field')}
                                                         type="text"
+                                                        data-timeline-event
                                                         value={item.event}
                                                         onChange={(e) => handleTimelineChange(idx, 'event', e.target.value)}
                                                         className="w-2/3 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
@@ -45874,6 +46257,39 @@ Return only the corrected version of this exact text:`;
                                                     </div>
                                                 )}
                                             </div>
+                                            <div className="flex flex-col items-center gap-1 mt-1 shrink-0">
+                                                {item.image ? (
+                                                    <div className="relative group/timgimg">
+                                                        <img
+                                                            loading="lazy"
+                                                            src={item.image}
+                                                            alt={`${item.date || ''}: ${item.event || ''}`}
+                                                            className="w-12 h-12 object-contain rounded border border-slate-200 bg-white"
+                                                        />
+                                                        <button
+                                                            onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
+                                                            disabled={isGeneratingTimelineImage[idx]}
+                                                            aria-busy={!!isGeneratingTimelineImage[idx]}
+                                                            aria-label={t('timeline.visuals.regen_button_aria') || 'Regenerate image for this item'}
+                                                            className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover/timgimg:opacity-100 transition-opacity text-white disabled:opacity-80"
+                                                            title={t('common.regenerate') || 'Regenerate'}
+                                                        >
+                                                            {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
+                                                        disabled={isGeneratingTimelineImage[idx] || !item.event}
+                                                        aria-busy={!!isGeneratingTimelineImage[idx]}
+                                                        aria-label={t('timeline.visuals.regen_button_aria') || 'Generate image for this item'}
+                                                        className="w-12 h-12 rounded border-2 border-dashed border-indigo-200 text-indigo-500 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-wait"
+                                                        title={t('timeline.visuals.regen_button_aria') || 'Generate image'}
+                                                    >
+                                                        {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <ImageIcon size={14} />}
+                                                    </button>
+                                                )}
+                                            </div>
                                             <button
                                                 aria-label={t('common.delete')}
                                                 onClick={() => handleDeleteTimelineStep(idx)}
@@ -45896,17 +46312,27 @@ Return only the corrected version of this exact text:`;
                                     (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
                                     <div key={idx} className="relative animate-in slide-in-from-bottom-2 duration-300" style={{animationDelay: `${idx * 100}ms`}}>
                                         <div className="absolute -left-[57px] sm:-left-[73px] top-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-indigo-600 border-4 border-indigo-100 box-content"></div>
-                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                                            <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded mb-1 border border-indigo-200">
-                                                {item.date}
-                                                {item.date_en && <span className="opacity-60 font-normal ml-1">({item.date_en})</span>}
-                                            </span>
-                                            <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                                                {item.event}
-                                            </p>
-                                            {item.event_en && (
-                                                <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
+                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
+                                            {item.image && (
+                                                <img
+                                                    loading="lazy"
+                                                    src={item.image}
+                                                    alt={`${item.date || ''}: ${item.event || ''}`}
+                                                    className="w-[72px] h-[72px] object-contain rounded-lg bg-white border border-slate-100 shrink-0"
+                                                />
                                             )}
+                                            <div className="flex-1 min-w-0">
+                                                <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded mb-1 border border-indigo-200">
+                                                    {item.date}
+                                                    {item.date_en && <span className="opacity-60 font-normal ml-1">({item.date_en})</span>}
+                                                </span>
+                                                <p className="text-sm font-medium text-slate-800 leading-relaxed">
+                                                    {item.event}
+                                                </p>
+                                                {item.event_en && (
+                                                    <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     ))
@@ -45940,6 +46366,7 @@ Return only the corrected version of this exact text:`;
                                     playSound={playSound}
                                     onScoreUpdate={handleGameScoreUpdate}
                                     onGameComplete={handleGameCompletion}
+                                    onExplainIncorrect={handleExplainTimelineItem}
                                 />
                             </ErrorBoundary>
                         )}
@@ -51506,6 +51933,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
+                    <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
+                      <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label="Auto-continue remediation until target score" />
+                      <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
+                    </label>
                     <div>
                       <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
@@ -51700,7 +52131,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
                   </button>
                   <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-200">
@@ -53342,28 +53773,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {pdfFixResult.axeAudit.totalIncomplete > 0 && <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">⏳ {pdfFixResult.axeAudit.totalIncomplete} need manual review</span>}
                             {pdfFixResult.autoFixPasses > 0 && <span className="text-[11px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">🔧 {pdfFixResult.autoFixPasses} auto-fix pass{pdfFixResult.autoFixPasses > 1 ? 'es' : ''} applied</span>}
                             {pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && (
-                              <button onClick={async () => {
-                                setPdfFixLoading(true);
-                                setPdfFixStep('Auto-fixing remaining violations...');
-                                const result = await autoFixAxeViolations(pdfFixResult.accessibleHtml, pdfFixResult.axeAudit, pdfAutoFixPasses);
-                                setPdfFixStep('Re-verifying...');
-                                const reVerify = await auditOutputAccessibility(result.html);
-                                setPdfFixResult(prev => ({
-                                  ...prev,
-                                  accessibleHtml: result.html,
-                                  axeAudit: result.axe,
-                                  verificationAudit: reVerify || prev.verificationAudit,
-                                  afterScore: reVerify ? reVerify.score : prev.afterScore,
-                                  autoFixPasses: (prev.autoFixPasses || 0) + result.passes,
-                                  htmlChars: result.html.length,
-                                  chunkState: result.chunkState || prev.chunkState,
-                                  chunkWeightedScore: result.chunkWeightedScore || prev.chunkWeightedScore,
-                                }));
-                                setPdfFixLoading(false);
-                                setPdfFixStep('');
-                                addToast(result.axe.totalViolations === 0 ? '✅ All violations fixed!' : `Fixed ${pdfFixResult.axeAudit.totalViolations - result.axe.totalViolations} more — ${result.axe.totalViolations} remaining`, result.axe.totalViolations === 0 ? 'success' : 'info');
-                              }} className="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
-                                🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}
+                              <button onClick={() => runAutoFixLoop(pdfAutoContinue ? 3 : 1)} className="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
+                                🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}{pdfAutoContinue ? ' (auto-continue on)' : ''}
+                              </button>
+                            )}
+                            {pdfAutoContinueRunning && (
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; addToast('Stopping after current pass...', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
+                                ⏸ Stop auto-continue
                               </button>
                             )}
                             {pdfFixLoading && pdfFixStep.includes('Auto-fix') && (
@@ -53751,44 +54167,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         </div>
                       </div>
-                      {/* Save / Load Project */}
+                      {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
+                          which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">
-                        <button onClick={() => {
-                          const project = {
-                            version: 1,
-                            savedAt: new Date().toISOString(),
-                            fileName: pendingPdfFile?.name || 'document.pdf',
-                            accessibleHtml: pdfFixResult.accessibleHtml,
-                            beforeScore: pdfFixResult.beforeScore,
-                            afterScore: pdfFixResult.afterScore,
-                            axeAudit: pdfFixResult.axeAudit,
-                            verificationAudit: pdfFixResult.verificationAudit,
-                            docStyle: pdfFixResult.docStyle,
-                            pageCount: pdfFixResult.pageCount,
-                            imageCount: pdfFixResult.imageCount,
-                            needsExpertReview: pdfFixResult.needsExpertReview,
-                          };
-                          // Include multi-session ranges when applicable. Old
-                          // loaders ignore this field; new loaders use it to
-                          // restore the prior-ranges panel and continue across
-                          // sessions on Canvas (where IndexedDB is wiped).
-                          if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
-                            project.multiSession = {
-                              schemaVersion: 1,
-                              sessionId: pdfMultiSession.sessionId,
-                              fileName: pdfMultiSession.fileName || project.fileName,
-                              fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
-                              pageCount: pdfMultiSession.pageCount || project.pageCount,
-                              ranges: pdfMultiSession.ranges,
-                            };
-                          }
-                          const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-project.alloflow.json`;
-                          document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                          addToast(project.multiSession ? '💾 Project saved (' + project.multiSession.ranges.length + ' range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ') — load it later to continue' : '💾 Project saved — load it later to continue editing', 'success');
-                        }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
+                        <button onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
                           💾 Save Project
                         </button>
                         <label className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
@@ -56960,6 +57342,110 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
                   <div className="text-[11px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
+                </div>
+
+                {/* ── SECTION: Word Art ── */}
+                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2">
+                  <input type="text" id="wordart-text-input" placeholder="Your word art text..." defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label="Word art text" />
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
+                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Word art style">
+                      {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
+                        <button key={key} type="button" role="radio" aria-checked={i === 0} data-wa-preset={key}
+                          className="wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
+                          style={i === 0 ? { background: '#f59e0b', color: 'white', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
+                          onClick={(e) => {
+                            const parent = e.currentTarget.parentElement;
+                            if (!parent) return;
+                            parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
+                            e.currentTarget.setAttribute('aria-checked', 'true');
+                            e.currentTarget.style.background = '#f59e0b';
+                            e.currentTarget.style.color = 'white';
+                            e.currentTarget.style.borderColor = '#f59e0b';
+                          }}
+                        >{emoji} {label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art size">
+                        {['S','M','L','XL'].map((s) => (
+                          <button key={s} type="button" role="radio" aria-checked={s === 'L'} data-wa-size={s}
+                            className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            style={s === 'L' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
+                            onClick={(e) => {
+                              const parent = e.currentTarget.parentElement;
+                              if (!parent) return;
+                              parent.querySelectorAll('.wordart-size-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.style.background = '#4f46e5';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = '#4f46e5';
+                            }}
+                          >{s}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art alignment">
+                        {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
+                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} data-wa-align={a}
+                            className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            style={a === 'center' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
+                            onClick={(e) => {
+                              const parent = e.currentTarget.parentElement;
+                              if (!parent) return;
+                              parent.querySelectorAll('.wordart-align-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.style.background = '#4f46e5';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = '#4f46e5';
+                            }}
+                          >{icon}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button"
+                    onClick={() => {
+                      const textInput = document.getElementById('wordart-text-input');
+                      const text = textInput && textInput.value ? textInput.value.trim() : '';
+                      if (!text) { addToast('Please enter word art text first', 'info'); return; }
+                      const presetBtn = document.querySelector('.wordart-preset-btn[aria-checked="true"]');
+                      const sizeBtn = document.querySelector('.wordart-size-btn[aria-checked="true"]');
+                      const alignBtn = document.querySelector('.wordart-align-btn[aria-checked="true"]');
+                      const preset = presetBtn ? presetBtn.getAttribute('data-wa-preset') : 'goldFoil';
+                      const size = sizeBtn ? sizeBtn.getAttribute('data-wa-size') : 'L';
+                      const align = alignBtn ? alignBtn.getAttribute('data-wa-align') : 'center';
+                      const iframe = exportPreviewRef.current;
+                      const doc = iframe && iframe.contentDocument;
+                      if (!doc || !doc.body) { addToast('Preview not ready yet', 'error'); return; }
+                      let html = '';
+                      if (window.AlloWordArt && typeof window.AlloWordArt.render === 'function') {
+                        html = window.AlloWordArt.render(text, preset, size, align);
+                      } else {
+                        const P = { goldFoil: 'background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;', neonGlow: 'color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490;font-weight:900;', retroArcade: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:Impact,'Arial Black',sans-serif;letter-spacing:0.03em;", chalkboard: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;", embossed: 'color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;', rainbow: 'background:linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0891b2,#4f46e5,#9333ea);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;' };
+                        const sz = { S: '1.5rem', M: '2.5rem', L: '4rem', XL: '6rem' };
+                        const safe = String(text).replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;');
+                        const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ';line-height:1.1;' + (P[preset] || P.goldFoil) + '">' + safe + '</span>';
+                        const wrapped = preset === 'chalkboard' ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + '</span>' : inner;
+                        html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + '</div>';
+                      }
+                      const wrap = doc.createElement('div');
+                      wrap.innerHTML = html;
+                      const node = wrap.firstChild;
+                      if (!node) { addToast('Could not render word art', 'error'); return; }
+                      doc.body.appendChild(node);
+                      try { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+                      if (textInput) textInput.value = '';
+                      addToast('✨ Word art inserted', 'success');
+                    }}
+                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+                  >✨ Insert Word Art</button>
                 </div>
 
                 {/* ── SECTION: Content ── */}

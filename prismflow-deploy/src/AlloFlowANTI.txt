@@ -13071,6 +13071,16 @@ Return only the corrected version of this exact text:`;
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
   const [pdfTargetScore, setPdfTargetScore] = useState(90);
+  // Auto-continue remediation until target score: runs multiple outer rounds of autoFixAxeViolations
+  // so stubborn violations don't require manual re-clicking. Preference persists across sessions.
+  const [pdfAutoContinue, setPdfAutoContinue] = useState(() => {
+    try { const v = localStorage.getItem('alloflow_pdf_auto_continue'); return v === null ? true : v === 'true'; } catch (e) { return true; }
+  });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_continue', String(pdfAutoContinue)); } catch (e) {} }, [pdfAutoContinue]);
+  const [pdfAutoContinueRunning, setPdfAutoContinueRunning] = useState(false);
+  const pdfAutoContinueAbortRef = useRef(false);
+  const pdfFixResultRef = useRef(null);
+  const lastAutoSaveHashRef = useRef('');
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
   const [pdfPreviewFontSize, setPdfPreviewFontSize] = useState(16);
@@ -19139,6 +19149,112 @@ Return ONLY valid JSON:
   const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
+
+  React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
+
+  const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
+    pdfAutoContinueAbortRef.current = false;
+    setPdfAutoContinueRunning(true);
+    let cur = pdfFixResultRef.current;
+    try {
+      let lastViolations = Infinity;
+      for (let round = 0; round < maxRounds; round++) {
+        if (pdfAutoContinueAbortRef.current) break;
+        if (!cur || !cur.axeAudit) break;
+        if ((cur.afterScore || 0) >= pdfTargetScore) break;
+        if (cur.axeAudit.totalViolations === 0) break;
+        if (cur.axeAudit.totalViolations >= lastViolations) break;
+        lastViolations = cur.axeAudit.totalViolations;
+        setPdfFixLoading(true);
+        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + cur.axeAudit.totalViolations + ' violation' + (cur.axeAudit.totalViolations !== 1 ? 's' : '') + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
+        const result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+        if (pdfAutoContinueAbortRef.current) break;
+        const reVerify = await auditOutputAccessibility(result.html);
+        const newScore = reVerify ? reVerify.score : (cur.afterScore || 0);
+        cur = Object.assign({}, cur, {
+          accessibleHtml: result.html,
+          axeAudit: result.axe,
+          verificationAudit: reVerify || cur.verificationAudit,
+          afterScore: newScore,
+          autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
+          htmlChars: result.html.length,
+          chunkState: result.chunkState || cur.chunkState,
+          chunkWeightedScore: result.chunkWeightedScore || cur.chunkWeightedScore,
+        });
+        const snapshot = cur;
+        setPdfFixResult(prev => Object.assign({}, prev, {
+          accessibleHtml: snapshot.accessibleHtml,
+          axeAudit: snapshot.axeAudit,
+          verificationAudit: snapshot.verificationAudit,
+          afterScore: snapshot.afterScore,
+          autoFixPasses: snapshot.autoFixPasses,
+          htmlChars: snapshot.htmlChars,
+          chunkState: snapshot.chunkState,
+          chunkWeightedScore: snapshot.chunkWeightedScore,
+        }));
+      }
+      if (pdfAutoContinueAbortRef.current) {
+        addToast('⏸ Auto-continue stopped', 'info');
+      } else if (cur && cur.axeAudit && cur.axeAudit.totalViolations === 0) {
+        addToast('✅ All violations resolved (score ' + (cur.afterScore || 0) + ')', 'success');
+      } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
+        addToast('🎯 Target score reached: ' + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+      }
+    } finally {
+      setPdfFixLoading(false);
+      setPdfAutoContinueRunning(false);
+      setPdfFixStep('');
+      if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
+    }
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
+
+  const saveProjectToFile = React.useCallback((isAuto) => {
+    const cur = pdfFixResultRef.current;
+    if (!cur || !cur.accessibleHtml) return false;
+    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String((cur.axeAudit && cur.axeAudit.totalViolations) || 0);
+    if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
+    const project = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      fileName: pendingPdfFile?.name || 'document.pdf',
+      accessibleHtml: cur.accessibleHtml,
+      beforeScore: cur.beforeScore,
+      afterScore: cur.afterScore,
+      axeAudit: cur.axeAudit,
+      verificationAudit: cur.verificationAudit,
+      docStyle: cur.docStyle,
+      pageCount: cur.pageCount,
+      imageCount: cur.imageCount,
+      needsExpertReview: cur.needsExpertReview,
+    };
+    if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
+      project.multiSession = {
+        schemaVersion: 1,
+        sessionId: pdfMultiSession.sessionId,
+        fileName: pdfMultiSession.fileName || project.fileName,
+        fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
+        pageCount: pdfMultiSession.pageCount || project.pageCount,
+        ranges: pdfMultiSession.ranges,
+      };
+    }
+    try {
+      const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      if (isAuto) lastAutoSaveHashRef.current = hashKey;
+      const rangeCount = project.multiSession ? project.multiSession.ranges.length : 0;
+      const msg = isAuto
+        ? ('💾 Auto-saved project' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
+        : (project.multiSession
+            ? '💾 Project saved (' + rangeCount + ' range' + (rangeCount === 1 ? '' : 's') + ') — load it later to continue'
+            : '💾 Project saved — load it later to continue editing');
+      addToast(msg, 'success');
+      return true;
+    } catch (e) { return false; }
+  }, [pendingPdfFile, pdfMultiSession, addToast]);
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
@@ -51506,6 +51622,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
+                    <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
+                      <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label="Auto-continue remediation until target score" />
+                      <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
+                    </label>
                     <div>
                       <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
@@ -51700,7 +51820,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
                   </button>
                   <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-200">
@@ -53342,28 +53462,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {pdfFixResult.axeAudit.totalIncomplete > 0 && <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">⏳ {pdfFixResult.axeAudit.totalIncomplete} need manual review</span>}
                             {pdfFixResult.autoFixPasses > 0 && <span className="text-[11px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">🔧 {pdfFixResult.autoFixPasses} auto-fix pass{pdfFixResult.autoFixPasses > 1 ? 'es' : ''} applied</span>}
                             {pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && (
-                              <button onClick={async () => {
-                                setPdfFixLoading(true);
-                                setPdfFixStep('Auto-fixing remaining violations...');
-                                const result = await autoFixAxeViolations(pdfFixResult.accessibleHtml, pdfFixResult.axeAudit, pdfAutoFixPasses);
-                                setPdfFixStep('Re-verifying...');
-                                const reVerify = await auditOutputAccessibility(result.html);
-                                setPdfFixResult(prev => ({
-                                  ...prev,
-                                  accessibleHtml: result.html,
-                                  axeAudit: result.axe,
-                                  verificationAudit: reVerify || prev.verificationAudit,
-                                  afterScore: reVerify ? reVerify.score : prev.afterScore,
-                                  autoFixPasses: (prev.autoFixPasses || 0) + result.passes,
-                                  htmlChars: result.html.length,
-                                  chunkState: result.chunkState || prev.chunkState,
-                                  chunkWeightedScore: result.chunkWeightedScore || prev.chunkWeightedScore,
-                                }));
-                                setPdfFixLoading(false);
-                                setPdfFixStep('');
-                                addToast(result.axe.totalViolations === 0 ? '✅ All violations fixed!' : `Fixed ${pdfFixResult.axeAudit.totalViolations - result.axe.totalViolations} more — ${result.axe.totalViolations} remaining`, result.axe.totalViolations === 0 ? 'success' : 'info');
-                              }} className="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
-                                🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}
+                              <button onClick={() => runAutoFixLoop(pdfAutoContinue ? 3 : 1)} className="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
+                                🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}{pdfAutoContinue ? ' (auto-continue on)' : ''}
+                              </button>
+                            )}
+                            {pdfAutoContinueRunning && (
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; addToast('Stopping after current pass...', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
+                                ⏸ Stop auto-continue
                               </button>
                             )}
                             {pdfFixLoading && pdfFixStep.includes('Auto-fix') && (
@@ -53751,44 +53856,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         </div>
                       </div>
-                      {/* Save / Load Project */}
+                      {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
+                          which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">
-                        <button onClick={() => {
-                          const project = {
-                            version: 1,
-                            savedAt: new Date().toISOString(),
-                            fileName: pendingPdfFile?.name || 'document.pdf',
-                            accessibleHtml: pdfFixResult.accessibleHtml,
-                            beforeScore: pdfFixResult.beforeScore,
-                            afterScore: pdfFixResult.afterScore,
-                            axeAudit: pdfFixResult.axeAudit,
-                            verificationAudit: pdfFixResult.verificationAudit,
-                            docStyle: pdfFixResult.docStyle,
-                            pageCount: pdfFixResult.pageCount,
-                            imageCount: pdfFixResult.imageCount,
-                            needsExpertReview: pdfFixResult.needsExpertReview,
-                          };
-                          // Include multi-session ranges when applicable. Old
-                          // loaders ignore this field; new loaders use it to
-                          // restore the prior-ranges panel and continue across
-                          // sessions on Canvas (where IndexedDB is wiped).
-                          if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
-                            project.multiSession = {
-                              schemaVersion: 1,
-                              sessionId: pdfMultiSession.sessionId,
-                              fileName: pdfMultiSession.fileName || project.fileName,
-                              fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
-                              pageCount: pdfMultiSession.pageCount || project.pageCount,
-                              ranges: pdfMultiSession.ranges,
-                            };
-                          }
-                          const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-project.alloflow.json`;
-                          document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                          addToast(project.multiSession ? '💾 Project saved (' + project.multiSession.ranges.length + ' range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ') — load it later to continue' : '💾 Project saved — load it later to continue editing', 'success');
-                        }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
+                        <button onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
                           💾 Save Project
                         </button>
                         <label className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
@@ -56960,6 +57031,110 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
                   <div className="text-[11px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
+                </div>
+
+                {/* ── SECTION: Word Art ── */}
+                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2">
+                  <input type="text" id="wordart-text-input" placeholder="Your word art text..." defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label="Word art text" />
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
+                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Word art style">
+                      {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
+                        <button key={key} type="button" role="radio" aria-checked={i === 0} data-wa-preset={key}
+                          className="wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
+                          style={i === 0 ? { background: '#f59e0b', color: 'white', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
+                          onClick={(e) => {
+                            const parent = e.currentTarget.parentElement;
+                            if (!parent) return;
+                            parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
+                            e.currentTarget.setAttribute('aria-checked', 'true');
+                            e.currentTarget.style.background = '#f59e0b';
+                            e.currentTarget.style.color = 'white';
+                            e.currentTarget.style.borderColor = '#f59e0b';
+                          }}
+                        >{emoji} {label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art size">
+                        {['S','M','L','XL'].map((s) => (
+                          <button key={s} type="button" role="radio" aria-checked={s === 'L'} data-wa-size={s}
+                            className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            style={s === 'L' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
+                            onClick={(e) => {
+                              const parent = e.currentTarget.parentElement;
+                              if (!parent) return;
+                              parent.querySelectorAll('.wordart-size-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.style.background = '#4f46e5';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = '#4f46e5';
+                            }}
+                          >{s}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art alignment">
+                        {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
+                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} data-wa-align={a}
+                            className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            style={a === 'center' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
+                            onClick={(e) => {
+                              const parent = e.currentTarget.parentElement;
+                              if (!parent) return;
+                              parent.querySelectorAll('.wordart-align-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.style.background = '#4f46e5';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = '#4f46e5';
+                            }}
+                          >{icon}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button"
+                    onClick={() => {
+                      const textInput = document.getElementById('wordart-text-input');
+                      const text = textInput && textInput.value ? textInput.value.trim() : '';
+                      if (!text) { addToast('Please enter word art text first', 'info'); return; }
+                      const presetBtn = document.querySelector('.wordart-preset-btn[aria-checked="true"]');
+                      const sizeBtn = document.querySelector('.wordart-size-btn[aria-checked="true"]');
+                      const alignBtn = document.querySelector('.wordart-align-btn[aria-checked="true"]');
+                      const preset = presetBtn ? presetBtn.getAttribute('data-wa-preset') : 'goldFoil';
+                      const size = sizeBtn ? sizeBtn.getAttribute('data-wa-size') : 'L';
+                      const align = alignBtn ? alignBtn.getAttribute('data-wa-align') : 'center';
+                      const iframe = exportPreviewRef.current;
+                      const doc = iframe && iframe.contentDocument;
+                      if (!doc || !doc.body) { addToast('Preview not ready yet', 'error'); return; }
+                      let html = '';
+                      if (window.AlloWordArt && typeof window.AlloWordArt.render === 'function') {
+                        html = window.AlloWordArt.render(text, preset, size, align);
+                      } else {
+                        const P = { goldFoil: 'background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;', neonGlow: 'color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490;font-weight:900;', retroArcade: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:Impact,'Arial Black',sans-serif;letter-spacing:0.03em;", chalkboard: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;", embossed: 'color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;', rainbow: 'background:linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0891b2,#4f46e5,#9333ea);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;' };
+                        const sz = { S: '1.5rem', M: '2.5rem', L: '4rem', XL: '6rem' };
+                        const safe = String(text).replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;');
+                        const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ';line-height:1.1;' + (P[preset] || P.goldFoil) + '">' + safe + '</span>';
+                        const wrapped = preset === 'chalkboard' ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + '</span>' : inner;
+                        html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + '</div>';
+                      }
+                      const wrap = doc.createElement('div');
+                      wrap.innerHTML = html;
+                      const node = wrap.firstChild;
+                      if (!node) { addToast('Could not render word art', 'error'); return; }
+                      doc.body.appendChild(node);
+                      try { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+                      if (textInput) textInput.value = '';
+                      addToast('✨ Word art inserted', 'success');
+                    }}
+                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+                  >✨ Insert Word Art</button>
                 </div>
 
                 {/* ── SECTION: Content ── */}

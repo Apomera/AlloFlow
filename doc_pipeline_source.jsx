@@ -598,6 +598,60 @@ var createDocPipeline = function(deps) {
   };
 
   // ── Shared helpers for surgical-then-AI remediation (Stage 3) ──
+  // ── Word Art presets ──
+  // Accessible CSS-only presets. Text remains real DOM text (readable by screen readers) — no SVG
+  // path rendering, no rasterization. Colors chosen for WCAG AA on white bg where feasible;
+  // decorative contrast rules (1.4.3 "incidental") cover the rest.
+  // Exposed on window.AlloWordArt so the Document Builder UI can render identical previews.
+  var WORD_ART_PRESETS = {
+    goldFoil: {
+      name: 'Gold Foil',
+      emoji: '✨',
+      style: 'background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(120,53,15,0.25);font-weight:900;'
+    },
+    neonGlow: {
+      name: 'Neon Glow',
+      emoji: '💡',
+      style: 'color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490,0 1px 2px rgba(0,0,0,0.3);font-weight:900;'
+    },
+    retroArcade: {
+      name: 'Retro Arcade',
+      emoji: '🕹️',
+      style: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:'Impact','Arial Black',sans-serif;letter-spacing:0.03em;"
+    },
+    chalkboard: {
+      name: 'Chalkboard',
+      emoji: '🖍️',
+      style: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;",
+      wrapperStyle: 'background:#14532d;padding:1rem 1.5rem;border-radius:8px;display:inline-block;border:3px solid #78350f;'
+    },
+    embossed: {
+      name: 'Embossed',
+      emoji: '🏛️',
+      style: 'color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;letter-spacing:0.01em;'
+    },
+    rainbow: {
+      name: 'Rainbow',
+      emoji: '🌈',
+      style: 'background:linear-gradient(90deg,#dc2626 0%,#ea580c 17%,#ca8a04 33%,#16a34a 50%,#0891b2 67%,#4f46e5 83%,#9333ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;'
+    }
+  };
+  var WORD_ART_SIZES = { S: '1.5rem', M: '2.5rem', L: '4rem', XL: '6rem' };
+  // Expose to host so Document Builder can render matching previews.
+  try { if (typeof window !== 'undefined') { window.AlloWordArt = { presets: WORD_ART_PRESETS, sizes: WORD_ART_SIZES }; } } catch(e) {}
+
+  // Render a wordart block to HTML. Used by renderJsonToHtml and by the Document Builder insert UI.
+  var renderWordArtHtml = function(text, presetKey, size, align) {
+    var preset = WORD_ART_PRESETS[presetKey] || WORD_ART_PRESETS.goldFoil;
+    var fontSize = WORD_ART_SIZES[size] || WORD_ART_SIZES.L;
+    var alignStyle = align === 'left' ? 'left' : align === 'right' ? 'right' : 'center';
+    var safeText = String(text || '').replace(/[<>&]/g, function(ch) { return ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&amp;'; });
+    var inner = '<span style="display:inline-block;font-size:' + fontSize + ';line-height:1.1;' + preset.style + '">' + safeText + '</span>';
+    if (preset.wrapperStyle) inner = '<span style="display:inline-block;' + preset.wrapperStyle + '">' + inner + '</span>';
+    return '<div class="alloflow-wordart" data-wa-preset="' + presetKey + '" data-wa-size="' + size + '" data-wa-align="' + alignStyle + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + alignStyle + '">' + inner + '</div>';
+  };
+  try { if (typeof window !== 'undefined') { window.AlloWordArt && (window.AlloWordArt.render = renderWordArtHtml); } } catch(e) {}
+
   // Placeholder-swap for base64 data URLs so Gemini never sees (and can't corrupt) image payloads.
   // Handles double-quoted, single-quoted, unquoted, and srcset — the original single-regex version
   // only caught src="data:..." with double quotes, so single-quoted or srcset data URLs leaked
@@ -5486,14 +5540,50 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               return `<table style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
             case 'image': {
-              // Use data-img-placeholder marker instead of SVG data URI (avoids regex issues)
-              const imgDesc = (block.description || block.alt || 'Image').replace(/"/g, '&quot;');
-              return `<figure data-img-placeholder="true" style="margin:1em 0;text-align:center"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#64748b">[Image: ${imgDesc.substring(0, 80)}]</div><figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25em">${block.description || block.alt || ''}</figcaption></figure>`;
+              // Uploadable placeholder: even when extractedImages is empty (no extraction happened),
+              // users can still upload their own image in the preview. The deferred-image block
+              // downstream upgrades the src when a real extracted image is available.
+              // Colors chosen for WCAG AA on the #f1f5f9 placeholder bg: #475569 caption (5.35:1),
+              // #64748b border (3.92:1 — passes 1.4.11 non-text contrast).
+              const _imgDesc = (block.description || block.alt || 'Image').replace(/"/g, '&quot;');
+              const _imgAltSafe = (block.description || block.alt || 'Image').replace(/"/g, '').replace(/'/g, '');
+              const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
+              const _captionText = block.description || block.alt || '';
+              return `<figure id="${_imgId}-figure" data-img-placeholder="true" style="margin:1em 0">`
+                + `<div id="${_imgId}-container" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">`
+                + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
+                + `<span style="font-size:13px;color:#334155;font-weight:600">Image placeholder</span>`
+                + `<span style="font-size:12px;color:#475569;max-width:90%">${_imgDesc.substring(0, 140)}${_imgDesc.length > 140 ? '…' : ''}</span>`
+                + `<label style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#1d4ed8;color:#ffffff;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;margin-top:0.5rem">`
+                + `📷 Upload image`
+                + `<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${_imgId}-container');var ex=c.querySelector('img');if(ex){ex.src=e.target.result;}else{c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';var ni=document.createElement('img');ni.src=e.target.result;ni.alt='${_imgAltSafe}';ni.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.insertBefore(ni,c.firstChild);}};r.readAsDataURL(f);})(this)">`
+                + `</label>`
+                + `</div>`
+                + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${_captionText}</figcaption>` : '')
+                + `</figure>`;
             }
             case 'link': return `<a href="${block.url || '#'}" style="color:${docStyle.accentColor}">${block.text}</a>`;
             case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
             case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
-            case 'banner': return `<div style="background:${docStyle.headerBg};color:${docStyle.headerText};padding:24px 28px;border-radius:12px;margin-bottom:24px"><div style="font-size:1.5em;font-weight:bold">${block.title || ''}</div>${block.subtitle ? '<div style="font-size:0.9em;opacity:0.85;margin-top:4px">' + block.subtitle + '</div>' : ''}</div>`;
+            case 'wordart': {
+              // Decorative stylized text. Renders via the shared WORD_ART_PRESETS so the in-app
+              // Document Builder preview and the exported PDF/HTML match exactly.
+              return renderWordArtHtml(block.text || block.title || '', block.preset || block.style || 'goldFoil', block.size || 'L', block.align || 'center');
+            }
+            case 'banner': {
+              // Enforce white text on dark gradient + text-shadow guarantees WCAG AA contrast
+              // regardless of the auto-extracted headerBg. Accent border + layered typography
+              // makes the banner feel like a proper chapter marker rather than a flat heading box.
+              const _bTitle = block.title || '';
+              const _bSubtitle = block.subtitle || '';
+              const _bEyebrow = block.eyebrow || '';
+              const _accent = docStyle.accentColor || '#fbbf24';
+              return `<div style="position:relative;background:${docStyle.headerBg};color:#ffffff;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
+                + (_bEyebrow ? '<div style="font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#ffffff;opacity:0.95;margin-bottom:10px;text-shadow:0 1px 2px rgba(0,0,0,0.25)">' + _bEyebrow + '</div>' : '')
+                + (_bTitle ? '<div style="font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;color:#ffffff;text-shadow:0 2px 4px rgba(0,0,0,0.35)">' + _bTitle + '</div>' : '')
+                + (_bSubtitle ? '<div style="font-size:1.1em;font-weight:500;margin-top:10px;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.3)">' + _bSubtitle + '</div>' : '')
+                + `</div>`;
+            }
             case 'rawhtml': {
               // Strip scripts, styles, event handlers, and javascript: URLs before trusting model-supplied HTML.
               const _rawHtml = String(block.html || '');
@@ -6044,9 +6134,9 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 <div id="${imgId}-container" style="${hasSrc ? '' : 'background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;'}text-align:center;min-height:${hasSrc ? '0' : '120px'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
 ${hasSrc
   ? `<img src="${srcToken}" alt="${desc.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
-  : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-<span style="font-size:12px;color:#64748b;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
-<span style="font-size:11px;color:#94a3b8">${desc.substring(0, 100)}${desc.length > 100 ? '...' : ''}</span>`}
+  : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+<span style="font-size:13px;color:#334155;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
+<span style="font-size:12px;color:#475569">${desc.substring(0, 100)}${desc.length > 100 ? '...' : ''}</span>`}
 <div style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
 <label style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:${hasSrc ? '#64748b' : '#2563eb'};color:white;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer">
 ${hasSrc ? (isRegenerated ? '🔄 Replace (AI generated)' : '🔄 Replace') : '📷 Upload image'}
@@ -6055,7 +6145,7 @@ ${hasSrc ? (isRegenerated ? '🔄 Replace (AI generated)' : '🔄 Replace') : '�
 ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:#8b5cf6;color:white;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer" aria-label="Adjust crop for this image">✂ Adjust Crop</button>` : ''}
 </div>
 </div>
-<figcaption style="font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.5em">${desc}${purpose ? '<br><em style="font-size:0.8em;color:#94a3b8">Purpose: ' + purpose + '</em>' : ''}</figcaption>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em">${desc}${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose + '</em>' : ''}</figcaption>
 </figure>`;
           }
         });
@@ -6769,6 +6859,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // Suffix: "}]" at end of document — use /s so \s* can span newlines.
           accessibleHtml = accessibleHtml.replace(/"\s*\}\s*\]\s*$/s, '');
           accessibleHtml = accessibleHtml.replace(/"\s*\}\s*$/s, '');
+          // Also handle bare string-array suffix: `"]` (for [""..."] shapes without objects).
+          accessibleHtml = accessibleHtml.replace(/"\s*\]\s*$/s, '');
+          // Final catch-all: strip any leading JSON-shape junk (brackets, braces, quotes, commas,
+          // whitespace) that appears BEFORE the first real HTML tag at the document start.
+          // Safe because it only fires when a literal HTML tag follows immediately, so legitimate
+          // prose that happens to start with '[' won't be mangled.
+          accessibleHtml = accessibleHtml.replace(/^[\s\[\]\{\}"',]+(?=<[a-zA-Z])/, '');
           // Strip JSON array transition fragments: "}{ or "][{ patterns that leak between concatenated
           // JSON objects when Gemini returns multiple blocks. These appear as visible garbage in the output.
           accessibleHtml = accessibleHtml.replace(new RegExp('"\\s*,\\s*\\{\\s*"' + _jsonKeyPat + '"\\s*:\\s*"', 'g'), '\n');
