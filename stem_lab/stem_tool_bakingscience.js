@@ -42,8 +42,30 @@
     { id: 'scaler', icon: '\uD83D\uDCCF', label: 'Recipe Scaler', desc: 'Baker\u2019s percentages and unit math', color: 'orange' },
     { id: 'oven', icon: '\uD83D\uDD25', label: 'Oven Timeline', desc: 'What happens at each temperature', color: 'rose' },
     { id: 'diagnosis', icon: '\uD83D\uDD0D', label: 'Bake Diagnosis', desc: 'Figure out why a bake went wrong', color: 'pink' },
-    { id: 'gluten', icon: '\uD83E\uDDF5', label: 'Gluten Lab', desc: 'See how flour, water, and kneading build the network', color: 'teal' }
+    { id: 'gluten', icon: '\uD83E\uDDF5', label: 'Gluten Lab', desc: 'See how flour, water, and kneading build the network', color: 'teal' },
+    { id: 'browning', icon: '\uD83E\uDD69', label: 'Browning Lab', desc: 'Maillard vs. caramelization head-to-head', color: 'orange' }
   ];
+
+  // ── Browning Lab data ──
+  // protein is approx amino-acid reducing-sugar partners; sugars is free/formed sugar content.
+  // Both 0-1 relative scale tuned for gameplay.
+  var BROWN_FOODS = [
+    { id: 'chicken',   label: 'Chicken skin',   emoji: '\uD83C\uDF57', protein: 0.8, sugars: 0.1, rawColor: '#fde4c2', doneColor: '#a0522d', charColor: '#3a1a0a',
+      note: 'Protein-rich, low sugar \u2014 Maillard dominates.' },
+    { id: 'bread',     label: 'Bread crust',    emoji: '\uD83E\uDD56', protein: 0.5, sugars: 0.3, rawColor: '#f4d8a4', doneColor: '#c68e42', charColor: '#4a240e',
+      note: 'Some protein + some sugars \u2014 classic Maillard with a hint of caramel.' },
+    { id: 'onion',     label: 'Caramelized onion', emoji: '\uD83E\uDDC5', protein: 0.3, sugars: 0.7, rawColor: '#f9ebc3', doneColor: '#a8551d', charColor: '#4a1a08',
+      note: 'Onions release LOTS of natural sugar as they cook \u2014 both reactions team up.' },
+    { id: 'sugar',     label: 'Sugar syrup',    emoji: '\uD83C\uDF6F', protein: 0.0, sugars: 1.0, rawColor: '#fef9e7', doneColor: '#b9720d', charColor: '#4a1e04',
+      note: 'Pure sugars \u2014 caramelization only, no Maillard at all.' },
+    { id: 'tomato',    label: 'Roasted tomato', emoji: '\uD83C\uDF45', protein: 0.2, sugars: 0.5, rawColor: '#f16b5c', doneColor: '#8a2a1a', charColor: '#3a120a',
+      note: 'Mostly sugars with a touch of protein \u2014 caramelization-forward.' },
+    { id: 'marshmallow', label: 'Marshmallow', emoji: '\uD83C\uDF62', protein: 0.1, sugars: 0.95, rawColor: '#fdfdfd', doneColor: '#c08a48', charColor: '#3e1a08',
+      note: 'Sugar + gelatin. The surface dries quickly and caramelizes fast over a flame.' }
+  ];
+  // Flavor descriptors keyed by dominant reaction
+  var MAILLARD_FLAVORS = ['nutty', 'roasted', 'savory', 'umami', 'meaty', 'toasted', 'complex', 'deep'];
+  var CARAMEL_FLAVORS  = ['sweet', 'buttery', 'caramel', 'candy-like', 'honey', 'amber', 'syrupy', 'rich'];
 
   // ── Gluten Lab data ──
   var FLOUR_PRESETS = [
@@ -351,7 +373,8 @@
       { id: 'scale_3',   label: 'Scale 3 different recipes', icon: '\uD83D\uDCCF', check: function(d) { var e = d._bakingExt || {}; return (e.recipesScaled || 0) >= 3; }, progress: function(d) { var e = d._bakingExt || {}; return (e.recipesScaled || 0) + '/3'; } },
       { id: 'oven_all',  label: 'Discover every oven event', icon: '\uD83D\uDD25', check: function(d) { var e = d._bakingExt || {}; return (e.ovenEventsFound || []).length >= OVEN_EVENTS.length; }, progress: function(d) { var e = d._bakingExt || {}; return ((e.ovenEventsFound || []).length) + '/' + OVEN_EVENTS.length; } },
       { id: 'diag_5',    label: 'Diagnose 5 bakes correctly', icon: '\uD83D\uDD0D', check: function(d) { var e = d._bakingExt || {}; return (e.diagnosesCorrect || 0) >= 5; }, progress: function(d) { var e = d._bakingExt || {}; return (e.diagnosesCorrect || 0) + '/5'; } },
-      { id: 'gluten_3',  label: 'Match 3 gluten targets', icon: '\uD83E\uDDF5', check: function(d) { var e = d._bakingExt || {}; return (e.glutenMatches || 0) >= 3; }, progress: function(d) { var e = d._bakingExt || {}; return (e.glutenMatches || 0) + '/3'; } }
+      { id: 'gluten_3',  label: 'Match 3 gluten targets', icon: '\uD83E\uDDF5', check: function(d) { var e = d._bakingExt || {}; return (e.glutenMatches || 0) >= 3; }, progress: function(d) { var e = d._bakingExt || {}; return (e.glutenMatches || 0) + '/3'; } },
+      { id: 'brown_3',   label: 'Brown 3 foods to golden perfection', icon: '\uD83E\uDD69', check: function(d) { var e = d._bakingExt || {}; return (e.browningPerfections || 0) >= 3; }, progress: function(d) { var e = d._bakingExt || {}; return (e.browningPerfections || 0) + '/3'; } }
     ],
 
     render: function(ctx) {
