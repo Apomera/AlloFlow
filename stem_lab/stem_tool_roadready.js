@@ -1788,7 +1788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!hitConeRef.current) {
             hitConeRef.current = true;
             var newSt = Object.assign({}, st);
-            newSt.score -= 25;
+            newSt.score = Math.max(0, newSt.score - 25);
             newSt.hits += 1;
             setSt(newSt);
             setFeedback('💥 You bumped a parked car. -25. Press R to reset.');
@@ -1998,7 +1998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (car.y < ROAD_TOP + 14 || car.y > ROAD_BOT - 14) {
           if (Math.abs(car.speed) > 3) {
             var ns = Object.assign({}, stVal);
-            ns.score -= 15; ns.hits++;
+            ns.score = Math.max(0, ns.score - 15); ns.hits++;
             setSt(ns);
             setFb('💥 Curb hit! -15. Slow down near the edge. Press R to reset.');
           }
@@ -2158,7 +2158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (Math.hypot(car.x - cone.x, car.y - cone.y) < 16 && !cone.hit) {
             cone.hit = true;
             var ns = Object.assign({}, stVal);
-            ns.score -= 10; ns.conesHit++;
+            ns.score = Math.max(0, ns.score - 10); ns.conesHit++;
             setSt(ns);
             setFb('🔶 Cone hit! -10. Steer more gently.');
           }
@@ -2850,6 +2850,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var blindSpotRef = useRef({ left: false, right: false });
       // Lane departure detector: flags when we drift across a lane line without signaling.
       var laneDepartureRef = useRef({ side: null, lastAlertAt: 0 });
+      // Wrong-side-of-road tracker: monitors duration on the oncoming side,
+      // with context awareness so legitimate avoidance doesn't get penalized.
+      // { active: bool, startedAt: seconds (sim time), lastPenaltyAt: seconds, lastWarnAt: seconds }
+      var wrongSideRef = useRef({ active: false, startedAt: 0, lastPenaltyAt: 0, lastWarnAt: 0 });
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
       // Tracked setTimeout IDs — cancelled on drive exit so spooky callbacks don't fire after teardown.
       var timeoutsRef = useRef([]);
@@ -3112,35 +3116,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } else {
           parentRef.current = { active: false, errors: [], startedAt: 0, durationSec: 120 };
         }
-        // Dynamic weather: if enabled in Free Explore, build a 3-stage chain starting
+        // Dynamic weather: if enabled in Free Explore, build a multi-stage chain starting
         // ~90s in. Pattern depends on initial weather and time of day.
+        // Each starting state has 2–3 alternative chains so repeat drives feel different.
+        // Events can carry `weather` (physics grip + visuals), `time` (dawn→day transition
+        // for "sun comes up"), or both.
         weatherSysRef.current = { enabled: !!(d.freeExplore && d.dynamicWeather), queue: [], lastApplied: scn.weather };
         if (weatherSysRef.current.enabled) {
           var initW = scn.weather, initT = scn.time;
-          var queue = [];
-          // Maine-realistic chains.
+          var chainOptions = [];
+          // ─── Clear + day ───
           if (initW === 'clear' && initT === 'day') {
-            queue = [
-              { startAt: 90, weather: 'rain', narration: 'A summer storm is rolling in. Wipers and headlights are required.' },
-              { startAt: 240, weather: 'fog', narration: 'The rain is settling into thick coastal fog. Slow down and use low beams only.' },
-              { startAt: 360, weather: 'clear', narration: 'The fog is breaking up. Clear conditions ahead.' }
-            ];
-          } else if (initW === 'clear' && initT === 'night') {
-            queue = [
-              { startAt: 100, weather: 'fog', narration: 'Night fog forming over the coast. Drop your speed by half.' },
-              { startAt: 280, weather: 'rain', narration: 'Light rain at night — toughest visibility conditions there are.' }
-            ];
-          } else if (initW === 'snow') {
-            queue = [
-              { startAt: 120, weather: 'fog', narration: 'Blowing snow is reducing visibility. Increase following distance to 6 seconds.' },
-              { startAt: 300, weather: 'snow', narration: 'Snow squall continuing. Stay smooth — no quick inputs on ice.' }
-            ];
-          } else {
-            // Default chain — drive into a clearing.
-            queue = [
-              { startAt: 150, weather: 'clear', narration: 'Conditions are improving.' }
+            chainOptions = [
+              // Storm rolls in → coastal fog → clears
+              [ { startAt: 90,  weather: 'rain', narration: 'A summer storm is rolling in. Wipers and headlights are required.' },
+                { startAt: 240, weather: 'fog',  narration: 'The rain is settling into thick coastal fog. Slow down and use low beams only.' },
+                { startAt: 360, weather: 'clear', narration: 'The fog is breaking up. Clear conditions ahead.' } ],
+              // Clouds darken into a pop-up shower
+              [ { startAt: 120, weather: 'rain', narration: 'Pop-up shower ahead — pavement will be slick for the first five minutes.' },
+                { startAt: 280, weather: 'clear', narration: 'Shower is past. Pavement still damp; ease on the throttle.' } ],
+              // Hazy → fog (common on the Maine coast in summer)
+              [ { startAt: 150, weather: 'fog', narration: 'Sea breeze is pulling fog inland. Drop your speed by half.' },
+                { startAt: 330, weather: 'clear', narration: 'Fog is burning off. You should see sun again shortly.' } ]
             ];
           }
+          // ─── Clear + night ───
+          else if (initW === 'clear' && initT === 'night') {
+            chainOptions = [
+              [ { startAt: 100, weather: 'fog', narration: 'Night fog forming over the coast. Drop your speed by half.' },
+                { startAt: 280, weather: 'rain', narration: 'Light rain at night — toughest visibility conditions there are.' } ],
+              [ { startAt: 140, weather: 'rain', narration: 'Overnight shower. Use low beams — high beams reflect off the drops.' },
+                { startAt: 320, weather: 'fog', narration: 'Rain is turning to fog as the temperature drops. Slow way down.' } ]
+            ];
+          }
+          // ─── Snow (any time) — Maine winter sequences ───
+          else if (initW === 'snow') {
+            chainOptions = [
+              [ { startAt: 120, weather: 'fog', narration: 'Blowing snow is reducing visibility. Increase following distance to 6 seconds.' },
+                { startAt: 300, weather: 'snow', narration: 'Snow squall continuing. Stay smooth — no quick inputs on ice.' } ],
+              // Whiteout-and-clear pattern
+              [ { startAt: 90,  weather: 'fog', narration: 'Whiteout conditions. Pull right and stop if you lose visibility entirely.' },
+                { startAt: 240, weather: 'snow', narration: 'Visibility is recovering but the road is still fully covered.' },
+                { startAt: 420, weather: 'clear', narration: 'Sun is breaking through. Roads still icy in shade — watch bridges.' } ]
+            ];
+          }
+          // ─── Dawn (the key "sun comes up" case) — time-of-day progression ───
+          else if (initT === 'dawn') {
+            chainOptions = [
+              // Foggy dawn → fog burns off → full day
+              [ { startAt: 60,  weather: 'fog', narration: 'Ground fog is thickest right at sunrise. Low beams only — high beams blind you.' },
+                { startAt: 200, weather: 'clear', narration: 'The sun is cresting the trees. Fog is lifting fast now.' },
+                { startAt: 260, time: 'day', narration: 'Full daylight. Watch for eastbound drivers blinded by the sun.' } ],
+              // Simple sunrise — no weather events, just the time shift
+              [ { startAt: 180, time: 'day', narration: 'Sunrise complete. Expect east-facing drivers to have sun in their eyes.' } ],
+              // Dawn + pop-up shower
+              [ { startAt: 90,  weather: 'rain', narration: 'Dawn shower — common on the coast. Headlights on.' },
+                { startAt: 240, weather: 'clear', narration: 'Shower is past. Pavement still wet.' },
+                { startAt: 300, time: 'day', narration: 'Sun is fully up. Clear driving ahead.' } ]
+            ];
+          }
+          // ─── Fog ───
+          else if (initW === 'fog') {
+            chainOptions = [
+              [ { startAt: 120, weather: 'rain', narration: 'Fog is giving way to light rain. Visibility will improve slightly.' },
+                { startAt: 300, weather: 'clear', narration: 'Weather system moving east. Clear ahead.' } ],
+              [ { startAt: 180, weather: 'clear', narration: 'Fog burning off. Return to normal cruising speed when comfortable.' } ]
+            ];
+          }
+          // ─── Rain ───
+          else if (initW === 'rain') {
+            chainOptions = [
+              [ { startAt: 120, weather: 'fog', narration: 'Rain is tapering into fog. Keep wipers on intermittent.' },
+                { startAt: 300, weather: 'clear', narration: 'System has passed. Roads still wet — extend following distance.' } ],
+              [ { startAt: 240, weather: 'clear', narration: 'Rain is past. Watch for standing water on lower stretches.' } ]
+            ];
+          }
+          // ─── Default fallback ───
+          else {
+            chainOptions = [
+              [ { startAt: 150, weather: 'clear', narration: 'Conditions are improving.' } ]
+            ];
+          }
+          // Pick one of the available chains at random for this drive.
+          var queue = chainOptions[Math.floor(Math.random() * chainOptions.length)] || [];
           weatherSysRef.current.queue = queue;
           journalLog('weather_dyn', '🌦️', 'Dynamic weather enabled');
         }
@@ -3630,16 +3688,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
               // ── Dynamic weather: pop the next queued transition when its startAt elapses ──
+              // Events may carry a `weather` change, a `time` change (dawn→day "sun comes up"),
+              // or both. We apply each independently so a chain can interleave them.
               var ws = weatherSysRef.current;
               if (ws.enabled && ws.queue.length > 0 && curT >= ws.queue[0].startAt) {
                 var nextW = ws.queue.shift();
-                if (nextW.weather !== currentScenario.weather) {
+                var changed = false;
+                if (nextW.weather && nextW.weather !== currentScenario.weather) {
                   Object.assign(currentScenario, { weather: nextW.weather });
                   ws.lastApplied = nextW.weather;
                   var wIcon = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️' };
                   addToast((wIcon[nextW.weather] || '🌦️') + ' Weather changing to ' + nextW.weather);
-                  speak(nextW.narration);
                   journalLog('weather_change', wIcon[nextW.weather] || '🌦️', 'Weather → ' + nextW.weather);
+                  changed = true;
+                }
+                if (nextW.time && nextW.time !== currentScenario.time) {
+                  var priorTime = currentScenario.time;
+                  Object.assign(currentScenario, { time: nextW.time });
+                  var tIcon = { day: '☀️', dawn: '🌅', dusk: '🌇', night: '🌙' };
+                  addToast((tIcon[nextW.time] || '🕐') + ' Time of day: ' + nextW.time);
+                  journalLog('time_change', tIcon[nextW.time] || '🕐', 'Time of day: ' + priorTime + ' → ' + nextW.time);
+                  changed = true;
+                }
+                if (changed) {
+                  speak(nextW.narration);
                   // If radio is on the Weather station, log a "forecast verified" line.
                   if (radioRef.current.station === 'weather') {
                     radioRef.current.lastWeatherAt = Date.now();
@@ -3937,6 +4009,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var updatePhysics = function(dt) {
           var car = carRef.current;
+          // Sanitize car state: if any numeric field went NaN/Infinity (e.g. from a prior
+          // weird input, a tab-switch glitch, or a division-by-zero edge case), reset it
+          // to a safe default. Without this guard a single NaN propagates through every
+          // later frame and never recovers.
+          if (!isFinite(car.speed))    car.speed = 0;
+          if (!isFinite(car.heading))  car.heading = 0;
+          if (!isFinite(car.steering)) car.steering = 0;
+          if (!isFinite(car.x))        car.x = Math.floor(MAP_SIZE / 2);
+          if (!isFinite(car.y))        car.y = 0;
           var k = keysRef.current;
           var veh = currentVehicle;
           var scn = currentScenario;
@@ -4235,7 +4316,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (skid && Math.abs(car.speed) > 4 && timeRef.current > 3) {
             skidRef.current.active = true;
             skidRef.current.intensity = Math.min(1, (lateralAccelNeeded - lateralAvail) / lateralAvail);
-            statsRef.current.safetyScore -= dt * 8;
+            // Clamp at 0 so long skid chains or compounded crashes can't drive the score
+            // into deep negative territory (the end-of-drive report uses the raw value
+            // for grading, not just the clamped display).
+            statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - dt * 8);
             statsRef.current.skidSeconds += dt;
           } else {
             skidRef.current.active = false;
@@ -4535,6 +4619,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // controlling their perpendicular approach: main-road green = cross-street red.
             var slowFor = 0; // 0=clear, 1=slow, 2=stop
             var signalDetectRange = 14; // brake earlier — was 8
+            // Track the signal currently controlling us (used below for stop-sign resume).
+            var activeStopSign = null;
+            var activeStopDist = Infinity;
             signals.forEach(function(s) {
               if (!t.crossStreet) {
                 // Main-road car: straight-ahead signal on the path.
@@ -4545,6 +4632,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       slowFor = Math.max(slowFor, 1);
                     } else {
                       slowFor = Math.max(slowFor, 2);
+                      if (s.type === 'stop' && rel.ahead < activeStopDist) {
+                        activeStopSign = s; activeStopDist = rel.ahead;
+                      }
                     }
                   } else if (s.state === 'yellow') {
                     // Brake unless far enough to clear (dilemma zone): aggressive past 5 cells gun it.
@@ -4569,12 +4659,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Our side has green — proceed normally (no slow).
                   } else if (s.type === 'stop') {
                     // 4-way stop
-                    if (pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) slowFor = Math.max(slowFor, 1);
-                    else slowFor = Math.max(slowFor, 2);
+                    if (pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
+                      slowFor = Math.max(slowFor, 1);
+                    } else {
+                      slowFor = Math.max(slowFor, 2);
+                      if (distToCross < activeStopDist) { activeStopSign = s; activeStopDist = distToCross; }
+                    }
                   }
                 }
               }
             });
+            // ── Stop-sign resume logic (prevents 4-way deadlock) ──
+            // If we've been stopped at a stop sign for long enough, scan for cross-traffic
+            // (and the player). If the intersection is clear, proceed. Otherwise stay put.
+            // Each vehicle gets its own random wait (1.2–3.2s) + small per-vehicle jitter
+            // to break ties so two AIs at a 4-way don't both move on the same frame.
+            if (activeStopSign && slowFor === 2 && Math.abs(t.speed) < 0.4) {
+              if (!t._stopArrivedAt) t._stopArrivedAt = timeRef.current;
+              if (t._stopWaitTarget == null) t._stopWaitTarget = 1.2 + Math.random() * 2.0 + (idx % 7) * 0.08;
+              var waitedFor = timeRef.current - t._stopArrivedAt;
+              if (waitedFor >= t._stopWaitTarget) {
+                // Wait satisfied — look both ways before going.
+                var intersectionClear = true;
+                var iX = activeStopSign.x, iY = activeStopSign.y;
+                // Cross-axis AI traffic inside the intersection box (4 cells)
+                traffic.forEach(function(other, oi) {
+                  if (!intersectionClear || oi === idx) return;
+                  var oYaxis = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                  if (oYaxis === travelsY) {
+                    // Same axis: only a concern if another car is immediately in front of us at the same stop
+                    var rel2 = aheadOf(other.x, other.y);
+                    if (rel2.ahead > 0 && rel2.ahead < 3 && Math.abs(rel2.lat) < 2) intersectionClear = false;
+                    return;
+                  }
+                  // Cross-axis: a car inside or entering the intersection?
+                  if (Math.hypot(other.x - iX, other.y - iY) < 4 && Math.abs(other.speed) > 0.5) {
+                    intersectionClear = false;
+                  }
+                });
+                // Player check — if the player is in or entering the intersection, yield.
+                if (intersectionClear) {
+                  var playerCar = carRef.current;
+                  if (playerCar && Math.hypot(playerCar.x - iX, playerCar.y - iY) < 5 && Math.abs(playerCar.speed) > 0.3) {
+                    intersectionClear = false;
+                  }
+                }
+                if (intersectionClear) {
+                  // Release — downgrade slowFor so target speed returns to normal
+                  slowFor = 0;
+                  t._stopReleasedAt = timeRef.current;
+                  t._stopArrivedAt = 0;
+                  t._stopWaitTarget = null;
+                } else {
+                  // Not clear — extend the wait by 0.6s and try again
+                  t._stopWaitTarget = waitedFor + 0.6;
+                }
+              }
+            } else if (!activeStopSign) {
+              // No stop sign controlling us anymore — clear the arrival state
+              t._stopArrivedAt = 0;
+              t._stopWaitTarget = null;
+            }
+            // Within 1.5s of a release, keep slowFor low so we actually accelerate away
+            // even if we cross the sign's detection range again on the next frame.
+            if (t._stopReleasedAt && timeRef.current - t._stopReleasedAt < 1.5) {
+              slowFor = Math.min(slowFor, 1);
+            }
             // ── Yield to pedestrians in / near our path ──
             // Pedestrians have { x, y, inCrosswalk? } shape. We slow for any within 4 cells
             // ahead AND close to our lateral path.
@@ -4600,9 +4750,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ── Intersection safety: check cross-traffic before entering ──
             // Real drivers look both ways even on green because red-light-runners exist.
             // If we're approaching an intersection (any signal within ~8 cells) AND any
-            // cross-axis vehicle is dangerously close to the same intersection, slow more.
+            // cross-axis vehicle (or the player) is dangerously close to the same
+            // intersection, slow more.
             signals.forEach(function(s) {
-              if (!s || s.type !== 'light') return;
+              // Now scans BOTH lights and stop signs (was lights-only).
+              if (!s || (s.type !== 'light' && s.type !== 'stop')) return;
               var rel = aheadOf(s.x, s.y);
               if (rel.ahead < 0 || rel.ahead > 9) return;
               // We're approaching this intersection. Scan for a car on the cross axis
@@ -4615,12 +4767,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (sameAxis) return; // only concerned with cross-axis traffic
                 var odx = other.x - s.x, ody = other.y - s.y;
                 var odist = Math.hypot(odx, ody);
-                // Cross-traffic within 4 cells of intersection + moving fast = potential red-light runner
-                if (odist < 4 && other.speed > 3) {
+                // Cross-traffic within 4 cells of intersection + actually moving = potential red-light runner
+                // (was `speed > 3` — lowered to `> 1` so slow-rolling stop-sign-runners also trigger caution)
+                if (odist < 4 && Math.abs(other.speed) > 1) {
                   // Extra caution — slow from target
                   slowFor = Math.max(slowFor, 1);
                 }
               });
+              // ── Also watch for the PLAYER in the intersection ──
+              // Previously the scan only covered AI traffic; AI approaching a green light
+              // wouldn't slow for a player who just ran the red. Now it does.
+              var playerCar = carRef.current;
+              if (playerCar) {
+                var pYaxis = Math.abs(Math.abs(playerCar.heading) - Math.PI / 2) < 0.3;
+                var pSameAxis = (pYaxis && travelsY) || (!pYaxis && !travelsY);
+                if (!pSameAxis) {
+                  var pdx = playerCar.x - s.x, pdy = playerCar.y - s.y;
+                  var pdist = Math.hypot(pdx, pdy);
+                  if (pdist < 5 && Math.abs(playerCar.speed) > 1) {
+                    // Player is crossing our path — be more cautious than for AI (player
+                    // is harder to predict and more prone to mistakes).
+                    slowFor = Math.max(slowFor, 2);
+                  }
+                }
+              }
             });
             // ── Yield to emergency vehicles: pull right + slow ──
             // When an emergency vehicle is active, every traffic car slows dramatically
@@ -4744,12 +4914,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (Math.abs(playerCar.speed) < t.speed * 0.7) slowFor = Math.max(slowFor, 1);
               }
             }
-            // Adjust speed
+            // Adjust speed. Guard against missing/malformed speedLimit so we never
+            // hand NaN to the lerp (a single NaN poisons that vehicle's speed forever).
+            var speedLimitMph = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
             var targetSpeed;
             if (slowFor === 2) targetSpeed = 0;
-            else if (slowFor === 1) targetSpeed = scn.speedLimit * 0.4 * MPH_TO_MS;
-            else targetSpeed = (scn.speedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
-            t.speed += (targetSpeed - t.speed) * Math.min(1, dt * 2);
+            else if (slowFor === 1) targetSpeed = speedLimitMph * 0.4 * MPH_TO_MS;
+            else targetSpeed = (speedLimitMph - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
+            // Frame-rate-independent approach: exp-based smoothing with a 0.5 s time
+            // constant. `Math.min(1, dt * 2)` was biased toward low frame rates (AI cars
+            // accelerated faster at 30 fps than 60 fps); this form converges at the same
+            // rate regardless of fps.
+            var speedLerp = 1 - Math.exp(-dt / 0.5);
+            t.speed += (targetSpeed - t.speed) * speedLerp;
             // Expose slowFor to the renderer so brake lights match the AI's braking state.
             t._slowFor = slowFor;
             // Turn signal on AI vehicles — blink when slowing for a signal
@@ -4845,7 +5022,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
                 var respawnCenter = infiniteWorldRef.current.spline ? infiniteWorldRef.current.spline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
                 t.x = respawnCenter + t.laneOffset;
-                t.speed = (scn.speedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
+                var respSpeedLimit = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
+                t.speed = (respSpeedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
               }
             } else {
               if (t.y < -2) t.y = MAP_SIZE + 2;
@@ -5624,6 +5802,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var updatePeds = function(dt) {
           var signals = signalsRef.current;
+          var traffic = trafficRef.current;
+          var playerCar = carRef.current;
           pedsRef.current.forEach(function(p) {
             if (p.waitingAtCrosswalk && p.crosswalkY != null) {
               // Crosswalk behavior: wait on sidewalk, cross when traffic signal is red
@@ -5631,7 +5811,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               signals.forEach(function(s) {
                 if (Math.abs(s.y - p.crosswalkY) < 2) signalAtCrosswalk = s;
               });
-              var canCross = !signalAtCrosswalk || signalAtCrosswalk.state === 'red';
+              // Signal permits crossing? (red for vehicles → green for peds)
+              var signalPermits = !signalAtCrosswalk || signalAtCrosswalk.state === 'red';
+              // Even with a signal permitting, do a last-second "look both ways":
+              // don't step off the curb if a moving vehicle is within ~4 cells and approaching the crosswalk.
+              // This prevents AI red-light-runners and the human player from T-boning a pedestrian who
+              // naively trusted the signal.
+              var trafficImminent = false;
+              if (signalPermits && !p.crossing) {
+                // Only check when about to START crossing; once committed, commit.
+                var checkDist = 4;
+                var scanVehicles = function(v) {
+                  if (!v || typeof v.x !== 'number' || typeof v.y !== 'number') return;
+                  var speed = Math.abs(v.speed || 0);
+                  if (speed < 1) return; // stopped vehicles are not imminent
+                  var dy = p.crosswalkY - v.y;
+                  // Approaching? Use heading sign (for AI) or dot with heading (for player).
+                  if (v.heading !== undefined) {
+                    // AI: heading>0 moves +Y, heading<0 moves -Y
+                    var approach = (v.heading > 0 ? dy > 0 : dy < 0);
+                    if (!approach) return;
+                  } else {
+                    // Player: dot current velocity with vector to crosswalk
+                    var dot = Math.cos(v.heading || 0) * 0 + Math.sin(v.heading || 0) * dy;
+                    if (dot <= 0) return;
+                  }
+                  // Close laterally to the crosswalk span? (within ~4 cells of ped's current x)
+                  if (Math.abs(v.x - p.x) > 4) return;
+                  // Close longitudinally? (within ~checkDist cells ahead)
+                  if (Math.abs(dy) < checkDist) trafficImminent = true;
+                };
+                traffic.forEach(scanVehicles);
+                // Also consider the player's own car — they may run the red.
+                scanVehicles(playerCar);
+              }
+              var canCross = signalPermits && !trafficImminent;
               if (canCross && !p.crossing) {
                 // Start crossing: move straight across from one sidewalk to the other
                 p.crossing = true;
@@ -5684,9 +5898,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
             if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
             // Physical collision: hit radius ~1.2 world units
-            // Collision: require meaningful relative speed difference (not just being near a car going the same speed)
+            // Collision: require meaningful relative speed difference (not just being near a car going the same speed).
+            // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
+            // tap still records as a minor bump — previously you could nose into a stopped
+            // car at 3 mph with no crash flag, which hid unsafe habits in the stats.
             var relativeSpeed = Math.abs(car.speed - t.speed);
-            if (dist < 1.2 && relativeSpeed > 2 && absSpeed > 2) {
+            if (dist < 1.2 && relativeSpeed > 0.5 && absSpeed > 0.5) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
                 var impactSpeed = relativeSpeed * MS_TO_MPH;
@@ -10407,6 +10624,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           hudFade = 1 - Math.pow(1 - hudFade, 3);
           gfx.globalAlpha = hudFade;
 
+          // ── Headlight cone + night vignette ──
+          // At night (or dusk/dawn), drape a dark overlay over the scene with a
+          // radial "hole" that represents the headlight beam. Low beams = narrower,
+          // dimmer, shorter reach. High beams (L key) = wider, brighter, farther.
+          // This layer is purely visual — the scoring/physics system reads d.highBeams
+          // separately for the night-vision drill and speeding-in-dark checks.
+          if (isNight || scn.id === 'dawn') {
+            var hb = !!d.highBeams;
+            var coneCenterX = W / 2;
+            // Cone "lands" slightly below the horizon — this is where a real headlight beam
+            // would illuminate the road surface in a cockpit / chase view.
+            var coneCenterY = H * 0.58;
+            // Reach: how far the gradient extends (in pixels from center).
+            var reachFactor = hb ? 0.72 : 0.48;
+            var coneReach = Math.min(W, H) * reachFactor;
+            // Darkness at the far edges — dusk/fog tolerate lighter, deep night goes darker.
+            var dark = (scn.id === 'dawn') ? 0.32 : (hb ? 0.42 : 0.62);
+            // A warm-white tint in the center mimics halogen / LED headlights.
+            var coreTint = hb ? 'rgba(255,252,230,0.08)' : 'rgba(255,240,210,0.05)';
+            var rg = gfx.createRadialGradient(coneCenterX, coneCenterY, 10, coneCenterX, coneCenterY, coneReach);
+            rg.addColorStop(0,    coreTint);                        // bright core
+            rg.addColorStop(0.18, 'rgba(20,25,40,0)');              // clear zone
+            rg.addColorStop(0.55, 'rgba(6,8,14,' + (dark * 0.55) + ')'); // fading into dark
+            rg.addColorStop(1,    'rgba(2,4,8,' + dark + ')');      // outer darkness
+            gfx.fillStyle = rg;
+            gfx.fillRect(0, 0, W, H);
+            // Dashboard glow under the cone — soft warm bar near the horizon, sells the
+            // "cone of light hitting road" look and masks the hard edge of the gradient.
+            var dashGrad = gfx.createLinearGradient(0, coneCenterY - 4, 0, coneCenterY + 6);
+            dashGrad.addColorStop(0, 'rgba(255,245,200,0)');
+            dashGrad.addColorStop(0.5, hb ? 'rgba(255,245,200,0.12)' : 'rgba(255,230,180,0.07)');
+            dashGrad.addColorStop(1, 'rgba(255,245,200,0)');
+            gfx.fillStyle = dashGrad;
+            gfx.fillRect(coneCenterX - coneReach * 0.8, coneCenterY - 4, coneReach * 1.6, 10);
+            // Tiny "beam status" indicator bottom-left of the cone
+            if (hudFade > 0.7) {
+              gfx.globalAlpha = hudFade * 0.75;
+              gfx.font = 'bold 9px system-ui, sans-serif';
+              gfx.fillStyle = hb ? '#fcd34d' : '#94a3b8';
+              gfx.textAlign = 'left';
+              gfx.fillText(hb ? '◉ HIGH BEAMS' : '○ low beams', 14, 26);
+              gfx.globalAlpha = hudFade;
+            }
+          }
+
           // ── Bottom HUD bar: modern digital instrument cluster ──
           // Gradient backing instead of flat black — premium-car feel.
           var hudGrad = gfx.createLinearGradient(0, H - 96, 0, H);
@@ -10987,6 +11249,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           })();
 
+          // ── Wrong-side-of-road detection (context-aware) ──
+          // Penalizes sustained driving on the oncoming side of the road — but only when
+          // there's no legitimate reason (obstacle, stopped traffic, wildlife, responder).
+          // Layered logic:
+          //   • Brief incursion (< 1s)       → ignore (flinches, corrections, pre-turn positioning)
+          //   • On wrong side with obstacle  → ignore (legitimate avoidance)
+          //   • Sustained + oncoming close   → BIG penalty (near-head-on danger)
+          //   • Sustained no-reason          → small penalty (bad habit)
+          (function() {
+            if (!infiniteWorldRef.current || !infiniteWorldRef.current.spline) { wrongSideRef.current.active = false; return; }
+            var spdMph = Math.abs(car.speed) * MS_TO_MPH;
+            if (spdMph < 8) { wrongSideRef.current.active = false; return; }
+            var roadCenter = infiniteWorldRef.current.spline.centerAt(car.y);
+            var offsetX = car.x - roadCenter; // signed: left of center is negative
+            // Determine the correct side from heading. sin(heading) tells us Y-direction:
+            //   heading ≈ +π/2 (northbound, sin +1) → correct side is x < center (offsetX < 0)
+            //   heading ≈ -π/2 (southbound, sin -1) → correct side is x > center (offsetX > 0)
+            var northbound = Math.sin(car.heading) > 0.3;
+            var southbound = Math.sin(car.heading) < -0.3;
+            if (!northbound && !southbound) { wrongSideRef.current.active = false; return; }
+            // Player needs to be at least 0.5 cells across centerline to count as "wrong side"
+            // (not just straddling the line).
+            var onWrongSide = northbound ? offsetX > 0.5 : offsetX < -0.5;
+            if (!onWrongSide) {
+              // Recovered — reset tracker
+              wrongSideRef.current.active = false;
+              wrongSideRef.current.startedAt = 0;
+              return;
+            }
+            // Start or continue tracking
+            var tNow = timeRef.current;
+            if (!wrongSideRef.current.active) {
+              wrongSideRef.current.active = true;
+              wrongSideRef.current.startedAt = tNow;
+              return;
+            }
+            var durationSec = tNow - wrongSideRef.current.startedAt;
+            // Grace period: a short dip across the line is normal (pre-turn positioning, flinches).
+            if (durationSec < 1.0) return;
+            // Context check: scan for legitimate reasons to be on the wrong side.
+            // Anything ahead in OUR lane (wildlife / stopped vehicle / cones / responder) that
+            // would force us to go around it gets a pass.
+            var obstaclePresent = false;
+            // 1) Wildlife ahead in our lane, ≤ 18 cells forward
+            var wl = wildlifeRef.current;
+            if (wl) {
+              var wlDy = (northbound ? wl.y - car.y : car.y - wl.y);
+              if (wlDy > 0 && wlDy < 18 && Math.abs(wl.x - roadCenter) < 3) obstaclePresent = true;
+            }
+            // 2) Stopped or nearly-stopped traffic ahead in our lane
+            trafficRef.current.forEach(function(t) {
+              if (obstaclePresent) return;
+              if (!t || t.crossStreet) return;
+              var tDy = (northbound ? t.y - car.y : car.y - t.y);
+              if (tDy < 0 || tDy > 18) return;
+              // Must be in (or near) our lane, not in the oncoming lane we've crossed into
+              var tOffset = t.x - roadCenter;
+              var tInOurLane = northbound ? (tOffset < 0) : (tOffset > 0);
+              if (!tInOurLane) return;
+              // "Obstacle" = stopped or slow vehicle ahead
+              if (Math.abs(t.speed) < 3) obstaclePresent = true;
+            });
+            // 3) Emergency responder on shoulder (Move Over context)
+            if (emergencyRef.current) {
+              var er = emergencyRef.current;
+              var erDy = (northbound ? er.y - car.y : car.y - er.y);
+              if (erDy > -5 && erDy < 20 && Math.abs(er.x - roadCenter) < 4) obstaclePresent = true;
+            }
+            if (obstaclePresent) {
+              // Legitimate avoidance — no penalty, no warning. Keep tracker active so that
+              // if the player keeps going after the obstacle is past, we re-evaluate next frame.
+              return;
+            }
+            // No obstacle — this is actually dangerous. Check for oncoming traffic close by.
+            var oncomingClose = false;
+            trafficRef.current.forEach(function(t) {
+              if (oncomingClose) return;
+              if (!t || t.crossStreet) return;
+              // Opposite heading and close on the approach
+              var sameDir = (Math.sin(t.heading) > 0) === northbound;
+              if (sameDir) return;
+              var tDy2 = (northbound ? t.y - car.y : car.y - t.y);
+              if (tDy2 < 0 || tDy2 > 14) return;
+              if (Math.abs(t.x - car.x) < 2.5) oncomingClose = true;
+            });
+            // Penalty schedule. Rate-limited per-event so a 4-second incursion doesn't rack up 240 frames of deduction.
+            if (oncomingClose && tNow - wrongSideRef.current.lastPenaltyAt > 2) {
+              wrongSideRef.current.lastPenaltyAt = tNow;
+              statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 15);
+              statsRef.current.wrongSideEvents = (statsRef.current.wrongSideEvents || 0) + 1;
+              if (tNow - wrongSideRef.current.lastWarnAt > 3) {
+                wrongSideRef.current.lastWarnAt = tNow;
+                addToast('🚨 Oncoming traffic — you\'re on the wrong side! -15 safety');
+                eventToastRef.current = { msg: '🚨 Head-on risk: get back to your lane NOW.', until: timeRef.current + 4 };
+              }
+            } else if (durationSec > 3 && tNow - wrongSideRef.current.lastPenaltyAt > 4) {
+              // Sustained wrong-side with no oncoming and no obstacle — still a violation.
+              wrongSideRef.current.lastPenaltyAt = tNow;
+              statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 4);
+              statsRef.current.wrongSideEvents = (statsRef.current.wrongSideEvents || 0) + 1;
+              if (tNow - wrongSideRef.current.lastWarnAt > 4) {
+                wrongSideRef.current.lastWarnAt = tNow;
+                addToast('⚠️ You\'re on the wrong side of the road — get back over. -4 safety');
+              }
+            }
+          })();
+
           // ── Enhanced rearview mirror (top-center) ──
           // Bigger + tailgate warning glow + distance text. Shows vehicles, cyclists, and peds
           // in a cone directly behind the player. Pulses red when anyone is closing in fast.
@@ -11516,6 +11885,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             timeoutsRef.current.forEach(function(id) { clearTimeout(id); });
             timeoutsRef.current = [];
           } catch (e) {}
+          // Stop all long-running audio oscillators on nav-away. Previously these were
+          // only cleaned up by the explicit "End Drive" button — browser back, menu
+          // jumps, or any other route out of the driving view left the rumble / engine
+          // / siren oscillators running silently until AudioContext was GC'd.
+          try {
+            var aud = audioRef.current;
+            if (aud) {
+              ['engineOsc', '_engineHarm', '_engineOct', '_engineNoise', '_engineLFO',
+               '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode',
+               '_rumbleOsc', '_brakeOsc', '_signalOsc', '_tireNode',
+               '_reverseOsc', '_wiperNode', '_ambDayNode', '_ambNightNode'].forEach(function(key) {
+                if (aud[key]) { try { aud[key].stop(); } catch(e2){} aud[key] = null; }
+              });
+            }
+          } catch (eAud) {}
           if (threeRef.current && threeRef.current.renderer) {
             // Dispose all geometries and materials in the scene to free GPU memory
             if (threeRef.current.scene) {
@@ -14741,6 +15125,181 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       // ══════════════════════════════════════════════════════════
+      // WINTER DRIVING DRILL (Maine-specific)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'winterDriving') {
+        var WINTER_FACTS = [
+          { icon: '🌡️', title: 'Black ice: the trap',      body: 'Black ice forms between 28°F and 38°F — it doesn\'t need to be below freezing. Highest risk: bridges and overpasses (cold air on both sides), shaded curves, and pre-dawn hours. The surface looks wet, not icy.' },
+          { icon: '⛓️', title: 'Winter tires actually matter', body: 'All-season tires lose roughly 40% of their grip below 20°F because the rubber stiffens. Dedicated winter tires stay flexible and can halve your stopping distance on snow. Maine law allows studs Oct 1–May 1.' },
+          { icon: '🌀', title: 'Two kinds of skid',         body: 'Rear-wheel skid (oversteer): tail swings out — steer INTO the skid, toward where the front of the car is pointed. Front-wheel skid (understeer): car plows straight — ease off the throttle, don\'t add more steering.' },
+          { icon: '🚙', title: '4WD doesn\'t help you stop', body: 'Four-wheel drive and AWD help with traction for ACCELERATION. Braking is identical to a 2WD car — same four brakes, same tires. A false sense of security in 4WD kills people every Maine winter.' },
+          { icon: '🚜', title: 'Snowplows',                 body: 'Never pass a plow on the right — the blade throws snow and debris that direction. Stay 4+ truck lengths back. Plows often travel 30–40 mph even on highways; that slow-moving orange light is your safest speed too.' },
+          { icon: '🏔️', title: 'Windshield + roof',          body: 'Maine §2396-B requires a clear view through ALL windows. Clearing just the "driver porthole" is a $119 ticket. Snow on the roof can slide onto the windshield or fly onto the car behind you — clear it off.' }
+        ];
+        var WINTER_SCENARIOS = [
+          {
+            id: 'black_ice',
+            icon: '🧊',
+            title: 'Hitting black ice',
+            q: 'Dawn drive on Route 302, 35°F. The road LOOKS wet. Your steering suddenly feels light and the wheel isn\'t responding. You\'re going 45 mph.',
+            choices: [
+              'Brake hard and steer toward the shoulder',
+              'Steer the wheel straight, ease off the gas, do NOT brake',
+              'Pump the brakes to break through the ice',
+              'Accelerate to get across the ice patch faster'
+            ],
+            correct: 1,
+            exp: 'Hands straight, foot off the gas. Braking or sharp steering on ice makes it worse — you lose the tiny bit of traction you have. Glide across the patch at current speed, wait for the wheel to "come back to life" (you\'ll feel it), then steer gently. Black ice patches are usually short.'
+          },
+          {
+            id: 'follow_distance',
+            icon: '🚗',
+            title: 'Following distance on snow',
+            q: 'You\'re on I-95 in moderate snowfall at 45 mph. What\'s the minimum safe following distance?',
+            choices: [
+              '2 seconds (like dry pavement)',
+              '4 seconds (like rain)',
+              '8–10 seconds',
+              '1 car length per 10 mph'
+            ],
+            correct: 2,
+            exp: '8–10 seconds minimum on snow and ice. Your stopping distance can be 4× longer than dry pavement. The "car length per 10 mph" rule is a 1950s formula and not remotely safe. Count from when the car ahead passes a fixed object until you pass it: one-one-thousand, two-one-thousand…'
+          },
+          {
+            id: 'oversteer',
+            icon: '🌀',
+            title: 'Tail swinging out (oversteer)',
+            q: 'Going around a curve, the rear of your car starts sliding to the RIGHT (the car wants to spin counterclockwise). What do you do?',
+            choices: [
+              'Steer LEFT to counter the slide',
+              'Steer RIGHT (into the skid) and ease off the throttle',
+              'Brake hard',
+              'Accelerate hard to straighten out'
+            ],
+            correct: 1,
+            exp: '"Steer into the skid." The rule: point the front wheels where you want the NOSE to go. If the rear slides right, the nose wants to go left — so steer RIGHT to realign. Ease off the gas (don\'t brake — that weights the front and worsens rear slide). As grip returns, gently counter-steer back. Practiced correctly, this feels smooth.'
+          },
+          {
+            id: 'understeer',
+            icon: '➡️',
+            title: 'Plowing straight (understeer)',
+            q: 'You turn the wheel to take a curve and the car just keeps going straight — the front wheels have no grip. What do you do?',
+            choices: [
+              'Turn the wheel harder in the direction you want to go',
+              'Ease off the gas and wait for the front wheels to regain grip, then steer gently',
+              'Stomp the brakes',
+              'Accelerate to transfer weight to the back wheels'
+            ],
+            correct: 1,
+            exp: 'Ease off — don\'t add more steering. More steering input on a skidding front tire just keeps it skidding. Reducing throttle lets the front tires slow down, regain traction, and THEN turn. Braking often makes it worse (locks the fronts). Once the car "takes" the steering again, guide it through the curve.'
+          },
+          {
+            id: 'plow_passing',
+            icon: '🚜',
+            title: 'Passing a snowplow',
+            q: 'You catch up to a Maine DOT plow doing 35 mph on I-295. The left lane is clear. What do you do?',
+            choices: [
+              'Pass on the right — the left lane is the plow\'s',
+              'Stay 4+ truck lengths back in the left lane; only pass on the LEFT when safe, and never pass on the right',
+              'Tailgate to get their attention',
+              'Pass between two plows if they\'re running in echelon'
+            ],
+            correct: 1,
+            exp: 'Never pass a plow on the right — the blade throws a wall of snow and ice chunks to the right side that will shatter your windshield. Multi-plow echelon formations (two or three plows at a 45° angle) are clearing the entire road width; passing between them is a crash waiting to happen. Slow down, stay back, wait for a passing zone.'
+          },
+          {
+            id: 'fourwd_myth',
+            icon: '🚙',
+            title: 'The 4WD myth',
+            q: 'You\'re in a 4WD SUV on an icy hill. You apply the brakes and the car doesn\'t slow any faster than your friend\'s front-wheel-drive sedan would. Why?',
+            choices: [
+              'Your 4WD is malfunctioning',
+              '4WD only helps with acceleration traction, not braking — same four tires either way',
+              'SUVs have worse brakes than sedans',
+              'You should have engaged low-range 4WD for braking'
+            ],
+            correct: 1,
+            exp: 'Exactly. 4WD / AWD powers all four wheels from the engine, which helps you GO from a stop on snow. But when you brake, all cars use the same four brake pads on the same four tires — so stopping distance depends entirely on tire grip, not drivetrain. An AWD SUV on all-seasons stops WORSE than a sedan on winter tires. Drive to your tires, not your drivetrain.'
+          }
+        ];
+        var winterState = d.winterState || {};
+        var winterPassed = Object.keys(winterState).filter(function(k){return winterState[k] && winterState[k].correct;}).length;
+        var winterAllDone = Object.keys(winterState).length === WINTER_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #22d3ee', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '❄️'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Winter Driving Drill'),
+            h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, 'Ice · snow · skid recovery · ' + winterPassed + ' / ' + WINTER_SCENARIOS.length + ' passed'),
+            winterAllDone && winterPassed === WINTER_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — ready for your first Maine January.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Before the drill: six things to know'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              WINTER_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          WINTER_SCENARIOS.map(function(sc) {
+            var state = winterState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, winterState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('winterState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === WINTER_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.winter_ready) { dBadges.winter_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Winter-Ready'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #22d3ee', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, winterState);
+                  delete ns[sc.id];
+                  upd('winterState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // CRASH RECONSTRUCTION LAB
       // ══════════════════════════════════════════════════════════
       if (view === 'crashLab') {
@@ -16272,6 +16831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: 'Emergency Vehicle Drill', desc: 'Maine Move Over law, pull-to-right rule, stopped responders.' },
           { view: 'schoolBus', goal: 'safety', icon: '🚌', name: 'School Bus Stop Drill', desc: 'When to stop for a stopped school bus (Maine §2308).' },
           { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: 'Railroad Crossing Drill', desc: 'Federal + Maine crossing rules — and the 45° escape if you stall.' },
+          { view: 'winterDriving', goal: 'safety', icon: '❄️', name: 'Winter Driving Drill', desc: 'Black ice, skid recovery, plow etiquette, and the 4WD myth.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },

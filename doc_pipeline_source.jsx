@@ -3384,6 +3384,10 @@ HTML section ${chunkNum}/${chunks.length}:
   };
 
   // ── axe-core Accessibility Checker (lazy-loaded from CDN) ──
+  // Cache axe source text so each iframe audit injects it inline (no second CDN round-trip).
+  var _axeSourceCache = null;
+  var _axeSourcePromise = null;
+  const _AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
   const runAxeAudit = async (htmlContent) => {
     try {
       // Lazy-load axe-core from CDN if not already loaded
@@ -3396,13 +3400,24 @@ HTML section ${chunkNum}/${chunks.length}:
             return;
           }
           const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
+          script.src = _AXE_CDN_URL;
           script.setAttribute('data-axe-core', 'true');
           script.onload = () => resolve();
           script.onerror = () => reject(new Error('Failed to load axe-core from CDN'));
           document.head.appendChild(script);
         });
       }
+
+      // Fetch + cache axe source text once so subsequent iframe audits can inject inline.
+      // De-duplicated via _axeSourcePromise so concurrent audits share a single fetch.
+      if (!_axeSourceCache && !_axeSourcePromise) {
+        _axeSourcePromise = fetch(_AXE_CDN_URL)
+          .then(r => r.ok ? r.text() : null)
+          .then(txt => { if (txt) _axeSourceCache = txt; return txt; })
+          .catch(() => null)
+          .finally(() => { _axeSourcePromise = null; });
+      }
+      if (_axeSourcePromise) { try { await _axeSourcePromise; } catch(e) {} }
 
       // Create hidden iframe with the HTML content
       const iframe = document.createElement('iframe');
@@ -3424,15 +3439,23 @@ HTML section ${chunkNum}/${chunks.length}:
       // Wait for iframe content to render
       await new Promise(r => setTimeout(r, 800));
 
-      // Inject axe-core into the iframe
+      // Inject axe-core into the iframe — prefer the cached source text (no network),
+      // fall back to CDN script tag if the cache wasn't populated (e.g., fetch blocked).
       await new Promise((resolve, reject) => {
         const axeScript = iframeDoc.createElement('script');
-        axeScript.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
-        axeScript.onload = () => resolve();
-        axeScript.onerror = () => reject(new Error('Failed to inject axe-core into iframe'));
-        iframeDoc.head.appendChild(axeScript);
+        if (_axeSourceCache) {
+          axeScript.textContent = _axeSourceCache;
+          iframeDoc.head.appendChild(axeScript);
+          resolve(); // inline scripts execute synchronously on append
+        } else {
+          axeScript.src = _AXE_CDN_URL;
+          axeScript.onload = () => resolve();
+          axeScript.onerror = () => reject(new Error('Failed to inject axe-core into iframe'));
+          iframeDoc.head.appendChild(axeScript);
+        }
       });
-      await new Promise(r => setTimeout(r, 300));
+      // Shorter settle delay when inlined — no network wait needed.
+      await new Promise(r => setTimeout(r, _axeSourceCache ? 50 : 300));
 
       // Run axe-core inside the iframe
       const iframeAxe = iframe.contentWindow.axe;
@@ -4032,6 +4055,96 @@ HTML section ${chunkNum}/${chunks.length}:
 
     if (fixCount > 0) warnLog(`[Lang Spans] Wrapped ${fixCount} non-Latin script runs deterministically`);
     return { html: fixed, fixCount };
+  };
+
+  // ── Axe-guided targeted contrast fixer ──
+  // When the regex-based fixContrastViolations can't catch a color (CSS vars, shorthand
+  // `background:`, class-based styles, gradient bg), axe-core still reports them. This function
+  // consumes axe's own report and generates selector-specific `!important` overrides so those
+  // stuck violations can be resolved. Called from autoFixAxeViolations as a last step each pass.
+  const fixAxeContrastViolationsTargeted = (html, axeResult) => {
+    if (!html || !axeResult) return { html: html, fixCount: 0 };
+    const nodes = [];
+    const collect = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(v => {
+        if ((v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') && Array.isArray(v.nodeDetails)) {
+          nodes.push.apply(nodes, v.nodeDetails);
+        }
+      });
+    };
+    collect(axeResult.critical);
+    collect(axeResult.serious);
+    collect(axeResult.moderate);
+    if (nodes.length === 0) return { html: html, fixCount: 0 };
+
+    // Local color math (duplicated to keep this helper self-contained).
+    const hexToRgb = (hex) => {
+      const h = hex.replace('#', '');
+      if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
+      return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+    };
+    const rgbToHex = (r, g, b) => '#' + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
+    const srgb = (c) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    const lum = (r, g, b) => 0.2126 * srgb(r/255) + 0.7152 * srgb(g/255) + 0.0722 * srgb(b/255);
+    const cr = (a, b) => { const l1 = lum.apply(null, a), l2 = lum.apply(null, b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+    const fixFg = (fgRgb, bgRgb, target) => {
+      target = target || 4.5;
+      let r = fgRgb[0], g = fgRgb[1], b = fgRgb[2];
+      const isDarkBg = lum.apply(null, bgRgb) < 0.18;
+      for (let i = 0; i < 40; i++) {
+        if (cr([r, g, b], bgRgb) >= target) break;
+        if (isDarkBg) { r = Math.min(255, Math.round(r + (255 - r) * 0.15)); g = Math.min(255, Math.round(g + (255 - g) * 0.15)); b = Math.min(255, Math.round(b + (255 - b) * 0.15)); }
+        else { r = Math.max(0, Math.round(r * 0.82)); g = Math.max(0, Math.round(g * 0.82)); b = Math.max(0, Math.round(b * 0.82)); }
+      }
+      return [r, g, b];
+    };
+    const parseColor = (raw) => {
+      if (!raw) return null;
+      const s = String(raw).trim();
+      if (/^#[0-9a-fA-F]{3,8}$/.test(s)) return s.length === 4 ? '#' + s[1] + s[1] + s[2] + s[2] + s[3] + s[3] : s.slice(0, 7);
+      const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+      if (m) return rgbToHex(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+      return null;
+    };
+
+    const rules = [];
+    const seenSel = new Set();
+    nodes.forEach((node) => {
+      const summary = String(node.failureSummary || '');
+      const fgRaw = (summary.match(/foreground color\s*:?\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/i) || [])[1];
+      const bgRaw = (summary.match(/background color\s*:?\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/i) || [])[1];
+      const targetSel = Array.isArray(node.target) ? node.target.join(' ') : String(node.target || '');
+      if (!fgRaw || !bgRaw || !targetSel) return;
+      const fgHex = parseColor(fgRaw);
+      const bgHex = parseColor(bgRaw);
+      if (!fgHex || !bgHex) return;
+      try {
+        const newRgb = fixFg(hexToRgb(fgHex), hexToRgb(bgHex));
+        const newHex = rgbToHex(newRgb[0], newRgb[1], newRgb[2]);
+        if (newHex.toLowerCase() === fgHex.toLowerCase()) return; // already passing somehow
+        // Strip selector chars that could break or inject rules.
+        const safeSel = targetSel.replace(/[{};<>]/g, '').trim();
+        if (!safeSel || safeSel.length > 300 || seenSel.has(safeSel)) return;
+        seenSel.add(safeSel);
+        rules.push(safeSel + ' { color: ' + newHex + ' !important; }');
+      } catch (e) { /* skip malformed node */ }
+    });
+
+    if (rules.length === 0) return { html: html, fixCount: 0 };
+
+    const overrideStyle = '<style id="alloflow-contrast-overrides">\n/* Axe-guided contrast fixes — targeted ' + rules.length + ' element' + (rules.length === 1 ? '' : 's') + ' */\n' + rules.join('\n') + '\n</style>';
+
+    // Replace any prior overrides block to avoid accumulation across repeated runs.
+    let fixed = html.replace(/<style id="alloflow-contrast-overrides">[\s\S]*?<\/style>\s*/i, '');
+    if (/<\/head>/i.test(fixed)) {
+      fixed = fixed.replace(/<\/head>/i, overrideStyle + '\n</head>');
+    } else {
+      fixed = overrideStyle + fixed;
+    }
+
+    _pipeLog('Contrast', 'Axe-guided targeted fix applied to ' + rules.length + ' selector' + (rules.length === 1 ? '' : 's'));
+    return { html: fixed, fixCount: rules.length };
   };
 
   // Convenience wrapper: run all four new deterministic WCAG fixes in sequence
@@ -4696,7 +4809,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               usedOriginal = true;
               const fallbackScore = scoreChunkLocally(chunk);
               accepted = { html: chunk, score: fallbackScore, integrityCheck: { passed: false, reason: 'ai-fix-failed-using-deterministic-only' }, aiVerified: false, wasRetried, usedOriginal: true, deterministicFixCount, surgicalFixCount };
-              warnLog(`[AutoFix] Chunk ${chi + 1}: AI fix failed — using deterministic-only version (${deterministicFixCount} det + ${surgicalFixCount} surgical fixes preserved)`);
+              _pipeLog('AutoFix', 'Chunk ' + (chi + 1) + ' needs manual review — AI fix failed, kept deterministic-only version (' + deterministicFixCount + ' det + ' + surgicalFixCount + ' surgical fixes preserved)', { chunkIndex: chi, reason: 'ai-fix-failed', usedOriginal: true });
+              if (addToast) { try { addToast('Section ' + (chi + 1) + ' needs manual review — AI couldn\'t fix it', 'info'); } catch(e) {} }
             }
 
             chunkResults.push(accepted);
@@ -4865,8 +4979,28 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       setPdfFixStep(`Re-checking after fix pass ${passCount}...`);
-      const newAxe = await runAxeAudit(currentHtml);
+      let newAxe = await runAxeAudit(currentHtml);
       if (!newAxe) break;
+
+      // ── Axe-guided targeted contrast fix ──
+      // If any color-contrast violations survived this pass, use axe's own report (which
+      // includes the exact failing selectors + fg/bg colors) to inject !important overrides.
+      // Catches CSS-var, shorthand `background:`, class-based, and gradient-bg cases that
+      // fixContrastViolations can't detect via inline-style regex.
+      const hasContrastViolations = [newAxe.critical, newAxe.serious, newAxe.moderate].some(arr =>
+        Array.isArray(arr) && arr.some(v => v.id === 'color-contrast' || v.id === 'color-contrast-enhanced')
+      );
+      if (hasContrastViolations) {
+        try {
+          const targetedFix = fixAxeContrastViolationsTargeted(currentHtml, newAxe);
+          if (targetedFix.fixCount > 0) {
+            currentHtml = targetedFix.html;
+            setPdfFixStep('Applied ' + targetedFix.fixCount + ' targeted contrast override' + (targetedFix.fixCount === 1 ? '' : 's') + ', re-checking...');
+            const reAxe = await runAxeAudit(currentHtml);
+            if (reAxe) newAxe = reAxe;
+          }
+        } catch (tcErr) { _pipeLog('Contrast', 'Targeted fix threw: ' + (tcErr && tcErr.message)); }
+      }
 
       const fixed = currentAxe.totalViolations - newAxe.totalViolations;
       warnLog(`[Auto-fix] Pass ${passCount}: ${currentAxe.totalViolations} → ${newAxe.totalViolations} (fixed ${fixed})`);
@@ -5066,7 +5200,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     if (!accepted) {
       const fb = scoreChunkLocally(chunk);
       accepted = { html: chunk, score: fb, integrityCheck: { passed: false, reason: 'ai-refix-failed' }, aiVerified: false, wasRetried: true, usedOriginal: true, deterministicFixCount, surgicalFixCount };
-      warnLog(`[RefixChunk] Chunk ${chunkIndex + 1}: AI failed, using deterministic-only version`);
+      _pipeLog('RefixChunk', 'Chunk ' + (chunkIndex + 1) + ' needs manual review — AI re-fix failed, kept deterministic-only version', { chunkIndex: chunkIndex, reason: 'ai-refix-failed', usedOriginal: true });
+      if (addToast) { try { addToast('Section ' + (chunkIndex + 1) + ' couldn\'t be re-fixed automatically — may need manual review', 'info'); } catch(e) {} }
     }
 
     // ── Update chunk state and reassemble ──
@@ -6233,11 +6368,32 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                   }
                 }
                 const polished = _polishStyleBlock + polishedParts.join('');
-                if (polished.length >= bodyContent.length * 0.85) {
+                // Tag-balance check at chunk seams. Polish AI can open/close tags asymmetrically
+                // inside a chunk, which only manifests as broken HTML after the naive join. Count
+                // matched opens/closes for a short allow-list of block tags. If the delta widened
+                // compared to the original body, revert the whole polish pass — better to skip
+                // polish than ship a doc with half-open <tr> or <section>.
+                const _balanceTags = ['p','div','section','article','table','thead','tbody','tr','td','th','ul','ol','li','figure','blockquote','h1','h2','h3','h4','h5','h6','main','header','footer','nav'];
+                const _tagDelta = (src) => {
+                  let delta = 0;
+                  for (let ti = 0; ti < _balanceTags.length; ti++) {
+                    const t = _balanceTags[ti];
+                    const opens = (src.match(new RegExp('<' + t + '(?:\\s[^>]*)?>', 'gi')) || []).length;
+                    const closes = (src.match(new RegExp('</' + t + '\\s*>', 'gi')) || []).length;
+                    delta += Math.abs(opens - closes);
+                  }
+                  return delta;
+                };
+                const _originalDelta = _tagDelta(bodyContent);
+                const _polishedDelta = _tagDelta(polished);
+                const _balanceOk = _polishedDelta <= _originalDelta + 2; // allow ±2 slack for natural drift
+                if (polished.length >= bodyContent.length * 0.85 && _balanceOk) {
                   bodyContent = polished;
                   _pipeLog('Polish', 'Pass ' + (polishIdx + 1) + ' applied (' + polishChunks.length + ' chunks, ' + polishSkipped + ' kept original)');
+                } else if (!_balanceOk) {
+                  _pipeLog('Polish', 'Pass ' + (polishIdx + 1) + ' rejected: tag balance worse (orig Δ=' + _originalDelta + ', polished Δ=' + _polishedDelta + ') — keeping unpolished HTML to avoid broken markup');
                 } else {
-                  warnLog('[Polish] Pass ' + (polishIdx + 1) + ' rejected: output too short');
+                  _pipeLog('Polish', 'Pass ' + (polishIdx + 1) + ' rejected: output too short (' + polished.length + ' vs ' + bodyContent.length + ')');
                 }
               } catch (polishErr) {
                 warnLog('[PDF Fix] Polish pass ' + (polishIdx + 1) + ' failed:', polishErr);
@@ -8964,6 +9120,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     fixContrastViolations: _wrap(fixContrastViolations),
+    fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
     refixChunk: _wrapAsync(refixChunk),
