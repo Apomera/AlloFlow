@@ -1009,6 +1009,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [lastCorrectCount, setLastCorrectCount] = useState(null); // null until first check
   const [explanations, setExplanations] = useState({}); // originalIndex -> text | 'loading'
   const [hintHidden, setHintHidden] = useState(false);
+  const [answerRevealed, setAnswerRevealed] = useState(false);
   const itemRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
   useEffect(() => {
@@ -1027,6 +1028,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     setLastCorrectCount(null);
     setExplanations({});
     setHintHidden(false);
+    setAnswerRevealed(false);
     setAnnouncement(t('timeline.game.start_announcement'));
     setKeyboardLiftedIdx(null);
   }, [data]);
@@ -1208,6 +1210,17 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setAnnouncement(t('timeline.game.hint_used', { item: moved.event }) || `Hint: "${moved.event}" moved to its correct spot.`);
       if (playSound) playSound('click');
   };
+  const revealAnswer = () => {
+      if (isWon) return;
+      // Sort items into their correct order by originalIndex. Reveal = no points.
+      const sorted = [...items].sort((a, b) => a.originalIndex - b.originalIndex);
+      setItems(sorted);
+      setAnswerRevealed(true);
+      setIsWon(true);
+      setScore(0);
+      setAnnouncement(t('timeline.game.answer_revealed_announce') || 'Answer revealed. No points awarded.');
+      if (playSound) playSound('reveal');
+  };
   const reset = () => {
      const itemsArray = normalizedItemsRef.current || [];
      setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
@@ -1241,7 +1254,12 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            </div>
        </div>
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
-           {isWon && !useReducedMotion() && <ConfettiExplosion />}
+           {isWon && !answerRevealed && !useReducedMotion() && <ConfettiExplosion />}
+           {answerRevealed && (
+               <div className="max-w-3xl mx-auto mb-4 px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium text-center">
+                   👁 {t('timeline.game.answer_revealed_banner') || 'Answer revealed — no points this round. Play again to try for a score.'}
+               </div>
+           )}
            <div className="max-w-3xl mx-auto relative min-h-full pb-20">
                {!isWon && (
                    <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
@@ -1430,6 +1448,17 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                        data-help-key="timeline_hint_btn"
                    >
                        💡 {t('timeline.game.hint') || 'Hint'} <span className="text-[10px] opacity-60">({Math.ceil(items.length / 3) - hintsUsed} {t('common.left') || 'left'})</span>
+                   </button>
+               )}
+               {!isWon && (
+                   <button
+                       onClick={revealAnswer}
+                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                       aria-label={t('timeline.game.reveal_aria') || 'Show the correct answer (no points awarded)'}
+                       title={t('timeline.game.reveal_tooltip') || 'Reveal the correct order — no points awarded'}
+                       data-help-key="timeline_reveal_btn"
+                   >
+                       👁 {t('timeline.game.reveal') || 'Show answer'}
                    </button>
                )}
                {!isWon && (

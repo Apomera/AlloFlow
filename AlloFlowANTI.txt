@@ -6543,6 +6543,126 @@ const TIMELINE_MODE_DEFINITIONS = {
     labelTemplate: 'Narrative Arc: Exposition → Resolution'
   }
 };
+// Structural validation for Sequence Builder output.
+// Returns { ok: bool, issues: [{ code, itemIndex?, message }] }. Pure function.
+function validateSequenceStructure(content, mode) {
+  const issues = [];
+  if (!content || !Array.isArray(content.items) || content.items.length === 0) {
+    return { ok: false, issues: [{ code: 'NO_ITEMS', message: 'No items produced.' }] };
+  }
+  const items = content.items;
+  items.forEach((it, i) => {
+    if (!it || typeof it !== 'object') {
+      issues.push({ code: 'MALFORMED_ITEM', itemIndex: i, message: `Item ${i + 1} is not a valid object.` });
+      return;
+    }
+    if (!it.event || !String(it.event).trim()) {
+      issues.push({ code: 'EMPTY_EVENT', itemIndex: i, message: `Item ${i + 1} has no event text.` });
+    }
+    if (!it.date || !String(it.date).trim()) {
+      issues.push({ code: 'EMPTY_DATE', itemIndex: i, message: `Item ${i + 1} has no position/date value.` });
+    }
+  });
+  const dateCounts = {};
+  items.forEach((it, i) => {
+    const d = String(it?.date || '').trim().toLowerCase();
+    if (!d) return;
+    if (!dateCounts[d]) dateCounts[d] = [];
+    dateCounts[d].push(i);
+  });
+  Object.entries(dateCounts).forEach(([d, indices]) => {
+    if (indices.length > 1) {
+      issues.push({
+        code: 'DUPLICATE_DATE',
+        itemIndex: indices[0],
+        message: `Items ${indices.map(x => x + 1).join(', ')} all share the same position "${d}". Positions must be unique.`
+      });
+    }
+  });
+  const withDateEn = items.filter(it => it?.date_en).length;
+  const withEventEn = items.filter(it => it?.event_en).length;
+  if (withDateEn > 0 && withDateEn < items.length) {
+    issues.push({ code: 'PARTIAL_EN_DATE', message: `${withDateEn} of ${items.length} items have date_en — should be all or none.` });
+  }
+  if (withEventEn > 0 && withEventEn < items.length) {
+    issues.push({ code: 'PARTIAL_EN_EVENT', message: `${withEventEn} of ${items.length} items have event_en — should be all or none.` });
+  }
+  const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+  const jaccard = (a, b) => {
+    const sa = new Set(norm(a).split(/\s+/).filter(Boolean));
+    const sb = new Set(norm(b).split(/\s+/).filter(Boolean));
+    if (sa.size === 0 || sb.size === 0) return 0;
+    let inter = 0;
+    sa.forEach(t => { if (sb.has(t)) inter++; });
+    return inter / (sa.size + sb.size - inter);
+  };
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      const sim = jaccard(items[i]?.event, items[j]?.event);
+      if (sim >= 0.85) {
+        issues.push({
+          code: 'NEAR_DUPLICATE',
+          itemIndex: i,
+          message: `Items ${i + 1} and ${j + 1} are nearly identical. Students can't tell them apart.`
+        });
+      }
+    }
+  }
+  if (mode === 'chronological') {
+    const parseYear = (s) => {
+      const str = String(s || '');
+      const neg = /bce|bc\b/i.test(str) ? -1 : 1;
+      const m = str.match(/-?\d{1,5}/);
+      if (!m) return null;
+      return parseInt(m[0], 10) * neg;
+    };
+    const parsed = items.map(it => parseYear(it?.date));
+    const parsedOk = parsed.filter(x => x !== null).length;
+    if (parsedOk >= items.length - 1) {
+      let nonMono = 0;
+      for (let i = 1; i < parsed.length; i++) {
+        if (parsed[i - 1] !== null && parsed[i] !== null && parsed[i - 1] > parsed[i]) nonMono++;
+      }
+      if (nonMono > 0) {
+        issues.push({ code: 'NON_MONOTONIC_DATES', message: `${nonMono} chronological step(s) go backward in time — dates aren't in order.` });
+      }
+    }
+  }
+  if (mode === 'procedural') {
+    const stepNums = items.map(it => {
+      const m = String(it?.date || '').match(/step\s*(\d+)/i);
+      return m ? parseInt(m[1], 10) : null;
+    });
+    if (stepNums.filter(x => x !== null).length >= items.length - 1) {
+      const first = stepNums.find(x => x !== null);
+      if (first !== 1) {
+        issues.push({ code: 'STEPS_NOT_STARTING_AT_1', message: `Procedural steps should start at "Step 1".` });
+      }
+      let gap = false;
+      for (let i = 1; i < stepNums.length; i++) {
+        if (stepNums[i] !== null && stepNums[i - 1] !== null && stepNums[i] !== stepNums[i - 1] + 1) gap = true;
+      }
+      if (gap) issues.push({ code: 'STEP_GAP', message: `Procedural step numbers have gaps or repeats.` });
+    }
+  }
+  if (mode === 'narrative') {
+    const order = ['exposition', 'rising', 'climax', 'falling', 'resolution', 'denouement'];
+    const stageIdx = items.map(it => {
+      const d = String(it?.date || '').toLowerCase();
+      return order.findIndex(s => d.includes(s));
+    });
+    const labeled = stageIdx.filter(x => x !== -1);
+    if (labeled.length >= 3) {
+      for (let i = 1; i < stageIdx.length; i++) {
+        if (stageIdx[i] !== -1 && stageIdx[i - 1] !== -1 && stageIdx[i] < stageIdx[i - 1]) {
+          issues.push({ code: 'NARRATIVE_OUT_OF_ORDER', message: `Narrative stages aren't in order (exposition → rising → climax → falling → resolution).` });
+          break;
+        }
+      }
+    }
+  }
+  return { ok: issues.length === 0, issues };
+}
 const ADV_INITIAL_STATE = {
   isAdventureCloudEnabled: false,
   isSocialStoryMode: false,
@@ -29002,6 +29122,16 @@ ${modeListForAuto}
                  throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
              }
          }
+         // Structural validation — attach any issues to the content for the UI to surface.
+         try {
+             const validation = validateSequenceStructure(content, content.mode || effectiveMode);
+             if (!validation.ok) {
+                 content.validationIssues = validation.issues;
+                 warnLog('[Timeline] Structural validation issues:', validation.issues);
+             }
+         } catch (vErr) {
+             warnLog('[Timeline] Validator threw:', vErr);
+         }
          // Optional: batched+pooled image generation with retry-with-backoff.
          if (includeTimelineVisuals && content.items && content.items.length > 0) {
              setGenerationStep(t('timeline.visuals.generating') || 'Generating sequence visuals...');
@@ -30102,6 +30232,113 @@ Return ONLY JSON:
     setTimelineMode(data.mode);
     const lbl = TIMELINE_MODE_DEFINITIONS[data.mode]?.label || data.mode;
     addToast(t('timeline.mode_locked', { mode: lbl }) || `Mode locked: ${lbl}`, 'success');
+  };
+  const [isAutoFixingTimeline, setIsAutoFixingTimeline] = useState(false);
+  const handleAutoFixTimeline = async () => {
+    if (!generatedContent || generatedContent.type !== 'timeline') return;
+    const data = generatedContent.data;
+    if (Array.isArray(data) || !Array.isArray(data.validationIssues) || data.validationIssues.length === 0) return;
+    setIsAutoFixingTimeline(true);
+    try {
+        const issueList = data.validationIssues.map((iss, i) => `${i + 1}. ${iss.message}`).join('\n');
+        const progression = data.progressionLabel || 'sequential order';
+        const modeLbl = data.mode && TIMELINE_MODE_DEFINITIONS[data.mode] ? TIMELINE_MODE_DEFINITIONS[data.mode].label : 'sequence';
+        const currentJson = JSON.stringify(data.items, null, 2);
+        const prompt = `
+You are fixing validation issues in a ${modeLbl} sequence ordered by "${progression}".
+Current items:
+${currentJson}
+Problems to fix:
+${issueList}
+Return ONLY valid JSON with the same structure, with the specific problems resolved:
+{
+    "items": [ { "date": "...", "event": "..."${data.items[0]?.date_en ? ', "date_en": "..."' : ''}${data.items[0]?.event_en ? ', "event_en": "..."' : ''} } ]
+}
+Keep the same number of items and same overall content scope — just fix the listed problems.
+        `;
+        const result = await callGemini(prompt, true);
+        const parsed = JSON.parse(cleanJson(result));
+        const newItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : data.items;
+        // Preserve images from original items by event-match, since auto-fix may rewrite text.
+        const merged = newItems.map((it, i) => {
+            const original = data.items[i];
+            return original?.image ? { ...it, image: original.image } : it;
+        });
+        const newData = { ...data, items: merged };
+        // Re-validate
+        const revalid = validateSequenceStructure(newData, data.mode);
+        if (!revalid.ok) {
+            newData.validationIssues = revalid.issues;
+            addToast(t('timeline.validation.partial_fix', { remaining: revalid.issues.length }) || `Fixed some issues, ${revalid.issues.length} remain.`, 'warning');
+        } else {
+            delete newData.validationIssues;
+            addToast(t('timeline.validation.all_fixed') || 'All validation issues fixed.', 'success');
+        }
+        const updated = { ...generatedContent, data: newData };
+        setGeneratedContent(updated);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updated : item));
+    } catch (e) {
+        warnLog('Timeline auto-fix failed:', e);
+        addToast(t('timeline.validation.fix_failed') || "Couldn't auto-fix. Please revise manually.", 'error');
+    } finally {
+        setIsAutoFixingTimeline(false);
+    }
+  };
+  const [isVerifyingTimeline, setIsVerifyingTimeline] = useState(false);
+  const handleVerifyTimelineAccuracy = async () => {
+    if (!generatedContent || generatedContent.type !== 'timeline') return;
+    const data = generatedContent.data;
+    const items = Array.isArray(data) ? data : (data?.items || []);
+    if (items.length === 0) return;
+    setIsVerifyingTimeline(true);
+    try {
+        const modeLbl = (!Array.isArray(data) && data?.mode && TIMELINE_MODE_DEFINITIONS[data.mode]) ? TIMELINE_MODE_DEFINITIONS[data.mode].label : 'sequence';
+        const progression = (!Array.isArray(data) && data?.progressionLabel) || 'sequential order';
+        const itemsJson = items.map((it, i) => ({ index: i, date: it.date, event: it.event }));
+        const prompt = `
+You are verifying a ${modeLbl} sequence ordered by "${progression}".
+Target grade level: ${gradeLevel}.
+For each item, assess:
+  - "isFactuallyAccurate": boolean — are the factual claims (dates, names, values) correct?
+  - "isPositionCorrect": boolean — does it belong at this position on the ${modeLbl} axis?
+  - "concern": string — if either is false, a short (≤100 chars) explanation; else empty string.
+Items:
+${JSON.stringify(itemsJson, null, 2)}
+Return ONLY a JSON array like:
+[{"index": 0, "isFactuallyAccurate": true, "isPositionCorrect": true, "concern": ""}, ...]
+        `;
+        const result = await callGemini(prompt, true);
+        const parsed = JSON.parse(cleanJson(result));
+        if (!Array.isArray(parsed)) throw new Error('Invalid verification response');
+        const verdictByIndex = {};
+        parsed.forEach(v => {
+            if (typeof v?.index === 'number') verdictByIndex[v.index] = {
+                factual: v.isFactuallyAccurate !== false,
+                position: v.isPositionCorrect !== false,
+                concern: String(v.concern || '').substring(0, 200)
+            };
+        });
+        const newItems = items.map((it, i) => {
+            const v = verdictByIndex[i];
+            if (!v) return it;
+            return { ...it, verification: v };
+        });
+        const newData = Array.isArray(data) ? newItems : { ...data, items: newItems };
+        const updated = { ...generatedContent, data: newData };
+        setGeneratedContent(updated);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updated : item));
+        const concerns = parsed.filter(v => v.isFactuallyAccurate === false || v.isPositionCorrect === false).length;
+        if (concerns === 0) {
+            addToast(t('timeline.validation.verified_clean') || 'Verified: all items look accurate.', 'success');
+        } else {
+            addToast(t('timeline.validation.verified_concerns', { count: concerns }) || `Verified: ${concerns} item(s) flagged. Review badges for details.`, 'warning');
+        }
+    } catch (e) {
+        warnLog('Timeline verification failed:', e);
+        addToast(t('timeline.validation.verify_failed') || "Couldn't run accuracy check. Try again later.", 'error');
+    } finally {
+        setIsVerifyingTimeline(false);
+    }
   };
   const handleDeleteTimelineStep = (index) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
@@ -46295,6 +46532,42 @@ Return only the corrected version of this exact text:`;
                                 </button>
                             </div>
                         )}
+                        {isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && (
+                            <details className="bg-amber-50 border border-amber-200 rounded-lg shadow-sm p-3">
+                                <summary className="cursor-pointer flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800">
+                                    <AlertTriangle size={14} className="text-amber-600" />
+                                    {t('timeline.validation.issues_header', { count: generatedContent.data.validationIssues.length }) || `${generatedContent.data.validationIssues.length} structural issue(s) detected`}
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAutoFixTimeline(); }}
+                                        disabled={isAutoFixingTimeline}
+                                        className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
+                                        aria-busy={isAutoFixingTimeline}
+                                    >
+                                        {isAutoFixingTimeline ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                        {isAutoFixingTimeline ? (t('timeline.validation.fixing') || 'Fixing…') : (t('timeline.validation.auto_fix') || 'Auto-fix')}
+                                    </button>
+                                </summary>
+                                <ul className="mt-2 text-[12px] text-amber-900 list-disc list-inside space-y-1">
+                                    {generatedContent.data.validationIssues.map((iss, i) => (
+                                        <li key={i}>{iss.message}</li>
+                                    ))}
+                                </ul>
+                            </details>
+                        )}
+                        {isTeacherMode && generatedContent?.data && (
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => handleVerifyTimelineAccuracy()}
+                                    disabled={isVerifyingTimeline}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    aria-busy={isVerifyingTimeline}
+                                    title={t('timeline.validation.verify_tooltip') || 'Run AI accuracy check on each item'}
+                                >
+                                    {isVerifyingTimeline ? <Loader2 size={14} className="animate-spin" /> : '🔍'}
+                                    {isVerifyingTimeline ? (t('timeline.validation.verifying') || 'Verifying…') : (t('timeline.validation.verify') || 'Verify accuracy')}
+                                </button>
+                            </div>
+                        )}
                         <div className="relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8">
                             <div className="absolute left-[-7px] top-0 font-black text-indigo-300 text-[11px] uppercase tracking-widest -translate-y-full">{t('timeline.start_marker')}</div>
                             {!Array.isArray(generatedContent?.data) && generatedContent?.data?.progressionLabel && (
@@ -46457,6 +46730,19 @@ Return only the corrected version of this exact text:`;
                                                 </p>
                                                 {item.event_en && (
                                                     <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
+                                                )}
+                                                {item.verification && (item.verification.factual === false || item.verification.position === false) && (
+                                                    <div className="mt-2 flex items-start gap-1.5 text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1 text-red-800">
+                                                        <AlertCircle size={12} className="shrink-0 mt-0.5 text-red-600" />
+                                                        <div>
+                                                            <strong>{t('timeline.validation.flagged') || 'Flagged'}:</strong> {item.verification.concern || (item.verification.factual === false ? 'Factual concern' : 'Position may be wrong')}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {item.verification && item.verification.factual !== false && item.verification.position !== false && (
+                                                    <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
+                                                        <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

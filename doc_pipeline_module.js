@@ -52,16 +52,19 @@ var createDocPipeline = function(deps) {
   var _pipeLog = function(tag, msg, data) {
     var elapsed = _pipelineStats.startTime ? '+' + ((performance.now() - _pipelineStats.startTime) / 1000).toFixed(1) + 's' : '';
     var prefix = '[DocPipe][' + tag + '] ' + elapsed + ' — ';
+    // Original console/warnLog output (dev-tools).
     if (data) {
       try { console.groupCollapsed(prefix + msg); console.log(data); console.groupEnd(); } catch(e) { warnLog(prefix + msg, data); }
     } else {
       warnLog(prefix + msg);
     }
+    // Canvas-visible emission.
     try {
       if (typeof window !== 'undefined') {
         var entry = { ts: Date.now(), elapsed: elapsed, tag: tag, msg: msg, data: data || null };
         if (window._alloflowPipelineWarnings) {
           window._alloflowPipelineWarnings.push(entry);
+          // Cap the buffer so long sessions don't leak memory.
           if (window._alloflowPipelineWarnings.length > 500) window._alloflowPipelineWarnings.splice(0, window._alloflowPipelineWarnings.length - 500);
         }
         if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
@@ -352,6 +355,9 @@ var createDocPipeline = function(deps) {
     return c.trim();
   };
 
+  // Detects chunk responses that the AI wrapped in JSON (e.g. {"html":"..."} or [{"html":"..."}]).
+  // textCharCount doesn't penalize JSON syntax, so without this check a wrapped response passes
+  // validation and the wrapper leaks into the joined document as visible artifacts.
   const _JSON_HTML_KEYS = /^(?:html|content|text|fixed_html|output_html|accessible_html|body|section|fragment|\w*_?html)$/i;
   const _isJsonWrapped = (s) => {
     if (!s) return false;
@@ -595,25 +601,48 @@ var createDocPipeline = function(deps) {
 
   // ── Shared helpers for surgical-then-AI remediation (Stage 3) ──
   // ── Word Art presets ──
-  // Accessible CSS-only presets. Text remains real DOM text (readable by screen readers).
+  // Accessible CSS-only presets. Text remains real DOM text (readable by screen readers) — no SVG
+  // path rendering, no rasterization. Colors chosen for WCAG AA on white bg where feasible;
+  // decorative contrast rules (1.4.3 "incidental") cover the rest.
+  // Exposed on window.AlloWordArt so the Document Builder UI can render identical previews.
   var WORD_ART_PRESETS = {
-    goldFoil: { name: 'Gold Foil', emoji: '✨',
-      style: 'background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(120,53,15,0.25);font-weight:900;' },
-    neonGlow: { name: 'Neon Glow', emoji: '💡',
-      style: 'color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490,0 1px 2px rgba(0,0,0,0.3);font-weight:900;' },
-    retroArcade: { name: 'Retro Arcade', emoji: '🕹️',
-      style: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:'Impact','Arial Black',sans-serif;letter-spacing:0.03em;" },
-    chalkboard: { name: 'Chalkboard', emoji: '🖍️',
+    goldFoil: {
+      name: 'Gold Foil',
+      emoji: '✨',
+      style: 'background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(120,53,15,0.25);font-weight:900;'
+    },
+    neonGlow: {
+      name: 'Neon Glow',
+      emoji: '💡',
+      style: 'color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490,0 1px 2px rgba(0,0,0,0.3);font-weight:900;'
+    },
+    retroArcade: {
+      name: 'Retro Arcade',
+      emoji: '🕹️',
+      style: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:'Impact','Arial Black',sans-serif;letter-spacing:0.03em;"
+    },
+    chalkboard: {
+      name: 'Chalkboard',
+      emoji: '🖍️',
       style: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;",
-      wrapperStyle: 'background:#14532d;padding:1rem 1.5rem;border-radius:8px;display:inline-block;border:3px solid #78350f;' },
-    embossed: { name: 'Embossed', emoji: '🏛️',
-      style: 'color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;letter-spacing:0.01em;' },
-    rainbow: { name: 'Rainbow', emoji: '🌈',
-      style: 'background:linear-gradient(90deg,#dc2626 0%,#ea580c 17%,#ca8a04 33%,#16a34a 50%,#0891b2 67%,#4f46e5 83%,#9333ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;' }
+      wrapperStyle: 'background:#14532d;padding:1rem 1.5rem;border-radius:8px;display:inline-block;border:3px solid #78350f;'
+    },
+    embossed: {
+      name: 'Embossed',
+      emoji: '🏛️',
+      style: 'color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;letter-spacing:0.01em;'
+    },
+    rainbow: {
+      name: 'Rainbow',
+      emoji: '🌈',
+      style: 'background:linear-gradient(90deg,#dc2626 0%,#ea580c 17%,#ca8a04 33%,#16a34a 50%,#0891b2 67%,#4f46e5 83%,#9333ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;'
+    }
   };
   var WORD_ART_SIZES = { S: '1.5rem', M: '2.5rem', L: '4rem', XL: '6rem' };
+  // Expose to host so Document Builder can render matching previews.
   try { if (typeof window !== 'undefined') { window.AlloWordArt = { presets: WORD_ART_PRESETS, sizes: WORD_ART_SIZES }; } } catch(e) {}
 
+  // Render a wordart block to HTML. Used by renderJsonToHtml and by the Document Builder insert UI.
   var renderWordArtHtml = function(text, presetKey, size, align) {
     var preset = WORD_ART_PRESETS[presetKey] || WORD_ART_PRESETS.goldFoil;
     var fontSize = WORD_ART_SIZES[size] || WORD_ART_SIZES.L;
@@ -639,12 +668,15 @@ var createDocPipeline = function(deps) {
       return quote + token + quote;
     };
     let out = html;
+    // Double-quoted src/href/srcset containing any data: URL
     out = out.replace(/(src|href|srcset)\s*=\s*"([^"]*data:[^"]+)"/gi, function(m, attr, val) {
       return attr + '=' + swap(val, '"');
     });
+    // Single-quoted variant
     out = out.replace(/(src|href|srcset)\s*=\s*'([^']*data:[^']+)'/gi, function(m, attr, val) {
       return attr + '=' + swap(val, "'");
     });
+    // Unquoted src/href with data: URL (HTML5 allows this)
     out = out.replace(/(src|href)\s*=\s*(data:[^\s>]+)/gi, function(m, attr, val) {
       return attr + '=' + swap(val, '"');
     });
@@ -3976,13 +4008,17 @@ HTML section ${chunkNum}/${chunks.length}:
   let _chunkState = null; // { preamble, postamble, originalChunks[], fixedChunks[], chunkResults[], violationInstructions, headSection }
 
   // Cheap fingerprint for distinguishing documents — avoids collisions between unrelated runs
-  // that share a _chunkState singleton.
+  // that share a _chunkState singleton. Uses length + a prefix slice; good enough for "is this
+  // the same document I was working on before?" without needing a full hash.
   const _docFingerprint = (html) => String((html || '').length) + ':' + String(html || '').slice(0, 200);
 
   // ── Auto-fix axe-core violations via targeted AI pass ──
   const autoFixAxeViolations = async (htmlContent, axeResult, maxPasses = 2) => {
     if (!callGemini || !axeResult || axeResult.totalViolations === 0) return { html: htmlContent, axe: axeResult, passes: 0 };
-    // Clear stale chunk state from an unrelated prior document.
+    // Clear stale chunk state from an unrelated prior document. The "re-fix chunk N" feature
+    // relies on _chunkState persisting across autoFixAxeViolations calls, but if the calling
+    // document has changed we must not reuse the old state — it would splice chunks from
+    // document A into document B.
     const _currentDocKey = _docFingerprint(htmlContent);
     if (_chunkState && _chunkState.docKey && _chunkState.docKey !== _currentDocKey) {
       _pipeLog('AutoFix', 'Clearing _chunkState from a different document (' + _chunkState.docKey.slice(0, 30) + '... → ' + _currentDocKey.slice(0, 30) + '...)');
@@ -5506,8 +5542,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               return `<table style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
             case 'image': {
-              // Uploadable placeholder: even when extractedImages is empty, users can still upload
-              // their own image in the preview. Deferred-image block downstream upgrades the src.
+              // Uploadable placeholder: even when extractedImages is empty (no extraction happened),
+              // users can still upload their own image in the preview. The deferred-image block
+              // downstream upgrades the src when a real extracted image is available.
+              // Colors chosen for WCAG AA on the #f1f5f9 placeholder bg: #475569 caption (5.35:1),
+              // #64748b border (3.92:1 — passes 1.4.11 non-text contrast).
               const _imgDesc = (block.description || block.alt || 'Image').replace(/"/g, '&quot;');
               const _imgAltSafe = (block.description || block.alt || 'Image').replace(/"/g, '').replace(/'/g, '');
               const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
@@ -5529,10 +5568,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             case 'blockquote': return `<blockquote style="border-left:4px solid ${docStyle.accentColor};padding:12px 16px;margin:1em 0;background:${docStyle.bgColor === '#ffffff' ? '#f8fafc' : docStyle.bgColor};border-radius:0 8px 8px 0;font-style:italic">${block.text}</blockquote>`;
             case 'hr': return `<hr style="border:none;border-top:2px solid ${docStyle.sectionBorderColor};margin:2em 0">`;
             case 'wordart': {
+              // Decorative stylized text. Renders via the shared WORD_ART_PRESETS so the in-app
+              // Document Builder preview and the exported PDF/HTML match exactly.
               return renderWordArtHtml(block.text || block.title || '', block.preset || block.style || 'goldFoil', block.size || 'L', block.align || 'center');
             }
             case 'banner': {
-              // Enforce white text on dark gradient + text-shadow guarantees WCAG AA contrast.
+              // Enforce white text on dark gradient + text-shadow guarantees WCAG AA contrast
+              // regardless of the auto-extracted headerBg. Accent border + layered typography
+              // makes the banner feel like a proper chapter marker rather than a flat heading box.
               const _bTitle = block.title || '';
               const _bSubtitle = block.subtitle || '';
               const _bEyebrow = block.eyebrow || '';
@@ -6803,13 +6846,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // without that sibling, this regex used to match legit inline content like
           // {"content": "a long quoted sentence..."} that appears mid-prose, capture only up to the
           // first embedded quote, and greedily consume the rest with [^{}]*} — silently deleting
-          // paragraphs of document content.
+          // paragraphs of document content. Requiring a sibling "kind" key keeps this effective for
+          // true JSON artifacts (Gemini block shapes) while not eating real prose.
           accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:type|tag|element|kind|role)"\s*:\s*"[^"]+"[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"[^{}]*\}/g, '<p>$1</p>');
           accessibleHtml = accessibleHtml.replace(/\{[^{}]*"(?:text|content)"\s*:\s*"([^"]{10,})"[^{}]*"(?:type|tag|element|kind|role)"\s*:\s*"[^"]+"[^{}]*\}/g, '<p>$1</p>');
           // Strip JSON wrappers — catch all known Gemini key variants including alternate schemas.
+          // Gemini has returned: {html, content, text, section, fixed_html, output_html, accessible_html,
+          // tag, class, element, value, body} — match any of these or any *_html key.
           var _jsonKeyPat = '(?:html|content|text|section|tag|class|element|value|body|fixed_html|output_html|accessible_html|\\w*_?html)';
           // Empty-array prefix (e.g. "[\n]{\"html\":\"...\"}") — common when one chunk returned []
-          // and the next returned a bare object.
+          // and the next returned a bare object. Original regex required [ and { to be adjacent.
           accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[\\s*\\]\\s*(?=\\{\\s*"' + _jsonKeyPat + '"\\s*:)', ''), '');
           accessibleHtml = accessibleHtml.replace(new RegExp('^\\s*\\[?\\s*\\{[^}]*"' + _jsonKeyPat + '"\\s*:\\s*"', 'm'), '');
           // Suffix: "}]" at end of document — use /s so \s* can span newlines.
@@ -6819,6 +6865,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = accessibleHtml.replace(/"\s*\]\s*$/s, '');
           // Final catch-all: strip any leading JSON-shape junk (brackets, braces, quotes, commas,
           // whitespace) that appears BEFORE the first real HTML tag at the document start.
+          // Safe because it only fires when a literal HTML tag follows immediately, so legitimate
+          // prose that happens to start with '[' won't be mangled.
           accessibleHtml = accessibleHtml.replace(/^[\s\[\]\{\}"',]+(?=<[a-zA-Z])/, '');
           // Strip JSON array transition fragments: "}{ or "][{ patterns that leak between concatenated
           // JSON objects when Gemini returns multiple blocks. These appear as visible garbage in the output.
@@ -8137,27 +8185,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'timeline') {
-          const items = Array.isArray(item.data) ? item.data : [];
+          const rawItems = Array.isArray(item.data) ? item.data : (item.data?.items || []);
+          const progression = (!Array.isArray(item.data) && item.data?.progressionLabel) || '';
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
+                  ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
                   <ol style="position: relative; padding-left: 24px; border-left: 3px solid #4338ca; margin-left: 10px; list-style: none;">
-                      ${items.map((t, i) => `
+                      ${rawItems.map((t, i) => `
                           <li style="margin-bottom: 20px; position: relative;">
                               <div aria-hidden="true" style="position: absolute; left: -32px; top: 0; width: 16px; height: 16px; background: #4f46e5; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #4338ca;"></div>
-                              <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px;">
-                                  <div style="margin-bottom: 4px;">
-                                      <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
-                                      ${t.date_en ? `<span style="opacity:0.6; font-weight:normal; font-size:0.85em; margin-left:6px;">(${t.date_en})</span>` : ''}
+                              <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; display:flex; gap:12px; align-items:flex-start;">
+                                  ${t.image ? `<img src="${t.image}" alt="${(t.date ? t.date + ': ' : '') + (t.event || '')}" style="width:64px;height:64px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
+                                  <div style="flex:1;min-width:0;">
+                                      <div style="margin-bottom: 4px;">
+                                          <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
+                                          ${t.date_en ? `<span style="opacity:0.6; font-weight:normal; font-size:0.85em; margin-left:6px;">(${t.date_en})</span>` : ''}
+                                      </div>
+                                      <div style="color: #334155;">
+                                          ${t.event}
+                                      </div>
+                                      ${t.event_en ? `<div style="color: #64748b; font-size: 0.9em; margin-top: 4px; font-style: italic;">${t.event_en}</div>` : ''}
                                   </div>
-                                  <div style="color: #334155;">
-                                      ${t.event}
-                                  </div>
-                                  ${t.event_en ? `<div style="color: #64748b; font-size: 0.9em; margin-top: 4px; font-style: italic;">${t.event_en}</div>` : ''}
                               </div>
                           </li>
                       `).join('')}
-                  </div>
+                  </ol>
               </div>
           `;
       } else if (item.type === 'concept-sort') {

@@ -1722,8 +1722,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     useEffect(function() {
       var onDown = function(e) {
-        keysRef.current[e.key.toLowerCase()] = true;
         if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+        if (e.repeat) return;
+        keysRef.current[e.key.toLowerCase()] = true;
         if (e.key.toLowerCase() === 'r') resetCar();
       };
       var onUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
@@ -1945,8 +1946,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     useEffect(function() {
       var onD = function(e) {
-        keysRef.current[e.key.toLowerCase()] = true;
         if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+        if (e.repeat) return;
+        keysRef.current[e.key.toLowerCase()] = true;
         if (e.key.toLowerCase() === 'r') resetCar();
       };
       var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
@@ -2115,7 +2117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
 
     useEffect(function() {
-      var onD = function(e) { keysRef.current[e.key.toLowerCase()] = true; if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.key.toLowerCase() === 'r') resetCar(); };
+      var onD = function(e) { if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.repeat) return; keysRef.current[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === 'r') resetCar(); };
       var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
       window.addEventListener('keydown', onD); window.addEventListener('keyup', onU);
       return function() { window.removeEventListener('keydown', onD); window.removeEventListener('keyup', onU); };
@@ -2864,8 +2866,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         if (view !== 'driving') return;
         var onKeyDown = function(e) {
+          // preventDefault runs on every event (including repeats) so held WASD/arrows don't scroll the page.
+          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+          // Skip one-shot toggle logic on OS key-repeat — otherwise holding Space strobes pause,
+          // holding C cycles cameras at ~30Hz, holding E/V flips signals, etc.
+          if (e.repeat) return;
           keysRef.current[e.key.toLowerCase()] = true;
-          if (e.key === ' ') { pausedRef.current = !pausedRef.current; e.preventDefault(); }
+          if (e.key === ' ') { pausedRef.current = !pausedRef.current; }
           if (e.key.toLowerCase() === 'c') {
             var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
             cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
@@ -2889,7 +2896,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
           // Horn — quick two-tone beep on 'q'
           if (e.key.toLowerCase() === 'q') playHorn(0.35);
-          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
         window.addEventListener('keydown', onKeyDown);

@@ -1848,6 +1848,32 @@
         // ── Undo / Redo system ──
         engine._undoStack = []; // { action: 'place'|'remove', x, y, z, type, shape }
         engine._redoStack = [];
+
+        // ── Return to Spawn: teleport player back to lesson spawn point ──
+        engine.returnToSpawn = function() {
+          var sp = (engine._currentLesson && engine._currentLesson.spawnPoint) || [0, 2, 0];
+          engine.camera.position.set(sp[0], sp[1] + 1.7, sp[2]);
+          engine.velocity.set(0, 0, 0);
+          engine.yaw = 0; engine.pitch = 0;
+        };
+
+        // ── Clear My Blocks: remove only student-placed blocks (preserves lesson structures) ──
+        engine.clearPlayerBlocks = function() {
+          var cleared = 0;
+          Object.keys(engine.blocks).forEach(function(key) {
+            var mesh = engine.blocks[key];
+            if (mesh && mesh.userData && !mesh.userData._lessonBlock) {
+              var p = key.split(',').map(Number);
+              engine.removeBlock(p[0], p[1], p[2], true);
+              cleared++;
+            }
+          });
+          // Reset counter + clear undo history (confusing after bulk clear)
+          engine.blocksPlaced = 0;
+          engine._undoStack = [];
+          engine._redoStack = [];
+          return cleared;
+        };
         var MAX_UNDO = 200;
         function pushUndo(action) {
           engine._undoStack.push(action);
@@ -2104,6 +2130,7 @@
 
         engine.loadLesson = function(lesson) {
           if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length });
+          engine._currentLesson = lesson; // remember for returnToSpawn
           engine.clearWorld();
           // Reset sky to daytime
           engine.scene.background.setRGB(0.53, 0.81, 0.92);
@@ -2511,6 +2538,16 @@
               }
               break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
+            case 'KeyH':
+              // H = return to spawn (home)
+              if (!ev.ctrlKey && !ev.metaKey) {
+                ev.preventDefault();
+                if (engine.returnToSpawn) {
+                  engine.returnToSpawn();
+                  if (addToast) addToast('🏠 Teleported to spawn', 'info');
+                }
+              }
+              break;
             case 'KeyZ':
               if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); }
               break;
@@ -3892,6 +3929,9 @@
       var engine = window[engineKey];
       var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
 
+      // Expose current React state to the engine so the compass rAF loop reads live data
+      if (engine) engine._answeredRef = answeredNpcs;
+
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
         { flag: showNpcDialog,    key: 'showNpcDialog',    label: 'NPC Dialog',            emoji: '💬' },
@@ -4401,6 +4441,203 @@
           )
         ),
 
+        // ── LESSON PROGRESS HUD (always visible while playing, hidden when modals cover it) ──
+        // Compact status card top-left below the toolbar. Students always see lesson title +
+        // NPC progress + blocks placed without opening a menu.
+        worldActive && openModals.length === 0 && el('div', {
+          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: '#e2e8f0', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'none' },
+          role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + (currentLesson.title || 'Lesson') + ', ' + Object.keys(answeredNpcs).length + ' of ' + totalQ + ' NPCs answered, ' + ((engine && engine.blocksPlaced) || 0) + ' blocks placed'
+        },
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+            el('span', { style: { fontSize: '13px' } }, '📐'),
+            el('span', { style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' } }, currentLesson.title || 'Geometry Lesson')
+          ),
+          el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', fontSize: '10px' } },
+            totalQ > 0 && el('span', { title: 'NPCs answered', style: { color: Object.keys(answeredNpcs).length === totalQ ? '#4ade80' : '#94a3b8' } },
+              '💬 ' + Object.keys(answeredNpcs).length + '/' + totalQ),
+            el('span', { title: 'Blocks placed this session', style: { color: '#fbbf24' } },
+              '🧱 ' + ((engine && engine.blocksPlaced) || 0)),
+            el('span', { title: 'Session score', style: { color: '#34d399' } },
+              '⭐ ' + score)
+          ),
+          // NPC progress bar (only if there are NPCs in this lesson)
+          totalQ > 0 && el('div', { style: { marginTop: '4px', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' } },
+            el('div', { style: { width: Math.round((Object.keys(answeredNpcs).length / totalQ) * 100) + '%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #34d399)', transition: 'width 0.4s' } })
+          ),
+          // ── Objectives checklist (auto-computed from lesson data + live state) ──
+          (function() {
+            var objectives = [];
+            // 1. Lesson's explicit objectives (from lesson JSON)
+            if (Array.isArray(currentLesson.objectives) && currentLesson.objectives.length > 0) {
+              currentLesson.objectives.forEach(function(text, i) {
+                // Heuristic: mark done if all NPCs answered AND at least one block placed
+                var done = false;
+                if (/answer|talk|ask/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
+                else if (/build|place|construct/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
+                else if (/measure/i.test(text)) done = (measureHistory && measureHistory.length > 0);
+                objectives.push({ text: text, done: done });
+              });
+            } else {
+              // 2. Fallback auto-generated objectives from lesson shape
+              if (totalQ > 0) objectives.push({ text: 'Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'), done: Object.keys(answeredNpcs).length >= totalQ });
+              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: (measureHistory && measureHistory.length > 0) });
+              objectives.push({ text: 'Place at least 5 blocks', done: ((engine && engine.blocksPlaced) || 0) >= 5 });
+            }
+            var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
+            return el('div', { style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(148,163,184,0.2)' } },
+              el('div', { style: { fontSize: '9px', fontWeight: 800, color: allDone ? '#4ade80' : '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '2px' } },
+                (allDone ? '✨ ' : '🎯 ') + 'Objectives'),
+              objectives.slice(0, 4).map(function(o, i) {
+                return el('div', { key: i, style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
+                  el('span', { style: { color: o.done ? '#4ade80' : '#64748b', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
+                  el('span', { style: { color: o.done ? '#94a3b8' : '#cbd5e1', textDecoration: o.done ? 'line-through' : 'none' } }, o.text)
+                );
+              })
+            );
+          })()
+        ),
+
+        // ── NPC COMPASS — live-updating horizontal pip strip centered on camera facing ──
+        // Pips colored green (answered) or red (unanswered) help students locate NPCs they've missed.
+        // Self-contained: canvas ref boots a rAF loop that reads engine.camera + engine.npcs each frame.
+        worldActive && openModals.length === 0 && engine && engine.npcs && engine.npcs.length > 0 && el('canvas', {
+          ref: function(cv) {
+            if (!cv) return;
+            if (cv._compassStarted) return; // guard against React re-render re-initialization
+            cv._compassStarted = true;
+            var dpr = window.devicePixelRatio || 1;
+            var W = 260, H = 32;
+            cv.width = W * dpr; cv.height = H * dpr;
+            cv.style.width = W + 'px'; cv.style.height = H + 'px';
+            var ctx = cv.getContext('2d');
+            ctx.scale(dpr, dpr);
+            function render() {
+              if (!cv.isConnected) return; // canvas removed — stop loop
+              if (!window.THREE || !engine || !engine.camera || !engine.npcs) {
+                requestAnimationFrame(render);
+                return;
+              }
+              ctx.clearRect(0, 0, W, H);
+              // Background pill
+              ctx.fillStyle = 'rgba(15,23,42,0.7)';
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0, 0, W, H, 16); ctx.fill(); }
+              else ctx.fillRect(0, 0, W, H);
+              ctx.strokeStyle = 'rgba(124,58,237,0.3)'; ctx.lineWidth = 1;
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0.5, 0.5, W - 1, H - 1, 16); ctx.stroke(); }
+              // Read camera yaw from quaternion (YXZ order gives yaw directly)
+              var euler = new window.THREE.Euler().setFromQuaternion(engine.camera.quaternion, 'YXZ');
+              var camYaw = euler.y;
+              var halfFov = Math.PI; // show full 180° ahead and behind (180° = ±π/2)
+              var answered = engine._answeredRef || {};
+              // Draw center forward tick
+              ctx.fillStyle = '#fbbf24';
+              ctx.beginPath();
+              ctx.moveTo(W / 2, 5); ctx.lineTo(W / 2 - 4, 11); ctx.lineTo(W / 2 + 4, 11);
+              ctx.closePath(); ctx.fill();
+              // Draw pips for each NPC
+              engine.npcs.forEach(function(npc, i) {
+                if (!npc || !npc.body) return;
+                var dx = npc.body.position.x - engine.camera.position.x;
+                var dz = npc.body.position.z - engine.camera.position.z;
+                var dist = Math.sqrt(dx * dx + dz * dz);
+                // World-frame angle: atan2(-dx, -dz) gives 0 when NPC is directly ahead (−Z forward)
+                var worldAngle = Math.atan2(dx, -dz);
+                var relAngle = worldAngle - camYaw;
+                while (relAngle > Math.PI) relAngle -= 2 * Math.PI;
+                while (relAngle < -Math.PI) relAngle += 2 * Math.PI;
+                // Only show pips within ±90° field of compass
+                if (Math.abs(relAngle) > halfFov / 2) {
+                  // Off-compass: draw a small edge arrow
+                  var edgeX = relAngle > 0 ? W - 10 : 10;
+                  ctx.fillStyle = answered[i] ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.6)';
+                  ctx.beginPath();
+                  if (relAngle > 0) { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX - 6, 12); ctx.lineTo(edgeX - 6, 20); }
+                  else { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX + 6, 12); ctx.lineTo(edgeX + 6, 20); }
+                  ctx.closePath(); ctx.fill();
+                  return;
+                }
+                var pipX = W / 2 + (relAngle / (halfFov / 2)) * (W / 2 - 12);
+                var isAnswered = !!answered[i];
+                // Pip — circle for answered (done, closed), square for unanswered (open task)
+                // Shape + color + glyph = triple-coded for color-blind accessibility
+                ctx.fillStyle = isAnswered ? '#22c55e' : '#ef4444';
+                if (isAnswered) {
+                  ctx.beginPath(); ctx.arc(pipX, 18, 6, 0, 6.28); ctx.fill();
+                } else {
+                  ctx.fillRect(pipX - 6, 12, 12, 12); // square = "task open"
+                }
+                // Inner glyph (third visual channel)
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 9px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(isAnswered ? '✓' : '?', pipX, 18);
+                // Distance dot size hints (closer = bigger) — subtle
+                if (dist < 8) {
+                  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5;
+                  ctx.beginPath(); ctx.arc(pipX, 18, 8, 0, 6.28); ctx.stroke();
+                }
+              });
+              requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+          },
+          style: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 5, pointerEvents: 'none', borderRadius: '16px' },
+          role: 'img', 'aria-label': 'NPC compass strip showing relative direction to each NPC from camera facing'
+        })
+        ,
+
+        // ── BLOCK PALETTE HOTBAR — Minecraft-style visible selector at bottom-center ──
+        // Shows current block type + shape so students always see what they're placing.
+        worldActive && openModals.length === 0 && el('div', {
+          style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', pointerEvents: 'none' },
+          role: 'toolbar', 'aria-label': 'Block selection palette'
+        },
+          // Current shape indicator (small strip above block row)
+          el('div', { style: { display: 'flex', gap: '3px', padding: '3px 8px', borderRadius: '10px', background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(6px)', border: '1px solid rgba(251,191,36,0.3)', fontSize: '9px', fontWeight: 700, color: '#fbbf24', alignItems: 'center', pointerEvents: 'auto', cursor: 'pointer' },
+            onClick: function() {
+              upd({ selectedShape: (selectedShape + 1) % BLOCK_SHAPES.length, blockRotation: 0 });
+              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[(selectedShape + 1) % BLOCK_SHAPES.length].name);
+            },
+            title: 'Click to cycle shape (Q) · ' + BLOCK_SHAPES[selectedShape].desc
+          },
+            el('span', { style: { fontSize: '13px' } }, BLOCK_SHAPES[selectedShape].emoji),
+            el('span', null, BLOCK_SHAPES[selectedShape].name + ' (' + BLOCK_SHAPES[selectedShape].fraction + ' unit)'),
+            selectedShape > 0 && el('span', { style: { color: '#94a3b8', fontSize: '8px' } }, '· Q cycle · R rotate')
+          ),
+          // Block type hotbar (12 blocks, number keys 1-9,0 plus scroll)
+          el('div', { style: { display: 'flex', gap: '4px', padding: '6px', borderRadius: '12px', background: 'rgba(15,23,42,0.82)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', pointerEvents: 'auto' } },
+            BLOCK_TYPES.map(function(bt, bi) {
+              var selected = bi === selectedBlock;
+              var keyLabel = bi < 9 ? String(bi + 1) : bi === 9 ? '0' : '';
+              return el('button', {
+                key: bt.id,
+                onClick: function() { upd('selectedBlock', bi); },
+                'aria-label': 'Select ' + bt.name + ' block' + (keyLabel ? ' (press ' + keyLabel + ')' : '') + (selected ? ', currently selected' : ''),
+                'aria-pressed': selected,
+                title: bt.name + (keyLabel ? ' (press ' + keyLabel + ')' : ''),
+                style: {
+                  position: 'relative',
+                  width: '36px', height: '36px',
+                  border: selected ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '8px',
+                  background: selected ? 'rgba(251,191,36,0.18)' : 'rgba(255,255,255,0.04)',
+                  boxShadow: selected ? '0 0 0 2px rgba(251,191,36,0.2), 0 4px 8px rgba(251,191,36,0.15)' : 'none',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '20px',
+                  transition: 'all 0.12s'
+                }
+              },
+                bt.emoji,
+                // Key hint badge
+                keyLabel && el('span', { style: { position: 'absolute', top: '-2px', right: '-2px', background: selected ? '#fbbf24' : 'rgba(15,23,42,0.85)', color: selected ? '#111' : '#94a3b8', fontSize: '8px', fontWeight: 800, width: '13px', height: '13px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.2)' } }, keyLabel)
+              );
+            })
+          ),
+          // Current block name label
+          el('div', { style: { fontSize: '10px', color: '#cbd5e1', fontWeight: 700, background: 'rgba(15,23,42,0.6)', padding: '2px 8px', borderRadius: '10px', pointerEvents: 'none' } },
+            BLOCK_TYPES[selectedBlock].emoji + ' ' + BLOCK_TYPES[selectedBlock].name
+          )
+        ),
+
         // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
         // Lets students instantly dismiss all overlays and return to the 3D world.
         // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
@@ -4454,7 +4691,10 @@
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0',
-            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)'
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)',
+            el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
+            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
+            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
           ),
           // Mobile touch controls section (shown on touch devices)
           isMobile && el('div', { style: { marginBottom: '8px' } },
@@ -4897,7 +5137,60 @@
             style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer' },
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
-          }, '\u21AA ' + engine._redoStack.length)
+          }, '\u21AA ' + engine._redoStack.length),
+          // Return to spawn (home)
+          worldActive && el('div', {
+            style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer' },
+            onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
+            title: 'Return to spawn point (H)'
+          }, '\uD83C\uDFE0 Home'),
+          // Screenshot / Save Build
+          worldActive && el('div', {
+            style: { background: 'rgba(34,211,238,0.12)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 700, cursor: 'pointer' },
+            onClick: function() {
+              if (!engine || !engine.renderer || !engine.scene || !engine.camera) return;
+              try {
+                // Force a fresh render before toDataURL (renderer isn't preserveDrawingBuffer)
+                engine.renderer.render(engine.scene, engine.camera);
+                var dataURL = engine.renderer.domElement.toDataURL('image/png');
+                var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                var safeTitle = (currentLesson.title || 'geometry-world').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40);
+                var a = document.createElement('a');
+                a.href = dataURL;
+                a.download = 'geometry-world_' + safeTitle + '_' + stamp + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                if (addToast) addToast('\uD83D\uDCF8 Screenshot saved to your downloads!', 'success');
+              } catch (err) {
+                console.error('Screenshot failed:', err);
+                if (addToast) addToast('Screenshot failed \u2014 try again.', 'info');
+              }
+            },
+            title: 'Save a PNG screenshot of your build'
+          }, '\uD83D\uDCF8 Save'),
+          // Clear my blocks
+          worldActive && el('div', {
+            style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer' },
+            onClick: function() {
+              if (!engine || !engine.clearPlayerBlocks) return;
+              var count = 0;
+              // Count first for confirm message
+              Object.keys(engine.blocks || {}).forEach(function(k) {
+                var m = engine.blocks[k];
+                if (m && m.userData && !m.userData._lessonBlock) count++;
+              });
+              if (count === 0) {
+                if (addToast) addToast('Nothing to clear — you haven\'t placed any blocks.', 'info');
+                return;
+              }
+              if (window.confirm('Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.')) {
+                var cleared = engine.clearPlayerBlocks();
+                if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
+              }
+            },
+            title: 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.'
+          }, '\uD83D\uDDD1\uFE0F Clear Mine')
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
         isMobile && worldActive && engine && el('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },

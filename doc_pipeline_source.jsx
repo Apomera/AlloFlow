@@ -8183,27 +8183,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'timeline') {
-          const items = Array.isArray(item.data) ? item.data : [];
+          const rawItems = Array.isArray(item.data) ? item.data : (item.data?.items || []);
+          const progression = (!Array.isArray(item.data) && item.data?.progressionLabel) || '';
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
+                  ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
                   <ol style="position: relative; padding-left: 24px; border-left: 3px solid #4338ca; margin-left: 10px; list-style: none;">
-                      ${items.map((t, i) => `
+                      ${rawItems.map((t, i) => `
                           <li style="margin-bottom: 20px; position: relative;">
                               <div aria-hidden="true" style="position: absolute; left: -32px; top: 0; width: 16px; height: 16px; background: #4f46e5; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #4338ca;"></div>
-                              <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px;">
-                                  <div style="margin-bottom: 4px;">
-                                      <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
-                                      ${t.date_en ? `<span style="opacity:0.6; font-weight:normal; font-size:0.85em; margin-left:6px;">(${t.date_en})</span>` : ''}
+                              <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; display:flex; gap:12px; align-items:flex-start;">
+                                  ${t.image ? `<img src="${t.image}" alt="${(t.date ? t.date + ': ' : '') + (t.event || '')}" style="width:64px;height:64px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
+                                  <div style="flex:1;min-width:0;">
+                                      <div style="margin-bottom: 4px;">
+                                          <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
+                                          ${t.date_en ? `<span style="opacity:0.6; font-weight:normal; font-size:0.85em; margin-left:6px;">(${t.date_en})</span>` : ''}
+                                      </div>
+                                      <div style="color: #334155;">
+                                          ${t.event}
+                                      </div>
+                                      ${t.event_en ? `<div style="color: #64748b; font-size: 0.9em; margin-top: 4px; font-style: italic;">${t.event_en}</div>` : ''}
                                   </div>
-                                  <div style="color: #334155;">
-                                      ${t.event}
-                                  </div>
-                                  ${t.event_en ? `<div style="color: #64748b; font-size: 0.9em; margin-top: 4px; font-style: italic;">${t.event_en}</div>` : ''}
                               </div>
                           </li>
                       `).join('')}
-                  </div>
+                  </ol>
               </div>
           `;
       } else if (item.type === 'concept-sort') {

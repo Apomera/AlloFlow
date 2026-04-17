@@ -2851,7 +2851,12 @@
                                                                   "why_loading": "Thinking…",
                                                                     "why_aria": "Explain why this is out of place",
                                                                       "why_none": "No explanation available.",
-                                                                        "why_failed": "Couldn't generate an explanation right now."
+                                                                        "why_failed": "Couldn't generate an explanation right now.",
+                                                                          "reveal": "Show answer",
+                                                                            "reveal_aria": "Show the correct order (no points awarded)",
+                                                                              "reveal_tooltip": "Reveal the correct order — no points awarded",
+                                                                                "answer_revealed_banner": "Answer revealed — no points this round. Play again to try for a score.",
+                                                                                  "answer_revealed_announce": "Answer revealed. No points awarded."
     },
     "new_step_placeholder": "New step — describe this position in the sequence",
     "modes": {
@@ -2889,7 +2894,23 @@
           "revise_button": "Revise with AI",
             "revising": "Revising sequence...",
               "revision_success": "Timeline updated!",
-                "revision_error": "Could not revise timeline. Please try again."
+                "revision_error": "Could not revise timeline. Please try again.",
+                  "validation": {
+      "issues_header": "{count} structural issue(s) detected",
+        "auto_fix": "Auto-fix",
+          "fixing": "Fixing…",
+            "all_fixed": "All validation issues fixed.",
+              "partial_fix": "Fixed some issues, {remaining} remain.",
+                "fix_failed": "Couldn't auto-fix. Please revise manually.",
+                  "verify": "Verify accuracy",
+                    "verify_tooltip": "Run AI accuracy check on each item",
+                      "verifying": "Verifying…",
+                        "verified_clean": "Verified: all items look accurate.",
+                          "verified_concerns": "Verified: {count} item(s) flagged. Review badges for details.",
+                            "verify_failed": "Couldn't run accuracy check. Try again later.",
+                              "flagged": "Flagged",
+                                "verified": "Verified"
+    }
   },
   "concept_sort": {
     "title": "Concept Sort",

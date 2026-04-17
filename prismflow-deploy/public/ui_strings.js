@@ -1765,13 +1765,18 @@
       "diagnosis_label": "Bake Diagnosis",
       "diagnosis_desc": "Figure out why a bake went wrong",
       "gluten_label": "Gluten Lab",
-      "gluten_desc": "See how flour, water, and kneading build the network"
+      "gluten_desc": "See how flour, water, and kneading build the network",
+      "browning_label": "Browning Lab",
+      "browning_desc": "Maillard vs. caramelization head-to-head"
     },
     "stats": {
       "reactions": "Reactions",
       "emulsions": "Emulsions",
       "recipes_scaled": "Recipes scaled",
-      "oven_events": "Oven events"
+      "oven_events": "Oven events",
+      "diagnoses": "Diagnoses",
+      "gluten_matches": "Gluten matches",
+      "brownings": "Perfect bakes"
     },
     "leavening": {
       "tagline": "Mix an acid and a base to make bubbles of CO\u2082.",
@@ -1897,6 +1902,37 @@
       "sci_hydration": "Water is the switch",
       "sci_knead": "Kneading aligns the strands",
       "sci_tender": "Tenderness = less gluten"
+    },
+    "browning": {
+      "tagline": "Maillard reactions vs. caramelization. Different foods brown in different ways.",
+      "pick_food": "Pick a food",
+      "temp": "Temperature",
+      "time": "Time",
+      "moisture": "Surface",
+      "wet": "Wet",
+      "dry": "Dry (patted)",
+      "moisture_hint": "Wet surfaces can\u2019t exceed 212\u00b0F \u2014 water has to evaporate first.",
+      "cook_btn": "Cook it",
+      "reactions": "Active reactions",
+      "maillard": "Maillard",
+      "caramel": "Caramelization",
+      "burn": "Burn / pyrolysis",
+      "flavors": "Flavor notes",
+      "verdict_wet": "Surface too wet \u2014 water has to evaporate before browning starts.",
+      "verdict_raw": "No browning yet. Crank up the temperature or give it more time.",
+      "verdict_light": "Lightly colored. Pale golden \u2014 needs a bit more time or heat.",
+      "verdict_perfect": "Golden perfection! Rich color, complex flavor.",
+      "verdict_deep": "Deep color \u2014 almost too far. Pull it now.",
+      "verdict_burnt": "Burnt \u2014 bitter, acrid compounds have formed.",
+      "verdict_ok": "Coming along nicely.",
+      "perfect_toast": "Golden! You nailed {label}.",
+      "burnt_toast": "Burnt. Lower the temperature or pull sooner.",
+      "more_toast": "Not quite golden yet \u2014 adjust and cook again.",
+      "science_title": "The science",
+      "sci_maillard_title": "Maillard reaction",
+      "sci_caramel_title": "Caramelization",
+      "sci_water": "The water rule",
+      "sci_past_400": "Past the sweet spot"
     }
   },
   "bingo": {
@@ -2815,7 +2851,12 @@
                                                                   "why_loading": "Thinking…",
                                                                     "why_aria": "Explain why this is out of place",
                                                                       "why_none": "No explanation available.",
-                                                                        "why_failed": "Couldn't generate an explanation right now."
+                                                                        "why_failed": "Couldn't generate an explanation right now.",
+                                                                          "reveal": "Show answer",
+                                                                            "reveal_aria": "Show the correct order (no points awarded)",
+                                                                              "reveal_tooltip": "Reveal the correct order — no points awarded",
+                                                                                "answer_revealed_banner": "Answer revealed — no points this round. Play again to try for a score.",
+                                                                                  "answer_revealed_announce": "Answer revealed. No points awarded."
     },
     "new_step_placeholder": "New step — describe this position in the sequence",
     "modes": {
@@ -2853,7 +2894,23 @@
           "revise_button": "Revise with AI",
             "revising": "Revising sequence...",
               "revision_success": "Timeline updated!",
-                "revision_error": "Could not revise timeline. Please try again."
+                "revision_error": "Could not revise timeline. Please try again.",
+                  "validation": {
+      "issues_header": "{count} structural issue(s) detected",
+        "auto_fix": "Auto-fix",
+          "fixing": "Fixing…",
+            "all_fixed": "All validation issues fixed.",
+              "partial_fix": "Fixed some issues, {remaining} remain.",
+                "fix_failed": "Couldn't auto-fix. Please revise manually.",
+                  "verify": "Verify accuracy",
+                    "verify_tooltip": "Run AI accuracy check on each item",
+                      "verifying": "Verifying…",
+                        "verified_clean": "Verified: all items look accurate.",
+                          "verified_concerns": "Verified: {count} item(s) flagged. Review badges for details.",
+                            "verify_failed": "Couldn't run accuracy check. Try again later.",
+                              "flagged": "Flagged",
+                                "verified": "Verified"
+    }
   },
   "concept_sort": {
     "title": "Concept Sort",
