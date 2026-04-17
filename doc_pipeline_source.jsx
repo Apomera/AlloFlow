@@ -686,6 +686,36 @@ var createDocPipeline = function(deps) {
     Object.keys(map).forEach(function(token) { out = out.split(token).join(map[token]); });
     return out;
   };
+  // Replace entire image-placeholder <figure> blocks (including inline upload buttons, SVG icons,
+  // captions, crop-data attrs, upload inputs) with a stable token so AI rewrite passes can't
+  // strip or mangle them. Restored verbatim after the AI pass returns.
+  // Matches EITHER the pre-replacement marker (`data-img-placeholder="true"`) OR the fully-rendered
+  // placeholder (any <figure ... data-img-idx="N" ...>).
+  const _stripImagePlaceholdersForAi = (html) => {
+    if (!html) return { html: html, map: {} };
+    const map = {};
+    let counter = 0;
+    let out = html;
+    // Pre-replacement marker
+    out = out.replace(/<figure\s[^>]*data-img-placeholder="true"[\s\S]*?<\/figure>/gi, function(match) {
+      const token = '__ALLOFLOW_IMG_FIGURE_' + (counter++) + '__';
+      map[token] = match;
+      return token;
+    });
+    // Post-replacement full placeholder (has data-img-idx attribute)
+    out = out.replace(/<figure\s[^>]*data-img-idx="\d+"[\s\S]*?<\/figure>/gi, function(match) {
+      const token = '__ALLOFLOW_IMG_FIGURE_' + (counter++) + '__';
+      map[token] = match;
+      return token;
+    });
+    return { html: out, map: map };
+  };
+  const _restoreImagePlaceholdersForAi = (html, map) => {
+    if (!html || !map) return html;
+    let out = html;
+    Object.keys(map).forEach(function(token) { out = out.split(token).join(map[token]); });
+    return out;
+  };
 
   // Shared tolerant JSON parser for AI-returned arrays. Handles markdown fences, trailing garbage,
   // unquoted keys, single quotes, missing commas, truncation mid-object, etc.
@@ -1158,7 +1188,9 @@ var createDocPipeline = function(deps) {
     const violationText = violationLines.slice(0, 20).join('\n') || 'General WCAG 2.1 AA compliance issues';
 
     const stripped = _stripDataUrlsForAi(html);
-    let workingHtml = stripped.html;
+    // Also strip image placeholder figures so AI passes can't mangle upload buttons / captions / crop data.
+    const figStripped = _stripImagePlaceholdersForAi(stripped.html);
+    let workingHtml = figStripped.html;
     const chunks = splitHtmlOnTagBoundary(workingHtml, HTML_FIX_CHUNK);
     warnLog('[SurgicalThenAI] Processing ' + chunks.length + ' chunk(s) with ' + violationLines.length + ' violations');
 
@@ -1244,7 +1276,19 @@ var createDocPipeline = function(deps) {
     }
 
     let reassembled = fixedChunks.join('');
+    reassembled = _restoreImagePlaceholdersForAi(reassembled, figStripped.map);
     reassembled = _restoreDataUrlsForAi(reassembled, stripped.map);
+    // Track preservation: if any figure token didn't survive, restore it anyway by splicing the original back in at end.
+    try {
+      const lostFigTokens = Object.keys(figStripped.map).filter(tok => !reassembled.includes(tok) && !reassembled.includes(figStripped.map[tok]));
+      if (lostFigTokens.length > 0) {
+        warnLog('[SurgicalThenAI] WARNING: ' + lostFigTokens.length + ' image placeholder figure(s) were dropped by AI — recovering originals');
+        // Re-insert lost figures before </body> so users can re-attach.
+        const recovered = lostFigTokens.map(tok => figStripped.map[tok]).join('\n');
+        if (reassembled.includes('</body>')) reassembled = reassembled.replace('</body>', recovered + '\n</body>');
+        else reassembled = reassembled + '\n' + recovered;
+      }
+    } catch (e) { warnLog('[SurgicalThenAI] figure-recovery threw:', e); }
     warnLog('[SurgicalThenAI] Done: ' + surgicalFixCount + ' surgical fixes, ' + geminiPassCount + ' Gemini passes, ' + rejectedChunks + ' rejected chunks');
     return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
   };
@@ -6752,6 +6796,43 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           aiFixCount++;
           return `<img alt="Document image"${attrs}>`;
         });
+
+        // 1b. Heading contrast inside dark-background wrappers.
+        // When the AI wraps content in a dark <div style="background:#1e3a5f;...">, any <h1>-<h6>
+        // inside may inherit a heading color that matches the bg (docStyle.headingColor == headerBg),
+        // producing dark-on-dark "Part II"-style invisible text. Force white for headings nested in
+        // dark-background wrappers when they lack an explicit color override.
+        try {
+          const hexToLum = (hex) => {
+            const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex || '');
+            if (!m) return null;
+            let h = m[1];
+            if (h.length === 3) h = h.split('').map(c => c + c).join('');
+            const r = parseInt(h.slice(0, 2), 16) / 255;
+            const g = parseInt(h.slice(2, 4), 16) / 255;
+            const b = parseInt(h.slice(4, 6), 16) / 255;
+            const f = v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+            return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+          };
+          // Scan: any wrapper <div|section|header|aside|article> with a style="background:..." that
+          // is darker than 0.20 luminance. For each such wrapper, ensure nested headings have white text.
+          accessibleHtml = accessibleHtml.replace(
+            /<(div|section|header|aside|article|main|nav)([^>]*?style="[^"]*?background(?:-color)?\s*:\s*(#[0-9a-f]{3,6})[^"]*?"[^>]*)>([\s\S]*?)<\/\1>/gi,
+            (full, tag, attrs, bgHex, inner) => {
+              const lum = hexToLum(bgHex);
+              if (lum === null || lum >= 0.20) return full;
+              const fixed = inner.replace(/<(h[1-6])([^>]*)>([\s\S]*?)<\/\1>/gi, (hm, htag, hattrs, content) => {
+                if (/style\s*=\s*"[^"]*color\s*:/i.test(hattrs)) return hm; // explicit color already set
+                if (/style\s*=/i.test(hattrs)) {
+                  return '<' + htag + hattrs.replace(/style\s*=\s*"([^"]*)"/i, 'style="color:#ffffff;$1"') + '>' + content + '</' + htag + '>';
+                }
+                return '<' + htag + ' style="color:#ffffff"' + hattrs + '>' + content + '</' + htag + '>';
+              });
+              if (fixed !== inner) aiFixCount++;
+              return '<' + tag + attrs + '>' + fixed + '</' + tag + '>';
+            }
+          );
+        } catch (hcErr) { warnLog('[Fix] Heading contrast pass threw:', hcErr); }
 
         // 2. Ensure exactly one h1 (document title)
         const h1Count = (accessibleHtml.match(/<h1[\s>]/gi) || []).length;
