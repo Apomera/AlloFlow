@@ -7929,27 +7929,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7965,7 +7965,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4ce07b9/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8028,6 +8028,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_spaceexplorer.js',
         'stem_lab/stem_tool_roadready.js',
+        'stem_lab/stem_tool_bakingscience.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
@@ -8317,10 +8318,19 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
           const currentItems = Array.isArray(currentData) ? currentData : (currentData?.items || []);
           const currentProgressionLabel = currentData?.progressionLabel || t('timeline.progression_label_default');
           const currentProgressionLabelEn = (!Array.isArray(currentData) && currentData?.progressionLabel_en) || null;
+          const currentMode = (!Array.isArray(currentData) && currentData?.mode) || null;
+          const currentAutoDetected = (!Array.isArray(currentData) && currentData?.autoDetected) || false;
+          const currentModeDef = currentMode ? TIMELINE_MODE_DEFINITIONS[currentMode] : null;
+          const modeRule = currentMode
+              ? (currentAutoDetected
+                  ? `The current mode is "${currentModeDef?.label || currentMode}" (auto-detected). If the user's instructions imply a different mode (e.g. "sort by cause and effect instead"), switch modes and return "detectedMode": "<new>". Otherwise keep "${currentMode}".`
+                  : `The current mode is "${currentModeDef?.label || currentMode}" (locked by teacher). Maintain this ordering criterion. Only change if the user's instructions explicitly request a mode switch; if so, return "detectedMode": "<new>". The progressionLabel should match the template: "${currentModeDef?.labelTemplate || currentProgressionLabel}".`)
+              : '';
           const safeInstructions = JSON.stringify(timelineRevisionInput.trim());
           const prompt = `
 You are an AI assistant helping to revise a sequence/timeline.
 The user has a sequence with this ordering principle: ${JSON.stringify(currentProgressionLabel)}.
+${modeRule}
 Current sequence items:
 ${JSON.stringify(currentItems, null, 2)}
 User's revision instructions: ${safeInstructions}
@@ -8333,6 +8343,7 @@ IMPORTANT RULES:
 6. ${currentItems[0]?.event_en ? 'The original items have _en translations (date_en, event_en) — preserve or translate them for every item.' : ''}
 Return ONLY a valid JSON object:
 {
+    ${currentMode ? '"detectedMode": "<mode key if changed, else omit>",' : ''}
     "progressionLabel": "Y-axis ordering principle",
     ${currentProgressionLabelEn ? '"progressionLabel_en": "English translation",' : ''}
     "items": [
@@ -8355,10 +8366,21 @@ Return ONLY a valid JSON object:
           const revisedLabelEn = parsed.progressionLabel_en
               ? parsed.progressionLabel_en
               : (labelChanged ? null : currentProgressionLabelEn);
+          // Mode handling: if AI returned a valid detectedMode, use it; else preserve the current.
+          const revisedMode = (parsed.detectedMode && TIMELINE_MODE_DEFINITIONS[parsed.detectedMode])
+              ? parsed.detectedMode
+              : currentMode;
+          // Once the AI changes the mode via revise, the sequence is no longer "auto-detected"
+          // in the original sense — treat it as locked going forward.
+          const revisedAutoDetected = (parsed.detectedMode && parsed.detectedMode !== currentMode)
+              ? false
+              : currentAutoDetected;
           let revisedData = {
               progressionLabel: parsed.progressionLabel || currentProgressionLabel,
               progressionLabel_en: revisedLabelEn,
-              items: revisedItems
+              items: revisedItems,
+              mode: revisedMode,
+              autoDetected: revisedAutoDetected
           };
           setGeneratedContent(prev => ({
               ...prev,
@@ -8392,9 +8414,10 @@ Return ONLY a valid JSON object:
                   const results = await Promise.all(batch.map(generateOne));
                   results.forEach((r, j) => { output[i + j] = r; });
               }
+              // Race-safe: write back using the same item.event lookup pattern.
               setGeneratedContent(prev => {
                   if (!prev || prev.type !== 'timeline') return prev;
-                  const nextData = { ...(prev.data || {}), items: output, progressionLabel: revisedData.progressionLabel, progressionLabel_en: revisedData.progressionLabel_en };
+                  const nextData = { ...(prev.data || {}), items: output, progressionLabel: revisedData.progressionLabel, progressionLabel_en: revisedData.progressionLabel_en, mode: revisedData.mode, autoDetected: revisedData.autoDetected };
                   const updated = { ...prev, data: nextData };
                   setHistory(h => h.map(item => item.id === prev.id ? updated : item));
                   return updated;
@@ -13186,7 +13209,10 @@ Return only the corrected version of this exact text:`;
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_continue', String(pdfAutoContinue)); } catch (e) {} }, [pdfAutoContinue]);
   const [pdfAutoContinueRunning, setPdfAutoContinueRunning] = useState(false);
   const pdfAutoContinueAbortRef = useRef(false);
+  // Ref tracking the latest pdfFixResult so runAutoFixLoop can read fresh state without closure staleness.
   const pdfFixResultRef = useRef(null);
+  // Fingerprint of the last auto-save — prevents duplicate downloads when the initial flow and
+  // the auto-continue loop both complete on the same result.
   const lastAutoSaveHashRef = useRef('');
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
@@ -13534,6 +13560,7 @@ Return only the corrected version of this exact text:`;
   const [timelineItemCount, setTimelineItemCount] = useState('');
   const [includeTimelineVisuals, setIncludeTimelineVisuals] = useState(false);
   const [isGeneratingTimelineImage, setIsGeneratingTimelineImage] = useState({});
+  const [timelineMode, setTimelineMode] = useState('auto');
   const [draggedTimelineIndex, setDraggedTimelineIndex] = useState(null);
   const [frameType, setFrameType] = useState('Sentence Starters');
   const [frameCustomInstructions, setFrameCustomInstructions] = useState('');
@@ -19259,8 +19286,12 @@ Return ONLY valid JSON:
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
 
+  // Keep pdfFixResultRef in sync so runAutoFixLoop can read the latest pdfFixResult without closure staleness.
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
+  // Auto-continue helper: runs multiple outer rounds of autoFixAxeViolations until target score
+  // reached, zero violations, no progress between rounds, or maxRounds hit. Tracks state locally
+  // between iterations so React batching can't stall the loop.
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
     pdfAutoContinueAbortRef.current = false;
     setPdfAutoContinueRunning(true);
@@ -19272,7 +19303,7 @@ Return ONLY valid JSON:
         if (!cur || !cur.axeAudit) break;
         if ((cur.afterScore || 0) >= pdfTargetScore) break;
         if (cur.axeAudit.totalViolations === 0) break;
-        if (cur.axeAudit.totalViolations >= lastViolations) break;
+        if (cur.axeAudit.totalViolations >= lastViolations) break; // no progress last round
         lastViolations = cur.axeAudit.totalViolations;
         setPdfFixLoading(true);
         setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + cur.axeAudit.totalViolations + ' violation' + (cur.axeAudit.totalViolations !== 1 ? 's' : '') + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
@@ -19313,14 +19344,18 @@ Return ONLY valid JSON:
       setPdfFixLoading(false);
       setPdfAutoContinueRunning(false);
       setPdfFixStep('');
+      // Auto-save at the end of the loop if the user opted into it and we have a real result.
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
   }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
 
+  // Unified project-save helper — used by both the manual "Save Project" button and auto-save
+  // triggers. `isAuto=true` de-duplicates via fingerprint so back-to-back completion events don't
+  // each trigger a download.
   const saveProjectToFile = React.useCallback((isAuto) => {
     const cur = pdfFixResultRef.current;
     if (!cur || !cur.accessibleHtml) return false;
-    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String((cur.axeAudit && cur.axeAudit.totalViolations) || 0);
+    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0);
     if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
     const project = {
       version: 1,
@@ -28848,20 +28883,35 @@ Return ONLY JSON.`;
          setGenerationStep(t('status_steps.extracting_sequence'));
          const effectiveCount = configOverride.timelineCount || timelineItemCount;
          const effectiveTopic = effCustomInstructions || timelineTopic || sourceTopic || "General Sequence";
+         const effectiveMode = configOverride.timelineMode || timelineMode || 'auto';
+         const isAutoMode = effectiveMode === 'auto';
+         const modeDef = !isAutoMode ? TIMELINE_MODE_DEFINITIONS[effectiveMode] : null;
+         const modeListForAuto = Object.entries(TIMELINE_MODE_DEFINITIONS)
+             .map(([k, def]) => `  - "${k}": ${def.label} — ${def.description}. e.g., ${def.examples}`)
+             .join('\n');
+         const modeSection = isAutoMode ? `
+             *** MODE SELECTION (AUTO-DETECT) ***
+             Examine the source text AND the teacher's content hint below, then pick the single best ordering mode from this list:
+${modeListForAuto}
+             Teacher's content hint: "${effectiveTopic}" (may explicitly suggest a mode; if so, prefer that)
+             Return your pick as "detectedMode": "<mode key>" in the JSON response.
+             Use that mode's ordering criterion for the items.
+         ` : `
+             *** ORDERING MODE (LOCKED BY TEACHER) ***
+             Mode: ${modeDef.label}
+             Criterion: ${modeDef.description}
+             Example positions: ${modeDef.examples}
+             ${modeDef.guidance}
+             The progressionLabel should follow the template: "${modeDef.labelTemplate}"
+         `;
           const prompt = `
              You are a Sequence Validation Expert. Your task is to extract or CREATE a SINGLE, UNAMBIGUOUS sequence from the provided text.
              Target Audience: ${gradeLevel} students.
              Language: ${effectiveLanguage}.
-             Focus Topic: "${effectiveTopic}",
+             Focus Topic / Content hint: "${effectiveTopic}"
+             ${modeSection}
              *** FUNDAMENTAL REQUIREMENT ***
              There must be EXACTLY ONE CORRECT ORDER for the items you generate. A student must be able to determine the correct order purely from the item descriptions without guessing.
-             *** VALID ORDERING CRITERIA (Choose exactly ONE) ***
-             1. CHRONOLOGICAL: Years, dates, eras (e.g., "1776", "1865", "1920" -- clear numerical order)
-             2. PROCEDURAL STEPS: Step numbers in a process (e.g., "Step 1: Mix", "Step 2: Heat", "Step 3: Cool")
-             3. SIZE/SCALE: Measurable dimensions (e.g., "Atom", "Molecule", "Cell", "Tissue", "Organ")
-             4. HIERARCHY/LEVEL: Organizational levels (e.g., "City", "County", "State", "Nation")
-             5. INTENSITY/DEGREE: Measurable amounts (e.g., "0°C", "25°C", "50°C", "100°C")
-             6. CAUSE→EFFECT CHAIN: Where A causes B causes C (must be logically sequential, not parallel)
              *** VALIDATION RULES (You MUST verify each) ***
              Rule 1: BINARY COMPARABILITY - For any two items A and B, it must be objectively determinable which comes "before" or "after" on the axis.
              Rule 2: NO TIES - No two items can reasonably occupy the same position.
@@ -28885,6 +28935,7 @@ Return ONLY JSON.`;
              ${dialectInstruction}
              Return ONLY a JSON object with this structure:
              {
+                 ${isAutoMode ? '"detectedMode": "<one of: chronological, procedural, lifecycle, size, hierarchy, cause-effect, intensity, narrative>",' : ''}
                  "progressionLabel": "AXIS: [Criterion Name] ([Low End] → [High End])",
                  ${effectiveLanguage !== 'English' ? '"progressionLabel_en": "English translation of the label",' : ''}
                  "items": [
@@ -28899,7 +28950,7 @@ Return ONLY JSON.`;
              EXAMPLE progressionLabel formats:
              - "Timeline: Earliest (1492) → Latest (1776)"
              - "Size Scale: Smallest (Atom) → Largest (Universe)"
-             - "Process Steps: First (Observe) → Last (Conclude)",
+             - "Process Steps: First (Observe) → Last (Conclude)"
              ${differentiationContext}
              Text: "${textToProcess}"
           `;
@@ -28909,10 +28960,14 @@ Return ONLY JSON.`;
              let itemsArray = [];
              let progressionLabel = t('timeline.progression_label_default') || 'Sequential Order';
              let progressionLabel_en = null;
+             let detectedMode = null;
              if (parsed && !Array.isArray(parsed) && parsed.items) {
                  itemsArray = parsed.items;
                  if (parsed.progressionLabel) progressionLabel = parsed.progressionLabel;
                  if (parsed.progressionLabel_en) progressionLabel_en = parsed.progressionLabel_en;
+                 if (parsed.detectedMode && TIMELINE_MODE_DEFINITIONS[parsed.detectedMode]) {
+                     detectedMode = parsed.detectedMode;
+                 }
              }
              else if (Array.isArray(parsed)) {
                  itemsArray = parsed;
@@ -28922,7 +28977,15 @@ Return ONLY JSON.`;
                  else if (parsed.sequence) itemsArray = parsed.sequence;
                  else itemsArray = [];
              }
-             return { progressionLabel, progressionLabel_en, items: itemsArray };
+             // Resolve final mode: explicit teacher mode wins; else detectedMode; else fallback.
+             const finalMode = isAutoMode ? (detectedMode || 'chronological') : effectiveMode;
+             return {
+                 progressionLabel,
+                 progressionLabel_en,
+                 items: itemsArray,
+                 mode: finalMode,
+                 autoDetected: isAutoMode
+             };
          };
          try {
              content = parseTimelineResponse(result);
@@ -30028,6 +30091,18 @@ Return ONLY JSON:
         } catch {}
     }, 50);
   };
+  const handleLockTimelineMode = () => {
+    if (!generatedContent || generatedContent.type !== 'timeline') return;
+    const data = generatedContent.data;
+    if (Array.isArray(data) || !data?.mode) return;
+    if (data.autoDetected === false) return;
+    const updated = { ...generatedContent, data: { ...data, autoDetected: false } };
+    setGeneratedContent(updated);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updated : item));
+    setTimelineMode(data.mode);
+    const lbl = TIMELINE_MODE_DEFINITIONS[data.mode]?.label || data.mode;
+    addToast(t('timeline.mode_locked', { mode: lbl }) || `Mode locked: ${lbl}`, 'success');
+  };
   const handleDeleteTimelineStep = (index) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
     const data = generatedContent.data;
@@ -30053,6 +30128,7 @@ Return ONLY JSON:
         const progression = (!isArrayShape && data?.progressionLabel) || 'sequential order';
         const imgPrompt = `Simple vector icon/illustration of: "${event}" (sequence position: "${date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
         const imageUrl = await callImagen(imgPrompt);
+        // Race-safe: find the item by event string at write-time.
         setGeneratedContent(prev => {
             if (!prev || prev.type !== 'timeline') return prev;
             const prevData = prev.data;
@@ -33318,6 +33394,12 @@ Return ONLY JSON:
         }
         @keyframes dashflow {
           to { stroke-dashoffset: -20; }
+        }
+        @keyframes bakingBubbleRise {
+          0%   { transform: translateY(0) scale(0.4); opacity: 0; }
+          15%  { opacity: 0.85; }
+          70%  { opacity: 0.9; }
+          100% { transform: translateY(-160%) scale(1.1); opacity: 0; }
         }
         @keyframes pop {
           0% { transform: scale(0.95); }
@@ -37451,6 +37533,32 @@ Return ONLY JSON:
                                 placeholder={t('timeline.placeholder_count')}
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
                             />
+                        </div>
+                        <div data-help-key="timeline_mode_info">
+                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                                {t('timeline.settings.mode_label') || 'Ordering Mode'}
+                            </label>
+                            <select
+                                aria-label={t('timeline.settings.mode_label') || 'Ordering mode'}
+                                value={timelineMode}
+                                onChange={(e) => setTimelineMode(e.target.value)}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
+                            >
+                                <option value="auto">{t('timeline.settings.mode_auto') || '✨ Auto-detect (AI picks best)'}</option>
+                                <option value="chronological">{t('timeline.modes.chronological') || 'Chronological — dates, events'}</option>
+                                <option value="procedural">{t('timeline.modes.procedural') || 'Procedural steps — how-to, experiments'}</option>
+                                <option value="lifecycle">{t('timeline.modes.lifecycle') || 'Life cycle / Developmental stages'}</option>
+                                <option value="size">{t('timeline.modes.size') || 'Size / Scale — smallest to largest'}</option>
+                                <option value="hierarchy">{t('timeline.modes.hierarchy') || 'Hierarchy / Taxonomy — broadest to specific'}</option>
+                                <option value="cause-effect">{t('timeline.modes.cause-effect') || 'Cause → Effect chain'}</option>
+                                <option value="intensity">{t('timeline.modes.intensity') || 'Intensity / Degree — least to most'}</option>
+                                <option value="narrative">{t('timeline.modes.narrative') || 'Narrative arc — exposition to resolution'}</option>
+                            </select>
+                            <p className="text-[11px] text-slate-500 italic mt-1">
+                                {timelineMode === 'auto'
+                                    ? (t('timeline.settings.mode_hint_auto') || 'AI examines the text and topic hint to pick the best ordering axis.')
+                                    : (TIMELINE_MODE_DEFINITIONS[timelineMode]?.description || '')}
+                            </p>
                         </div>
                         <div data-help-key="timeline_visuals_info">
                             <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
@@ -46190,8 +46298,26 @@ Return only the corrected version of this exact text:`;
                         <div className="relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8">
                             <div className="absolute left-[-7px] top-0 font-black text-indigo-300 text-[11px] uppercase tracking-widest -translate-y-full">{t('timeline.start_marker')}</div>
                             {!Array.isArray(generatedContent?.data) && generatedContent?.data?.progressionLabel && (
-                                <div className="absolute left-4 top-[-24px] bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
-                                    <span className="opacity-70">{t('timeline.order_by')}</span> {generatedContent?.data.progressionLabel}
+                                <div className="absolute left-4 top-[-24px] flex items-center gap-2">
+                                    <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
+                                        <span className="opacity-70">{t('timeline.order_by')}</span> {generatedContent?.data.progressionLabel}
+                                    </div>
+                                    {generatedContent?.data.mode && TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode] && (
+                                        generatedContent.data.autoDetected ? (
+                                            <button
+                                                onClick={handleLockTimelineMode}
+                                                className="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors"
+                                                title={t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations'}
+                                                aria-label={t('timeline.click_to_lock_aria') || 'Click to lock this mode'}
+                                            >
+                                                ✨ {t('timeline.detected_label') || 'Detected'}: {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
+                                            </button>
+                                        ) : (
+                                            <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                                🔒 {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
+                                            </span>
+                                        )
+                                    )}
                                 </div>
                             )}
                             <div className="absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"></div>
@@ -57428,6 +57554,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       if (window.AlloWordArt && typeof window.AlloWordArt.render === 'function') {
                         html = window.AlloWordArt.render(text, preset, size, align);
                       } else {
+                        // Fallback if doc_pipeline module hasn't loaded — keep in sync with WORD_ART_PRESETS there.
                         const P = { goldFoil: 'background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;', neonGlow: 'color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490;font-weight:900;', retroArcade: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:Impact,'Arial Black',sans-serif;letter-spacing:0.03em;", chalkboard: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;", embossed: 'color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;', rainbow: 'background:linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0891b2,#4f46e5,#9333ea);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;' };
                         const sz = { S: '1.5rem', M: '2.5rem', L: '4rem', XL: '6rem' };
                         const safe = String(text).replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;');

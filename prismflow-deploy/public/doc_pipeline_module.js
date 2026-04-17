@@ -43,7 +43,9 @@ var createDocPipeline = function(deps) {
   // Structured logging with timestamps, durations, and API call tracking.
   // All output prefixed with [DocPipe] for easy filtering in DevTools.
   var _pipelineStats = { apiCalls: 0, visionCalls: 0, totalApiMs: 0, retries: 0, startTime: 0, stepTimes: {} };
-  // Canvas-visible sink: window-level array + CustomEvent for host listeners.
+  // Canvas-visible sink: in canvas/embedded runtimes, warnLog/console.warn aren't shown. We keep
+  // a rolling window-level array AND dispatch a CustomEvent so a host listener (panel, toast,
+  // diagnostic overlay) can surface pipeline telemetry without touching each call site.
   if (typeof window !== 'undefined' && !window._alloflowPipelineWarnings) {
     window._alloflowPipelineWarnings = [];
   }

@@ -418,7 +418,7 @@
           });
         };
 
-        var ext = d._bakingExt || { leaveningRuns: 0, emulsionsSolved: 0, recipesScaled: 0, ovenEventsFound: [], diagnosesCorrect: 0, diagnosesAttempted: 0, diagStreak: 0, diagBestStreak: 0, glutenMatches: 0, glutenExplorations: 0, badges: [] };
+        var ext = d._bakingExt || { leaveningRuns: 0, emulsionsSolved: 0, recipesScaled: 0, ovenEventsFound: [], diagnosesCorrect: 0, diagnosesAttempted: 0, diagStreak: 0, diagBestStreak: 0, glutenMatches: 0, glutenExplorations: 0, browningPerfections: 0, browningAttempts: 0, badges: [] };
         var updExt = function(obj) {
           var merged = Object.assign({}, ext, obj);
           upd('_bakingExt', merged);
@@ -457,7 +457,8 @@
           scaler:    { label: 'baking.activities.scaler_label',    desc: 'baking.activities.scaler_desc'    },
           oven:      { label: 'baking.activities.oven_label',      desc: 'baking.activities.oven_desc'      },
           diagnosis: { label: 'baking.activities.diagnosis_label', desc: 'baking.activities.diagnosis_desc' },
-          gluten:    { label: 'baking.activities.gluten_label',    desc: 'baking.activities.gluten_desc'    }
+          gluten:    { label: 'baking.activities.gluten_label',    desc: 'baking.activities.gluten_desc'    },
+          browning:  { label: 'baking.activities.browning_label',  desc: 'baking.activities.browning_desc'  }
         };
         var subtoolLabel = function(st) { return tr(subtoolI18n[st.id].label, st.label); };
         var subtoolDesc  = function(st) { return tr(subtoolI18n[st.id].desc,  st.desc ); };
@@ -490,22 +491,34 @@
                 );
               })
             ),
-            h('div', { className: 'mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2' },
+            h('div', { className: 'mt-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2' },
               h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-amber-700' }, ext.leaveningRuns || 0),
+                h('div', { className: 'text-2xl font-black text-amber-700 tabular-nums' }, ext.leaveningRuns || 0),
                 h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-600' }, tr('baking.stats.reactions', 'Reactions'))
               ),
               h('div', { className: 'rounded-xl bg-yellow-50 border border-yellow-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-yellow-700' }, ext.emulsionsSolved || 0),
+                h('div', { className: 'text-2xl font-black text-yellow-700 tabular-nums' }, ext.emulsionsSolved || 0),
                 h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-yellow-600' }, tr('baking.stats.emulsions', 'Emulsions'))
               ),
               h('div', { className: 'rounded-xl bg-orange-50 border border-orange-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-orange-700' }, ext.recipesScaled || 0),
+                h('div', { className: 'text-2xl font-black text-orange-700 tabular-nums' }, ext.recipesScaled || 0),
                 h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-600' }, tr('baking.stats.recipes_scaled', 'Recipes scaled'))
               ),
               h('div', { className: 'rounded-xl bg-rose-50 border border-rose-200 p-3 text-center' },
-                h('div', { className: 'text-2xl font-black text-rose-700' }, (ext.ovenEventsFound || []).length + '/' + OVEN_EVENTS.length),
+                h('div', { className: 'text-2xl font-black text-rose-700 tabular-nums' }, (ext.ovenEventsFound || []).length + '/' + OVEN_EVENTS.length),
                 h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-rose-600' }, tr('baking.stats.oven_events', 'Oven events'))
+              ),
+              h('div', { className: 'rounded-xl bg-pink-50 border border-pink-200 p-3 text-center' },
+                h('div', { className: 'text-2xl font-black text-pink-700 tabular-nums' }, ext.diagnosesCorrect || 0),
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-600' }, tr('baking.stats.diagnoses', 'Diagnoses'))
+              ),
+              h('div', { className: 'rounded-xl bg-teal-50 border border-teal-200 p-3 text-center' },
+                h('div', { className: 'text-2xl font-black text-teal-700 tabular-nums' }, ext.glutenMatches || 0),
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-teal-600' }, tr('baking.stats.gluten_matches', 'Gluten matches'))
+              ),
+              h('div', { className: 'rounded-xl bg-orange-50 border border-orange-200 p-3 text-center' },
+                h('div', { className: 'text-2xl font-black text-orange-700 tabular-nums' }, ext.browningPerfections || 0),
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-600' }, tr('baking.stats.brownings', 'Perfect bakes'))
               )
             )
           );
@@ -1726,6 +1739,271 @@
         };
 
         // ═══════════════════════════════════════
+        // SUB-TOOL 7: BROWNING LAB
+        // ═══════════════════════════════════════
+        var renderBrowning = function() {
+          var foodId = d.brownFood || 'chicken';
+          var food = BROWN_FOODS.filter(function(f) { return f.id === foodId; })[0] || BROWN_FOODS[0];
+          var temp = d.brownTemp != null ? d.brownTemp : 350;
+          var minutes = d.brownTime != null ? d.brownTime : 5;
+          var dry = !!d.brownDry;
+
+          // Browning physics (simplified):
+          // - wet surface at <212F: no browning at all (water evaporating)
+          // - Maillard activation above ~285F, scales to ~380F
+          // - Caramelization activation above ~320F, scales to ~390F
+          // - past 410F, pyrolysis/burn overtakes flavor
+          var maillardRate = 0, caramelRate = 0, burnRate = 0;
+          if (temp < 212 && !dry) {
+            maillardRate = 0; caramelRate = 0;
+          } else {
+            if (temp >= 285) maillardRate = Math.min(1, (temp - 285) / 95) * food.protein;
+            if (temp >= 320) caramelRate  = Math.min(1, (temp - 320) / 70) * food.sugars;
+            if (!dry && temp < 250) { maillardRate *= 0.3; caramelRate *= 0.3; }
+            if (temp >= 400) burnRate = Math.min(1, (temp - 400) / 50);
+          }
+
+          // Progression over time (0-1)
+          var mProgress = Math.min(1, maillardRate * (minutes / 12));
+          var cProgress = Math.min(1, caramelRate  * (minutes / 12));
+          var burnProgress = Math.min(1, burnRate  * (minutes / 6));
+          var totalBrown = Math.max(mProgress, cProgress);
+          var colorProgress = Math.min(1, totalBrown + burnProgress * 0.5);
+          var isBurnt = burnProgress > 0.4;
+
+          // Dominant reaction
+          var totalRate = maillardRate + caramelRate;
+          var maillardShare = totalRate > 0 ? maillardRate / totalRate : 0;
+          var caramelShare  = totalRate > 0 ? caramelRate  / totalRate : 0;
+
+          // Color interpolation: raw -> done -> char
+          var mixColors = function(c1, c2, t) {
+            var p = function(c) { return [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)]; };
+            var a = p(c1), b = p(c2);
+            var r = Math.round(a[0] + (b[0]-a[0]) * t);
+            var g = Math.round(a[1] + (b[1]-a[1]) * t);
+            var bl = Math.round(a[2] + (b[2]-a[2]) * t);
+            return 'rgb(' + r + ',' + g + ',' + bl + ')';
+          };
+          var foodColor;
+          if (isBurnt) foodColor = mixColors(food.doneColor, food.charColor, Math.min(1, (burnProgress - 0.4) / 0.6));
+          else         foodColor = mixColors(food.rawColor, food.doneColor, colorProgress);
+
+          // Verdict
+          var verdict, verdictTone;
+          if (temp < 212 && !dry) { verdict = tr('baking.browning.verdict_wet', 'Surface too wet \u2014 water has to evaporate before browning starts.'); verdictTone = 'slate'; }
+          else if (totalBrown < 0.1) { verdict = tr('baking.browning.verdict_raw', 'No browning yet. Crank up the temperature or give it more time.'); verdictTone = 'slate'; }
+          else if (totalBrown < 0.35) { verdict = tr('baking.browning.verdict_light', 'Lightly colored. Pale golden \u2014 needs a bit more time or heat.'); verdictTone = 'amber'; }
+          else if (totalBrown >= 0.5 && totalBrown <= 0.85 && !isBurnt) { verdict = tr('baking.browning.verdict_perfect', 'Golden perfection! Rich color, complex flavor.'); verdictTone = 'emerald'; }
+          else if (totalBrown > 0.85 && !isBurnt) { verdict = tr('baking.browning.verdict_deep', 'Deep color \u2014 almost too far. Pull it now.'); verdictTone = 'amber'; }
+          else if (isBurnt) { verdict = tr('baking.browning.verdict_burnt', 'Burnt \u2014 bitter, acrid compounds have formed.'); verdictTone = 'red'; }
+          else { verdict = tr('baking.browning.verdict_ok', 'Coming along nicely.'); verdictTone = 'amber'; }
+
+          // Flavor words: sample from the dominant pool plus one from the minority
+          var flavors = [];
+          if (maillardShare > 0.15 && totalBrown > 0.15) {
+            var mCount = Math.max(1, Math.round(maillardShare * (isBurnt ? 2 : 4)));
+            for (var mi = 0; mi < mCount; mi++) flavors.push(MAILLARD_FLAVORS[(mi + Math.floor(totalBrown * 7)) % MAILLARD_FLAVORS.length]);
+          }
+          if (caramelShare > 0.15 && totalBrown > 0.15) {
+            var cCount = Math.max(1, Math.round(caramelShare * (isBurnt ? 2 : 4)));
+            for (var ci = 0; ci < cCount; ci++) flavors.push(CARAMEL_FLAVORS[(ci + Math.floor(totalBrown * 5)) % CARAMEL_FLAVORS.length]);
+          }
+          if (isBurnt) flavors = ['bitter', 'acrid', 'burnt'];
+          // Dedupe
+          flavors = flavors.filter(function(v, i, a) { return a.indexOf(v) === i; }).slice(0, 5);
+
+          var cook = function() {
+            var perfect = totalBrown >= 0.5 && totalBrown <= 0.85 && !isBurnt && temp > 212;
+            var attempts = (ext.browningAttempts || 0) + 1;
+            if (perfect) {
+              var perf = (ext.browningPerfections || 0) + 1;
+              updExt({ browningAttempts: attempts, browningPerfections: perf });
+              awardXP && awardXP(15, 'Browned to perfection');
+              celebrate && celebrate();
+              playBeep('success');
+              addToast && addToast('\u2728 ' + tr('baking.browning.perfect_toast', 'Golden! You nailed {label}.', { label: food.label }), 'success');
+            } else if (isBurnt) {
+              updExt({ browningAttempts: attempts });
+              playBeep('fail');
+              addToast && addToast(tr('baking.browning.burnt_toast', 'Burnt. Lower the temperature or pull sooner.'), 'info');
+            } else {
+              updExt({ browningAttempts: attempts });
+              playBeep('click');
+              addToast && addToast(tr('baking.browning.more_toast', 'Not quite golden yet \u2014 adjust and cook again.'), 'info');
+            }
+            announceToSR && announceToSR(verdict);
+          };
+
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+            h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
+              h('div', null,
+                h('h2', { className: 'text-xl sm:text-2xl font-black text-orange-800 flex items-center gap-2' }, '\uD83E\uDD69 ' + tr('baking.activities.browning_label', 'Browning Lab')),
+                h('p', { className: 'text-xs text-slate-600' }, tr('baking.browning.tagline', 'Maillard reactions vs. caramelization. Different foods brown in different ways.'))
+              ),
+              backBtn('orange')
+            ),
+            // Food picker
+            h('div', { className: 'mb-4 rounded-2xl bg-white border-2 border-orange-200 p-3' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-700 mb-2' }, tr('baking.browning.pick_food', 'Pick a food')),
+              h('div', { className: 'grid grid-cols-3 sm:grid-cols-6 gap-2' },
+                BROWN_FOODS.map(function(f) {
+                  var active = f.id === foodId;
+                  return h('button', {
+                    key: f.id,
+                    onClick: function() { upd('brownFood', f.id); playBeep('click'); },
+                    className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-200 hover:border-orange-400 text-orange-900'),
+                    'aria-pressed': active,
+                    'aria-label': f.label
+                  },
+                    h('div', { className: 'text-2xl mb-1', 'aria-hidden': true }, f.emoji),
+                    f.label
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
+              // Controls
+              h('div', { className: 'space-y-4' },
+                // Temp
+                h('div', { className: 'rounded-2xl bg-white border-2 border-orange-200 p-4' },
+                  h('div', { className: 'flex items-center justify-between mb-1' },
+                    h('label', { htmlFor: 'br-temp', className: 'text-xs font-bold uppercase tracking-wider text-orange-700' }, '\uD83C\uDF21\uFE0F ' + tr('baking.browning.temp', 'Temperature')),
+                    h('span', { className: 'text-sm font-black text-orange-700 tabular-nums' }, temp + '\u00B0F')
+                  ),
+                  h('input', {
+                    id: 'br-temp',
+                    type: 'range',
+                    min: 150, max: 450, step: 5,
+                    value: temp,
+                    onChange: function(e) { upd('brownTemp', parseInt(e.target.value, 10)); },
+                    className: 'w-full accent-orange-500'
+                  }),
+                  h('div', { className: 'mt-1 flex justify-between text-[10px] text-slate-500' },
+                    h('span', null, '150'),
+                    h('span', null, '285 M'),
+                    h('span', null, '320 C'),
+                    h('span', null, '400+ burn')
+                  )
+                ),
+                // Time
+                h('div', { className: 'rounded-2xl bg-white border-2 border-amber-200 p-4' },
+                  h('div', { className: 'flex items-center justify-between mb-1' },
+                    h('label', { htmlFor: 'br-time', className: 'text-xs font-bold uppercase tracking-wider text-amber-700' }, '\uD83D\uDD50 ' + tr('baking.browning.time', 'Time')),
+                    h('span', { className: 'text-sm font-black text-amber-700 tabular-nums' }, minutes + ' min')
+                  ),
+                  h('input', {
+                    id: 'br-time',
+                    type: 'range',
+                    min: 0, max: 20, step: 1,
+                    value: minutes,
+                    onChange: function(e) { upd('brownTime', parseInt(e.target.value, 10)); },
+                    className: 'w-full accent-amber-500'
+                  })
+                ),
+                // Moisture
+                h('div', { className: 'rounded-2xl bg-white border-2 border-sky-200 p-4' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-sky-700 mb-2' }, '\uD83D\uDCA7 ' + tr('baking.browning.moisture', 'Surface')),
+                  h('div', { className: 'flex gap-1' },
+                    [
+                      { id: false, label: tr('baking.browning.wet', 'Wet') },
+                      { id: true,  label: tr('baking.browning.dry', 'Dry (patted)') }
+                    ].map(function(opt) {
+                      var active = dry === opt.id;
+                      return h('button', {
+                        key: String(opt.id),
+                        onClick: function() { upd('brownDry', opt.id); playBeep('click'); },
+                        className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold transition-colors ' + (active ? 'bg-sky-500 text-white' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'),
+                        'aria-pressed': active
+                      }, opt.label);
+                    })
+                  ),
+                  h('div', { className: 'mt-2 text-[10px] text-slate-500 italic' }, tr('baking.browning.moisture_hint', 'Wet surfaces can\u2019t exceed 212\u00B0F \u2014 water has to evaporate first.'))
+                ),
+                h('button', {
+                  onClick: cook,
+                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95'
+                }, tr('baking.browning.cook_btn', 'Cook it') + ' \uD83D\uDD25')
+              ),
+              // Result
+              h('div', { className: 'rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 p-4 space-y-3' },
+                // Food visual
+                h('div', { className: 'flex items-center justify-center h-32 rounded-xl bg-white/80 border border-orange-200' },
+                  h('div', {
+                    className: 'w-24 h-24 rounded-full shadow-inner flex items-center justify-center text-4xl transition-all',
+                    style: {
+                      background: foodColor,
+                      boxShadow: isBurnt ? '0 0 20px rgba(60,20,8,0.5)' : (totalBrown > 0.5 ? '0 0 15px rgba(180,100,20,0.3)' : '')
+                    },
+                    'aria-label': food.label + ', ' + Math.round(colorProgress * 100) + ' percent browned'
+                  },
+                    h('span', { 'aria-hidden': true, style: { opacity: isBurnt ? 0.35 : 0.55 } }, food.emoji)
+                  )
+                ),
+                // Reaction share
+                h('div', { className: 'space-y-1.5' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500' }, tr('baking.browning.reactions', 'Active reactions')),
+                  h('div', { className: 'flex items-center gap-2 text-[11px]' },
+                    h('div', { className: 'w-24 font-bold text-red-700 shrink-0' }, tr('baking.browning.maillard', 'Maillard')),
+                    h('div', { className: 'flex-grow h-2 rounded-full bg-slate-200 overflow-hidden' },
+                      h('div', { className: 'h-full bg-gradient-to-r from-red-400 to-red-600 transition-all', style: { width: Math.round(mProgress * 100) + '%' } })
+                    ),
+                    h('div', { className: 'w-10 text-right tabular-nums font-bold text-red-700' }, Math.round(mProgress * 100) + '%')
+                  ),
+                  h('div', { className: 'flex items-center gap-2 text-[11px]' },
+                    h('div', { className: 'w-24 font-bold text-amber-700 shrink-0' }, tr('baking.browning.caramel', 'Caramelization')),
+                    h('div', { className: 'flex-grow h-2 rounded-full bg-slate-200 overflow-hidden' },
+                      h('div', { className: 'h-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all', style: { width: Math.round(cProgress * 100) + '%' } })
+                    ),
+                    h('div', { className: 'w-10 text-right tabular-nums font-bold text-amber-700' }, Math.round(cProgress * 100) + '%')
+                  ),
+                  burnProgress > 0 && h('div', { className: 'flex items-center gap-2 text-[11px]' },
+                    h('div', { className: 'w-24 font-bold text-red-900 shrink-0' }, tr('baking.browning.burn', 'Burn / pyrolysis')),
+                    h('div', { className: 'flex-grow h-2 rounded-full bg-slate-200 overflow-hidden' },
+                      h('div', { className: 'h-full bg-gradient-to-r from-red-700 to-red-900 transition-all', style: { width: Math.round(burnProgress * 100) + '%' } })
+                    ),
+                    h('div', { className: 'w-10 text-right tabular-nums font-bold text-red-900' }, Math.round(burnProgress * 100) + '%')
+                  )
+                ),
+                // Flavor words
+                flavors.length > 0 && h('div', null,
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, tr('baking.browning.flavors', 'Flavor notes')),
+                  h('div', { className: 'flex flex-wrap gap-1' },
+                    flavors.map(function(fv, i) {
+                      return h('span', {
+                        key: i,
+                        className: 'inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ' + (isBurnt ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-white text-orange-800 border border-orange-200')
+                      }, fv);
+                    })
+                  )
+                ),
+                // Verdict
+                h('div', { className: 'rounded-xl border-2 p-3 ' +
+                  (verdictTone === 'red' ? 'bg-red-50 border-red-300 text-red-900' :
+                   verdictTone === 'emerald' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' :
+                   verdictTone === 'amber' ? 'bg-amber-50 border-amber-300 text-amber-900' :
+                   'bg-slate-50 border-slate-300 text-slate-700')
+                },
+                  h('div', { className: 'text-sm font-bold' }, verdict)
+                ),
+                // Per-food note
+                h('div', { className: 'text-[11px] text-slate-600 italic' }, food.note)
+              )
+            ),
+            // Science
+            h('details', { className: 'mt-6 rounded-xl bg-orange-50 border border-orange-200 p-4' },
+              h('summary', { className: 'cursor-pointer font-bold text-orange-900 text-sm' }, '\uD83D\uDCD6 ' + tr('baking.browning.science_title', 'The science')),
+              h('div', { className: 'mt-3 text-sm text-slate-700 space-y-2' },
+                h('p', null, h('strong', null, tr('baking.browning.sci_maillard_title', 'Maillard reaction')), ': named for Louis-Camille Maillard (1912). Amino acids from proteins react with ', h('em', null, 'reducing sugars'), ' at ~285\u00B0F+ to create hundreds of new flavor and aroma compounds. Seared steak, toasted bread, roasted coffee, and browned butter all owe their flavor to Maillard.'),
+                h('p', null, h('strong', null, tr('baking.browning.sci_caramel_title', 'Caramelization')), ': pure sugars melting and breaking apart around 320\u00B0F+. No protein needed. Gives the pure sweet-amber character of caramel sauce, cr\u00E8me br\u00FBl\u00E9e tops, and roasted vegetables with high natural sugar.'),
+                h('p', null, h('strong', null, tr('baking.browning.sci_water', 'The water rule')), ': neither reaction happens below 212\u00B0F because water caps the surface temperature. This is why patting chicken skin dry before searing is the difference between rubbery and crispy.'),
+                h('p', null, h('strong', null, tr('baking.browning.sci_past_400', 'Past the sweet spot')), ': above ~400\u00B0F, carbon-carbon bonds break into bitter, acrid pyrolysis products. You can smell it before you see it \u2014 burnt toast, scorched garlic, blackened coffee.')
+              )
+            )
+          );
+        };
+
+        // ═══════════════════════════════════════
         // ROUTER
         // ═══════════════════════════════════════
         if (subtool === 'leavening') return renderLeavening();
@@ -1734,6 +2012,7 @@
         if (subtool === 'oven')      return renderOven();
         if (subtool === 'diagnosis') return renderDiagnosis();
         if (subtool === 'gluten')    return renderGluten();
+        if (subtool === 'browning')  return renderBrowning();
         return renderMenu();
       })();
     }

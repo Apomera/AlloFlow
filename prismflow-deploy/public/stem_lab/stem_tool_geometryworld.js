@@ -2229,7 +2229,7 @@
 
           // Step 2 (after 0.8s): Width line + label
           setTimeout(function() {
-            if (!engine || !engine.scene) return;
+            if (!engine || !engine.scene || !window.THREE) return;
             dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
             var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
             wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
@@ -2238,7 +2238,7 @@
 
           // Step 3 (after 1.6s): Height line + label
           setTimeout(function() {
-            if (!engine || !engine.scene) return;
+            if (!engine || !engine.scene || !window.THREE) return;
             dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
             var hbl = makeDimLabel('H=' + m.H, '#22c55e');
             hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
@@ -2290,7 +2290,7 @@
           var colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0x7c3aed, 0xec4899];
           sortedYs.forEach(function(ly, layerIdx) {
             setTimeout(function() {
-              if (!engine || !engine.scene) return;
+              if (!engine || !engine.scene || !window.THREE) return;
               var layerColor = colors[layerIdx % colors.length];
               var glowMat = new THREE.MeshBasicMaterial({ color: layerColor, transparent: true, opacity: 0.22, side: THREE.DoubleSide });
               layers[ly].forEach(function(b) {
@@ -2351,6 +2351,13 @@
             case 'KeyD': engine.moveState.right = true; break;
             case 'Space':
               ev.preventDefault();
+              // Ignore OS key-repeat: without this the double-tap-to-fly check fires
+              // ~33ms after the initial press, silently toggling fly mode while the
+              // user just holds Space to jump.
+              if (ev.repeat) {
+                if (engine.flyMode) engine.moveState.flyUp = true;
+                break;
+              }
               // Double-tap Space = toggle fly mode (like Minecraft creative)
               var now = Date.now();
               if (engine._lastSpaceTime && now - engine._lastSpaceTime < 300) {
@@ -2761,6 +2768,8 @@
         // Animation loop
         function animate() {
           requestAnimationFrame(animate);
+          // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
+          if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
 
           // ── Smooth environment transitions ──
@@ -4830,8 +4839,8 @@
           el('div', { style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
-              onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround) { engine.velocity.y = 6; sfxJump(); } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
-              onTouchEnd: function() { engine.moveState.flyUp = false; },
+              onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround && !engine._jumpLock) { engine.velocity.y = 6; sfxJump(); engine._jumpLock = true; } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
+              onTouchEnd: function() { engine.moveState.flyUp = false; engine._jumpLock = false; },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u2B06\uFE0F'),
             // Place block button

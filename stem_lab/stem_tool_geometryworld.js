@@ -2337,12 +2337,28 @@
         document.addEventListener('keydown', function(ev) {
           switch (ev.code) {
             case 'Escape':
-              // Close any open dialog/overlay and release pointer lock
+              // Shift+Esc: close every open overlay at once and return to game
+              if (ev.shiftKey) {
+                var d2 = (labToolData && labToolData.geometryWorld) || {};
+                var anyOpen = d2.showNpcDialog || d2.showMyLessons || d2.showLessonEditor || d2.showLessonIntro || d2.showReflection || d2.showHelp || d2.showCreatorPanel || d2.showGrowthNudge || d2.showTeacherView || d2.showPeerWorlds;
+                if (anyOpen) {
+                  ev.preventDefault();
+                  upd({ showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false });
+                  if (addToast) addToast('🎮 All overlays closed — back in the game', 'info');
+                }
+                break;
+              }
+              // Plain Esc: close the top-priority open dialog/overlay one at a time
               if (showNpcDialog) { upd('showNpcDialog', false); break; }
               if (showHelp) { upd('showHelp', false); break; }
               if (showGrowthNudge) { upd('showGrowthNudge', false); break; }
               if (showPeerWorlds) { upd('showPeerWorlds', false); break; }
               if (showTeacherView) { upd('showTeacherView', false); break; }
+              if (showMyLessons) { upd('showMyLessons', false); break; }
+              if (showLessonEditor) { upd('showLessonEditor', false); break; }
+              if (showLessonIntro) { upd('showLessonIntro', false); break; }
+              if (showReflection) { upd('showReflection', false); break; }
+              if (showCreatorPanel) { upd('showCreatorPanel', false); break; }
               if (creatorMode) { upd('creatorMode', false); break; }
               break;
             case 'KeyW': engine.moveState.forward = true; break;
@@ -3876,6 +3892,30 @@
       var engine = window[engineKey];
       var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
 
+      // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
+      var OPEN_MODALS = [
+        { flag: showNpcDialog,    key: 'showNpcDialog',    label: 'NPC Dialog',            emoji: '💬' },
+        { flag: showMyLessons,    key: 'showMyLessons',    label: 'My Lessons',            emoji: '📚' },
+        { flag: showLessonEditor, key: 'showLessonEditor', label: 'Lesson Editor',         emoji: '✏️' },
+        { flag: showLessonIntro,  key: 'showLessonIntro',  label: 'Lesson Intro',          emoji: '📖' },
+        { flag: showReflection,   key: 'showReflection',   label: 'Reflection',            emoji: '🔍' },
+        { flag: showHelp,         key: 'showHelp',         label: 'Help',                  emoji: '❓' },
+        { flag: showCreatorPanel, key: 'showCreatorPanel', label: 'Creator Panel',         emoji: '🎨' },
+        { flag: showGrowthNudge,  key: 'showGrowthNudge',  label: 'Growth Nudge',          emoji: '🌱' },
+        { flag: showTeacherView,  key: 'showTeacherView',  label: 'Teacher Dashboard',     emoji: '📊' },
+        { flag: showPeerWorlds,   key: 'showPeerWorlds',   label: 'Class Worlds',          emoji: '🌐' }
+      ];
+      var openModals = OPEN_MODALS.filter(function(m) { return m.flag; });
+      function closeAllModals() {
+        var patch = {};
+        OPEN_MODALS.forEach(function(m) { if (m.flag) patch[m.key] = false; });
+        if (Object.keys(patch).length > 0) {
+          upd(patch);
+          if (addToast) addToast('🎮 Returned to game — ' + Object.keys(patch).length + ' overlay(s) closed', 'info');
+          playSfx(sfxJump);
+        }
+      }
+
       return el('div', { role: 'application', 'aria-label': 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.', style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
         // Top bar — glass style
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
@@ -4360,6 +4400,40 @@
             }, '\u270F\uFE0F JSON')
           )
         ),
+
+        // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
+        // Lets students instantly dismiss all overlays and return to the 3D world.
+        // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
+        openModals.length > 0 && el('div', {
+          style: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', pointerEvents: 'none' }
+        },
+          // Status pill: list of open overlays
+          el('div', {
+            style: { pointerEvents: 'auto', padding: '4px 10px', borderRadius: '14px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', color: '#c4b5fd', fontSize: '10px', fontWeight: 600, maxWidth: '420px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+            title: openModals.length + ' overlay' + (openModals.length === 1 ? '' : 's') + ' open: ' + openModals.map(function(m) { return m.emoji + ' ' + m.label; }).join(', ')
+          },
+            openModals.length === 1 ? (openModals[0].emoji + ' ' + openModals[0].label + ' open') :
+              (openModals.length + ' overlays open: ' + openModals.map(function(m) { return m.emoji; }).join(' '))
+          ),
+          // Main "Back to Game" button (prominent)
+          el('button', {
+            onClick: closeAllModals,
+            'aria-label': 'Close all open overlays and return to the game view',
+            title: 'Close all overlays & return to the 3D game (or press Shift+Esc)',
+            style: { pointerEvents: 'auto', padding: '10px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.45), 0 0 0 2px rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.15s' },
+            onMouseEnter: function(ev) { ev.currentTarget.style.transform = 'scale(1.03)'; },
+            onMouseLeave: function(ev) { ev.currentTarget.style.transform = 'scale(1)'; }
+          },
+            el('span', { style: { fontSize: '18px' } }, '🎮'),
+            'Back to Game',
+            openModals.length > 1 && el('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: 'rgba(0,0,0,0.25)', fontWeight: 700 } }, 'close all ' + openModals.length)
+          ),
+          // Keyboard hint (subtle)
+          el('div', { style: { color: '#64748b', fontSize: '9px', fontWeight: 600 } },
+            openModals.length === 1 ? 'Esc also closes this' : 'Esc closes one · Shift+Esc closes all'
+          )
+        ),
+
         // Help overlay
         showHelp && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.6, maxWidth: '240px' } },
           el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
