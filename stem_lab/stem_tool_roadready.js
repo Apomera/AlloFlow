@@ -12958,6 +12958,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var quizIdx = d.signsQuizIdx || 0;
         var quizScore = d.signsQuizScore || 0;
         var quizAnswered = d.signsQuizAnswered;
+        var quizReverse = !!d.signsQuizReverse;
+        // Build (or rebuild) a fresh shuffled question set. Stored on d.signsQuizQuestions so
+        // re-renders don't reshuffle. Includes {signIdx, choiceIndices[4], correctPos, reverse}.
+        var buildSignsQuiz = function(reverse) {
+          var n = signLibrary.length;
+          var indices = []; for (var i = 0; i < n; i++) indices.push(i);
+          for (var si = indices.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var st = indices[si]; indices[si] = indices[sj]; indices[sj] = st;
+          }
+          var questionCount = Math.min(10, n);
+          var qs = [];
+          for (var q = 0; q < questionCount; q++) {
+            var correctIdx = indices[q];
+            var wrongPool = []; for (var wi = 0; wi < n; wi++) if (wi !== correctIdx) wrongPool.push(wi);
+            for (var wj = wrongPool.length - 1; wj > 0; wj--) {
+              var wk = Math.floor(Math.random() * (wj + 1));
+              var wt = wrongPool[wj]; wrongPool[wj] = wrongPool[wk]; wrongPool[wk] = wt;
+            }
+            var choiceIndices = [correctIdx, wrongPool[0], wrongPool[1], wrongPool[2]];
+            for (var ci = choiceIndices.length - 1; ci > 0; ci--) {
+              var cj = Math.floor(Math.random() * (ci + 1));
+              var ct = choiceIndices[ci]; choiceIndices[ci] = choiceIndices[cj]; choiceIndices[cj] = ct;
+            }
+            qs.push({ signIdx: correctIdx, choiceIndices: choiceIndices, correctPos: choiceIndices.indexOf(correctIdx), reverse: !!reverse });
+          }
+          return qs;
+        };
+        // Lazy-init the question set on first render while in quiz mode
+        if (quizMode && (!d.signsQuizQuestions || d.signsQuizQuestions.length === 0)) {
+          var freshQs = buildSignsQuiz(quizReverse);
+          upd('signsQuizQuestions', freshQs);
+          d.signsQuizQuestions = freshQs;
+        }
         return h('div', { style: { padding: '20px', maxWidth: '920px', margin: '0 auto', color: '#e2e8f0' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', signsQuizMode: false }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
           h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #4ade80' } },
@@ -12969,9 +13003,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', { onClick: function() { upd('signsQuizMode', false); },
                 style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: !quizMode ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
               }, '📚 Browse'),
-              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null }); },
-                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: quizMode ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-              }, '🎯 Quiz')
+              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizReverse: false, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: (quizMode && !quizReverse) ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '🎯 Name the sign'),
+              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizReverse: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: (quizMode && quizReverse) ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '🔁 Pick the sign')
             )
           ),
           !quizMode ? h('div', null,
@@ -13000,62 +13037,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               })
             )
           ) : (function() {
-            // Quiz mode
-            if (quizIdx >= 10) {
-              // Done
-              return h('div', { style: { background: 'linear-gradient(135deg, ' + (quizScore >= 7 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (quizScore >= 7 ? '#4ade80' : '#f59e0b') } },
-                h('div', { style: { fontSize: '56px' } }, quizScore >= 7 ? '🎉' : '📝'),
+            var quizQuestions = d.signsQuizQuestions || [];
+            var totalQs = quizQuestions.length;
+            // Quiz complete screen
+            if (quizIdx >= totalQs) {
+              var passed = quizScore >= Math.ceil(totalQs * 0.7);
+              return h('div', { style: { background: 'linear-gradient(135deg, ' + (passed ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (passed ? '#4ade80' : '#f59e0b') } },
+                h('div', { style: { fontSize: '56px' } }, passed ? '🎉' : '📝'),
                 h('h3', { style: { fontSize: '20px', fontWeight: 900, marginTop: '8px' } }, 'Quiz Complete!'),
-                h('div', { style: { fontSize: '36px', fontWeight: 900, color: quizScore >= 7 ? '#4ade80' : '#f59e0b', margin: '8px 0' } }, quizScore + ' / 10'),
-                h('div', { style: { fontSize: '12px', color: '#cbd5e1' } }, quizScore >= 9 ? 'Excellent!' : quizScore >= 7 ? 'Good work — ready for the permit test.' : 'Keep studying. Switch to Browse mode to review.'),
-                h('button', { onClick: function() { updMulti({ signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null }); },
-                  style: { marginTop: '16px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-                }, '↻ Try Again')
+                h('div', { style: { fontSize: '36px', fontWeight: 900, color: passed ? '#4ade80' : '#f59e0b', margin: '8px 0' } }, quizScore + ' / ' + totalQs),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, quizReverse ? '🔁 Pick-the-sign mode' : '🎯 Name-the-sign mode'),
+                h('div', { style: { fontSize: '12px', color: '#cbd5e1' } }, quizScore >= 9 ? 'Excellent!' : passed ? 'Good work — ready for the permit test.' : 'Keep studying. Switch to Browse mode to review.'),
+                h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', flexWrap: 'wrap' } },
+                  h('button', { onClick: function() { updMulti({ signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                    style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                  }, '↻ Try Again (new shuffle)'),
+                  h('button', { onClick: function() { updMulti({ signsQuizReverse: !quizReverse, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                    style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: '#4ade80', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                  }, quizReverse ? '🎯 Try Name-the-sign' : '🔁 Try Pick-the-sign')
+                )
               );
             }
-            // Deterministic question per quizIdx based on signLibrary
-            var qSign = signLibrary[(quizIdx * 3) % signLibrary.length];
-            // 4 choices: correct meaning + 3 random others
-            var otherMeanings = signLibrary.filter(function(s) { return s.name !== qSign.name; })
-              .slice(0, 3 + quizIdx).slice(-3).map(function(s) { return s.meaning; });
-            var choices = [qSign.meaning].concat(otherMeanings);
-            // Deterministic shuffle
-            var rng = function(i) { var x = (quizIdx + 1) * 9301 + i * 49297; return ((x % 233280) / 233280); };
-            choices.sort(function(a, b) { return rng(choices.indexOf(a)) - rng(choices.indexOf(b)); });
-            var correctIdx = choices.indexOf(qSign.meaning);
+            var currentQ = quizQuestions[quizIdx];
+            if (!currentQ) { return h('div', null); }
+            var qSign = signLibrary[currentQ.signIdx];
+            var choiceIndices = currentQ.choiceIndices;
+            var correctPos = currentQ.correctPos;
             var answered = quizAnswered !== null && quizAnswered !== undefined;
+            var isReverse = currentQ.reverse;
             return h('div', null,
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '11px' } },
-                h('span', { style: { color: '#94a3b8' } }, 'Question ' + (quizIdx + 1) + ' / 10'),
+                h('span', { style: { color: '#94a3b8' } }, 'Question ' + (quizIdx + 1) + ' / ' + totalQs + ' · ' + (isReverse ? '🔁 Pick-the-sign' : '🎯 Name-the-sign')),
                 h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Score: ' + quizScore)
               ),
+              // Prompt: sign (name-mode) or meaning text (reverse-mode)
               h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '20px', border: '1px solid #334155', marginBottom: '10px', textAlign: 'center' } },
-                h('div', { style: { padding: '12px', background: '#020617', borderRadius: '8px', display: 'inline-block' } }, qSign.svg()),
-                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: '#fff' } }, 'What does this sign mean?')
+                isReverse
+                  ? h('div', { style: { padding: '16px', background: '#020617', borderRadius: '8px', fontSize: '13px', color: '#fff', fontStyle: 'italic', lineHeight: '1.5' } }, '\u201C' + qSign.meaning + '\u201D')
+                  : h('div', { style: { padding: '12px', background: '#020617', borderRadius: '8px', display: 'inline-block' } }, qSign.svg()),
+                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: '#fff' } },
+                  isReverse ? 'Which sign matches this?' : 'What does this sign mean?'
+                )
               ),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-                choices.map(function(c, ci) {
-                  var isCorr = ci === correctIdx;
-                  var picked = quizAnswered === ci;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
-                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
-                  return h('button', { key: ci,
-                    disabled: answered,
-                    onClick: function() {
-                      if (answered) return;
-                      var correct = ci === correctIdx;
-                      updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
-                    },
-                    style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
-                  }, String.fromCharCode(65 + ci) + '. ' + c);
-                })
-              ),
+              // Choices: either 4 meaning strings or a 2×2 grid of 4 SVGs
+              isReverse
+                ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' } },
+                    choiceIndices.map(function(idx, ci) {
+                      var isCorr = ci === correctPos;
+                      var picked = quizAnswered === ci;
+                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                      var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                      return h('button', { key: ci,
+                        disabled: answered,
+                        onClick: function() {
+                          if (answered) return;
+                          var correct = ci === correctPos;
+                          updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
+                        },
+                        style: { padding: '14px', borderRadius: '8px', border: '2px solid ' + bd, background: bg, cursor: answered ? 'default' : 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' },
+                        'aria-label': 'Option ' + String.fromCharCode(65 + ci) + ': ' + signLibrary[idx].name
+                      },
+                        h('div', null, signLibrary[idx].svg()),
+                        h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#cbd5e1' } }, String.fromCharCode(65 + ci))
+                      );
+                    })
+                  )
+                : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                    choiceIndices.map(function(idx, ci) {
+                      var isCorr = ci === correctPos;
+                      var picked = quizAnswered === ci;
+                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                      var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                      return h('button', { key: ci,
+                        disabled: answered,
+                        onClick: function() {
+                          if (answered) return;
+                          var correct = ci === correctPos;
+                          updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
+                        },
+                        style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                      }, String.fromCharCode(65 + ci) + '. ' + signLibrary[idx].meaning);
+                    })
+                  ),
               answered ? h('div', { style: { marginTop: '12px', padding: '10px', background: '#020617', borderRadius: '6px', borderLeft: '3px solid #4ade80', fontSize: '11px', color: '#cbd5e1' } },
                 h('b', null, qSign.name + ': '), qSign.when
               ) : null,
               answered ? h('button', { onClick: function() { updMulti({ signsQuizIdx: quizIdx + 1, signsQuizAnswered: null }); },
                 style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-              }, quizIdx >= 9 ? 'See Results →' : 'Next Question →') : null
+              }, quizIdx >= totalQs - 1 ? 'See Results →' : 'Next Question →') : null
             );
           })()
         );
@@ -15004,7 +15073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   else if (act === 'maintenance') upd('view', 'maintenanceGame');
                   else if (act === 'row') updMulti({ view: 'rightOfWay', rowIdx: 0, rowScore: 0, rowAnswered: null });
                   else if (act === 'parking') upd('view', 'parking');
-                  else if (act === 'signs') updMulti({ view: 'signsView', signsQuizMode: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null });
+                  else if (act === 'signs') updMulti({ view: 'signsView', signsQuizMode: true, signsQuizReverse: false, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null });
                   else if (act === 'distracted') upd('view', 'distractedLab');
                   else if (act === 'reaction') updMulti({ view: 'reactionTest', rtPhase: 'intro' });
                   else if (act === 'emergency') upd('view', 'emergencyHandbook');
