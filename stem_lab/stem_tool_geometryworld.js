@@ -1279,7 +1279,16 @@
       };
       var callGemini = ctx.callGemini || null;
       var addToast = ctx.addToast;
-      var awardXP = ctx.awardXP;
+      // Wrap awardXP so the session-XP total is tracked on the engine for the HUD display.
+      // Persists across React renders via engine._sessionXP (not reset until lesson load).
+      var _rawAwardXP = ctx.awardXP;
+      var awardXP = _rawAwardXP ? function(toolId, amount, reason) {
+        var engine2 = window[engineKey];
+        if (engine2 && typeof amount === 'number' && amount > 0) {
+          engine2._sessionXP = (engine2._sessionXP || 0) + amount;
+        }
+        return _rawAwardXP(toolId, amount, reason);
+      } : null;
       var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
       // ── State from toolData ──
@@ -2147,6 +2156,8 @@
           engine.completionTriggered = false;
           engine.completionProgress = 0;
           engine.blocksPlaced = 0;
+          engine._sessionXP = 0; // Reset session XP counter when switching lessons
+          engine._blockMilestones = {}; // Re-arm 10/50-block XP awards for the new lesson
           if (engine.stars) { engine.scene.remove(engine.stars); engine.stars = null; engine.starsCreated = false; }
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
           // Place ground and structures as indestructible lesson blocks
@@ -4552,8 +4563,10 @@
               '💬 ' + Object.keys(answeredNpcs).length + '/' + totalQ),
             el('span', { title: 'Blocks placed this session', style: { color: '#fbbf24' } },
               '🧱 ' + ((engine && engine.blocksPlaced) || 0)),
-            el('span', { title: 'Session score', style: { color: '#34d399' } },
-              '⭐ ' + score)
+            el('span', { title: 'Correct answers this session', style: { color: '#34d399' } },
+              '⭐ ' + score),
+            ((engine && engine._sessionXP) || 0) > 0 && el('span', { title: 'XP earned this session', style: { color: '#c084fc' } },
+              '✨ +' + (engine._sessionXP) + ' XP')
           ),
           // NPC progress bar (only if there are NPCs in this lesson)
           totalQ > 0 && el('div', { style: { marginTop: '4px', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' } },
@@ -5092,7 +5105,7 @@
               onClick: function() { upd('selectedShape', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedShape', i); } },
               title: bs.name + ' (' + bs.desc + ')',
-              style: { width: '32px', height: '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '14px', cursor: 'pointer',
+              style: { width: isMobile ? '26px' : '32px', height: isMobile ? '26px' : '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer',
                 border: i === selectedShape ? '2px solid #fbbf24' : '2px solid transparent',
                 background: i === selectedShape ? 'rgba(251,191,36,0.2)' : 'transparent' }
             },
@@ -5114,7 +5127,7 @@
               onClick: function() { upd('selectedBlock', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedBlock', i); } },
               title: bt.name + ' (' + (i + 1) + ')',
-              style: { width: '38px', height: '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
+              style: { width: isMobile ? '30px' : '38px', height: isMobile ? '30px' : '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '14px' : '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                 border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.03)',
                 boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
@@ -5638,7 +5651,25 @@
               });
           }
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
-          return el('div', { style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: '16px', padding: '0', maxWidth: '440px', width: '90%', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' } },
+          return el('div', { style: {
+              position: 'absolute',
+              // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
+              bottom: isMobile ? '160px' : '60px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 30,
+              background: 'rgba(15,23,42,0.92)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(100,116,139,0.25)',
+              borderRadius: '16px',
+              padding: '0',
+              maxWidth: '440px',
+              width: isMobile ? '94%' : '90%',
+              // Clamp vertical size on mobile so it never eats the whole screen
+              maxHeight: isMobile ? 'calc(100vh - 220px)' : '70vh',
+              overflow: 'auto',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            } },
             // Header bar with NPC color accent
             el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
               // NPC avatar circle
@@ -5698,7 +5729,10 @@
                     onClick: function() {
                       if (ci === curQ.correct) {
                         sfxCorrect();
-                        upd('consecutiveWrong', 0);
+                        // Clear wrongs lesson-wide + this NPC's wrong count
+                        var clearedWrongs = Object.assign({}, d.npcWrongCount || {});
+                        delete clearedWrongs[dialogNpcIdx];
+                        upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs });
                         if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
                         var eng = window[engineKey];
                         if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep });
@@ -5760,13 +5794,22 @@
                         var eng2 = window[engineKey];
                         if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
                         if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct] });
-                        var newWrong = consecutiveWrong + 1;
-                        upd('consecutiveWrong', newWrong);
-                        checkFrustration(newWrong);
+                        // Track per-NPC wrong count (not global) so hint escalation is scoped.
+                        // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
+                        // trigger level-3 hints on the first wrong answer at NPC B. Also prevents
+                        // "farming" — wrong 3× on NPC A used to REVEAL the correct answer, which
+                        // students could exploit to bypass learning.
+                        var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
+                        npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
+                        var newWrong = npcWrongMap[dialogNpcIdx];
+                        var totalConsecutive = consecutiveWrong + 1;
+                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap });
+                        checkFrustration(totalConsecutive);
                         setTimeout(runAchievementCheck, 100);
                         var hintText = '\u274C Not quite. ';
+                        // Escalate scaffolding WITHOUT revealing the correct answer choice.
                         if (newWrong >= 3) {
-                          hintText += 'Let\u2019s break it down: ' + curQ.choices[curQ.correct] + '. Try measuring with M key!';
+                          hintText += 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?';
                         } else if (newWrong >= 2) {
                           hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!';
                         } else {

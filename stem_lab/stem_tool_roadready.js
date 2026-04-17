@@ -15300,6 +15300,179 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       // ══════════════════════════════════════════════════════════
+      // CONSTRUCTION ZONE DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'constructionZone') {
+        var CONSTR_FACTS = [
+          { icon: '📜', title: 'Fines are doubled',        body: 'Maine law: fines are doubled in posted work zones, and workers don\'t have to be present. The zone starts at the first warning sign and ends at the "END ROAD WORK" sign.' },
+          { icon: '🦺', title: 'Flaggers are the law',      body: 'Inside a work zone, a flagger\'s instructions override every other traffic control device — including traffic lights. Flagger STOP paddle means stop even if your light is green.' },
+          { icon: '🔶', title: 'Orange = temporary',        body: 'Orange signs and barrels always mean a temporary traffic pattern. Pay extra attention: lanes shift, speed limits drop, and your GPS map may be wrong.' },
+          { icon: '🚙', title: 'Pilot cars & one-way zones', body: 'A "FOLLOW ME" pilot car leads traffic through a single-lane section where traffic alternates direction. Passing the pilot puts you head-on with opposing traffic waiting their turn.' }
+        ];
+        var CONSTR_SCENARIOS = [
+          {
+            id: 'flagger_stop',
+            icon: '🛑',
+            title: 'Flagger with STOP paddle',
+            q: 'You approach a work zone. The traffic light 100 ft ahead is GREEN. A flagger in front of you holds up a STOP paddle. What do you do?',
+            choices: [
+              'Continue — the green light takes priority over a flagger',
+              'Stop. Flagger instructions override all other signals, including green lights',
+              'Creep forward until the flagger steps aside',
+              'Honk to get the flagger\'s attention'
+            ],
+            correct: 1,
+            exp: 'A trained, certified flagger has full legal authority to control traffic inside a work zone — more than the traffic signal. If their paddle says STOP, you stop. If it says SLOW, you proceed carefully. Ignoring a flagger is a moving violation AND creates a direct injury risk to the crew.'
+          },
+          {
+            id: 'flagger_slow',
+            icon: '🐢',
+            title: 'Flagger flips to SLOW',
+            q: 'The flagger rotates the paddle from STOP to SLOW. Traffic in your lane starts moving. What\'s the correct speed?',
+            choices: [
+              'Full posted speed — SLOW just means "resume normal driving"',
+              'The posted advisory speed (usually 15–25 mph) through the entire work zone',
+              'Accelerate to pass the zone before the flagger changes back',
+              'Wait for an explicit "GO" paddle signal'
+            ],
+            correct: 1,
+            exp: 'SLOW paddle = proceed at the advisory speed posted at the zone entrance (typically 15–25 mph). Workers are active. Fines are doubled. Maintain that speed until you pass the "END ROAD WORK" sign — not until you leave sight of the flagger.'
+          },
+          {
+            id: 'merge_choice',
+            icon: '↖️',
+            title: 'Lane closure merge',
+            q: 'A highway sign says "Right lane closed 1 mile ahead." You\'re in the right lane. Traffic is moderate but moving. What\'s the best merge strategy?',
+            choices: [
+              'Merge left immediately — early merge is always the courteous choice',
+              'Stay right until just before the closure — the "zipper merge" maximizes throughput in heavy traffic',
+              'Either A or B depending on traffic: light traffic, merge early; congested, zipper at the end',
+              'Wait for a forced merge at the cones'
+            ],
+            correct: 2,
+            exp: 'Both strategies are legal. In light traffic, early merge is fine and polite. In heavy congestion, studies show the zipper merge (alternating at the merge point) reduces backups by ~40%. What\'s NOT okay: sitting in the closing lane to "cheat past" stopped traffic and then forcing your way in at the last possible moment.'
+          },
+          {
+            id: 'worker_shoulder',
+            icon: '🦺',
+            title: 'Worker on the shoulder',
+            q: 'I-295, 65 mph. No lane closure, but a Maine DOT worker in a reflective vest is on the right shoulder next to a parked truck with flashing amber lights. What do you do?',
+            choices: [
+              'Maintain 65 mph — they\'re on the shoulder, not in your lane',
+              'If the left lane is safe, move over. If not, slow to about 45 mph (20 mph below posted)',
+              'Stop completely to offer help',
+              'Flash high beams as courtesy and maintain speed'
+            ],
+            correct: 1,
+            exp: 'Same Move Over law as for emergency vehicles (Maine §2054-A). Utility, DOT, and tow workers are covered. Move over one lane when safe, or slow 20 mph below the posted limit if you can\'t. This law exists because roadside worker deaths are one of the leading causes of work-zone fatalities.'
+          },
+          {
+            id: 'barrel_gap',
+            icon: '🔶',
+            title: 'Gap in the barrel line',
+            q: 'You\'re passing a work zone. There\'s a gap between two orange barrels that looks like you could cut through to save 30 seconds. What do you do?',
+            choices: [
+              'Cut through — the gap is clearly wide enough',
+              'Stay in your lane. Gaps are worker access points, not traffic shortcuts',
+              'Cut through only if no one appears to be watching',
+              'Honk first, then cut through if clear'
+            ],
+            correct: 1,
+            exp: 'Orange barrels delineate active work areas — the gaps exist so workers, trucks, and equipment can move in and out. Cutting through can drive you over fresh paint, hot asphalt, or open trenches, and it\'s a doubled-fine traffic violation. Whatever 30 seconds you save isn\'t worth the ticket or the injury risk.'
+          },
+          {
+            id: 'pilot_car',
+            icon: '🚗',
+            title: 'Pilot car leading traffic',
+            q: 'A pilot car labeled "FOLLOW ME" pulls in front of your lane at a work zone, going 25 mph in a 45-mph zone. The opposing lane is blocked by cones. What do you do?',
+            choices: [
+              'Pass the pilot car when safe — it\'s well below the posted limit',
+              'Follow at the pilot car\'s speed. It\'s leading you through a single-lane section where opposing traffic is currently waiting',
+              'Honk and flash for the pilot to speed up',
+              'Pass only if you have a truck with a horn'
+            ],
+            correct: 1,
+            exp: 'Pilot cars lead traffic through one-way sections — usually where one lane is closed and both directions have to share the remaining lane. The opposing traffic is stopped at the OTHER end waiting for their turn. Passing the pilot means driving into head-on traffic. Follow the pilot until the END ROAD WORK sign.'
+          }
+        ];
+        var constrState = d.constrState || {};
+        var constrPassed = Object.keys(constrState).filter(function(k){return constrState[k] && constrState[k].correct;}).length;
+        var constrAllDone = Object.keys(constrState).length === CONSTR_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚧'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Construction Zone Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, 'Flaggers · merges · Move Over · ' + constrPassed + ' / ' + CONSTR_SCENARIOS.length + ' passed'),
+            constrAllDone && constrPassed === CONSTR_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — safe in any work zone.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              CONSTR_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          CONSTR_SCENARIOS.map(function(sc) {
+            var state = constrState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, constrState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('constrState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === CONSTR_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.zone_wise) { dBadges.zone_wise = true; upd('badges', dBadges); addToast('🏅 Achievement: Work-Zone Wise'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #f97316', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, constrState);
+                  delete ns[sc.id];
+                  upd('constrState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // CRASH RECONSTRUCTION LAB
       // ══════════════════════════════════════════════════════════
       if (view === 'crashLab') {
@@ -16832,6 +17005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'schoolBus', goal: 'safety', icon: '🚌', name: 'School Bus Stop Drill', desc: 'When to stop for a stopped school bus (Maine §2308).' },
           { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: 'Railroad Crossing Drill', desc: 'Federal + Maine crossing rules — and the 45° escape if you stall.' },
           { view: 'winterDriving', goal: 'safety', icon: '❄️', name: 'Winter Driving Drill', desc: 'Black ice, skid recovery, plow etiquette, and the 4WD myth.' },
+          { view: 'constructionZone', goal: 'safety', icon: '🚧', name: 'Construction Zone Drill', desc: 'Flaggers, zipper merges, barrels, pilot cars — fines doubled.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
