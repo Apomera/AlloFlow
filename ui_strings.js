@@ -2687,7 +2687,12 @@
                                                       "close_aria": "Close Concept Sort",
                                                         "unsorted_aria": "Unsorted",
                                                           "sorted_aria": "Sorted",
-                                                            "move_aria": "Press Enter to move."
+                                                            "move_aria": "Press Enter to move.",
+                                                              "why_label": "Why?",
+                                                                "why_hide": "Hide why",
+                                                                  "why_failed": "Couldn't generate an explanation right now.",
+                                                                    "why_loading": "Thinking…",
+                                                                      "visuals_failed": "{failed} of {total} card visuals couldn't be generated. Cards will show text only."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -3691,7 +3696,12 @@
             "colors": "Colors",
               "presets": "Presets",
                 "text": "Text",
-                  "text_color": "Text Color"
+                  "text_color": "Text Color",
+                    "tap_mode": "Tap",
+                      "speak": "Speak",
+                        "define": "Define",
+                          "tap_speak": "Tap a word to hear it",
+                            "tap_define": "Tap a word to see its definition and picture"
   },
   "timer": {
     "title": "Task Timer",

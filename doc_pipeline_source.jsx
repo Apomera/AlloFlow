@@ -41,14 +41,35 @@ var createDocPipeline = function(deps) {
   // Structured logging with timestamps, durations, and API call tracking.
   // All output prefixed with [DocPipe] for easy filtering in DevTools.
   var _pipelineStats = { apiCalls: 0, visionCalls: 0, totalApiMs: 0, retries: 0, startTime: 0, stepTimes: {} };
+  // Canvas-visible sink: in canvas/embedded runtimes, warnLog/console.warn aren't shown. We keep
+  // a rolling window-level array AND dispatch a CustomEvent so a host listener (panel, toast,
+  // diagnostic overlay) can surface pipeline telemetry without touching each call site.
+  if (typeof window !== 'undefined' && !window._alloflowPipelineWarnings) {
+    window._alloflowPipelineWarnings = [];
+  }
   var _pipeLog = function(tag, msg, data) {
     var elapsed = _pipelineStats.startTime ? '+' + ((performance.now() - _pipelineStats.startTime) / 1000).toFixed(1) + 's' : '';
     var prefix = '[DocPipe][' + tag + '] ' + elapsed + ' — ';
+    // Original console/warnLog output (dev-tools).
     if (data) {
       try { console.groupCollapsed(prefix + msg); console.log(data); console.groupEnd(); } catch(e) { warnLog(prefix + msg, data); }
     } else {
       warnLog(prefix + msg);
     }
+    // Canvas-visible emission.
+    try {
+      if (typeof window !== 'undefined') {
+        var entry = { ts: Date.now(), elapsed: elapsed, tag: tag, msg: msg, data: data || null };
+        if (window._alloflowPipelineWarnings) {
+          window._alloflowPipelineWarnings.push(entry);
+          // Cap the buffer so long sessions don't leak memory.
+          if (window._alloflowPipelineWarnings.length > 500) window._alloflowPipelineWarnings.splice(0, window._alloflowPipelineWarnings.length - 500);
+        }
+        if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+          window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: entry }));
+        }
+      }
+    } catch(e) { /* canvas sink is best-effort; never block the pipeline */ }
   };
   var _pipeStepStart = function(step) {
     _pipelineStats.stepTimes[step] = performance.now();
@@ -415,7 +436,7 @@ var createDocPipeline = function(deps) {
           if (unwrapped && unwrapped.length >= part.length * 0.9 && textCharCount(unwrapped) >= textCharCount(part) * 0.95) {
             out = unwrapped;
           } else {
-            warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} returned JSON wrapper — keeping original`);
+            _pipeLog('aiFixChunked:' + label, 'chunk ' + (ci + 1) + ' returned JSON wrapper — keeping original');
             return part;
           }
         }
@@ -433,7 +454,7 @@ var createDocPipeline = function(deps) {
                 if (unwrappedHalf && unwrappedHalf.length >= half.length * 0.85 && textCharCount(unwrappedHalf) >= textCharCount(half) * 0.9) {
                   halfOut = unwrappedHalf;
                 } else {
-                  warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} JSON wrapper — keeping original half`);
+                  _pipeLog('aiFixChunked:' + label, 'half-chunk ' + (hi + 1) + ' JSON wrapper — keeping original half');
                   return half;
                 }
               }
@@ -645,7 +666,7 @@ var createDocPipeline = function(deps) {
     try { return JSON.parse(repaired); } catch(e) {}
     const arrMatch = repaired.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
-    warnLog('[repairAndParseJsonShared] gave up — returning null. Raw head:', String(raw).slice(0, 200));
+    _pipeLog('repairAndParseJsonShared', 'gave up — returning null', String(raw).slice(0, 200));
     return null;
   };
 
@@ -1035,7 +1056,7 @@ var createDocPipeline = function(deps) {
               rewritten = unwrappedRw;
             } else {
               rejectedChunks++;
-              warnLog('[SurgicalThenAI] Chunk ' + (ci + 1) + ' rewrite rejected (JSON wrapper, unrecoverable)');
+              _pipeLog('SurgicalThenAI', 'Chunk ' + (ci + 1) + ' rewrite rejected (JSON wrapper, unrecoverable)');
               fixedChunks[ci] = chunk;
               continue;
             }
@@ -3944,7 +3965,7 @@ HTML section ${chunkNum}/${chunks.length}:
     // document A into document B.
     const _currentDocKey = _docFingerprint(htmlContent);
     if (_chunkState && _chunkState.docKey && _chunkState.docKey !== _currentDocKey) {
-      warnLog('[AutoFix] Clearing _chunkState from a different document (' + _chunkState.docKey.slice(0, 30) + '... → ' + _currentDocKey.slice(0, 30) + '...)');
+      _pipeLog('AutoFix', 'Clearing _chunkState from a different document (' + _chunkState.docKey.slice(0, 30) + '... → ' + _currentDocKey.slice(0, 30) + '...)');
       _chunkState = null;
     }
     let currentHtml = htmlContent;
@@ -5487,7 +5508,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // and log the type so we can extend the switch if Gemini starts emitting new shapes.
               const _salvage = block.text || block.title || block.description || block.caption
                 || (Array.isArray(block.items) ? block.items.join(', ') : '');
-              if (block.type) warnLog('[renderJsonToHtml] unknown block type:', block.type, '— salvaged', _salvage.length, 'chars');
+              if (block.type) _pipeLog('renderJsonToHtml', 'unknown block type: ' + block.type + ' — salvaged ' + _salvage.length + ' chars');
               return `<div style="margin:0.6em 0">${_salvage}</div>`;
             }
           }
@@ -5576,7 +5597,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             && bodyContent.trim().length >= 50
             && /<(?:p|h[1-6]|ul|ol|table|section|article|div|main)\b/i.test(bodyContent);
           if (!_fallbackOk) {
-            warnLog('[PDF Fix] Fallback HTML failed structural validation (len=' + (bodyContent ? bodyContent.trim().length : 0) + ') — downstream will rely on heuristic extraction');
+            _pipeLog('PDF Fix', 'Fallback HTML failed structural validation (len=' + (bodyContent ? bodyContent.trim().length : 0) + ') — downstream will rely on heuristic extraction');
             bodyContent = '';
           }
         }
@@ -5802,7 +5823,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             // collapsed structure into one <p>. Split on blank-line paragraph breaks instead.
             const _fallbackParas = String(chunkText || '').split(/\n\s*\n+/).map(p => p.trim()).filter(p => p.length > 0);
             if (_fallbackParas.length === 0) return [];
-            warnLog(`[PDF Fix] Chunk ${i + 1}: last-resort paragraph fallback preserved ${_fallbackParas.length} paragraphs (${chunkText.length} chars)`);
+            _pipeLog('PDF Fix', 'Chunk ' + (i + 1) + ': last-resort paragraph fallback preserved ' + _fallbackParas.length + ' paragraphs (' + chunkText.length + ' chars)');
             return _fallbackParas.map(p => ({ type: 'p', text: p }));
           }
           return [];

@@ -7869,27 +7869,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7905,7 +7905,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5502ce7/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18202,6 +18202,30 @@ Return ONLY valid JSON:
   const closeDefinition = _ceFn('closeDefinition');
   const closePhonics = _ceFn('closePhonics');
   const handleDefineSelection = _ceFn('handleDefineSelection', async () => {});
+  const wordImageCacheRef = useRef(new Map());
+  const handleFetchWordImage = async (word) => {
+      const key = (word || '').toLowerCase().trim();
+      if (!key) return;
+      const cached = wordImageCacheRef.current.get(key);
+      if (cached) {
+          setDefinitionData(prev => prev ? { ...prev, imageUrl: cached } : prev);
+          return;
+      }
+      setDefinitionData(prev => prev ? { ...prev, imageLoading: true } : prev);
+      try {
+          const prompt = `Icon style illustration of "${word}". Simple, clear, flat vector art style. White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
+          const url = await callImagen(prompt, 256, 0.8);
+          if (url) {
+              wordImageCacheRef.current.set(key, url);
+              setDefinitionData(prev => prev ? { ...prev, imageUrl: url, imageLoading: false } : prev);
+          } else {
+              setDefinitionData(prev => prev ? { ...prev, imageLoading: false, imageError: true } : prev);
+          }
+      } catch (err) {
+          warnLog('Word image fetch failed:', err);
+          setDefinitionData(prev => prev ? { ...prev, imageLoading: false, imageError: true } : prev);
+      }
+  };
   const _ceStopPlayback = _ceFn('stopPlayback');
   const stopPlayback = function() {
     _ceStopPlayback();
@@ -28575,6 +28599,8 @@ Return ONLY JSON.`;
          } catch (parseErr) {
              warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
              try {
+                 // Back off before retry to avoid immediately hammering a rate-limited endpoint.
+                 await new Promise(r => setTimeout(r, 750));
                  const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
                  const retryResult = await callGemini(retryPrompt, true);
                  content = JSON.parse(cleanJson(retryResult));
@@ -30827,11 +30853,21 @@ Return ONLY JSON:
                  warnLog("Auto-remove text failed for regenerated term:", term, editErr);
              }
         }
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...newData[index], image: imageUrl };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        // Race-safe write: look up the term's current index at write time.
+        // Handles the case where the glossary was edited/reordered mid-generation.
+        setGeneratedContent(prev => {
+            if (!prev || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+            const liveIdx = prev.data.findIndex(d => d && d.term === term);
+            if (liveIdx === -1) {
+                warnLog("Term no longer exists, discarding generated image for:", term);
+                return prev;
+            }
+            const newData = [...prev.data];
+            newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+            const updated = { ...prev, data: newData };
+            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+            return updated;
+        });
         addToast(t('glossary.actions.icon_generated', { term: term }), "success");
     } catch (e) {
         warnLog("Unhandled error:", e);
@@ -30843,6 +30879,12 @@ Return ONLY JSON:
   const handleGenerateTermEtymology = async (index, term) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
     setIsGeneratingEtymology(prev => ({ ...prev, [index]: true }));
+    // Safety: auto-clear loading state after 30s in case the request hangs
+    // (prevents stuck spinner if network stalls and the finally-block never runs).
+    const hangGuard = setTimeout(() => {
+        setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
+        warnLog("Etymology hang guard tripped for:", term);
+    }, 30000);
     try {
         const def = generatedContent?.data[index]?.def || "";
         const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
@@ -30854,24 +30896,36 @@ Return ONLY JSON:
               : 'Break into prefix/root/suffix where useful; name source languages.'}
           ${effectiveLanguage && effectiveLanguage !== 'English' ? `Write in ${effectiveLanguage}.` : ''}
           If the word has no meaningful etymology (proper noun, recent coinage), reply with exactly: NONE.
+          Hard limit: 250 characters total. Be concise.
           Return plain text only, no markdown, no quotes, no headers.
         `;
         const raw = await callGemini(prompt, false);
-        const result = (raw || '').trim();
+        let result = (raw || '').trim();
+        if (result.length > 400) result = result.substring(0, 397) + '…';
         if (!result || result === 'NONE') {
             addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
             return;
         }
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...newData[index], etymology: result };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        // Race-safe write — find the term's current index when the result arrives.
+        setGeneratedContent(prev => {
+            if (!prev || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+            const liveIdx = prev.data.findIndex(d => d && d.term === term);
+            if (liveIdx === -1) {
+                warnLog("Term no longer exists, discarding etymology for:", term);
+                return prev;
+            }
+            const newData = [...prev.data];
+            newData[liveIdx] = { ...newData[liveIdx], etymology: result };
+            const updated = { ...prev, data: newData };
+            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+            return updated;
+        });
         addToast(t('glossary.actions.etymology_generated') || "Word roots added.", "success");
     } catch (e) {
         warnLog("Etymology generation failed:", e);
         addToast(t('glossary.actions.etymology_failed') || "Couldn't generate word roots right now.", "error");
     } finally {
+        clearTimeout(hangGuard);
         setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
     }
   };
@@ -32897,6 +32951,9 @@ Return ONLY JSON:
         }
         .animate-shake {
           animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes dashflow {
+          to { stroke-dashoffset: -20; }
         }
         @keyframes pop {
           0% { transform: scale(0.95); }
@@ -41327,6 +41384,8 @@ Return only the corrected version of this exact text:`;
                                 setChunkReaderAutoPlay={setChunkReaderAutoPlay}
                                 chunkReaderSpeed={chunkReaderSpeed}
                                 setChunkReaderSpeed={setChunkReaderSpeed}
+                                interactionMode={interactionMode}
+                                setInteractionMode={setInteractionMode}
                                 totalSentences={(() => { const sbs = getSideBySideContent(generatedContent?.data); const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : (generatedContent?.data || '').split(new RegExp('\\n{2,}')); return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1; })()}
                             /><ErrorBoundary fallbackMessage="Speed reader encountered an error. Please close and reopen.">
                             <SpeedReaderOverlay
@@ -41417,6 +41476,8 @@ Return only the corrected version of this exact text:`;
                                                     isActive={(isPlaying && playbackState.currentIdx === assignedIdx) || isChunkHighlight}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
+                                                        if (interactionMode === 'define') { handleWordClick(wordData.text, e); return; }
+                                                        if (interactionMode === 'phonics') { handlePhonicsClick(wordData.text, e); return; }
                                                         if (isChunkReaderActive) { setChunkReaderIdx(assignedIdx); }
                                                         else { handleSpeak(generatedContent?.data, 'simplified-main', assignedIdx); }
                                                     }}
@@ -41701,6 +41762,27 @@ Return only the corrected version of this exact text:`;
                               ) : (
                                   <div className="flex items-center gap-2 text-xs text-indigo-500">
                                       <RefreshCw size={12} className="animate-spin"/> {t('glossary.popups.finding')}
+                                  </div>
+                              )}
+                              {definitionData.text && (
+                                  <div className="mt-3 pt-3 border-t border-slate-100">
+                                      {definitionData.imageUrl ? (
+                                          <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-200" />
+                                      ) : definitionData.imageLoading ? (
+                                          <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-200 border-dashed">
+                                              <RefreshCw size={12} className="animate-spin"/> {t('common.loading') || 'Loading picture...'}
+                                          </div>
+                                      ) : definitionData.imageError ? (
+                                          <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div>
+                                      ) : (
+                                          <button
+                                              onClick={() => handleFetchWordImage(definitionData.word)}
+                                              className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors"
+                                              aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}
+                                          >
+                                              <ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}
+                                          </button>
+                                      )}
                                   </div>
                               )}
                               <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45"></div>

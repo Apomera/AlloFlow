@@ -1572,7 +1572,9 @@
           "failed": "Could not analyze word.",
             "ipa": "IPA",
               "syllables": "Syllables",
-                "replay": "Replay Slow Audio"
+                "replay": "Replay Slow Audio",
+                  "show_picture": "Show picture",
+                    "image_error": "Could not load picture."
     }
   },
   "text_tools": {
@@ -1711,6 +1713,7 @@
                         "cleared_message": "You cleared the board in {moves} moves.",
                           "announcement_match": "It's a match! +30 Points",
                             "announcement_mismatch": "Not a match. -5 Points. Cards flipped back.",
+                              "mode_switch_confirm": "Changing the mode will restart this round. Continue?",
                               "modes": {
       "smart": "Auto (Term ? Visual)",
         "term_def": "Term ? Definition",
@@ -1735,6 +1738,7 @@
                 "print_instructions": "Instructions: Draw a line to match each term on the left with its correct definition on the right.",
                   "check_answers": "Check Answers",
                     "score_display": "Score",
+                      "pairs": "Pairs",
                       "aria_selection_cancelled": "Selection cancelled.",
                         "aria_term_selected": "Term selected. Press Tab to navigate to the definitions column, then press Enter to connect.",
                           "aria_connected": "Connected.",
@@ -2683,7 +2687,12 @@
                                                       "close_aria": "Close Concept Sort",
                                                         "unsorted_aria": "Unsorted",
                                                           "sorted_aria": "Sorted",
-                                                            "move_aria": "Press Enter to move."
+                                                            "move_aria": "Press Enter to move.",
+                                                              "why_label": "Why?",
+                                                                "why_hide": "Hide why",
+                                                                  "why_failed": "Couldn't generate an explanation right now.",
+                                                                    "why_loading": "Thinking…",
+                                                                      "visuals_failed": "{failed} of {total} card visuals couldn't be generated. Cards will show text only."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -3687,7 +3696,12 @@
             "colors": "Colors",
               "presets": "Presets",
                 "text": "Text",
-                  "text_color": "Text Color"
+                  "text_color": "Text Color",
+                    "tap_mode": "Tap",
+                      "speak": "Speak",
+                        "define": "Define",
+                          "tap_speak": "Tap a word to hear it",
+                            "tap_define": "Tap a word to see its definition and picture"
   },
   "timer": {
     "title": "Task Timer",

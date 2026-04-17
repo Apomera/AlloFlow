@@ -10940,9 +10940,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var pct = Math.round(Object.keys(scenariosDriven).length / 14 * 100);
                 return h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
-                    h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%' } })
+                    h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
                   ),
-                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee' } }, pct + '%'),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee' } }, h(CountUp, { value: pct, suffix: '%' })),
                   h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Scenarios')
                 );
               })(),
@@ -10951,9 +10951,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var pct = Math.round(Object.keys(earnedBadges).length / ACHIEVEMENTS.length * 100);
                 return h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
-                    h('div', { style: { height: '100%', background: '#fbbf24', borderRadius: '2px', width: pct + '%' } })
+                    h('div', { style: { height: '100%', background: '#fbbf24', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
                   ),
-                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fbbf24' } }, pct + '%'),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fbbf24' } }, h(CountUp, { value: pct, suffix: '%' })),
                   h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Badges')
                 );
               })(),
@@ -15198,18 +15198,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' } },
                 list.map(function(ach) {
                   var earned = !!earnedBadges[ach.id];
+                  // Rarity: per-badge mapping by how frequently users typically earn it.
+                  // COMMON = most users get it. UNCOMMON = effort required. RARE = skill gate.
+                  // LEGENDARY = long-term dedication or edge-case wins.
+                  var rarityMap = {
+                    first_drive: 'COMMON', no_crash: 'COMMON', permit_pass: 'UNCOMMON', first_landmark: 'COMMON',
+                    first_challenge: 'COMMON', eco_warrior: 'UNCOMMON', safety_star: 'UNCOMMON',
+                    signal_perfect: 'UNCOMMON', full_stop: 'COMMON', night_drive: 'COMMON', night_owl: 'UNCOMMON',
+                    pretrip_pro: 'UNCOMMON', daily_streak_3: 'UNCOMMON', five_scenarios: 'UNCOMMON',
+                    all_weather: 'RARE', five_challenges: 'RARE', a_plus: 'RARE', speed_demon: 'RARE',
+                    park_master: 'RARE', three_point: 'RARE', hazard_ace: 'RARE', hypermiler: 'RARE',
+                    emergency_response: 'RARE', emergency_yield: 'RARE', five_landmarks: 'RARE',
+                    biome_tourist: 'RARE', defensive_drill: 'RARE', peer_pro: 'RARE',
+                    ten_drives: 'RARE', road_test_pass: 'RARE', winter_warrior: 'RARE',
+                    moose_dodge: 'RARE', bus_respect: 'UNCOMMON', school_hero: 'UNCOMMON',
+                    logbook_starter: 'UNCOMMON', safe_return: 'RARE', daily_streak_7: 'RARE',
+                    ten_landmarks: 'LEGENDARY', maintenance_master: 'LEGENDARY',
+                    civic_scholar: 'LEGENDARY', maine_explorer: 'LEGENDARY',
+                    logbook_ten_hr: 'LEGENDARY', daily_streak_30: 'LEGENDARY'
+                  };
+                  var rarity = rarityMap[ach.id] || 'COMMON';
+                  var rarityColors = {
+                    COMMON: '#94a3b8', UNCOMMON: '#22c55e', RARE: '#3b82f6', LEGENDARY: '#a78bfa'
+                  };
                   return h('div', { key: ach.id, className: 'rrBadgeCard',
                     style: {
                       background: earned ? 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95))' : '#0f172a',
-                      borderRadius: '12px', padding: '14px 10px', textAlign: 'center',
+                      borderRadius: '12px', padding: '14px 10px 10px', textAlign: 'center',
                       border: '2px solid ' + (earned ? c.ring : '#1e293b'),
                       boxShadow: earned ? '0 4px 16px ' + c.glow : 'none',
                       opacity: earned ? 1 : 0.55,
-                      cursor: 'default'
+                      cursor: 'default',
+                      position: 'relative'
                     }
                   },
+                    // Rarity badge — top-right corner
+                    h('div', { style: { position: 'absolute', top: '6px', right: '6px', padding: '2px 6px', borderRadius: '3px', fontSize: '8px', fontWeight: 900, letterSpacing: '0.08em', color: rarityColors[rarity], border: '1px solid ' + rarityColors[rarity], background: 'rgba(0,0,0,0.4)', opacity: earned ? 0.95 : 0.5 } }, rarity),
                     // Badge icon with tier ring
-                    h('div', { style: { position: 'relative', width: '56px', height: '56px', margin: '0 auto 8px' } },
+                    h('div', { style: { position: 'relative', width: '56px', height: '56px', margin: '8px auto 8px' } },
                       h('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', background: earned ? c.bg : '#1e293b', animation: earned ? 'rrGalGlow 2.5s ease-in-out infinite' : 'none', color: c.ring } }),
                       h('div', { style: { position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', filter: earned ? 'none' : 'grayscale(1)' } }, earned ? ach.icon : '🔒')
                     ),

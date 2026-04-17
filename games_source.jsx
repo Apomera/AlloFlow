@@ -1509,9 +1509,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           const correct = buckets.find(b => b.id === item.categoryId);
           const chosen = buckets.find(b => b.id === item.currentContainer);
           const text = await onExplainIncorrect(item, correct, chosen);
-          setExplanations(prev => ({ ...prev, [item.id]: text || "No explanation available." }));
+          setExplanations(prev => ({ ...prev, [item.id]: text || t('concept_sort.why_none') || "No explanation available." }));
       } catch (e) {
-          setExplanations(prev => ({ ...prev, [item.id]: "Couldn't generate an explanation right now." }));
+          setExplanations(prev => ({ ...prev, [item.id]: t('concept_sort.why_failed') || "Couldn't generate an explanation right now." }));
       }
   };
   const reset = () => {
