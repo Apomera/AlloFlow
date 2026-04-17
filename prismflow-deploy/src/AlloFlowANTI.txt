@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6dd2723/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ed2c486/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -52318,7 +52318,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
                 <p className="text-sm text-slate-600 mb-4">Choose how to process this PDF:</p>
 
-                <details className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
+                <details open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
                   <div className="mt-2 space-y-2">
                     <div>
@@ -54188,6 +54188,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <button onClick={() => runAutoFixLoop(pdfAutoContinue ? 3 : 1)} className="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
                                 🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}{pdfAutoContinue ? ' (auto-continue on)' : ''}
                               </button>
+                            )}
+                            {pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && (
+                              <label className="flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-full hover:bg-indigo-100 transition-colors" title={`Auto-continue until score ≥ ${pdfTargetScore}`}>
+                                <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="rounded" aria-label="Auto-continue remediation until target score" />
+                                <span>🔁 Auto-continue</span>
+                              </label>
                             )}
                             {pdfAutoContinueRunning && (
                               <button onClick={() => { pdfAutoContinueAbortRef.current = true; addToast('Stopping after current pass...', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">

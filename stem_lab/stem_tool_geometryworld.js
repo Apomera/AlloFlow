@@ -2589,6 +2589,7 @@
               engine._shakeUntil = engine.clock.getElapsedTime() + 0.15;
               engine._shakeIntensity = 0.03;
               engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
+              upd('blocksPlaced', engine.blocksPlaced); // keep React state in sync
               checkBreakFrustration();
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             } else if (ev.button === 2 && hit.object.userData.gridPos && hit.face) {
@@ -2605,6 +2606,8 @@
               sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+              // Sync to React state so quests + HUD stay current (was never synced — pre-existing bug)
+              upd('blocksPlaced', engine.blocksPlaced);
               // First block ever — special celebration!
               if (engine.blocksPlaced === 1) {
                 if (addToast) addToast('\uD83C\uDF89 Your first block! Keep building!', 'success');
@@ -5149,6 +5152,7 @@
               }
               if (window.confirm('Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.')) {
                 var cleared = engine.clearPlayerBlocks();
+                upd('blocksPlaced', 0); // keep React state in sync after bulk clear
                 if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
               }
             },

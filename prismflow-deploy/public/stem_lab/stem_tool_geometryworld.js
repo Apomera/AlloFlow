@@ -2347,7 +2347,7 @@
         canvas.addEventListener('click', function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', function() {
           engine.isLocked = !!document.pointerLockElement;
-          if (engine.isLocked) { startAmbientWind(); if (tutorialStep === 0 && !tutorialDismissed) upd('tutorialStep', 1); }
+          if (engine.isLocked) { startAmbientWind(); var ts = engine._tutorialState || {}; if (ts.step === 0 && !ts.dismissed) upd('tutorialStep', 1); }
         });
 
         // Smooth mouse look with configurable sensitivity
@@ -2364,29 +2364,28 @@
         document.addEventListener('keydown', function(ev) {
           switch (ev.code) {
             case 'Escape':
-              // Shift+Esc: close every open overlay at once and return to game
+              // Shift+Esc: close every overlay at once. Unconditional dispatch so it works
+              // regardless of closure staleness (keydown handler was attached once).
               if (ev.shiftKey) {
-                var d2 = (labToolData && labToolData.geometryWorld) || {};
-                var anyOpen = d2.showNpcDialog || d2.showMyLessons || d2.showLessonEditor || d2.showLessonIntro || d2.showReflection || d2.showHelp || d2.showCreatorPanel || d2.showGrowthNudge || d2.showTeacherView || d2.showPeerWorlds;
-                if (anyOpen) {
-                  ev.preventDefault();
-                  upd({ showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false });
-                  if (addToast) addToast('🎮 All overlays closed — back in the game', 'info');
-                }
+                ev.preventDefault();
+                upd({ showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false });
+                if (addToast) addToast('🎮 Closed all overlays — back in the game', 'info');
                 break;
               }
-              // Plain Esc: close the top-priority open dialog/overlay one at a time
-              if (showNpcDialog) { upd('showNpcDialog', false); break; }
-              if (showHelp) { upd('showHelp', false); break; }
-              if (showGrowthNudge) { upd('showGrowthNudge', false); break; }
-              if (showPeerWorlds) { upd('showPeerWorlds', false); break; }
-              if (showTeacherView) { upd('showTeacherView', false); break; }
-              if (showMyLessons) { upd('showMyLessons', false); break; }
-              if (showLessonEditor) { upd('showLessonEditor', false); break; }
-              if (showLessonIntro) { upd('showLessonIntro', false); break; }
-              if (showReflection) { upd('showReflection', false); break; }
-              if (showCreatorPanel) { upd('showCreatorPanel', false); break; }
-              if (creatorMode) { upd('creatorMode', false); break; }
+              // Plain Esc: close the top-priority open dialog/overlay one at a time.
+              // Read from engine._modalState (updated each React render) to avoid stale closure.
+              var ms = (engine && engine._modalState) || {};
+              if (ms.showNpcDialog) { upd('showNpcDialog', false); break; }
+              if (ms.showHelp) { upd('showHelp', false); break; }
+              if (ms.showGrowthNudge) { upd('showGrowthNudge', false); break; }
+              if (ms.showPeerWorlds) { upd('showPeerWorlds', false); break; }
+              if (ms.showTeacherView) { upd('showTeacherView', false); break; }
+              if (ms.showMyLessons) { upd('showMyLessons', false); break; }
+              if (ms.showLessonEditor) { upd('showLessonEditor', false); break; }
+              if (ms.showLessonIntro) { upd('showLessonIntro', false); break; }
+              if (ms.showReflection) { upd('showReflection', false); break; }
+              if (ms.showCreatorPanel) { upd('showCreatorPanel', false); break; }
+              if (ms.creatorMode) { upd('creatorMode', false); break; }
               break;
             case 'KeyW': engine.moveState.forward = true; break;
             case 'KeyS': engine.moveState.backward = true; break;
@@ -2446,7 +2445,7 @@
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
+              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); var ts1 = engine._tutorialState || {}; if (ts1.step === 1 && !ts1.dismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -2471,7 +2470,7 @@
                   if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
                   var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
-                  if (tutorialStep === 2 && !tutorialDismissed) upd('tutorialStep', 3);
+                  var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
                   setTimeout(runAchievementCheck, 100);
                 }
               }
@@ -2625,7 +2624,7 @@
               }
               if (engine.blocksPlaced === 10 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '10 blocks placed');
               if (engine.blocksPlaced === 50 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '50 blocks placed');
-              if (tutorialStep === 3 && !tutorialDismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
+              var ts3 = engine._tutorialState || {}; if (ts3.step === 3 && !ts3.dismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
           }
@@ -3930,7 +3929,22 @@
       var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
 
       // Expose current React state to the engine so the compass rAF loop reads live data
-      if (engine) engine._answeredRef = answeredNpcs;
+      if (engine) {
+        engine._answeredRef = answeredNpcs;
+        // Modal flags bridge: the keydown handler was attached once during initEngine
+        // and its closure captured these as first-render primitives. Mirror them onto
+        // the engine on every React render so Esc/Shift+Esc always see current state.
+        engine._modalState = {
+          showNpcDialog: showNpcDialog, showHelp: showHelp, showGrowthNudge: showGrowthNudge,
+          showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
+          showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
+          showLessonIntro: showLessonIntro, showReflection: showReflection,
+          showCreatorPanel: showCreatorPanel, creatorMode: creatorMode
+        };
+        // Tutorial state bridge — same staleness issue; tutorial advancement checks
+        // must read from here or they compare against the first-render value (usually 0).
+        engine._tutorialState = { step: tutorialStep, dismissed: tutorialDismissed };
+      }
 
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
@@ -4469,12 +4483,13 @@
             var objectives = [];
             // 1. Lesson's explicit objectives (from lesson JSON)
             if (Array.isArray(currentLesson.objectives) && currentLesson.objectives.length > 0) {
-              currentLesson.objectives.forEach(function(text, i) {
-                // Heuristic: mark done if all NPCs answered AND at least one block placed
+              currentLesson.objectives.forEach(function(text) {
+                // Heuristic: mark done if text matches one of the known behaviors + state hits threshold.
                 var done = false;
-                if (/answer|talk|ask/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
-                else if (/build|place|construct/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
-                else if (/measure/i.test(text)) done = (measureHistory && measureHistory.length > 0);
+                if (/answer|talk|ask|speak/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
+                else if (/build|place|construct|create|make|stack/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
+                else if (/measure|ruler|volume/i.test(text)) done = (measureHistory && measureHistory.length > 0);
+                else if (/explore|find|locate|visit/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length > 0;
                 objectives.push({ text: text, done: done });
               });
             } else {
@@ -4584,59 +4599,7 @@
         })
         ,
 
-        // ── BLOCK PALETTE HOTBAR — Minecraft-style visible selector at bottom-center ──
-        // Shows current block type + shape so students always see what they're placing.
-        worldActive && openModals.length === 0 && el('div', {
-          style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', pointerEvents: 'none' },
-          role: 'toolbar', 'aria-label': 'Block selection palette'
-        },
-          // Current shape indicator (small strip above block row)
-          el('div', { style: { display: 'flex', gap: '3px', padding: '3px 8px', borderRadius: '10px', background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(6px)', border: '1px solid rgba(251,191,36,0.3)', fontSize: '9px', fontWeight: 700, color: '#fbbf24', alignItems: 'center', pointerEvents: 'auto', cursor: 'pointer' },
-            onClick: function() {
-              upd({ selectedShape: (selectedShape + 1) % BLOCK_SHAPES.length, blockRotation: 0 });
-              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[(selectedShape + 1) % BLOCK_SHAPES.length].name);
-            },
-            title: 'Click to cycle shape (Q) · ' + BLOCK_SHAPES[selectedShape].desc
-          },
-            el('span', { style: { fontSize: '13px' } }, BLOCK_SHAPES[selectedShape].emoji),
-            el('span', null, BLOCK_SHAPES[selectedShape].name + ' (' + BLOCK_SHAPES[selectedShape].fraction + ' unit)'),
-            selectedShape > 0 && el('span', { style: { color: '#94a3b8', fontSize: '8px' } }, '· Q cycle · R rotate')
-          ),
-          // Block type hotbar (12 blocks, number keys 1-9,0 plus scroll)
-          el('div', { style: { display: 'flex', gap: '4px', padding: '6px', borderRadius: '12px', background: 'rgba(15,23,42,0.82)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', pointerEvents: 'auto' } },
-            BLOCK_TYPES.map(function(bt, bi) {
-              var selected = bi === selectedBlock;
-              var keyLabel = bi < 9 ? String(bi + 1) : bi === 9 ? '0' : '';
-              return el('button', {
-                key: bt.id,
-                onClick: function() { upd('selectedBlock', bi); },
-                'aria-label': 'Select ' + bt.name + ' block' + (keyLabel ? ' (press ' + keyLabel + ')' : '') + (selected ? ', currently selected' : ''),
-                'aria-pressed': selected,
-                title: bt.name + (keyLabel ? ' (press ' + keyLabel + ')' : ''),
-                style: {
-                  position: 'relative',
-                  width: '36px', height: '36px',
-                  border: selected ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '8px',
-                  background: selected ? 'rgba(251,191,36,0.18)' : 'rgba(255,255,255,0.04)',
-                  boxShadow: selected ? '0 0 0 2px rgba(251,191,36,0.2), 0 4px 8px rgba(251,191,36,0.15)' : 'none',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '20px',
-                  transition: 'all 0.12s'
-                }
-              },
-                bt.emoji,
-                // Key hint badge
-                keyLabel && el('span', { style: { position: 'absolute', top: '-2px', right: '-2px', background: selected ? '#fbbf24' : 'rgba(15,23,42,0.85)', color: selected ? '#111' : '#94a3b8', fontSize: '8px', fontWeight: 800, width: '13px', height: '13px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.2)' } }, keyLabel)
-              );
-            })
-          ),
-          // Current block name label
-          el('div', { style: { fontSize: '10px', color: '#cbd5e1', fontWeight: 700, background: 'rgba(15,23,42,0.6)', padding: '2px 8px', borderRadius: '10px', pointerEvents: 'none' } },
-            BLOCK_TYPES[selectedBlock].emoji + ' ' + BLOCK_TYPES[selectedBlock].name
-          )
-        ),
+        // (Block palette hotbar already exists at bottom-center further below — line ~5060)
 
         // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
         // Lets students instantly dismiss all overlays and return to the 3D world.
