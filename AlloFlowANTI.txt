@@ -52318,7 +52318,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
                 <p className="text-sm text-slate-600 mb-4">Choose how to process this PDF:</p>
 
-                <details className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
+                <details open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
                   <div className="mt-2 space-y-2">
                     <div>
@@ -54188,6 +54188,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <button onClick={() => runAutoFixLoop(pdfAutoContinue ? 3 : 1)} className="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
                                 🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}{pdfAutoContinue ? ' (auto-continue on)' : ''}
                               </button>
+                            )}
+                            {pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && (
+                              <label className="flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-full hover:bg-indigo-100 transition-colors" title={`Auto-continue until score ≥ ${pdfTargetScore}`}>
+                                <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="rounded" aria-label="Auto-continue remediation until target score" />
+                                <span>🔁 Auto-continue</span>
+                              </label>
                             )}
                             {pdfAutoContinueRunning && (
                               <button onClick={() => { pdfAutoContinueAbortRef.current = true; addToast('Stopping after current pass...', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">

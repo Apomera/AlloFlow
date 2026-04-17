@@ -14036,6 +14036,518 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       // ══════════════════════════════════════════════════════════
+      // MOOSE SAFETY DRILL (Maine-specific)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'mooseSafety') {
+        var MOOSE_FACTS = [
+          { icon: '📊', title: 'By the numbers', body: 'Maine has roughly 500–700 reported moose–vehicle collisions per year. The state averages 3–5 fatal moose crashes annually.' },
+          { icon: '🕒', title: 'Worst times',     body: 'Dawn and dusk (low light) plus late May through June (calves) and September–November (the rut). Overnight hours are dangerous too — moose are dark and blend into the road.' },
+          { icon: '📏', title: 'Why swerving fails', body: 'A full-grown moose weighs 800–1,400 lb. Its mass sits on long legs — your bumper takes the legs out and the body comes through the windshield. Roof-crush is the usual cause of death, not the impact itself.' },
+          { icon: '🛣️', title: 'Maine zones',     body: 'Route 201, Route 2, Route 6, Route 11 north of Bangor, and the entire Moosehead Lake region are the highest-risk corridors. Yellow moose-warning signs mark known crossings — slow down and scan.' },
+          { icon: '💡', title: 'High beams',      body: 'In moose country and zero oncoming traffic, use high beams. A moose\'s eyes don\'t always reflect like a deer\'s, but its body outline appears sooner. Dim for oncoming cars, then pop them back on.' },
+          { icon: '\uD83D\uDE97', title: 'If impact is unavoidable', body: 'Brake hard, let up just before impact (helps the hood absorb force), duck your head low toward the wheel. This moves your skull below the predicted windshield-crush line.' }
+        ];
+        var MOOSE_SCENARIOS = [
+          {
+            id: 'dusk_straight',
+            icon: '🫎',
+            title: 'Moose in the lane at dusk',
+            q: 'Dusk, Route 201 near Jackman. You\'re going 55 mph. A full-grown bull moose is standing broadside in your lane, 150 ft ahead.',
+            choices: [
+              'Swerve hard right onto the shoulder',
+              'Swerve left into the oncoming lane (clear)',
+              'Brake hard in a straight line, stay in your lane',
+              'Flash high beams to scare it and hold speed'
+            ],
+            correct: 2,
+            exp: 'Brake straight. Even with an empty oncoming lane, swerving at 55 mph on a shoulder or across a center line invites rollover, sliding off, or a head-on if another car appears. A moose in front of you is predictable; swerving creates an unknown. Modern vehicles + seatbelts + airbags survive straight impacts far better than rollovers.'
+          },
+          {
+            id: 'calf_and_cow',
+            icon: '🫎',
+            title: 'Cow and calf',
+            q: 'You spot a cow moose crossing. She\'s clear of the road. What\'s your move?',
+            choices: [
+              'Resume normal speed — she\'s across',
+              'Slow down, scan for a calf, proceed when clear',
+              'Speed up to pass before anything else appears',
+              'Stop in the lane and wait for her to leave'
+            ],
+            correct: 1,
+            exp: 'Slow down and scan. In spring and early summer, a cow is almost always followed by one or two calves who get left behind, then sprint across to catch up. Calves are smaller, harder to see, and often sprint directly into a moving car chasing mom.'
+          },
+          {
+            id: 'shoulder_ambiguous',
+            icon: '🌲',
+            title: 'Dark shape on the shoulder',
+            q: 'Night, 45 mph, 2-lane road. A dark mass on the right shoulder — might be a moose, might be a rock. No oncoming traffic.',
+            choices: [
+              'Hold the lane and keep your speed',
+              'Move closer to the center line and slow down',
+              'Honk to scare it off',
+              'Flash high beams briefly and accelerate'
+            ],
+            correct: 1,
+            exp: 'Move toward the center line and slow. This buys you distance + time if the shape is a moose that steps into the road. Honking can spook a moose INTO the road. Center-lane position only works when oncoming is clear — scan both ways first.'
+          },
+          {
+            id: 'oncoming_commitment',
+            icon: '🚨',
+            title: 'Moose crossing with oncoming traffic',
+            q: 'A moose is walking into your lane from the right. An oncoming car is ~200 ft away in the opposite lane at highway speed.',
+            choices: [
+              'Swerve left to miss the moose',
+              'Brake hard and stay in your lane',
+              'Accelerate past before it\'s fully in the lane',
+              'Swerve right onto the shoulder'
+            ],
+            correct: 1,
+            exp: 'Brake straight. Swerving left is a head-on crash — categorically worse than striking a moose, even a bull. Swerving right onto a narrow Maine shoulder is gravel/ditch territory. Accelerating INTO the moose gives you less time to stop and makes the impact worse.'
+          },
+          {
+            id: 'post_near_miss',
+            icon: '\uD83D\uDE97',
+            title: 'After the near-miss',
+            q: 'You just barely missed a moose. Adrenaline is pumping, hands are shaking. What next?',
+            choices: [
+              'Stop right there in your lane and call 911',
+              'Pull over safely, hazards on, breathe for 2 minutes before driving on',
+              'Speed up to outrun the area',
+              'Keep driving — you\'re fine'
+            ],
+            correct: 1,
+            exp: 'Pull over safely and collect yourself. Adrenaline tunnel-vision is real and lasts 3–5 minutes. Driving on immediately means your scanning and reaction time are worse, not better. If you hit the moose — even a glancing strike — call the Maine Warden Service (911) and stay put; injured moose in the road kill more people than the first hit.'
+          },
+          {
+            id: 'fog_zone',
+            icon: '🌫️',
+            title: 'Fog in a moose zone',
+            q: 'Heavy morning fog on Route 11 north of Millinocket. You can see about 100 ft. What speed + lighting?',
+            choices: [
+              'High beams + 55 mph (posted limit)',
+              'Low beams + slow to a speed where you can stop in your visible distance',
+              'Fog lights only and normal speed',
+              'Hazard lights + normal speed so cars behind you can see'
+            ],
+            correct: 1,
+            exp: 'Low beams + "drive within your sight distance." High beams reflect off fog and blind YOU. The rule is: you must be able to stop in the distance you can see, because a moose can appear inside that distance. At 100 ft visibility, safe speed is roughly 20–25 mph. Never drive with hazards ON the move in Maine (it\'s for stopped vehicles).'
+          }
+        ];
+        var mooseState = d.mooseState || {}; // { id: { answered: idx, correct: bool } }
+        var mooseAttempted = Object.keys(mooseState).length;
+        var moosePassed = Object.keys(mooseState).filter(function(k){return mooseState[k].correct;}).length;
+        var allDone = mooseAttempted === MOOSE_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🫎'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Moose Encounter Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fcd34d' } }, 'Maine-specific · ' + moosePassed + ' / ' + MOOSE_SCENARIOS.length + ' passed'),
+            allDone ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } },
+              moosePassed === MOOSE_SCENARIOS.length ? '✓ All correct — drive safe out there.' : 'Complete. Review the red ones and retry.'
+            ) : null
+          ),
+          // Quick-facts carousel
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Before the drill: six things to know'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              MOOSE_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          // Scenarios
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          MOOSE_SCENARIOS.map(function(sc) {
+            var state = mooseState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, mooseState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('mooseState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew === MOOSE_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.moose_safe) { dBadges.moose_safe = true; upd('badges', dBadges); addToast('🏅 Achievement: Moose-Safe Mainer'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #f59e0b', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, mooseState);
+                  delete ns[sc.id];
+                  upd('mooseState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // EMERGENCY VEHICLE DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'emergencyVehicle') {
+        var EMG_FACTS = [
+          { icon: '📜', title: 'Maine law', body: 'Title 29-A §2054: when an emergency vehicle with lights and siren approaches, pull as far right as possible and stop until it passes. Failing to yield is a civil violation with a fine.' },
+          { icon: '🛣️', title: 'Move Over law', body: 'Maine §2054-A: when passing a stopped emergency vehicle (police, fire, ambulance, tow, utility) with warning lights on the shoulder, move over one lane when safe. If you can\'t, slow to 20 mph below the posted speed.' },
+          { icon: '🚧', title: 'Why it matters', body: 'Every year roadside workers and responders die on Maine shoulders because drivers don\'t move over. The law exists because "rubbernecking at 65 mph" kills people.' },
+          { icon: '🛑', title: 'Don\'t stop mid-intersection', body: 'If you\'re inside an intersection when you hear a siren, CLEAR the intersection first, then pull right. Stopping in the intersection blocks the emergency vehicle\'s path.' }
+        ];
+        var EMG_SCENARIOS = [
+          {
+            id: 'siren_behind',
+            icon: '🚑',
+            title: 'Siren behind you on a 2-lane',
+            q: 'You\'re driving 35 mph on Route 302 when you hear a siren and see flashing lights directly behind you.',
+            choices: [
+              'Stop immediately in your lane',
+              'Speed up to get out of the way',
+              'Pull as far right as safely possible and stop until it passes',
+              'Move left to let them pass on the right'
+            ],
+            correct: 2,
+            exp: 'Right and stop. Always yield by pulling right — emergency vehicles expect it, and every other driver will do the same so a clear right-side lane opens up. Never stop in your lane mid-road; never move left or speed up to "stay ahead."'
+          },
+          {
+            id: 'intersection_clear',
+            icon: '🚦',
+            title: 'Siren at an intersection',
+            q: 'You\'re stopped at a red light in the left lane. A fire truck with siren and lights comes up behind you. What do you do?',
+            choices: [
+              'Run the red light to get out of the way',
+              'Stay stopped and signal right; wait for the light',
+              'Proceed through the red ONLY when the intersection is clear and safe',
+              'Reverse to give the truck your spot'
+            ],
+            correct: 2,
+            exp: 'You may proceed through a red light to clear the way, but ONLY when the intersection is fully clear and safe to cross. Never reverse (collision with the emergency vehicle or cars behind). Staying stopped blocks the truck; running blindly causes a T-bone. Move deliberately, then pull right.'
+          },
+          {
+            id: 'oncoming_divided',
+            icon: '🛣️',
+            title: 'Oncoming on a divided highway',
+            q: 'You\'re northbound on I-95 (divided median). An ambulance with siren is southbound in the opposite lanes.',
+            choices: [
+              'Pull to the right shoulder and stop',
+              'Stay in your lane at normal speed — the median separates you',
+              'Move left toward the median',
+              'Stop immediately'
+            ],
+            correct: 1,
+            exp: 'On a divided highway with a physical median, you don\'t need to stop for oncoming emergency vehicles — the median keeps you out of their path. Stopping on the interstate creates a new hazard. (If the median is just paint, treat it like any 2-way road and pull right.)'
+          },
+          {
+            id: 'oncoming_undivided',
+            icon: '🚨',
+            title: 'Oncoming on an undivided road',
+            q: 'On Route 1 (2-lane, no median). A police cruiser with lights and siren is heading toward you in the opposite lane.',
+            choices: [
+              'Keep going at normal speed',
+              'Pull right and stop until it passes',
+              'Flash your high beams to signal you see them',
+              'Swing wide left to give them room'
+            ],
+            correct: 1,
+            exp: 'Pull right and stop, even for oncoming. On undivided roads the cruiser may cross the center line to pass slower traffic or reach the scene — your clear shoulder is part of their escape path. Never swing left; never flash high beams at a working emergency vehicle.'
+          },
+          {
+            id: 'stopped_shoulder',
+            icon: '🛑',
+            title: 'Stopped cruiser on the shoulder',
+            q: 'Interstate 295, 65 mph. A state trooper is stopped on the right shoulder with lights flashing. You\'re in the right lane with a car beside you in the left.',
+            choices: [
+              'Hold your lane and speed',
+              'Move left into the adjacent lane if safe, otherwise slow to about 45 mph',
+              'Change lanes even if the left lane is occupied — it\'s the law',
+              'Stop on the shoulder behind them to offer help'
+            ],
+            correct: 1,
+            exp: 'Move over if you safely can. If the left lane isn\'t safe, the Move Over law says slow to 20 mph below the posted limit (65 − 20 = 45 mph). Never force a lane change into an occupied lane — that causes the crash the law is trying to prevent. Never stop to "help" unless you\'re trained and invited; you\'re another obstacle.'
+          },
+          {
+            id: 'multi_vehicle',
+            icon: '🚒',
+            title: 'Multiple vehicles in response',
+            q: 'A fire engine passes. You start to pull back into the lane. What do you do?',
+            choices: [
+              'Pull out immediately — it\'s gone',
+              'Wait and scan — more emergency vehicles may follow',
+              'Follow the fire engine to see what\'s happening',
+              'Use the shoulder to catch up with traffic flow'
+            ],
+            correct: 1,
+            exp: 'Wait and scan. Fire responses typically include an engine + ladder + ambulance + supervisor. Following an emergency vehicle closer than 500 ft is a violation in Maine (§2055) — and rubbernecking crashes happen exactly because someone pulled out too soon.'
+          }
+        ];
+        var emgState = d.emgState || {};
+        var emgPassed = Object.keys(emgState).filter(function(k){return emgState[k].correct;}).length;
+        var emgAllDone = Object.keys(emgState).length === EMG_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚨'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Emergency Vehicle Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fca5a5' } }, 'Yield + Move Over · ' + emgPassed + ' / ' + EMG_SCENARIOS.length + ' passed'),
+            emgAllDone && emgPassed === EMG_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you know the rules.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              EMG_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          EMG_SCENARIOS.map(function(sc) {
+            var state = emgState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, emgState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('emgState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew === EMG_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.emg_ready) { dBadges.emg_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Emergency-Ready'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #ef4444', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, emgState);
+                  delete ns[sc.id];
+                  upd('emgState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // SCHOOL BUS STOP DRILL (Maine Title 29-A §2308)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'schoolBus') {
+        var BUS_FACTS = [
+          { icon: '📜', title: 'The Maine rule', body: 'Title 29-A §2308: when a school bus is stopped with red lights flashing and stop arm extended, all traffic in both directions must stop — UNLESS you\'re separated by a physical median on a divided highway.' },
+          { icon: '🟡', title: 'Yellow vs red', body: 'Yellow flashers = bus is about to stop. Red flashers + stop arm = you must stop. The transition is your cue to slow down, not to speed past.' },
+          { icon: '📏', title: 'How far back', body: 'Stop far enough back that the bus driver can see you (rule of thumb: at least 20 ft). Children cross from BOTH sides unpredictably — tight stopping is dangerous.' },
+          { icon: '⚖️', title: 'Penalties', body: 'Passing a stopped school bus in Maine: fine of $250+, plus license points. Multiple violations can lead to suspension. Worse: you\'re the reason a kid doesn\'t come home.' }
+        ];
+        var BUS_SCENARIOS = [
+          {
+            id: 'same_direction_2lane',
+            icon: '🚌',
+            title: 'Bus stopped ahead in your direction',
+            q: 'You\'re on a 2-lane road approaching a school bus that has just stopped. Red lights flashing, stop arm out.',
+            choices: [
+              'Slow and pass cautiously if no kids are visible',
+              'Stop at a safe distance and wait until the red lights go off',
+              'Drive around on the shoulder',
+              'Honk so the kids know you\'re there'
+            ],
+            correct: 1,
+            exp: 'Stop and wait. Red lights + stop arm = full stop. Do not proceed until the arm retracts and the red lights turn off AND the bus starts moving. "No kids visible" isn\'t good enough — a child could be coming around the back of the bus where you can\'t see them.'
+          },
+          {
+            id: 'opposite_undivided',
+            icon: '🚌',
+            title: 'Bus stopped in opposite lane (undivided road)',
+            q: 'A school bus is stopped in the opposite lane on Route 302 (2-lane, no median). Red lights flashing.',
+            choices: [
+              'Keep driving — you\'re in the opposite lane',
+              'Stop. You must stop for a bus in either direction on an undivided road',
+              'Slow down but keep moving',
+              'Stop only if a child is visible'
+            ],
+            correct: 1,
+            exp: 'Stop. On any undivided road (no physical median), both directions of traffic must stop. Children often cross the road to reach the bus. Maine treats this like an absolute rule because the consequences are catastrophic.'
+          },
+          {
+            id: 'opposite_divided',
+            icon: '🛣️',
+            title: 'Bus stopped in opposite direction on a divided highway',
+            q: 'You\'re northbound on I-295 (physical median divides the directions). A school bus is stopped southbound with red lights flashing.',
+            choices: [
+              'Stop immediately',
+              'Slow to 20 mph',
+              'Continue at normal speed — the median separates you',
+              'Merge right onto the shoulder and stop'
+            ],
+            correct: 2,
+            exp: 'Continue at normal speed. The divided-highway exception applies: a physical median (grass, guardrail, concrete barrier) means kids can\'t cross to/from your direction, so you don\'t need to stop. A painted center stripe is NOT a median — that still counts as undivided.'
+          },
+          {
+            id: 'yellow_flashers',
+            icon: '🟡',
+            title: 'Yellow flashers, not red yet',
+            q: 'A school bus ahead turns on yellow flashing lights. It\'s still moving.',
+            choices: [
+              'Speed up to pass before the red lights come on',
+              'Slow down and prepare to stop',
+              'Stay at speed — yellow means nothing',
+              'Change lanes and pass'
+            ],
+            correct: 1,
+            exp: 'Slow down and prepare to stop. Yellow = "I\'m about to stop" — exactly like a yellow traffic light. Speeding up to pass is illegal AND puts you next to the bus exactly when kids will be getting off. In Maine this counts as passing a school bus.'
+          },
+          {
+            id: 'private_road',
+            icon: '🏠',
+            title: 'Bus stopped on a neighborhood street',
+            q: 'In a residential area with no posted speed limit, a school bus is stopped at a driveway with red lights flashing.',
+            choices: [
+              'Neighborhood streets are exempt',
+              'The rule still applies — stop and wait',
+              'Only applies if an adult is present',
+              'Pass slowly on the left'
+            ],
+            correct: 1,
+            exp: 'The rule applies everywhere a school bus stops with red lights and stop arm extended — public roads, neighborhood streets, commercial parking lots. The only exemptions are (1) a divided highway in the opposite direction, and (2) when a traffic officer signals otherwise.'
+          }
+        ];
+        var busState = d.busState || {};
+        var busPassed = Object.keys(busState).filter(function(k){return busState[k].correct;}).length;
+        var busAllDone = Object.keys(busState).length === BUS_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #854d0e, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚌'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'School Bus Stop Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Maine §2308 · ' + busPassed + ' / ' + BUS_SCENARIOS.length + ' passed'),
+            busAllDone && busPassed === BUS_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you\'ll stop when it counts.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              BUS_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          BUS_SCENARIOS.map(function(sc) {
+            var state = busState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, busState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('busState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew === BUS_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.bus_safe) { dBadges.bus_safe = true; upd('badges', dBadges); addToast('🏅 Achievement: Bus-Safe'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #fbbf24', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, busState);
+                  delete ns[sc.id];
+                  upd('busState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // CRASH RECONSTRUCTION LAB
       // ══════════════════════════════════════════════════════════
       if (view === 'crashLab') {
@@ -15563,6 +16075,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: 'Night Vision Training', desc: 'Focused night-drive drill with coach prompts.' },
           { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: 'Parent Ride Check', desc: '2-min structured eval — parent taps to mark errors.' },
           { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: 'Defensive Drills', desc: '8 hazard-response scenarios with correct-answer reveals.' },
+          { view: 'mooseSafety', goal: 'safety', icon: '🫎', name: 'Moose Encounter Drill', desc: 'Maine-specific: what to do when a moose is in the road.' },
+          { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: 'Emergency Vehicle Drill', desc: 'Maine Move Over law, pull-to-right rule, stopped responders.' },
+          { view: 'schoolBus', goal: 'safety', icon: '🚌', name: 'School Bus Stop Drill', desc: 'When to stop for a stopped school bus (Maine §2308).' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
