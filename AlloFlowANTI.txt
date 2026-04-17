@@ -54180,6 +54180,99 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </details>
                           )}
 
+                          {(() => {
+                            // Per-SC compliance aggregator — groups axe violations + passes by WCAG Success Criterion.
+                            const WCAG_LABELS = {
+                              '1.1.1': 'Non-text Content (alt text)',
+                              '1.3.1': 'Info and Relationships (structure)',
+                              '1.3.2': 'Meaningful Sequence',
+                              '1.4.1': 'Use of Color',
+                              '1.4.3': 'Contrast (Minimum)',
+                              '1.4.4': 'Resize Text',
+                              '1.4.5': 'Images of Text',
+                              '1.4.10': 'Reflow',
+                              '1.4.11': 'Non-text Contrast',
+                              '1.4.12': 'Text Spacing',
+                              '2.1.1': 'Keyboard',
+                              '2.4.1': 'Bypass Blocks (skip links)',
+                              '2.4.2': 'Page Titled',
+                              '2.4.4': 'Link Purpose',
+                              '2.4.6': 'Headings and Labels',
+                              '2.4.7': 'Focus Visible',
+                              '3.1.1': 'Language of Page',
+                              '3.1.2': 'Language of Parts',
+                              '3.1.4': 'Abbreviations',
+                              '3.3.2': 'Labels or Instructions',
+                              '4.1.1': 'Parsing (duplicate IDs)',
+                              '4.1.2': 'Name, Role, Value'
+                            };
+                            const scMap = {};
+                            const addToSc = (sc, bucket) => {
+                              if (!scMap[sc]) scMap[sc] = { passes: 0, violations: 0, incomplete: 0 };
+                              scMap[sc][bucket]++;
+                            };
+                            const extractSc = (w) => {
+                              if (!w) return null;
+                              const m = String(w).match(/(\d+\.\d+(?:\.\d+)?)/);
+                              return m ? m[1] : null;
+                            };
+                            (pdfFixResult.axeAudit.passes || []).forEach(p => {
+                              const sc = extractSc(p.wcag); if (sc) addToSc(sc, 'passes');
+                            });
+                            ['critical','serious','moderate','minor'].forEach(sev => {
+                              (pdfFixResult.axeAudit[sev] || []).forEach(v => {
+                                const sc = extractSc(v.wcag); if (sc) addToSc(sc, 'violations');
+                              });
+                            });
+                            (pdfFixResult.axeAudit.incomplete || []).forEach(i => {
+                              const sc = extractSc(i.wcag); if (sc) addToSc(sc, 'incomplete');
+                            });
+                            const scEntries = Object.entries(scMap).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+                            if (scEntries.length === 0) return null;
+                            const counts = scEntries.reduce((acc, [, v]) => {
+                              if (v.violations > 0) acc.fail++;
+                              else if (v.incomplete > 0) acc.warn++;
+                              else if (v.passes > 0) acc.pass++;
+                              return acc;
+                            }, { pass: 0, warn: 0, fail: 0 });
+                            return (
+                              <details className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                                <summary className="cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap items-center gap-2">
+                                  📋 WCAG Success Criteria Report
+                                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px]">✓ {counts.pass} pass</span>
+                                  {counts.warn > 0 && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[11px]">⚠ {counts.warn} needs review</span>}
+                                  {counts.fail > 0 && <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[11px]">✗ {counts.fail} fail</span>}
+                                </summary>
+                                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                  {scEntries.map(([sc, v]) => {
+                                    const status = v.violations > 0 ? 'fail' : v.incomplete > 0 ? 'warn' : v.passes > 0 ? 'pass' : 'none';
+                                    const color = status === 'pass' ? 'bg-green-50 border-green-200 text-green-800' :
+                                                  status === 'warn' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+                                                  status === 'fail' ? 'bg-red-50 border-red-200 text-red-800' :
+                                                  'bg-slate-50 border-slate-200 text-slate-600';
+                                    const icon = status === 'pass' ? '✓' : status === 'warn' ? '⚠' : status === 'fail' ? '✗' : '○';
+                                    const label = WCAG_LABELS[sc] || '';
+                                    return (
+                                      <div key={sc} className={`flex items-start gap-2 px-2 py-1 rounded border text-[11px] ${color}`}>
+                                        <span className="font-bold shrink-0">{icon}</span>
+                                        <div className="flex-1 min-w-0">
+                                          <span className="font-bold font-mono">{sc}</span>
+                                          {label && <span className="ml-1 opacity-80">— {label}</span>}
+                                          <div className="opacity-70 mt-0.5">
+                                            {v.passes > 0 && <span>{v.passes} pass</span>}
+                                            {v.violations > 0 && <span className="ml-2">{v.violations} fail</span>}
+                                            {v.incomplete > 0 && <span className="ml-2">{v.incomplete} review</span>}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                <p className="mt-2 text-[10px] text-slate-500 italic">Coverage may be incomplete — this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms).</p>
+                              </details>
+                            );
+                          })()}
+
                           <div className="flex gap-2 flex-wrap items-center">
                             <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">✅ {pdfFixResult.axeAudit.totalPasses} passed</span>
                             {pdfFixResult.axeAudit.totalIncomplete > 0 && <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">⏳ {pdfFixResult.axeAudit.totalIncomplete} need manual review</span>}

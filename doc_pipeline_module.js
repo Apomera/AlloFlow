@@ -998,6 +998,115 @@ var createDocPipeline = function(deps) {
         });
       }
     },
+    // Complex table: wrap first row in <thead>, remaining in <tbody>, add IDs to <th>, and set
+    // `headers` attribution on body cells where the teacher supplies a mapping.
+    // params: { index, headerRowCount?=1, columnHeaders?=['h_0','h_1',...] }
+    fix_complex_table: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index, headerRowCount?, columnHeaders?}',
+      fn: function(html, p) {
+        var tblIdx = 0;
+        var headerRowCount = Math.max(1, parseInt(p && p.headerRowCount, 10) || 1);
+        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
+          if (tblIdx++ !== (p && p.index || 0)) return m;
+          if (/<thead/i.test(content) && /<tbody/i.test(content) && /id="[a-z0-9_-]+"/i.test(content)) return m;
+          var rowRegex = /<tr([^>]*)>([\s\S]*?)<\/tr>/gi;
+          var rows = [];
+          var r;
+          while ((r = rowRegex.exec(content)) !== null) rows.push({ attrs: r[1], cells: r[2], full: r[0] });
+          if (rows.length < 2) return m;
+          var cellCount = (rows[0].cells.match(/<t[hd][\s>]/gi) || []).length;
+          var colIds = [];
+          for (var ci = 0; ci < cellCount; ci++) colIds.push('th-col-' + Date.now().toString(36) + '-' + tblIdx + '-' + ci);
+          var headerHtml = '<thead>';
+          for (var h = 0; h < Math.min(headerRowCount, rows.length); h++) {
+            var cellIdx = 0;
+            var fixed = rows[h].cells.replace(/<(td|th)([^>]*)>([\s\S]*?)<\/(?:td|th)>/gi, function(cm, tag, cAttrs, inner) {
+              var thAttrs = cAttrs || '';
+              if (!/scope=/i.test(thAttrs)) thAttrs = ' scope="col"' + thAttrs;
+              if (!/id="/i.test(thAttrs) && colIds[cellIdx]) thAttrs = ' id="' + colIds[cellIdx] + '"' + thAttrs;
+              cellIdx++;
+              return '<th' + thAttrs + '>' + inner + '</th>';
+            });
+            headerHtml += '<tr' + rows[h].attrs + '>' + fixed + '</tr>';
+          }
+          headerHtml += '</thead>';
+          var bodyHtml = '<tbody>';
+          for (var b = headerRowCount; b < rows.length; b++) {
+            var bCellIdx = 0;
+            var bodyCells = rows[b].cells.replace(/<td([^>]*)>/gi, function(cm, cAttrs) {
+              var tdAttrs = cAttrs || '';
+              if (!/headers=/i.test(tdAttrs) && colIds[bCellIdx]) tdAttrs = ' headers="' + colIds[bCellIdx] + '"' + tdAttrs;
+              bCellIdx++;
+              return '<td' + tdAttrs + '>';
+            });
+            bodyHtml += '<tr' + rows[b].attrs + '>' + bodyCells + '</tr>';
+          }
+          bodyHtml += '</tbody>';
+          return '<table' + attrs + '>' + headerHtml + bodyHtml + '</table>';
+        });
+      }
+    },
+    // Secondary landmarks. params: { label?, selector? }
+    // selector can be 'header', 'footer', 'nav', 'aside' (wraps matching tag/class region in landmark).
+    // If no matching region is found but the document has a clear nav (class/id hint), wraps it.
+    fix_add_nav: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{label?}',
+      fn: function(html, p) {
+        if (/<nav[\s>]/i.test(html)) return html;
+        var lbl = (p && p.label) || 'Main navigation';
+        // Match first <ul> that contains only <li><a> (likely a nav list) and wrap it.
+        return html.replace(/(<ul[^>]*>\s*(?:<li[^>]*>\s*<a[^>]*>[\s\S]*?<\/a>\s*<\/li>\s*){2,}<\/ul>)/i,
+          '<nav aria-label="' + lbl.replace(/"/g, '&quot;') + '">$1</nav>');
+      }
+    },
+    fix_add_aside: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{selector?, label?}',
+      fn: function(html, p) {
+        if (/<aside[\s>]/i.test(html)) return html;
+        var lbl = (p && p.label) || 'Sidebar';
+        var sel = (p && p.selector) || 'sidebar';
+        if (!SAFE_TAG_NAME.test(sel) && !/^[a-z0-9_-]+$/i.test(sel)) return html;
+        // Wrap element with matching class or id.
+        var re = new RegExp('<(div|section)([^>]*(?:class|id)="[^"]*' + escapeForRegex(sel) + '[^"]*"[^>]*)>([\\s\\S]*?)</\\1>', 'i');
+        return html.replace(re, '<aside aria-label="' + lbl.replace(/"/g, '&quot;') + '"><$1$2>$3</$1></aside>');
+      }
+    },
+    fix_add_header: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{}',
+      fn: function(html) {
+        if (/<header[\s>]/i.test(html)) return html;
+        // Wrap a leading <h1> + any sibling tagline div in <header>.
+        return html.replace(/(<body[^>]*>\s*)((?:<h1[^>]*>[\s\S]*?<\/h1>\s*)(?:<(?:p|div)[^>]*class="[^"]*(?:tagline|subtitle)[^"]*"[^>]*>[\s\S]*?<\/(?:p|div)>\s*)?)/i,
+          '$1<header role="banner">$2</header>');
+      }
+    },
+    fix_add_footer: {
+      category: 'STRUCTURE', wcag: '1.3.1', params: '{}',
+      fn: function(html) {
+        if (/<footer[\s>]/i.test(html)) return html;
+        // Wrap a trailing copyright/contact block in <footer>.
+        return html.replace(/((?:<(?:p|div)[^>]*>[\s\S]*?(?:©|copyright|all rights reserved)[\s\S]*?<\/(?:p|div)>\s*)+)(\s*<\/body>)/i,
+          '<footer role="contentinfo">$1</footer>$2');
+      }
+    },
+    // SVG accessibility: adds role="img" and embedded <title>/<desc> when missing.
+    // params: { index, title, desc? }
+    fix_svg_accessibility: {
+      category: 'VISUAL', wcag: '1.1.1', params: '{index, title, desc?}',
+      fn: function(html, p) {
+        if (!p || !p.title) return html;
+        var idx = 0;
+        return html.replace(/<svg([^>]*)>([\s\S]*?)<\/svg>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          var newAttrs = attrs || '';
+          if (!/role=/i.test(newAttrs)) newAttrs = ' role="img"' + newAttrs;
+          var newContent = content || '';
+          if (!/<title[\s>]/i.test(newContent)) newContent = '<title>' + p.title.replace(/</g, '&lt;') + '</title>' + newContent;
+          if (p.desc && !/<desc[\s>]/i.test(newContent)) newContent = newContent.replace(/<\/title>/i, '</title><desc>' + p.desc.replace(/</g, '&lt;') + '</desc>');
+          return '<svg' + newAttrs + '>' + newContent + '</svg>';
+        });
+      }
+    },
   };
 
   // Derive the Gemini diagnosis prompt from the registry so prompt and tools can never drift.
@@ -4027,6 +4136,56 @@ HTML section ${chunkNum}/${chunks.length}:
     let currentHtml = htmlContent;
     let currentAxe = axeResult;
     let passCount = 0;
+
+    // ── Fast path: direct axe rule → surgical tool mapping ──
+    // For unambiguous violations (image-alt, button-name, duplicate-id, document-title, etc.)
+    // apply the deterministic tool directly, skipping the Gemini diagnosis call. Cheaper + faster.
+    const AXE_RULE_TO_TOOL = {
+      'document-title': (nodes) => ({ tool: 'fix_title', params: { title: 'Document' } }),
+      'html-has-lang':  (nodes) => ({ tool: 'fix_lang',  params: { lang: 'en' } }),
+      'duplicate-id':   (nodes) => nodes.map(n => {
+        const m = (n.html || n.failureSummary || '').match(/id="([^"]+)"/);
+        return m ? { tool: 'fix_duplicate_id', params: { id: m[1] } } : null;
+      }).filter(Boolean),
+      'image-alt':      (nodes) => nodes.map((n, i) => ({ tool: 'fix_alt_text', params: { index: i, alt: 'Image' } })),
+      'button-name':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_button_name', params: { index: i, label: 'Button' } })),
+      'input-button-name': (nodes) => nodes.map((n, i) => ({ tool: 'fix_button_name', params: { index: i, label: 'Button' } })),
+      'link-name':      (nodes) => nodes.map((n, i) => ({ tool: 'fix_link_text', params: { index: i, newText: 'Learn more', force: true } })),
+      'frame-title':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_iframe_title', params: { index: i, title: 'Embedded content' } })),
+      'empty-heading':  (nodes) => nodes.map((n, i) => ({ tool: 'fix_remove_empty_heading', params: { index: i } })),
+      'skip-link':      () => ({ tool: 'fix_skip_nav', params: {} }),
+      'landmark-one-main': () => ({ tool: 'fix_add_landmark', params: { tag: 'main', label: 'Main content' } })
+    };
+    try {
+      const allAxeViolations = [].concat(currentAxe.critical || [], currentAxe.serious || [], currentAxe.moderate || [], currentAxe.minor || []);
+      let directFixCount = 0;
+      for (const v of allAxeViolations) {
+        const mapper = AXE_RULE_TO_TOOL[v.id];
+        if (!mapper) continue;
+        const nodes = v.nodeDetails || v.nodes || [];
+        const directives = mapper(nodes) || [];
+        const arr = Array.isArray(directives) ? directives : [directives];
+        for (const d of arr) {
+          if (!d || !d.tool || !SURGICAL_TOOL_REGISTRY[d.tool]) continue;
+          try {
+            currentHtml = SURGICAL_TOOL_REGISTRY[d.tool].fn(currentHtml, d.params || {});
+            directFixCount++;
+          } catch (e) {
+            warnLog('[AutoFix direct] tool ' + d.tool + ' threw:', e);
+          }
+        }
+      }
+      if (directFixCount > 0) {
+        _pipeLog('AutoFix', `Direct-mapped ${directFixCount} violation(s) to surgical tools, skipping AI diagnosis for those.`);
+        try {
+          const reAudit = await runAxeAudit(currentHtml);
+          if (reAudit) currentAxe = reAudit;
+        } catch (e) { /* non-fatal — continue with existing axe snapshot */ }
+        if (currentAxe.totalViolations === 0) return { html: currentHtml, axe: currentAxe, passes: 0 };
+      }
+    } catch (e) {
+      warnLog('[AutoFix] Direct-mapping fast path failed:', e);
+    }
 
     while (currentAxe.totalViolations > 0 && passCount < maxPasses) {
       passCount++;

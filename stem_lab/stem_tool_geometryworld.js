@@ -2169,11 +2169,13 @@
           // Restore chat history from localStorage
           var savedChat = null;
           try { savedChat = JSON.parse(localStorage.getItem('gw_chat_' + (lesson._id || Object.keys(SAMPLE_LESSONS).find(function(k) { return SAMPLE_LESSONS[k] === lesson; }) || 'unknown'))); } catch(e) {}
+          // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
+          // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
           }
           engine._progressKey = progressKey;
         };
@@ -2362,6 +2364,14 @@
         });
 
         document.addEventListener('keydown', function(ev) {
+          // Let Esc pass through even in inputs (students expect it to close overlays/blur inputs).
+          // But every other shortcut should be ignored when typing in a form field — otherwise
+          // typing "house" into the AI prompt triggers H-teleport, S-movement, E-talk, etc.
+          if (ev.code !== 'Escape' && ev.target && (
+            ev.target.tagName === 'INPUT' ||
+            ev.target.tagName === 'TEXTAREA' ||
+            ev.target.isContentEditable
+          )) return;
           switch (ev.code) {
             case 'Escape':
               // Shift+Esc: close every overlay at once. Unconditional dispatch so it works
@@ -2591,7 +2601,8 @@
               engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
               upd('blocksPlaced', engine.blocksPlaced); // keep React state in sync
               checkBreakFrustration();
-              if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
+              var ps1 = engine._placeState || {};
+              if (ps1.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             } else if (ev.button === 2 && hit.object.userData.gridPos && hit.face) {
               // Block limit check
               if (Object.keys(engine.blocks).length >= MAX_BLOCKS) {
@@ -2601,8 +2612,10 @@
               var p = hit.object.userData.gridPos;
               var n = hit.face.normal;
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
-              var placeType = BLOCK_TYPES[selectedBlock].id;
-              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[selectedShape].id, blockRotation);
+              // Read current placement state from engine bridge (closure vars are stale).
+              var ps = engine._placeState || { selectedBlock: 0, selectedShape: 0, blockRotation: 0 };
+              var placeType = BLOCK_TYPES[ps.selectedBlock].id;
+              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[ps.selectedShape].id, ps.blockRotation);
               sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
@@ -2628,7 +2641,7 @@
               if (engine.blocksPlaced === 10 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '10 blocks placed');
               if (engine.blocksPlaced === 50 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '50 blocks placed');
               var ts3 = engine._tutorialState || {}; if (ts3.step === 3 && !ts3.dismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
-              if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
+              if (ps.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
           }
         });
@@ -2639,8 +2652,10 @@
         canvas.addEventListener('wheel', function(ev) {
           if (!engine.isLocked) return;
           ev.preventDefault();
-          var dir = ev.deltaY > 0 ? 1 : -1;
-          var newIdx = ((selectedBlock + dir) % BLOCK_TYPES.length + BLOCK_TYPES.length) % BLOCK_TYPES.length;
+          var wdir = ev.deltaY > 0 ? 1 : -1;
+          // Read current selection from engine bridge (closure var is stale)
+          var cur = (engine._placeState && typeof engine._placeState.selectedBlock === 'number') ? engine._placeState.selectedBlock : 0;
+          var newIdx = ((cur + wdir) % BLOCK_TYPES.length + BLOCK_TYPES.length) % BLOCK_TYPES.length;
           upd('selectedBlock', newIdx);
         }, { passive: false });
 
@@ -2772,8 +2787,11 @@
             var p2 = hits[0].object.userData.gridPos;
             var n2 = hits[0].face.normal;
             var gx = p2.x + Math.round(n2.x), gy = p2.y + Math.round(n2.y), gz = p2.z + Math.round(n2.z);
-            var curShapeId = BLOCK_SHAPES[selectedShape] ? BLOCK_SHAPES[selectedShape].id : 'cube';
-            var curRot = blockRotation || 0;
+            // Read from engine bridge so ghost preview matches the CURRENT selected shape + rotation
+            // (closure vars are stale — handler attached once in initEngine)
+            var _ps = engine._placeState || { selectedShape: 0, blockRotation: 0 };
+            var curShapeId = BLOCK_SHAPES[_ps.selectedShape] ? BLOCK_SHAPES[_ps.selectedShape].id : 'cube';
+            var curRot = _ps.blockRotation || 0;
             // Recreate ghost if shape or rotation changed
             if (!engine._ghostMesh || engine._ghostShapeId !== curShapeId || engine._ghostRot !== curRot) {
               if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
@@ -3947,6 +3965,10 @@
         // Tutorial state bridge — same staleness issue; tutorial advancement checks
         // must read from here or they compare against the first-render value (usually 0).
         engine._tutorialState = { step: tutorialStep, dismissed: tutorialDismissed };
+        // Placement state bridge — critical: canvas.addEventListener handlers are stale
+        // (attached once in initEngine) so they can't see number-key block switches,
+        // shape cycling (Q), rotation (R), or collab-mode toggling.
+        engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
       }
 
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
@@ -5192,6 +5214,8 @@
                     sfxPlace(BLOCK_TYPES[selectedBlock].id);
                     spawnPlaceParticles(engine, px + 0.5, py + 0.5, pz + 0.5);
                     engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+                    upd('blocksPlaced', engine.blocksPlaced); // keep React state + HUD in sync
+                    if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
                   }
                 }
               },
@@ -5207,6 +5231,9 @@
                 if (h2.length > 0 && h2[0].object.userData.gridPos) {
                   var pp = h2[0].object.userData.gridPos;
                   engine.removeBlock(pp.x, pp.y, pp.z); sfxBreak(h2[0].object.userData.blockType || 'stone');
+                  engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
+                  upd('blocksPlaced', engine.blocksPlaced);
+                  if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
                 }
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }

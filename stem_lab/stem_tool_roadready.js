@@ -2326,6 +2326,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── Visual polish: view transitions + global style layer + confetti ──
       // prevViewRef tracks previous view so we can fade-in on change without flicker.
+      // badgePopupTimerRef tracks the auto-dismiss timer so re-entries cancel prior timers
+      // (prevents a stale timer from hiding a fresh popup).
+      var badgePopupTimerRef = useRef(null);
       // lastBadgeCountRef detects new achievement unlocks and triggers confetti.
       var prevViewRef = useRef(view);
       var lastBadgeCountRef = useRef(Object.keys(d.badges || {}).length);
@@ -2427,8 +2430,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var achDef = ACHIEVEMENTS.find(function(a) { return a.id === newBadgeId; });
           if (achDef) {
             setNewBadgePopup({ ach: achDef, shownAt: Date.now() });
-            // Auto-dismiss after 5s
-            setTimeout(function() { setNewBadgePopup(null); }, 5000);
+            // Auto-dismiss after 5s; cancel any prior pending dismiss so a fresh popup isn't cut short.
+            if (badgePopupTimerRef.current) clearTimeout(badgePopupTimerRef.current);
+            badgePopupTimerRef.current = setTimeout(function() { setNewBadgePopup(null); badgePopupTimerRef.current = null; }, 5000);
           }
           lastBadgeCountRef.current = current;
           // Fire confetti via imperative canvas draw. Cheap, no dependencies.
@@ -2480,6 +2484,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Reset if badges were cleared (e.g., save loaded with fewer).
           lastBadgeCountRef.current = current;
         }
+        // Cleanup on unmount: clear any pending auto-dismiss timer.
+        return function() {
+          if (badgePopupTimerRef.current) {
+            clearTimeout(badgePopupTimerRef.current);
+            badgePopupTimerRef.current = null;
+          }
+        };
       }, [Object.keys(d.badges || {}).length]);
 
       var currentVehicle = VEHICLES.find(function(v) { return v.id === selectedVehicle; }) || VEHICLES[0];
@@ -3807,18 +3818,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   + 'Based on this 30-second snapshot, say ONE specific, kind, action-oriented coaching line under 25 words. '
                   + 'No greetings, no preamble — just the advice. If everything looks great, encourage what they\'re doing. Snapshot:\n'
                   + JSON.stringify(snapshot);
-                callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' })
-                  .then(function(resp) {
-                    coachRef.current.inFlight = false;
-                    var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
-                    text = String(text).trim().replace(/^["']|["']$/g, '');
-                    if (text) {
-                      coachRef.current.lastTip = text;
-                      coachRef.current.lastTipAt = Date.now();
-                      speak(text);
-                    }
-                  })
-                  .catch(function() { coachRef.current.inFlight = false; });
+                if (!callGemini) {
+                  coachRef.current.inFlight = false;
+                } else {
+                  callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' })
+                    .then(function(resp) {
+                      coachRef.current.inFlight = false;
+                      var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
+                      text = String(text).trim().replace(/^["']|["']$/g, '');
+                      if (text) {
+                        coachRef.current.lastTip = text;
+                        coachRef.current.lastTipAt = Date.now();
+                        speak(text);
+                      }
+                    })
+                    .catch(function() { coachRef.current.inFlight = false; });
+                }
               }
             }
             // ── Night Vision drill prompts (when d.nightVisionDrill is set) ──
@@ -13497,24 +13512,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       + 'Tone: kind, specific, honest. Address them as "you". Mention 1-2 concrete things they did well, 1-2 things to work on next drive, and end with one sentence of encouragement.\n'
                       + 'Length: 120-180 words. Plain prose, no bullet points, no markdown, no greetings.\n\n'
                       + 'Drive data:\n' + JSON.stringify(snapshot);
-                    callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' })
-                      .then(function(resp) {
-                        reflectionRef.current.inFlight = false;
-                        var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
-                        text = String(text).trim().replace(/^["']|["']$/g, '');
-                        if (text) {
-                          upd('lastReflection', { text: text, at: Date.now() });
-                          speak('Your AI reflection is ready.');
-                        } else {
+                    if (!callGemini) {
+                      reflectionRef.current.inFlight = false;
+                      addToast('AI reflection not available in this environment.');
+                    } else {
+                      callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' })
+                        .then(function(resp) {
+                          reflectionRef.current.inFlight = false;
+                          var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
+                          text = String(text).trim().replace(/^["']|["']$/g, '');
+                          if (text) {
+                            upd('lastReflection', { text: text, at: Date.now() });
+                            speak('Your AI reflection is ready.');
+                          } else {
+                            addToast('Reflection failed — try again.');
+                            upd('reflectionTick', Date.now());
+                          }
+                        })
+                        .catch(function() {
+                          reflectionRef.current.inFlight = false;
                           addToast('Reflection failed — try again.');
                           upd('reflectionTick', Date.now());
-                        }
-                      })
-                      .catch(function() {
-                        reflectionRef.current.inFlight = false;
-                        addToast('Reflection failed — try again.');
-                        upd('reflectionTick', Date.now());
-                      });
+                        });
+                    }
                   },
                   style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.2)', color: '#bae6fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                 }, '✨ Generate') : null,
@@ -14539,6 +14559,179 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var ns = Object.assign({}, busState);
                   delete ns[sc.id];
                   upd('busState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // RAILROAD CROSSING DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'railroadCrossing') {
+        var RR_FACTS = [
+          { icon: '📜', title: 'The law',            body: 'Flashing red lights at a crossing mean STOP — treat them like a red traffic light. Driving around a lowered gate is a federal violation (49 CFR §234.11) and a felony in many states.' },
+          { icon: '📏', title: 'Train physics',      body: 'At 55 mph a freight train needs over 1 mile (≈ 6,000 ft) to stop. A 100-car train weighs roughly 18,000 tons — the equivalent of ~3,000 cars.' },
+          { icon: '👁️', title: 'The speed illusion', body: 'Large objects appear to move slower than they are. A train you judge "distant and slow" is usually moving 45–80 mph and covering 80+ feet per second.' },
+          { icon: '🏃', title: 'If you stall on the tracks', body: 'Everyone OUT. Run AT A 45° ANGLE TOWARD the oncoming train. Debris from an impact launches FORWARD in the train\'s direction of travel — running toward the train puts you behind the debris field.' }
+        ];
+        var RR_SCENARIOS = [
+          {
+            id: 'flashing_reds',
+            icon: '🚦',
+            title: 'Flashing red lights, gates down',
+            q: 'You approach a crossing. Red lights are flashing and the gates are lowered. You can\'t see a train yet.',
+            choices: [
+              'Drive around the gates — you can fit',
+              'Stop and wait until the lights stop flashing AND the gates fully raise',
+              'Proceed slowly as long as no train is in sight',
+              'Ease through the gap between gates'
+            ],
+            correct: 1,
+            exp: 'Full stop, full wait. Flashing reds mean a train is coming OR already on the crossing OR a second train is on a parallel track. Driving around a lowered gate is federally illegal and a leading cause of crossing fatalities. The gates raise themselves when the sensors say it\'s safe.'
+          },
+          {
+            id: 'could_make_it',
+            icon: '⏱️',
+            title: '"I can beat that train"',
+            q: 'You see a train approaching the crossing. Your gut says you have plenty of time to cross before it arrives.',
+            choices: [
+              'Accelerate and cross quickly',
+              'Stop and wait for the train to pass',
+              'Keep going at normal speed',
+              'Honk so the train knows you\'re there'
+            ],
+            correct: 1,
+            exp: 'Never try to beat a train. Large objects look slower than they actually are — a train looking "a ways off" is usually doing 50+ mph and moving 80+ ft/sec. If your engine stalls mid-crossing (a real risk at low-speed crossings), you die. The train physically cannot stop in under a mile.'
+          },
+          {
+            id: 'stalled',
+            icon: '🏃',
+            title: 'Stalled on the tracks',
+            q: 'Your engine dies while you\'re crossing the tracks. A train is visible about a half-mile away, approaching.',
+            choices: [
+              'Stay in the car and try to restart it',
+              'Push the car off the tracks with passengers',
+              'Get everyone out immediately and run AT A 45° ANGLE TOWARD the oncoming train',
+              'Run away from the train along the tracks'
+            ],
+            correct: 2,
+            exp: 'Cars are replaceable — people aren\'t. Abandon the vehicle, get everyone clear, and run toward the train at a 45° angle away from the tracks. Sounds counterintuitive, but when a train hits your car the debris gets pushed FORWARD in the train\'s direction. Running toward the train puts you behind the impact debris, not in front of it.'
+          },
+          {
+            id: 'multi_track',
+            icon: '🚂',
+            title: 'Second train hidden',
+            q: 'A freight train just finished passing. The gates are still down. A "Multiple Tracks" warning sign is posted.',
+            choices: [
+              'Go around the gates — the train is past',
+              'Wait — the gates raise when the crossing is actually clear; a second train may be coming on a parallel track',
+              'Get out and look both ways yourself',
+              'Creep forward slowly to check'
+            ],
+            correct: 1,
+            exp: 'This is exactly why the warning sign exists. A second train — often moving in the opposite direction or on a parallel track — can be masked by the first train\'s noise and visual bulk. The sensors won\'t raise the gate until all tracks are clear. Just wait.'
+          },
+          {
+            id: 'passive_crossing',
+            icon: '✚',
+            title: 'Rural crossbuck, no lights',
+            q: 'On a quiet Maine road you reach a crossing marked only by a white X-shaped "crossbuck" sign — no lights, no gates.',
+            choices: [
+              'Drive through at normal speed',
+              'Stop completely at the crossbuck',
+              'Slow down, look left-right-left, listen (crack a window), proceed when clear',
+              'Sound your horn to warn any train'
+            ],
+            correct: 2,
+            exp: 'A crossbuck is a YIELD sign, not a stop sign — but it requires you to look and listen. Slow to a speed where you could stop. Train horns are audible about 1/4 mile out — cracking your window catches them. If your line of sight is blocked by brush or buildings, treat it as a stop. School buses and hazmat trucks always stop at every crossing.'
+          },
+          {
+            id: 'humped_crossing',
+            icon: '⛰️',
+            title: 'Humped / low-clearance crossing',
+            q: 'You\'re driving a rented U-Haul with a long wheelbase. A yellow sign shows a humped profile indicating a raised crossing. The box ahead could bottom out.',
+            choices: [
+              'Drive over at normal speed to minimize time on the tracks',
+              'Cross at an angle to reduce the bump',
+              'Find an alternate route — low-clearance and long-wheelbase vehicles have gotten stuck on humped crossings',
+              'Accelerate to skim the hump'
+            ],
+            correct: 2,
+            exp: 'The "humped" warning means long or low vehicles can get beached with their chassis on the tracks. Crossing at an angle does NOT help — it actually increases the chassis-to-rail contact distance. If no alternative exists, approach at a crawl in the center of the lane. If you get stuck: immediate evacuation, run at 45° toward any oncoming train, and call the emergency number posted on the blue-and-white sign at every crossing.'
+          }
+        ];
+        var rrState = d.rrState || {};
+        var rrPassed = Object.keys(rrState).filter(function(k){return rrState[k] && rrState[k].correct;}).length;
+        var rrAllDone = Object.keys(rrState).length === RR_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚂'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Railroad Crossing Drill'),
+            h('div', { style: { fontSize: '12px', color: '#bfdbfe' } }, 'FRA + Maine rules · ' + rrPassed + ' / ' + RR_SCENARIOS.length + ' passed'),
+            rrAllDone && rrPassed === RR_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you know the rules that save lives at crossings.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Before the drill: four things to know'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              RR_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          RR_SCENARIOS.map(function(sc) {
+            var state = rrState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, rrState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('rrState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === RR_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.rail_ready) { dBadges.rail_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Rail-Ready'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #60a5fa', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, rrState);
+                  delete ns[sc.id];
+                  upd('rrState', ns);
                 },
                 style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
               }, '↺ Retry') : null
@@ -16078,6 +16271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'mooseSafety', goal: 'safety', icon: '🫎', name: 'Moose Encounter Drill', desc: 'Maine-specific: what to do when a moose is in the road.' },
           { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: 'Emergency Vehicle Drill', desc: 'Maine Move Over law, pull-to-right rule, stopped responders.' },
           { view: 'schoolBus', goal: 'safety', icon: '🚌', name: 'School Bus Stop Drill', desc: 'When to stop for a stopped school bus (Maine §2308).' },
+          { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: 'Railroad Crossing Drill', desc: 'Federal + Maine crossing rules — and the 45° escape if you stall.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
@@ -18126,14 +18320,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ', UnsignaledLaneChanges=' + drivingStats.unsignaledLaneChanges +
                 ', CyclistClosePass=' + (drivingStats.cyclistClose || 0) +
                 '. Format as short paragraphs, each starting with an emoji.';
-              callGemini(prompt).then(function(response) {
-                upd('coachResponse', response);
+              if (!callGemini) {
+                upd('coachResponse', 'AI coach not available in this environment.');
                 upd('coachLoading', false);
-                if (response) speak('Your AI driving coach analysis is ready.');
-              }).catch(function() {
-                upd('coachResponse', 'Unable to connect to AI coach. Please try again.');
-                upd('coachLoading', false);
-              });
+              } else {
+                callGemini(prompt).then(function(response) {
+                  upd('coachResponse', response);
+                  upd('coachLoading', false);
+                  if (response) speak('Your AI driving coach analysis is ready.');
+                }).catch(function() {
+                  upd('coachResponse', 'Unable to connect to AI coach. Please try again.');
+                  upd('coachLoading', false);
+                });
+              }
             },
               style: { width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }
             }, '🤖 Analyze My Drive') : null,
