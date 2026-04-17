@@ -1908,6 +1908,7 @@
               if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
               mesh.geometry.dispose(); mesh.material.dispose();
               delete engine.blocks[key];
+              engine._blocksDirty = true;
             }
           } else if (a.action === 'remove') {
             // Undo a removal = re-place the block
@@ -1932,6 +1933,7 @@
               if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
               mesh.geometry.dispose(); mesh.material.dispose();
               delete engine.blocks[key];
+              engine._blocksDirty = true;
             }
           }
           engine._undoStack.push(a);
@@ -1964,6 +1966,7 @@
           mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
+          engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
           pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId });
           // Torch blocks emit a point light
           if (type === 'torch') {
@@ -2002,6 +2005,7 @@
             if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
             mesh.geometry.dispose(); mesh.material.dispose();
             delete engine.blocks[key];
+            engine._blocksDirty = true; // invalidate cached blocks array
             pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape });
           }
         };
@@ -2056,6 +2060,7 @@
             var m = engine.blocks[k]; engine.scene.remove(m); m.geometry.dispose(); m.material.dispose();
           });
           engine.blocks = {};
+          engine._blocksDirty = true; // invalidate cache
           engine.npcs.forEach(function(n) {
             engine.scene.remove(n.body); engine.scene.remove(n.head); engine.scene.remove(n.label);
             if (n.prompt) engine.scene.remove(n.prompt);
@@ -2616,7 +2621,7 @@
           if (!engine.isLocked) return;
           var THREE = window.THREE;
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-          var allMeshes = Object.values(engine.blocks).concat(engine.npcs.map(function(n) { return n.body; }));
+          var allMeshes = engine.getBlocksArr().concat(engine.npcs.map(function(n) { return n.body; }));
           var hits = engine.raycaster.intersectObjects(allMeshes);
           if (hits.length > 0) {
             var hit = hits[0];
@@ -2772,6 +2777,18 @@
           }
         }, { passive: false });
 
+        // ── Cached blocks array (rebuilt only when blocks change). Avoids allocating
+        // a fresh Object.values() array every frame in the ghost-preview raycaster.
+        engine._blocksArr = [];
+        engine._blocksDirty = true;
+        engine.getBlocksArr = function() {
+          if (engine._blocksDirty) {
+            engine._blocksArr = Object.values(engine.blocks);
+            engine._blocksDirty = false;
+          }
+          return engine._blocksArr;
+        };
+
         // ── Block placement preview ghost + break highlight + crosshair targeting ──
         engine._ghostMesh = null;
         engine._highlightMesh = null;
@@ -2795,7 +2812,7 @@
           } else {
             engine._crosshairTarget = 'none';
           }
-          var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
           if (hits.length > 0) engine._crosshairTarget = engine._crosshairTarget === 'none' ? 'block' : engine._crosshairTarget;
 
           // ── Break highlight — colored wireframe on the targeted block ──

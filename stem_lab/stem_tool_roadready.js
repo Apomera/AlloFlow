@@ -15473,6 +15473,179 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       // ══════════════════════════════════════════════════════════
+      // TEEN GDL DRILL (Maine Graduated Driver's License rules)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'teenGDL') {
+        var GDL_FACTS = [
+          { icon: '📘', title: 'Three phases',       body: 'Maine GDL: Learner\'s Permit at 15 (w/ driver\'s ed enrollment). Intermediate (provisional) License at 16 after holding permit 6+ months. Full License at 17 with a clean 180-day record, or automatically at 18.' },
+          { icon: '⏱️', title: '70 supervised hours', body: 'Before the road test, Maine requires 70 hours of supervised driving (10 of those at night) if you\'re in driver\'s ed. 75 hours if you\'re not. These hours get verified on the logbook your parent signs.' },
+          { icon: '📵', title: 'Phones — zero tolerance', body: 'Under 18: all mobile-device use is banned while driving, including hands-free and GPS. First offense $50–$500, license suspension for repeats. The rule covers texting, calling, maps, music skipping — any touch.' },
+          { icon: '🔄', title: 'The clock resets',    body: 'A moving-violation conviction during intermediate phase restarts your 270-day clock from the violation date. Translation: one speeding ticket and you\'re back to square one for the passenger and curfew restrictions.' }
+        ];
+        var GDL_SCENARIOS = [
+          {
+            id: 'friends_party',
+            icon: '👥',
+            title: 'Friends want a ride',
+            q: 'You got your Maine intermediate license 3 months ago. You\'re 16. Two friends from school ask for a ride to a party. No adults in the car. Legal?',
+            choices: [
+              'Yes — you\'re licensed, you can carry who you want',
+              'No — during the 270-day intermediate phase, no non-family passengers under 20 unless a licensed driver 20+ is in the front seat',
+              'Yes, as long as everyone buckles up',
+              'Yes, but only within 5 miles of home'
+            ],
+            correct: 1,
+            exp: 'Maine\'s provisional license restricts you from carrying non-family passengers for the FIRST 270 days of intermediate licensing — unless a licensed driver age 20+ is in the front seat. The rule exists because teen-with-teen-passengers crashes are statistically the highest-risk driving situation in America. Siblings / parents / grandparents are always exempt.'
+          },
+          {
+            id: 'curfew',
+            icon: '🌙',
+            title: 'The 2 AM diner run',
+            q: 'You\'re 16 with an intermediate license. Friends want to hit a 24-hour diner at 2 AM. You\'re not coming from work or school. Legal for you to drive?',
+            choices: [
+              'Yes — intermediate drivers can drive anytime',
+              'No — midnight to 5 AM is off-limits for intermediate drivers unless you\'re going to/from work, school, or have a licensed 20+ driver in the front seat',
+              'Only on weekends',
+              'Only with parental text-permission'
+            ],
+            correct: 1,
+            exp: 'Maine intermediate license curfew: no driving 12:00 AM to 5:00 AM. Exceptions: coming from or going to work, school, or a licensed emergency-responder activity — AND a licensed 20+ driver in the passenger seat works as a blanket exemption. A social trip is not an exception. A ticket here also RESETS your 270-day intermediate clock.'
+          },
+          {
+            id: 'hands_free',
+            icon: '📱',
+            title: 'Hands-free call',
+            q: 'You\'re 17, intermediate license. Your parent calls on your phone, which is paired to the car\'s Bluetooth speaker. You use the steering-wheel button to answer. Legal?',
+            choices: [
+              'Yes — hands-free is always legal',
+              'No — Maine law bans all mobile-device use (including hands-free) for drivers under 18',
+              'Only if the call is under 30 seconds',
+              'Only for family calls'
+            ],
+            correct: 1,
+            exp: 'Under 18 in Maine: no phone use at all while driving. Not texting, not calling, not hands-free, not GPS input. The law is stricter than for adult drivers because teen-driver-distraction crashes are the #1 cause of teen-driver deaths. Pull over to take any call. A violation during intermediate phase restarts your 270-day clock.'
+          },
+          {
+            id: 'supervised_hours',
+            icon: '⏱️',
+            title: 'How many hours?',
+            q: 'You\'re in driver\'s ed and want to take your Maine road test. How many supervised driving hours do you need logged?',
+            choices: [
+              '40 hours',
+              '50 hours',
+              '70 hours total — with 10 of those at night',
+              '100 hours'
+            ],
+            correct: 2,
+            exp: '70 hours supervised driving, 10 at night, logged and signed by a parent or guardian, if you completed driver\'s education. Without driver\'s ed it\'s 75 hours. Night hours are specifically required because most teen fatal crashes happen after dark. The log is verified at the BMV when you test.'
+          },
+          {
+            id: 'clock_reset',
+            icon: '🔄',
+            title: 'Ticket consequence',
+            q: 'You have an intermediate license. 60 days in, you get a speeding ticket (guilty). What happens to your intermediate-phase restrictions?',
+            choices: [
+              'Nothing — a ticket is just a ticket',
+              'The 270-day intermediate clock RESETS from the violation date, extending all passenger/curfew restrictions',
+              'You lose your license permanently',
+              'You have to retake the road test'
+            ],
+            correct: 1,
+            exp: 'Any moving-violation conviction during intermediate phase restarts your 270-day clock from the violation date. So a ticket 60 days in resets you back to day zero — meaning another 270 days of no-non-family-passenger and no-midnight-drive rules. Multiple violations can also trigger license suspension. Drive carefully during this phase.'
+          },
+          {
+            id: 'sibling',
+            icon: '👨‍👧',
+            title: 'Sibling to practice',
+            q: 'You have an intermediate license, 60 days in. Can you drive your 14-year-old sister to her soccer practice, just the two of you?',
+            choices: [
+              'No — no passengers at all',
+              'Yes — immediate family members are always exempt from the passenger restriction',
+              'Only with a licensed adult in the passenger seat',
+              'Only with written parental permission'
+            ],
+            correct: 1,
+            exp: 'Immediate family — siblings, parents, grandparents, step-family — are always exempt from the passenger restriction. The rule targets teen-with-teen-friend situations, not family errands. This is why families can rely on newly-licensed drivers for practical chores like shuttling younger siblings.'
+          }
+        ];
+        var gdlState = d.gdlState || {};
+        var gdlPassed = Object.keys(gdlState).filter(function(k){return gdlState[k] && gdlState[k].correct;}).length;
+        var gdlAllDone = Object.keys(gdlState).length === GDL_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #065f46, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '📘'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Teen GDL Drill'),
+            h('div', { style: { fontSize: '12px', color: '#a7f3d0' } }, 'Maine Graduated License rules · ' + gdlPassed + ' / ' + GDL_SCENARIOS.length + ' passed'),
+            gdlAllDone && gdlPassed === GDL_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you know the GDL rules cold.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'The Maine GDL system'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              GDL_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          GDL_SCENARIOS.map(function(sc) {
+            var state = gdlState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, gdlState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('gdlState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === GDL_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.gdl_scholar) { dBadges.gdl_scholar = true; upd('badges', dBadges); addToast('🏅 Achievement: GDL Scholar'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #34d399', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, gdlState);
+                  delete ns[sc.id];
+                  upd('gdlState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // CRASH RECONSTRUCTION LAB
       // ══════════════════════════════════════════════════════════
       if (view === 'crashLab') {
@@ -17024,6 +17197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'maineWinter', goal: 'maine', icon: '❄️', name: 'Maine Winter Guide', desc: 'Moose warnings, black ice, winter kit, studded tires.' },
           { view: 'roundaboutGuide', goal: 'maine', icon: '🔄', name: 'Roundabout Tutorial', desc: 'Maine is adding these fast. Step-by-step how-to.' },
           { view: 'gdlTracker', goal: 'maine', icon: '🪪', name: 'GDL Stage Tracker', desc: 'Maine Graduated Driver License timeline + restrictions.' },
+          { view: 'teenGDL', goal: 'maine', icon: '📘', name: 'Teen GDL Drill', desc: 'Passenger, curfew, and phone rules teens get tested on.' },
           { view: 'insuranceCalc', goal: 'maine', icon: '💰', name: 'Insurance Calculator', desc: 'Estimate what your actual rate will be.' },
           { view: 'accidentProtocol', goal: 'maine', icon: '⚠️', name: 'Accident Protocol', desc: 'Maine-specific crash reporting & insurance steps.' },
           { view: 'logbook', goal: 'progress', icon: '📔', name: 'Driving Logbook', desc: 'All drives logged with 70-hour Maine progress bar.' },
