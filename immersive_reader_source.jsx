@@ -13,6 +13,7 @@ var List = _lazyIcon('List');
 var Pause = _lazyIcon('Pause');
 var Play = _lazyIcon('Play');
 var Settings2 = _lazyIcon('Settings2');
+var X = _lazyIcon('X');
 var Zap = _lazyIcon('Zap');
 
 const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
@@ -44,21 +45,19 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
         }
     }, [text]);
     React.useEffect(() => {
-        let interval;
-        if (isPlaying && currentIndex < words.length) {
-            const delay = 60000 / wpm;
-            interval = setInterval(() => {
-                setCurrentIndex(prev => {
-                    if (prev >= words.length - 1) {
-                        setIsPlaying(false);
-                        return prev;
-                    }
-                    return prev + 1;
-                });
-            }, delay);
-        }
+        if (!isPlaying) return;
+        const delay = 60000 / wpm;
+        const interval = setInterval(() => {
+            setCurrentIndex(prev => {
+                if (prev >= words.length - 1) {
+                    setIsPlaying(false);
+                    return prev;
+                }
+                return prev + 1;
+            });
+        }, delay);
         return () => clearInterval(interval);
-    }, [isPlaying, wpm, words.length, currentIndex]);
+    }, [isPlaying, wpm, words.length]);
     React.useEffect(() => {
         const handleKeyDown = (e) => {
             if (!isOpen) return;
@@ -178,7 +177,6 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 shrink-0">
             <Settings2 size={14}/> {t('immersive.title')}
         </span>
-        <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0">
             <label className="text-xs font-bold text-slate-700">{t('immersive.text_size')}</label>

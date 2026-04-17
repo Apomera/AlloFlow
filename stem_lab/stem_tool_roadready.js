@@ -2240,6 +2240,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var permitState = d.permit || null;
       var drivingStats = d.drivingStats || null;
 
+      // ── Visual polish: view transitions + global style layer + confetti ──
+      // prevViewRef tracks previous view so we can fade-in on change without flicker.
+      // lastBadgeCountRef detects new achievement unlocks and triggers confetti.
+      var prevViewRef = useRef(view);
+      var lastBadgeCountRef = useRef(Object.keys(d.badges || {}).length);
+      var confettiCanvasRef = useRef(null);
+      // Install a global style sheet + a confetti canvas overlay ONCE on mount. Both live
+      // in document.body so they apply/cover regardless of which view is active.
+      useEffect(function() {
+        var styleId = 'rr-polish-style-v1';
+        if (!document.getElementById(styleId)) {
+          var styleEl = document.createElement('style');
+          styleEl.id = styleId;
+          styleEl.textContent =
+            '@keyframes rr-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }' +
+            '@keyframes rr-shimmer { 0% { background-position: -800px 0; } 100% { background-position: 800px 0; } }' +
+            '@keyframes rr-pulse-soft { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }' +
+            '@keyframes rr-pulse-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(34,211,238,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,211,238,0); } }' +
+            '[data-rr-view] { animation: rr-fade-in 0.3s ease-out; }' +
+            '[data-rr-tile] { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }' +
+            '[data-rr-tile]:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); filter: brightness(1.08); }' +
+            '[data-rr-tile]:active { transform: translateY(-1px) scale(0.99); }' +
+            'button:not(:disabled) { transition: transform 0.12s ease, filter 0.12s ease; }' +
+            'button:not(:disabled):active { transform: scale(0.97); }' +
+            'button:not(:disabled):hover { filter: brightness(1.12); }' +
+            '.rr-shimmer { background: linear-gradient(90deg, rgba(30,41,59,0.6) 0%, rgba(71,85,105,0.8) 50%, rgba(30,41,59,0.6) 100%); background-size: 800px 100%; animation: rr-shimmer 1.6s infinite linear; border-radius: 4px; }' +
+            '.rr-cta-pulse { animation: rr-pulse-glow 2.4s ease-in-out infinite; }' +
+            'input[type="range"] { accent-color: #22d3ee; }' +
+            '/* Smoother scrollbars in dark mode */ ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: #0f172a; } ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #64748b; }';
+          document.head.appendChild(styleEl);
+        }
+        // Confetti canvas overlay
+        var confId = 'rr-confetti-canvas';
+        var confCvs = document.getElementById(confId);
+        if (!confCvs) {
+          confCvs = document.createElement('canvas');
+          confCvs.id = confId;
+          confCvs.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:99999;';
+          document.body.appendChild(confCvs);
+        }
+        confettiCanvasRef.current = confCvs;
+      }, []);
+      // On view change: scroll to top of the tool container + briefly flag a fade-in.
+      useEffect(function() {
+        if (prevViewRef.current !== view) {
+          prevViewRef.current = view;
+          // Scroll the surrounding scrollable container to top. Scope carefully — we don't
+          // want to scroll the whole page when the tool is embedded inside AlloFlow.
+          try {
+            // Try Window scroll (AlloFlow canvas typically scrolls here).
+            if (typeof window !== 'undefined' && window.scrollTo) window.scrollTo({ top: 0, behavior: 'smooth' });
+          } catch(_) {}
+        }
+      }, [view]);
+      // Detect badge count growth → trigger confetti.
+      useEffect(function() {
+        var current = Object.keys(d.badges || {}).length;
+        if (current > lastBadgeCountRef.current) {
+          lastBadgeCountRef.current = current;
+          // Fire confetti via imperative canvas draw. Cheap, no dependencies.
+          try {
+            var cvs = confettiCanvasRef.current;
+            if (!cvs) return;
+            cvs.width = window.innerWidth;
+            cvs.height = window.innerHeight;
+            var cctx = cvs.getContext('2d');
+            var parts = [];
+            var colors = ['#fbbf24','#f472b6','#a78bfa','#22d3ee','#4ade80','#ef4444','#f97316'];
+            for (var pi = 0; pi < 120; pi++) {
+              parts.push({
+                x: cvs.width / 2, y: cvs.height / 3,
+                vx: (Math.random() - 0.5) * 18,
+                vy: -Math.random() * 16 - 6,
+                size: 4 + Math.random() * 6,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rot: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.3,
+                life: 1
+              });
+            }
+            var start = Date.now();
+            var animate = function() {
+              var elapsed = Date.now() - start;
+              if (elapsed > 3000) { cctx.clearRect(0, 0, cvs.width, cvs.height); return; }
+              cctx.clearRect(0, 0, cvs.width, cvs.height);
+              parts.forEach(function(p) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.6; // gravity
+                p.vx *= 0.99;
+                p.rot += p.spin;
+                p.life = Math.max(0, 1 - elapsed / 3000);
+                cctx.save();
+                cctx.translate(p.x, p.y);
+                cctx.rotate(p.rot);
+                cctx.fillStyle = p.color;
+                cctx.globalAlpha = p.life;
+                cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                cctx.restore();
+              });
+              requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+          } catch (confErr) { /* ignore — confetti is cosmetic */ }
+        } else if (current < lastBadgeCountRef.current) {
+          // Reset if badges were cleared (e.g., save loaded with fewer).
+          lastBadgeCountRef.current = current;
+        }
+      }, [Object.keys(d.badges || {}).length]);
+
       var currentVehicle = VEHICLES.find(function(v) { return v.id === selectedVehicle; }) || VEHICLES[0];
       var currentScenario = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
 
@@ -12038,7 +12148,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   style: { padding: '4px 8px', borderRadius: '5px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
                 }, '↺ New') : null
               ),
-              reflectionRef.current.inFlight ? h('div', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, 'Your coach is thinking...') :
+              reflectionRef.current.inFlight ? h('div', null,
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', marginBottom: '8px' } }, '✨ Your coach is thinking...'),
+                h('div', { className: 'rr-shimmer', style: { height: '10px', marginBottom: '5px' } }),
+                h('div', { className: 'rr-shimmer', style: { height: '10px', marginBottom: '5px', width: '92%' } }),
+                h('div', { className: 'rr-shimmer', style: { height: '10px', marginBottom: '5px', width: '88%' } }),
+                h('div', { className: 'rr-shimmer', style: { height: '10px', marginBottom: '5px' } }),
+                h('div', { className: 'rr-shimmer', style: { height: '10px', marginBottom: '5px', width: '70%' } })
+              ) :
               d.lastReflection ? h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap' } }, d.lastReflection.text) :
               h('div', { style: { fontSize: '11px', color: '#64748b', lineHeight: '1.5' } }, 'Tap Generate for a personalized coaching reflection based on this drive.')
             ) : null,

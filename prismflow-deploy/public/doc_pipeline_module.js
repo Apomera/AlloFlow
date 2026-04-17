@@ -5539,6 +5539,14 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           updateProgress(2, 'Fallback: generating HTML directly...');
           const fallbackPrompt = `Transform this PDF into accessible HTML body content meeting WCAG 2.1 AA. Use proper headings, tables with th scope, alt text, lists, links. Include ALL content. Use inline CSS for styling. Return ONLY HTML.`;
           bodyContent = await callGeminiVision(fallbackPrompt, _base64, _mimeType);
+          // Validate: reject empty, refusal messages, or non-HTML replies so downstream stages know to recover.
+          const _fallbackOk = bodyContent
+            && bodyContent.trim().length >= 50
+            && /<(?:p|h[1-6]|ul|ol|table|section|article|div|main)\b/i.test(bodyContent);
+          if (!_fallbackOk) {
+            warnLog('[PDF Fix] Fallback HTML failed structural validation (len=' + (bodyContent ? bodyContent.trim().length : 0) + ') — downstream will rely on heuristic extraction');
+            bodyContent = '';
+          }
         }
       } else {
         // Long documents: chunked JSON extraction via Vision API
@@ -5757,7 +5765,13 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               warnLog(`[PDF Fix] Chunk ${i + 1}: heuristic fallback produced ${heuristicBlocks.length} blocks from extracted text`);
               return heuristicBlocks;
             }
-            return [{ type: 'p', text: chunkText.substring(0, 5000) }];
+            // Absolute last resort: preserve ALL chunk text as paragraphs. The previous implementation
+            // truncated at 5000 chars — on dense pages that silently dropped 3–7KB of content and
+            // collapsed structure into one <p>. Split on blank-line paragraph breaks instead.
+            const _fallbackParas = String(chunkText || '').split(/\n\s*\n+/).map(p => p.trim()).filter(p => p.length > 0);
+            if (_fallbackParas.length === 0) return [];
+            warnLog(`[PDF Fix] Chunk ${i + 1}: last-resort paragraph fallback preserved ${_fallbackParas.length} paragraphs (${chunkText.length} chars)`);
+            return _fallbackParas.map(p => ({ type: 'p', text: p }));
           }
           return [];
         };

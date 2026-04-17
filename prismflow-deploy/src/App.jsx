@@ -7869,27 +7869,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7905,7 +7905,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8256,12 +8256,14 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
           const currentData = generatedContent?.data;
           const currentItems = Array.isArray(currentData) ? currentData : (currentData?.items || []);
           const currentProgressionLabel = currentData?.progressionLabel || t('timeline.progression_label_default');
+          const currentProgressionLabelEn = (!Array.isArray(currentData) && currentData?.progressionLabel_en) || null;
+          const safeInstructions = JSON.stringify(timelineRevisionInput.trim());
           const prompt = `
 You are an AI assistant helping to revise a sequence/timeline.
-The user has a sequence with this ordering principle: "${currentProgressionLabel}",
+The user has a sequence with this ordering principle: ${JSON.stringify(currentProgressionLabel)}.
 Current sequence items:
 ${JSON.stringify(currentItems, null, 2)}
-User's revision instructions: "${timelineRevisionInput.trim()}",
+User's revision instructions: ${safeInstructions}
 IMPORTANT RULES:
 1. Apply the user's revision instructions to modify the sequence
 2. Maintain the same progressionLabel format unless the user explicitly asks to change it
@@ -8271,7 +8273,7 @@ IMPORTANT RULES:
 Return ONLY a valid JSON object:
 {
     "progressionLabel": "Y-axis ordering principle",
-    ${currentData.progressionLabel_en ? '"progressionLabel_en": "English translation",' : ''}
+    ${currentProgressionLabelEn ? '"progressionLabel_en": "English translation",' : ''}
     "items": [
         {
             "date": "Position/Value",
@@ -8284,10 +8286,11 @@ Return ONLY a valid JSON object:
           `;
           const result = await callGemini(prompt, true);
           const parsed = JSON.parse(cleanJson(result));
+          const revisedItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
           let revisedData = {
               progressionLabel: parsed.progressionLabel || currentProgressionLabel,
-              progressionLabel_en: parsed.progressionLabel_en || null,
-              items: parsed.items || []
+              progressionLabel_en: parsed.progressionLabel_en || currentProgressionLabelEn || null,
+              items: revisedItems
           };
           setGeneratedContent(prev => ({
               ...prev,
@@ -9315,15 +9318,35 @@ Return ONLY a valid JSON object:
   const [isCustomReviseOpen, setIsCustomReviseOpen] = useState(false);
   const [isImmersiveReaderActive, setIsImmersiveReaderActive] = useState(false);
   const [immersiveRulerY, setImmersiveRulerY] = useState(0);
-  const [immersiveSettings, setImmersiveSettings] = useState({
-      showSyllables: false,
-      showNouns: false,
-      showVerbs: false,
-      showAdjectives: false,
-      showAdverbs: false,
-      textSize: 18,
-      lineFocus: false,
-      wideText: false, bgColor: '#fdfbf7', fontColor: '#1e293b' });
+  const [immersiveSettings, _setImmersiveSettings] = useState(() => {
+      const defaults = {
+          showSyllables: false,
+          showNouns: false,
+          showVerbs: false,
+          showAdjectives: false,
+          showAdverbs: false,
+          textSize: 18,
+          lineFocus: false,
+          wideText: false,
+          bgColor: '#fef3c7',
+          fontColor: '#1e293b'
+      };
+      try {
+          const raw = safeGetItem('allo_immersive_settings');
+          if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed && typeof parsed === 'object') return { ...defaults, ...parsed };
+          }
+      } catch {}
+      return defaults;
+  });
+  const setImmersiveSettings = (v) => {
+      _setImmersiveSettings(prev => {
+          const next = typeof v === 'function' ? v(prev) : v;
+          try { safeSetItem('allo_immersive_settings', JSON.stringify(next)); } catch {}
+          return next;
+      });
+  };
   const [readingTheme, _setReadingTheme] = useState(() => {
       try {
           const v = safeGetItem('allo_reading_theme');
@@ -28621,8 +28644,8 @@ Return ONLY JSON.`;
              Text: "${textToProcess}"
           `;
          const result = await callGemini(prompt, true);
-         try {
-             let parsed = JSON.parse(cleanJson(result));
+         const parseTimelineResponse = (raw) => {
+             const parsed = JSON.parse(cleanJson(raw));
              let itemsArray = [];
              let progressionLabel = t('timeline.progression_label_default') || 'Sequential Order';
              let progressionLabel_en = null;
@@ -28639,15 +28662,22 @@ Return ONLY JSON.`;
                  else if (parsed.sequence) itemsArray = parsed.sequence;
                  else itemsArray = [];
              }
-             content = {
-                 progressionLabel,
-                 progressionLabel_en,
-                 items: itemsArray
-             };
-             metaInfo = t('meta.events_count', { count: itemsArray.length });
+             return { progressionLabel, progressionLabel_en, items: itemsArray };
+         };
+         try {
+             content = parseTimelineResponse(result);
+             metaInfo = t('meta.events_count', { count: content.items.length });
          } catch (parseErr) {
-             warnLog("Timeline Parse Error:", parseErr);
-             throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
+             warnLog("Timeline Parse Error (attempt 1):", parseErr);
+             try {
+                 const retryPrompt = `The previous response was not valid JSON. Return ONLY a valid JSON object matching this exact structure, with no prose, no markdown fences, and no trailing commas:\n{\n    "progressionLabel": "AXIS: ...",\n    "items": [ { "date": "...", "event": "..." } ]\n}\nPrevious response to repair:\n${result}`;
+                 const retryResult = await callGemini(retryPrompt, true);
+                 content = parseTimelineResponse(retryResult);
+                 metaInfo = t('meta.events_count', { count: content.items.length });
+             } catch (retryErr) {
+                 warnLog("Timeline Parse Error (attempt 2):", retryErr);
+                 throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
+             }
          }
       } else if (type === 'math') {
           setGenerationStep(t('status_steps.solving_visualizing'));
@@ -32688,6 +32718,23 @@ Return ONLY JSON:
         .theme-dark .bg-teal-50 { background-color: rgba(19, 78, 74, 0.4) !important; border-color: #0f766e !important; }
         .theme-dark .bg-rose-50 { background-color: rgba(136, 19, 55, 0.4) !important; border-color: #be123c !important; }
         .theme-dark .bg-cyan-50 { background-color: rgba(22, 78, 99, 0.4) !important; border-color: #0e7490 !important; }
+        /* -100 bg remaps — prevents light-badge + remapped-dark-text = invisible-text bug */
+        .theme-dark .bg-indigo-100 { background-color: rgba(55, 48, 163, 0.55) !important; border-color: #4338ca !important; }
+        .theme-dark .bg-blue-100 { background-color: rgba(30, 64, 175, 0.55) !important; border-color: #1e40af !important; }
+        .theme-dark .bg-green-100 { background-color: rgba(22, 101, 52, 0.55) !important; border-color: #15803d !important; }
+        .theme-dark .bg-orange-100 { background-color: rgba(154, 52, 18, 0.55) !important; border-color: #c2410c !important; }
+        .theme-dark .bg-red-100 { background-color: rgba(153, 27, 27, 0.55) !important; border-color: #b91c1c !important; }
+        .theme-dark .bg-yellow-100 { background-color: rgba(133, 77, 14, 0.55) !important; border-color: #a16207 !important; }
+        .theme-dark .bg-amber-100 { background-color: rgba(146, 64, 14, 0.55) !important; border-color: #b45309 !important; }
+        .theme-dark .bg-purple-100 { background-color: rgba(107, 33, 168, 0.55) !important; border-color: #7e22ce !important; }
+        .theme-dark .bg-teal-100 { background-color: rgba(17, 94, 89, 0.55) !important; border-color: #0f766e !important; }
+        .theme-dark .bg-rose-100 { background-color: rgba(159, 18, 57, 0.55) !important; border-color: #be123c !important; }
+        .theme-dark .bg-cyan-100 { background-color: rgba(21, 94, 117, 0.55) !important; border-color: #0e7490 !important; }
+        .theme-dark .bg-pink-100 { background-color: rgba(157, 23, 77, 0.55) !important; border-color: #be185d !important; }
+        .theme-dark .bg-emerald-100 { background-color: rgba(6, 95, 70, 0.55) !important; border-color: #059669 !important; }
+        .theme-dark .bg-violet-100 { background-color: rgba(91, 33, 182, 0.55) !important; border-color: #7c3aed !important; }
+        .theme-dark .bg-sky-100 { background-color: rgba(7, 89, 133, 0.55) !important; border-color: #0284c7 !important; }
+        .theme-dark .bg-fuchsia-100 { background-color: rgba(134, 25, 143, 0.55) !important; border-color: #a21caf !important; }
         .theme-dark .text-green-700, .theme-dark .text-green-800 { color: #86efac !important; } /* Green-300 */
         .theme-dark .text-red-700, .theme-dark .text-red-800 { color: #fca5a5 !important; } /* Red-300 */
         .theme-dark .text-yellow-700, .theme-dark .text-yellow-800 { color: #fde047 !important; } /* Yellow-300 */
@@ -32697,6 +32744,21 @@ Return ONLY JSON:
         .theme-dark .text-orange-700, .theme-dark .text-orange-800 { color: #fdba74 !important; } /* Orange-300 */
         .theme-dark .text-cyan-700, .theme-dark .text-cyan-800 { color: #67e8f9 !important; } /* Cyan-300 */
         .theme-dark .text-rose-700, .theme-dark .text-rose-800 { color: #fda4af !important; } /* Rose-300 */
+        /* -500 / -600 remaps — fixes inline icon/accent text that was 2-3:1 on dark bg */
+        .theme-dark .text-green-500, .theme-dark .text-green-600 { color: #4ade80 !important; } /* Green-400 */
+        .theme-dark .text-red-500, .theme-dark .text-red-600 { color: #f87171 !important; } /* Red-400 */
+        .theme-dark .text-yellow-500, .theme-dark .text-yellow-600 { color: #facc15 !important; } /* Yellow-400 */
+        .theme-dark .text-amber-500, .theme-dark .text-amber-600 { color: #fbbf24 !important; } /* Amber-400 */
+        .theme-dark .text-blue-500, .theme-dark .text-blue-600 { color: #60a5fa !important; } /* Blue-400 */
+        .theme-dark .text-purple-500, .theme-dark .text-purple-600 { color: #c084fc !important; } /* Purple-400 */
+        .theme-dark .text-teal-500, .theme-dark .text-teal-600 { color: #2dd4bf !important; } /* Teal-400 */
+        .theme-dark .text-orange-500, .theme-dark .text-orange-600 { color: #fb923c !important; } /* Orange-400 */
+        .theme-dark .text-cyan-500, .theme-dark .text-cyan-600 { color: #22d3ee !important; } /* Cyan-400 */
+        .theme-dark .text-rose-500, .theme-dark .text-rose-600 { color: #fb7185 !important; } /* Rose-400 */
+        .theme-dark .text-pink-500, .theme-dark .text-pink-600 { color: #f472b6 !important; } /* Pink-400 */
+        .theme-dark .text-emerald-500, .theme-dark .text-emerald-600 { color: #34d399 !important; } /* Emerald-400 */
+        .theme-dark .text-violet-500, .theme-dark .text-violet-600 { color: #a78bfa !important; } /* Violet-400 */
+        .theme-dark .text-sky-500, .theme-dark .text-sky-600 { color: #38bdf8 !important; } /* Sky-400 */
         .theme-dark { color-scheme: dark; }
         .theme-dark input, .theme-dark textarea, .theme-dark select {
             background-color: #0f172a !important;
@@ -32731,6 +32793,15 @@ Return ONLY JSON:
         .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; }
         .theme-contrast button { background-color: #000000 !important; border: 2px solid #00ff00 !important; color: #00ff00 !important; font-weight: bold !important; }
         .theme-contrast button:hover { background-color: #00ff00 !important; color: #000000 !important; }
+        /* Keyboard focus — critical in contrast mode */
+        .theme-contrast :focus-visible,
+        .theme-contrast button:focus-visible,
+        .theme-contrast a:focus-visible,
+        .theme-contrast [role="button"]:focus-visible {
+            outline: 4px solid #ffff00 !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 6px #000000, 0 0 0 10px #ffff00 !important;
+        }
         .theme-contrast { color-scheme: dark; }
         /* Reading theme overrides — make child bg-white elements transparent so theme shows through */
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-white,
@@ -32779,9 +32850,6 @@ Return ONLY JSON:
             color: #000000 !important;
             border: 2px solid #FFFFFF !important;
         }
-        .theme-modern {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-        }
         @font-face {
             font-family: 'OpenDyslexic';
             src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-regular.woff') format('woff');
@@ -32798,14 +32866,9 @@ Return ONLY JSON:
             font-family: 'OpenDyslexic', sans-serif !important;
             line-height: 1.6 !important;
         }
-        .theme-modern h1, .theme-modern h2, .theme-modern h3, .theme-modern h4, .theme-modern h5, .theme-modern h6, .theme-modern .font-heading, .theme-modern .font-display {
-            font-family: 'Outfit', system-ui, -apple-system, sans-serif !important;
-        }
-        @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap');
         .font-andika, .font-andika * {
             font-family: 'Andika', sans-serif !important;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&display=swap');
         .font-gentium, .font-gentium * {
             font-family: 'Gentium Book Plus', serif !important;
         }
@@ -36957,7 +37020,13 @@ Return ONLY JSON:
                                 min="3"
                                 max="20"
                                 value={timelineItemCount}
-                                onChange={(e) => setTimelineItemCount(e.target.value)}
+                                onChange={(e) => {
+                                    const raw = e.target.value;
+                                    if (raw === '') { setTimelineItemCount(''); return; }
+                                    const n = parseInt(raw, 10);
+                                    if (Number.isNaN(n)) { setTimelineItemCount(''); return; }
+                                    setTimelineItemCount(String(Math.min(20, Math.max(3, n))));
+                                }}
                                 placeholder={t('timeline.placeholder_count')}
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
                             />
@@ -51781,7 +51850,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
-                            <div className="text-[11px] text-slate-600 font-bold uppercase">Agreement Score</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase" title="Custom 1−(SD/50) index; not textbook ICC">Auditor Consistency (ICC-like)</div>
                           </div>
                           {pdfAuditResult.cronbachAlpha !== null && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">

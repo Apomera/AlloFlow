@@ -6394,6 +6394,9 @@ const GLOSS_INITIAL_STATE = {
   glossaryTier3Count: 6,
   glossaryDefinitionLevel: 'Same as Source Text',
   glossaryFilter: 'all',
+  includeEtymology: false,
+  etymologyScope: 'tier3',
+  isGeneratingEtymology: {},
 };
 function glossaryReducer(state, action) {
   if (action.type === 'GLOSS_SET') {
@@ -6465,7 +6468,7 @@ function uiChromeReducer(state, action) {
 const SETTINGS_INITIAL_STATE = {
   isProjectSettingsOpen: false,
         showAIBackendModal: false,
-  theme: 'light',
+  theme: (typeof safeGetItem === 'function' && ['light','dark','contrast'].includes(safeGetItem('allo_theme'))) ? safeGetItem('allo_theme') : 'light',
   showTextSettings: false,
   showVoiceSettings: false,
   wordSearchLang: 'English',
@@ -6995,7 +6998,7 @@ const AlloFlowContent = () => {
   const [settingsState, settingsDispatch] = useReducer(settingsReducer, SETTINGS_INITIAL_STATE);
   const { isProjectSettingsOpen, theme, showTextSettings, showVoiceSettings, wordSearchLang, standardDeckLang, targetTranslationLang } = settingsState;
   const setIsProjectSettingsOpen = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'isProjectSettingsOpen', value: v });
-  const setTheme = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'theme', value: v });
+  const setTheme = (v) => { try { safeSetItem('allo_theme', v); } catch {} settingsDispatch({ type: 'SETTINGS_SET', field: 'theme', value: v }); };
   const setShowTextSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showTextSettings', value: v });
   const setShowVoiceSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showVoiceSettings', value: v });
   const setWordSearchLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'wordSearchLang', value: v });
@@ -7866,27 +7869,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7902,7 +7905,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1ce8054/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d304bef/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8253,12 +8256,14 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
           const currentData = generatedContent?.data;
           const currentItems = Array.isArray(currentData) ? currentData : (currentData?.items || []);
           const currentProgressionLabel = currentData?.progressionLabel || t('timeline.progression_label_default');
+          const currentProgressionLabelEn = (!Array.isArray(currentData) && currentData?.progressionLabel_en) || null;
+          const safeInstructions = JSON.stringify(timelineRevisionInput.trim());
           const prompt = `
 You are an AI assistant helping to revise a sequence/timeline.
-The user has a sequence with this ordering principle: "${currentProgressionLabel}",
+The user has a sequence with this ordering principle: ${JSON.stringify(currentProgressionLabel)}.
 Current sequence items:
 ${JSON.stringify(currentItems, null, 2)}
-User's revision instructions: "${timelineRevisionInput.trim()}",
+User's revision instructions: ${safeInstructions}
 IMPORTANT RULES:
 1. Apply the user's revision instructions to modify the sequence
 2. Maintain the same progressionLabel format unless the user explicitly asks to change it
@@ -8268,7 +8273,7 @@ IMPORTANT RULES:
 Return ONLY a valid JSON object:
 {
     "progressionLabel": "Y-axis ordering principle",
-    ${currentData.progressionLabel_en ? '"progressionLabel_en": "English translation",' : ''}
+    ${currentProgressionLabelEn ? '"progressionLabel_en": "English translation",' : ''}
     "items": [
         {
             "date": "Position/Value",
@@ -8281,10 +8286,11 @@ Return ONLY a valid JSON object:
           `;
           const result = await callGemini(prompt, true);
           const parsed = JSON.parse(cleanJson(result));
+          const revisedItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
           let revisedData = {
               progressionLabel: parsed.progressionLabel || currentProgressionLabel,
-              progressionLabel_en: parsed.progressionLabel_en || null,
-              items: parsed.items || []
+              progressionLabel_en: parsed.progressionLabel_en || currentProgressionLabelEn || null,
+              items: revisedItems
           };
           setGeneratedContent(prev => ({
               ...prev,
@@ -8472,7 +8478,7 @@ Return ONLY a valid JSON object:
   const setWordSoundsLanguage = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsLanguage', value: v });
   const setWordSoundsFeedback = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsFeedback', value: v });
   const [glossaryState, glossaryDispatch] = useReducer(glossaryReducer, GLOSS_INITIAL_STATE);
-  const { glossaryHealthCheck, isEditingGlossary, definitionData, personaDefinitionData, isGeneratingTermImage, glossaryRefinementInputs, newGlossaryTerm, glossaryImageStyle, isAddingTerm, glossaryImageSize, glossaryTier2Count, glossaryTier3Count, glossaryDefinitionLevel, glossaryFilter } = glossaryState;
+  const { glossaryHealthCheck, isEditingGlossary, definitionData, personaDefinitionData, isGeneratingTermImage, glossaryRefinementInputs, newGlossaryTerm, glossaryImageStyle, isAddingTerm, glossaryImageSize, glossaryTier2Count, glossaryTier3Count, glossaryDefinitionLevel, glossaryFilter, includeEtymology, etymologyScope, isGeneratingEtymology } = glossaryState;
   const setGlossaryHealthCheck = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryHealthCheck', value: v });
   const setIsEditingGlossary = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'isEditingGlossary', value: v });
   const setDefinitionData = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'definitionData', value: v });
@@ -8487,6 +8493,9 @@ Return ONLY a valid JSON object:
   const setGlossaryTier3Count = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryTier3Count', value: v });
   const setGlossaryDefinitionLevel = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryDefinitionLevel', value: v });
   const setGlossaryFilter = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryFilter', value: v });
+  const setIncludeEtymology = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'includeEtymology', value: v });
+  const setEtymologyScope = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'etymologyScope', value: v });
+  const setIsGeneratingEtymology = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'isGeneratingEtymology', value: v });
   const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
   const [wordSoundsBadges, setWordSoundsBadges] = useState(() => {
       if (typeof window !== 'undefined') {
@@ -9280,7 +9289,10 @@ Return ONLY a valid JSON object:
   const [disableAnimations, setDisableAnimations] = useState(() => {
     try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) { return false; }
   });
-  const [colorOverlay, setColorOverlay] = useState('none');
+  const [colorOverlay, _setColorOverlay] = useState(() => {
+      try { const v = safeGetItem('allo_color_overlay'); return ['none','blue','peach','yellow'].includes(v) ? v : 'none'; } catch { return 'none'; }
+  });
+  const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
   const [dyslexicFont, setDyslexicFont] = useState(false);
@@ -9306,16 +9318,43 @@ Return ONLY a valid JSON object:
   const [isCustomReviseOpen, setIsCustomReviseOpen] = useState(false);
   const [isImmersiveReaderActive, setIsImmersiveReaderActive] = useState(false);
   const [immersiveRulerY, setImmersiveRulerY] = useState(0);
-  const [immersiveSettings, setImmersiveSettings] = useState({
-      showSyllables: false,
-      showNouns: false,
-      showVerbs: false,
-      showAdjectives: false,
-      showAdverbs: false,
-      textSize: 18,
-      lineFocus: false,
-      wideText: false, bgColor: '#fdfbf7', fontColor: '#1e293b' });
-  const [readingTheme, setReadingTheme] = useState('default');
+  const [immersiveSettings, _setImmersiveSettings] = useState(() => {
+      const defaults = {
+          showSyllables: false,
+          showNouns: false,
+          showVerbs: false,
+          showAdjectives: false,
+          showAdverbs: false,
+          textSize: 18,
+          lineFocus: false,
+          wideText: false,
+          bgColor: '#fef3c7',
+          fontColor: '#1e293b'
+      };
+      try {
+          const raw = safeGetItem('allo_immersive_settings');
+          if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed && typeof parsed === 'object') return { ...defaults, ...parsed };
+          }
+      } catch {}
+      return defaults;
+  });
+  const setImmersiveSettings = (v) => {
+      _setImmersiveSettings(prev => {
+          const next = typeof v === 'function' ? v(prev) : v;
+          try { safeSetItem('allo_immersive_settings', JSON.stringify(next)); } catch {}
+          return next;
+      });
+  };
+  const [readingTheme, _setReadingTheme] = useState(() => {
+      try {
+          const v = safeGetItem('allo_reading_theme');
+          const valid = ['default','warm','sepia','dark','highContrast','blue','green','rose','dyslexia'];
+          return valid.includes(v) ? v : 'default';
+      } catch { return 'default'; }
+  });
+  const setReadingTheme = (v) => { try { safeSetItem('allo_reading_theme', v); } catch {} _setReadingTheme(v); };
   const [isAnalyzingPos, setIsAnalyzingPos] = useState(false);
   const [isDictationMode, setIsDictationMode] = useState(false);
   const recognitionRef = useRef(null);
@@ -9691,6 +9730,7 @@ Return ONLY a valid JSON object:
     'tour-tool-lesson-plan': 'lesson-plan',
     'glossary_standard_flashcards': 'glossary',
     'glossary_language_flashcards': 'glossary',
+    'glossary_etymology_info': 'glossary',
     'glossary_export_standard': 'glossary',
     'glossary_export_language': 'glossary',
     'glossary_puzzle_lang': 'glossary',
@@ -12851,6 +12891,7 @@ Return only the corrected version of this exact text:`;
   const [conceptInput, setConceptInput] = useState('');
   const [selectedConcepts, setSelectedConcepts] = useState([]);
   const [conceptItemCount, setConceptItemCount] = useState(10);
+  const [conceptImageMode, setConceptImageMode] = useState('auto'); // 'auto' | 'always' | 'never'
   const [languageInput, setLanguageInput] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
@@ -24206,6 +24247,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
         .secondary-text { font-size: 16px; color: #4f46e5; font-weight: bold; margin-top: 5px; }
         .def-text { font-size: 13px; color: #475569; line-height: 1.4; }
         .def-trans { font-size: 13px; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
+        .etym-text { font-size: 11px; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
         .set-header {
             background: #f1f5f9; color: #334155;
             padding: 15px; margin: 40px 0 20px 0;
@@ -24274,6 +24316,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
                 backContent = `
                     <div class="def-text"><strong>${t('languages.english')}:</strong> ${cleanText(item.def)}</div>
                     ${transDef ? `<div class="def-trans"><strong>${lang}:</strong> ${cleanText(transDef)}</div>` : ''}
+                    ${item.etymology ? `<div class="etym-text">📜 <strong>${t('glossary.etymology_label') || 'Roots'}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                 `;
             }
             htmlBody += `
@@ -27239,12 +27282,21 @@ Return ONLY JSON.`;
               1. An English definition. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
               3. Translations into: ${langsReq.join(', ')}.
+              ${includeEtymology ? `
+              4. Etymology / Word Roots ${etymologyScope === 'both' ? 'for every term' : 'for Tier 3 (Domain-Specific) terms only'}:
+                 Provide 1-3 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 - K-5 audiences: simple wording like "Comes from the Greek word photo meaning light."
+                 - 6-12 audiences: break into prefix/root/suffix where relevant and name the source language.
+                 - Skip terms with no meaningful etymology (proper nouns, recent coinages). If so, OMIT the etymology field.
+                 ${effectiveLanguage !== 'English' ? `Write the etymology in ${effectiveLanguage}.` : ''}
+                 Add to each qualifying term an "etymology" string field.
+              ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
               ${langsReq.length > 0 ? "STRICT DIALECT ADHERENCE: For any requested language that specifies a region (e.g. 'Brazilian Portuguese'), use that specific dialect's conventions." : ""}
               CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
               Format: "Translated Term: Translated Definition",
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" } }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -27258,9 +27310,17 @@ Return ONLY JSON.`;
               For each term, provide:
               1. An English definition. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
+              ${includeEtymology ? `
+              3. Etymology / Word Roots ${etymologyScope === 'both' ? 'for every term' : 'for Tier 3 (Domain-Specific) terms only'}:
+                 Provide 1-3 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 - K-5 audiences: simple wording like "Comes from the Greek word photo meaning light."
+                 - 6-12 audiences: break into prefix/root/suffix where relevant and name the source language.
+                 - Skip terms with no meaningful etymology (proper nouns, recent coinages). If so, OMIT the etymology field.
+                 Add to each qualifying term an "etymology" string field.
+              ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${includeEtymology ? ', "etymology": "..." (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -28405,7 +28465,7 @@ Return ONLY JSON.`;
                      return d.questions.map((q, i) => `Q${i+1}: ${q.question} (Correct: ${q.correctAnswer})`).join('\n');
                  case 'glossary':
                      if (!Array.isArray(d)) return t('export.no_terms');
-                     return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def_label')} ${gItem.def}`).join('; ');
+                     return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def_label')} ${gItem.def}${gItem.etymology ? ` — Roots: ${gItem.etymology}` : ''}`).join('; ');
                  case 'sentence-frames':
                      return d.mode === 'list'
                          ? (d.items ? d.items.map(i => i.text).join('\n') : '')
@@ -28432,15 +28492,36 @@ Return ONLY JSON.`;
                  case 'analysis':
                        return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('export.unknown_level')}. ${t('export.key_concepts_label')} ${d.concepts?.join(', ')}.`;
                  default:
-                     return JSON.stringify(d).substring(0, 500);
+                     try { return JSON.stringify(d).substring(0, 500); }
+                     catch (circErr) { return `[${item.type} content]`; }
+             }
+         };
+         const safeGetAuditText = (item) => {
+             try {
+                 const txt = getAuditText(item);
+                 if (typeof txt === 'string') return txt;
+                 try { return JSON.stringify(txt).substring(0, 500); }
+                 catch (circErr) { return `[${item.type} content]`; }
+             } catch (e) {
+                 warnLog(`[Alignment] Failed to serialize ${item.type} artifact:`, e);
+                 return `[${item.type} content could not be serialized for audit]`;
              }
          };
          let comprehensiveContext = "";
+         const MAX_TOTAL_CONTEXT = 30000;
+         let contextOverflowed = false;
          artifactsToAudit.forEach((item, index) => {
+             if (contextOverflowed) return;
              const label = item.title || getDefaultTitle(item.type);
-             let contentStr = getAuditText(item);
+             let contentStr = safeGetAuditText(item);
              if (contentStr.length > 2500) contentStr = contentStr.substring(0, 2500) + "... [truncated]";
-             comprehensiveContext += `\n--- ARTIFACT ${index + 1}: ${label.toUpperCase()} (${item.type}) ---\n${contentStr}\n`;
+             const chunk = `\n--- ARTIFACT ${index + 1}: ${label.toUpperCase()} (${item.type}) ---\n${contentStr}\n`;
+             if (comprehensiveContext.length + chunk.length > MAX_TOTAL_CONTEXT) {
+                 comprehensiveContext += `\n--- [Additional ${artifactsToAudit.length - index} artifact(s) omitted to fit audit window] ---\n`;
+                 contextOverflowed = true;
+                 return;
+             }
+             comprehensiveContext += chunk;
          });
          const prompt = `
             Act as a strict District Curriculum Administrator conducting a **Holistic Lesson Plan Audit**.
@@ -28492,8 +28573,16 @@ Return ONLY JSON.`;
              content = JSON.parse(cleanJson(result));
              metaInfo = `Standards: ${standardsPromptString}`;
          } catch (parseErr) {
-             warnLog("Alignment Report Parse Error:", parseErr);
-             throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+             warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
+             try {
+                 const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
+                 const retryResult = await callGemini(retryPrompt, true);
+                 content = JSON.parse(cleanJson(retryResult));
+                 metaInfo = `Standards: ${standardsPromptString}`;
+             } catch (retryErr) {
+                 warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
+                 throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+             }
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
@@ -28555,8 +28644,8 @@ Return ONLY JSON.`;
              Text: "${textToProcess}"
           `;
          const result = await callGemini(prompt, true);
-         try {
-             let parsed = JSON.parse(cleanJson(result));
+         const parseTimelineResponse = (raw) => {
+             const parsed = JSON.parse(cleanJson(raw));
              let itemsArray = [];
              let progressionLabel = t('timeline.progression_label_default') || 'Sequential Order';
              let progressionLabel_en = null;
@@ -28573,15 +28662,22 @@ Return ONLY JSON.`;
                  else if (parsed.sequence) itemsArray = parsed.sequence;
                  else itemsArray = [];
              }
-             content = {
-                 progressionLabel,
-                 progressionLabel_en,
-                 items: itemsArray
-             };
-             metaInfo = t('meta.events_count', { count: itemsArray.length });
+             return { progressionLabel, progressionLabel_en, items: itemsArray };
+         };
+         try {
+             content = parseTimelineResponse(result);
+             metaInfo = t('meta.events_count', { count: content.items.length });
          } catch (parseErr) {
-             warnLog("Timeline Parse Error:", parseErr);
-             throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
+             warnLog("Timeline Parse Error (attempt 1):", parseErr);
+             try {
+                 const retryPrompt = `The previous response was not valid JSON. Return ONLY a valid JSON object matching this exact structure, with no prose, no markdown fences, and no trailing commas:\n{\n    "progressionLabel": "AXIS: ...",\n    "items": [ { "date": "...", "event": "..." } ]\n}\nPrevious response to repair:\n${result}`;
+                 const retryResult = await callGemini(retryPrompt, true);
+                 content = parseTimelineResponse(retryResult);
+                 metaInfo = t('meta.events_count', { count: content.items.length });
+             } catch (retryErr) {
+                 warnLog("Timeline Parse Error (attempt 2):", retryErr);
+                 throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
+             }
          }
       } else if (type === 'math') {
           setGenerationStep(t('status_steps.solving_visualizing'));
@@ -28759,9 +28855,16 @@ Return ONLY JSON.`;
              content = JSON.parse(cleanJson(result));
              if (!content.categories) content.categories = [];
              if (!content.items) content.items = [];
-             if (isLowerGrade && content.items) {
+             // Image gate: drive by item length, not grade — with teacher override.
+             const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
+             const itemsAreShort = content.items.length > 0 && content.items.every(it => wordCount(it.content) <= 6);
+             const shouldGenerateImages =
+                 conceptImageMode === 'always' ||
+                 (conceptImageMode === 'auto' && itemsAreShort);
+             if (shouldGenerateImages && content.items.length > 0) {
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
+                 let imgFailCount = 0;
                  content.items = await Promise.all(content.items.map(async (item) => {
                      try {
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. Educational style. No text.`;
@@ -28769,12 +28872,16 @@ Return ONLY JSON.`;
                          return { ...item, image: imageUrl };
                      } catch (e) {
                          warnLog("Card image gen failed", e);
+                         imgFailCount++;
                          return item;
                      }
                  }));
+                 if (imgFailCount > 0) {
+                     addToast(`${imgFailCount} of ${content.items.length} card visuals couldn't be generated. Cards will show text only.`, "warning");
+                 }
              }
              const catCount = content.categories.length;
-             metaInfo = isLowerGrade
+             metaInfo = shouldGenerateImages
                 ? t('meta.categories_visual', { count: catCount })
                 : t('meta.categories_text', { count: catCount });
          } catch (parseErr) {
@@ -29496,16 +29603,21 @@ Return ONLY JSON:
   };
   const handleTimelineChange = (index, field, value, isEn = false) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
-    const newData = [...generatedContent?.data];
-    const updatedItem = { ...newData[index] };
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const updatedItem = { ...newItems[index] };
     if (isEn) {
          updatedItem[`${field}_en`] = value;
     } else {
          updatedItem[field] = value;
     }
-    newData[index] = updatedItem;
-    setGeneratedContent({ ...generatedContent, data: newData });
-    setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...generatedContent, data: newData } : item));
+    newItems[index] = updatedItem;
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
+    const updatedContent = { ...generatedContent, data: newData };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const handleGenerateOutcome = async () => {
       if (!generatedContent || generatedContent.type !== 'outline') return;
@@ -29554,17 +29666,21 @@ Return ONLY JSON:
     e.preventDefault();
     if (!generatedContent || generatedContent.type !== 'timeline') return;
     if (draggedTimelineIndex === null || draggedTimelineIndex === index) return;
-    const newData = [...generatedContent?.data];
-    const draggedItem = newData[draggedTimelineIndex];
-    newData.splice(draggedTimelineIndex, 1);
-    newData.splice(index, 0, draggedItem);
-    const renumberedData = newData.map((item, i) => {
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const draggedItem = newItems[draggedTimelineIndex];
+    newItems.splice(draggedTimelineIndex, 1);
+    newItems.splice(index, 0, draggedItem);
+    const renumberedItems = newItems.map((item, i) => {
         if (item.date && /^Step\s+\d+$/i.test(item.date)) {
             return { ...item, date: `Step ${i + 1}` };
         }
         return item;
     });
-    const updatedContent = { ...generatedContent, data: renumberedData };
+    const newData = isArrayShape ? renumberedItems : { ...data, items: renumberedItems };
+    const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setDraggedTimelineIndex(index);
   };
@@ -29576,21 +29692,29 @@ Return ONLY JSON:
   };
   const handleAddTimelineStep = () => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
-    const newData = [...generatedContent?.data];
-    newData.push({
-        date: t('timeline.default_step_label', { n: newData.length + 1 }),
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    newItems.push({
+        date: t('timeline.default_step_label', { n: newItems.length + 1 }),
         event: "",
         date_en: "",
         event_en: "",
     });
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const handleDeleteTimelineStep = (index) => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
-    const newData = [...generatedContent?.data];
-    newData.splice(index, 1);
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    newItems.splice(index, 1);
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
@@ -30716,6 +30840,41 @@ Return ONLY JSON:
         setIsGeneratingTermImage(prev => ({ ...prev, [index]: false }));
     }
   };
+  const handleGenerateTermEtymology = async (index, term) => {
+    if (!generatedContent || generatedContent.type !== 'glossary') return;
+    setIsGeneratingEtymology(prev => ({ ...prev, [index]: true }));
+    try {
+        const def = generatedContent?.data[index]?.def || "";
+        const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
+        const prompt = `
+          Give the etymology of "${term}" (context: ${def}) in 1-3 sentences,
+          at a reading level appropriate for a ${gradeLevel} student.
+          ${isElementary
+              ? 'Use simple wording like: "Comes from the Greek/Latin/Old English word X meaning Y."'
+              : 'Break into prefix/root/suffix where useful; name source languages.'}
+          ${effectiveLanguage && effectiveLanguage !== 'English' ? `Write in ${effectiveLanguage}.` : ''}
+          If the word has no meaningful etymology (proper noun, recent coinage), reply with exactly: NONE.
+          Return plain text only, no markdown, no quotes, no headers.
+        `;
+        const raw = await callGemini(prompt, false);
+        const result = (raw || '').trim();
+        if (!result || result === 'NONE') {
+            addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
+            return;
+        }
+        const newData = [...generatedContent?.data];
+        newData[index] = { ...newData[index], etymology: result };
+        const updatedContent = { ...generatedContent, data: newData };
+        setGeneratedContent(updatedContent);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        addToast(t('glossary.actions.etymology_generated') || "Word roots added.", "success");
+    } catch (e) {
+        warnLog("Etymology generation failed:", e);
+        addToast(t('glossary.actions.etymology_failed') || "Couldn't generate word roots right now.", "error");
+    } finally {
+        setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
+    }
+  };
   const handleGenerateConceptItem = useCallback(async (term, categories) => {
       if (!term || !categories || categories.length === 0) return null;
       try {
@@ -30742,11 +30901,18 @@ Return ONLY JSON:
                return null;
           }
           if (!classification.categoryId) throw new Error("Failed to classify");
-          const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
+          const newWordCount = String(classification.content || '').trim().split(/\s+/).filter(Boolean).length;
+          const shouldGenerateImage =
+              conceptImageMode === 'always' ||
+              (conceptImageMode === 'auto' && newWordCount <= 6);
           let imageUrl = null;
-          if (isLowerGrade) {
-              const imgPrompt = `Simple, clear vector icon or illustration of: "${classification.content}". White background. Educational style. No text.`;
-              imageUrl = await callImagen(imgPrompt);
+          if (shouldGenerateImage) {
+              try {
+                  const imgPrompt = `Simple, clear vector icon or illustration of: "${classification.content}". White background. Educational style. No text.`;
+                  imageUrl = await callImagen(imgPrompt);
+              } catch (imgErr) {
+                  warnLog("Added-item image gen failed", imgErr);
+              }
           }
           return {
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -30759,7 +30925,25 @@ Return ONLY JSON:
           addToast(t('toasts.categorize_failed'), "error");
           return null;
       }
-  }, [gradeLevel, callGemini, callImagen]);
+  }, [gradeLevel, callGemini, callImagen, conceptImageMode]);
+  const handleExplainConceptSortItem = useCallback(async (item, correctCategory, chosenCategory) => {
+      try {
+          const prompt = `
+            A ${gradeLevel} student placed the item "${item.content}" into the category "${chosenCategory?.label || 'unknown'}".
+            The correct category is "${correctCategory?.label || 'unknown'}".
+            Write a brief, encouraging 2-3 sentence explanation for the student.
+            - State which category is correct and why.
+            - Point out one concrete feature of the item that signals the right category.
+            - Avoid shaming language; stay warm and instructive.
+            Return plain text only, no markdown, no quotes.
+          `;
+          const result = await callGemini(prompt, false);
+          return (result || '').trim();
+      } catch (e) {
+          warnLog("Explain concept sort item failed", e);
+          return "Couldn't generate an explanation right now. Try again in a moment.";
+      }
+  }, [gradeLevel, callGemini]);
   const handleMoveToUnit = (itemId, targetUnitId) => {
       setHistory(prev => prev.map(item =>
           item.id === itemId
@@ -32511,9 +32695,9 @@ Return ONLY JSON:
         .theme-dark .text-slate-900,
         .theme-dark .text-slate-800,
         .theme-dark .text-slate-700 { color: #f8fafc !important; }
-        .theme-dark .text-slate-600 { color: #cbd5e1 !important; } /* Light Grey */
-        .theme-dark .text-slate-600 { color: #94a3b8 !important; } /* Medium Grey */
-        .theme-dark .text-slate-600 { color: #64748b !important; } /* Muted Grey */
+        .theme-dark .text-slate-600 { color: #cbd5e1 !important; } /* slate-300 — secondary text, AAA on dark bg */
+        .theme-dark .text-slate-500 { color: #94a3b8 !important; } /* slate-400 — helper/label text */
+        .theme-dark .text-slate-400 { color: #64748b !important; } /* slate-500 — muted/disabled text */
         .theme-dark .border-slate-100,
         .theme-dark .border-slate-200,
         .theme-dark .border-slate-300 { border-color: #334155 !important; }
@@ -32534,6 +32718,23 @@ Return ONLY JSON:
         .theme-dark .bg-teal-50 { background-color: rgba(19, 78, 74, 0.4) !important; border-color: #0f766e !important; }
         .theme-dark .bg-rose-50 { background-color: rgba(136, 19, 55, 0.4) !important; border-color: #be123c !important; }
         .theme-dark .bg-cyan-50 { background-color: rgba(22, 78, 99, 0.4) !important; border-color: #0e7490 !important; }
+        /* -100 bg remaps — prevents light-badge + remapped-dark-text = invisible-text bug */
+        .theme-dark .bg-indigo-100 { background-color: rgba(55, 48, 163, 0.55) !important; border-color: #4338ca !important; }
+        .theme-dark .bg-blue-100 { background-color: rgba(30, 64, 175, 0.55) !important; border-color: #1e40af !important; }
+        .theme-dark .bg-green-100 { background-color: rgba(22, 101, 52, 0.55) !important; border-color: #15803d !important; }
+        .theme-dark .bg-orange-100 { background-color: rgba(154, 52, 18, 0.55) !important; border-color: #c2410c !important; }
+        .theme-dark .bg-red-100 { background-color: rgba(153, 27, 27, 0.55) !important; border-color: #b91c1c !important; }
+        .theme-dark .bg-yellow-100 { background-color: rgba(133, 77, 14, 0.55) !important; border-color: #a16207 !important; }
+        .theme-dark .bg-amber-100 { background-color: rgba(146, 64, 14, 0.55) !important; border-color: #b45309 !important; }
+        .theme-dark .bg-purple-100 { background-color: rgba(107, 33, 168, 0.55) !important; border-color: #7e22ce !important; }
+        .theme-dark .bg-teal-100 { background-color: rgba(17, 94, 89, 0.55) !important; border-color: #0f766e !important; }
+        .theme-dark .bg-rose-100 { background-color: rgba(159, 18, 57, 0.55) !important; border-color: #be123c !important; }
+        .theme-dark .bg-cyan-100 { background-color: rgba(21, 94, 117, 0.55) !important; border-color: #0e7490 !important; }
+        .theme-dark .bg-pink-100 { background-color: rgba(157, 23, 77, 0.55) !important; border-color: #be185d !important; }
+        .theme-dark .bg-emerald-100 { background-color: rgba(6, 95, 70, 0.55) !important; border-color: #059669 !important; }
+        .theme-dark .bg-violet-100 { background-color: rgba(91, 33, 182, 0.55) !important; border-color: #7c3aed !important; }
+        .theme-dark .bg-sky-100 { background-color: rgba(7, 89, 133, 0.55) !important; border-color: #0284c7 !important; }
+        .theme-dark .bg-fuchsia-100 { background-color: rgba(134, 25, 143, 0.55) !important; border-color: #a21caf !important; }
         .theme-dark .text-green-700, .theme-dark .text-green-800 { color: #86efac !important; } /* Green-300 */
         .theme-dark .text-red-700, .theme-dark .text-red-800 { color: #fca5a5 !important; } /* Red-300 */
         .theme-dark .text-yellow-700, .theme-dark .text-yellow-800 { color: #fde047 !important; } /* Yellow-300 */
@@ -32543,6 +32744,21 @@ Return ONLY JSON:
         .theme-dark .text-orange-700, .theme-dark .text-orange-800 { color: #fdba74 !important; } /* Orange-300 */
         .theme-dark .text-cyan-700, .theme-dark .text-cyan-800 { color: #67e8f9 !important; } /* Cyan-300 */
         .theme-dark .text-rose-700, .theme-dark .text-rose-800 { color: #fda4af !important; } /* Rose-300 */
+        /* -500 / -600 remaps — fixes inline icon/accent text that was 2-3:1 on dark bg */
+        .theme-dark .text-green-500, .theme-dark .text-green-600 { color: #4ade80 !important; } /* Green-400 */
+        .theme-dark .text-red-500, .theme-dark .text-red-600 { color: #f87171 !important; } /* Red-400 */
+        .theme-dark .text-yellow-500, .theme-dark .text-yellow-600 { color: #facc15 !important; } /* Yellow-400 */
+        .theme-dark .text-amber-500, .theme-dark .text-amber-600 { color: #fbbf24 !important; } /* Amber-400 */
+        .theme-dark .text-blue-500, .theme-dark .text-blue-600 { color: #60a5fa !important; } /* Blue-400 */
+        .theme-dark .text-purple-500, .theme-dark .text-purple-600 { color: #c084fc !important; } /* Purple-400 */
+        .theme-dark .text-teal-500, .theme-dark .text-teal-600 { color: #2dd4bf !important; } /* Teal-400 */
+        .theme-dark .text-orange-500, .theme-dark .text-orange-600 { color: #fb923c !important; } /* Orange-400 */
+        .theme-dark .text-cyan-500, .theme-dark .text-cyan-600 { color: #22d3ee !important; } /* Cyan-400 */
+        .theme-dark .text-rose-500, .theme-dark .text-rose-600 { color: #fb7185 !important; } /* Rose-400 */
+        .theme-dark .text-pink-500, .theme-dark .text-pink-600 { color: #f472b6 !important; } /* Pink-400 */
+        .theme-dark .text-emerald-500, .theme-dark .text-emerald-600 { color: #34d399 !important; } /* Emerald-400 */
+        .theme-dark .text-violet-500, .theme-dark .text-violet-600 { color: #a78bfa !important; } /* Violet-400 */
+        .theme-dark .text-sky-500, .theme-dark .text-sky-600 { color: #38bdf8 !important; } /* Sky-400 */
         .theme-dark { color-scheme: dark; }
         .theme-dark input, .theme-dark textarea, .theme-dark select {
             background-color: #0f172a !important;
@@ -32556,7 +32772,9 @@ Return ONLY JSON:
         .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #64748b !important; }
         .theme-dark input:focus, .theme-dark textarea:focus, .theme-dark select:focus {
             border-color: #818cf8 !important;
-            ring-color: #4338ca !important;
+            --tw-ring-color: #4338ca !important;
+            outline: 2px solid #818cf8 !important;
+            outline-offset: 1px !important;
         }
         .theme-dark .border-4.bg-white { background-color: #1e293b !important; border-color: #6366f1 !important; }
         .theme-dark .sort-card { background-color: #1e293b !important; border-color: #475569 !important; }
@@ -32575,10 +32793,42 @@ Return ONLY JSON:
         .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; }
         .theme-contrast button { background-color: #000000 !important; border: 2px solid #00ff00 !important; color: #00ff00 !important; font-weight: bold !important; }
         .theme-contrast button:hover { background-color: #00ff00 !important; color: #000000 !important; }
+        /* Keyboard focus — critical in contrast mode */
+        .theme-contrast :focus-visible,
+        .theme-contrast button:focus-visible,
+        .theme-contrast a:focus-visible,
+        .theme-contrast [role="button"]:focus-visible {
+            outline: 4px solid #ffff00 !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 6px #000000, 0 0 0 10px #ffff00 !important;
+        }
         .theme-contrast { color-scheme: dark; }
         /* Reading theme overrides — make child bg-white elements transparent so theme shows through */
-        [data-reading-theme]:not([data-reading-theme="default"]) .bg-white,
-        [data-reading-theme]:not([data-reading-theme="default"]) .bg-slate-50 { background-color: transparent !important; }
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-white,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-slate-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-indigo-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-blue-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-orange-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-green-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-50,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50 { background-color: transparent !important; }
+        /* Light reading themes win over dark-mode text remaps to prevent invisible-text collision */
+        [data-reading-theme="warm"], [data-reading-theme="warm"] *,
+        [data-reading-theme="sepia"], [data-reading-theme="sepia"] *,
+        [data-reading-theme="blue"], [data-reading-theme="blue"] *,
+        [data-reading-theme="green"], [data-reading-theme="green"] *,
+        [data-reading-theme="rose"], [data-reading-theme="rose"] *,
+        [data-reading-theme="dyslexia"], [data-reading-theme="dyslexia"] * {
+            color: inherit;
+        }
+        [data-reading-theme="warm"] { color: #5c4033 !important; }
+        [data-reading-theme="sepia"] { color: #5c4033 !important; }
+        [data-reading-theme="blue"] { color: #1b2631 !important; }
+        [data-reading-theme="green"] { color: #1b5e20 !important; }
+        [data-reading-theme="rose"] { color: #880e4f !important; }
+        [data-reading-theme="dyslexia"] { color: #1e293b !important; }
         [data-reading-theme="dark"] .bg-white, [data-reading-theme="dark"] .bg-slate-50 { background-color: rgba(26,26,46,0.5) !important; color: #e2e8f0 !important; }
         [data-reading-theme="dark"] h1, [data-reading-theme="dark"] h2, [data-reading-theme="dark"] h3, [data-reading-theme="dark"] p, [data-reading-theme="dark"] span, [data-reading-theme="dark"] li, [data-reading-theme="dark"] div { color: #e2e8f0 !important; }
         [data-reading-theme="highContrast"] .bg-white, [data-reading-theme="highContrast"] .bg-slate-50 { background-color: #000 !important; color: #ffff00 !important; }
@@ -32600,9 +32850,6 @@ Return ONLY JSON:
             color: #000000 !important;
             border: 2px solid #FFFFFF !important;
         }
-        .theme-modern {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-        }
         @font-face {
             font-family: 'OpenDyslexic';
             src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-regular.woff') format('woff');
@@ -32619,14 +32866,9 @@ Return ONLY JSON:
             font-family: 'OpenDyslexic', sans-serif !important;
             line-height: 1.6 !important;
         }
-        .theme-modern h1, .theme-modern h2, .theme-modern h3, .theme-modern h4, .theme-modern h5, .theme-modern h6, .theme-modern .font-heading, .theme-modern .font-display {
-            font-family: 'Outfit', system-ui, -apple-system, sans-serif !important;
-        }
-        @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap');
         .font-andika, .font-andika * {
             font-family: 'Andika', sans-serif !important;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&display=swap');
         .font-gentium, .font-gentium * {
             font-family: 'Gentium Book Plus', serif !important;
         }
@@ -32881,7 +33123,7 @@ Return ONLY JSON:
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
                                                     {[
                                                         { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
-                                                        { id: 'warm', label: 'Warm', bg: '#fdfbf7', fg: '#5c4033', border: '#f5e6d3', emoji: '☀️' },
+                                                        { id: 'warm', label: 'Warm', bg: '#fef3c7', fg: '#5c4033', border: '#fde68a', emoji: '☀️' },
                                                         { id: 'sepia', label: 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
                                                         { id: 'dark', label: 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
                                                         { id: 'highContrast', label: 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
@@ -35848,6 +36090,28 @@ Return ONLY JSON:
                             </select>
                         </div>
                     </div>
+                    <div className="mb-3" data-help-key="glossary_etymology_info">
+                        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={includeEtymology}
+                                onChange={(e) => setIncludeEtymology(e.target.checked)}
+                                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                            />
+                            📜 {t('glossary.settings.include_etymology') || 'Include word roots / etymology'}
+                        </label>
+                        {includeEtymology && (
+                            <label className="flex items-center gap-2 text-[11px] font-medium text-slate-600 cursor-pointer select-none mt-1 ml-6">
+                                <input
+                                    type="checkbox"
+                                    checked={etymologyScope === 'both'}
+                                    onChange={(e) => setEtymologyScope(e.target.checked ? 'both' : 'tier3')}
+                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                                />
+                                {t('glossary.settings.etymology_scope_both') || 'Also include for academic (Tier 2) terms'}
+                            </label>
+                        )}
+                    </div>
                     <div className="mb-3" data-help-key="glossary_custom_instructions">
                         <label className="block text-xs text-slate-600 mb-1 font-medium">
                             {t('input.custom_instructions')} <span className="text-violet-600 font-normal">{t('common.optional')}</span>
@@ -36756,7 +37020,13 @@ Return ONLY JSON:
                                 min="3"
                                 max="20"
                                 value={timelineItemCount}
-                                onChange={(e) => setTimelineItemCount(e.target.value)}
+                                onChange={(e) => {
+                                    const raw = e.target.value;
+                                    if (raw === '') { setTimelineItemCount(''); return; }
+                                    const n = parseInt(raw, 10);
+                                    if (Number.isNaN(n)) { setTimelineItemCount(''); return; }
+                                    setTimelineItemCount(String(Math.min(20, Math.max(3, n))));
+                                }}
                                 placeholder={t('timeline.placeholder_count')}
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
                             />
@@ -36833,6 +37103,20 @@ Return ONLY JSON:
                                 onChange={(e) => setConceptItemCount(parseInt(e.target.value) || 10)}
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
                             />
+                        </div>
+                        <div className="mt-2">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">Card visuals</label>
+                            <select
+                                aria-label="Card visuals"
+                                data-help-key="concept_sort_image_mode"
+                                value={conceptImageMode}
+                                onChange={(e) => setConceptImageMode(e.target.value)}
+                                className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+                            >
+                                <option value="auto">Auto (only on short items)</option>
+                                <option value="always">Always generate images</option>
+                                <option value="never">Never (text-only cards)</option>
+                            </select>
                         </div>
                     </div>
                     <button
@@ -39033,9 +39317,9 @@ Return ONLY JSON:
             data-reading-theme={readingTheme}
             className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
             style={readingTheme !== 'default' ? {
-              backgroundColor: readingTheme === 'warm' ? '#fdfbf7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
-              color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : undefined,
-              fontFamily: readingTheme === 'dyslexia' && selectedFont === 'default' ? "'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif" : undefined,
+              backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
+              color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : readingTheme === 'warm' ? '#5c4033' : readingTheme === 'dyslexia' ? '#1e293b' : undefined,
+              fontFamily: readingTheme === 'dyslexia' ? "'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif" : undefined,
               letterSpacing: readingTheme === 'dyslexia' ? '0.05em' : undefined,
               lineHeight: readingTheme === 'dyslexia' ? '1.8' : undefined,
               transition: 'background-color 0.3s, color 0.3s',
@@ -40211,6 +40495,27 @@ Return only the corrected version of this exact text:`;
                                                             </p>
                                                         </div>
                                                     )}
+                                                    {generatedContent?.data[flashcardIndex]?.etymology && (
+                                                        <div className="mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2">
+                                                            <p className="text-xs font-bold text-blue-200 uppercase mb-1">📜 {t('glossary.etymology_label') || 'Word roots'}</p>
+                                                            <p
+                                                                className="text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer"
+                                                                onClick={(e) => { e.stopPropagation(); handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym'); }}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
+                                                                    }
+                                                                }}
+                                                                tabIndex={0}
+                                                                role="button"
+                                                                aria-label={t('glossary.etymology_label') || 'Word roots'}
+                                                            >
+                                                                {generatedContent.data[flashcardIndex].etymology}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </>
                                             ) : (
                                                 (() => {
@@ -40919,6 +41224,38 @@ Return only the corrected version of this exact text:`;
                                                 <button onClick={() => handleSpeak(item.def, `def-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin"/> : playingContentId === `def-${idx}` ? <StopCircle size={14} /> : <Volume2 size={14} />}</button>
                                                 <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                             </div>
+                                            {!isEditingGlossary && (
+                                                item.etymology ? (
+                                                    <details className="mt-2 text-xs w-full" data-help-key="glossary_etymology_info">
+                                                        <summary className="cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none">
+                                                            📜 {t('glossary.etymology_label') || 'Word roots'}
+                                                        </summary>
+                                                        <div className="mt-1 flex items-start gap-1 pl-4 border-l-2 border-indigo-200">
+                                                            <p className="text-slate-700 leading-relaxed italic flex-1">{item.etymology}</p>
+                                                            <button
+                                                                onClick={() => handleSpeak(item.etymology, `etym-${idx}`)}
+                                                                disabled={isGeneratingAudio && playingContentId !== `etym-${idx}`}
+                                                                className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                                                aria-label={t('glossary.etymology_label') || 'Word roots'}
+                                                            >
+                                                                {playingContentId === `etym-${idx}` && isGeneratingAudio ? <RefreshCw size={12} className="animate-spin"/> : <Volume2 size={12} />}
+                                                            </button>
+                                                        </div>
+                                                    </details>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleGenerateTermEtymology(idx, item.term)}
+                                                        disabled={isGeneratingEtymology[idx]}
+                                                        className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1"
+                                                        data-help-key="glossary_etymology_info"
+                                                        title={t('glossary.etymology_label') || 'Word roots'}
+                                                    >
+                                                        {isGeneratingEtymology[idx]
+                                                            ? <><RefreshCw size={12} className="animate-spin"/> {t('glossary.actions.generating_etymology') || 'Finding roots…'}</>
+                                                            : <>📜 {t('glossary.actions.show_etymology') || 'Show word roots'}</>}
+                                                    </button>
+                                                )
+                                            )}
                                         </div>
                                     </td>
                                     {displayLanguages.map(lang => (
@@ -45223,9 +45560,9 @@ Return only the corrected version of this exact text:`;
                     </div>
                   </div>
                 )}
-                {activeView === 'alignment-report' && isTeacherMode && generatedContent?.data.reports && (
+                {activeView === 'alignment-report' && isTeacherMode && Array.isArray(generatedContent?.data?.reports) && generatedContent.data.reports.length > 0 && (
                   <div className="space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
-                      {generatedContent?.data.reports.map((report, idx) => (
+                      {generatedContent.data.reports.map((report, idx) => (
                       <div key={idx} className="animate-in slide-in-from-bottom-4 duration-500">
                           <div className="bg-slate-800 text-white px-4 py-2 rounded-t-xl font-bold text-xs uppercase tracking-wider flex items-center justify-between">
                               <span>{t('alignment.audit_report')} {idx + 1}</span>
@@ -45246,11 +45583,11 @@ Return only the corrected version of this exact text:`;
                               <div className="mt-6 pt-6 border-t border-black/10 grid grid-cols-1 md:grid-cols-2 gap-6">
                                   <div>
                                       <h4 className="text-xs font-bold uppercase text-slate-600 mb-1">{t('alignment.cognitive_demand')}</h4>
-                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown.cognitiveDemand}</p>
+                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown?.cognitiveDemand || "—"}</p>
                                   </div>
                                   <div>
                                       <h4 className="text-xs font-bold uppercase text-slate-600 mb-1">{t('alignment.content_focus')}</h4>
-                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown.contentFocus}</p>
+                                      <p className="text-sm font-medium text-slate-800">{report.standardBreakdown?.contentFocus || "—"}</p>
                                   </div>
                               </div>
                           </div>
@@ -45258,19 +45595,19 @@ Return only the corrected version of this exact text:`;
                               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2"><BookOpen size={18} className="text-indigo-600"/> {t('alignment.text_alignment')}</h3>
-                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis.textAlignment.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                          {report.analysis.textAlignment.status}
+                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis?.textAlignment?.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                          {report.analysis?.textAlignment?.status || "N/A"}
                                       </span>
                                   </div>
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-600"><Quote size={16} className="fill-current"/></div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
-                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.textAlignment.evidence}"</p>
+                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis?.textAlignment?.evidence || "—"}"</p>
                                       </div>
                                       <div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
-                                          <p className="text-slate-600 leading-relaxed">{report.analysis.textAlignment.notes}</p>
+                                          <p className="text-slate-600 leading-relaxed">{report.analysis?.textAlignment?.notes || "—"}</p>
                                       </div>
                                   </div>
                               </div>
@@ -45298,19 +45635,19 @@ Return only the corrected version of this exact text:`;
                               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2"><CheckSquare size={18} className="text-teal-600"/> {t('alignment.assessment')}</h3>
-                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis.assessmentAlignment.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                          {report.analysis.assessmentAlignment.status}
+                                      <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis?.assessmentAlignment?.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                          {report.analysis?.assessmentAlignment?.status || "N/A"}
                                       </span>
                                   </div>
                                   <div className="space-y-4 text-sm flex-grow">
                                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 relative">
                                           <div className="absolute top-3 left-3 text-slate-600"><Quote size={16} className="fill-current"/></div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1 pl-6">{t('alignment.evidence')}</span>
-                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis.assessmentAlignment.evidence}"</p>
+                                          <p className="italic text-slate-700 pl-6 leading-relaxed">"{report.analysis?.assessmentAlignment?.evidence || "—"}"</p>
                                       </div>
                                       <div>
                                           <span className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('alignment.audit_notes')}</span>
-                                          <p className="text-slate-600 leading-relaxed">{report.analysis.assessmentAlignment.notes}</p>
+                                          <p className="text-slate-600 leading-relaxed">{report.analysis?.assessmentAlignment?.notes || "—"}</p>
                                       </div>
                                   </div>
                               </div>
@@ -45330,11 +45667,11 @@ Return only the corrected version of this exact text:`;
                               <div>
                                   <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 flex items-center gap-1"><Sparkles size={12}/> {t('alignment.recommendation')}</h4>
                                   <div className="bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900 leading-relaxed border border-indigo-100 font-medium">
-                                      {report.adminRecommendation}
+                                      {report.adminRecommendation || "No recommendation was generated for this standard."}
                                   </div>
                               </div>
                           </div>
-                          {idx < generatedContent?.data.reports.length - 1 && (
+                          {idx < (generatedContent?.data?.reports?.length || 0) - 1 && (
                               <hr className="my-8 border-slate-300" />
                           )}
                       </div>
@@ -45596,6 +45933,7 @@ Return only the corrected version of this exact text:`;
                                     onGenerateItem={handleGenerateConceptItem}
                                     onScoreUpdate={handleGameScoreUpdate}
                                     onGameComplete={handleGameCompletion}
+                                    onExplainIncorrect={handleExplainConceptSortItem}
                                 />
                             </ErrorBoundary>
                         )}
@@ -51512,7 +51850,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
-                            <div className="text-[11px] text-slate-600 font-bold uppercase">Agreement Score</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase" title="Custom 1−(SD/50) index; not textbook ICC">Auditor Consistency (ICC-like)</div>
                           </div>
                           {pdfAuditResult.cronbachAlpha !== null && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
