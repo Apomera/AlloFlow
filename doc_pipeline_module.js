@@ -9476,6 +9476,226 @@ tr { page-break-inside: avoid; }
     return { html: outHtml, restored, unplaceable };
   };
 
+  // ── Stage A: Gemini-targeted sentence re-insertion ──
+  // When _buildMissingList reports genuinely dropped words (Gemini paraphrased the surrounding
+  // prose so ±5-word fuzzy context fails), send a focused retry: "here's the HTML, here are the
+  // specific source sentences that got lost, reinsert them." Uses _chunkState when available
+  // (one call per chunk that lost words) to stay under the 8K output budget; otherwise falls
+  // back to a single whole-doc call if the HTML is small enough.
+  const retargetMissingWordsViaGemini = async (html, missingList, sourceText) => {
+    if (!html || !Array.isArray(missingList) || missingList.length === 0 || !sourceText || !callGemini) {
+      return { html: html || '', stillMissing: missingList || [], restoredViaRetry: [] };
+    }
+    const splitSentences = (txt) => (txt || '').match(/[^.!?]+[.!?]+/g) || [];
+    const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const tokenizeText = (s) => {
+      const out = {};
+      const matches = (s || '').toLowerCase().match(/[a-z0-9][\w'-]*/g);
+      if (matches) matches.forEach(w => {
+        const k = w.replace(/^['-]+|['-]+$/g, '');
+        if (k) out[k] = (out[k] || 0) + 1;
+      });
+      return out;
+    };
+    const buildPrompt = (fragment, sentences, isFragment) => [
+      'The following HTML ' + (isFragment ? 'fragment' : 'document') + ' lost some source content during a WCAG remediation pass.',
+      'Reinsert the listed source sentences at the most natural locations, preserving ALL existing HTML structure, accessibility attributes, inline styles, and reading order.',
+      'Do not alter, rephrase, or remove any existing content. Only add the missing sentences.',
+      'Return ONLY the updated HTML ' + (isFragment ? 'fragment' : 'document') + ' — no explanation, no markdown fencing, no JSON wrapper.',
+      '',
+      'SOURCE SENTENCES TO REINSERT (verbatim, in order):',
+      sentences.map((s, i) => (i + 1) + '. ' + s).join('\n'),
+      '',
+      'CURRENT HTML:',
+      fragment
+    ].join('\n');
+
+    // Chunk-scoped path: retarget only chunks that actually dropped words.
+    if (_chunkState && Array.isArray(_chunkState.fixedChunks) && Array.isArray(_chunkState.originalChunks) &&
+        _chunkState.fixedChunks.length === _chunkState.originalChunks.length && _chunkState.fixedChunks.length > 0) {
+      const restored = [];
+      const updatedFixed = _chunkState.fixedChunks.slice();
+      for (let ci = 0; ci < _chunkState.originalChunks.length; ci++) {
+        const origChunk = _chunkState.originalChunks[ci] || '';
+        const fixedChunk = updatedFixed[ci] || '';
+        if (!origChunk || !fixedChunk) continue;
+        const origText = extractPlainText(origChunk);
+        const fixedText = extractPlainText(fixedChunk);
+        const origCounts = tokenizeText(origText);
+        const fixedCounts = tokenizeText(fixedText);
+        const chunkMissing = [];
+        Object.keys(origCounts).forEach(w => {
+          if ((fixedCounts[w] || 0) < origCounts[w]) chunkMissing.push(w);
+        });
+        if (chunkMissing.length === 0) continue;
+        const chunkSentences = splitSentences(origText);
+        const picked = [];
+        const seen = new Set();
+        chunkMissing.forEach(w => {
+          const re = new RegExp('\\b' + escapeRe(w) + '\\b', 'i');
+          for (const s of chunkSentences) {
+            if (re.test(s)) {
+              const t = s.trim();
+              if (!seen.has(t) && t.length >= 15) { seen.add(t); picked.push(t); }
+              break;
+            }
+          }
+        });
+        if (picked.length === 0) continue;
+        const capped = picked.slice().sort((a, b) => b.length - a.length).slice(0, 20);
+        try {
+          const updated = await callGemini(buildPrompt(fixedChunk, capped, true), true);
+          if (updated && typeof updated === 'string' && updated.trim().length > fixedChunk.length * 0.7) {
+            updatedFixed[ci] = _stripJsonWrapperArtifacts(updated.trim());
+            chunkMissing.forEach(w => { if (!restored.includes(w)) restored.push(w); });
+          }
+        } catch (e) {
+          warnLog('[Retarget] Chunk ' + (ci + 1) + ' retarget failed: ' + (e && e.message));
+        }
+      }
+      if (restored.length > 0) {
+        const reassembled = (_chunkState.preamble || '') + '\n' + updatedFixed.join('\n') + '\n' + (_chunkState.postamble || '</body></html>');
+        _chunkState.fixedChunks = updatedFixed;
+        const restoredSet = new Set(restored);
+        const stillMissing = missingList.filter(m => !restoredSet.has(String((m && m.word) || '').toLowerCase()));
+        return { html: reassembled, stillMissing, restoredViaRetry: restored };
+      }
+      return { html, stillMissing: missingList, restoredViaRetry: [] };
+    }
+
+    // Whole-document path: only safe for small HTML to stay under output budget.
+    if (html.length > 15000) {
+      return { html, stillMissing: missingList, restoredViaRetry: [] };
+    }
+    const sourceSentences = splitSentences(sourceText);
+    const picked = [];
+    const seen = new Set();
+    missingList.forEach(m => {
+      const w = (m && m.word) ? String(m.word).toLowerCase().replace(/[^a-z0-9'-]/g, '') : '';
+      if (!w) return;
+      const re = new RegExp('\\b' + escapeRe(w) + '\\b', 'i');
+      for (const s of sourceSentences) {
+        if (re.test(s)) {
+          const t = s.trim();
+          if (!seen.has(t) && t.length >= 15) { seen.add(t); picked.push(t); }
+          break;
+        }
+      }
+    });
+    if (picked.length === 0) return { html, stillMissing: missingList, restoredViaRetry: [] };
+    const capped = picked.slice().sort((a, b) => b.length - a.length).slice(0, 20);
+    try {
+      const updated = await callGemini(buildPrompt(html, capped, false), true);
+      if (updated && typeof updated === 'string' && updated.trim().length > html.length * 0.7) {
+        const cleaned = _stripJsonWrapperArtifacts(updated.trim());
+        const lcUpdated = cleaned.toLowerCase();
+        const restored = [];
+        missingList.forEach(m => {
+          const w = (m && m.word) ? String(m.word).toLowerCase().replace(/[^a-z0-9'-]/g, '') : '';
+          if (w && new RegExp('\\b' + escapeRe(w) + '\\b').test(lcUpdated)) restored.push(w);
+        });
+        if (restored.length > 0) {
+          const restoredSet = new Set(restored);
+          const stillMissing = missingList.filter(m => !restoredSet.has(String((m && m.word) || '').toLowerCase()));
+          return { html: cleaned, stillMissing, restoredViaRetry: restored };
+        }
+      }
+    } catch (e) {
+      warnLog('[Retarget] Whole-doc retarget failed: ' + (e && e.message));
+    }
+    return { html, stillMissing: missingList, restoredViaRetry: [] };
+  };
+
+  // ── Stage B: Deterministic sentence-level restoration ──
+  // For each still-missing word, find its source sentence and use the preceding source sentence
+  // as a word-overlap anchor to locate the nearest block element in the HTML. Insert the source
+  // sentence as a new <p data-source-restored> after that block. Pure DOM work — zero API cost.
+  const restoreSentencesDeterministic = (html, missingList, sourceText) => {
+    if (!html || !Array.isArray(missingList) || missingList.length === 0 || !sourceText) {
+      return { html: html || '', stillMissing: missingList || [], restoredViaSentence: [] };
+    }
+    const splitSentences = (txt) => (txt || '').match(/[^.!?]+[.!?]+/g) || [];
+    const sourceSentences = splitSentences(sourceText).map(s => s.trim()).filter(Boolean);
+    if (sourceSentences.length === 0) {
+      return { html, stillMissing: missingList, restoredViaSentence: [] };
+    }
+    const normalize = (s) => (s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const wordSet = (s) => new Set(normalize(s).split(' ').filter(w => w.length >= 3));
+    const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
+    const doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
+    let doc;
+    try { doc = new DOMParser().parseFromString(html, 'text/html'); }
+    catch (e) { return { html, stillMissing: missingList, restoredViaSentence: [] }; }
+    const body = doc.body || doc.documentElement;
+    if (!body) return { html, stillMissing: missingList, restoredViaSentence: [] };
+    // Exclude blocks inside the existing content-recovery appendix so we don't anchor to orphans
+    // from prior restoration passes.
+    const blocks = Array.from(body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, td'))
+      .filter(el => {
+        if (el.closest('section[data-content-recovery="true"]')) return false;
+        return (el.textContent || '').trim().length >= 10;
+      })
+      .map(el => ({ el, words: wordSet(el.textContent || '') }));
+    if (blocks.length === 0) {
+      return { html, stillMissing: missingList, restoredViaSentence: [] };
+    }
+    const restored = [];
+    const usedSentenceIndices = new Set();
+    for (const m of missingList) {
+      const raw = m && m.word ? String(m.word).toLowerCase() : '';
+      if (!raw) continue;
+      const needle = raw.replace(/[^a-z0-9'-]/g, '');
+      if (!needle) continue;
+      const re = new RegExp('\\b' + escapeRe(needle) + '\\b', 'i');
+      let sentIdx = -1;
+      for (let i = 0; i < sourceSentences.length; i++) {
+        if (usedSentenceIndices.has(i)) continue;
+        if (re.test(sourceSentences[i].toLowerCase())) { sentIdx = i; break; }
+      }
+      if (sentIdx === -1) continue;
+      const targetSentence = sourceSentences[sentIdx];
+      // Anchor: prefer previous sentence, fall back to following sentence, then the target itself.
+      const anchorCandidates = [];
+      if (sentIdx > 0) anchorCandidates.push(sourceSentences[sentIdx - 1]);
+      if (sentIdx + 1 < sourceSentences.length) anchorCandidates.push(sourceSentences[sentIdx + 1]);
+      anchorCandidates.push(targetSentence);
+      let bestBlock = null;
+      let bestScore = 0;
+      for (const anchor of anchorCandidates) {
+        const anchorWords = wordSet(anchor);
+        if (anchorWords.size < 3) continue;
+        for (const b of blocks) {
+          let common = 0;
+          anchorWords.forEach(w => { if (b.words.has(w)) common++; });
+          const score = common / anchorWords.size;
+          if (score > bestScore) { bestScore = score; bestBlock = b; }
+        }
+        if (bestScore >= 0.6) break;
+      }
+      if (!bestBlock || bestScore < 0.6) continue;
+      const newP = doc.createElement('p');
+      newP.setAttribute('data-source-restored', 'true');
+      newP.textContent = targetSentence;
+      if (bestBlock.el.parentNode) {
+        bestBlock.el.parentNode.insertBefore(newP, bestBlock.el.nextSibling);
+        usedSentenceIndices.add(sentIdx);
+        restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100 });
+        // Refresh the inserted block's word set so subsequent anchors can match it if needed
+        blocks.push({ el: newP, words: wordSet(targetSentence) });
+      }
+    }
+    if (restored.length === 0) {
+      return { html, stillMissing: missingList, restoredViaSentence: [] };
+    }
+    const restoredWords = new Set(restored.map(r => String(r.word || '').toLowerCase()));
+    const stillMissing = missingList.filter(m => !restoredWords.has(String((m && m.word) || '').toLowerCase()));
+    let outHtml;
+    try { outHtml = doctypePrefix + (doc.documentElement ? doc.documentElement.outerHTML : html); }
+    catch (e) { outHtml = html; }
+    return { html: outHtml, stillMissing, restoredViaSentence: restored };
+  };
+
   // Side-effecting wrapper — reads current HTML from the preview iframe (authoritative, since
   // the user may have edited), runs restoration, writes back via pdfFixResult + re-renders the
   // iframe. Returns the same shape as applyWordRestoration so callers can show a toast.
@@ -10798,6 +11018,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     updatePdfPreview: _wrap(updatePdfPreview),
     applyWordRestoration: applyWordRestoration, // pure helper (no state binding needed)
     applyWordRestorationInPlace: _wrap(applyWordRestorationInPlace),
+    retargetMissingWordsViaGemini: _wrapAsync(retargetMissingWordsViaGemini),
+    restoreSentencesDeterministic: restoreSentencesDeterministic, // pure DOM work
     runAutonomousRemediation: _wrapAsync(runAutonomousRemediation), // Expert Workbench — autonomous agent loop
     processExpertCommand: _wrapAsync(processExpertCommand),        // Expert Workbench — command bar interpreter
     // Multi-session + Tier 2/2.5/3 — restored after 1ce8054 regression (see comment on

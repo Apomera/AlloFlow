@@ -19560,6 +19560,8 @@ Return ONLY valid JSON:
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
+  const retargetMissingWordsViaGemini = _docPipeline ? _docPipeline.retargetMissingWordsViaGemini : async (h) => ({ html: h, stillMissing: [], restoredViaRetry: [] });
+  const restoreSentencesDeterministic = _docPipeline ? _docPipeline.restoreSentencesDeterministic : (h) => ({ html: h, stillMissing: [], restoredViaSentence: [] });
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
@@ -19654,33 +19656,77 @@ Return ONLY valid JSON:
           if (addToast) addToast('✓ Fidelity 100% — no words missing.', 'success');
           return;
         }
-        // Auto-restore — pipeline's surgical helper.
-        let restoreResult = { restored: [], unplaceable: missing1 };
-        try { restoreResult = applyWordRestorationInPlace(missing1, sourceText) || restoreResult; }
-        catch (restoreErr) { /* warn already in pipeline */ }
-        // Pass 2 — fidelity after restoration. Small delay so the iframe re-renders via
-        // updatePdfPreview before we re-read.
-        setTimeout(() => {
+        // Fidelity recovery ladder (run async because Stage A awaits a Gemini call):
+        //   Stage A — targeted Gemini re-insertion on chunks that dropped source sentences
+        //   Stage B — deterministic sentence-level restoration for Stage A residuals
+        //   Stage C — original ±5-word fuzzy splice + orange appendix for final residuals
+        (async () => {
+          const stageCounts = { retry: 0, sentence: 0 };
+          let currentMissing = missing1;
+          // Stage A
           try {
-            const remText2 = extractText();
-            const pass2 = _buildMissingList(sourceText, remText2);
-            const missing2 = pass2.missing;
-            const afterFidelity = pass2.fidelity;
-            setFidelityResult({ missing: missing2, totalSrc: pass2.totalSrc, totalRem: pass2.totalRem, totalMissing: pass2.totalMissing, fidelity: afterFidelity });
-            setAutoRestoreSummary({
-              restored: (restoreResult && restoreResult.restored) || [],
-              unplaceable: (restoreResult && restoreResult.unplaceable) || [],
-              beforeFidelity,
-              afterFidelity,
-            });
-            if (addToast) {
-              const rCount = ((restoreResult && restoreResult.restored) || []).length;
-              const uCount = ((restoreResult && restoreResult.unplaceable) || []).length;
-              const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '% · ' + rCount + ' restored' + (uCount > 0 ? ' · ' + uCount + ' in recovery appendix' : '');
-              addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
+            const currentHtml = getPdfPreviewHtml ? getPdfPreviewHtml() : ((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+            const stageA = await retargetMissingWordsViaGemini(currentHtml, currentMissing, sourceText);
+            if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
+              stageCounts.retry = stageA.restoredViaRetry.length;
+              if (typeof setPdfFixResult === 'function' && pdfFixResult) {
+                setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageA.html });
+              }
+              currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
-          } catch (e) { /* non-blocking */ }
-        }, 500);
+          } catch (eA) { /* non-blocking */ }
+          // Stage B
+          if (currentMissing.length > 0) {
+            try {
+              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const stageB = restoreSentencesDeterministic(currentHtml, currentMissing, sourceText);
+              if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
+                stageCounts.sentence = stageB.restoredViaSentence.length;
+                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
+                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageB.html });
+                }
+                currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
+              }
+            } catch (eB) { /* non-blocking */ }
+          }
+          // Give React a tick to commit the updated accessibleHtml into the iframe before
+          // Stage C reads it back via the preview-iframe-authoritative path in applyWordRestorationInPlace.
+          setTimeout(() => {
+            let restoreResult = { restored: [], unplaceable: currentMissing };
+            if (currentMissing.length > 0) {
+              try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
+              catch (restoreErr) { /* warn already in pipeline */ }
+            }
+            // Final fidelity measurement after all three stages applied + iframe re-rendered.
+            setTimeout(() => {
+              try {
+                const remText2 = extractText();
+                const pass2 = _buildMissingList(sourceText, remText2);
+                const missing2 = pass2.missing;
+                const afterFidelity = pass2.fidelity;
+                setFidelityResult({ missing: missing2, totalSrc: pass2.totalSrc, totalRem: pass2.totalRem, totalMissing: pass2.totalMissing, fidelity: afterFidelity });
+                setAutoRestoreSummary({
+                  restored: (restoreResult && restoreResult.restored) || [],
+                  unplaceable: (restoreResult && restoreResult.unplaceable) || [],
+                  beforeFidelity,
+                  afterFidelity,
+                });
+                if (addToast) {
+                  const fuzzyCount = ((restoreResult && restoreResult.restored) || []).length;
+                  const uCount = ((restoreResult && restoreResult.unplaceable) || []).length;
+                  const parts = [];
+                  if (stageCounts.retry > 0) parts.push(stageCounts.retry + ' reinserted (AI)');
+                  if (stageCounts.sentence > 0) parts.push(stageCounts.sentence + ' reinserted (sentence)');
+                  if (fuzzyCount > 0) parts.push(fuzzyCount + ' reinserted (fuzzy)');
+                  if (uCount > 0) parts.push(uCount + ' in recovery appendix');
+                  const detail = parts.length > 0 ? ' · ' + parts.join(' · ') : '';
+                  const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail;
+                  addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
+                }
+              } catch (e) { /* non-blocking */ }
+            }, 500);
+          }, 200);
+        })();
       } catch (outerErr) { /* non-blocking */ }
     }, 200);
     return () => clearTimeout(tid);

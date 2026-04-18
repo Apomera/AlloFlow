@@ -4392,7 +4392,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           car._pitchTarget = accel * 0.003 + gradePitch * 0.5;
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
-          car._rollTarget = -car.steering * Math.abs(car.speed) * 0.003; // body rolls in turns
+          // Body roll on turns. Coefficient bumped 0.003 → 0.005 — was so subtle that you
+          // couldn't see the lean unless you slow-mo'd a screenshot. Now visibly tilts on
+          // sharp cornering at speed (~5° at full steering at 20 m/s) which sells the
+          // weight-transfer feel without crossing into cartoon territory.
+          car._rollTarget = -car.steering * Math.abs(car.speed) * 0.005;
           car._roll = (car._roll || 0) + (car._rollTarget - (car._roll || 0)) * dt * 4;
           // Suspension bounce — speed-dependent road vibration
           var suspFreq = 3 + absSpeed * 0.3;
@@ -8099,18 +8103,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var mirR = new T.Mesh(mirGeo, mirMat);
           mirR.position.set(0.25, 0.85, -0.52);
           playerCarGroup.add(mirR);
-          // Wheels — lifted by 0.04 to prevent Z-fighting with the road surface mesh
-          // (player car group is positioned AT road height, so wheel bottom would otherwise
-          // sit exactly on the road and flicker as "sinking in"). Name-tagged so the
-          // rotation update can find them without false-positives on other cylinders.
+          // Wheels — lifted by 0.04 to prevent Z-fighting with the road surface mesh.
+          // Each wheel is wrapped in a parent Group ("steering pivot") so we can YAW the
+          // group around vertical for steering visualization, while rotating the wheel
+          // itself around its own axis for the spin animation.
+          // Tagged 'rr_playerWheelF' (front) or 'rr_playerWheelR' (rear) — only fronts
+          // get the steering yaw applied each frame.
           var wheelMat = new T.MeshLambertMaterial({ color: 0x111111 });
-          [[-0.55, 0.24, 0.5], [-0.55, 0.24, -0.5], [0.55, 0.24, 0.5], [0.55, 0.24, -0.5]].forEach(function(pos) {
+          [[-0.55, 0.24, 0.5, 'R'], [-0.55, 0.24, -0.5, 'R'], [0.55, 0.24, 0.5, 'F'], [0.55, 0.24, -0.5, 'F']].forEach(function(pos) {
+            var pivot = new T.Group();
+            pivot.position.set(pos[0], pos[1], pos[2]);
+            pivot.name = pos[3] === 'F' ? 'rr_playerWheelPivotF' : 'rr_playerWheelPivotR';
             var wGeo = new T.CylinderGeometry(0.2, 0.2, 0.15, 12);
             var wMesh = new T.Mesh(wGeo, wheelMat);
             wMesh.rotation.x = Math.PI / 2;
-            wMesh.position.set(pos[0], pos[1], pos[2]);
-            wMesh.name = 'rr_playerWheel';
-            playerCarGroup.add(wMesh);
+            wMesh.name = pos[3] === 'F' ? 'rr_playerWheelF' : 'rr_playerWheelR';
+            pivot.add(wMesh);
+            playerCarGroup.add(pivot);
           });
           // Headlights
           var hlMat = new T.MeshBasicMaterial({ color: 0xffffee, transparent: true, opacity: isNight ? 0.9 : 0.3 });
@@ -8464,11 +8473,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ? infiniteWorldRef.current.roadHeightAtY(car.y) : 0;
           s3.playerCarGroup.position.set(carWorldX, roadH + (car._suspY || 0), carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
-          // Pitch the car along the road grade so it visually follows hills.
-          // rotation.x = pitch (positive = nose up in Three.js default orientation).
-          // The car model faces +X, so rotation around Z is pitch. car._pitch has
-          // both grade + accel-induced weight transfer combined.
-          s3.playerCarGroup.rotation.z = car._pitch || 0;
+          // Pitch (rotation.x) + roll (rotation.z) get set later via car._pitch/_roll.
+          // (A duplicate set was here previously — removed; the later assignment was
+          // already correct, but this earlier one assigned _pitch to the roll axis.)
           // ── Windshield wipers: sweep in rain/snow, rest when dry ──
           // Wipers pivot around their base (the group origin at the windshield base).
           // A simple triangle wave on time gives the back-and-forth sweep; rate scales
@@ -8526,9 +8533,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   s3._trackPool.push(tr);
                 }
                 // Place behind the car along its heading axis, offset laterally.
+                // Y is road-relative — using a flat 0.019 made tracks disappear under the
+                // road on hills (road sits at heightAt(y) + 0.011, which can be many units up).
                 var tx = carWorldX - Math.cos(car.heading) * 0.8 - Math.sin(-car.heading) * off;
                 var tz = carWorldZ - Math.sin(car.heading) * 0.8 - Math.cos(-car.heading) * off;
-                tr.position.set(tx, 0.019, tz);
+                tr.position.set(tx, roadH + 0.022, tz);
                 tr.rotation.z = -car.heading;
               });
             }
@@ -8541,17 +8550,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (s3._mtnRef) s3._mtnRef.position.set(carWorldX, 0, carWorldZ);
           if (!s3._forestRef) s3._forestRef = s3.scene.getObjectByName('forest_ring');
           if (s3._forestRef) s3._forestRef.position.set(carWorldX, 0, carWorldZ);
-          // Weight transfer: body pitch (brake/accel) and roll (turns)
+          // Weight transfer: body pitch (brake/accel) and roll (turns).
+          // Wheel rotation is handled separately below (the dead wheel-spin loop that
+          // used to live here couldn't find wheels anymore — they're inside steering
+          // pivot Groups now, not direct children of playerCarGroup).
           s3.playerCarGroup.rotation.x = car._pitch || 0;
           s3.playerCarGroup.rotation.z = car._roll || 0;
-          // Wheel rotation animation (spin proportional to speed)
-          var wheelSpinAngle = timeRef.current * Math.abs(car.speed) * 2;
-          s3.playerCarGroup.children.forEach(function(child) {
-            // Wheels are CylinderGeometry with rotation.x = PI/2
-            if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
-              child.rotation.y = wheelSpinAngle;
-            }
-          });
 
           // Camera follows car
           var camMode = cameraModeRef.current;
@@ -8748,16 +8752,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             });
           }
-          // Player wheel rotation — accumulate Δangle = speed * dt / radius.
-          // dt isn't a parameter of updateThreeScene; compute it locally from timeRef.
+          // Player wheel rotation + front-wheel steering visualization.
+          // Spin angle accumulated from speed × dt / radius. Front-wheel pivots yaw with
+          // the steering input so the wheels visibly turn left/right with the wheel.
           if (s3.playerCarGroup) {
             if (s3._playerWheelAngle === undefined) s3._playerWheelAngle = 0;
             if (s3._lastWheelT === undefined) s3._lastWheelT = timeRef.current;
             var wheelDt = Math.max(0, Math.min(0.1, timeRef.current - s3._lastWheelT));
             s3._lastWheelT = timeRef.current;
             s3._playerWheelAngle += Math.abs(car.speed) * wheelDt / 0.20;
+            // Steering angle: clamp ~30° max (Math.PI/5 ≈ 36°). Reverse-sign so positive
+            // steering input (right) yaws the wheels to the right (negative pivot.y in
+            // the player car's local frame, where +X is forward).
+            var steerYaw = -Math.max(-1, Math.min(1, car.steering)) * (Math.PI / 5);
             s3.playerCarGroup.children.forEach(function(child) {
-              if (child.name === 'rr_playerWheel') child.rotation.y = s3._playerWheelAngle;
+              if (child.name === 'rr_playerWheelPivotF') {
+                child.rotation.y = steerYaw;
+              }
+              // Walk one level deeper to find the actual wheel mesh inside each pivot
+              if (child.name === 'rr_playerWheelPivotF' || child.name === 'rr_playerWheelPivotR') {
+                child.children.forEach(function(w) {
+                  if (w.name === 'rr_playerWheelF' || w.name === 'rr_playerWheelR') {
+                    w.rotation.y = s3._playerWheelAngle;
+                  }
+                });
+              }
             });
           }
 
@@ -8847,15 +8866,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var hardBrake = car.brake > 0.7 && carAbsSpeed > 8;
           if (skidding || hardBrake) {
             var markGeo = new T2.PlaneGeometry(0.08, 0.5);
-            // Two parallel tire strips (left + right wheel tracks)
+            // Two parallel tire strips (left + right wheel tracks).
+            // Marks must be road-relative in Y — using a flat 0.015 made them appear
+            // BELOW the road on hills (road mesh sits at heightAt(y) + 0.011, can be
+            // 5+ units up). Now uses roadH so marks always lay just above the actual
+            // road surface, matching painted markings.
             [-0.35, 0.35].forEach(function(lateral) {
               var mark = new T2.Mesh(markGeo, s3.skidMarkMat);
               mark.rotation.x = -Math.PI / 2;
               mark.rotation.z = -car.heading + Math.PI / 2;
-              // Offset laterally perpendicular to travel direction
               var perpX = -Math.sin(car.heading) * lateral;
               var perpZ = Math.cos(car.heading) * lateral;
-              mark.position.set(carWorldX + perpX, 0.015, carWorldZ + perpZ);
+              mark.position.set(carWorldX + perpX, roadH + 0.018, carWorldZ + perpZ);
               // Hard-brake marks are fainter than skid marks
               if (hardBrake && !skidding) {
                 mark.material = mark.material.clone();
@@ -9044,25 +9066,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var wWidth = isBus ? 0.18 : isTruck ? 0.17 : isVan ? 0.15 : isSUV ? 0.14 : 0.13;
               var wZOff = 0.40;
               var wXAxle = bLen * 0.30;
-              // ── Wheel Y lift to prevent Z-fighting with road surface ──
-              // The car group is positioned at y = tRoadH (road height under car). With
-              // wheel center at local y = wR, the wheel BOTTOM lands at world y = tRoadH
-              // exactly, identical to the road mesh. Z-fighting causes the wheel to flicker
-              // and look like it's "sinking into the road." Lift wheel center by 0.04m so
-              // wheel-bottom sits ~4cm above road surface — visually grounded but no fight.
               var wLift = 0.04;
               var hubMat = new T.MeshLambertMaterial({ color: 0x909096 });
-              [[-wXAxle, wR + wLift, wZOff], [-wXAxle, wR + wLift, -wZOff], [wXAxle, wR + wLift, wZOff], [wXAxle, wR + wLift, -wZOff]].forEach(function(wp) {
+              // Wheel positions tagged 'F' (front, +X) or 'R' (rear, -X). Each wheel gets
+              // a parent steering pivot Group; only fronts get yaw applied per-frame.
+              [[-wXAxle, wR + wLift, wZOff, 'R'], [-wXAxle, wR + wLift, -wZOff, 'R'], [wXAxle, wR + wLift, wZOff, 'F'], [wXAxle, wR + wLift, -wZOff, 'F']].forEach(function(wp) {
+                var wPivot = new T.Group();
+                wPivot.position.set(wp[0], wp[1], wp[2]);
+                wPivot.name = wp[3] === 'F' ? 'rr_aiWheelPivotF' : 'rr_aiWheelPivotR';
                 var wGeo = new T.CylinderGeometry(wR, wR, wWidth, 14);
                 var wheel = new T.Mesh(wGeo, wMat);
                 wheel.rotation.x = Math.PI / 2;
-                wheel.position.set(wp[0], wp[1], wp[2]);
-                cg.add(wheel);
+                wheel.name = 'rr_aiWheel';
+                wPivot.add(wheel);
                 var hubGeo = new T.CylinderGeometry(wR * 0.55, wR * 0.55, wWidth + 0.004, 12);
                 var hub = new T.Mesh(hubGeo, hubMat);
                 hub.rotation.x = Math.PI / 2;
-                hub.position.set(wp[0], wp[1], wp[2]);
-                cg.add(hub);
+                hub.name = 'rr_aiHub';
+                wPivot.add(hub);
+                cg.add(wPivot);
               });
               // Tire shadow patch — also lifted off the road slightly to avoid Z-fighting
               // with painted road markings (which sit at +0.012–0.016 above the asphalt).
@@ -9153,14 +9175,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               t._lastWheelT = timeRef.current;
               t._wheelSpinAngle += Math.abs(t.speed) * aiWheelDt / 0.22;
               var tWheelAngle = t._wheelSpinAngle;
+              // AI front-wheel steering yaw: derived from heading delta vs the spline
+              // tangent target. If the AI is currently lerping its heading to follow
+              // a curve, the wheels visibly turn in that direction. Clamped ±30°.
+              var aiSteerYaw = 0;
+              if (!t.crossStreet) {
+                var aiwSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                if (aiwSp) {
+                  var targetH = (t.heading > 0)
+                    ? (Math.PI / 2 - aiwSp.headingAt(t.y))
+                    : (-Math.PI / 2 - aiwSp.headingAt(t.y));
+                  var hDelta = targetH - t.heading;
+                  while (hDelta > Math.PI) hDelta -= 2 * Math.PI;
+                  while (hDelta < -Math.PI) hDelta += 2 * Math.PI;
+                  // Amplify visually so even small heading deltas show as turning wheels
+                  aiSteerYaw = Math.max(-Math.PI / 5, Math.min(Math.PI / 5, hDelta * 4));
+                }
+              }
               var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
-              // Braking: bright red if actively slowing or told to slow/stop. The _slowFor
-              // field is set by updateTraffic based on signals, cars ahead, and player state.
               var isBraking = (t._slowFor >= 1) || (t._prevSpeed !== undefined && t.speed < t._prevSpeed - 0.2);
               var nightLights = scn.time === 'night' || scn.weather === 'fog';
               m.children.forEach(function(child) {
-                if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
-                  child.rotation.y = tWheelAngle;
+                // Steering pivot Groups: yaw front pivots only; spin the wheel inside both.
+                if (child.name === 'rr_aiWheelPivotF' || child.name === 'rr_aiWheelPivotR') {
+                  if (child.name === 'rr_aiWheelPivotF') child.rotation.y = aiSteerYaw;
+                  child.children.forEach(function(w) {
+                    if (w.name === 'rr_aiWheel' || w.name === 'rr_aiHub') w.rotation.y = tWheelAngle;
+                  });
                   return;
                 }
                 var n = child.name;
