@@ -2916,6 +2916,12 @@
       // the summary card before returning to the menu. Zero-round sessions jump straight back
       // (no point showing a "you got 0/0" recap).
       if (srchTotal > 0) {
+        // Sort missed labels by miss count descending — the labels the student struggled with
+        // most appear first. That's what the SLP wants to see at the top.
+        var missedMap = srchMissedSetRef.current || {};
+        var missedLabels = Object.keys(missedMap)
+          .sort(function (a, b) { return (missedMap[b] || 0) - (missedMap[a] || 0); })
+          .slice(0, 8); // cap at 8 so the card stays scannable
         setSrchSummaryData({
           mode: srchMode,
           correct: srchCorrect,
@@ -2923,7 +2929,9 @@
           score: srchScore,
           bestStreak: srchBest,
           accuracy: srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0,
-          filter: srchCategoryFilter
+          filter: srchCategoryFilter,
+          missedLabels: missedLabels,
+          errorless: srchErrorless
         });
         setSrchShowSummary(true);
       }
@@ -3561,6 +3569,23 @@
                 e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'best streak')
               )
             ),
+            // Miss list — "Words to practice next time". Only shown when there were actually
+            // missed items; otherwise a "✓ No misses!" celebration replaces it.
+            srchSummaryData.missedLabels && srchSummaryData.missedLabels.length > 0
+              ? e('div', { style: { marginBottom: '12px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Words to practice next time'),
+                  e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                    srchSummaryData.missedLabels.map(function (lbl, li) {
+                      return e('span', {
+                        key: li,
+                        title: 'Tap to hear',
+                        onClick: function () { srchSpeakWord(lbl); },
+                        style: { cursor: 'pointer', background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 }
+                      }, lbl);
+                    })
+                  )
+                )
+              : (srchSummaryData.total > 0 && e('div', { style: { fontSize: '11px', color: '#166534', fontWeight: 700, marginBottom: '10px', textAlign: 'center' } }, '✨ No misses — every target correct!')),
             e('div', { style: { display: 'flex', gap: '8px' } },
               e('button', {
                 onClick: function () { setSrchShowSummary(false); srchStartSession(srchSummaryData.mode); },
@@ -3610,21 +3635,63 @@
               }, c.icon + ' ' + c.label, e('span', { style: { fontSize: '10px', opacity: 0.7, fontWeight: 500 } }, '(' + c.count + ')'));
             })
           ),
-          // Difficulty selector
-          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151' } },
+          // Difficulty selector. In errorless mode the difficulty is forced to 2 internally,
+          // so we visually disable the difficulty chips to avoid confusion about what's in effect.
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', opacity: srchErrorless ? 0.5 : 1 } },
             e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
             [2, 3, 4, 6].map(function (n) {
               return e('button', {
                 key: n,
-                onClick: function () { setSrchDifficulty(n); },
+                onClick: function () { if (!srchErrorless) setSrchDifficulty(n); },
+                disabled: srchErrorless,
+                title: srchErrorless ? 'Errorless mode uses 2 choices' : '',
                 'aria-label': n + ' options',
                 style: {
-                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (srchDifficulty === n ? PURPLE : '#d1d5db'),
-                  background: srchDifficulty === n ? LIGHT_PURPLE : '#f9fafb',
-                  color: srchDifficulty === n ? PURPLE : '#6b7280',
-                  fontWeight: srchDifficulty === n ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                  padding: '4px 12px', borderRadius: '16px',
+                  border: '2px solid ' + ((!srchErrorless && srchDifficulty === n) ? PURPLE : '#d1d5db'),
+                  background: (!srchErrorless && srchDifficulty === n) ? LIGHT_PURPLE : '#f9fafb',
+                  color: (!srchErrorless && srchDifficulty === n) ? PURPLE : '#6b7280',
+                  fontWeight: (!srchErrorless && srchDifficulty === n) ? 700 : 500, fontSize: '12px',
+                  cursor: srchErrorless ? 'not-allowed' : 'pointer'
                 }
               }, n + ' choices');
+            })
+          ),
+          // Errorless learning mode toggle — for pre-receptive students. When on, wrong answers
+          // don't penalize the student; distractors are always off-category; difficulty forced to 2.
+          e('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', cursor: 'pointer', background: srchErrorless ? '#fef3c7' : 'transparent', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + (srchErrorless ? '#fcd34d' : 'transparent') } },
+            e('input', {
+              type: 'checkbox',
+              checked: srchErrorless,
+              onChange: function (ev) { setSrchErrorless(ev.target.checked); },
+              'aria-label': 'Toggle errorless learning mode'
+            }),
+            e('span', { style: { fontWeight: 600 } }, '💛 Errorless mode'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280' } }, '(beginner — wrong picks retry same target)')
+          ),
+          // Session length selector — optional auto-end after N rounds. Default "Unlimited" matches
+          // legacy behavior. Good for structured practice blocks or data-probe sessions.
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', flexWrap: 'wrap' } },
+            e('span', { style: { fontWeight: 600 } }, 'Session length:'),
+            [
+              { val: null, label: 'Unlimited' },
+              { val: 10, label: '10 rounds' },
+              { val: 20, label: '20 rounds' },
+              { val: 30, label: '30 rounds' }
+            ].map(function (opt) {
+              var sel = srchSessionLength === opt.val;
+              return e('button', {
+                key: String(opt.val),
+                onClick: function () { setSrchSessionLength(opt.val); },
+                'aria-label': opt.label,
+                'aria-pressed': sel,
+                style: {
+                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (sel ? PURPLE : '#d1d5db'),
+                  background: sel ? LIGHT_PURPLE : '#f9fafb',
+                  color: sel ? PURPLE : '#6b7280',
+                  fontWeight: sel ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                }
+              }, opt.label);
             })
           ),
           // All-time stats

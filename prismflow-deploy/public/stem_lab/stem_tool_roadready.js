@@ -109,7 +109,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     bicycleDistance: 'Must give cyclists at least 3 feet when passing (2015 law).',
   };
 
-  // (US federal baseline rules are covered inline in the permit bank + Maine rules.)
+  // ─────────────────────────────────────────────────────────
+  // SECTION 2b: UNIVERSAL RULES OF THE ROAD (apply in all 50 states)
+  // ─────────────────────────────────────────────────────────
+  // MAINE_RULES layers state-specific overrides on top of this baseline.
+  // These are the universal patterns every US driver is expected to know, grouped
+  // into pedagogical categories so a learner can study them one pillar at a time.
+  var UNIVERSAL_RULES = {
+    rightOfWay: {
+      title: 'Right-of-Way Priority Ladder',
+      icon: '🚦',
+      summary: 'Who goes first when paths conflict. Follow the ladder top to bottom.',
+      ladder: [
+        { rank: 1, who: 'Emergency vehicles with lights/siren', rule: 'Pull to the RIGHT and stop. Clear the lane completely. Do not follow within 500 ft.' },
+        { rank: 2, who: 'Funeral processions (lead vehicle has cleared intersection)', rule: 'Yield until the entire procession passes, even on green. Do not cut between cars in the procession.' },
+        { rank: 3, who: 'Pedestrians in crosswalks (marked or unmarked at intersections)', rule: 'Full stop. Never pass a vehicle already stopped at a crosswalk.' },
+        { rank: 4, who: 'Pedestrians using a white cane or guide dog', rule: 'Mandatory full stop in all 50 states, anywhere in the roadway.' },
+        { rank: 5, who: 'School buses with red flashers + stop-arm extended', rule: 'BOTH directions stop on undivided roads. Only following traffic stops on divided highways (physical median).' },
+        { rank: 6, who: 'Traffic already in the intersection / roundabout', rule: 'Those already committed have priority. New arrivals yield.' },
+        { rank: 7, who: 'Through traffic (vs. turning traffic)', rule: 'Left-turners yield to oncoming through traffic. Right-turners yield to through traffic and pedestrians.' },
+        { rank: 8, who: 'First to arrive at a stop/yield', rule: 'First-arrived, first-go. When simultaneous, the vehicle on the RIGHT goes first.' },
+        { rank: 9, who: 'Uphill traffic on a narrow mountain road', rule: 'Descending vehicle yields (easier to back downhill than up under load).' }
+      ]
+    },
+    laneDiscipline: {
+      title: 'Lane Discipline',
+      icon: '🛣️',
+      summary: 'Where to drive, when to change lanes, and why.',
+      rules: [
+        'Keep-right: stay in the rightmost lane except to pass, turn left, or avoid a hazard. "Left lane for passing" is law in most states.',
+        'Slower-traffic-keep-right: if 5+ vehicles are stacked behind you and a passing lane exists, move right.',
+        'HOV/Carpool lanes: minimum occupancy posted on the sign (usually 2+ or 3+). Motorcycles and buses always qualify. Crossing a double white line into/out of HOV = $$$$ fine.',
+        'Solid white line = lane change discouraged (not illegal in most states, but risky). Dashed white = change allowed when clear.',
+        'Check mirrors + blind spot before every lane change. The mirror alone misses a car in the adjacent lane at highway speed.',
+        'Signal BEFORE you move — at least 3 seconds or 100 ft. Signaling during the move is too late.',
+        'Never straddle a lane line. Commit to one lane at a time.'
+      ]
+    },
+    signaling: {
+      title: 'Signaling Distances',
+      icon: '🟡',
+      summary: 'Give other drivers enough time to react.',
+      rules: [
+        'Urban streets (25–35 mph): signal at least 100 ft (about 4 parked car-lengths) before the turn.',
+        'Highways (45+ mph): signal at least 200 ft (about 8 car-lengths). Many states require 300 ft on freeways.',
+        'Signal even when no car is behind you — cyclists, pedestrians, and crossing traffic all read your signal.',
+        'Cancel the signal after your turn. A forgotten blinker is a common cause of rear-end collisions.',
+        'Hand signals (required if signal lights fail): LEFT arm straight out = left turn; bent up = right turn; bent down = slowing/stopping.'
+      ]
+    },
+    passing: {
+      title: 'Passing & No-Pass Zones',
+      icon: '⬅️',
+      summary: 'Rules for getting around a slower vehicle safely.',
+      rules: [
+        'Pass on the LEFT only (the "fast lane"). Passing on the right is illegal except on multi-lane roads where the right lane is moving faster, or when the vehicle ahead is making a left turn.',
+        'Solid yellow on YOUR side of the centerline = NO passing. Broken yellow = passing allowed when safe.',
+        'Never pass on hills, curves, within 100 ft of an intersection, railroad crossing, bridge, or tunnel.',
+        'No passing in school zones when children are present or within 100 ft of a school crossing.',
+        'Never pass a school bus with red flashers flashing (see Right-of-Way ladder).',
+        'When being passed: stay in your lane, hold your speed (do NOT speed up), and give the passer room to return.',
+        'Total passing maneuver at highway speed takes ~10 seconds and covers ~1500 ft. You need that much clear road AHEAD before you start.'
+      ]
+    },
+    merging: {
+      title: 'Merge & Yield Hierarchy',
+      icon: '🔀',
+      summary: 'How to join traffic safely.',
+      rules: [
+        'Zipper merge: when a lane closure is ahead, use BOTH lanes fully until the merge point, then alternate one-for-one. This is faster and safer than merging early.',
+        'Highway on-ramps: match the speed of traffic in the rightmost lane BEFORE you merge. Do not stop on the ramp unless traffic is stopped.',
+        'Yield signs = slow down, look, stop only if needed. Different from stop signs.',
+        'Merging driver yields to through traffic. Through traffic should not be forced to brake.',
+        'Always signal before merging, even if the lane "ends" — the signal confirms your intent.',
+        'On-ramp priority: acceleration lane traffic yields to freeway traffic, but freeway drivers should cooperate by moving left when possible.'
+      ]
+    },
+    pedestrian: {
+      title: 'Pedestrian Protocol',
+      icon: '🚶',
+      summary: 'Pedestrians always have the legal and practical right-of-way.',
+      rules: [
+        'Marked crosswalk OR unmarked crosswalk at any intersection: vehicles must yield to pedestrians.',
+        'Pedestrian with a WHITE CANE or GUIDE DOG: mandatory full stop in all 50 states, anywhere on the roadway.',
+        'School zones: reduced speed when children are present or signs are flashing. Expect children to dart unpredictably.',
+        'Never pass a vehicle stopped at a crosswalk — there may be a pedestrian you can\'t see.',
+        'Turn-on-red: you may turn right on red only after a FULL stop and yielding to pedestrians and cross traffic.',
+        'Backing up: you are responsible for anyone behind you, including small children. Walk around the car first.'
+      ]
+    },
+    emergency: {
+      title: 'Emergency Vehicle Protocol',
+      icon: '🚑',
+      summary: 'What to do when you see lights, hear sirens, or encounter a scene.',
+      rules: [
+        'Lights + siren approaching from any direction: pull to the RIGHT curb and stop. Stay stopped until it passes (and any others behind it).',
+        'On a divided highway with a physical median: opposing traffic does NOT need to stop — only same-direction traffic yields.',
+        'Do NOT follow an emergency vehicle closer than 500 ft (or "one city block").',
+        '"Move Over" laws (all 50 states): when passing a stopped emergency, tow, utility, or roadside assistance vehicle with flashers, move one lane away OR slow down significantly. Maine adds $300 fine.',
+        'Funeral procession: yield to the entire procession, even through a green light. Never break up the line.',
+        'Disabled vehicle on the shoulder: move over one lane if possible; otherwise slow down substantially.'
+      ]
+    },
+    railroad: {
+      title: 'Railroad Crossings',
+      icon: '🚂',
+      summary: 'Trains can\'t stop. You always lose the weight contest.',
+      rules: [
+        'Active controls (gates + lights + bells): STOP when activated. Never drive around lowered gates.',
+        'Passive controls (crossbuck only, no gates): you must LOOK and LISTEN. Reduce speed and be prepared to stop.',
+        'Never stop ON the tracks. If traffic is backed up, wait BEFORE the crossing until you have room to clear it completely.',
+        'Stuck on tracks: GET OUT immediately. Walk toward the train at a 45° angle (debris flies forward). Call 911 and the emergency number on the nearby crossing post.',
+        'School buses and hazmat trucks MUST stop at all railroad crossings, even without active controls.',
+        'Multi-track warning signs ("2 TRACKS" or similar): wait for the first train to pass completely, then check for a second train coming the other way before proceeding.',
+        'A freight train at 55 mph takes over a mile to stop. It is PHYSICALLY impossible for the engineer to stop in time if you\'re on the tracks.'
+      ]
+    },
+    speedAndFollowing: {
+      title: 'Speed Management & Following Distance',
+      icon: '📏',
+      summary: 'Speed is never "fixed" — it\'s conditional on everything around you.',
+      rules: [
+        'Posted limit is a MAXIMUM under ideal conditions. Rain, fog, snow, night, traffic, and road damage all require reducing from that maximum.',
+        '"Basic speed law" (all 50 states): you must drive at a speed that is reasonable and prudent for current conditions, regardless of the posted limit.',
+        '3-second following rule: pick a fixed point ahead; after the car ahead passes it, you should reach it in 3+ seconds. 4+ in rain. 6+ in snow/ice.',
+        'Double your speed = quadruple your braking distance (v² physics). 60→120 mph = 4× the stopping distance, not 2×.',
+        'Reaction distance alone: ~1.5 seconds × speed. At 60 mph that\'s 132 ft before your brake even engages.',
+        'Uphill: gravity helps you slow. Downhill: gravity adds to your stopping distance. Use engine braking (lower gear) on long descents.',
+        'Speed limits in work zones, school zones, and residential areas are often ENFORCED with double fines. Always posted.'
+      ]
+    }
+  };
 
   // ─────────────────────────────────────────────────────────
   // SECTION 3: ROAD SIGNS — Shape/color semantics
@@ -1162,8 +1292,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       else if (prRoll < 0.35) personality = { speedBias: 0.92, followMult: 1.3, aggro: 0.15, rollsStops: 0.0 }; // cautious
       else if (prRoll < 0.48) personality = { speedBias: 0.88, followMult: 1.5, aggro: 0.05, rollsStops: 0.0 }; // elderly/learner
       else personality = { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0.05 }; // normal
+      // Lane offset: right side of the road relative to direction of travel (US driving).
+      // direction=1 (heading +π/2, moving +Y) → laneOffset = -1.5 (right of center for +Y driver)
+      // direction=-1 (heading -π/2, moving -Y) → laneOffset = +1.5 (right of center for -Y driver)
+      var laneOffset = direction === 1 ? -1.5 : 1.5;
       traffic.push({
-        x: centerX + (direction === 1 ? -1.5 : 1.5),
+        x: centerX + laneOffset,
+        laneOffset: laneOffset,
         y: Math.random() * MAP_SIZE,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
         speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS * personality.speedBias,
@@ -1245,12 +1380,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (['highway', 'fog', 'snow', 'night', 'parking'].indexOf(scenario.id) !== -1) return [];
     var cyclists = [];
     var centerX = Math.floor(MAP_SIZE / 2);
-    var count = scenario.id === 'rural' ? 2 : scenario.id === 'residential' ? 2 : 1;
+    var count = scenario.id === 'rural' ? 2 : scenario.id === 'residential' ? 3 : 2;
     for (var i = 0; i < count; i++) {
+      // Cyclists travel ON THE RIGHT SIDE relative to their direction of motion.
+      // Since the car moves in -Y (heading = -π/2) and uses the right side of road,
+      // cyclists heading -π/2 (same direction as player) are at X = centerX + 2.3 (bike lane).
+      // Cyclists heading +π/2 (oncoming) are at X = centerX - 2.3.
+      var heading = Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2;
+      var bikeLaneX = heading === -Math.PI / 2 ? centerX + 2.3 : centerX - 2.3;
       cyclists.push({
-        x: centerX + (Math.random() < 0.5 ? -2 : 2.2), // near shoulder
+        x: bikeLaneX,
         y: Math.random() * MAP_SIZE,
-        heading: Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2,
+        heading: heading,
         speed: (12 + Math.random() * 4) * MPH_TO_MS, // 12-16 mph
         type: 'cyclist'
       });
@@ -1711,8 +1852,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     useEffect(function() {
       var onDown = function(e) {
-        keysRef.current[e.key.toLowerCase()] = true;
         if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+        if (e.repeat) return;
+        keysRef.current[e.key.toLowerCase()] = true;
         if (e.key.toLowerCase() === 'r') resetCar();
       };
       var onUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
@@ -1776,7 +1918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!hitConeRef.current) {
             hitConeRef.current = true;
             var newSt = Object.assign({}, st);
-            newSt.score -= 25;
+            newSt.score = Math.max(0, newSt.score - 25);
             newSt.hits += 1;
             setSt(newSt);
             setFeedback('💥 You bumped a parked car. -25. Press R to reset.');
@@ -1934,8 +2076,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     useEffect(function() {
       var onD = function(e) {
-        keysRef.current[e.key.toLowerCase()] = true;
         if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+        if (e.repeat) return;
+        keysRef.current[e.key.toLowerCase()] = true;
         if (e.key.toLowerCase() === 'r') resetCar();
       };
       var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
@@ -1985,7 +2128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (car.y < ROAD_TOP + 14 || car.y > ROAD_BOT - 14) {
           if (Math.abs(car.speed) > 3) {
             var ns = Object.assign({}, stVal);
-            ns.score -= 15; ns.hits++;
+            ns.score = Math.max(0, ns.score - 15); ns.hits++;
             setSt(ns);
             setFb('💥 Curb hit! -15. Slow down near the edge. Press R to reset.');
           }
@@ -2104,7 +2247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
 
     useEffect(function() {
-      var onD = function(e) { keysRef.current[e.key.toLowerCase()] = true; if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.key.toLowerCase() === 'r') resetCar(); };
+      var onD = function(e) { if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.repeat) return; keysRef.current[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === 'r') resetCar(); };
       var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
       window.addEventListener('keydown', onD); window.addEventListener('keyup', onU);
       return function() { window.removeEventListener('keydown', onD); window.removeEventListener('keyup', onU); };
@@ -2145,7 +2288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (Math.hypot(car.x - cone.x, car.y - cone.y) < 16 && !cone.hit) {
             cone.hit = true;
             var ns = Object.assign({}, stVal);
-            ns.score -= 10; ns.conesHit++;
+            ns.score = Math.max(0, ns.score - 10); ns.conesHit++;
             setSt(ns);
             setFb('🔶 Cone hit! -10. Steer more gently.');
           }
@@ -2227,6 +2370,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var useEffect = React.useEffect;
       var useRef = React.useRef;
       var useCallback = React.useCallback;
+      var useState = React.useState;
+      // CountUp helper component: animates numbers from 0 → target over ~800ms.
+      // Used on stat cards so numbers feel earned rather than just appearing.
+      function CountUp(props) {
+        var target = Number(props.value) || 0;
+        var duration = props.duration || 800;
+        var stateTuple = useState(0);
+        var shown = stateTuple[0], setShown = stateTuple[1];
+        var startRef = useRef(null);
+        useEffect(function() {
+          startRef.current = Date.now();
+          setShown(0);
+          var tick = function() {
+            var elapsed = Date.now() - startRef.current;
+            var t = Math.min(1, elapsed / duration);
+            // Ease-out cubic for a natural settle.
+            var eased = 1 - Math.pow(1 - t, 3);
+            setShown(eased * target);
+            if (t < 1) requestAnimationFrame(tick);
+            else setShown(target);
+          };
+          requestAnimationFrame(tick);
+        }, [target]);
+        var decimals = props.decimals || 0;
+        var formatted = decimals > 0 ? shown.toFixed(decimals) : Math.round(shown);
+        return h('span', { style: props.style || null }, (props.prefix || '') + formatted + (props.suffix || ''));
+      }
 
       var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
       var upd = function(key, val) { ctx.update('roadReady', key, val); };
@@ -2286,10 +2456,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── Visual polish: view transitions + global style layer + confetti ──
       // prevViewRef tracks previous view so we can fade-in on change without flicker.
+      // badgePopupTimerRef tracks the auto-dismiss timer so re-entries cancel prior timers
+      // (prevents a stale timer from hiding a fresh popup).
+      var badgePopupTimerRef = useRef(null);
       // lastBadgeCountRef detects new achievement unlocks and triggers confetti.
       var prevViewRef = useRef(view);
       var lastBadgeCountRef = useRef(Object.keys(d.badges || {}).length);
       var confettiCanvasRef = useRef(null);
+      // Most-recently-unlocked badge, for the big celebration modal.
+      var newBadgeTuple = useState(null);
+      var newBadgePopup = newBadgeTuple[0];
+      var setNewBadgePopup = newBadgeTuple[1];
       // Install a global style sheet + a confetti canvas overlay ONCE on mount. Both live
       // in document.body so they apply/cover regardless of which view is active.
       useEffect(function() {
@@ -2330,9 +2507,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           try {
             var s = document.getElementById(styleId); if (s) s.remove();
             var c = document.getElementById(confId); if (c) c.remove();
+            var bp = document.getElementById('rr-badge-popup'); if (bp) bp.remove();
           } catch(_) {}
         };
       }, []);
+      // ── Badge unlock modal: renders a DOM element into body whenever a new badge fires ──
+      // Simpler than threading through every view return, and ensures the modal shows up
+      // no matter what view is active.
+      useEffect(function() {
+        var popupId = 'rr-badge-popup';
+        var existing = document.getElementById(popupId);
+        if (existing) { existing.remove(); }
+        if (!newBadgePopup) return;
+        var wrap = document.createElement('div');
+        wrap.id = popupId;
+        wrap.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:99998;pointer-events:none;animation:rr-fade-in 0.4s ease-out;';
+        wrap.innerHTML =
+          '<div style="background:linear-gradient(135deg,#78350f,#0f172a);border:3px solid #fbbf24;border-radius:20px;padding:32px 44px;text-align:center;color:#fff;max-width:420px;box-shadow:0 20px 60px rgba(251,191,36,0.5);animation:rr-pulse-soft 2s ease-in-out infinite;">'
+          + '<div style="font-size:12px;font-weight:800;color:#fbbf24;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px;">🏆 Achievement Unlocked</div>'
+          + '<div style="font-size:72px;margin:12px 0;animation:rr-pulse-soft 1.3s ease-in-out infinite;display:inline-block;">' + newBadgePopup.ach.icon + '</div>'
+          + '<div style="font-size:22px;font-weight:900;margin-bottom:6px;color:#fef3c7;">' + newBadgePopup.ach.name + '</div>'
+          + '<div style="font-size:12px;color:#fde68a;line-height:1.5;font-style:italic;">' + newBadgePopup.ach.desc + '</div>'
+          + '</div>';
+        document.body.appendChild(wrap);
+        return function() {
+          var p = document.getElementById(popupId);
+          if (p) p.remove();
+        };
+      }, [newBadgePopup]);
       // On view change: scroll to top of the tool container + briefly flag a fade-in.
       useEffect(function() {
         if (prevViewRef.current !== view) {
@@ -2349,6 +2551,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         var current = Object.keys(d.badges || {}).length;
         if (current > lastBadgeCountRef.current) {
+          // Identify the NEW badge id so we can show the celebration modal.
+          var prevBadgeIds = lastBadgeCountRef.current > 0 ? [] : null;
+          // We'll compare current keys to a map of "was there before" we maintain via ref.
+          // Simpler: pick the most recently added key (last in iteration order).
+          var currentKeys = Object.keys(d.badges || {});
+          var newBadgeId = currentKeys[currentKeys.length - 1];
+          var achDef = ACHIEVEMENTS.find(function(a) { return a.id === newBadgeId; });
+          if (achDef) {
+            setNewBadgePopup({ ach: achDef, shownAt: Date.now() });
+            // Auto-dismiss after 5s; cancel any prior pending dismiss so a fresh popup isn't cut short.
+            if (badgePopupTimerRef.current) clearTimeout(badgePopupTimerRef.current);
+            badgePopupTimerRef.current = setTimeout(function() { setNewBadgePopup(null); badgePopupTimerRef.current = null; }, 5000);
+          }
           lastBadgeCountRef.current = current;
           // Fire confetti via imperative canvas draw. Cheap, no dependencies.
           try {
@@ -2399,6 +2614,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Reset if badges were cleared (e.g., save loaded with fewer).
           lastBadgeCountRef.current = current;
         }
+        // Cleanup on unmount: clear any pending auto-dismiss timer.
+        return function() {
+          if (badgePopupTimerRef.current) {
+            clearTimeout(badgePopupTimerRef.current);
+            badgePopupTimerRef.current = null;
+          }
+        };
       }, [Object.keys(d.badges || {}).length]);
 
       var currentVehicle = VEHICLES.find(function(v) { return v.id === selectedVehicle; }) || VEHICLES[0];
@@ -2747,6 +2969,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
       var permitGateRef = useRef({}); // tracks per-question cooldown timeouts so we don't double-schedule
       var rearviewRef = useRef(null); // canvas ref for mirror
+      // Grace period: first few seconds after drive start. Shows a subtle
+      // "check your mirrors first" banner + narration, and the spawn sanitization
+      // keeps the driver's immediate vicinity clear of traffic.
+      var graceRef = useRef({ until: 0, mirrorCheckPrompted: false });
+      // Seatbelt state: must be fastened to start driving. Chime plays until buckled.
+      // User presses B (or any movement key will also auto-buckle after first prompt).
+      var seatbeltRef = useRef({ fastened: false, chimeOsc: null, chimeGain: null });
+      // Blind spot detector: populated every render based on adjacent-lane traffic.
+      var blindSpotRef = useRef({ left: false, right: false });
+      // Lane departure detector: flags when we drift across a lane line without signaling.
+      var laneDepartureRef = useRef({ side: null, lastAlertAt: 0 });
+      // Wrong-side-of-road tracker: monitors duration on the oncoming side,
+      // with context awareness so legitimate avoidance doesn't get penalized.
+      // { active: bool, startedAt: seconds (sim time), lastPenaltyAt: seconds, lastWarnAt: seconds }
+      var wrongSideRef = useRef({ active: false, startedAt: 0, lastPenaltyAt: 0, lastWarnAt: 0 });
       var emergencyRef = useRef(null); // { kind, icon, color, sirenFreq, x, y, heading, speed, life, responded }
       // Tracked setTimeout IDs — cancelled on drive exit so spooky callbacks don't fire after teardown.
       var timeoutsRef = useRef([]);
@@ -2774,8 +3011,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         if (view !== 'driving') return;
         var onKeyDown = function(e) {
+          // preventDefault runs on every event (including repeats) so held WASD/arrows don't scroll the page.
+          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+          // Skip one-shot toggle logic on OS key-repeat — otherwise holding Space strobes pause,
+          // holding C cycles cameras at ~30Hz, holding E/V flips signals, etc.
+          if (e.repeat) return;
           keysRef.current[e.key.toLowerCase()] = true;
-          if (e.key === ' ') { pausedRef.current = !pausedRef.current; e.preventDefault(); }
+          if (e.key === ' ') { pausedRef.current = !pausedRef.current; }
           if (e.key.toLowerCase() === 'c') {
             var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
             cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
@@ -2799,7 +3041,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
           // Horn — quick two-tone beep on 'q'
           if (e.key.toLowerCase() === 'q') playHorn(0.35);
-          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
         window.addEventListener('keydown', onKeyDown);
@@ -2849,6 +3090,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         eventToastRef.current = introMsg ? { msg: introMsg, until: 10 } : { msg: null, until: 0 };
         // Speak the intro aloud after a short delay
         if (introMsg) safeTimeout(function() { speak(introMsg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim()); }, 1500);
+        // ── Grace period: first 4 seconds after drive start ──
+        // Coach reminds the driver to check mirrors + settle in before pulling out.
+        // This also pairs with the safe-spawn sanitization above.
+        graceRef.current = { until: 4, mirrorCheckPrompted: false };
+        // ── Seatbelt startup sequence ──
+        // Unbuckled on start. Plays 2-second chime loop every 4s until fastened.
+        // Scenarios that auto-bypass this: parking (top-down, no real car), 3-point, backingDrill.
+        var autoBelt = ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
+        seatbeltRef.current = { fastened: autoBelt, chimeOsc: null, chimeGain: null, startedAt: Date.now() };
+        if (!autoBelt) {
+          safeTimeout(function() {
+            if (!seatbeltRef.current.fastened) {
+              speak('Fasten your seatbelt before driving.');
+            }
+          }, 1000);
+        }
+        safeTimeout(function() {
+          speak('Take your time. Check your rearview, left, and right mirrors before accelerating.');
+        }, 2500);
         timeRef.current = 0;
         // Init audio lazily on start
         try {
@@ -2917,6 +3177,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         }
         carRef.current = { x: startX, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
+        // ── SAFE-START sanitization ──
+        // Clear a 20-cell bubble around the player so you never spawn into an active crash.
+        // Traffic in the danger zone gets teleported to a safe distance (preserving lane offset).
+        // Peds/cyclists within 6 cells also get pushed away to avoid instant collisions.
+        var DANGER_R = 20; // cells ahead OR behind in same direction
+        var HEADON_R = 22; // cells ahead for oncoming traffic (collision range is worse head-on)
+        (trafficRef.current || []).forEach(function(t) {
+          if (t.crossStreet) return; // handled separately below
+          var dy = t.y - startY;
+          var sameDir = (t.heading < 0); // player heads -π/2 (negative)
+          var inDangerZone = sameDir
+            ? Math.abs(dy) < DANGER_R      // same direction: danger on both sides
+            : (dy < 0 && dy > -HEADON_R);  // oncoming: only danger if car is ahead of player (dy < 0 since player at startY)
+          if (inDangerZone) {
+            // Teleport this car to a safe distance further out, same lane offset.
+            var push = DANGER_R + 10 + Math.random() * 20;
+            // If car was behind player → push further back. Ahead → further ahead.
+            if (sameDir) {
+              t.y = startY + (dy >= 0 ? push : -push);
+            } else {
+              t.y = startY - (push + 10);
+            }
+          }
+        });
+        // Also clear cross-street cars from the first intersection near the player.
+        (trafficRef.current || []).forEach(function(t) {
+          if (!t.crossStreet) return;
+          if (Math.abs(t.y - startY) < 15) {
+            // Nearest cross-street intersection to player — move the car far down the cross street.
+            t.x = Math.random() < 0.5 ? 3 : MAP_SIZE - 3;
+          }
+        });
+        // Peds and cyclists: push away if within 6 cells of the player.
+        (pedsRef.current || []).forEach(function(p) {
+          var dd = Math.hypot(p.x - startX, p.y - startY);
+          if (dd < 6) {
+            p.y = startY + (p.y >= startY ? 20 : -20);
+          }
+        });
+        (cyclistsRef.current || []).forEach(function(cy) {
+          var dd = Math.hypot(cy.x - startX, cy.y - startY);
+          if (dd < 10) {
+            cy.y = startY + (cy.y >= startY ? 25 : -25);
+          }
+        });
         statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
@@ -2941,35 +3246,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } else {
           parentRef.current = { active: false, errors: [], startedAt: 0, durationSec: 120 };
         }
-        // Dynamic weather: if enabled in Free Explore, build a 3-stage chain starting
+        // Dynamic weather: if enabled in Free Explore, build a multi-stage chain starting
         // ~90s in. Pattern depends on initial weather and time of day.
+        // Each starting state has 2–3 alternative chains so repeat drives feel different.
+        // Events can carry `weather` (physics grip + visuals), `time` (dawn→day transition
+        // for "sun comes up"), or both.
         weatherSysRef.current = { enabled: !!(d.freeExplore && d.dynamicWeather), queue: [], lastApplied: scn.weather };
         if (weatherSysRef.current.enabled) {
           var initW = scn.weather, initT = scn.time;
-          var queue = [];
-          // Maine-realistic chains.
+          var chainOptions = [];
+          // ─── Clear + day ───
           if (initW === 'clear' && initT === 'day') {
-            queue = [
-              { startAt: 90, weather: 'rain', narration: 'A summer storm is rolling in. Wipers and headlights are required.' },
-              { startAt: 240, weather: 'fog', narration: 'The rain is settling into thick coastal fog. Slow down and use low beams only.' },
-              { startAt: 360, weather: 'clear', narration: 'The fog is breaking up. Clear conditions ahead.' }
-            ];
-          } else if (initW === 'clear' && initT === 'night') {
-            queue = [
-              { startAt: 100, weather: 'fog', narration: 'Night fog forming over the coast. Drop your speed by half.' },
-              { startAt: 280, weather: 'rain', narration: 'Light rain at night — toughest visibility conditions there are.' }
-            ];
-          } else if (initW === 'snow') {
-            queue = [
-              { startAt: 120, weather: 'fog', narration: 'Blowing snow is reducing visibility. Increase following distance to 6 seconds.' },
-              { startAt: 300, weather: 'snow', narration: 'Snow squall continuing. Stay smooth — no quick inputs on ice.' }
-            ];
-          } else {
-            // Default chain — drive into a clearing.
-            queue = [
-              { startAt: 150, weather: 'clear', narration: 'Conditions are improving.' }
+            chainOptions = [
+              // Storm rolls in → coastal fog → clears
+              [ { startAt: 90,  weather: 'rain', narration: 'A summer storm is rolling in. Wipers and headlights are required.' },
+                { startAt: 240, weather: 'fog',  narration: 'The rain is settling into thick coastal fog. Slow down and use low beams only.' },
+                { startAt: 360, weather: 'clear', narration: 'The fog is breaking up. Clear conditions ahead.' } ],
+              // Clouds darken into a pop-up shower
+              [ { startAt: 120, weather: 'rain', narration: 'Pop-up shower ahead — pavement will be slick for the first five minutes.' },
+                { startAt: 280, weather: 'clear', narration: 'Shower is past. Pavement still damp; ease on the throttle.' } ],
+              // Hazy → fog (common on the Maine coast in summer)
+              [ { startAt: 150, weather: 'fog', narration: 'Sea breeze is pulling fog inland. Drop your speed by half.' },
+                { startAt: 330, weather: 'clear', narration: 'Fog is burning off. You should see sun again shortly.' } ]
             ];
           }
+          // ─── Clear + night ───
+          else if (initW === 'clear' && initT === 'night') {
+            chainOptions = [
+              [ { startAt: 100, weather: 'fog', narration: 'Night fog forming over the coast. Drop your speed by half.' },
+                { startAt: 280, weather: 'rain', narration: 'Light rain at night — toughest visibility conditions there are.' } ],
+              [ { startAt: 140, weather: 'rain', narration: 'Overnight shower. Use low beams — high beams reflect off the drops.' },
+                { startAt: 320, weather: 'fog', narration: 'Rain is turning to fog as the temperature drops. Slow way down.' } ]
+            ];
+          }
+          // ─── Snow (any time) — Maine winter sequences ───
+          else if (initW === 'snow') {
+            chainOptions = [
+              [ { startAt: 120, weather: 'fog', narration: 'Blowing snow is reducing visibility. Increase following distance to 6 seconds.' },
+                { startAt: 300, weather: 'snow', narration: 'Snow squall continuing. Stay smooth — no quick inputs on ice.' } ],
+              // Whiteout-and-clear pattern
+              [ { startAt: 90,  weather: 'fog', narration: 'Whiteout conditions. Pull right and stop if you lose visibility entirely.' },
+                { startAt: 240, weather: 'snow', narration: 'Visibility is recovering but the road is still fully covered.' },
+                { startAt: 420, weather: 'clear', narration: 'Sun is breaking through. Roads still icy in shade — watch bridges.' } ]
+            ];
+          }
+          // ─── Dawn (the key "sun comes up" case) — time-of-day progression ───
+          else if (initT === 'dawn') {
+            chainOptions = [
+              // Foggy dawn → fog burns off → full day
+              [ { startAt: 60,  weather: 'fog', narration: 'Ground fog is thickest right at sunrise. Low beams only — high beams blind you.' },
+                { startAt: 200, weather: 'clear', narration: 'The sun is cresting the trees. Fog is lifting fast now.' },
+                { startAt: 260, time: 'day', narration: 'Full daylight. Watch for eastbound drivers blinded by the sun.' } ],
+              // Simple sunrise — no weather events, just the time shift
+              [ { startAt: 180, time: 'day', narration: 'Sunrise complete. Expect east-facing drivers to have sun in their eyes.' } ],
+              // Dawn + pop-up shower
+              [ { startAt: 90,  weather: 'rain', narration: 'Dawn shower — common on the coast. Headlights on.' },
+                { startAt: 240, weather: 'clear', narration: 'Shower is past. Pavement still wet.' },
+                { startAt: 300, time: 'day', narration: 'Sun is fully up. Clear driving ahead.' } ]
+            ];
+          }
+          // ─── Fog ───
+          else if (initW === 'fog') {
+            chainOptions = [
+              [ { startAt: 120, weather: 'rain', narration: 'Fog is giving way to light rain. Visibility will improve slightly.' },
+                { startAt: 300, weather: 'clear', narration: 'Weather system moving east. Clear ahead.' } ],
+              [ { startAt: 180, weather: 'clear', narration: 'Fog burning off. Return to normal cruising speed when comfortable.' } ]
+            ];
+          }
+          // ─── Rain ───
+          else if (initW === 'rain') {
+            chainOptions = [
+              [ { startAt: 120, weather: 'fog', narration: 'Rain is tapering into fog. Keep wipers on intermittent.' },
+                { startAt: 300, weather: 'clear', narration: 'System has passed. Roads still wet — extend following distance.' } ],
+              [ { startAt: 240, weather: 'clear', narration: 'Rain is past. Watch for standing water on lower stretches.' } ]
+            ];
+          }
+          // ─── Default fallback ───
+          else {
+            chainOptions = [
+              [ { startAt: 150, weather: 'clear', narration: 'Conditions are improving.' } ]
+            ];
+          }
+          // Pick one of the available chains at random for this drive.
+          var queue = chainOptions[Math.floor(Math.random() * chainOptions.length)] || [];
           weatherSysRef.current.queue = queue;
           journalLog('weather_dyn', '🌦️', 'Dynamic weather enabled');
         }
@@ -3149,6 +3508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             speedViolations: s.speedViolations,
             closeFollows: s.closeFollows,
             crashes: s.crashes,
+            aiCausedCrashes: s.aiCausedCrashes || 0,
             stops: s.stops,
             fuelUsed_gal: s.fuelUsed.toFixed(3),
             skidSeconds: Math.round(s.skidSeconds),
@@ -3458,16 +3818,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
               // ── Dynamic weather: pop the next queued transition when its startAt elapses ──
+              // Events may carry a `weather` change, a `time` change (dawn→day "sun comes up"),
+              // or both. We apply each independently so a chain can interleave them.
               var ws = weatherSysRef.current;
               if (ws.enabled && ws.queue.length > 0 && curT >= ws.queue[0].startAt) {
                 var nextW = ws.queue.shift();
-                if (nextW.weather !== currentScenario.weather) {
+                var changed = false;
+                if (nextW.weather && nextW.weather !== currentScenario.weather) {
                   Object.assign(currentScenario, { weather: nextW.weather });
                   ws.lastApplied = nextW.weather;
                   var wIcon = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️' };
                   addToast((wIcon[nextW.weather] || '🌦️') + ' Weather changing to ' + nextW.weather);
-                  speak(nextW.narration);
                   journalLog('weather_change', wIcon[nextW.weather] || '🌦️', 'Weather → ' + nextW.weather);
+                  changed = true;
+                }
+                if (nextW.time && nextW.time !== currentScenario.time) {
+                  var priorTime = currentScenario.time;
+                  Object.assign(currentScenario, { time: nextW.time });
+                  var tIcon = { day: '☀️', dawn: '🌅', dusk: '🌇', night: '🌙' };
+                  addToast((tIcon[nextW.time] || '🕐') + ' Time of day: ' + nextW.time);
+                  journalLog('time_change', tIcon[nextW.time] || '🕐', 'Time of day: ' + priorTime + ' → ' + nextW.time);
+                  changed = true;
+                }
+                if (changed) {
+                  speak(nextW.narration);
                   // If radio is on the Weather station, log a "forecast verified" line.
                   if (radioRef.current.station === 'weather') {
                     radioRef.current.lastWeatherAt = Date.now();
@@ -3478,6 +3852,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (infiniteWorldRef.current) {
                 var biomeChunk = infiniteWorldRef.current.getChunk(Math.floor(carRef.current.y / CHUNK_SIZE));
                 var currentBiome = biomeChunk ? biomeChunk.biome : null;
+                // ── Biome-aware dynamic speed limit in Free Explore ──
+                // Update currentScenario.speedLimit to match the biome the player is in,
+                // so the HUD speedometer color-zones and the enforcement match the signs.
+                if (currentBiome) {
+                  var biomeSpeedMap = { residential: 25, suburban: 35, commercial: 30, industrial: 35, rural: 50 };
+                  var newLimit = biomeSpeedMap[currentBiome] || 30;
+                  if (currentScenario.speedLimit !== newLimit) {
+                    Object.assign(currentScenario, { speedLimit: newLimit });
+                  }
+                }
                 if (currentBiome && currentBiome !== ch.lastBiome) {
                   if (ch.lastBiome !== null) {
                     // ── Biome milestone: crossing from one biome to another ──
@@ -3636,18 +4020,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   + 'Based on this 30-second snapshot, say ONE specific, kind, action-oriented coaching line under 25 words. '
                   + 'No greetings, no preamble — just the advice. If everything looks great, encourage what they\'re doing. Snapshot:\n'
                   + JSON.stringify(snapshot);
-                callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' })
-                  .then(function(resp) {
-                    coachRef.current.inFlight = false;
-                    var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
-                    text = String(text).trim().replace(/^["']|["']$/g, '');
-                    if (text) {
-                      coachRef.current.lastTip = text;
-                      coachRef.current.lastTipAt = Date.now();
-                      speak(text);
-                    }
-                  })
-                  .catch(function() { coachRef.current.inFlight = false; });
+                if (!callGemini) {
+                  coachRef.current.inFlight = false;
+                } else {
+                  callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' })
+                    .then(function(resp) {
+                      coachRef.current.inFlight = false;
+                      var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
+                      text = String(text).trim().replace(/^["']|["']$/g, '');
+                      if (text) {
+                        coachRef.current.lastTip = text;
+                        coachRef.current.lastTipAt = Date.now();
+                        speak(text);
+                      }
+                    })
+                    .catch(function() { coachRef.current.inFlight = false; });
+                }
               }
             }
             // ── Night Vision drill prompts (when d.nightVisionDrill is set) ──
@@ -3751,6 +4139,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var updatePhysics = function(dt) {
           var car = carRef.current;
+          // Sanitize car state: if any numeric field went NaN/Infinity (e.g. from a prior
+          // weird input, a tab-switch glitch, or a division-by-zero edge case), reset it
+          // to a safe default. Without this guard a single NaN propagates through every
+          // later frame and never recovers.
+          if (!isFinite(car.speed))    car.speed = 0;
+          if (!isFinite(car.heading))  car.heading = 0;
+          if (!isFinite(car.steering)) car.steering = 0;
+          if (!isFinite(car.x))        car.x = Math.floor(MAP_SIZE / 2);
+          if (!isFinite(car.y))        car.y = 0;
           var k = keysRef.current;
           var veh = currentVehicle;
           var scn = currentScenario;
@@ -3766,6 +4163,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var brakeInput = Math.max((k['s'] || k['arrowdown']) ? 1 : 0, gpBrake);
           var steerLeft = (k['a'] || k['arrowleft']) ? 1 : 0;
           var steerRight = (k['d'] || k['arrowright']) ? 1 : 0;
+          // ── Seatbelt lock: no throttle until fastened ──
+          // Touching W/↑/B/any movement key after the prompt also auto-buckles you.
+          if (!seatbeltRef.current.fastened) {
+            if (throttleInput > 0 || brakeInput > 0 || k['b']) {
+              seatbeltRef.current.fastened = true;
+              addToast('🔔 Seatbelt fastened. Drive safe.');
+              speak('Seatbelt fastened.');
+            } else {
+              // Keep the car parked until buckled. Also play a quiet periodic chime.
+              throttleInput = 0;
+              var sbNow = Date.now();
+              var sbElapsed = sbNow - (seatbeltRef.current.startedAt || sbNow);
+              if (sbElapsed > 2000 && sbElapsed % 4000 < 50) {
+                try {
+                  var sbAc = audioRef.current.ctx;
+                  if (sbAc) {
+                    var chime = sbAc.createOscillator();
+                    var chimeG = sbAc.createGain();
+                    chime.type = 'sine'; chime.frequency.value = 880;
+                    chimeG.gain.setValueAtTime(0.05, sbAc.currentTime);
+                    chimeG.gain.exponentialRampToValueAtTime(0.001, sbAc.currentTime + 0.3);
+                    chime.connect(chimeG); chimeG.connect(sbAc.destination);
+                    chime.start(); chime.stop(sbAc.currentTime + 0.35);
+                  }
+                } catch (_) {}
+              }
+            }
+          }
           // ─── Ride-Along autopilot override ───
           // Replaces human input with a lookahead spline-follower + target-speed cruise.
           // The physics, hazards, and narration pipeline are unchanged — this just feeds
@@ -4021,7 +4446,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (skid && Math.abs(car.speed) > 4 && timeRef.current > 3) {
             skidRef.current.active = true;
             skidRef.current.intensity = Math.min(1, (lateralAccelNeeded - lateralAvail) / lateralAvail);
-            statsRef.current.safetyScore -= dt * 8;
+            // Clamp at 0 so long skid chains or compounded crashes can't drive the score
+            // into deep negative territory (the end-of-drive report uses the raw value
+            // for grading, not just the clamped display).
+            statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - dt * 8);
             statsRef.current.skidSeconds += dt;
           } else {
             skidRef.current.active = false;
@@ -4298,62 +4726,355 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var updateTraffic = function(dt) {
           var traffic = trafficRef.current;
           var signals = signalsRef.current;
+          var peds = pedsRef.current || [];
+          var emergency = emergencyRef.current;
           var scn = currentScenario;
           traffic.forEach(function(t, idx) {
             // Default personality for legacy/cross-street cars that didn't get one.
             var pers = t.personality || { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0 };
-            // Look for nearest signal ahead in our direction of travel
+            // ── School bus stop-arm cycle ──
+            // Periodically a school bus stops to pick up/drop off kids, extending its stop arm
+            // and flashing red lights. Surrounding traffic must stop (enforced in the yield block
+            // below). Cycle: 25–45s rolling, then 6s stopped, then resume. Deterministic per-bus
+            // by seeding with the traffic index.
+            if (t.type === 'schoolbus' && !t.crossStreet) {
+              if (t._busCycleTimer === undefined) {
+                // Stagger by index so all buses don't stop at the same moment
+                t._busCycleTimer = 25 + (idx * 7) % 20;
+                t._stopArmActive = false;
+              }
+              t._busCycleTimer -= dt;
+              if (t._busCycleTimer <= 0) {
+                t._stopArmActive = !t._stopArmActive;
+                t._busCycleTimer = t._stopArmActive ? 6 : (28 + Math.random() * 18);
+              }
+              // While stop arm is active, override speed → 0 and set hard slowFor later.
+            }
+            // ── Direction-aware forward-vector helper ──
+            // Cars travel along either Y (heading = ±π/2) or X (heading = 0 or π).
+            // "ahead" of a car depends on which axis it travels along.
+            var travelsY = Math.abs(Math.abs(t.heading) - Math.PI / 2) < 0.3;
+            var forwardSign = travelsY ? (t.heading > 0 ? 1 : -1) : (Math.abs(t.heading) < 1 ? 1 : -1);
+            var axis = travelsY ? 'y' : 'x';
+            var crossAxis = travelsY ? 'x' : 'y';
+            var aheadOf = function(targetX, targetY) {
+              var d = (axis === 'y') ? (targetY - t.y) * forwardSign : (targetX - t.x) * forwardSign;
+              var lat = (axis === 'y') ? (targetX - t.x) : (targetY - t.y);
+              return { ahead: d, lat: lat };
+            };
+            // Look for nearest signal ahead. Signals ARE positioned on the main road —
+            // main-road cars detect directly; cross-street cars treat the same signal as
+            // controlling their perpendicular approach: main-road green = cross-street red.
             var slowFor = 0; // 0=clear, 1=slow, 2=stop
+            var signalDetectRange = 14; // brake earlier — was 8
+            // Track the signal currently controlling us (used below for stop-sign resume).
+            var activeStopSign = null;
+            var activeStopDist = Infinity;
             signals.forEach(function(s) {
-              var ahead = (t.heading > 0 ? s.y - t.y : t.y - s.y);
-              if (ahead > 0 && ahead < 8 && Math.abs(s.x - t.x) < 3) {
-                if (s.type === 'stop' || s.state === 'red') {
-                  // Some drivers roll stops — flag once per signal so they only
-                  // commit one rolling stop per encounter. Otherwise stop as normal.
-                  if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
-                    slowFor = Math.max(slowFor, 1); // slow but don't stop
-                  } else {
-                    slowFor = Math.max(slowFor, 2);
+              if (!t.crossStreet) {
+                // Main-road car: straight-ahead signal on the path.
+                var rel = aheadOf(s.x, s.y);
+                if (rel.ahead > 0 && rel.ahead < signalDetectRange && Math.abs(rel.lat) < 3) {
+                  if (s.type === 'stop' || s.state === 'red') {
+                    if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
+                      slowFor = Math.max(slowFor, 1);
+                    } else {
+                      slowFor = Math.max(slowFor, 2);
+                      if (s.type === 'stop' && rel.ahead < activeStopDist) {
+                        activeStopSign = s; activeStopDist = rel.ahead;
+                      }
+                    }
+                  } else if (s.state === 'yellow') {
+                    // Brake unless far enough to clear (dilemma zone): aggressive past 5 cells gun it.
+                    if (pers.aggro > 0.5 && rel.ahead > 5) slowFor = Math.max(slowFor, 0);
+                    else slowFor = Math.max(slowFor, 1);
                   }
-                } else if (s.state === 'yellow') {
-                  // Aggressive drivers gun it through yellow; cautious brake.
-                  slowFor = Math.max(slowFor, pers.aggro > 0.5 ? 0 : 1);
+                }
+              } else {
+                // Cross-street car: main-road signal at our Y-coord controls our crossing.
+                // The intersection center is at (s.x, s.y); we approach along X axis.
+                // Our crossing point is X=s.x; detect when approaching it.
+                var sameRow = Math.abs(s.y - t.y) < 3; // we're on this signal's row
+                if (!sameRow) return;
+                var distToCross = (s.x - t.x) * forwardSign;
+                if (distToCross > 0 && distToCross < signalDetectRange) {
+                  // We have a RED when main-road has GREEN (and partial-red at main-road YELLOW).
+                  if (s.state === 'green') {
+                    slowFor = Math.max(slowFor, 2); // full stop
+                  } else if (s.state === 'yellow') {
+                    slowFor = Math.max(slowFor, 2); // main just went yellow — we stay stopped
+                  } else if (s.state === 'red') {
+                    // Our side has green — proceed normally (no slow).
+                  } else if (s.type === 'stop') {
+                    // 4-way stop
+                    if (pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
+                      slowFor = Math.max(slowFor, 1);
+                    } else {
+                      slowFor = Math.max(slowFor, 2);
+                      if (distToCross < activeStopDist) { activeStopSign = s; activeStopDist = distToCross; }
+                    }
+                  }
                 }
               }
             });
-            // Follow car ahead — distance scaled by personality.followMult
-            // (aggressive tailgate, cautious leave space). Speed-aware: longer
-            // gap when moving fast, shorter at crawl speeds.
-            var followNear = 4 * pers.followMult + t.speed * 0.25 * pers.followMult;
-            var followFar  = 7 * pers.followMult + t.speed * 0.35 * pers.followMult;
+            // ── Stop-sign resume logic (prevents 4-way deadlock) ──
+            // If we've been stopped at a stop sign for long enough, scan for cross-traffic
+            // (and the player). If the intersection is clear, proceed. Otherwise stay put.
+            // Each vehicle gets its own random wait (1.2–3.2s) + small per-vehicle jitter
+            // to break ties so two AIs at a 4-way don't both move on the same frame.
+            if (activeStopSign && slowFor === 2 && Math.abs(t.speed) < 0.4) {
+              if (!t._stopArrivedAt) t._stopArrivedAt = timeRef.current;
+              if (t._stopWaitTarget == null) t._stopWaitTarget = 1.2 + Math.random() * 2.0 + (idx % 7) * 0.08;
+              var waitedFor = timeRef.current - t._stopArrivedAt;
+              if (waitedFor >= t._stopWaitTarget) {
+                // Wait satisfied — look both ways before going.
+                var intersectionClear = true;
+                var iX = activeStopSign.x, iY = activeStopSign.y;
+                // Cross-axis AI traffic inside the intersection box (4 cells)
+                traffic.forEach(function(other, oi) {
+                  if (!intersectionClear || oi === idx) return;
+                  var oYaxis = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                  if (oYaxis === travelsY) {
+                    // Same axis: only a concern if another car is immediately in front of us at the same stop
+                    var rel2 = aheadOf(other.x, other.y);
+                    if (rel2.ahead > 0 && rel2.ahead < 3 && Math.abs(rel2.lat) < 2) intersectionClear = false;
+                    return;
+                  }
+                  // Cross-axis: a car inside or entering the intersection?
+                  if (Math.hypot(other.x - iX, other.y - iY) < 4 && Math.abs(other.speed) > 0.5) {
+                    intersectionClear = false;
+                  }
+                });
+                // Player check — if the player is in or entering the intersection, yield.
+                if (intersectionClear) {
+                  var playerCar = carRef.current;
+                  if (playerCar && Math.hypot(playerCar.x - iX, playerCar.y - iY) < 5 && Math.abs(playerCar.speed) > 0.3) {
+                    intersectionClear = false;
+                  }
+                }
+                if (intersectionClear) {
+                  // Release — downgrade slowFor so target speed returns to normal
+                  slowFor = 0;
+                  t._stopReleasedAt = timeRef.current;
+                  t._stopArrivedAt = 0;
+                  t._stopWaitTarget = null;
+                } else {
+                  // Not clear — extend the wait by 0.6s and try again
+                  t._stopWaitTarget = waitedFor + 0.6;
+                }
+              }
+            } else if (!activeStopSign) {
+              // No stop sign controlling us anymore — clear the arrival state
+              t._stopArrivedAt = 0;
+              t._stopWaitTarget = null;
+            }
+            // Within 1.5s of a release, keep slowFor low so we actually accelerate away
+            // even if we cross the sign's detection range again on the next frame.
+            if (t._stopReleasedAt && timeRef.current - t._stopReleasedAt < 1.5) {
+              slowFor = Math.min(slowFor, 1);
+            }
+            // ── Yield to pedestrians in / near our path ──
+            // Pedestrians have { x, y, inCrosswalk? } shape. We slow for any within 4 cells
+            // ahead AND close to our lateral path.
+            peds.forEach(function(p) {
+              if (!p) return;
+              var prel = aheadOf(p.x, p.y);
+              if (prel.ahead > 0 && prel.ahead < 5 && Math.abs(prel.lat) < 2.5) {
+                // Close ped in path — full stop. In crosswalk = mandatory per Maine law.
+                slowFor = Math.max(slowFor, 2);
+              } else if (prel.ahead > 0 && prel.ahead < 9 && Math.abs(prel.lat) < 3) {
+                slowFor = Math.max(slowFor, 1); // slow and watch
+              }
+            });
+            // ── Yield to cyclists when passing close ──
+            (cyclistsRef.current || []).forEach(function(cy) {
+              if (!cy) return;
+              var crel = aheadOf(cy.x, cy.y);
+              // If cyclist is directly ahead and we haven't passed them, slow to give room.
+              if (crel.ahead > 0 && crel.ahead < 4 && Math.abs(crel.lat) < 2) {
+                slowFor = Math.max(slowFor, 1);
+              }
+            });
+            // ── Intersection safety: check cross-traffic before entering ──
+            // Real drivers look both ways even on green because red-light-runners exist.
+            // If we're approaching an intersection (any signal within ~8 cells) AND any
+            // cross-axis vehicle (or the player) is dangerously close to the same
+            // intersection, slow more.
+            signals.forEach(function(s) {
+              // Now scans BOTH lights and stop signs (was lights-only).
+              if (!s || (s.type !== 'light' && s.type !== 'stop')) return;
+              var rel = aheadOf(s.x, s.y);
+              if (rel.ahead < 0 || rel.ahead > 9) return;
+              // We're approaching this intersection. Scan for a car on the cross axis
+              // that might cross our path. "crossingCar" = car whose axis of travel is
+              // perpendicular to ours AND close to the intersection point (s.x, s.y).
+              traffic.forEach(function(other, oi) {
+                if (oi === idx) return;
+                var otherTravelsY = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                var sameAxis = (otherTravelsY && travelsY) || (!otherTravelsY && !travelsY);
+                if (sameAxis) return; // only concerned with cross-axis traffic
+                var odx = other.x - s.x, ody = other.y - s.y;
+                var odist = Math.hypot(odx, ody);
+                // Cross-traffic within 4 cells of intersection + actually moving = potential red-light runner
+                // (was `speed > 3` — lowered to `> 1` so slow-rolling stop-sign-runners also trigger caution)
+                if (odist < 4 && Math.abs(other.speed) > 1) {
+                  // Extra caution — slow from target
+                  slowFor = Math.max(slowFor, 1);
+                }
+              });
+              // ── Also watch for the PLAYER in the intersection ──
+              // Previously the scan only covered AI traffic; AI approaching a green light
+              // wouldn't slow for a player who just ran the red. Now it does.
+              var playerCar = carRef.current;
+              if (playerCar) {
+                var pYaxis = Math.abs(Math.abs(playerCar.heading) - Math.PI / 2) < 0.3;
+                var pSameAxis = (pYaxis && travelsY) || (!pYaxis && !travelsY);
+                if (!pSameAxis) {
+                  var pdx = playerCar.x - s.x, pdy = playerCar.y - s.y;
+                  var pdist = Math.hypot(pdx, pdy);
+                  if (pdist < 5 && Math.abs(playerCar.speed) > 1) {
+                    // Player is crossing our path — be more cautious than for AI (player
+                    // is harder to predict and more prone to mistakes).
+                    slowFor = Math.max(slowFor, 2);
+                  }
+                }
+              }
+            });
+            // ── Yield to emergency vehicles: pull right + slow ──
+            // When an emergency vehicle is active, every traffic car slows dramatically
+            // and shifts its lane offset toward the right shoulder (outer edge).
+            if (emergency && !emergency.responded) {
+              var erel = aheadOf(emergency.x, emergency.y);
+              // Within 20 cells in any direction — react.
+              if (Math.abs(erel.ahead) < 20 && Math.abs(erel.lat) < 8) {
+                slowFor = Math.max(slowFor, 1);
+                // Shift toward the outer edge — direction-dependent.
+                if (!t.crossStreet && t.laneOffset !== undefined) {
+                  var pullOver = t.heading > 0 ? -2.4 : 2.4; // farther right than the default lane
+                  // Only shift if we have room and aren't blocked.
+                  t._emergencyPullOver = true;
+                  // Gradual pull-over (not instant snap)
+                  t.laneOffset += (pullOver - t.laneOffset) * Math.min(1, dt * 1.5);
+                }
+              } else if (t._emergencyPullOver) {
+                // Emergency vehicle has passed — return to default lane.
+                var defaultOff = t.heading > 0 ? -1.5 : 1.5;
+                t.laneOffset += (defaultOff - t.laneOffset) * Math.min(1, dt * 1.5);
+                if (Math.abs(t.laneOffset - defaultOff) < 0.1) t._emergencyPullOver = false;
+              }
+            }
+            // ── Defensive-driver awareness: erratic player expansion ──
+            // If the player's safety score is dropping or their recent actions are chaotic,
+            // nearby AI cars silently extend their follow distance. Real defensive drivers do this.
+            var pSafety = statsRef.current.safetyScore;
+            var erraticMult = 1.0;
+            if (pSafety < 70) erraticMult = 1.35;
+            else if (pSafety < 50) erraticMult = 1.6;
+            // Also expand if we've seen many hard brakes recently
+            if (statsRef.current.hardBrakes >= 3) erraticMult = Math.max(erraticMult, 1.3);
+            // Follow car ahead — distance scaled by personality.followMult + erraticMult (direction-aware).
+            var followNear = 4 * pers.followMult * erraticMult + t.speed * 0.25 * pers.followMult;
+            var followFar  = 7 * pers.followMult * erraticMult + t.speed * 0.35 * pers.followMult;
             traffic.forEach(function(other, j) {
               if (j === idx) return;
-              if (Math.abs(other.x - t.x) > 2) return;
-              var ahead = (t.heading > 0 ? other.y - t.y : t.y - other.y);
-              if (ahead > 0 && ahead < followNear) slowFor = Math.max(slowFor, 2);
-              else if (ahead > 0 && ahead < followFar) slowFor = Math.max(slowFor, 1);
+              // Must be in the same lane (similar cross-axis position).
+              var otherRel = aheadOf(other.x, other.y);
+              if (Math.abs(otherRel.lat) > 2) return;
+              if (otherRel.ahead > 0 && otherRel.ahead < followNear) slowFor = Math.max(slowFor, 2);
+              else if (otherRel.ahead > 0 && otherRel.ahead < followFar) slowFor = Math.max(slowFor, 1);
             });
-            // React to PLAYER car — slow down, honk, or rear-end
+            // ── Yield to pedestrians in/near crosswalks ahead ──
+            // Real drivers slow to stop when a pedestrian is in the crosswalk OR about to
+            // enter it. The AI scans peds along its path and reacts if any are within the
+            // crosswalk span (or waiting curbside in our direction of travel).
+            var pedsForYield = pedsRef.current || [];
+            for (var pyi = 0; pyi < pedsForYield.length; pyi++) {
+              var py = pedsForYield[pyi];
+              if (!py.crossing && !py.waitingAtCrosswalk) continue;
+              var pedRel = aheadOf(py.x, py.y);
+              // Only react to peds AHEAD of us, within 10 cells, that are close to our path.
+              if (pedRel.ahead < 0 || pedRel.ahead > 10) continue;
+              if (Math.abs(pedRel.lat) > 5) continue; // not near the road
+              if (py.crossing) {
+                // Active crossing: mandatory stop if close.
+                if (pedRel.ahead < 7) slowFor = Math.max(slowFor, 2);
+                else if (pedRel.ahead < 10) slowFor = Math.max(slowFor, 1);
+              } else if (py.waitingAtCrosswalk) {
+                // Waiting at curb: slow down — in many states, drivers must yield to peds
+                // waiting at a marked crosswalk intending to cross.
+                if (pedRel.ahead < 6) slowFor = Math.max(slowFor, 1);
+              }
+            }
+            // If THIS vehicle is a school bus with active stop-arm, it must be stopped.
+            if (t.type === 'schoolbus' && t._stopArmActive) slowFor = 2;
+            // ── Yield to school buses with red flashers (stop-arm extended) ──
+            // Federal + state law: both directions stop on undivided roads; same-direction
+            // only on divided highways. We treat Free Explore / scenarios as undivided
+            // (single physical road surface). The bus marks itself with _stopArmActive.
+            traffic.forEach(function(other4, j4) {
+              if (j4 === idx) return;
+              if (other4.type !== 'schoolbus') return;
+              if (!other4._stopArmActive) return;
+              // Bus is stopped with flashers — all traffic within ~15 cells must stop.
+              // Lateral check: same road (within the full road width), any direction.
+              if (Math.abs(other4.x - t.x) > 10) return; // ~full road width + shoulder
+              var busRel = aheadOf(other4.x, other4.y);
+              // Stop whether approaching from behind OR oncoming — this is the rule.
+              if (Math.abs(busRel.ahead) < 15) {
+                slowFor = Math.max(slowFor, 2);
+              }
+            });
+            // React to PLAYER car — slow down, honk, or AEB (emergency brake)
             var playerCar = carRef.current;
             if (Math.abs(playerCar.x - t.x) < 2) {
               var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);
               if (playerAhead > 0 && playerAhead < 3) {
-                // Very close behind player — emergency stop or crash
+                // Very close behind player — EMERGENCY AUTOMATIC BRAKING (AEB-style).
+                // Real modern cars brake at up to 1g when a collision is imminent.
+                // We set the AI's target speed to 0 AND apply an extra decel burst.
                 slowFor = Math.max(slowFor, 2);
-                // If traffic was going fast and player stopped suddenly → rear-end collision
-                if (t.speed > 5 && Math.abs(playerCar.speed) < 2 && playerAhead < 1.5) {
+                t._aeb = true;
+                t.speed = Math.max(0, t.speed - 8 * dt); // hard ~0.8g deceleration burst
+                // If the emergency brake wasn't enough → crash. Attribute fault correctly.
+                if (t.speed > 2 && playerAhead < 1.2) {
                   if (!t._rearEndCooldown || timeRef.current - t._rearEndCooldown > 8) {
                     t._rearEndCooldown = timeRef.current;
                     statsRef.current.crashes++;
-                    statsRef.current.safetyScore -= 15;
-                    addToast('💥 Rear-ended! The car behind couldn\'t stop in time. -15');
-                    eventToastRef.current = { msg: '💥 You were rear-ended. Sudden stops on fast roads cause chain reactions.', until: timeRef.current + 4 };
-                    speak('You were rear-ended. Avoid sudden stops when traffic is close behind.');
+                    // ── FAULT DETERMINATION ──
+                    // Normally a rear-end = rear car's fault (following too close). BUT if the
+                    // player brake-checked (they just decelerated hard from speed to near-stop),
+                    // it's the player's fault. Detect via lastStateRef for player.
+                    var plPrevSpd = (lastStateRef.current && lastStateRef.current.speed) || 0;
+                    var decelRate = (plPrevSpd - Math.abs(playerCar.speed)) / Math.max(0.016, dt);
+                    var brakeCheck = plPrevSpd > 8 && Math.abs(playerCar.speed) < 2 && decelRate > 40;
+                    if (brakeCheck) {
+                      // Player's fault: brake-check
+                      statsRef.current.safetyScore -= 15;
+                      addToast('💥 You brake-checked — the car behind couldn\'t stop. -15 YOUR FAULT');
+                      eventToastRef.current = { msg: '💥 Brake-check rear-end. Slow gradually; check your mirrors first.', until: timeRef.current + 5 };
+                      speak('You were rear-ended after a sudden brake. Slow gradually next time.');
+                    } else {
+                      // AI's fault: following too close
+                      if (!statsRef.current.aiCausedCrashes) statsRef.current.aiCausedCrashes = 0;
+                      statsRef.current.aiCausedCrashes++;
+                      // No penalty to safety (or a tiny -2 for not being defensive enough)
+                      statsRef.current.safetyScore -= 2;
+                      addToast('💥 Rear-ended! The car behind was following too close. -2 (mostly not your fault)');
+                      eventToastRef.current = { msg: '⚠️ AI at fault — they tailgated. In reality you\'d collect their insurance.', until: timeRef.current + 5 };
+                      speak('You were rear-ended. The driver behind was following too closely.');
+                    }
                     t.speed *= 0.3;
                     playerCar.speed += t.speed * 0.2; // push player forward
                   }
                 }
               } else if (playerAhead > 0 && playerAhead < 6) {
+                // Approaching player in our lane — slow down defensively.
+                // Emergency: if we're fast and closing hard, engage AEB mode.
+                var closingSpeed = t.speed - Math.abs(playerCar.speed);
+                if (closingSpeed > 6 && playerAhead < 4.5) {
+                  t._aeb = true;
+                  t.speed = Math.max(0, t.speed - 5 * dt); // hard brake
+                }
                 // Approaching player — slow down
                 slowFor = Math.max(slowFor, 1);
                 // Honk if player is going much slower than the speed limit
@@ -4382,44 +5103,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (Math.abs(playerCar.speed) < t.speed * 0.7) slowFor = Math.max(slowFor, 1);
               }
             }
-            // Adjust speed
+            // Adjust speed. Guard against missing/malformed speedLimit so we never
+            // hand NaN to the lerp (a single NaN poisons that vehicle's speed forever).
+            var speedLimitMph = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
             var targetSpeed;
             if (slowFor === 2) targetSpeed = 0;
-            else if (slowFor === 1) targetSpeed = scn.speedLimit * 0.4 * MPH_TO_MS;
-            else targetSpeed = (scn.speedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
-            t.speed += (targetSpeed - t.speed) * Math.min(1, dt * 2);
-            // Turn signal on AI vehicles — blink when slowing for a signal
-            t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
-            // Lane-change: triggered when slow car ahead + aggressive personality.
-            // Aggressive drivers switch more readily and on less gap.
+            else if (slowFor === 1) targetSpeed = speedLimitMph * 0.4 * MPH_TO_MS;
+            else targetSpeed = (speedLimitMph - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
+            // Frame-rate-independent approach: exp-based smoothing with a 0.5 s time
+            // constant. `Math.min(1, dt * 2)` was biased toward low frame rates (AI cars
+            // accelerated faster at 30 fps than 60 fps); this form converges at the same
+            // rate regardless of fps.
+            var speedLerp = 1 - Math.exp(-dt / 0.5);
+            t.speed += (targetSpeed - t.speed) * speedLerp;
+            // Expose slowFor to the renderer so brake lights match the AI's braking state.
+            t._slowFor = slowFor;
+            // Turn signal on AI vehicles — blink when slowing for a signal, BUT do not
+            // clobber a pending-lane-change blinker or its cancel-drift.
+            if (!t._pendingLaneOffset && !t._blinkerCancelTimer) {
+              t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
+            }
+            // ── Lane discipline: compute target X from spline center + laneOffset ──
+            // Traffic now follows the road curve. t.laneOffset is the signed distance
+            // from road centerline (positive = +X side). Cars gently steer toward their
+            // target lane position instead of drifting freely.
+            var centerXt = Math.floor(MAP_SIZE / 2);
+            if (t.laneOffset === undefined) t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
+            // Lane-change: ONLY switch lanes within your own direction's half — never
+            // cross the centerline into oncoming traffic (that's the legal rule).
             if (!t.crossStreet && !t._laneChangeCooldown) t._laneChangeCooldown = 0;
-            if (!t.crossStreet && t._laneChangeCooldown <= 0) {
-              var centerXt = Math.floor(MAP_SIZE / 2);
-              // Check for slower car 3-8 units directly ahead — reason to overtake.
-              var wantOvertake = false;
-              traffic.forEach(function(other2, j2) {
-                if (j2 === idx || wantOvertake) return;
-                if (Math.abs(other2.x - t.x) > 1.5) return;
-                var ah = (t.heading > 0 ? other2.y - t.y : t.y - other2.y);
-                if (ah > 3 && ah < 8 && other2.speed < t.speed * 0.8) wantOvertake = true;
-              });
-              // Aggressive drivers (aggro > 0.4) overtake; cautious drivers wait.
-              if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.02) {
-                var laneDir = t.x < centerXt ? 0.3 : -0.3;
-                t.x += laneDir;
-                t.blinker = laneDir > 0 ? 1 : -1;
-                t._laneChangeCooldown = 8;
-              } else if (!wantOvertake && Math.random() < 0.0008) {
-                // Idle lane drift (rare) — still happens occasionally.
-                var laneDir2 = t.x < centerXt ? 0.2 : -0.2;
-                t.x += laneDir2;
-                t._laneChangeCooldown = 10;
+            // Disable lane changes in no-pass zones: rural (solid double yellow), snow/fog/night,
+            // and when within ~10 cells of an intersection (approach zone = no passing).
+            var noPassZone = scn.id === 'rural' || scn.id === 'snow' || scn.id === 'fog' || scn.id === 'dawn';
+            if (!noPassZone && infiniteWorldRef.current) {
+              // In Free Explore, check the chunk biome for rural
+              var tCi = Math.floor(t.y / CHUNK_SIZE);
+              var tChunk = infiniteWorldRef.current.chunks && infiniteWorldRef.current.chunks[tCi];
+              if (tChunk && tChunk.biome === 'rural') noPassZone = true;
+              // Approaching an intersection in this or next chunk: also no-pass
+              if (tChunk && tChunk.hasIntersection) {
+                var intersectionWorldY = tCi * CHUNK_SIZE + tChunk.intersectionY;
+                if (Math.abs(t.y - intersectionWorldY) < 10) noPassZone = true;
               }
             }
+            if (noPassZone) { t._laneChangeCooldown = Math.max(t._laneChangeCooldown || 0, 2); }
+            if (!t.crossStreet && t._laneChangeCooldown <= 0) {
+              var wantOvertake = false;
+              var blockedLeft = false, blockedRight = false;
+              traffic.forEach(function(other2, j2) {
+                if (j2 === idx) return;
+                if (Math.abs(other2.x - t.x) > 2) return;
+                var ah = (t.heading > 0 ? other2.y - t.y : t.y - other2.y);
+                // Someone directly ahead in my lane, slower than me → reason to overtake
+                if (Math.abs(other2.x - t.x) < 1 && ah > 3 && ah < 10 && other2.speed < t.speed * 0.85) wantOvertake = true;
+                // Check if adjacent lane is blocked (safety check before lane change)
+                if (Math.abs(ah) < 5) {
+                  if (other2.x > t.x && other2.x - t.x < 2.2) blockedRight = true;
+                  if (other2.x < t.x && t.x - other2.x < 2.2) blockedLeft = true;
+                }
+              });
+              // Aggressive drivers overtake — but only if safe and only WITHIN their direction's side.
+              // For heading > 0 (+Y): our side is x < centerXt, safe lanes: [-2.5, -0.5] from center.
+              // For heading < 0 (-Y): our side is x > centerXt, safe lanes: [+0.5, +2.5] from center.
+              // ── Realistic signaling: set blinker FIRST, wait ~1.2s, THEN move. ──
+              // t._pendingLaneOffset + t._pendingLaneTimer track the pre-signal phase.
+              if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.015 && !t._pendingLaneOffset) {
+                var newOffset = t.heading > 0 ? -0.5 : 0.5;
+                var blocked = (newOffset > t.laneOffset) ? blockedRight : blockedLeft;
+                if (!blocked && Math.abs(t.laneOffset - newOffset) > 0.5) {
+                  // Start the pre-signal phase — blinker on, lane hasn't moved yet.
+                  t._pendingLaneOffset = newOffset;
+                  t._pendingLaneTimer = 1.2; // legally required 1s+ signal before move
+                  t.blinker = newOffset > t.laneOffset ? 1 : -1;
+                }
+              } else if (!wantOvertake && t._laneChangeCooldown <= 0 && !t._pendingLaneOffset && Math.random() < 0.0008) {
+                // Return to default lane (right side for direction) — also pre-signaled.
+                var defaultOffset = t.heading > 0 ? -1.5 : 1.5;
+                if (Math.abs(t.laneOffset - defaultOffset) > 0.3) {
+                  t._pendingLaneOffset = defaultOffset;
+                  t._pendingLaneTimer = 1.0;
+                  t.blinker = defaultOffset > t.laneOffset ? 1 : -1;
+                }
+              }
+            }
+            // Pending lane change: count down, then commit. If the adjacent lane becomes
+            // blocked during the signal phase, cancel cleanly and cancel the blinker.
+            if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
+              t._pendingLaneTimer -= dt;
+              // Re-check blockage each frame
+              var stillBlocked = false;
+              var pOff = t._pendingLaneOffset;
+              traffic.forEach(function(other3, j3) {
+                if (j3 === idx) return;
+                if (Math.abs(other3.x - t.x) > 3) return;
+                var ahp = (t.heading > 0 ? other3.y - t.y : t.y - other3.y);
+                if (Math.abs(ahp) < 5) {
+                  if (pOff > t.laneOffset && other3.x > t.x && other3.x - t.x < 2.2) stillBlocked = true;
+                  if (pOff < t.laneOffset && other3.x < t.x && t.x - other3.x < 2.2) stillBlocked = true;
+                }
+              });
+              if (stillBlocked) {
+                t._pendingLaneOffset = null;
+                t._pendingLaneTimer = 0;
+                t.blinker = 0;
+                t._laneChangeCooldown = 3; // cooldown before retry
+              } else if (t._pendingLaneTimer <= 0) {
+                // Commit the lane change
+                t.laneOffset = t._pendingLaneOffset;
+                t._pendingLaneOffset = null;
+                t._laneChangeCooldown = 10;
+                // Blinker stays on briefly post-change (realism), then cancels
+                t._blinkerCancelTimer = 0.6;
+              }
+            }
+            // Cancel blinker after lane change completes
+            if (t._blinkerCancelTimer > 0) {
+              t._blinkerCancelTimer -= dt;
+              if (t._blinkerCancelTimer <= 0) t.blinker = 0;
+            }
             if (t._laneChangeCooldown > 0) t._laneChangeCooldown -= dt;
-            // Move
+            // Move forward along direction of travel
             t.y += Math.sin(t.heading) * t.speed * dt / 5;
             t.x += Math.cos(t.heading) * t.speed * dt / 5;
+            // ── Pull toward target lane position (spline-aware) ──
+            // On curved roads the spline center moves; traffic must follow it or drive off-road.
+            if (!t.crossStreet) {
+              var roadCenterAtT = centerXt;
+              if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+                roadCenterAtT = infiniteWorldRef.current.spline.centerAt(t.y);
+              }
+              var targetX = roadCenterAtT + t.laneOffset;
+              // Low-pass: move ~15% of the way per frame at 60fps, scaled by dt.
+              var lerpT = Math.min(1, dt * 4);
+              t.x = t.x * (1 - lerpT) + targetX * lerpT;
+            }
             // Wrap / respawn traffic relative to player position
             var playerY = carRef.current.y;
             if (t.crossStreet) {
@@ -4431,8 +5248,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Respawn ahead or behind the player
                 var newDir = Math.random() < 0.5 ? 1 : -1;
                 t.y = playerY + newDir * (10 + Math.random() * MAP_SIZE * 0.4);
-                t.x = Math.floor(MAP_SIZE / 2) + (t.heading > 0 ? -1.5 : 1.5);
-                t.speed = (scn.speedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
+                // Position in the correct lane on the spline at the new Y
+                t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
+                var respawnCenter = infiniteWorldRef.current.spline ? infiniteWorldRef.current.spline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
+                t.x = respawnCenter + t.laneOffset;
+                var respSpeedLimit = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
+                t.speed = (respSpeedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
               }
             } else {
               if (t.y < -2) t.y = MAP_SIZE + 2;
@@ -4456,7 +5277,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 kind: spawn.kind, icon: spawn.icon, mass: spawn.mass,
                 x: sx, y: sy,
                 vx: -1.2, vy: 0,
-                hit: false, life: 8
+                hit: false, life: 8,
+                // Capture player's heading + speed at spawn so we can score their reaction:
+                // brake straight = low maxSwerve + big speed drop. Swerve = high maxSwerve.
+                initialHeading: car.heading,
+                initialSpeed: Math.abs(car.speed),
+                maxSwerve: 0,
+                scored: false
               };
               eventToastRef.current = { msg: '⚠️ ' + spawn.warn + ' Brake straight — DO NOT swerve!', until: timeRef.current + 5 };
               addToast('⚠️ ' + spawn.warn);
@@ -4498,7 +5325,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             w.x += w.vx * dt;
             w.y += w.vy * dt;
             w.life -= dt;
-            if (w.life <= 0) { wildlifeRef.current = null; return; }
+            // Track player's reaction while the animal is present. maxSwerve = the largest
+            // deviation from the heading they had when the animal appeared. Low value = they
+            // stayed in their lane (the correct response). Higher = they tried to swerve.
+            if (w.initialHeading !== undefined) {
+              var headingDelta = Math.abs(car.heading - w.initialHeading);
+              // Normalize across the wrap point (heading is on a circle)
+              while (headingDelta > Math.PI) headingDelta = Math.abs(headingDelta - 2 * Math.PI);
+              if (headingDelta > w.maxSwerve) w.maxSwerve = headingDelta;
+            }
+            if (w.life <= 0) {
+              // Animal has passed / despawned. If not hit and not yet scored, evaluate the player's response
+              // and credit them for brake-straight behavior — specifically for MASSIVE (moose) encounters,
+              // which is what the Moose Encounter Drill teaches.
+              if (!w.hit && !w.scored && w.mass === 'massive' && w.initialSpeed !== undefined) {
+                w.scored = true;
+                var speedDrop = w.initialSpeed > 0 ? 1 - (Math.abs(car.speed) / w.initialSpeed) : 0;
+                var swerveRad = w.maxSwerve || 0;
+                // Thresholds: swerve < ~11° AND speed dropped by ≥ 30% = textbook brake-straight.
+                if (swerveRad < 0.2 && speedDrop > 0.3) {
+                  statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 10);
+                  if (!statsRef.current.mooseSafeAvoids) statsRef.current.mooseSafeAvoids = 0;
+                  statsRef.current.mooseSafeAvoids++;
+                  addToast('✓ Brake straight, no swerve — textbook Maine moose response. +10 safety');
+                  eventToastRef.current = { msg: '✓ Exactly what the Moose Encounter Drill teaches: brake in a straight line, do not swerve.', until: timeRef.current + 5 };
+                  var mBadges = Object.assign({}, (d.badges || {}));
+                  if (!mBadges.moose_avoided) {
+                    mBadges.moose_avoided = true;
+                    upd('badges', mBadges);
+                    addToast('🏅 Achievement: Moose-Safe in the Field 🫎');
+                  }
+                } else if (swerveRad >= 0.25) {
+                  // Player swerved — didn't hit it (maybe luck), but not what the drill teaches.
+                  addToast('⚠️ You swerved to avoid the moose. Drill reminder: brake STRAIGHT next time.');
+                  eventToastRef.current = { msg: '⚠️ Swerving at speed risks rollover and head-on. Review the Moose Drill.', until: timeRef.current + 5 };
+                }
+              }
+              wildlifeRef.current = null; return;
+            }
             // Hit detection
             var dx = w.x - car.x;
             var dy = w.y - car.y;
@@ -4627,7 +5491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!statsRef.current.emergencyYields) statsRef.current.emergencyYields = 0;
               statsRef.current.emergencyYields++;
               addToast('✓ Good — pulled right and stopped for emergency vehicle. +5');
-              eventToastRef.current = { msg: '✓ Correct response: pull RIGHT, STOP until it passes.', until: timeRef.current + 4 };
+              eventToastRef.current = { msg: '✓ Right + stop — exactly what the Emergency Vehicle Drill teaches (Maine §2054).', until: timeRef.current + 4 };
               // Emergency Responder landmark achievement
               if (em.fromLandmark) {
                 var erBadges = Object.assign({}, (d.badges || {}));
@@ -5211,6 +6075,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var updatePeds = function(dt) {
           var signals = signalsRef.current;
+          var traffic = trafficRef.current;
+          var playerCar = carRef.current;
           pedsRef.current.forEach(function(p) {
             if (p.waitingAtCrosswalk && p.crosswalkY != null) {
               // Crosswalk behavior: wait on sidewalk, cross when traffic signal is red
@@ -5218,7 +6084,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               signals.forEach(function(s) {
                 if (Math.abs(s.y - p.crosswalkY) < 2) signalAtCrosswalk = s;
               });
-              var canCross = !signalAtCrosswalk || signalAtCrosswalk.state === 'red';
+              // Signal permits crossing? (red for vehicles → green for peds)
+              var signalPermits = !signalAtCrosswalk || signalAtCrosswalk.state === 'red';
+              // Even with a signal permitting, do a last-second "look both ways":
+              // don't step off the curb if a moving vehicle is within ~4 cells and approaching the crosswalk.
+              // This prevents AI red-light-runners and the human player from T-boning a pedestrian who
+              // naively trusted the signal.
+              var trafficImminent = false;
+              if (signalPermits && !p.crossing) {
+                // Only check when about to START crossing; once committed, commit.
+                var checkDist = 4;
+                var scanVehicles = function(v) {
+                  if (!v || typeof v.x !== 'number' || typeof v.y !== 'number') return;
+                  var speed = Math.abs(v.speed || 0);
+                  if (speed < 1) return; // stopped vehicles are not imminent
+                  var dy = p.crosswalkY - v.y;
+                  // Approaching? Use heading sign (for AI) or dot with heading (for player).
+                  if (v.heading !== undefined) {
+                    // AI: heading>0 moves +Y, heading<0 moves -Y
+                    var approach = (v.heading > 0 ? dy > 0 : dy < 0);
+                    if (!approach) return;
+                  } else {
+                    // Player: dot current velocity with vector to crosswalk
+                    var dot = Math.cos(v.heading || 0) * 0 + Math.sin(v.heading || 0) * dy;
+                    if (dot <= 0) return;
+                  }
+                  // Close laterally to the crosswalk span? (within ~4 cells of ped's current x)
+                  if (Math.abs(v.x - p.x) > 4) return;
+                  // Close longitudinally? (within ~checkDist cells ahead)
+                  if (Math.abs(dy) < checkDist) trafficImminent = true;
+                };
+                traffic.forEach(scanVehicles);
+                // Also consider the player's own car — they may run the red.
+                scanVehicles(playerCar);
+              }
+              var canCross = signalPermits && !trafficImminent;
               if (canCross && !p.crossing) {
                 // Start crossing: move straight across from one sidewalk to the other
                 p.crossing = true;
@@ -5271,9 +6171,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
             if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
             // Physical collision: hit radius ~1.2 world units
-            // Collision: require meaningful relative speed difference (not just being near a car going the same speed)
+            // Collision: require meaningful relative speed difference (not just being near a car going the same speed).
+            // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
+            // tap still records as a minor bump — previously you could nose into a stopped
+            // car at 3 mph with no crash flag, which hid unsafe habits in the stats.
             var relativeSpeed = Math.abs(car.speed - t.speed);
-            if (dist < 1.2 && relativeSpeed > 2 && absSpeed > 2) {
+            if (dist < 1.2 && relativeSpeed > 0.5 && absSpeed > 0.5) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
                 var impactSpeed = relativeSpeed * MS_TO_MPH;
@@ -6525,6 +7428,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ws.position.set(0.4, 0.92, 0);
           ws.rotation.z = -0.25; // slight rake angle
           playerCarGroup.add(ws);
+          // ── Windshield wipers (visible from cockpit, chase, overhead) ──
+          // Two pivoting arms sitting at the base of the windshield. They sweep
+          // when rain or snow is active (updated in the render loop via wiperL/wiperR refs).
+          // Each wiper = a pivot group with an arm + blade so rotation.y sweeps naturally.
+          var wiperMat = new T.MeshLambertMaterial({ color: 0x0a0a0a });
+          var wiperL = new T.Group();
+          wiperL.position.set(0.5, 0.78, 0.22); // base of windshield, driver side
+          var wArmL = new T.Mesh(new T.BoxGeometry(0.01, 0.03, 0.32), wiperMat);
+          wArmL.position.set(0, 0.01, 0.16);
+          wiperL.add(wArmL);
+          var wBladeL = new T.Mesh(new T.BoxGeometry(0.04, 0.04, 0.36), wiperMat);
+          wBladeL.position.set(0, 0.02, 0.18);
+          wiperL.add(wBladeL);
+          wiperL.name = 'rr_wiperL';
+          playerCarGroup.add(wiperL);
+          var wiperR = new T.Group();
+          wiperR.position.set(0.5, 0.78, -0.22); // passenger side
+          var wArmR = new T.Mesh(new T.BoxGeometry(0.01, 0.03, 0.32), wiperMat);
+          wArmR.position.set(0, 0.01, -0.16);
+          wiperR.add(wArmR);
+          var wBladeR = new T.Mesh(new T.BoxGeometry(0.04, 0.04, 0.36), wiperMat);
+          wBladeR.position.set(0, 0.02, -0.18);
+          wiperR.add(wBladeR);
+          wiperR.name = 'rr_wiperR';
+          playerCarGroup.add(wiperR);
           // Rear windshield
           var rwsGeo = new T.BoxGeometry(0.03, 0.3, 0.72);
           var rws = new T.Mesh(rwsGeo, glassMat);
@@ -6761,10 +7689,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(wetOverlay);
           }
 
-          // ── Tire spray particle system (rain only, follows player car) ──
+          // ── Tire spray particle system — always built, toggled by current weather ──
+          // Created unconditionally so dynamic weather transitions (clear → rain) still show spray.
           var tireSprayParticles = null;
-          if (isRain) {
-            var sprayCount = 100;
+          (function() {
+            var sprayCount = 160;
             var sprayGeo = new T.BufferGeometry();
             var sprayPos = new Float32Array(sprayCount * 3);
             for (var spi = 0; spi < sprayCount; spi++) {
@@ -6773,10 +7702,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               sprayPos[spi * 3 + 2] = 0;
             }
             sprayGeo.setAttribute('position', new T.BufferAttribute(sprayPos, 3));
-            var sprayMat = new T.PointsMaterial({ color: 0xaaccee, size: 0.06, transparent: true, opacity: 0.4 });
+            var sprayMat = new T.PointsMaterial({ color: 0xaaccee, size: 0.08, transparent: true, opacity: 0.5, depthWrite: false });
             tireSprayParticles = new T.Points(sprayGeo, sprayMat);
+            tireSprayParticles.visible = !!isRain;
             scene.add(tireSprayParticles);
-          }
+          })();
 
           // ── Off-road dust particle system (active any time the car is on grass) ──
           // Points float up and fade behind the car; pool is cycled via _dustIdx.
@@ -6919,6 +7849,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // The car model faces +X, so rotation around Z is pitch. car._pitch has
           // both grade + accel-induced weight transfer combined.
           s3.playerCarGroup.rotation.z = car._pitch || 0;
+          // ── Windshield wipers: sweep in rain/snow, rest when dry ──
+          // Wipers pivot around their base (the group origin at the windshield base).
+          // A simple triangle wave on time gives the back-and-forth sweep; rate scales
+          // with rain intensity (faster on the first few seconds of a heavy downpour).
+          (function() {
+            var wL = null, wR = null;
+            for (var wi = 0; wi < s3.playerCarGroup.children.length; wi++) {
+              var c = s3.playerCarGroup.children[wi];
+              if (c.name === 'rr_wiperL') wL = c;
+              else if (c.name === 'rr_wiperR') wR = c;
+            }
+            if (!wL || !wR) return;
+            var needsWipers = scn.weather === 'rain' || scn.weather === 'snow';
+            if (needsWipers) {
+              // Triangle wave 0→1→0 at ~1.4 Hz (roughly human fast-wiper speed)
+              var wSpeed = scn.weather === 'rain' ? 2.8 : 1.4;
+              var wT = (timeRef.current * wSpeed) % 2;
+              var sweep = wT < 1 ? wT : 2 - wT; // 0 to 1 to 0
+              // Both wipers sweep toward the driver (so they look correctly synchronized)
+              wL.rotation.y = -1.0 + sweep * 1.4; // -1.0 (parked left) to 0.4 (swept right)
+              wR.rotation.y = 1.0 - sweep * 1.4;
+            } else {
+              // Rest position — flat against the base of the windshield
+              wL.rotation.y = -1.0;
+              wR.rotation.y = 1.0;
+            }
+          })();
 
           // Tire tracks in snow — drop a pair of small dark planes behind the
           // car each "tick". Ring buffer of ~200 tracks to bound memory; oldest
@@ -7225,17 +8182,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           s3.blinkerMeshRL.material.opacity = (bDir === -1 && blinkOn) ? 0.9 : 0;
           s3.blinkerMeshRR.material.opacity = (bDir === 1 && blinkOn) ? 0.9 : 0;
 
-          // Skid tire marks — drop dark plane strips when skidding
-          if (skidRef.current.active && car.speed > 4) {
-            var T2 = window.THREE;
+          // ── Tire marks: skidding OR hard braking ──
+          // Dark strips rendered just above the road. Real cars leave marks not only
+          // when losing traction but also under heavy ABS-threshold braking.
+          var T2 = window.THREE;
+          var carAbsSpeed = Math.abs(car.speed);
+          var skidding = skidRef.current.active && carAbsSpeed > 4;
+          // Detect hard brake: high brake pressure AND moving fast — marks are subtler
+          var hardBrake = car.brake > 0.7 && carAbsSpeed > 8;
+          if (skidding || hardBrake) {
             var markGeo = new T2.PlaneGeometry(0.08, 0.5);
-            var mark = new T2.Mesh(markGeo, s3.skidMarkMat);
-            mark.rotation.x = -Math.PI / 2;
-            mark.rotation.z = -car.heading + Math.PI / 2;
-            mark.position.set(carWorldX, 0.015, carWorldZ);
-            s3.skidMarksGroup.add(mark);
-            // Cap at 200 marks, remove oldest
-            while (s3.skidMarksGroup.children.length > 200) {
+            // Two parallel tire strips (left + right wheel tracks)
+            [-0.35, 0.35].forEach(function(lateral) {
+              var mark = new T2.Mesh(markGeo, s3.skidMarkMat);
+              mark.rotation.x = -Math.PI / 2;
+              mark.rotation.z = -car.heading + Math.PI / 2;
+              // Offset laterally perpendicular to travel direction
+              var perpX = -Math.sin(car.heading) * lateral;
+              var perpZ = Math.cos(car.heading) * lateral;
+              mark.position.set(carWorldX + perpX, 0.015, carWorldZ + perpZ);
+              // Hard-brake marks are fainter than skid marks
+              if (hardBrake && !skidding) {
+                mark.material = mark.material.clone();
+                mark.material.opacity = 0.35;
+                mark.material.transparent = true;
+              }
+              s3.skidMarksGroup.add(mark);
+            });
+            // Cap at 300 marks (accounts for paired tracks)
+            while (s3.skidMarksGroup.children.length > 300) {
               var oldMark = s3.skidMarksGroup.children[0];
               if (oldMark.geometry) oldMark.geometry.dispose();
               s3.skidMarksGroup.remove(oldMark);
@@ -7251,6 +8226,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             }
           });
+          // Update school-zone flashing beacons — alternating amber lamps (top ↔ bottom).
+          // Self-cleaning: drop any beacon whose mesh has been removed from the scene
+          // (happens when the chunk unloads). ~1.2 Hz alternation.
+          if (s3.flashingBeacons && s3.flashingBeacons.length) {
+            var beaconTick = Math.floor(timeRef.current * 2.4) % 2;
+            s3.flashingBeacons = s3.flashingBeacons.filter(function(b) {
+              // Walk up parents: if we ever lose the scene root, mesh was removed
+              var n = b.mesh; while (n.parent) n = n.parent;
+              if (n !== s3.scene) return false;
+              var lit = (beaconTick === b.phase);
+              b.mesh.material.opacity = lit ? 1.0 : 0.25;
+              b.mesh.material.color.setHex(lit ? 0xffd900 : 0x8a6a00);
+              return true;
+            });
+          }
 
           // Update traffic vehicles (low-poly car groups)
           var tGroup = s3.trafficGroup;
@@ -7290,12 +8280,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var stripe2 = new T.Mesh(stripeGeo2, stripeMat2);
                 stripe2.position.set(0, bH * 0.55 + 0.2, 0);
                 cg.add(stripe2);
-                // Stop arm hint (red rectangle on side)
-                var stopArmMat = new T.MeshBasicMaterial({ color: 0xff0000 });
-                var stopArmGeo = new T.BoxGeometry(0.3, 0.08, 0.01);
+                // Stop arm hint (red octagonal paddle on side) — animates out when active
+                var stopArmMat = new T.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.2 });
+                var stopArmGeo = new T.BoxGeometry(0.5, 0.35, 0.02);
                 var stopArm = new T.Mesh(stopArmGeo, stopArmMat);
                 stopArm.position.set(-bLen * 0.15, bH * 0.6 + 0.2, 0.51);
+                stopArm.name = 'rr_busStopArm';
                 cg.add(stopArm);
+                // Twin red flasher lights on top of the bus (front + rear of the roof)
+                [bLen * 0.35, -bLen * 0.35].forEach(function(rx, ri) {
+                  var flMat = new T.MeshBasicMaterial({ color: 0x440000, transparent: true, opacity: 0.3 });
+                  var flGeo = new T.SphereGeometry(0.10, 8, 8);
+                  var fl = new T.Mesh(flGeo, flMat);
+                  fl.position.set(rx, bH + 0.45, 0);
+                  fl.name = 'rr_busFlash' + (ri === 0 ? 'F' : 'R');
+                  cg.add(fl);
+                });
               } else if (isVan) {
                 // Van: tall boxy roof
                 var vanRoofGeo = new T.BoxGeometry(bLen * 0.75, 0.5, 0.88);
@@ -7338,31 +8338,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   cg.add(tsideR);
                 }
               }
-              // Wheels (4)
-              var wMat = new T.MeshLambertMaterial({ color: 0x111111 });
-              var wR = 0.18;
-              [[-bLen * 0.3, wR, 0.45], [-bLen * 0.3, wR, -0.45], [bLen * 0.3, wR, 0.45], [bLen * 0.3, wR, -0.45]].forEach(function(wp) {
-                var wGeo = new T.CylinderGeometry(wR, wR, 0.12, 10);
+              // Wheels (4) — sized per vehicle type so they visually ground the body.
+              // Trucks, buses, vans get bigger wheels (otherwise the tall body looks like
+              // it's floating on tiny donuts). Tire width also scales so wheels read
+              // clearly from a distance.
+              var wMat = new T.MeshLambertMaterial({ color: 0x0c0c0c });
+              var wR = isBus ? 0.32 : isTruck ? 0.27 : isVan ? 0.25 : isSUV ? 0.23 : 0.20;
+              var wWidth = isBus ? 0.18 : isTruck ? 0.17 : isVan ? 0.15 : isSUV ? 0.14 : 0.13;
+              // Position wheel center just inside the body edge so the outer half pokes
+              // out clearly (body is 0.85 wide → halfwidth 0.425, wheel center at 0.40).
+              var wZOff = 0.40;
+              // X positions: front + rear axle, pushed in from each end by a tire-width margin
+              var wXAxle = bLen * 0.30;
+              // Silver hub cap — makes the tire read as a wheel, not a solid cylinder
+              var hubMat = new T.MeshLambertMaterial({ color: 0x909096 });
+              [[-wXAxle, wR, wZOff], [-wXAxle, wR, -wZOff], [wXAxle, wR, wZOff], [wXAxle, wR, -wZOff]].forEach(function(wp) {
+                var wGeo = new T.CylinderGeometry(wR, wR, wWidth, 14);
                 var wheel = new T.Mesh(wGeo, wMat);
                 wheel.rotation.x = Math.PI / 2;
                 wheel.position.set(wp[0], wp[1], wp[2]);
                 cg.add(wheel);
+                // Hub cap — smaller disc with slightly wider Z so it reads outboard
+                var hubGeo = new T.CylinderGeometry(wR * 0.55, wR * 0.55, wWidth + 0.004, 12);
+                var hub = new T.Mesh(hubGeo, hubMat);
+                hub.rotation.x = Math.PI / 2;
+                hub.position.set(wp[0], wp[1], wp[2]);
+                cg.add(hub);
               });
-              // Headlights (front, visible at night)
-              var hlMat2 = new T.MeshBasicMaterial({ color: 0xffffee, transparent: true, opacity: currentScenario.time === 'night' ? 0.9 : 0.2 });
-              [0.3, -0.3].forEach(function(z) {
-                var hlGeo = new T.SphereGeometry(0.05, 6, 6);
-                var hl = new T.Mesh(hlGeo, hlMat2);
+              // Black wheel-well shading — a dark rectangle beneath each wheel so the wheel
+              // always contrasts against the body even in bright sun / fog.
+              var wellMat = new T.MeshBasicMaterial({ color: 0x050505 });
+              [[-wXAxle, 0.01, 0.40], [wXAxle, 0.01, 0.40], [-wXAxle, 0.01, -0.40], [wXAxle, 0.01, -0.40]].forEach(function(shp) {
+                var well = new T.Mesh(new T.PlaneGeometry(wR * 2.2, wWidth * 1.6), wellMat);
+                well.rotation.x = -Math.PI / 2;
+                well.position.set(shp[0], shp[1], shp[2]);
+                cg.add(well);
+              });
+              // ── Headlights (front) — per-car materials so each light is independently animatable ──
+              // Named mesh tags ('rr_fl', 'rr_fr') let the render loop find them without scanning materials.
+              [0.3, -0.3].forEach(function(z, hi) {
+                var hlGeo = new T.SphereGeometry(0.075, 8, 8);
+                var hlMat = new T.MeshBasicMaterial({ color: 0xffffee, transparent: true, opacity: 0.25 });
+                var hl = new T.Mesh(hlGeo, hlMat);
                 hl.position.set(bLen / 2 + 0.01, bH / 2 + 0.2, z);
+                hl.name = hi === 0 ? 'rr_fr' : 'rr_fl'; // front right, front left (z>0 is +Z side, but local frame)
                 cg.add(hl);
               });
-              // Tail lights
-              var tlMat = new T.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.5 });
-              [0.3, -0.3].forEach(function(z) {
-                var tlGeo = new T.SphereGeometry(0.04, 6, 6);
-                var tl = new T.Mesh(tlGeo, tlMat);
-                tl.position.set(-bLen / 2, bH / 2 + 0.2, z);
-                cg.add(tl);
+              // ── Headlight cone: additive-blended cone projected forward at night ──
+              // Invisible in daylight (opacity = 0), fades up under night/fog conditions.
+              // One merged cone per car (cheaper than two) — positioned centered low + front.
+              var coneGeo = new T.ConeGeometry(0.9, 4.5, 12, 1, true);
+              var coneMat = new T.MeshBasicMaterial({
+                color: 0xfff5c8, transparent: true, opacity: 0,
+                blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
+              });
+              var cone = new T.Mesh(coneGeo, coneMat);
+              // The cone's axis is local +Y by default. Rotate so it points along +X (car's forward).
+              cone.rotation.z = -Math.PI / 2;
+              // Tip of the cone is at its +Y top. After rotating, tip is at +X. Offset so the TIP
+              // sits at the car's headlights and the base extends forward.
+              cone.position.set(bLen / 2 + 2.25, bH / 2 + 0.2, 0);
+              cone.name = 'rr_hlCone';
+              cg.add(cone);
+              // ── Brake lights (rear) — bigger + per-car material ──
+              // Twin red lenses on each side of the trunk, plus a high-mount brake light (the CHMSL).
+              [0.33, -0.33].forEach(function(z, bi) {
+                var blGeo = new T.BoxGeometry(0.04, 0.14, 0.22);
+                var blMat = new T.MeshBasicMaterial({ color: 0xcc0000, transparent: true, opacity: 0.55 });
+                var bl = new T.Mesh(blGeo, blMat);
+                bl.position.set(-bLen / 2 + 0.02, bH / 2 + 0.22, z);
+                bl.name = bi === 0 ? 'rr_brR' : 'rr_brL';
+                cg.add(bl);
+              });
+              // Center High-Mount Stop Lamp (CHMSL) — the third brake light every car has since ~1986.
+              var chmslGeo = new T.BoxGeometry(0.04, 0.05, 0.34);
+              var chmslMat = new T.MeshBasicMaterial({ color: 0x990000, transparent: true, opacity: 0.4 });
+              var chmsl = new T.Mesh(chmslGeo, chmslMat);
+              chmsl.position.set(-bLen / 2 + 0.02, bH + 0.32, 0);
+              chmsl.name = 'rr_chmsl';
+              cg.add(chmsl);
+              // ── Rear turn signals — amber, independent of brake lights ──
+              [0.4, -0.4].forEach(function(z, bi) {
+                var blinkGeo = new T.BoxGeometry(0.04, 0.12, 0.14);
+                var blinkMat = new T.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.25 });
+                var blink = new T.Mesh(blinkGeo, blinkMat);
+                blink.position.set(-bLen / 2 + 0.02, bH / 2 + 0.22, z);
+                blink.name = bi === 0 ? 'rr_rrBlinkR' : 'rr_rrBlinkL';
+                cg.add(blink);
               });
               tGroup.add(cg);
               m = cg;
@@ -7370,38 +8432,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var tRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(t.y) : 0;
             m.position.set(t.x - MAP_SIZE / 2, tRoadH, t.y - MAP_SIZE / 2);
             m.rotation.y = -t.heading;
-            // Wheel spin + blinker on traffic vehicles
+            // ── Wheel spin + proper brake + turn signal animation ──
             if (m.children) {
               var tWheelAngle = timeRef.current * Math.abs(t.speed) * 2;
               var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
+              // Braking: bright red if actively slowing or told to slow/stop. The _slowFor
+              // field is set by updateTraffic based on signals, cars ahead, and player state.
+              var isBraking = (t._slowFor >= 1) || (t._prevSpeed !== undefined && t.speed < t._prevSpeed - 0.2);
+              var nightLights = scn.time === 'night' || scn.weather === 'fog';
               m.children.forEach(function(child) {
                 if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
                   child.rotation.y = tWheelAngle;
+                  return;
                 }
-                // Headlight meshes double as blinker indicators (orange glow)
-                if (child.material && child.material.color) {
-                  var cHex = child.material.color.getHex();
-                  if (cHex === 0xffffee) {
-                    // Left headlight = left blinker, right = right blinker
-                    if (tBlinkOn && ((t.blinker === -1 && child.position.z > 0) || (t.blinker === 1 && child.position.z < 0))) {
-                      child.material.color.setHex(0xf59e0b); // orange blinker
-                      child.material.opacity = 0.9;
-                    } else {
-                      child.material.color.setHex(0xffffee);
-                      child.material.opacity = scn.time === 'night' ? 0.9 : 0.2;
-                    }
+                var n = child.name;
+                if (!n || n.indexOf('rr_') !== 0) return;
+                // Headlights: always dim in day, bright at night. Stay white — never blink.
+                if (n === 'rr_fr' || n === 'rr_fl') {
+                  child.material.opacity = nightLights ? 0.92 : 0.22;
+                  return;
+                }
+                // Headlight cone: additive light volume, visible only at night/fog.
+                if (n === 'rr_hlCone') {
+                  child.material.opacity = scn.time === 'night' ? 0.28 : (scn.weather === 'fog' ? 0.18 : 0);
+                  return;
+                }
+                // Brake lights (twin + CHMSL): glow bright red when braking, faint otherwise.
+                if (n === 'rr_brR' || n === 'rr_brL') {
+                  child.material.color.setHex(isBraking ? 0xff2a2a : 0xaa0000);
+                  child.material.opacity = isBraking ? 0.95 : 0.32;
+                  return;
+                }
+                if (n === 'rr_chmsl') {
+                  // Third brake light only lights when braking (more realistic — CHMSL doesn't do running-light mode)
+                  child.material.color.setHex(isBraking ? 0xff1a1a : 0x550000);
+                  child.material.opacity = isBraking ? 0.9 : 0.12;
+                  return;
+                }
+                // Rear turn signals — amber blinker on the active side only.
+                if (n === 'rr_rrBlinkL' || n === 'rr_rrBlinkR') {
+                  // Local +Z is left side. t.blinker = -1 means left signal.
+                  var isLeftSignal = (n === 'rr_rrBlinkL');
+                  var isActive = (t.blinker === -1 && isLeftSignal) || (t.blinker === 1 && !isLeftSignal);
+                  if (isActive && tBlinkOn) {
+                    child.material.color.setHex(0xffaa00);
+                    child.material.opacity = 0.95;
+                  } else {
+                    child.material.color.setHex(0xff8800);
+                    child.material.opacity = 0.18;
                   }
+                  return;
                 }
-              });
-            }
-            // Brake light brightness based on whether vehicle is slowing
-            if (m.children) {
-              m.children.forEach(function(child) {
-                if (child.material && child.material.color) {
-                  var hex = child.material.color.getHex();
-                  if (hex === 0xff2222 || hex === 0xff0000) {
-                    child.material.opacity = t.speed < t._prevSpeed ? 0.9 : 0.3;
-                    child.material.transparent = true;
+                // School bus stop arm — swing outward and glow red when active.
+                if (n === 'rr_busStopArm') {
+                  if (t._stopArmActive) {
+                    child.material.opacity = 0.95;
+                    // Rotate the arm ~90° outward (around local Y axis) when extended
+                    child.rotation.y = Math.PI / 2;
+                    child.position.z = 0.85; // push it outboard
+                  } else {
+                    child.material.opacity = 0.25;
+                    child.rotation.y = 0;
+                    child.position.z = 0.51;
+                  }
+                  return;
+                }
+                // Bus roof flashers — alternating red lamps (front and rear flash opposite).
+                if (n === 'rr_busFlashF' || n === 'rr_busFlashR') {
+                  if (t._stopArmActive) {
+                    // Alternate front/rear at 2 Hz
+                    var flashOn = Math.floor(timeRef.current * 2) % 2 === 0;
+                    var meOn = (n === 'rr_busFlashF') ? flashOn : !flashOn;
+                    child.material.color.setHex(meOn ? 0xff2020 : 0x550000);
+                    child.material.opacity = meOn ? 1.0 : 0.35;
+                  } else {
+                    child.material.color.setHex(0x440000);
+                    child.material.opacity = 0.3;
                   }
                 }
               });
@@ -7490,29 +8596,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           });
 
-          // Update cyclists
+          // Update cyclists — proper bike (wheels inline, frame, handlebars, rider torso+head+helmet)
           var cGroup = s3.cyclistGroup;
           while (cGroup.children.length > cyclistsRef.current.length) cGroup.remove(cGroup.children[cGroup.children.length - 1]);
           cyclistsRef.current.forEach(function(cy, ci) {
             var m;
+            var isMoto = cy.type === 'motorcycle';
             if (ci < cGroup.children.length) {
               m = cGroup.children[ci];
             } else {
+              // Build a bike/motorcycle group. Local coordinate system: +Z is forward-travel
+              // direction, ±X is left/right of the bike, +Y is up.
+              // The group rotates on rotation.y to align with heading at render time.
               var cg = new T.Group();
-              var wheelGeo = new T.TorusGeometry(0.25, 0.02, 8, 16);
-              var wheelMat2 = new T.MeshLambertMaterial({ color: 0x888888 });
-              var w1 = new T.Mesh(wheelGeo, wheelMat2); w1.position.set(0.3, 0.25, 0); w1.rotation.y = Math.PI / 2; cg.add(w1);
-              var w2 = new T.Mesh(wheelGeo, wheelMat2); w2.position.set(-0.3, 0.25, 0); w2.rotation.y = Math.PI / 2; cg.add(w2);
-              var riderGeo = new T.CylinderGeometry(0.1, 0.1, 0.6, 6);
-              var riderMat = new T.MeshLambertMaterial({ color: cy.type === 'motorcycle' ? 0x1e293b : 0x06b6d4 });
-              var rider = new T.Mesh(riderGeo, riderMat);
-              rider.position.y = 0.9;
-              cg.add(rider);
-              var helmetGeo = new T.SphereGeometry(0.12, 8, 8);
-              var helmetMat = new T.MeshLambertMaterial({ color: cy.type === 'motorcycle' ? 0xef4444 : 0xfbbf24 });
-              var helmet = new T.Mesh(helmetGeo, helmetMat);
-              helmet.position.y = 1.3;
+              var bikeMetal = new T.MeshLambertMaterial({ color: isMoto ? 0x1e293b : 0xef4444 });
+              var wheelMat2 = new T.MeshLambertMaterial({ color: 0x1e1e1e });
+              var spokeMat = new T.MeshLambertMaterial({ color: 0xcfcfcf });
+              var wheelR = isMoto ? 0.30 : 0.33;
+              var wheelTube = isMoto ? 0.08 : 0.03;
+              // Front wheel (at +Z = front of bike)
+              var frontWheel = new T.Mesh(new T.TorusGeometry(wheelR, wheelTube, 8, 20), wheelMat2);
+              frontWheel.position.set(0, wheelR, 0.55);
+              frontWheel.rotation.y = Math.PI / 2;
+              cg.add(frontWheel);
+              // Rear wheel (at -Z = back of bike)
+              var rearWheel = new T.Mesh(new T.TorusGeometry(wheelR, wheelTube, 8, 20), wheelMat2);
+              rearWheel.position.set(0, wheelR, -0.55);
+              rearWheel.rotation.y = Math.PI / 2;
+              cg.add(rearWheel);
+              // Wheel hubs (small disks to fill the center)
+              [0.55, -0.55].forEach(function(wz) {
+                var hub = new T.Mesh(new T.CylinderGeometry(wheelR * 0.15, wheelR * 0.15, wheelTube * 2 + 0.02, 8), spokeMat);
+                hub.position.set(0, wheelR, wz);
+                hub.rotation.z = Math.PI / 2;
+                cg.add(hub);
+              });
+              // Frame: triangular — top tube + down tube + seat tube + chain stay
+              var frameMat = new T.MeshLambertMaterial({ color: isMoto ? 0x3a424a : (cy.type === 'cyclist' ? ['#1e40af','#059669','#b91c1c','#d97706','#4c1d95'][ci % 5] : 0xef4444) });
+              if (typeof frameMat.color.set === 'function' && typeof frameMat.color.getHex() !== 'number') {
+                // Already set via hex string
+              }
+              // Down tube (from rear wheel up-forward to handlebar area)
+              var downTube = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.0, 6), frameMat);
+              downTube.position.set(0, wheelR + 0.25, 0);
+              downTube.rotation.x = Math.PI / 2;
+              cg.add(downTube);
+              // Seat tube (vertical, above rear wheel)
+              var seatTube = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.55, 6), frameMat);
+              seatTube.position.set(0, wheelR + 0.28, -0.3);
+              cg.add(seatTube);
+              // Top tube (connects seat to handlebar stem)
+              var topTube = new T.Mesh(new T.CylinderGeometry(0.035, 0.035, 0.72, 6), frameMat);
+              topTube.position.set(0, wheelR + 0.5, 0.05);
+              topTube.rotation.x = Math.PI / 2;
+              cg.add(topTube);
+              // Seat (small cushion on seat post)
+              var seat = new T.Mesh(new T.BoxGeometry(0.08, 0.04, 0.22), new T.MeshLambertMaterial({ color: 0x1a1a1a }));
+              seat.position.set(0, wheelR + 0.58, -0.3);
+              cg.add(seat);
+              // Handlebar stem (vertical from front fork to bars)
+              var stem = new T.Mesh(new T.CylinderGeometry(0.035, 0.035, 0.4, 6), frameMat);
+              stem.position.set(0, wheelR + 0.55, 0.5);
+              cg.add(stem);
+              // Handlebars (horizontal crossbar)
+              var handlebar = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, isMoto ? 0.56 : 0.46, 6), frameMat);
+              handlebar.position.set(0, wheelR + 0.72, 0.5);
+              handlebar.rotation.z = Math.PI / 2;
+              cg.add(handlebar);
+              // Motorcycle extras: headlight, mirrors, fuel tank shape
+              if (isMoto) {
+                var headlight = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: 0xfff5c0 }));
+                headlight.position.set(0, wheelR + 0.55, 0.65);
+                cg.add(headlight);
+                var tank = new T.Mesh(new T.BoxGeometry(0.22, 0.18, 0.36), frameMat);
+                tank.position.set(0, wheelR + 0.48, 0.08);
+                cg.add(tank);
+              }
+              // Rider: torso
+              var shirtColors = [0x06b6d4, 0xfbbf24, 0x22c55e, 0xec4899, 0xa78bfa];
+              var riderColor = isMoto ? 0x1e293b : shirtColors[ci % shirtColors.length];
+              var torso = new T.Mesh(new T.BoxGeometry(0.32, 0.48, 0.22), new T.MeshLambertMaterial({ color: riderColor }));
+              torso.position.set(0, wheelR + 0.88, -0.15);
+              torso.rotation.x = 0.2; // slight lean forward
+              cg.add(torso);
+              // Rider: head
+              var head = new T.Mesh(new T.SphereGeometry(0.11, 10, 8), new T.MeshLambertMaterial({ color: 0xf5c28b }));
+              head.position.set(0, wheelR + 1.22, -0.05);
+              cg.add(head);
+              // Helmet — bright color for visibility (brightest cyclist-safety color is fluorescent yellow/green)
+              var helmetColor = isMoto ? 0xef4444 : 0xeaff00;
+              var helmet = new T.Mesh(new T.SphereGeometry(0.14, 12, 8, 0, Math.PI * 2, 0, Math.PI / 1.8), new T.MeshLambertMaterial({ color: helmetColor }));
+              helmet.position.set(0, wheelR + 1.28, -0.05);
               cg.add(helmet);
+              // Arms going forward to the handlebars — two thin cylinders
+              [-0.14, 0.14].forEach(function(ax) {
+                var arm = new T.Mesh(new T.CylinderGeometry(0.035, 0.035, 0.5, 6), new T.MeshLambertMaterial({ color: riderColor }));
+                arm.position.set(ax, wheelR + 0.92, 0.15);
+                arm.rotation.x = 1.1; // forward reach
+                cg.add(arm);
+              });
+              // High-visibility safety vest/stripe for cyclists (not motos)
+              if (!isMoto) {
+                var vest = new T.Mesh(new T.BoxGeometry(0.34, 0.12, 0.24), new T.MeshBasicMaterial({ color: 0xeaff00 }));
+                vest.position.set(0, wheelR + 1.0, -0.15);
+                vest.rotation.x = 0.2;
+                cg.add(vest);
+              }
               cg.castShadow = true;
               cGroup.add(cg);
               m = cg;
@@ -7637,27 +8826,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             eGroup.add(eGrp);
           }
 
-          // Tire spray in rain (mist kicked up by rear tires)
-          if (s3.tireSprayParticles && Math.abs(car.speed) > 3) {
-            var spPos = s3.tireSprayParticles.geometry.attributes.position;
-            var spIdx = Math.floor(timeRef.current * 30) % spPos.count;
-            // Spawn at rear wheel positions
-            var rearX = carWorldX - Math.cos(car.heading) * 0.8;
-            var rearZ = carWorldZ - Math.sin(car.heading) * 0.8;
-            spPos.setXYZ(spIdx, rearX + (Math.random() - 0.5) * 0.5, 0.1 + Math.random() * 0.3, rearZ + (Math.random() - 0.5) * 0.5);
-            // Drift existing particles up and back
-            for (var spi = 0; spi < spPos.count; spi++) {
-              var spy = spPos.getY(spi);
-              if (spy > 0 && spy < 1.5) {
-                spPos.setY(spi, spy + 0.015);
-                spPos.setX(spi, spPos.getX(spi) - Math.cos(car.heading) * 0.01);
-                spPos.setZ(spi, spPos.getZ(spi) - Math.sin(car.heading) * 0.01);
-              } else if (spy >= 1.5) {
-                spPos.setY(spi, -999);
+          // ── Tire spray in rain — dynamically toggled by current weather ──
+          // Intensity scales with speed; a brief "splash boost" fires when the player
+          // drives through a deterministic puddle (same positions as the painted ones).
+          if (s3.tireSprayParticles) {
+            var sprayActive = scn.weather === 'rain' && Math.abs(car.speed) > 3;
+            s3.tireSprayParticles.visible = sprayActive;
+            if (sprayActive) {
+              var spPos = s3.tireSprayParticles.geometry.attributes.position;
+              // Check if we're driving over a puddle (rough test: does a puddle exist
+              // within 1 cell of the car's current position?). When so, burst extra spray.
+              var overPuddle = false;
+              if (infiniteWorldRef.current) {
+                var puddleChunk = Math.floor(car.y / CHUNK_SIZE);
+                // Reproduce the puddle hash from chunk render code
+                var pHashNow = function(k) { var x = (puddleChunk * 2654435761 + k * 1597334677) >>> 0; return (x / 0xffffffff); };
+                for (var pci = 0; pci < 6; pci++) {
+                  var pZLocal = pHashNow(pci * 3) * CHUNK_SIZE;
+                  var pYWorld = puddleChunk * CHUNK_SIZE + pZLocal;
+                  var pSide = (pHashNow(pci * 3 + 1) - 0.5) * 3.5 * 1.6;
+                  var rCenter = infiniteWorldRef.current.spline ? infiniteWorldRef.current.spline.centerAt(pYWorld) : Math.floor(MAP_SIZE / 2);
+                  var pxW = rCenter + pSide;
+                  if (Math.hypot(pxW - car.x, pYWorld - car.y) < 1.2) { overPuddle = true; break; }
+                }
+              }
+              var sparkPerFrame = overPuddle ? 4 : 1;
+              for (var sprk = 0; sprk < sparkPerFrame; sprk++) {
+                var spIdx = (Math.floor(timeRef.current * 60) + sprk * 41) % spPos.count;
+                // Spawn at rear wheel positions
+                var rearX = carWorldX - Math.cos(car.heading) * 0.8;
+                var rearZ = carWorldZ - Math.sin(car.heading) * 0.8;
+                spPos.setXYZ(spIdx, rearX + (Math.random() - 0.5) * (overPuddle ? 0.9 : 0.5), 0.1 + Math.random() * (overPuddle ? 0.5 : 0.3), rearZ + (Math.random() - 0.5) * (overPuddle ? 0.9 : 0.5));
+              }
+              // Drift existing particles up and back
+              for (var spi = 0; spi < spPos.count; spi++) {
+                var spy = spPos.getY(spi);
+                if (spy > 0 && spy < 1.5) {
+                  spPos.setY(spi, spy + 0.018);
+                  spPos.setX(spi, spPos.getX(spi) - Math.cos(car.heading) * 0.012);
+                  spPos.setZ(spi, spPos.getZ(spi) - Math.sin(car.heading) * 0.012);
+                } else if (spy >= 1.5) {
+                  spPos.setY(spi, -999);
+                }
+              }
+              spPos.needsUpdate = true;
+              s3.tireSprayParticles.material.opacity = Math.min(0.7, Math.abs(car.speed) * 0.03);
+              // Brief splash sound when over a puddle at speed
+              if (overPuddle && Math.abs(car.speed) > 5) {
+                if (!s3._lastSplashAt || timeRef.current - s3._lastSplashAt > 0.7) {
+                  s3._lastSplashAt = timeRef.current;
+                  try { if (typeof playSplash === 'function') playSplash(Math.abs(car.speed)); } catch(_) {}
+                }
               }
             }
-            spPos.needsUpdate = true;
-            s3.tireSprayParticles.material.opacity = Math.min(0.5, Math.abs(car.speed) * 0.025);
           }
 
           // Off-road dust — only when car is on grass (not road) and moving.
@@ -8133,6 +9354,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var flag = new T.Mesh(new T.BoxGeometry(0.8, 0.5, 0.02), new T.MeshLambertMaterial({ color: 0xef4444 }));
                     flag.position.set(lmCenterWX + lm.side * 2 + lm.side * 0.4, 3.5, lmCenterWZ + 1.5);
                     chunkGroup.add(flag);
+                    // ── Flashing yellow school-zone beacons on both sides of the road ──
+                    // Two poles with twin flashing amber lamps — alternating at ~1.2 Hz.
+                    // Placed on the APPROACH side of the school (~6m before the landmark Z).
+                    var beaconZ = lmCenterWZ - 6;
+                    s3.flashingBeacons = s3.flashingBeacons || [];
+                    [-1, 1].forEach(function(bSide) {
+                      var roadCtr = iw.spline ? (iw.spline.centerAt(beaconZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+                      var bPoleX = roadCtr + bSide * (roadHalfW + 0.8);
+                      var bHt = iw.spline ? iw.spline.heightAt(beaconZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var bPole = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 3.0, 6), new T.MeshLambertMaterial({ color: 0x888888 }));
+                      bPole.position.set(bPoleX, bHt + 1.5, beaconZ);
+                      chunkGroup.add(bPole);
+                      // Sign panel (yellow diamond — school zone warning)
+                      var schoolSignMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                      var schoolSign = new T.Mesh(new T.BoxGeometry(0.85, 0.85, 0.04), schoolSignMat);
+                      schoolSign.rotation.z = Math.PI / 4; // 45° diamond
+                      schoolSign.position.set(bPoleX, bHt + 2.6, beaconZ);
+                      chunkGroup.add(schoolSign);
+                      // Twin amber lamps (top + bottom of sign)
+                      [-0.55, 0.55].forEach(function(bdy, bi) {
+                        var lampMat = new T.MeshBasicMaterial({ color: 0xffbf00, transparent: true, opacity: 0.35 });
+                        var lampMesh = new T.Mesh(new T.SphereGeometry(0.11, 10, 10), lampMat);
+                        lampMesh.position.set(bPoleX, bHt + 2.6 + bdy, beaconZ + 0.05);
+                        chunkGroup.add(lampMesh);
+                        s3.flashingBeacons.push({ mesh: lampMesh, phase: (bi + (bSide > 0 ? 1 : 0)) % 2 });
+                      });
+                    });
                   } else if (lt.id === 'fire') {
                     // Garage door (larger)
                     var fdMat = new T.MeshLambertMaterial({ color: 0xfef3c7 });
@@ -8949,29 +10197,281 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
               // Each mark is positioned at the spline center for its Z, plus a lateral
               // offset, so markings curve with the road instead of running off the edge.
-              if (scn.weather !== 'snow' && isHighLOD) { // markings hidden by snow; only render near
+              // ── CORE LANE DELINEATION — always rendered on every loaded chunk ──
+              // Solid edge lines + centerline stripe run the full length of the ribbon as
+              // one simple extruded mesh each, so we're paying for 2 meshes (3 on divided
+              // roads) instead of hundreds. These are the "always on" markings that make
+              // the road clearly a road at any distance or weather. Snow whitens but
+              // doesn't hide them.
+              var alwaysMarksColor = scn.weather === 'snow' ? 0xf0f0e8 : 0xffffff;
+              var alwaysYellowColor = scn.weather === 'snow' ? 0xffec99 : 0xfacc15;
+              var markCenterAtZ = function(worldZ) {
+                return iw.spline ? (iw.spline.centerAt(worldZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+              };
+              var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
+              var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
+              // Compact always-on markings: one short stripe every 3m, both edges + center.
+              // Cheap enough that every loaded chunk gets them.
+              var alwaysStripe = function(x_offset, yellow, z_start, step) {
+                var mat = new T.MeshBasicMaterial({ color: yellow ? alwaysYellowColor : alwaysMarksColor });
+                for (var sz = chunkWorldZ + z_start; sz < chunkWorldZ + CHUNK_SIZE - 0.5; sz += step) {
+                  if (sz > skipZ1 && sz < skipZ2) continue;
+                  var stCtr = markCenterAtZ(sz);
+                  var stHt = iw.spline ? iw.spline.heightAt(sz - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var st = new T.Mesh(new T.PlaneGeometry(0.12, 1.0), mat);
+                  st.rotation.x = -Math.PI / 2;
+                  st.position.set(stCtr + x_offset, stHt + 0.012, sz);
+                  chunkGroup.add(st);
+                }
+              };
+              // Always-on centerline: SOLID double-yellow on no-pass chunks
+              // (rural, intersections); dashed single-yellow everywhere else.
+              // This matches real road convention: solid = don't cross, dashed = passing allowed.
+              var chunkNoPass = (chunk.biome === 'rural' || chunk.hasIntersection);
+              if (chunkNoPass) {
+                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.18m
+                var solidYellowMat = new T.MeshBasicMaterial({ color: alwaysYellowColor });
+                var dyStep = 2.0;
+                for (var dyZ = chunkWorldZ + 0.5; dyZ < chunkWorldZ + CHUNK_SIZE - 0.5; dyZ += dyStep) {
+                  if (dyZ > skipZ1 && dyZ < skipZ2) continue;
+                  var dyCtr = markCenterAtZ(dyZ);
+                  var dyHt = iw.spline ? iw.spline.heightAt(dyZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var dyLeft = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  dyLeft.rotation.x = -Math.PI / 2;
+                  dyLeft.position.set(dyCtr - 0.18, dyHt + 0.013, dyZ);
+                  chunkGroup.add(dyLeft);
+                  var dyRight = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  dyRight.rotation.x = -Math.PI / 2;
+                  dyRight.position.set(dyCtr + 0.18, dyHt + 0.013, dyZ);
+                  chunkGroup.add(dyRight);
+                }
+              } else {
+                // Dashed single-yellow (passing allowed)
+                alwaysStripe(0, true, 1.0, 2.2);
+              }
+              alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 1.8);
+              alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 1.8);
+              // ── Painted speed limit numbers on the road surface ──
+              // At the start of each chunk whose biome is different from the previous one,
+              // paint a big "XX" number on the road so the driver sees the new zone's limit.
+              // Also paint at every 3rd chunk regardless so the limit remains visible.
+              var prevChunk = iw.chunks && iw.chunks[ci - 1];
+              var biomeChanged = prevChunk && prevChunk.biome !== chunk.biome;
+              var periodicRepaint = (ci % 3 === 0);
+              if (scn.weather !== 'snow' && (biomeChanged || periodicRepaint)) {
+                try {
+                  var paintLimit = chunk.biome === 'residential' ? 25
+                    : chunk.biome === 'suburban' ? 35
+                    : chunk.biome === 'commercial' ? 30
+                    : chunk.biome === 'industrial' ? 35
+                    : chunk.biome === 'rural' ? 50 : 30;
+                  // Cache the texture per limit value (3–4 unique textures total per session)
+                  if (!iw._roadNumCache) iw._roadNumCache = {};
+                  var cacheKey = 'n_' + paintLimit;
+                  var numTex = iw._roadNumCache[cacheKey];
+                  if (!numTex) {
+                    var numCan = document.createElement('canvas');
+                    numCan.width = 128; numCan.height = 256;
+                    var numCtx = numCan.getContext('2d');
+                    // Transparent background — only the number paints
+                    numCtx.clearRect(0, 0, 128, 256);
+                    numCtx.fillStyle = '#f5f5f5';
+                    // "SPEED LIMIT" style stacked: "SPEED" / "LIMIT" / "XX"
+                    numCtx.font = 'bold 32px system-ui, Arial, sans-serif';
+                    numCtx.textAlign = 'center';
+                    numCtx.fillText('SPEED', 64, 40);
+                    numCtx.fillText('LIMIT', 64, 78);
+                    numCtx.font = 'bold 110px system-ui, Arial, sans-serif';
+                    numCtx.fillText(String(paintLimit), 64, 200);
+                    numTex = new T.CanvasTexture(numCan);
+                    iw._roadNumCache[cacheKey] = numTex;
+                  }
+                  var numMat = new T.MeshBasicMaterial({ map: numTex, transparent: true, depthWrite: false });
+                  // Place the painted number in each lane (both directions see it)
+                  var paintZ = chunkWorldZ + (biomeChanged ? 4 : CHUNK_SIZE / 2);
+                  if (paintZ > skipZ1 && paintZ < skipZ2) paintZ += 6;
+                  var paintCtr = markCenterAtZ(paintZ);
+                  var paintHt = iw.spline ? iw.spline.heightAt(paintZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // Lane 1 (driver's side)
+                  var paintPlane1 = new T.Mesh(new T.PlaneGeometry(1.4, 2.8), numMat);
+                  paintPlane1.rotation.x = -Math.PI / 2;
+                  paintPlane1.position.set(paintCtr - 1.3, paintHt + 0.012, paintZ);
+                  chunkGroup.add(paintPlane1);
+                  // Lane 2 (oncoming side) — mirror the Z rotation so it reads for that direction
+                  var paintPlane2 = new T.Mesh(new T.PlaneGeometry(1.4, 2.8), numMat);
+                  paintPlane2.rotation.x = -Math.PI / 2;
+                  paintPlane2.rotation.z = Math.PI; // rotate 180° for oncoming
+                  paintPlane2.position.set(paintCtr + 1.3, paintHt + 0.012, paintZ);
+                  chunkGroup.add(paintPlane2);
+                } catch (paintErr) { /* canvas not available — skip painting */ }
+              }
+              // ── Shoulder rumble strips: short dark dashes just OUTSIDE each edge line ──
+              // These are the scored grooves you hear/feel when drifting off the road.
+              // Cheap visual: small dark dashes at 1.4m intervals, offset 0.25m outside the edge line.
+              // Skip at intersections (the shoulder disappears into the crosswalk area).
+              var rumbleMat = new T.MeshBasicMaterial({ color: scn.weather === 'snow' ? 0x707078 : 0x2a2a28 });
+              var rumbleOffset = roadHalfW + 0.08; // just outside the painted edge
+              for (var rz = chunkWorldZ + 0.4; rz < chunkWorldZ + CHUNK_SIZE - 0.4; rz += 1.1) {
+                if (rz > skipZ1 && rz < skipZ2) continue;
+                var rCtr = markCenterAtZ(rz);
+                var rHt = iw.spline ? iw.spline.heightAt(rz - chunkWorldZ + ribbonChunkBaseY) : 0;
+                // left shoulder
+                var rL = new T.Mesh(new T.PlaneGeometry(0.28, 0.18), rumbleMat);
+                rL.rotation.x = -Math.PI / 2;
+                rL.position.set(rCtr - rumbleOffset, rHt + 0.009, rz);
+                chunkGroup.add(rL);
+                // right shoulder
+                var rR = new T.Mesh(new T.PlaneGeometry(0.28, 0.18), rumbleMat);
+                rR.rotation.x = -Math.PI / 2;
+                rR.position.set(rCtr + rumbleOffset, rHt + 0.009, rz);
+                chunkGroup.add(rR);
+              }
+              // ── Zebra crosswalk stripes at intersections ──
+              // Paint the classic white ladder-style crosswalk at each intersection,
+              // on both sides of the cross street (approach + exit). 6 stripes per crossing.
+              if (chunk.hasIntersection && scn.weather !== 'snow') {
+                var zebraMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
+                // The intersection is centered at Y = chunkWorldZ + chunk.intersectionY.
+                // Place one crosswalk ~2.5 cells before the intersection (approach side)
+                // and one ~2.5 cells after (exit side).
+                var crossZCenter = chunkWorldZ + chunk.intersectionY;
+                [-2.8, 2.8].forEach(function(cwOffset) {
+                  var cwZ = crossZCenter + cwOffset;
+                  var cwCtr = markCenterAtZ(cwZ);
+                  var cwHt = iw.spline ? iw.spline.heightAt(cwZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // 6 parallel stripes across the full road width (about 0.45 each with 0.3 gap)
+                  var stripeW = 0.45, stripeGap = 0.30;
+                  var stripeSpan = roadHalfW * 2;
+                  var nStripes = Math.floor(stripeSpan / (stripeW + stripeGap));
+                  for (var zi = 0; zi < nStripes; zi++) {
+                    var xoff = -roadHalfW + stripeGap / 2 + zi * (stripeW + stripeGap) + stripeW / 2;
+                    var zebra = new T.Mesh(new T.PlaneGeometry(stripeW, 1.6), zebraMat);
+                    zebra.rotation.x = -Math.PI / 2;
+                    zebra.position.set(cwCtr + xoff, cwHt + 0.015, cwZ);
+                    chunkGroup.add(zebra);
+                  }
+                  // Stop line — solid white bar ~1 cell closer to the intersection
+                  var stopLineOff = cwOffset < 0 ? 1.3 : -1.3;
+                  var stopLineZ = cwZ + stopLineOff;
+                  var stopLineCtr = markCenterAtZ(stopLineZ);
+                  var stopLineHt = iw.spline ? iw.spline.heightAt(stopLineZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var stopLine = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 * 0.95, 0.3), zebraMat);
+                  stopLine.rotation.x = -Math.PI / 2;
+                  stopLine.position.set(stopLineCtr, stopLineHt + 0.014, stopLineZ);
+                  chunkGroup.add(stopLine);
+                  // ── Tire skid marks on the approach side ──
+                  // Dark streaks that fade into the stop line — evidence of countless drivers
+                  // hard-braking just before the intersection. Two parallel streaks per lane
+                  // (one per wheel track), ~2m long, subtle dark gray.
+                  var skidMat = new T.MeshBasicMaterial({ color: 0x1a1816, transparent: true, opacity: 0.55, depthWrite: false });
+                  var skidApproachSign = cwOffset < 0 ? -1 : 1; // away from intersection
+                  var skidLaneOff = roadHalfW * 0.5; // center of each lane
+                  [-skidLaneOff, +skidLaneOff].forEach(function(skLaneX) {
+                    // 2 wheel tracks per lane, 0.45m apart
+                    [-0.22, 0.22].forEach(function(skWheelX) {
+                      var skZ = stopLineZ + skidApproachSign * 1.1; // starts just behind stop line
+                      var skCtr = markCenterAtZ(skZ);
+                      var skHt = iw.spline ? iw.spline.heightAt(skZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var skid = new T.Mesh(new T.PlaneGeometry(0.16, 2.0), skidMat);
+                      skid.rotation.x = -Math.PI / 2;
+                      skid.position.set(skCtr + skLaneX + skWheelX, skHt + 0.0095, skZ);
+                      chunkGroup.add(skid);
+                    });
+                  });
+
+                  // ── Lane arrows on the approach side (3m behind the stop line) ──
+                  // Paint a straight-ahead arrow in the center of each lane, pointing
+                  // TOWARD the intersection (which is at crossZCenter, between the two
+                  // crosswalks). cwOffset < 0 means the crosswalk is at lower Z than the
+                  // intersection, so driver approaches from -Z and the arrow must point +Z.
+                  // cwOffset > 0: driver approaches from +Z, arrow must point -Z.
+                  var arrowPointsTowardIntersection = cwOffset < 0 ? +1 : -1;
+                  var arrowZ = stopLineZ + (cwOffset < 0 ? -3.0 : 3.0);
+                  var arrowCtr = markCenterAtZ(arrowZ);
+                  var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // Build a single reusable arrow geometry (3-plane approach for perf).
+                  // Shaft: 0.12 wide × 1.4 long. Head: two 0.38-long chevron arms at ~30°.
+                  var laneOffset = roadHalfW * 0.5; // middle of each lane
+                  [-laneOffset, +laneOffset].forEach(function(arrowX) {
+                    // Shaft
+                    var shaft = new T.Mesh(new T.PlaneGeometry(0.18, 1.4), zebraMat);
+                    shaft.rotation.x = -Math.PI / 2;
+                    shaft.position.set(arrowCtr + arrowX, arrowHt + 0.016, arrowZ);
+                    chunkGroup.add(shaft);
+                    // Arrowhead tip position (toward intersection)
+                    var tipZ = arrowZ + arrowPointsTowardIntersection * 0.7;
+                    // Two chevron arms: 0.55 long each, angled 30° off the axis
+                    [-1, 1].forEach(function(side) {
+                      var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.55), zebraMat);
+                      arm.rotation.x = -Math.PI / 2;
+                      // rotate around Y to form the chevron — 30° off axis, mirrored by side
+                      arm.rotation.z = side * arrowPointsTowardIntersection * (Math.PI / 6);
+                      // position so arm meets at the tip
+                      var armZ = tipZ - arrowPointsTowardIntersection * 0.22;
+                      var armX = arrowCtr + arrowX + side * 0.19;
+                      arm.position.set(armX, arrowHt + 0.016, armZ);
+                      chunkGroup.add(arm);
+                    });
+                  });
+                });
+              }
+              // ── Wet road sheen: glossy puddle patches + reflective streaks in rain ──
+              // Only renders during rain or immediately after (for now, while rain is active).
+              // Uses deterministic positions seeded by chunk index so the same stretch of road
+              // always has the same puddles — no per-frame randomness flicker.
+              if (scn.weather === 'rain' || scn.weather === 'fog') {
+                var puddleMat = new T.MeshBasicMaterial({
+                  color: scn.weather === 'rain' ? 0x6b8cb8 : 0x7a8ea0,
+                  transparent: true,
+                  opacity: scn.weather === 'rain' ? 0.35 : 0.18,
+                  blending: T.AdditiveBlending,
+                  depthWrite: false
+                });
+                // Simple seeded hash per-chunk for stable puddle positions.
+                var pHash = function(k) { var x = (ci * 2654435761 + k * 1597334677) >>> 0; return (x / 0xffffffff); };
+                var puddleCount = 6;
+                for (var pi = 0; pi < puddleCount; pi++) {
+                  var pZ = chunkWorldZ + pHash(pi * 3) * CHUNK_SIZE;
+                  if (pZ > skipZ1 && pZ < skipZ2) continue;
+                  var pCtr = markCenterAtZ(pZ);
+                  var pHt = iw.spline ? iw.spline.heightAt(pZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var pSide = (pHash(pi * 3 + 1) - 0.5) * (roadHalfW * 1.6);
+                  var pW = 0.6 + pHash(pi * 3 + 2) * 1.2;
+                  var pL = 0.4 + pHash(pi * 3 + 5) * 0.8;
+                  var puddle = new T.Mesh(new T.PlaneGeometry(pW, pL), puddleMat);
+                  puddle.rotation.x = -Math.PI / 2;
+                  puddle.position.set(pCtr + pSide, pHt + 0.0108, pZ);
+                  chunkGroup.add(puddle);
+                }
+                // Rain sheen: a subtle full-road overlay that makes the asphalt look wet overall.
+                var sheenMat = new T.MeshBasicMaterial({
+                  color: 0xaac0d8,
+                  transparent: true,
+                  opacity: 0.09,
+                  blending: T.AdditiveBlending,
+                  depthWrite: false
+                });
+                var sheen = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 * 0.95, CHUNK_SIZE), sheenMat);
+                sheen.rotation.x = -Math.PI / 2;
+                var sheenCtr = markCenterAtZ(chunkWorldZ + CHUNK_SIZE / 2);
+                var sheenHt = iw.spline ? iw.spline.heightAt(ribbonChunkBaseY + CHUNK_SIZE / 2) : 0;
+                sheen.position.set(sheenCtr, sheenHt + 0.0105, chunkWorldZ + CHUNK_SIZE / 2);
+                chunkGroup.add(sheen);
+              }
+              // ── Detailed markings (dashes, bike lane paint, lane dividers, shoulders, curbs) ──
+              // Still cost-gated to medium LOD. These layer on top of the always-on core.
+              var markingsVisible = isMediumLOD && (scn.weather !== 'snow' || isHighLOD);
+              if (markingsVisible) {
                 var centerLineMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                // Centerline detail dashes: only render in pass-allowed zones — no-pass zones
+                // already have a solid double-yellow from the always-on block above, and
+                // adding dashed stripes on top would look cluttered.
                 var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection;
-                var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
-                var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
-                var markCenterAtZ = function(worldZ) {
-                  // worldZ → world Y (cells), spline → world X.
-                  return iw.spline ? (iw.spline.centerAt(worldZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
-                };
-                for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
-                  if (mlZ > skipZ1 && mlZ < skipZ2) continue;
-                  var ctrX = markCenterAtZ(mlZ);
-                  var mlHt = iw.spline ? iw.spline.heightAt(mlZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  if (isNoPass) {
-                    var dyL = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
-                    dyL.rotation.x = -Math.PI / 2;
-                    dyL.position.set(ctrX - 0.25, mlHt + 0.014, mlZ);
-                    chunkGroup.add(dyL);
-                    var dyR = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
-                    dyR.rotation.x = -Math.PI / 2;
-                    dyR.position.set(ctrX + 0.25, mlHt + 0.014, mlZ);
-                    chunkGroup.add(dyR);
-                  } else {
+                if (!isNoPass) {
+                  for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
+                    if (mlZ > skipZ1 && mlZ < skipZ2) continue;
+                    var ctrX = markCenterAtZ(mlZ);
+                    var mlHt = iw.spline ? iw.spline.heightAt(mlZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                     var dyD = new T.Mesh(new T.PlaneGeometry(0.15, 1.2), centerLineMat);
                     dyD.rotation.x = -Math.PI / 2;
                     dyD.position.set(ctrX, mlHt + 0.014, mlZ);
@@ -9004,6 +10504,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       chunkGroup.add(ld);
                     });
                   }
+                }
+                // ─── BIKE LANES — painted green strip inside the right edge line ───
+                // Rendered in residential/suburban/commercial biomes (where cyclists spawn).
+                // The strip is a continuous ribbon following the spline, with a solid white
+                // boundary line on its inside edge and a painted bicycle symbol every 8m.
+                var bikeLaneBiomes = ['residential', 'suburban', 'commercial'];
+                if (bikeLaneBiomes.indexOf(chunk.biome) !== -1) {
+                  var bikeLaneMat = new T.MeshBasicMaterial({ color: 0x1d6e2e, transparent: true, opacity: 0.45 });
+                  var bikeBoundaryMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                  var symbolMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                  // Paint a green strip on BOTH sides (cyclists can travel either direction).
+                  // Position: just INSIDE the edge line, width ~0.8 cells.
+                  var bikeLaneOff = roadHalfW - 0.7; // center of bike lane, on the road side of edge
+                  [-1, 1].forEach(function(blSide) {
+                    for (var blZ = chunkWorldZ + 0.5; blZ < chunkWorldZ + CHUNK_SIZE - 0.5; blZ += 1.5) {
+                      if (blZ > skipZ1 && blZ < skipZ2) continue;
+                      var blCtr = markCenterAtZ(blZ);
+                      var blHt = iw.spline ? iw.spline.heightAt(blZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var bl = new T.Mesh(new T.PlaneGeometry(0.8, 1.5), bikeLaneMat);
+                      bl.rotation.x = -Math.PI / 2;
+                      bl.position.set(blCtr + blSide * bikeLaneOff, blHt + 0.0115, blZ);
+                      chunkGroup.add(bl);
+                    }
+                    // Solid white inner boundary — separates bike lane from travel lane
+                    for (var blbZ = chunkWorldZ + 1; blbZ < chunkWorldZ + CHUNK_SIZE - 1; blbZ += 1.2) {
+                      if (blbZ > skipZ1 && blbZ < skipZ2) continue;
+                      var blbCtr = markCenterAtZ(blbZ);
+                      var blbHt = iw.spline ? iw.spline.heightAt(blbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var blbEdge = new T.Mesh(new T.PlaneGeometry(0.08, 1.2), bikeBoundaryMat);
+                      blbEdge.rotation.x = -Math.PI / 2;
+                      blbEdge.position.set(blbCtr + blSide * (bikeLaneOff - 0.4), blbHt + 0.0135, blbZ);
+                      chunkGroup.add(blbEdge);
+                    }
+                    // Painted 🚴 symbol every 8m — small white rectangles approximating a cyclist
+                    for (var bsZ = chunkWorldZ + 4; bsZ < chunkWorldZ + CHUNK_SIZE - 4; bsZ += 8) {
+                      if (bsZ > skipZ1 && bsZ < skipZ2) continue;
+                      var bsCtr = markCenterAtZ(bsZ);
+                      var bsHt = iw.spline ? iw.spline.heightAt(bsZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var bsX = bsCtr + blSide * bikeLaneOff;
+                      // Wheels (two small circles)
+                      var bsWheel1 = new T.Mesh(new T.CircleGeometry(0.12, 12), symbolMat);
+                      bsWheel1.rotation.x = -Math.PI / 2;
+                      bsWheel1.position.set(bsX, bsHt + 0.0125, bsZ - 0.3);
+                      chunkGroup.add(bsWheel1);
+                      var bsWheel2 = new T.Mesh(new T.CircleGeometry(0.12, 12), symbolMat);
+                      bsWheel2.rotation.x = -Math.PI / 2;
+                      bsWheel2.position.set(bsX, bsHt + 0.0125, bsZ + 0.3);
+                      chunkGroup.add(bsWheel2);
+                      // Rider body blob
+                      var bsBody = new T.Mesh(new T.PlaneGeometry(0.18, 0.3), symbolMat);
+                      bsBody.rotation.x = -Math.PI / 2;
+                      bsBody.position.set(bsX + 0.05, bsHt + 0.0125, bsZ);
+                      chunkGroup.add(bsBody);
+                    }
+                  });
                 }
                 // Shoulder/curb strips — thin raised concrete-colored ribbons
                 // along both road edges so the boundary between asphalt and grass
@@ -9157,16 +10712,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (chunk.hasIntersection) {
                 var crossZ = chunkWorldZ + chunk.intersectionY;
                 var crossCenterX = splineCenterAtZ(crossZ);
-                var crossRoadFlatMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
-                var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, 6);
+                // Use MeshBasicMaterial so the cross-street reads the same in day/night/fog
+                // (unlit = no dark shaded corners). Matches ribbon asphalt tone.
+                var crossRoadFlatMat = new T.MeshBasicMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x2f343e });
+                var crossWidth = 6.5;
+                var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, crossWidth);
                 var crossRoad = new T.Mesh(crossRoadGeo, crossRoadFlatMat);
                 crossRoad.rotation.x = -Math.PI / 2;
                 // Lift the cross-street slightly above the main ribbon so it
                 // doesn't z-fight; the main road sits at ~0.011.
                 var crossHt = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + chunk.intersectionY) : 0;
                 crossRoad.position.set(0, crossHt + 0.013, crossZ);
-                crossRoad.receiveShadow = true;
                 chunkGroup.add(crossRoad);
+                // Cross-street white edge lines (solid ribbons) — ALWAYS rendered so
+                // the cross-street consistently reads as a real road, not a gray stripe.
+                var crossEdgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                [-1, 1].forEach(function(ceSide) {
+                  var crossEdge = new T.Mesh(new T.PlaneGeometry(MAP_SIZE, 0.1), crossEdgeMat);
+                  crossEdge.rotation.x = -Math.PI / 2;
+                  crossEdge.position.set(0, crossHt + 0.014, crossZ + ceSide * (crossWidth / 2 - 0.15));
+                  chunkGroup.add(crossEdge);
+                });
                 // Cross street center dashes — skip the section overlapping the main road
                 // (gap stays centered on the spline, not on world X = 0).
                 var crossDashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
@@ -9175,8 +10741,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var cdGeo = new T.PlaneGeometry(1.5, 0.12);
                   var cd = new T.Mesh(cdGeo, crossDashMat);
                   cd.rotation.x = -Math.PI / 2;
-                  cd.position.set(cdx, 0.02, crossZ);
+                  cd.position.set(cdx, crossHt + 0.015, crossZ);
                   chunkGroup.add(cd);
+                }
+                // Cross-street crosswalk stripes — zebra pattern across the MAIN road at the
+                // intersection, so peds crossing the main road get a visible crosswalk too
+                // (the existing crosswalks at ±2.8 from crossZ are for peds crossing the CROSS
+                // street). These stamp the main direction of travel.
+                if (scn.weather !== 'snow') {
+                  var mainZebraMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
+                  [-1, 1].forEach(function(mzSide) {
+                    var mzX = crossCenterX + mzSide * (crossWidth / 2 - 0.4);
+                    // 5 parallel stripes perpendicular to the cross-street axis (so running along main-road Z)
+                    var mStripeCount = 6;
+                    var mStripeSpan = roadHalfW * 2;
+                    var mStripeGap = 0.35;
+                    var mStripeW = (mStripeSpan - mStripeGap * (mStripeCount - 1)) / mStripeCount;
+                    for (var mzi = 0; mzi < mStripeCount; mzi++) {
+                      var mzZ = crossZ - roadHalfW + mStripeGap / 2 + mzi * (mStripeW + mStripeGap) + mStripeW / 2;
+                      var mzStripe = new T.Mesh(new T.PlaneGeometry(1.6, mStripeW), mainZebraMat);
+                      mzStripe.rotation.x = -Math.PI / 2;
+                      mzStripe.position.set(mzX, crossHt + 0.015, mzZ);
+                      chunkGroup.add(mzStripe);
+                    }
+                  });
                 }
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;
@@ -9608,6 +11196,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var avgMpg = stats.mpgSamples > 0 ? (stats.mpgSum / stats.mpgSamples) : 0;
           var isNight = scn.time === 'night';
           var isFog = scn.weather === 'fog';
+          // ── HUD fade-in: smooth alpha rise over the first 0.9s of the drive ──
+          var hudFade = Math.min(1, timeRef.current / 0.9);
+          // Ease-out cubic for nicer feel
+          hudFade = 1 - Math.pow(1 - hudFade, 3);
+          gfx.globalAlpha = hudFade;
+
+          // ── Headlight cone + night vignette ──
+          // At night (or dusk/dawn), drape a dark overlay over the scene with a
+          // radial "hole" that represents the headlight beam. Low beams = narrower,
+          // dimmer, shorter reach. High beams (L key) = wider, brighter, farther.
+          // This layer is purely visual — the scoring/physics system reads d.highBeams
+          // separately for the night-vision drill and speeding-in-dark checks.
+          if (isNight || scn.id === 'dawn') {
+            var hb = !!d.highBeams;
+            var coneCenterX = W / 2;
+            // Cone "lands" slightly below the horizon — this is where a real headlight beam
+            // would illuminate the road surface in a cockpit / chase view.
+            var coneCenterY = H * 0.58;
+            // Reach: how far the gradient extends (in pixels from center).
+            var reachFactor = hb ? 0.72 : 0.48;
+            var coneReach = Math.min(W, H) * reachFactor;
+            // Darkness at the far edges — dusk/fog tolerate lighter, deep night goes darker.
+            var dark = (scn.id === 'dawn') ? 0.32 : (hb ? 0.42 : 0.62);
+            // A warm-white tint in the center mimics halogen / LED headlights.
+            var coreTint = hb ? 'rgba(255,252,230,0.08)' : 'rgba(255,240,210,0.05)';
+            var rg = gfx.createRadialGradient(coneCenterX, coneCenterY, 10, coneCenterX, coneCenterY, coneReach);
+            rg.addColorStop(0,    coreTint);                        // bright core
+            rg.addColorStop(0.18, 'rgba(20,25,40,0)');              // clear zone
+            rg.addColorStop(0.55, 'rgba(6,8,14,' + (dark * 0.55) + ')'); // fading into dark
+            rg.addColorStop(1,    'rgba(2,4,8,' + dark + ')');      // outer darkness
+            gfx.fillStyle = rg;
+            gfx.fillRect(0, 0, W, H);
+            // Dashboard glow under the cone — soft warm bar near the horizon, sells the
+            // "cone of light hitting road" look and masks the hard edge of the gradient.
+            var dashGrad = gfx.createLinearGradient(0, coneCenterY - 4, 0, coneCenterY + 6);
+            dashGrad.addColorStop(0, 'rgba(255,245,200,0)');
+            dashGrad.addColorStop(0.5, hb ? 'rgba(255,245,200,0.12)' : 'rgba(255,230,180,0.07)');
+            dashGrad.addColorStop(1, 'rgba(255,245,200,0)');
+            gfx.fillStyle = dashGrad;
+            gfx.fillRect(coneCenterX - coneReach * 0.8, coneCenterY - 4, coneReach * 1.6, 10);
+            // Tiny "beam status" indicator bottom-left of the cone
+            if (hudFade > 0.7) {
+              gfx.globalAlpha = hudFade * 0.75;
+              gfx.font = 'bold 9px system-ui, sans-serif';
+              gfx.fillStyle = hb ? '#fcd34d' : '#94a3b8';
+              gfx.textAlign = 'left';
+              gfx.fillText(hb ? '◉ HIGH BEAMS' : '○ low beams', 14, 26);
+              gfx.globalAlpha = hudFade;
+            }
+          }
 
           // ── Bottom HUD bar: modern digital instrument cluster ──
           // Gradient backing instead of flat black — premium-car feel.
@@ -9617,13 +11255,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           hudGrad.addColorStop(1, 'rgba(2,6,12,0.98)');
           gfx.fillStyle = hudGrad;
           gfx.fillRect(0, H - 96, W, 96);
-          // Thin cyan top bar — the "dashboard edge" light.
+          // ── Breathing top bar: cyan edge pulses at idle, brightens with speed ──
+          // Gives the dashboard a "live" feel like a modern car cluster at startup.
+          var breathPulse = 0.7 + 0.3 * Math.sin(timeRef.current * 1.3);
+          var speedBoost = Math.min(0.25, Math.abs(car.speed) * 0.02); // extra glow at speed
+          var edgeAlpha = 0.7 + speedBoost + 0.1 * breathPulse;
           var edgeGrad = gfx.createLinearGradient(0, 0, W, 0);
           edgeGrad.addColorStop(0, 'rgba(34,211,238,0)');
-          edgeGrad.addColorStop(0.5, 'rgba(34,211,238,0.9)');
+          edgeGrad.addColorStop(0.5, 'rgba(34,211,238,' + Math.min(1, edgeAlpha) + ')');
           edgeGrad.addColorStop(1, 'rgba(34,211,238,0)');
           gfx.fillStyle = edgeGrad;
           gfx.fillRect(0, H - 96, W, 2);
+          // Extra soft glow under the top bar (2px-tall gradient bleed)
+          if (hudFade > 0.5) {
+            var glowGrad = gfx.createLinearGradient(0, H - 94, 0, H - 88);
+            glowGrad.addColorStop(0, 'rgba(34,211,238,' + (0.22 * breathPulse) + ')');
+            glowGrad.addColorStop(1, 'rgba(34,211,238,0)');
+            gfx.fillStyle = glowGrad;
+            gfx.fillRect(0, H - 94, W, 6);
+          }
 
           // ── Speedometer: dual-ring digital gauge ──
           var gaugeX = 62, gaugeY = H - 50, gaugeR = 40;
@@ -9638,8 +11288,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false); gfx.strokeStyle = 'rgba(34,197,94,0.35)'; gfx.lineWidth = 10; gfx.stroke();
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false); gfx.strokeStyle = 'rgba(245,158,11,0.45)'; gfx.lineWidth = 10; gfx.stroke();
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false); gfx.strokeStyle = 'rgba(239,68,68,0.55)'; gfx.lineWidth = 10; gfx.stroke();
-          // Active fill arc — bright, glowing, from 0 to current speed
-          var needleAngle = Math.PI + (Math.min(speedMph, maxGauge) / maxGauge) * Math.PI;
+          // Active fill arc — needle smoothly interpolates toward target speed
+          // so the gauge glides rather than snapping. stats._displaySpeed carries
+          // the animated value between frames (ease-out: ~12% of delta per frame).
+          if (stats._displaySpeed == null) stats._displaySpeed = speedMph;
+          stats._displaySpeed += (speedMph - stats._displaySpeed) * 0.14;
+          var shownSpeed = stats._displaySpeed;
+          var needleAngle = Math.PI + (Math.min(shownSpeed, maxGauge) / maxGauge) * Math.PI;
           var activeColor = speedMph > scn.speedLimit + 5 ? '#ef4444' : speedMph > scn.speedLimit ? '#f59e0b' : '#22d3ee';
           gfx.shadowColor = activeColor; gfx.shadowBlur = 8;
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, needleAngle, false);
@@ -9659,12 +11314,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               gfx.fillText(ti, gaugeX + Math.cos(ta) * (gaugeR + 17), gaugeY + Math.sin(ta) * (gaugeR + 17) + 2);
             }
           }
-          // Digital speed readout in the center — big, bright, like a modern Tesla/Ford cluster.
+          // Digital speed readout in the center — matches the smoothed needle
           gfx.shadowColor = activeColor; gfx.shadowBlur = 12;
           gfx.fillStyle = activeColor;
           gfx.font = 'bold 28px "Segoe UI", system-ui, sans-serif';
           gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
-          gfx.fillText(speedMph, gaugeX, gaugeY - 4);
+          gfx.fillText(Math.round(shownSpeed), gaugeX, gaugeY - 4);
           gfx.shadowBlur = 0;
           gfx.textBaseline = 'alphabetic';
           gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui';
@@ -9677,6 +11332,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText('LIMIT', gaugeX + gaugeR + 18, gaugeY - 14);
           gfx.font = 'bold 14px "Segoe UI"';
           gfx.fillText(scn.speedLimit, gaugeX + gaugeR + 18, gaugeY + 3);
+
+          // ── RPM tachometer — half-ring gauge mirroring the speedometer ──
+          // Fake RPM computed from throttle + speed. Revs spike on throttle, settle
+          // at cruising, drop when braking/off-gas. Max ~6000 with 5500 redline.
+          if (stats._displayRpm == null) stats._displayRpm = 800;
+          var targetRpm = 800 + (car.throttle || 0) * 3200 + Math.abs(car.speed) * 180;
+          if (car.brake > 0.3 && Math.abs(car.speed) > 2) targetRpm *= 0.8;
+          targetRpm = Math.min(6500, Math.max(650, targetRpm));
+          stats._displayRpm += (targetRpm - stats._displayRpm) * 0.18;
+          var rpmX = gaugeX + gaugeR + 80, rpmY = H - 50, rpmR = 26;
+          // Half-ring background (red zone on right side 5500-6500)
+          var rpmMax = 6500, rpmRedline = 5500;
+          gfx.beginPath(); gfx.arc(rpmX, rpmY, rpmR, Math.PI, 0, false);
+          gfx.strokeStyle = 'rgba(15,23,42,0.9)'; gfx.lineWidth = 7; gfx.stroke();
+          var redlineAngle = Math.PI + (rpmRedline / rpmMax) * Math.PI;
+          gfx.beginPath(); gfx.arc(rpmX, rpmY, rpmR, redlineAngle, 2 * Math.PI, false);
+          gfx.strokeStyle = 'rgba(239,68,68,0.5)'; gfx.lineWidth = 7; gfx.stroke();
+          // Active RPM fill
+          var rpmAngle = Math.PI + (Math.min(stats._displayRpm, rpmMax) / rpmMax) * Math.PI;
+          var rpmActiveColor = stats._displayRpm > rpmRedline ? '#ef4444' : stats._displayRpm > 4500 ? '#f59e0b' : '#06b6d4';
+          gfx.shadowColor = rpmActiveColor; gfx.shadowBlur = 6;
+          gfx.beginPath(); gfx.arc(rpmX, rpmY, rpmR, Math.PI, rpmAngle, false);
+          gfx.strokeStyle = rpmActiveColor; gfx.lineWidth = 3; gfx.stroke();
+          gfx.shadowBlur = 0;
+          // Tick marks (every 1000 RPM)
+          for (var ri = 0; ri <= rpmMax; ri += 1000) {
+            var rta = Math.PI + (ri / rpmMax) * Math.PI;
+            gfx.strokeStyle = ri >= rpmRedline ? '#ef4444' : '#64748b'; gfx.lineWidth = 1;
+            gfx.beginPath();
+            gfx.moveTo(rpmX + Math.cos(rta) * (rpmR + 2), rpmY + Math.sin(rta) * (rpmR + 2));
+            gfx.lineTo(rpmX + Math.cos(rta) * (rpmR + 6), rpmY + Math.sin(rta) * (rpmR + 6));
+            gfx.stroke();
+          }
+          // Digital readout
+          gfx.fillStyle = rpmActiveColor; gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(Math.round(stats._displayRpm / 100) / 10, rpmX, rpmY - 4);
+          gfx.fillStyle = '#94a3b8'; gfx.font = '7px system-ui';
+          gfx.fillText('x1000 RPM', rpmX, rpmY + 8);
+
+          // ── Dashboard turn signal arrows — big green flashing chevrons ──
+          // Two arrows flanking the speedometer, blink in sync with the signal.
+          var blinkVisible = Math.floor(timeRef.current * 2.5) % 2 === 0;
+          var drawArrow = function(x, y, dir, lit) {
+            gfx.save();
+            gfx.translate(x, y);
+            gfx.shadowColor = '#22c55e';
+            gfx.shadowBlur = lit ? 10 : 0;
+            gfx.fillStyle = lit ? '#22c55e' : 'rgba(34,197,94,0.15)';
+            gfx.beginPath();
+            gfx.moveTo(0, -8);
+            gfx.lineTo(dir * 9, 0);
+            gfx.lineTo(0, 8);
+            gfx.lineTo(0, 3);
+            gfx.lineTo(-dir * 6, 3);
+            gfx.lineTo(-dir * 6, -3);
+            gfx.lineTo(0, -3);
+            gfx.closePath();
+            gfx.fill();
+            gfx.restore();
+          };
+          var leftBlinkLit = blinkerRef.current === -1 && blinkVisible;
+          var rightBlinkLit = blinkerRef.current === 1 && blinkVisible;
+          drawArrow(gaugeX - gaugeR - 22, gaugeY - 30, -1, leftBlinkLit);
+          drawArrow(gaugeX + gaugeR + 40, gaugeY - 30, 1, rightBlinkLit);
+
+          // ── Steering wheel indicator (small icon below speedometer) ──
+          // Rotates with steering input (-1 full left, +1 full right).
+          var swX = gaugeX, swY = gaugeY + 32, swR = 8;
+          gfx.save();
+          gfx.translate(swX, swY);
+          gfx.rotate((car.steering || 0) * 1.2); // up to ~70° rotation at full lock
+          gfx.strokeStyle = '#94a3b8'; gfx.lineWidth = 1.5;
+          gfx.beginPath(); gfx.arc(0, 0, swR, 0, Math.PI * 2); gfx.stroke();
+          // Spokes: three lines at 12, 4, 8 o'clock
+          gfx.beginPath();
+          gfx.moveTo(0, 0); gfx.lineTo(0, -swR);
+          gfx.moveTo(0, 0); gfx.lineTo(swR * 0.87, swR * 0.5);
+          gfx.moveTo(0, 0); gfx.lineTo(-swR * 0.87, swR * 0.5);
+          gfx.stroke();
+          gfx.fillStyle = '#64748b'; gfx.beginPath(); gfx.arc(0, 0, 1.5, 0, Math.PI * 2); gfx.fill();
+          gfx.restore();
 
           // ── Gear indicator + RPM-style bar (left of speedometer) ──
           var gearTxt = gearRef.current || 'P';
@@ -9707,11 +11443,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(wi.icon, warnX + 10 + widx * 22, warnY + 14);
           });
 
-          // Fuel gauge
+          // MPG readout (center-ish)
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 20px monospace'; gfx.textAlign = 'center';
           gfx.fillText(avgMpg > 0 && avgMpg < 999 ? avgMpg.toFixed(1) : '—', W / 2, H - 40);
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText(veh.type === 'electric' ? 'MPGe AVG' : 'MPG AVG', W / 2, H - 22);
+
+          // ── Fuel gauge — vertical bar on the right side of MPG readout ──
+          // fuelCap is in gallons; fuelUsed is cumulative gallons consumed this drive.
+          var tankCap = veh.fuelCap || 48;
+          var fuelRemaining = Math.max(0, tankCap - (stats.fuelUsed || 0));
+          var fuelFrac = fuelRemaining / tankCap;
+          var fuelLabel = veh.type === 'electric' ? 'BAT' : 'FUEL';
+          var fgX = W / 2 + 60, fgY = H - 62, fgW = 12, fgH = 44;
+          // Frame
+          gfx.fillStyle = 'rgba(15,23,42,0.9)'; gfx.fillRect(fgX - 1, fgY - 1, fgW + 2, fgH + 2);
+          gfx.strokeStyle = '#475569'; gfx.lineWidth = 1; gfx.strokeRect(fgX - 1, fgY - 1, fgW + 2, fgH + 2);
+          // Fill — gradient from red (empty) to green (full)
+          var fuelColor = fuelFrac < 0.15 ? '#ef4444' : fuelFrac < 0.3 ? '#f59e0b' : '#22c55e';
+          var fillH = Math.max(1, fgH * fuelFrac);
+          gfx.fillStyle = fuelColor;
+          gfx.fillRect(fgX, fgY + (fgH - fillH), fgW, fillH);
+          // Tick marks at E, 1/4, 1/2, 3/4, F
+          gfx.strokeStyle = 'rgba(255,255,255,0.4)'; gfx.lineWidth = 1;
+          [0, 0.25, 0.5, 0.75, 1].forEach(function(tickT) {
+            var ty = fgY + fgH - tickT * fgH;
+            gfx.beginPath(); gfx.moveTo(fgX, ty); gfx.lineTo(fgX + fgW, ty); gfx.stroke();
+          });
+          // E / F labels
+          gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 8px "Segoe UI"'; gfx.textAlign = 'center';
+          gfx.fillText('F', fgX + fgW / 2, fgY - 3);
+          gfx.fillText('E', fgX + fgW / 2, fgY + fgH + 10);
+          // Label under the gauge
+          gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText(fuelLabel, fgX + fgW / 2, H - 4);
+          // ── Low fuel warning (blinks when under 1/8 tank) ──
+          if (fuelFrac < 0.125) {
+            var fuelBlink = Math.floor(timeRef.current * 1.8) % 2 === 0;
+            if (fuelBlink) {
+              gfx.fillStyle = '#ef4444';
+              gfx.font = 'bold 18px system-ui'; gfx.textAlign = 'center';
+              gfx.shadowColor = '#ef4444'; gfx.shadowBlur = 8;
+              gfx.fillText('⛽', fgX + fgW / 2 + 22, fgY + fgH / 2 + 6);
+              gfx.shadowBlur = 0;
+            }
+            // One-time chime when crossing below 1/8 tank
+            if (!stats._lowFuelAlerted) {
+              stats._lowFuelAlerted = true;
+              addToast('⛽ Low fuel — plan your next stop');
+              speak('Low fuel. Plan your next stop.');
+              try {
+                var lfAc = audioRef.current && audioRef.current.ctx;
+                if (lfAc) {
+                  var lfOsc = lfAc.createOscillator();
+                  var lfG = lfAc.createGain();
+                  lfOsc.type = 'sine'; lfOsc.frequency.value = 660;
+                  lfG.gain.setValueAtTime(0.06, lfAc.currentTime);
+                  lfG.gain.exponentialRampToValueAtTime(0.001, lfAc.currentTime + 0.5);
+                  lfOsc.connect(lfG); lfG.connect(lfAc.destination);
+                  lfOsc.start(); lfOsc.stop(lfAc.currentTime + 0.55);
+                }
+              } catch (_) {}
+            }
+          } else if (fuelFrac > 0.2) {
+            // Reset alert flag when refilled (for future gas-station integration)
+            stats._lowFuelAlerted = false;
+          }
 
           // Safety + efficiency — smoothly interpolate displayed values so drops feel gradual
           if (stats._displaySafety == null) stats._displaySafety = stats.safetyScore;
@@ -9926,16 +11723,263 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           bar('Roll',  rollF,            '#10b981', 2);
           bar('Hill',  Math.abs(gradeFhud), gradeFhud >= 0 ? '#f59e0b' : '#a78bfa', 3);
 
-          // Rearview mirror
-          var mirrorW = Math.min(200, W * 0.25), mirrorH = 50;
-          var mirrorX = W / 2 - mirrorW / 2, mirrorY = 74;
-          gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
-          gfx.strokeStyle = '#475569'; gfx.lineWidth = 1; gfx.strokeRect(mirrorX - 2, mirrorY - 2, mirrorW + 4, mirrorH + 4);
-          gfx.fillStyle = isNight ? '#0a0f1e' : isFog ? '#94a3b8' : '#60a5fa';
+          // ── 3-second following distance visualizer ──
+          // Finds the nearest car directly ahead in our path, computes seconds-gap at current speed,
+          // and paints a color-coded bar on the HUD. Teaches the Maine 3-second rule viscerally.
+          (function() {
+            var closestAhead = null, closestAheadDist = 99;
+            trafficRef.current.forEach(function(t) {
+              var dx = t.x - car.x, dy = t.y - car.y;
+              var dist = Math.hypot(dx, dy);
+              if (dist > 30 || dist < 1) return;
+              var ang = Math.atan2(dy, dx) - car.heading;
+              while (ang > Math.PI) ang -= 2 * Math.PI;
+              while (ang < -Math.PI) ang += 2 * Math.PI;
+              // Directly ahead cone (~45° either side of forward)
+              if (Math.abs(ang) > Math.PI / 4) return;
+              if (Math.abs(t.x - car.x) > 2.2) return; // must be in our lane
+              if (dist < closestAheadDist) { closestAhead = t; closestAheadDist = dist; }
+            });
+            var ownSpd = Math.abs(car.speed); // m/s
+            if (closestAhead && ownSpd > 2) {
+              // Convert cell-distance to feet then to seconds at current speed.
+              var distFt = closestAheadDist * 10; // ~10ft per cell
+              var secsGap = distFt / (ownSpd * 3.28084); // time to reach that car at current speed
+              // Color: red < 2, amber 2-3, green ≥ 3
+              var gapColor = secsGap < 2 ? '#ef4444' : secsGap < 3 ? '#f59e0b' : '#4ade80';
+              var barW = 150, barH = 32;
+              var barX = W - barW - 16, barY = 150;
+              gfx.fillStyle = 'rgba(0,0,0,0.75)';
+              gfx.fillRect(barX - 3, barY - 3, barW + 6, barH + 6);
+              gfx.strokeStyle = gapColor; gfx.lineWidth = 2;
+              gfx.strokeRect(barX - 3, barY - 3, barW + 6, barH + 6);
+              // Bar fill: proportional to seconds (capped at 5 for display)
+              var fillPct = Math.min(1, secsGap / 5);
+              gfx.fillStyle = gapColor;
+              gfx.fillRect(barX, barY, barW * fillPct, barH);
+              // Text
+              gfx.fillStyle = '#fff'; gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center';
+              gfx.fillText(secsGap.toFixed(1) + 's', barX + barW / 2, barY + 14);
+              gfx.fillStyle = '#cbd5e1'; gfx.font = '8px system-ui';
+              gfx.fillText('FOLLOW GAP (3+ safe)', barX + barW / 2, barY + 27);
+              // Update stats: close-follow counter when under 2 seconds
+              if (secsGap < 2) {
+                if (!stats._lastCloseFollow || timeRef.current - stats._lastCloseFollow > 3) {
+                  stats.closeFollows = (stats.closeFollows || 0) + 1;
+                  stats._lastCloseFollow = timeRef.current;
+                }
+              }
+            }
+          })();
+
+          // ── Blind spot detection ──
+          // Scans traffic within a "blind spot zone" behind each side mirror.
+          // Blind spot = roughly 45° off the car's direction-of-travel, 3-8 cells out.
+          (function() {
+            blindSpotRef.current.left = false;
+            blindSpotRef.current.right = false;
+            trafficRef.current.forEach(function(t) {
+              var dx = t.x - car.x, dy = t.y - car.y;
+              var dist = Math.hypot(dx, dy);
+              if (dist > 9 || dist < 2) return;
+              // Angle in car's local frame: 0 = directly ahead, ±π = behind
+              var angleInCar = Math.atan2(dy, dx) - car.heading;
+              while (angleInCar > Math.PI) angleInCar -= 2 * Math.PI;
+              while (angleInCar < -Math.PI) angleInCar += 2 * Math.PI;
+              // Left blind spot: ~+90° to +150° (behind-left-of-car)
+              if (angleInCar > Math.PI / 2.5 && angleInCar < Math.PI * 0.85) blindSpotRef.current.left = true;
+              // Right blind spot: ~-90° to -150°
+              if (angleInCar < -Math.PI / 2.5 && angleInCar > -Math.PI * 0.85) blindSpotRef.current.right = true;
+            });
+          })();
+          // ── Lane departure detection ──
+          // Checks if the player car's center has crossed a lane line without signaling.
+          // We consider the centerline (cross-into-oncoming) the worst offense.
+          (function() {
+            if (!infiniteWorldRef.current || !infiniteWorldRef.current.spline) { laneDepartureRef.current.side = null; return; }
+            var roadCenter = infiniteWorldRef.current.spline.centerAt(car.y);
+            var offset = car.x - roadCenter; // negative = left of center, positive = right
+            var signalOn = blinkerRef.current;
+            // Thresholds: ±1.0 cells is "normal lane." ±1.6 is crossing into oncoming/shoulder.
+            // For player traveling -π/2 (heading south, drives on +X side), normal offset = +1.5.
+            // Drifting below +0.5 → encroaching on centerline. Below -0.5 → FULLY in oncoming.
+            var worryZone = Math.abs(car.heading + Math.PI / 2) < 0.5; // heading matches -π/2
+            if (!worryZone) { laneDepartureRef.current.side = null; return; }
+            var spd = Math.abs(car.speed) * MS_TO_MPH;
+            if (spd < 10) { laneDepartureRef.current.side = null; return; } // ignore when parked
+            var now = Date.now();
+            if (offset < 0.5 && signalOn !== -1) {
+              // Drifting left across centerline without left signal
+              laneDepartureRef.current.side = 'left';
+              if (now - laneDepartureRef.current.lastAlertAt > 4500 && offset < 0) {
+                laneDepartureRef.current.lastAlertAt = now;
+                addToast('⚠️ Lane departure LEFT — across centerline!');
+              }
+            } else if (offset > 2.6 && signalOn !== 1) {
+              // Drifting right off the road onto shoulder without right signal
+              laneDepartureRef.current.side = 'right';
+              if (now - laneDepartureRef.current.lastAlertAt > 4500) {
+                laneDepartureRef.current.lastAlertAt = now;
+                addToast('⚠️ Lane departure RIGHT — check shoulder!');
+              }
+            } else {
+              laneDepartureRef.current.side = null;
+            }
+          })();
+
+          // ── Wrong-side-of-road detection (context-aware) ──
+          // Penalizes sustained driving on the oncoming side of the road — but only when
+          // there's no legitimate reason (obstacle, stopped traffic, wildlife, responder).
+          // Layered logic:
+          //   • Brief incursion (< 1s)       → ignore (flinches, corrections, pre-turn positioning)
+          //   • On wrong side with obstacle  → ignore (legitimate avoidance)
+          //   • Sustained + oncoming close   → BIG penalty (near-head-on danger)
+          //   • Sustained no-reason          → small penalty (bad habit)
+          (function() {
+            if (!infiniteWorldRef.current || !infiniteWorldRef.current.spline) { wrongSideRef.current.active = false; return; }
+            var spdMph = Math.abs(car.speed) * MS_TO_MPH;
+            if (spdMph < 8) { wrongSideRef.current.active = false; return; }
+            var roadCenter = infiniteWorldRef.current.spline.centerAt(car.y);
+            var offsetX = car.x - roadCenter; // signed: left of center is negative
+            // Determine the correct side from heading. sin(heading) tells us Y-direction:
+            //   heading ≈ +π/2 (northbound, sin +1) → correct side is x < center (offsetX < 0)
+            //   heading ≈ -π/2 (southbound, sin -1) → correct side is x > center (offsetX > 0)
+            var northbound = Math.sin(car.heading) > 0.3;
+            var southbound = Math.sin(car.heading) < -0.3;
+            if (!northbound && !southbound) { wrongSideRef.current.active = false; return; }
+            // Player needs to be at least 0.5 cells across centerline to count as "wrong side"
+            // (not just straddling the line).
+            var onWrongSide = northbound ? offsetX > 0.5 : offsetX < -0.5;
+            if (!onWrongSide) {
+              // Recovered — reset tracker
+              wrongSideRef.current.active = false;
+              wrongSideRef.current.startedAt = 0;
+              return;
+            }
+            // Start or continue tracking
+            var tNow = timeRef.current;
+            if (!wrongSideRef.current.active) {
+              wrongSideRef.current.active = true;
+              wrongSideRef.current.startedAt = tNow;
+              return;
+            }
+            var durationSec = tNow - wrongSideRef.current.startedAt;
+            // Grace period: a short dip across the line is normal (pre-turn positioning, flinches).
+            if (durationSec < 1.0) return;
+            // Context check: scan for legitimate reasons to be on the wrong side.
+            // Anything ahead in OUR lane (wildlife / stopped vehicle / cones / responder) that
+            // would force us to go around it gets a pass.
+            var obstaclePresent = false;
+            // 1) Wildlife ahead in our lane, ≤ 18 cells forward
+            var wl = wildlifeRef.current;
+            if (wl) {
+              var wlDy = (northbound ? wl.y - car.y : car.y - wl.y);
+              if (wlDy > 0 && wlDy < 18 && Math.abs(wl.x - roadCenter) < 3) obstaclePresent = true;
+            }
+            // 2) Stopped or nearly-stopped traffic ahead in our lane
+            trafficRef.current.forEach(function(t) {
+              if (obstaclePresent) return;
+              if (!t || t.crossStreet) return;
+              var tDy = (northbound ? t.y - car.y : car.y - t.y);
+              if (tDy < 0 || tDy > 18) return;
+              // Must be in (or near) our lane, not in the oncoming lane we've crossed into
+              var tOffset = t.x - roadCenter;
+              var tInOurLane = northbound ? (tOffset < 0) : (tOffset > 0);
+              if (!tInOurLane) return;
+              // "Obstacle" = stopped or slow vehicle ahead
+              if (Math.abs(t.speed) < 3) obstaclePresent = true;
+            });
+            // 3) Emergency responder on shoulder (Move Over context)
+            if (emergencyRef.current) {
+              var er = emergencyRef.current;
+              var erDy = (northbound ? er.y - car.y : car.y - er.y);
+              if (erDy > -5 && erDy < 20 && Math.abs(er.x - roadCenter) < 4) obstaclePresent = true;
+            }
+            if (obstaclePresent) {
+              // Legitimate avoidance — no penalty, no warning. Keep tracker active so that
+              // if the player keeps going after the obstacle is past, we re-evaluate next frame.
+              return;
+            }
+            // No obstacle — this is actually dangerous. Check for oncoming traffic close by.
+            var oncomingClose = false;
+            trafficRef.current.forEach(function(t) {
+              if (oncomingClose) return;
+              if (!t || t.crossStreet) return;
+              // Opposite heading and close on the approach
+              var sameDir = (Math.sin(t.heading) > 0) === northbound;
+              if (sameDir) return;
+              var tDy2 = (northbound ? t.y - car.y : car.y - t.y);
+              if (tDy2 < 0 || tDy2 > 14) return;
+              if (Math.abs(t.x - car.x) < 2.5) oncomingClose = true;
+            });
+            // Penalty schedule. Rate-limited per-event so a 4-second incursion doesn't rack up 240 frames of deduction.
+            if (oncomingClose && tNow - wrongSideRef.current.lastPenaltyAt > 2) {
+              wrongSideRef.current.lastPenaltyAt = tNow;
+              statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 15);
+              statsRef.current.wrongSideEvents = (statsRef.current.wrongSideEvents || 0) + 1;
+              if (tNow - wrongSideRef.current.lastWarnAt > 3) {
+                wrongSideRef.current.lastWarnAt = tNow;
+                addToast('🚨 Oncoming traffic — you\'re on the wrong side! -15 safety');
+                eventToastRef.current = { msg: '🚨 Head-on risk: get back to your lane NOW.', until: timeRef.current + 4 };
+              }
+            } else if (durationSec > 3 && tNow - wrongSideRef.current.lastPenaltyAt > 4) {
+              // Sustained wrong-side with no oncoming and no obstacle — still a violation.
+              wrongSideRef.current.lastPenaltyAt = tNow;
+              statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 4);
+              statsRef.current.wrongSideEvents = (statsRef.current.wrongSideEvents || 0) + 1;
+              if (tNow - wrongSideRef.current.lastWarnAt > 4) {
+                wrongSideRef.current.lastWarnAt = tNow;
+                addToast('⚠️ You\'re on the wrong side of the road — get back over. -4 safety');
+              }
+            }
+          })();
+
+          // ── Enhanced rearview mirror (top-center) ──
+          // Bigger + tailgate warning glow + distance text. Shows vehicles, cyclists, and peds
+          // in a cone directly behind the player. Pulses red when anyone is closing in fast.
+          var mirrorW = Math.min(260, W * 0.32), mirrorH = 60;
+          var mirrorX = W / 2 - mirrorW / 2, mirrorY = 12;
+          var rearAngle = car.heading + Math.PI;
+          // Find the closest thing behind us (traffic/cyclist/ped) for warning logic
+          var closestRearDist = 99, closestRearClosingMph = 0;
+          trafficRef.current.forEach(function(t) {
+            var dx = t.x - car.x, dy = t.y - car.y;
+            var dist = Math.hypot(dx, dy);
+            if (dist > 15 || dist < 0.5) return;
+            var angle = Math.atan2(dy, dx) - rearAngle;
+            while (angle > Math.PI) angle -= 2 * Math.PI;
+            while (angle < -Math.PI) angle += 2 * Math.PI;
+            if (Math.abs(angle) > Math.PI / 4) return;
+            if (dist < closestRearDist) {
+              closestRearDist = dist;
+              var closingSpeed = t.speed - Math.abs(car.speed);
+              closestRearClosingMph = closingSpeed * MS_TO_MPH;
+            }
+          });
+          var tailgateWarning = closestRearDist < 6 && closestRearClosingMph > 3;
+          // Mirror frame — chrome effect + warning glow when tailgated
+          if (tailgateWarning) {
+            var pulse = 0.7 + 0.3 * Math.sin(timeRef.current * 6);
+            gfx.fillStyle = 'rgba(239,68,68,' + (0.3 * pulse) + ')';
+            gfx.fillRect(mirrorX - 10, mirrorY - 10, mirrorW + 20, mirrorH + 20);
+          }
+          gfx.fillStyle = 'rgba(0,0,0,0.85)'; gfx.fillRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
+          gfx.strokeStyle = tailgateWarning ? '#ef4444' : '#64748b'; gfx.lineWidth = 2;
+          gfx.strokeRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
+          // Sky
+          var mirrorSky = gfx.createLinearGradient(0, mirrorY, 0, mirrorY + mirrorH / 2);
+          if (isNight) { mirrorSky.addColorStop(0, '#020617'); mirrorSky.addColorStop(1, '#0a0f1e'); }
+          else if (isFog) { mirrorSky.addColorStop(0, '#94a3b8'); mirrorSky.addColorStop(1, '#64748b'); }
+          else { mirrorSky.addColorStop(0, '#1e3a5f'); mirrorSky.addColorStop(1, '#60a5fa'); }
+          gfx.fillStyle = mirrorSky;
           gfx.fillRect(mirrorX, mirrorY, mirrorW, mirrorH / 2);
+          // Road
           gfx.fillStyle = isNight ? '#0a0a14' : '#334155';
           gfx.fillRect(mirrorX, mirrorY + mirrorH / 2, mirrorW, mirrorH / 2);
-          var rearAngle = car.heading + Math.PI;
+          // Horizon line
+          gfx.strokeStyle = 'rgba(255,255,255,0.15)'; gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(mirrorX, mirrorY + mirrorH / 2); gfx.lineTo(mirrorX + mirrorW, mirrorY + mirrorH / 2); gfx.stroke();
+          // Traffic pips
           trafficRef.current.forEach(function(t) {
             var dx = t.x - car.x, dy = t.y - car.y;
             var dist = Math.hypot(dx, dy);
@@ -9945,17 +11989,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             while (angle < -Math.PI) angle += 2 * Math.PI;
             if (Math.abs(angle) > Math.PI / 4) return;
             var mx = mirrorX + mirrorW / 2 + (angle / (Math.PI / 4)) * (mirrorW / 2);
-            var mSize = Math.max(4, 20 / dist);
+            // Ground vertical: farther cars appear closer to horizon
+            var verticalPos = mirrorY + mirrorH / 2 + (1 - dist / 15) * (mirrorH / 2 - 4);
+            var mSize = Math.max(5, 22 / dist);
             gfx.fillStyle = t.color;
-            gfx.fillRect(mx - mSize / 2, mirrorY + mirrorH / 2 - mSize / 2, mSize, mSize * 0.6);
+            gfx.fillRect(mx - mSize / 2, verticalPos - mSize / 2, mSize, mSize * 0.65);
+            // Headlights at night
             if (isNight) {
-              gfx.fillStyle = 'rgba(255,255,200,0.6)';
-              gfx.beginPath(); gfx.arc(mx - mSize * 0.3, mirrorY + mirrorH / 2, 1.5, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath(); gfx.arc(mx + mSize * 0.3, mirrorY + mirrorH / 2, 1.5, 0, Math.PI * 2); gfx.fill();
+              gfx.fillStyle = 'rgba(255,255,200,0.8)';
+              gfx.beginPath(); gfx.arc(mx - mSize * 0.3, verticalPos, 2, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(mx + mSize * 0.3, verticalPos, 2, 0, Math.PI * 2); gfx.fill();
+            }
+            // Brake lights when closing in
+            if (t._slowFor >= 1) {
+              gfx.fillStyle = 'rgba(239,68,68,0.9)';
+              gfx.fillRect(mx - mSize * 0.4, verticalPos + mSize * 0.1, 2, 2);
+              gfx.fillRect(mx + mSize * 0.4 - 2, verticalPos + mSize * 0.1, 2, 2);
             }
           });
-          gfx.fillStyle = '#475569'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText('REARVIEW', W / 2, mirrorY - 4);
+          // Label + distance readout
+          gfx.fillStyle = tailgateWarning ? '#fca5a5' : '#94a3b8';
+          gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('REARVIEW', W / 2, mirrorY - 6);
+          if (closestRearDist < 15) {
+            gfx.fillStyle = closestRearDist < 6 ? '#fca5a5' : '#94a3b8';
+            gfx.font = '9px monospace'; gfx.textAlign = 'right';
+            gfx.fillText(Math.round(closestRearDist * 10) + ' ft', mirrorX + mirrorW - 4, mirrorY + mirrorH - 4);
+          }
+          if (tailgateWarning) {
+            gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('⚠ TAILGATING', W / 2, mirrorY + mirrorH + 14);
+          }
+
+          // ── Side mirrors (left + right) — show adjacent-lane traffic ──
+          // Smaller than rearview. Each mirror shows a ~90° cone to that side.
+          var smW = 70, smH = 44;
+          var smY = mirrorY + 10;
+          var drawSideMirror = function(isLeft) {
+            var smX = isLeft ? 14 : W - smW - 14;
+            // Frame
+            gfx.fillStyle = 'rgba(0,0,0,0.85)';
+            gfx.fillRect(smX - 2, smY - 2, smW + 4, smH + 4);
+            gfx.strokeStyle = '#475569'; gfx.lineWidth = 1;
+            gfx.strokeRect(smX - 2, smY - 2, smW + 4, smH + 4);
+            // Sky + ground
+            gfx.fillStyle = isNight ? '#0a0f1e' : isFog ? '#94a3b8' : '#1e3a5f';
+            gfx.fillRect(smX, smY, smW, smH / 2);
+            gfx.fillStyle = isNight ? '#0a0a14' : '#334155';
+            gfx.fillRect(smX, smY + smH / 2, smW, smH / 2);
+            // Own car shadow at inner edge (driver-side corner)
+            gfx.fillStyle = 'rgba(0,0,0,0.5)';
+            if (isLeft) gfx.fillRect(smX + smW - 12, smY + smH * 0.5, 12, smH * 0.5);
+            else gfx.fillRect(smX, smY + smH * 0.5, 12, smH * 0.5);
+            // Traffic pips — angle relative to car perpendicular
+            // Left mirror: shows 0 to -π (car's left side, behind-to-side)
+            // Right mirror: shows 0 to +π (car's right side, behind-to-side)
+            var mirrorDir = isLeft ? (car.heading - Math.PI / 2) : (car.heading + Math.PI / 2);
+            trafficRef.current.forEach(function(t) {
+              var dx = t.x - car.x, dy = t.y - car.y;
+              var dist = Math.hypot(dx, dy);
+              if (dist > 10 || dist < 0.5) return;
+              var angle = Math.atan2(dy, dx) - mirrorDir;
+              while (angle > Math.PI) angle -= 2 * Math.PI;
+              while (angle < -Math.PI) angle += 2 * Math.PI;
+              // Show angles ~[-π/3, +π/2] (from the side, slightly forward, to directly behind)
+              if (angle > Math.PI / 3 || angle < -Math.PI / 2) return;
+              // Map angle to x position (front of mirror to back)
+              var tNorm = (angle + Math.PI / 2) / (Math.PI * 0.83); // 0..1
+              var mx = smX + (isLeft ? (1 - tNorm) : tNorm) * smW;
+              var verticalPos = smY + smH / 2 + (1 - dist / 10) * (smH / 2 - 3);
+              var mSize = Math.max(4, 14 / dist);
+              gfx.fillStyle = t.color;
+              gfx.fillRect(mx - mSize / 2, verticalPos - mSize / 2, mSize, mSize * 0.6);
+              if (t._slowFor >= 1) {
+                gfx.fillStyle = 'rgba(239,68,68,0.8)';
+                gfx.fillRect(mx - 1, verticalPos + mSize * 0.1, 2, 1.5);
+              }
+            });
+            // Label
+            gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(isLeft ? '◄ LEFT' : 'RIGHT ►', smX + smW / 2, smY - 4);
+            // ── Blind spot warning (yellow icon at outer corner, matches modern car BSW systems) ──
+            var blindSpot = isLeft ? blindSpotRef.current.left : blindSpotRef.current.right;
+            if (blindSpot) {
+              var bsX = isLeft ? smX + 4 : smX + smW - 16;
+              var bsY = smY + 4;
+              // Pulsing triangle icon
+              var bsPulse = 0.65 + 0.35 * Math.sin(timeRef.current * 8);
+              gfx.fillStyle = 'rgba(245,158,11,' + bsPulse + ')';
+              gfx.beginPath();
+              gfx.moveTo(bsX + 6, bsY);
+              gfx.lineTo(bsX + 12, bsY + 10);
+              gfx.lineTo(bsX, bsY + 10);
+              gfx.closePath();
+              gfx.fill();
+              gfx.fillStyle = '#1e293b'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+              gfx.fillText('!', bsX + 6, bsY + 8);
+              // Border glow
+              gfx.strokeStyle = 'rgba(245,158,11,' + bsPulse + ')'; gfx.lineWidth = 3;
+              gfx.strokeRect(smX - 2, smY - 2, smW + 4, smH + 4);
+            }
+            // ── Lane departure indicator (red bar on the departing side) ──
+            var departingThis = (isLeft && laneDepartureRef.current.side === 'left') || (!isLeft && laneDepartureRef.current.side === 'right');
+            if (departingThis) {
+              var ldPulse = 0.7 + 0.3 * Math.sin(timeRef.current * 10);
+              gfx.fillStyle = 'rgba(239,68,68,' + ldPulse + ')';
+              var ldBarX = isLeft ? smX - 2 : smX + smW - 4;
+              gfx.fillRect(ldBarX, smY - 2, 6, smH + 4);
+              // Label
+              gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+              gfx.fillText('LANE!', smX + smW / 2, smY + smH + 12);
+            }
+          };
+          drawSideMirror(true);
+          drawSideMirror(false);
 
           // ── Mini-map radar (bottom-left corner) ──
           // Free Explore gets a larger map with infinite-world road sampling + landmark pips.
@@ -10316,6 +12463,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             timeoutsRef.current.forEach(function(id) { clearTimeout(id); });
             timeoutsRef.current = [];
           } catch (e) {}
+          // Stop all long-running audio oscillators on nav-away. Previously these were
+          // only cleaned up by the explicit "End Drive" button — browser back, menu
+          // jumps, or any other route out of the driving view left the rumble / engine
+          // / siren oscillators running silently until AudioContext was GC'd.
+          try {
+            var aud = audioRef.current;
+            if (aud) {
+              ['engineOsc', '_engineHarm', '_engineOct', '_engineNoise', '_engineLFO',
+               '_skidOsc', '_sirenOsc', '_windNode', '_rainNode', '_ambientNode',
+               '_rumbleOsc', '_brakeOsc', '_signalOsc', '_tireNode',
+               '_reverseOsc', '_wiperNode', '_ambDayNode', '_ambNightNode'].forEach(function(key) {
+                if (aud[key]) { try { aud[key].stop(); } catch(e2){} aud[key] = null; }
+              });
+            }
+          } catch (eAud) {}
           if (threeRef.current && threeRef.current.renderer) {
             // Dispose all geometries and materials in the scene to free GPU memory
             if (threeRef.current.scene) {
@@ -10655,7 +12817,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '↔️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Right-of-Way'),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, '10 "who goes first?" scenarios')
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, '18 "who goes first?" scenarios')
+            ),
+            h('button', { onClick: function() { updMulti({ view: 'rulesFoundations', rulesPillar: 'rightOfWay' }); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📚'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Rules Foundations'),
+              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, '9 universal pillars every driver must know')
             ),
             h('button', { onClick: function() { upd('view', 'stopDistCalc'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -10913,9 +13081,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var pct = Math.round(Object.keys(scenariosDriven).length / 14 * 100);
                 return h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
-                    h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%' } })
+                    h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
                   ),
-                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee' } }, pct + '%'),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee' } }, h(CountUp, { value: pct, suffix: '%' })),
                   h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Scenarios')
                 );
               })(),
@@ -10924,9 +13092,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var pct = Math.round(Object.keys(earnedBadges).length / ACHIEVEMENTS.length * 100);
                 return h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { height: '4px', background: '#1e293b', borderRadius: '2px', marginBottom: '4px' } },
-                    h('div', { style: { height: '100%', background: '#fbbf24', borderRadius: '2px', width: pct + '%' } })
+                    h('div', { style: { height: '100%', background: '#fbbf24', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
                   ),
-                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fbbf24' } }, pct + '%'),
+                  h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fbbf24' } }, h(CountUp, { value: pct, suffix: '%' })),
                   h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Badges')
                 );
               })(),
@@ -11397,6 +13565,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: '#cbd5e1', fontSize: '10px', zIndex: 10 } },
             'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · K Photo · Q Horn · SPACE Pause'
           ),
+          // ── Pause screen overlay — visible while paused ──
+          pausedRef.current ? h('div', {
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'rr-fade-in 0.3s ease-out', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }
+          },
+            h('div', { style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))', borderRadius: '18px', padding: '36px 44px', border: '2px solid #22d3ee', boxShadow: '0 20px 60px rgba(34,211,238,0.3)', textAlign: 'center', maxWidth: '420px' } },
+              h('div', { style: { fontSize: '64px', marginBottom: '12px', animation: 'rr-pulse-soft 2s ease-in-out infinite' } }, '⏸'),
+              h('h2', { style: { fontSize: '28px', fontWeight: 900, color: '#22d3ee', margin: '0 0 8px 0', letterSpacing: '0.12em' } }, 'PAUSED'),
+              h('div', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '22px' } }, 'Take a breath. Check your mirrors. Plan your next move.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#cbd5e1', alignItems: 'center' } },
+                h('div', null,
+                  h('kbd', { style: { padding: '4px 10px', background: '#1e293b', border: '1px solid #22d3ee', borderRadius: '5px', fontFamily: 'monospace', fontWeight: 900, color: '#22d3ee' } }, 'SPACE'),
+                  h('span', { style: { marginLeft: '10px' } }, 'Resume')
+                ),
+                h('div', null,
+                  h('kbd', { style: { padding: '4px 10px', background: '#1e293b', border: '1px solid #475569', borderRadius: '5px', fontFamily: 'monospace', fontWeight: 900 } }, 'C'),
+                  h('span', { style: { marginLeft: '10px', color: '#94a3b8' } }, 'Cycle camera view')
+                ),
+                h('div', null,
+                  h('kbd', { style: { padding: '4px 10px', background: '#1e293b', border: '1px solid #475569', borderRadius: '5px', fontFamily: 'monospace', fontWeight: 900 } }, 'K'),
+                  h('span', { style: { marginLeft: '10px', color: '#94a3b8' } }, 'Take a photo')
+                )
+              ),
+              h('button', { onClick: function() { pausedRef.current = false; },
+                style: { marginTop: '24px', padding: '10px 24px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #22d3ee, #0891b2)', color: '#0f172a', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34,211,238,0.4)' }
+              }, '▶ Resume Driving')
+            )
+          ) : null,
+          // ── Seatbelt prompt — shows until the driver buckles up ──
+          !seatbeltRef.current.fastened ? h('div', {
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', maxWidth: '440px', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'rr-pulse-soft 1.5s ease-in-out infinite' }
+          },
+            h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),
+            h('div', { style: { fontSize: '15px', fontWeight: 900, marginBottom: '4px' } }, 'Fasten Your Seatbelt'),
+            h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } }, 'Press ', h('kbd', { style: { padding: '2px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontWeight: 900 } }, 'B'), ' or any movement key to fasten. The car will not move until you do.')
+          ) :
+          // ── Grace period banner: visible for the first ~4s after belt is fastened ──
+          (timeRef.current > 0 && timeRef.current < (graceRef.current && graceRef.current.until || 4)) ? h('div', {
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: 'rr-fade-in 0.5s ease-out' }
+          },
+            h('div', { style: { fontSize: '20px', marginBottom: '6px' } }, '🪞 Check Your Mirrors'),
+            h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '4px' } }, 'Glance at each mirror before you pull out'),
+            h('div', { style: { fontSize: '11px', color: '#bbf7d0', lineHeight: '1.4' } }, 'Rearview (top center) · Left mirror (top left) · Right mirror (top right). Take your time — the road isn\'t going anywhere.')
+          ) : null,
           // ── Touch controls for mobile/tablet ──
           h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
             className: 'touch-controls' },
@@ -11730,6 +13941,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var quizIdx = d.signsQuizIdx || 0;
         var quizScore = d.signsQuizScore || 0;
         var quizAnswered = d.signsQuizAnswered;
+        var quizReverse = !!d.signsQuizReverse;
+        // Build (or rebuild) a fresh shuffled question set. Stored on d.signsQuizQuestions so
+        // re-renders don't reshuffle. Includes {signIdx, choiceIndices[4], correctPos, reverse}.
+        var buildSignsQuiz = function(reverse) {
+          var n = signLibrary.length;
+          var indices = []; for (var i = 0; i < n; i++) indices.push(i);
+          for (var si = indices.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var st = indices[si]; indices[si] = indices[sj]; indices[sj] = st;
+          }
+          var questionCount = Math.min(10, n);
+          var qs = [];
+          for (var q = 0; q < questionCount; q++) {
+            var correctIdx = indices[q];
+            var wrongPool = []; for (var wi = 0; wi < n; wi++) if (wi !== correctIdx) wrongPool.push(wi);
+            for (var wj = wrongPool.length - 1; wj > 0; wj--) {
+              var wk = Math.floor(Math.random() * (wj + 1));
+              var wt = wrongPool[wj]; wrongPool[wj] = wrongPool[wk]; wrongPool[wk] = wt;
+            }
+            var choiceIndices = [correctIdx, wrongPool[0], wrongPool[1], wrongPool[2]];
+            for (var ci = choiceIndices.length - 1; ci > 0; ci--) {
+              var cj = Math.floor(Math.random() * (ci + 1));
+              var ct = choiceIndices[ci]; choiceIndices[ci] = choiceIndices[cj]; choiceIndices[cj] = ct;
+            }
+            qs.push({ signIdx: correctIdx, choiceIndices: choiceIndices, correctPos: choiceIndices.indexOf(correctIdx), reverse: !!reverse });
+          }
+          return qs;
+        };
+        // Lazy-init the question set on first render while in quiz mode
+        if (quizMode && (!d.signsQuizQuestions || d.signsQuizQuestions.length === 0)) {
+          var freshQs = buildSignsQuiz(quizReverse);
+          upd('signsQuizQuestions', freshQs);
+          d.signsQuizQuestions = freshQs;
+        }
         return h('div', { style: { padding: '20px', maxWidth: '920px', margin: '0 auto', color: '#e2e8f0' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', signsQuizMode: false }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
           h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #4ade80' } },
@@ -11741,9 +13986,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', { onClick: function() { upd('signsQuizMode', false); },
                 style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: !quizMode ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
               }, '📚 Browse'),
-              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null }); },
-                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: quizMode ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-              }, '🎯 Quiz')
+              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizReverse: false, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: (quizMode && !quizReverse) ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '🎯 Name the sign'),
+              h('button', { onClick: function() { updMulti({ signsQuizMode: true, signsQuizReverse: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                style: { padding: '6px 16px', borderRadius: '8px', border: '1px solid #4ade80', background: (quizMode && quizReverse) ? '#14532d' : 'transparent', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '🔁 Pick the sign')
             )
           ),
           !quizMode ? h('div', null,
@@ -11772,62 +14020,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               })
             )
           ) : (function() {
-            // Quiz mode
-            if (quizIdx >= 10) {
-              // Done
-              return h('div', { style: { background: 'linear-gradient(135deg, ' + (quizScore >= 7 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (quizScore >= 7 ? '#4ade80' : '#f59e0b') } },
-                h('div', { style: { fontSize: '56px' } }, quizScore >= 7 ? '🎉' : '📝'),
+            var quizQuestions = d.signsQuizQuestions || [];
+            var totalQs = quizQuestions.length;
+            // Quiz complete screen
+            if (quizIdx >= totalQs) {
+              var passed = quizScore >= Math.ceil(totalQs * 0.7);
+              return h('div', { style: { background: 'linear-gradient(135deg, ' + (passed ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (passed ? '#4ade80' : '#f59e0b') } },
+                h('div', { style: { fontSize: '56px' } }, passed ? '🎉' : '📝'),
                 h('h3', { style: { fontSize: '20px', fontWeight: 900, marginTop: '8px' } }, 'Quiz Complete!'),
-                h('div', { style: { fontSize: '36px', fontWeight: 900, color: quizScore >= 7 ? '#4ade80' : '#f59e0b', margin: '8px 0' } }, quizScore + ' / 10'),
-                h('div', { style: { fontSize: '12px', color: '#cbd5e1' } }, quizScore >= 9 ? 'Excellent!' : quizScore >= 7 ? 'Good work — ready for the permit test.' : 'Keep studying. Switch to Browse mode to review.'),
-                h('button', { onClick: function() { updMulti({ signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null }); },
-                  style: { marginTop: '16px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-                }, '↻ Try Again')
+                h('div', { style: { fontSize: '36px', fontWeight: 900, color: passed ? '#4ade80' : '#f59e0b', margin: '8px 0' } }, quizScore + ' / ' + totalQs),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, quizReverse ? '🔁 Pick-the-sign mode' : '🎯 Name-the-sign mode'),
+                h('div', { style: { fontSize: '12px', color: '#cbd5e1' } }, quizScore >= 9 ? 'Excellent!' : passed ? 'Good work — ready for the permit test.' : 'Keep studying. Switch to Browse mode to review.'),
+                h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', flexWrap: 'wrap' } },
+                  h('button', { onClick: function() { updMulti({ signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                    style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                  }, '↻ Try Again (new shuffle)'),
+                  h('button', { onClick: function() { updMulti({ signsQuizReverse: !quizReverse, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
+                    style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: '#4ade80', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                  }, quizReverse ? '🎯 Try Name-the-sign' : '🔁 Try Pick-the-sign')
+                )
               );
             }
-            // Deterministic question per quizIdx based on signLibrary
-            var qSign = signLibrary[(quizIdx * 3) % signLibrary.length];
-            // 4 choices: correct meaning + 3 random others
-            var otherMeanings = signLibrary.filter(function(s) { return s.name !== qSign.name; })
-              .slice(0, 3 + quizIdx).slice(-3).map(function(s) { return s.meaning; });
-            var choices = [qSign.meaning].concat(otherMeanings);
-            // Deterministic shuffle
-            var rng = function(i) { var x = (quizIdx + 1) * 9301 + i * 49297; return ((x % 233280) / 233280); };
-            choices.sort(function(a, b) { return rng(choices.indexOf(a)) - rng(choices.indexOf(b)); });
-            var correctIdx = choices.indexOf(qSign.meaning);
+            var currentQ = quizQuestions[quizIdx];
+            if (!currentQ) { return h('div', null); }
+            var qSign = signLibrary[currentQ.signIdx];
+            var choiceIndices = currentQ.choiceIndices;
+            var correctPos = currentQ.correctPos;
             var answered = quizAnswered !== null && quizAnswered !== undefined;
+            var isReverse = currentQ.reverse;
             return h('div', null,
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '11px' } },
-                h('span', { style: { color: '#94a3b8' } }, 'Question ' + (quizIdx + 1) + ' / 10'),
+                h('span', { style: { color: '#94a3b8' } }, 'Question ' + (quizIdx + 1) + ' / ' + totalQs + ' · ' + (isReverse ? '🔁 Pick-the-sign' : '🎯 Name-the-sign')),
                 h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Score: ' + quizScore)
               ),
+              // Prompt: sign (name-mode) or meaning text (reverse-mode)
               h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '20px', border: '1px solid #334155', marginBottom: '10px', textAlign: 'center' } },
-                h('div', { style: { padding: '12px', background: '#020617', borderRadius: '8px', display: 'inline-block' } }, qSign.svg()),
-                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: '#fff' } }, 'What does this sign mean?')
+                isReverse
+                  ? h('div', { style: { padding: '16px', background: '#020617', borderRadius: '8px', fontSize: '13px', color: '#fff', fontStyle: 'italic', lineHeight: '1.5' } }, '\u201C' + qSign.meaning + '\u201D')
+                  : h('div', { style: { padding: '12px', background: '#020617', borderRadius: '8px', display: 'inline-block' } }, qSign.svg()),
+                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: '#fff' } },
+                  isReverse ? 'Which sign matches this?' : 'What does this sign mean?'
+                )
               ),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-                choices.map(function(c, ci) {
-                  var isCorr = ci === correctIdx;
-                  var picked = quizAnswered === ci;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
-                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
-                  return h('button', { key: ci,
-                    disabled: answered,
-                    onClick: function() {
-                      if (answered) return;
-                      var correct = ci === correctIdx;
-                      updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
-                    },
-                    style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
-                  }, String.fromCharCode(65 + ci) + '. ' + c);
-                })
-              ),
+              // Choices: either 4 meaning strings or a 2×2 grid of 4 SVGs
+              isReverse
+                ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' } },
+                    choiceIndices.map(function(idx, ci) {
+                      var isCorr = ci === correctPos;
+                      var picked = quizAnswered === ci;
+                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                      var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                      return h('button', { key: ci,
+                        disabled: answered,
+                        onClick: function() {
+                          if (answered) return;
+                          var correct = ci === correctPos;
+                          updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
+                        },
+                        style: { padding: '14px', borderRadius: '8px', border: '2px solid ' + bd, background: bg, cursor: answered ? 'default' : 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' },
+                        'aria-label': 'Option ' + String.fromCharCode(65 + ci) + ': ' + signLibrary[idx].name
+                      },
+                        h('div', null, signLibrary[idx].svg()),
+                        h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#cbd5e1' } }, String.fromCharCode(65 + ci))
+                      );
+                    })
+                  )
+                : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                    choiceIndices.map(function(idx, ci) {
+                      var isCorr = ci === correctPos;
+                      var picked = quizAnswered === ci;
+                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                      var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                      return h('button', { key: ci,
+                        disabled: answered,
+                        onClick: function() {
+                          if (answered) return;
+                          var correct = ci === correctPos;
+                          updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
+                        },
+                        style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                      }, String.fromCharCode(65 + ci) + '. ' + signLibrary[idx].meaning);
+                    })
+                  ),
               answered ? h('div', { style: { marginTop: '12px', padding: '10px', background: '#020617', borderRadius: '6px', borderLeft: '3px solid #4ade80', fontSize: '11px', color: '#cbd5e1' } },
                 h('b', null, qSign.name + ': '), qSign.when
               ) : null,
               answered ? h('button', { onClick: function() { updMulti({ signsQuizIdx: quizIdx + 1, signsQuizAnswered: null }); },
                 style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-              }, quizIdx >= 9 ? 'See Results →' : 'Next Question →') : null
+              }, quizIdx >= totalQs - 1 ? 'See Results →' : 'Next Question →') : null
             );
           })()
         );
@@ -12009,7 +14289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                ['🛡️', drivingStats.safetyScore, 'Safety Score'],
                ['🌿', drivingStats.efficiencyScore, 'Eco Score'],
                ['⚠️', drivingStats.hardBrakes, 'Hard Brakes'],
-               ['💥', drivingStats.crashes, 'Crashes']
+               ['💥', drivingStats.crashes + (drivingStats.aiCausedCrashes ? ' (' + drivingStats.aiCausedCrashes + ' AI)' : ''), 'Crashes']
               ].map(function(stat) {
                 return h('div', { key: stat[2], style: { background: '#020617', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #1e293b' } },
                   h('div', { style: { fontSize: '16px' } }, stat[0]),
@@ -12161,6 +14441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.speedViolations > 2 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '⚠️ Speed limit exceeded for ' + Math.round(drivingStats.speedViolations) + 's total. Remember: braking distance grows with v². A little faster = a lot more stopping distance.') : null,
                 drivingStats.closeFollows > 5 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '👀 Following too close. Use the 3-second rule. Pick a fixed point ahead. Count after the car in front passes it.') : null,
                 drivingStats.crashes === 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '✅ Zero crashes! That is the baseline real drivers are measured against.') : null,
+                drivingStats.aiCausedCrashes > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #60a5fa' } }, 'ℹ️ ' + drivingStats.aiCausedCrashes + ' of your ' + drivingStats.crashes + ' crashes were caused by other drivers (mostly tailgating). In real life you\'d file an insurance claim — your safety score was only lightly penalized.') : null,
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
                 drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
                 drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, R=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
@@ -12199,24 +14480,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       + 'Tone: kind, specific, honest. Address them as "you". Mention 1-2 concrete things they did well, 1-2 things to work on next drive, and end with one sentence of encouragement.\n'
                       + 'Length: 120-180 words. Plain prose, no bullet points, no markdown, no greetings.\n\n'
                       + 'Drive data:\n' + JSON.stringify(snapshot);
-                    callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' })
-                      .then(function(resp) {
-                        reflectionRef.current.inFlight = false;
-                        var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
-                        text = String(text).trim().replace(/^["']|["']$/g, '');
-                        if (text) {
-                          upd('lastReflection', { text: text, at: Date.now() });
-                          speak('Your AI reflection is ready.');
-                        } else {
+                    if (!callGemini) {
+                      reflectionRef.current.inFlight = false;
+                      addToast('AI reflection not available in this environment.');
+                    } else {
+                      callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' })
+                        .then(function(resp) {
+                          reflectionRef.current.inFlight = false;
+                          var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
+                          text = String(text).trim().replace(/^["']|["']$/g, '');
+                          if (text) {
+                            upd('lastReflection', { text: text, at: Date.now() });
+                            speak('Your AI reflection is ready.');
+                          } else {
+                            addToast('Reflection failed — try again.');
+                            upd('reflectionTick', Date.now());
+                          }
+                        })
+                        .catch(function() {
+                          reflectionRef.current.inFlight = false;
                           addToast('Reflection failed — try again.');
                           upd('reflectionTick', Date.now());
-                        }
-                      })
-                      .catch(function() {
-                        reflectionRef.current.inFlight = false;
-                        addToast('Reflection failed — try again.');
-                        upd('reflectionTick', Date.now());
-                      });
+                        });
+                    }
                   },
                   style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.2)', color: '#bae6fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                 }, '✨ Generate') : null,
@@ -12647,6 +14933,262 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       // DEFENSIVE DRIVING SCENARIOS LIBRARY
       // ══════════════════════════════════════════════════════════
+      // ══════════════════════════════════════════════════════════
+      // Shared drill renderer — reduces boilerplate for new MC drills.
+      // Used by new drills (roundabout, DUI, ...). Existing drills keep their
+      // inline implementations for zero-risk; this helper is additive.
+      // ══════════════════════════════════════════════════════════
+      var renderDrill = function(cfg) {
+        // cfg: { icon, title, subtitle, factsTitle, facts, scenarios,
+        //        stateKey, badgeId, badgeName, winMessage,
+        //        gradientFrom, gradientTo, borderColor, subtitleColor, accentBorder }
+        var state = d[cfg.stateKey] || {};
+        var passed = Object.keys(state).filter(function(k){ return state[k] && state[k].correct; }).length;
+        var allDone = Object.keys(state).length === cfg.scenarios.length;
+        var commit = function(sc, ci) {
+          var ns = Object.assign({}, d[cfg.stateKey] || {});
+          ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+          upd(cfg.stateKey, ns);
+          if (ci === sc.correct) {
+            addToast('✓ Correct!');
+            var pn = Object.keys(ns).filter(function(k){ return ns[k] && ns[k].correct; }).length;
+            if (pn === cfg.scenarios.length) {
+              var dBadges = Object.assign({}, d.badges || {});
+              if (cfg.badgeId && !dBadges[cfg.badgeId]) {
+                dBadges[cfg.badgeId] = true;
+                upd('badges', dBadges);
+                addToast('🏅 Achievement: ' + cfg.badgeName);
+              }
+            }
+          } else {
+            addToast('Not quite — see explanation');
+          }
+        };
+        var retryOne = function(sc) {
+          var ns = Object.assign({}, d[cfg.stateKey] || {});
+          delete ns[sc.id];
+          upd(cfg.stateKey, ns);
+        };
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, ' + cfg.gradientFrom + ', ' + cfg.gradientTo + ')', borderRadius: '14px', padding: '22px', border: '1px solid ' + cfg.borderColor, marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, cfg.icon),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, cfg.title),
+            h('div', { style: { fontSize: '12px', color: cfg.subtitleColor || '#cbd5e1' } }, cfg.subtitle + ' · ' + passed + ' / ' + cfg.scenarios.length + ' passed'),
+            allDone && passed === cfg.scenarios.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ ' + (cfg.winMessage || 'All correct.')) : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, cfg.factsTitle || 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              cfg.facts.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          cfg.scenarios.map(function(sc) {
+            var scState = state[sc.id] || {};
+            var answered = scState.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (scState.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                scState.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = scState.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', {
+                    key: ci,
+                    disabled: answered,
+                    onClick: function() { if (!answered) commit(sc, ci); },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid ' + (cfg.accentBorder || '#60a5fa'), lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() { retryOne(sc); },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      };
+
+      // ══════════════════════════════════════════════════════════
+      // ROUNDABOUT DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'roundaboutDrill') {
+        return renderDrill({
+          icon: '🔄', title: 'Roundabout Drill', subtitle: 'Maine is adding these fast',
+          factsTitle: 'Before the drill: key rules',
+          gradientFrom: '#0c4a6e', gradientTo: '#0f172a',
+          borderColor: '#38bdf8', subtitleColor: '#bae6fd', accentBorder: '#38bdf8',
+          stateKey: 'roundaboutState', badgeId: 'roundabout_pro', badgeName: 'Roundabout Pro',
+          winMessage: 'You know roundabouts. Good — Maine keeps adding them.',
+          facts: [
+            { icon: '🔄', title: 'Traffic flows counterclockwise', body: 'In the U.S., all roundabouts circulate counterclockwise. You enter to the right and exit to the right. Signal right as you approach your exit.' },
+            { icon: '🛑', title: 'Yield, don\'t stop', body: 'At entry, you yield to traffic already IN the circle — but don\'t come to a hard stop if you can see a gap. Flow through. Inside the circle, never stop (except if forced by a crash ahead).' },
+            { icon: '🚶', title: 'Pedestrians at every exit', body: 'Marked crosswalks sit just outside each entry and exit. Yield to pedestrians ALWAYS — whether you\'re entering or leaving the circle.' },
+            { icon: '🚚', title: 'Trucks may use both lanes', body: 'Large trucks, school buses, and emergency vehicles often need to track both lanes of a multi-lane roundabout to clear the curb. Don\'t crowd them or try to pass inside.' }
+          ],
+          scenarios: [
+            { id: 'entry_yield', icon: '↘️', title: 'Entering with traffic in the circle',
+              q: 'You approach a roundabout. One car is already circulating, about to pass in front of your entry. What do you do?',
+              choices: [
+                'Enter quickly — you have the right-of-way',
+                'Yield. Traffic in the circle always has priority over entering traffic',
+                'Honk to signal your intent',
+                'Stop completely no matter what'
+              ],
+              correct: 1,
+              exp: 'Circulating traffic has right-of-way. Yield triangles at the entry confirm this. You don\'t need to come to a full stop if the circle is clear, but you MUST yield to anyone already in it. Entering in front of a circulating car causes the most common roundabout crashes.' },
+            { id: 'emergency_in_circle', icon: '🚨', title: 'Ambulance behind while you\'re circulating',
+              q: 'You\'re halfway around a roundabout and an ambulance with lights and siren comes up behind you. What do you do?',
+              choices: [
+                'Stop immediately in the circle to let them pass',
+                'Continue to your exit, then pull right and stop just past the circle',
+                'Swerve into the inner lane',
+                'Exit at the next available exit regardless of where it goes'
+              ],
+              correct: 1,
+              exp: 'Never stop inside a roundabout — you create a dangerous blockage for everyone else. Complete your exit, pull to the right just past the roundabout, and stop there. The ambulance will also continue through and pull where needed. If you MUST, take the next exit to clear the circle, even if it\'s not yours.' },
+            { id: 'truck_both_lanes', icon: '🚚', title: 'Truck using both lanes',
+              q: 'A tractor-trailer in a two-lane roundabout is tracking across both lanes to clear the curb. You\'re behind in the inner lane.',
+              choices: [
+                'Honk so they pick a lane',
+                'Stay back — large trucks often need both lanes; trying to pass puts you in their blind spot mid-turn',
+                'Pass them on the inside',
+                'Pass them on the outside'
+              ],
+              correct: 1,
+              exp: 'A truck straddling two lanes is doing it correctly — they physically can\'t stay in one lane and clear the curb. Passing puts you in their blind spot while they\'re still turning, and the trailer can swing into your lane. Wait 10 seconds until they\'re out.' },
+            { id: 'lane_choice', icon: '➡️', title: 'Which lane for which exit?',
+              q: 'Two-lane roundabout. You want to take the 3rd exit (roughly 3/4 around). Which lane do you start in?',
+              choices: [
+                'Right (outer) lane throughout',
+                'Left (inner) lane to enter and travel, move right and signal before your exit',
+                'Either lane — lane choice doesn\'t matter in roundabouts',
+                'Middle of the road'
+              ],
+              correct: 1,
+              exp: 'Standard rule: right lane = first exit (right turn) or straight. Left lane = later exits (left turn / U-turn / 3rd-exit-equivalent). Follow the ground arrows if painted. Signal LEFT entering (telling others you\'re going around), then signal RIGHT before your exit. Changing lanes is the move before you exit, not after.' },
+            { id: 'pedestrian_exit', icon: '🚶', title: 'Pedestrian at your exit',
+              q: 'You\'re exiting a roundabout. A pedestrian steps onto the crosswalk at your exit — right as you\'re about to leave.',
+              choices: [
+                'Keep going — they started late',
+                'Yield. Pedestrians at roundabout crosswalks always have right-of-way',
+                'Honk to warn them',
+                'Swerve around them'
+              ],
+              correct: 1,
+              exp: 'Pedestrians always have right-of-way at roundabout crosswalks. "They started late" is never an excuse. Slow enough to yield AT the crosswalk, even if the circle is pressuring you from behind. Hitting a pedestrian in a roundabout is 100% on you.' },
+            { id: 'signal_correctly', icon: '🚦', title: 'How do you signal?',
+              q: 'Which is correct for signaling in a roundabout?',
+              choices: [
+                'Signal right on approach, no other signal needed',
+                'Signal left on approach if going more than halfway around; signal right before your exit always',
+                'No signaling required in roundabouts',
+                'Signal left on approach, right on exit — always both'
+              ],
+              correct: 1,
+              exp: 'Best practice: signal LEFT on approach if you\'re going PAST the 12 o\'clock position (more than halfway around — tells drivers behind you you\'re not exiting early). Signal RIGHT before EVERY exit (tells circulating and entering drivers you\'re leaving so they can move). Signaling right for a first-exit right turn is also correct.' }
+          ]
+        });
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DUI / IMPAIRED-DRIVING DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'duiDrill') {
+        return renderDrill({
+          icon: '⚖️', title: 'DUI / Impaired-Driving Drill', subtitle: 'Maine limits, zero-tolerance, implied consent',
+          factsTitle: 'Key rules',
+          gradientFrom: '#7f1d1d', gradientTo: '#0f172a',
+          borderColor: '#f87171', subtitleColor: '#fecaca', accentBorder: '#ef4444',
+          stateKey: 'duiState', badgeId: 'sober_smart', badgeName: 'Sober-Smart',
+          winMessage: 'You know the law. More important — never drive impaired.',
+          facts: [
+            { icon: '⚖️', title: 'Legal limits', body: 'Maine: 0.08 BAC for 21+. Zero tolerance — 0.02 BAC — for under 21. For commercial drivers, 0.04. Any measurable alcohol under 21 can trigger a charge.' },
+            { icon: '🧪', title: 'Implied consent', body: 'Driving on a Maine road is legal consent to breath/blood testing when an officer has probable cause. Refusing the test = automatic 275-day license suspension — often LONGER than a first-offense conviction penalty.' },
+            { icon: '💊', title: 'Drugs count too', body: 'Prescription, medical marijuana, OTC cold medicine, even "legal" recreational cannabis — if it impairs you, driving on it is OUI (Operating Under the Influence). "The doctor prescribed it" is not a defense.' },
+            { icon: '🍺', title: 'One-drink math', body: 'A 130-lb teenager drops below Maine\'s 0.02 limit about 90 minutes after ONE 12-oz beer. Food, fatigue, and body composition shift that — you can\'t reliably "feel" your BAC.' }
+          ],
+          scenarios: [
+            { id: 'just_one_mile', icon: '🚗', title: '"Just one mile" pressure',
+              q: 'You\'re 17 and sober at a friend\'s house. Your friend (21) has had a few beers but insists he\'s "fine to drive the last mile home." What do you do?',
+              choices: [
+                'Let him drive — it\'s just a mile',
+                'Take the keys and drive him yourself — you\'re sober',
+                'Call an Uber / Lyft / Maine Ride Service or a parent',
+                'B or C — never let an impaired driver drive, full stop'
+              ],
+              correct: 3,
+              exp: 'There is no "just a mile." Most fatal DUIs happen within a few miles of home because drivers feel safe and let their guard down. Taking the keys and driving him yourself is the right call if you\'re sober and licensed — if your GDL restrictions prevent it, call a rideshare or parent. Never, ever let an impaired person drive.' },
+            { id: 'implied_consent', icon: '🧪', title: 'Breath test refusal',
+              q: 'An officer has probable cause and asks you to take a breath test. You\'re 19 and worried because you had one drink. If you refuse:',
+              choices: [
+                'No penalty unless they have other evidence of impairment',
+                'Automatic 275-day license suspension — often worse than the first-offense penalty',
+                '$100 civil fine only',
+                'They can\'t require a test without a warrant'
+              ],
+              correct: 1,
+              exp: 'Maine has implied-consent laws. Driving on a Maine road is legal consent to breath or blood testing when an officer establishes probable cause. Refusing = automatic 275-day suspension, separate from any conviction penalty. First-offense OUI conviction is only a 150-day suspension — so refusal is actually WORSE. Also, refusal can be used against you in court.' },
+            { id: 'rx_drug', icon: '💊', title: 'Prescribed painkiller',
+              q: 'Your dentist prescribes oxycodone after a wisdom-tooth extraction. The warning label says "may cause drowsiness. Do not drive or operate heavy machinery." You feel a little foggy but functional. Legal to drive?',
+              choices: [
+                'Yes — it\'s prescribed, so it\'s legal',
+                'Only if you don\'t feel drowsy',
+                'No — prescription drugs that impair driving are treated as OUI in Maine regardless of legality',
+                'Only to/from the pharmacy'
+              ],
+              correct: 2,
+              exp: 'Maine OUI law covers ALL impairing substances — prescription, OTC, recreational, medical marijuana. The warning label is the clue: the prescriber is telling you not to drive. An officer who suspects impairment can demand a drug test the same way they can demand a breath test. "It was prescribed" is not a legal defense.' },
+            { id: 'zero_tolerance', icon: '🚫', title: 'Zero tolerance at 20',
+              q: 'You\'re 20, had a single light beer ~2 hours ago at a family dinner. BAC tests at 0.03. Legal to drive in Maine?',
+              choices: [
+                'Yes — under 0.08',
+                'No — Maine zero-tolerance is 0.02 BAC for drivers under 21',
+                'Yes if the beer was consumed during a family meal',
+                'Only until midnight'
+              ],
+              correct: 1,
+              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to full DUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
+            { id: 'weed_legal', icon: '🍃', title: 'Recreational marijuana + driving',
+              q: 'Maine legalized recreational marijuana for adults 21+. You\'re 22, used it 90 minutes ago, still feel relaxed. Can you drive?',
+              choices: [
+                'Yes — it\'s legal to use',
+                'Only if you stay under 5 ng/mL THC',
+                'No — driving under the influence of ANY impairing substance is illegal regardless of the substance\'s legality',
+                'Only on private roads'
+              ],
+              correct: 2,
+              exp: 'Legal to use ≠ legal to drive on. Maine\'s OUI law applies to any substance that impairs your ability to drive safely. Officers are trained in Drug Recognition Expert (DRE) protocols. THC affects reaction time, lane tracking, and judgment for hours. If you\'re high, call a ride.' },
+            { id: 'first_offense', icon: '📋', title: 'First-offense consequences',
+              q: 'A first-time adult Maine OUI conviction (no accident, no minors in car) typically includes which of these?',
+              choices: [
+                'Only a fine and a warning',
+                'License suspension (typically 150 days), fine (starts at $500), mandatory DEEP program, possible jail, SR-22 insurance',
+                'Automatic felony charge',
+                'Nothing — first offenses are sealed'
+              ],
+              correct: 1,
+              exp: 'First-offense Maine OUI is a misdemeanor but carries: ~150-day license suspension, $500+ fine, mandatory Driver Education Evaluation Program (DEEP) (~$500 more), possible 48 hours to 1-year jail, SR-22 high-risk insurance filing for 3 years (often triples rates). Second offense is mandatory jail time. Third is a felony.' }
+          ]
+        });
+      }
+
       if (view === 'defensiveList') {
         var defScenarios = [
           { id: 'red_runner', icon: '🚦', title: 'Runaway Red', q: 'You enter an intersection on green. A car to your left blows the red light at 40 mph. What do you do?',
@@ -12729,6 +15271,1212 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var ns = Object.assign({}, defState);
                   delete ns[sc.id];
                   upd('defensiveState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // MOOSE SAFETY DRILL (Maine-specific)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'mooseSafety') {
+        var MOOSE_FACTS = [
+          { icon: '📊', title: 'By the numbers', body: 'Maine has roughly 500–700 reported moose–vehicle collisions per year. The state averages 3–5 fatal moose crashes annually.' },
+          { icon: '🕒', title: 'Worst times',     body: 'Dawn and dusk (low light) plus late May through June (calves) and September–November (the rut). Overnight hours are dangerous too — moose are dark and blend into the road.' },
+          { icon: '📏', title: 'Why swerving fails', body: 'A full-grown moose weighs 800–1,400 lb. Its mass sits on long legs — your bumper takes the legs out and the body comes through the windshield. Roof-crush is the usual cause of death, not the impact itself.' },
+          { icon: '🛣️', title: 'Maine zones',     body: 'Route 201, Route 2, Route 6, Route 11 north of Bangor, and the entire Moosehead Lake region are the highest-risk corridors. Yellow moose-warning signs mark known crossings — slow down and scan.' },
+          { icon: '💡', title: 'High beams',      body: 'In moose country and zero oncoming traffic, use high beams. A moose\'s eyes don\'t always reflect like a deer\'s, but its body outline appears sooner. Dim for oncoming cars, then pop them back on.' },
+          { icon: '\uD83D\uDE97', title: 'If impact is unavoidable', body: 'Brake hard, let up just before impact (helps the hood absorb force), duck your head low toward the wheel. This moves your skull below the predicted windshield-crush line.' }
+        ];
+        var MOOSE_SCENARIOS = [
+          {
+            id: 'dusk_straight',
+            icon: '🫎',
+            title: 'Moose in the lane at dusk',
+            q: 'Dusk, Route 201 near Jackman. You\'re going 55 mph. A full-grown bull moose is standing broadside in your lane, 150 ft ahead.',
+            choices: [
+              'Swerve hard right onto the shoulder',
+              'Swerve left into the oncoming lane (clear)',
+              'Brake hard in a straight line, stay in your lane',
+              'Flash high beams to scare it and hold speed'
+            ],
+            correct: 2,
+            exp: 'Brake straight. Even with an empty oncoming lane, swerving at 55 mph on a shoulder or across a center line invites rollover, sliding off, or a head-on if another car appears. A moose in front of you is predictable; swerving creates an unknown. Modern vehicles + seatbelts + airbags survive straight impacts far better than rollovers.'
+          },
+          {
+            id: 'calf_and_cow',
+            icon: '🫎',
+            title: 'Cow and calf',
+            q: 'You spot a cow moose crossing. She\'s clear of the road. What\'s your move?',
+            choices: [
+              'Resume normal speed — she\'s across',
+              'Slow down, scan for a calf, proceed when clear',
+              'Speed up to pass before anything else appears',
+              'Stop in the lane and wait for her to leave'
+            ],
+            correct: 1,
+            exp: 'Slow down and scan. In spring and early summer, a cow is almost always followed by one or two calves who get left behind, then sprint across to catch up. Calves are smaller, harder to see, and often sprint directly into a moving car chasing mom.'
+          },
+          {
+            id: 'shoulder_ambiguous',
+            icon: '🌲',
+            title: 'Dark shape on the shoulder',
+            q: 'Night, 45 mph, 2-lane road. A dark mass on the right shoulder — might be a moose, might be a rock. No oncoming traffic.',
+            choices: [
+              'Hold the lane and keep your speed',
+              'Move closer to the center line and slow down',
+              'Honk to scare it off',
+              'Flash high beams briefly and accelerate'
+            ],
+            correct: 1,
+            exp: 'Move toward the center line and slow. This buys you distance + time if the shape is a moose that steps into the road. Honking can spook a moose INTO the road. Center-lane position only works when oncoming is clear — scan both ways first.'
+          },
+          {
+            id: 'oncoming_commitment',
+            icon: '🚨',
+            title: 'Moose crossing with oncoming traffic',
+            q: 'A moose is walking into your lane from the right. An oncoming car is ~200 ft away in the opposite lane at highway speed.',
+            choices: [
+              'Swerve left to miss the moose',
+              'Brake hard and stay in your lane',
+              'Accelerate past before it\'s fully in the lane',
+              'Swerve right onto the shoulder'
+            ],
+            correct: 1,
+            exp: 'Brake straight. Swerving left is a head-on crash — categorically worse than striking a moose, even a bull. Swerving right onto a narrow Maine shoulder is gravel/ditch territory. Accelerating INTO the moose gives you less time to stop and makes the impact worse.'
+          },
+          {
+            id: 'post_near_miss',
+            icon: '\uD83D\uDE97',
+            title: 'After the near-miss',
+            q: 'You just barely missed a moose. Adrenaline is pumping, hands are shaking. What next?',
+            choices: [
+              'Stop right there in your lane and call 911',
+              'Pull over safely, hazards on, breathe for 2 minutes before driving on',
+              'Speed up to outrun the area',
+              'Keep driving — you\'re fine'
+            ],
+            correct: 1,
+            exp: 'Pull over safely and collect yourself. Adrenaline tunnel-vision is real and lasts 3–5 minutes. Driving on immediately means your scanning and reaction time are worse, not better. If you hit the moose — even a glancing strike — call the Maine Warden Service (911) and stay put; injured moose in the road kill more people than the first hit.'
+          },
+          {
+            id: 'fog_zone',
+            icon: '🌫️',
+            title: 'Fog in a moose zone',
+            q: 'Heavy morning fog on Route 11 north of Millinocket. You can see about 100 ft. What speed + lighting?',
+            choices: [
+              'High beams + 55 mph (posted limit)',
+              'Low beams + slow to a speed where you can stop in your visible distance',
+              'Fog lights only and normal speed',
+              'Hazard lights + normal speed so cars behind you can see'
+            ],
+            correct: 1,
+            exp: 'Low beams + "drive within your sight distance." High beams reflect off fog and blind YOU. The rule is: you must be able to stop in the distance you can see, because a moose can appear inside that distance. At 100 ft visibility, safe speed is roughly 20–25 mph. Never drive with hazards ON the move in Maine (it\'s for stopped vehicles).'
+          }
+        ];
+        var mooseState = d.mooseState || {}; // { id: { answered: idx, correct: bool } }
+        var mooseAttempted = Object.keys(mooseState).length;
+        var moosePassed = Object.keys(mooseState).filter(function(k){return mooseState[k].correct;}).length;
+        var allDone = mooseAttempted === MOOSE_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🫎'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Moose Encounter Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fcd34d' } }, 'Maine-specific · ' + moosePassed + ' / ' + MOOSE_SCENARIOS.length + ' passed'),
+            allDone ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } },
+              moosePassed === MOOSE_SCENARIOS.length ? '✓ All correct — drive safe out there.' : 'Complete. Review the red ones and retry.'
+            ) : null
+          ),
+          // Quick-facts carousel
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Before the drill: six things to know'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              MOOSE_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          // Scenarios
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          MOOSE_SCENARIOS.map(function(sc) {
+            var state = mooseState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, mooseState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('mooseState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew === MOOSE_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.moose_safe) { dBadges.moose_safe = true; upd('badges', dBadges); addToast('🏅 Achievement: Moose-Safe Mainer'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #f59e0b', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, mooseState);
+                  delete ns[sc.id];
+                  upd('mooseState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // EMERGENCY VEHICLE DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'emergencyVehicle') {
+        var EMG_FACTS = [
+          { icon: '📜', title: 'Maine law', body: 'Title 29-A §2054: when an emergency vehicle with lights and siren approaches, pull as far right as possible and stop until it passes. Failing to yield is a civil violation with a fine.' },
+          { icon: '🛣️', title: 'Move Over law', body: 'Maine §2054-A: when passing a stopped emergency vehicle (police, fire, ambulance, tow, utility) with warning lights on the shoulder, move over one lane when safe. If you can\'t, slow to 20 mph below the posted speed.' },
+          { icon: '🚧', title: 'Why it matters', body: 'Every year roadside workers and responders die on Maine shoulders because drivers don\'t move over. The law exists because "rubbernecking at 65 mph" kills people.' },
+          { icon: '🛑', title: 'Don\'t stop mid-intersection', body: 'If you\'re inside an intersection when you hear a siren, CLEAR the intersection first, then pull right. Stopping in the intersection blocks the emergency vehicle\'s path.' }
+        ];
+        var EMG_SCENARIOS = [
+          {
+            id: 'siren_behind',
+            icon: '🚑',
+            title: 'Siren behind you on a 2-lane',
+            q: 'You\'re driving 35 mph on Route 302 when you hear a siren and see flashing lights directly behind you.',
+            choices: [
+              'Stop immediately in your lane',
+              'Speed up to get out of the way',
+              'Pull as far right as safely possible and stop until it passes',
+              'Move left to let them pass on the right'
+            ],
+            correct: 2,
+            exp: 'Right and stop. Always yield by pulling right — emergency vehicles expect it, and every other driver will do the same so a clear right-side lane opens up. Never stop in your lane mid-road; never move left or speed up to "stay ahead."'
+          },
+          {
+            id: 'intersection_clear',
+            icon: '🚦',
+            title: 'Siren at an intersection',
+            q: 'You\'re stopped at a red light in the left lane. A fire truck with siren and lights comes up behind you. What do you do?',
+            choices: [
+              'Run the red light to get out of the way',
+              'Stay stopped and signal right; wait for the light',
+              'Proceed through the red ONLY when the intersection is clear and safe',
+              'Reverse to give the truck your spot'
+            ],
+            correct: 2,
+            exp: 'You may proceed through a red light to clear the way, but ONLY when the intersection is fully clear and safe to cross. Never reverse (collision with the emergency vehicle or cars behind). Staying stopped blocks the truck; running blindly causes a T-bone. Move deliberately, then pull right.'
+          },
+          {
+            id: 'oncoming_divided',
+            icon: '🛣️',
+            title: 'Oncoming on a divided highway',
+            q: 'You\'re northbound on I-95 (divided median). An ambulance with siren is southbound in the opposite lanes.',
+            choices: [
+              'Pull to the right shoulder and stop',
+              'Stay in your lane at normal speed — the median separates you',
+              'Move left toward the median',
+              'Stop immediately'
+            ],
+            correct: 1,
+            exp: 'On a divided highway with a physical median, you don\'t need to stop for oncoming emergency vehicles — the median keeps you out of their path. Stopping on the interstate creates a new hazard. (If the median is just paint, treat it like any 2-way road and pull right.)'
+          },
+          {
+            id: 'oncoming_undivided',
+            icon: '🚨',
+            title: 'Oncoming on an undivided road',
+            q: 'On Route 1 (2-lane, no median). A police cruiser with lights and siren is heading toward you in the opposite lane.',
+            choices: [
+              'Keep going at normal speed',
+              'Pull right and stop until it passes',
+              'Flash your high beams to signal you see them',
+              'Swing wide left to give them room'
+            ],
+            correct: 1,
+            exp: 'Pull right and stop, even for oncoming. On undivided roads the cruiser may cross the center line to pass slower traffic or reach the scene — your clear shoulder is part of their escape path. Never swing left; never flash high beams at a working emergency vehicle.'
+          },
+          {
+            id: 'stopped_shoulder',
+            icon: '🛑',
+            title: 'Stopped cruiser on the shoulder',
+            q: 'Interstate 295, 65 mph. A state trooper is stopped on the right shoulder with lights flashing. You\'re in the right lane with a car beside you in the left.',
+            choices: [
+              'Hold your lane and speed',
+              'Move left into the adjacent lane if safe, otherwise slow to about 45 mph',
+              'Change lanes even if the left lane is occupied — it\'s the law',
+              'Stop on the shoulder behind them to offer help'
+            ],
+            correct: 1,
+            exp: 'Move over if you safely can. If the left lane isn\'t safe, the Move Over law says slow to 20 mph below the posted limit (65 − 20 = 45 mph). Never force a lane change into an occupied lane — that causes the crash the law is trying to prevent. Never stop to "help" unless you\'re trained and invited; you\'re another obstacle.'
+          },
+          {
+            id: 'multi_vehicle',
+            icon: '🚒',
+            title: 'Multiple vehicles in response',
+            q: 'A fire engine passes. You start to pull back into the lane. What do you do?',
+            choices: [
+              'Pull out immediately — it\'s gone',
+              'Wait and scan — more emergency vehicles may follow',
+              'Follow the fire engine to see what\'s happening',
+              'Use the shoulder to catch up with traffic flow'
+            ],
+            correct: 1,
+            exp: 'Wait and scan. Fire responses typically include an engine + ladder + ambulance + supervisor. Following an emergency vehicle closer than 500 ft is a violation in Maine (§2055) — and rubbernecking crashes happen exactly because someone pulled out too soon.'
+          }
+        ];
+        var emgState = d.emgState || {};
+        var emgPassed = Object.keys(emgState).filter(function(k){return emgState[k].correct;}).length;
+        var emgAllDone = Object.keys(emgState).length === EMG_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚨'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Emergency Vehicle Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fca5a5' } }, 'Yield + Move Over · ' + emgPassed + ' / ' + EMG_SCENARIOS.length + ' passed'),
+            emgAllDone && emgPassed === EMG_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you know the rules.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              EMG_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          EMG_SCENARIOS.map(function(sc) {
+            var state = emgState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, emgState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('emgState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew === EMG_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.emg_ready) { dBadges.emg_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Emergency-Ready'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #ef4444', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, emgState);
+                  delete ns[sc.id];
+                  upd('emgState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // SCHOOL BUS STOP DRILL (Maine Title 29-A §2308)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'schoolBus') {
+        var BUS_FACTS = [
+          { icon: '📜', title: 'The Maine rule', body: 'Title 29-A §2308: when a school bus is stopped with red lights flashing and stop arm extended, all traffic in both directions must stop — UNLESS you\'re separated by a physical median on a divided highway.' },
+          { icon: '🟡', title: 'Yellow vs red', body: 'Yellow flashers = bus is about to stop. Red flashers + stop arm = you must stop. The transition is your cue to slow down, not to speed past.' },
+          { icon: '📏', title: 'How far back', body: 'Stop far enough back that the bus driver can see you (rule of thumb: at least 20 ft). Children cross from BOTH sides unpredictably — tight stopping is dangerous.' },
+          { icon: '⚖️', title: 'Penalties', body: 'Passing a stopped school bus in Maine: fine of $250+, plus license points. Multiple violations can lead to suspension. Worse: you\'re the reason a kid doesn\'t come home.' }
+        ];
+        var BUS_SCENARIOS = [
+          {
+            id: 'same_direction_2lane',
+            icon: '🚌',
+            title: 'Bus stopped ahead in your direction',
+            q: 'You\'re on a 2-lane road approaching a school bus that has just stopped. Red lights flashing, stop arm out.',
+            choices: [
+              'Slow and pass cautiously if no kids are visible',
+              'Stop at a safe distance and wait until the red lights go off',
+              'Drive around on the shoulder',
+              'Honk so the kids know you\'re there'
+            ],
+            correct: 1,
+            exp: 'Stop and wait. Red lights + stop arm = full stop. Do not proceed until the arm retracts and the red lights turn off AND the bus starts moving. "No kids visible" isn\'t good enough — a child could be coming around the back of the bus where you can\'t see them.'
+          },
+          {
+            id: 'opposite_undivided',
+            icon: '🚌',
+            title: 'Bus stopped in opposite lane (undivided road)',
+            q: 'A school bus is stopped in the opposite lane on Route 302 (2-lane, no median). Red lights flashing.',
+            choices: [
+              'Keep driving — you\'re in the opposite lane',
+              'Stop. You must stop for a bus in either direction on an undivided road',
+              'Slow down but keep moving',
+              'Stop only if a child is visible'
+            ],
+            correct: 1,
+            exp: 'Stop. On any undivided road (no physical median), both directions of traffic must stop. Children often cross the road to reach the bus. Maine treats this like an absolute rule because the consequences are catastrophic.'
+          },
+          {
+            id: 'opposite_divided',
+            icon: '🛣️',
+            title: 'Bus stopped in opposite direction on a divided highway',
+            q: 'You\'re northbound on I-295 (physical median divides the directions). A school bus is stopped southbound with red lights flashing.',
+            choices: [
+              'Stop immediately',
+              'Slow to 20 mph',
+              'Continue at normal speed — the median separates you',
+              'Merge right onto the shoulder and stop'
+            ],
+            correct: 2,
+            exp: 'Continue at normal speed. The divided-highway exception applies: a physical median (grass, guardrail, concrete barrier) means kids can\'t cross to/from your direction, so you don\'t need to stop. A painted center stripe is NOT a median — that still counts as undivided.'
+          },
+          {
+            id: 'yellow_flashers',
+            icon: '🟡',
+            title: 'Yellow flashers, not red yet',
+            q: 'A school bus ahead turns on yellow flashing lights. It\'s still moving.',
+            choices: [
+              'Speed up to pass before the red lights come on',
+              'Slow down and prepare to stop',
+              'Stay at speed — yellow means nothing',
+              'Change lanes and pass'
+            ],
+            correct: 1,
+            exp: 'Slow down and prepare to stop. Yellow = "I\'m about to stop" — exactly like a yellow traffic light. Speeding up to pass is illegal AND puts you next to the bus exactly when kids will be getting off. In Maine this counts as passing a school bus.'
+          },
+          {
+            id: 'private_road',
+            icon: '🏠',
+            title: 'Bus stopped on a neighborhood street',
+            q: 'In a residential area with no posted speed limit, a school bus is stopped at a driveway with red lights flashing.',
+            choices: [
+              'Neighborhood streets are exempt',
+              'The rule still applies — stop and wait',
+              'Only applies if an adult is present',
+              'Pass slowly on the left'
+            ],
+            correct: 1,
+            exp: 'The rule applies everywhere a school bus stops with red lights and stop arm extended — public roads, neighborhood streets, commercial parking lots. The only exemptions are (1) a divided highway in the opposite direction, and (2) when a traffic officer signals otherwise.'
+          }
+        ];
+        var busState = d.busState || {};
+        var busPassed = Object.keys(busState).filter(function(k){return busState[k].correct;}).length;
+        var busAllDone = Object.keys(busState).length === BUS_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #854d0e, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚌'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'School Bus Stop Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Maine §2308 · ' + busPassed + ' / ' + BUS_SCENARIOS.length + ' passed'),
+            busAllDone && busPassed === BUS_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you\'ll stop when it counts.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              BUS_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          BUS_SCENARIOS.map(function(sc) {
+            var state = busState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, busState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('busState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
+                        if (passedNew === BUS_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.bus_safe) { dBadges.bus_safe = true; upd('badges', dBadges); addToast('🏅 Achievement: Bus-Safe'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #fbbf24', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, busState);
+                  delete ns[sc.id];
+                  upd('busState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // RAILROAD CROSSING DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'railroadCrossing') {
+        var RR_FACTS = [
+          { icon: '📜', title: 'The law',            body: 'Flashing red lights at a crossing mean STOP — treat them like a red traffic light. Driving around a lowered gate is a federal violation (49 CFR §234.11) and a felony in many states.' },
+          { icon: '📏', title: 'Train physics',      body: 'At 55 mph a freight train needs over 1 mile (≈ 6,000 ft) to stop. A 100-car train weighs roughly 18,000 tons — the equivalent of ~3,000 cars.' },
+          { icon: '👁️', title: 'The speed illusion', body: 'Large objects appear to move slower than they are. A train you judge "distant and slow" is usually moving 45–80 mph and covering 80+ feet per second.' },
+          { icon: '🏃', title: 'If you stall on the tracks', body: 'Everyone OUT. Run AT A 45° ANGLE TOWARD the oncoming train. Debris from an impact launches FORWARD in the train\'s direction of travel — running toward the train puts you behind the debris field.' }
+        ];
+        var RR_SCENARIOS = [
+          {
+            id: 'flashing_reds',
+            icon: '🚦',
+            title: 'Flashing red lights, gates down',
+            q: 'You approach a crossing. Red lights are flashing and the gates are lowered. You can\'t see a train yet.',
+            choices: [
+              'Drive around the gates — you can fit',
+              'Stop and wait until the lights stop flashing AND the gates fully raise',
+              'Proceed slowly as long as no train is in sight',
+              'Ease through the gap between gates'
+            ],
+            correct: 1,
+            exp: 'Full stop, full wait. Flashing reds mean a train is coming OR already on the crossing OR a second train is on a parallel track. Driving around a lowered gate is federally illegal and a leading cause of crossing fatalities. The gates raise themselves when the sensors say it\'s safe.'
+          },
+          {
+            id: 'could_make_it',
+            icon: '⏱️',
+            title: '"I can beat that train"',
+            q: 'You see a train approaching the crossing. Your gut says you have plenty of time to cross before it arrives.',
+            choices: [
+              'Accelerate and cross quickly',
+              'Stop and wait for the train to pass',
+              'Keep going at normal speed',
+              'Honk so the train knows you\'re there'
+            ],
+            correct: 1,
+            exp: 'Never try to beat a train. Large objects look slower than they actually are — a train looking "a ways off" is usually doing 50+ mph and moving 80+ ft/sec. If your engine stalls mid-crossing (a real risk at low-speed crossings), you die. The train physically cannot stop in under a mile.'
+          },
+          {
+            id: 'stalled',
+            icon: '🏃',
+            title: 'Stalled on the tracks',
+            q: 'Your engine dies while you\'re crossing the tracks. A train is visible about a half-mile away, approaching.',
+            choices: [
+              'Stay in the car and try to restart it',
+              'Push the car off the tracks with passengers',
+              'Get everyone out immediately and run AT A 45° ANGLE TOWARD the oncoming train',
+              'Run away from the train along the tracks'
+            ],
+            correct: 2,
+            exp: 'Cars are replaceable — people aren\'t. Abandon the vehicle, get everyone clear, and run toward the train at a 45° angle away from the tracks. Sounds counterintuitive, but when a train hits your car the debris gets pushed FORWARD in the train\'s direction. Running toward the train puts you behind the impact debris, not in front of it.'
+          },
+          {
+            id: 'multi_track',
+            icon: '🚂',
+            title: 'Second train hidden',
+            q: 'A freight train just finished passing. The gates are still down. A "Multiple Tracks" warning sign is posted.',
+            choices: [
+              'Go around the gates — the train is past',
+              'Wait — the gates raise when the crossing is actually clear; a second train may be coming on a parallel track',
+              'Get out and look both ways yourself',
+              'Creep forward slowly to check'
+            ],
+            correct: 1,
+            exp: 'This is exactly why the warning sign exists. A second train — often moving in the opposite direction or on a parallel track — can be masked by the first train\'s noise and visual bulk. The sensors won\'t raise the gate until all tracks are clear. Just wait.'
+          },
+          {
+            id: 'passive_crossing',
+            icon: '✚',
+            title: 'Rural crossbuck, no lights',
+            q: 'On a quiet Maine road you reach a crossing marked only by a white X-shaped "crossbuck" sign — no lights, no gates.',
+            choices: [
+              'Drive through at normal speed',
+              'Stop completely at the crossbuck',
+              'Slow down, look left-right-left, listen (crack a window), proceed when clear',
+              'Sound your horn to warn any train'
+            ],
+            correct: 2,
+            exp: 'A crossbuck is a YIELD sign, not a stop sign — but it requires you to look and listen. Slow to a speed where you could stop. Train horns are audible about 1/4 mile out — cracking your window catches them. If your line of sight is blocked by brush or buildings, treat it as a stop. School buses and hazmat trucks always stop at every crossing.'
+          },
+          {
+            id: 'humped_crossing',
+            icon: '⛰️',
+            title: 'Humped / low-clearance crossing',
+            q: 'You\'re driving a rented U-Haul with a long wheelbase. A yellow sign shows a humped profile indicating a raised crossing. The box ahead could bottom out.',
+            choices: [
+              'Drive over at normal speed to minimize time on the tracks',
+              'Cross at an angle to reduce the bump',
+              'Find an alternate route — low-clearance and long-wheelbase vehicles have gotten stuck on humped crossings',
+              'Accelerate to skim the hump'
+            ],
+            correct: 2,
+            exp: 'The "humped" warning means long or low vehicles can get beached with their chassis on the tracks. Crossing at an angle does NOT help — it actually increases the chassis-to-rail contact distance. If no alternative exists, approach at a crawl in the center of the lane. If you get stuck: immediate evacuation, run at 45° toward any oncoming train, and call the emergency number posted on the blue-and-white sign at every crossing.'
+          }
+        ];
+        var rrState = d.rrState || {};
+        var rrPassed = Object.keys(rrState).filter(function(k){return rrState[k] && rrState[k].correct;}).length;
+        var rrAllDone = Object.keys(rrState).length === RR_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚂'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Railroad Crossing Drill'),
+            h('div', { style: { fontSize: '12px', color: '#bfdbfe' } }, 'FRA + Maine rules · ' + rrPassed + ' / ' + RR_SCENARIOS.length + ' passed'),
+            rrAllDone && rrPassed === RR_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you know the rules that save lives at crossings.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Before the drill: four things to know'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              RR_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          RR_SCENARIOS.map(function(sc) {
+            var state = rrState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, rrState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('rrState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === RR_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.rail_ready) { dBadges.rail_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Rail-Ready'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #60a5fa', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, rrState);
+                  delete ns[sc.id];
+                  upd('rrState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // WINTER DRIVING DRILL (Maine-specific)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'winterDriving') {
+        var WINTER_FACTS = [
+          { icon: '🌡️', title: 'Black ice: the trap',      body: 'Black ice forms between 28°F and 38°F — it doesn\'t need to be below freezing. Highest risk: bridges and overpasses (cold air on both sides), shaded curves, and pre-dawn hours. The surface looks wet, not icy.' },
+          { icon: '⛓️', title: 'Winter tires actually matter', body: 'All-season tires lose roughly 40% of their grip below 20°F because the rubber stiffens. Dedicated winter tires stay flexible and can halve your stopping distance on snow. Maine law allows studs Oct 1–May 1.' },
+          { icon: '🌀', title: 'Two kinds of skid',         body: 'Rear-wheel skid (oversteer): tail swings out — steer INTO the skid, toward where the front of the car is pointed. Front-wheel skid (understeer): car plows straight — ease off the throttle, don\'t add more steering.' },
+          { icon: '🚙', title: '4WD doesn\'t help you stop', body: 'Four-wheel drive and AWD help with traction for ACCELERATION. Braking is identical to a 2WD car — same four brakes, same tires. A false sense of security in 4WD kills people every Maine winter.' },
+          { icon: '🚜', title: 'Snowplows',                 body: 'Never pass a plow on the right — the blade throws snow and debris that direction. Stay 4+ truck lengths back. Plows often travel 30–40 mph even on highways; that slow-moving orange light is your safest speed too.' },
+          { icon: '🏔️', title: 'Windshield + roof',          body: 'Maine §2396-B requires a clear view through ALL windows. Clearing just the "driver porthole" is a $119 ticket. Snow on the roof can slide onto the windshield or fly onto the car behind you — clear it off.' }
+        ];
+        var WINTER_SCENARIOS = [
+          {
+            id: 'black_ice',
+            icon: '🧊',
+            title: 'Hitting black ice',
+            q: 'Dawn drive on Route 302, 35°F. The road LOOKS wet. Your steering suddenly feels light and the wheel isn\'t responding. You\'re going 45 mph.',
+            choices: [
+              'Brake hard and steer toward the shoulder',
+              'Steer the wheel straight, ease off the gas, do NOT brake',
+              'Pump the brakes to break through the ice',
+              'Accelerate to get across the ice patch faster'
+            ],
+            correct: 1,
+            exp: 'Hands straight, foot off the gas. Braking or sharp steering on ice makes it worse — you lose the tiny bit of traction you have. Glide across the patch at current speed, wait for the wheel to "come back to life" (you\'ll feel it), then steer gently. Black ice patches are usually short.'
+          },
+          {
+            id: 'follow_distance',
+            icon: '🚗',
+            title: 'Following distance on snow',
+            q: 'You\'re on I-95 in moderate snowfall at 45 mph. What\'s the minimum safe following distance?',
+            choices: [
+              '2 seconds (like dry pavement)',
+              '4 seconds (like rain)',
+              '8–10 seconds',
+              '1 car length per 10 mph'
+            ],
+            correct: 2,
+            exp: '8–10 seconds minimum on snow and ice. Your stopping distance can be 4× longer than dry pavement. The "car length per 10 mph" rule is a 1950s formula and not remotely safe. Count from when the car ahead passes a fixed object until you pass it: one-one-thousand, two-one-thousand…'
+          },
+          {
+            id: 'oversteer',
+            icon: '🌀',
+            title: 'Tail swinging out (oversteer)',
+            q: 'Going around a curve, the rear of your car starts sliding to the RIGHT (the car wants to spin counterclockwise). What do you do?',
+            choices: [
+              'Steer LEFT to counter the slide',
+              'Steer RIGHT (into the skid) and ease off the throttle',
+              'Brake hard',
+              'Accelerate hard to straighten out'
+            ],
+            correct: 1,
+            exp: '"Steer into the skid." The rule: point the front wheels where you want the NOSE to go. If the rear slides right, the nose wants to go left — so steer RIGHT to realign. Ease off the gas (don\'t brake — that weights the front and worsens rear slide). As grip returns, gently counter-steer back. Practiced correctly, this feels smooth.'
+          },
+          {
+            id: 'understeer',
+            icon: '➡️',
+            title: 'Plowing straight (understeer)',
+            q: 'You turn the wheel to take a curve and the car just keeps going straight — the front wheels have no grip. What do you do?',
+            choices: [
+              'Turn the wheel harder in the direction you want to go',
+              'Ease off the gas and wait for the front wheels to regain grip, then steer gently',
+              'Stomp the brakes',
+              'Accelerate to transfer weight to the back wheels'
+            ],
+            correct: 1,
+            exp: 'Ease off — don\'t add more steering. More steering input on a skidding front tire just keeps it skidding. Reducing throttle lets the front tires slow down, regain traction, and THEN turn. Braking often makes it worse (locks the fronts). Once the car "takes" the steering again, guide it through the curve.'
+          },
+          {
+            id: 'plow_passing',
+            icon: '🚜',
+            title: 'Passing a snowplow',
+            q: 'You catch up to a Maine DOT plow doing 35 mph on I-295. The left lane is clear. What do you do?',
+            choices: [
+              'Pass on the right — the left lane is the plow\'s',
+              'Stay 4+ truck lengths back in the left lane; only pass on the LEFT when safe, and never pass on the right',
+              'Tailgate to get their attention',
+              'Pass between two plows if they\'re running in echelon'
+            ],
+            correct: 1,
+            exp: 'Never pass a plow on the right — the blade throws a wall of snow and ice chunks to the right side that will shatter your windshield. Multi-plow echelon formations (two or three plows at a 45° angle) are clearing the entire road width; passing between them is a crash waiting to happen. Slow down, stay back, wait for a passing zone.'
+          },
+          {
+            id: 'fourwd_myth',
+            icon: '🚙',
+            title: 'The 4WD myth',
+            q: 'You\'re in a 4WD SUV on an icy hill. You apply the brakes and the car doesn\'t slow any faster than your friend\'s front-wheel-drive sedan would. Why?',
+            choices: [
+              'Your 4WD is malfunctioning',
+              '4WD only helps with acceleration traction, not braking — same four tires either way',
+              'SUVs have worse brakes than sedans',
+              'You should have engaged low-range 4WD for braking'
+            ],
+            correct: 1,
+            exp: 'Exactly. 4WD / AWD powers all four wheels from the engine, which helps you GO from a stop on snow. But when you brake, all cars use the same four brake pads on the same four tires — so stopping distance depends entirely on tire grip, not drivetrain. An AWD SUV on all-seasons stops WORSE than a sedan on winter tires. Drive to your tires, not your drivetrain.'
+          }
+        ];
+        var winterState = d.winterState || {};
+        var winterPassed = Object.keys(winterState).filter(function(k){return winterState[k] && winterState[k].correct;}).length;
+        var winterAllDone = Object.keys(winterState).length === WINTER_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #22d3ee', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '❄️'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Winter Driving Drill'),
+            h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, 'Ice · snow · skid recovery · ' + winterPassed + ' / ' + WINTER_SCENARIOS.length + ' passed'),
+            winterAllDone && winterPassed === WINTER_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — ready for your first Maine January.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Before the drill: six things to know'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              WINTER_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          WINTER_SCENARIOS.map(function(sc) {
+            var state = winterState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, winterState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('winterState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === WINTER_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.winter_ready) { dBadges.winter_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Winter-Ready'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #22d3ee', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, winterState);
+                  delete ns[sc.id];
+                  upd('winterState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // CONSTRUCTION ZONE DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'constructionZone') {
+        var CONSTR_FACTS = [
+          { icon: '📜', title: 'Fines are doubled',        body: 'Maine law: fines are doubled in posted work zones, and workers don\'t have to be present. The zone starts at the first warning sign and ends at the "END ROAD WORK" sign.' },
+          { icon: '🦺', title: 'Flaggers are the law',      body: 'Inside a work zone, a flagger\'s instructions override every other traffic control device — including traffic lights. Flagger STOP paddle means stop even if your light is green.' },
+          { icon: '🔶', title: 'Orange = temporary',        body: 'Orange signs and barrels always mean a temporary traffic pattern. Pay extra attention: lanes shift, speed limits drop, and your GPS map may be wrong.' },
+          { icon: '🚙', title: 'Pilot cars & one-way zones', body: 'A "FOLLOW ME" pilot car leads traffic through a single-lane section where traffic alternates direction. Passing the pilot puts you head-on with opposing traffic waiting their turn.' }
+        ];
+        var CONSTR_SCENARIOS = [
+          {
+            id: 'flagger_stop',
+            icon: '🛑',
+            title: 'Flagger with STOP paddle',
+            q: 'You approach a work zone. The traffic light 100 ft ahead is GREEN. A flagger in front of you holds up a STOP paddle. What do you do?',
+            choices: [
+              'Continue — the green light takes priority over a flagger',
+              'Stop. Flagger instructions override all other signals, including green lights',
+              'Creep forward until the flagger steps aside',
+              'Honk to get the flagger\'s attention'
+            ],
+            correct: 1,
+            exp: 'A trained, certified flagger has full legal authority to control traffic inside a work zone — more than the traffic signal. If their paddle says STOP, you stop. If it says SLOW, you proceed carefully. Ignoring a flagger is a moving violation AND creates a direct injury risk to the crew.'
+          },
+          {
+            id: 'flagger_slow',
+            icon: '🐢',
+            title: 'Flagger flips to SLOW',
+            q: 'The flagger rotates the paddle from STOP to SLOW. Traffic in your lane starts moving. What\'s the correct speed?',
+            choices: [
+              'Full posted speed — SLOW just means "resume normal driving"',
+              'The posted advisory speed (usually 15–25 mph) through the entire work zone',
+              'Accelerate to pass the zone before the flagger changes back',
+              'Wait for an explicit "GO" paddle signal'
+            ],
+            correct: 1,
+            exp: 'SLOW paddle = proceed at the advisory speed posted at the zone entrance (typically 15–25 mph). Workers are active. Fines are doubled. Maintain that speed until you pass the "END ROAD WORK" sign — not until you leave sight of the flagger.'
+          },
+          {
+            id: 'merge_choice',
+            icon: '↖️',
+            title: 'Lane closure merge',
+            q: 'A highway sign says "Right lane closed 1 mile ahead." You\'re in the right lane. Traffic is moderate but moving. What\'s the best merge strategy?',
+            choices: [
+              'Merge left immediately — early merge is always the courteous choice',
+              'Stay right until just before the closure — the "zipper merge" maximizes throughput in heavy traffic',
+              'Either A or B depending on traffic: light traffic, merge early; congested, zipper at the end',
+              'Wait for a forced merge at the cones'
+            ],
+            correct: 2,
+            exp: 'Both strategies are legal. In light traffic, early merge is fine and polite. In heavy congestion, studies show the zipper merge (alternating at the merge point) reduces backups by ~40%. What\'s NOT okay: sitting in the closing lane to "cheat past" stopped traffic and then forcing your way in at the last possible moment.'
+          },
+          {
+            id: 'worker_shoulder',
+            icon: '🦺',
+            title: 'Worker on the shoulder',
+            q: 'I-295, 65 mph. No lane closure, but a Maine DOT worker in a reflective vest is on the right shoulder next to a parked truck with flashing amber lights. What do you do?',
+            choices: [
+              'Maintain 65 mph — they\'re on the shoulder, not in your lane',
+              'If the left lane is safe, move over. If not, slow to about 45 mph (20 mph below posted)',
+              'Stop completely to offer help',
+              'Flash high beams as courtesy and maintain speed'
+            ],
+            correct: 1,
+            exp: 'Same Move Over law as for emergency vehicles (Maine §2054-A). Utility, DOT, and tow workers are covered. Move over one lane when safe, or slow 20 mph below the posted limit if you can\'t. This law exists because roadside worker deaths are one of the leading causes of work-zone fatalities.'
+          },
+          {
+            id: 'barrel_gap',
+            icon: '🔶',
+            title: 'Gap in the barrel line',
+            q: 'You\'re passing a work zone. There\'s a gap between two orange barrels that looks like you could cut through to save 30 seconds. What do you do?',
+            choices: [
+              'Cut through — the gap is clearly wide enough',
+              'Stay in your lane. Gaps are worker access points, not traffic shortcuts',
+              'Cut through only if no one appears to be watching',
+              'Honk first, then cut through if clear'
+            ],
+            correct: 1,
+            exp: 'Orange barrels delineate active work areas — the gaps exist so workers, trucks, and equipment can move in and out. Cutting through can drive you over fresh paint, hot asphalt, or open trenches, and it\'s a doubled-fine traffic violation. Whatever 30 seconds you save isn\'t worth the ticket or the injury risk.'
+          },
+          {
+            id: 'pilot_car',
+            icon: '🚗',
+            title: 'Pilot car leading traffic',
+            q: 'A pilot car labeled "FOLLOW ME" pulls in front of your lane at a work zone, going 25 mph in a 45-mph zone. The opposing lane is blocked by cones. What do you do?',
+            choices: [
+              'Pass the pilot car when safe — it\'s well below the posted limit',
+              'Follow at the pilot car\'s speed. It\'s leading you through a single-lane section where opposing traffic is currently waiting',
+              'Honk and flash for the pilot to speed up',
+              'Pass only if you have a truck with a horn'
+            ],
+            correct: 1,
+            exp: 'Pilot cars lead traffic through one-way sections — usually where one lane is closed and both directions have to share the remaining lane. The opposing traffic is stopped at the OTHER end waiting for their turn. Passing the pilot means driving into head-on traffic. Follow the pilot until the END ROAD WORK sign.'
+          }
+        ];
+        var constrState = d.constrState || {};
+        var constrPassed = Object.keys(constrState).filter(function(k){return constrState[k] && constrState[k].correct;}).length;
+        var constrAllDone = Object.keys(constrState).length === CONSTR_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '🚧'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Construction Zone Drill'),
+            h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, 'Flaggers · merges · Move Over · ' + constrPassed + ' / ' + CONSTR_SCENARIOS.length + ' passed'),
+            constrAllDone && constrPassed === CONSTR_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — safe in any work zone.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              CONSTR_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          CONSTR_SCENARIOS.map(function(sc) {
+            var state = constrState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, constrState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('constrState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === CONSTR_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.zone_wise) { dBadges.zone_wise = true; upd('badges', dBadges); addToast('🏅 Achievement: Work-Zone Wise'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #f97316', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, constrState);
+                  delete ns[sc.id];
+                  upd('constrState', ns);
+                },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // TEEN GDL DRILL (Maine Graduated Driver's License rules)
+      // ══════════════════════════════════════════════════════════
+      if (view === 'teenGDL') {
+        var GDL_FACTS = [
+          { icon: '📘', title: 'Three phases',       body: 'Maine GDL: Learner\'s Permit at 15 (w/ driver\'s ed enrollment). Intermediate (provisional) License at 16 after holding permit 6+ months. Full License at 17 with a clean 180-day record, or automatically at 18.' },
+          { icon: '⏱️', title: '70 supervised hours', body: 'Before the road test, Maine requires 70 hours of supervised driving (10 of those at night) if you\'re in driver\'s ed. 75 hours if you\'re not. These hours get verified on the logbook your parent signs.' },
+          { icon: '📵', title: 'Phones — zero tolerance', body: 'Under 18: all mobile-device use is banned while driving, including hands-free and GPS. First offense $50–$500, license suspension for repeats. The rule covers texting, calling, maps, music skipping — any touch.' },
+          { icon: '🔄', title: 'The clock resets',    body: 'A moving-violation conviction during intermediate phase restarts your 270-day clock from the violation date. Translation: one speeding ticket and you\'re back to square one for the passenger and curfew restrictions.' }
+        ];
+        var GDL_SCENARIOS = [
+          {
+            id: 'friends_party',
+            icon: '👥',
+            title: 'Friends want a ride',
+            q: 'You got your Maine intermediate license 3 months ago. You\'re 16. Two friends from school ask for a ride to a party. No adults in the car. Legal?',
+            choices: [
+              'Yes — you\'re licensed, you can carry who you want',
+              'No — during the 270-day intermediate phase, no non-family passengers under 20 unless a licensed driver 20+ is in the front seat',
+              'Yes, as long as everyone buckles up',
+              'Yes, but only within 5 miles of home'
+            ],
+            correct: 1,
+            exp: 'Maine\'s provisional license restricts you from carrying non-family passengers for the FIRST 270 days of intermediate licensing — unless a licensed driver age 20+ is in the front seat. The rule exists because teen-with-teen-passengers crashes are statistically the highest-risk driving situation in America. Siblings / parents / grandparents are always exempt.'
+          },
+          {
+            id: 'curfew',
+            icon: '🌙',
+            title: 'The 2 AM diner run',
+            q: 'You\'re 16 with an intermediate license. Friends want to hit a 24-hour diner at 2 AM. You\'re not coming from work or school. Legal for you to drive?',
+            choices: [
+              'Yes — intermediate drivers can drive anytime',
+              'No — midnight to 5 AM is off-limits for intermediate drivers unless you\'re going to/from work, school, or have a licensed 20+ driver in the front seat',
+              'Only on weekends',
+              'Only with parental text-permission'
+            ],
+            correct: 1,
+            exp: 'Maine intermediate license curfew: no driving 12:00 AM to 5:00 AM. Exceptions: coming from or going to work, school, or a licensed emergency-responder activity — AND a licensed 20+ driver in the passenger seat works as a blanket exemption. A social trip is not an exception. A ticket here also RESETS your 270-day intermediate clock.'
+          },
+          {
+            id: 'hands_free',
+            icon: '📱',
+            title: 'Hands-free call',
+            q: 'You\'re 17, intermediate license. Your parent calls on your phone, which is paired to the car\'s Bluetooth speaker. You use the steering-wheel button to answer. Legal?',
+            choices: [
+              'Yes — hands-free is always legal',
+              'No — Maine law bans all mobile-device use (including hands-free) for drivers under 18',
+              'Only if the call is under 30 seconds',
+              'Only for family calls'
+            ],
+            correct: 1,
+            exp: 'Under 18 in Maine: no phone use at all while driving. Not texting, not calling, not hands-free, not GPS input. The law is stricter than for adult drivers because teen-driver-distraction crashes are the #1 cause of teen-driver deaths. Pull over to take any call. A violation during intermediate phase restarts your 270-day clock.'
+          },
+          {
+            id: 'supervised_hours',
+            icon: '⏱️',
+            title: 'How many hours?',
+            q: 'You\'re in driver\'s ed and want to take your Maine road test. How many supervised driving hours do you need logged?',
+            choices: [
+              '40 hours',
+              '50 hours',
+              '70 hours total — with 10 of those at night',
+              '100 hours'
+            ],
+            correct: 2,
+            exp: '70 hours supervised driving, 10 at night, logged and signed by a parent or guardian, if you completed driver\'s education. Without driver\'s ed it\'s 75 hours. Night hours are specifically required because most teen fatal crashes happen after dark. The log is verified at the BMV when you test.'
+          },
+          {
+            id: 'clock_reset',
+            icon: '🔄',
+            title: 'Ticket consequence',
+            q: 'You have an intermediate license. 60 days in, you get a speeding ticket (guilty). What happens to your intermediate-phase restrictions?',
+            choices: [
+              'Nothing — a ticket is just a ticket',
+              'The 270-day intermediate clock RESETS from the violation date, extending all passenger/curfew restrictions',
+              'You lose your license permanently',
+              'You have to retake the road test'
+            ],
+            correct: 1,
+            exp: 'Any moving-violation conviction during intermediate phase restarts your 270-day clock from the violation date. So a ticket 60 days in resets you back to day zero — meaning another 270 days of no-non-family-passenger and no-midnight-drive rules. Multiple violations can also trigger license suspension. Drive carefully during this phase.'
+          },
+          {
+            id: 'sibling',
+            icon: '👨‍👧',
+            title: 'Sibling to practice',
+            q: 'You have an intermediate license, 60 days in. Can you drive your 14-year-old sister to her soccer practice, just the two of you?',
+            choices: [
+              'No — no passengers at all',
+              'Yes — immediate family members are always exempt from the passenger restriction',
+              'Only with a licensed adult in the passenger seat',
+              'Only with written parental permission'
+            ],
+            correct: 1,
+            exp: 'Immediate family — siblings, parents, grandparents, step-family — are always exempt from the passenger restriction. The rule targets teen-with-teen-friend situations, not family errands. This is why families can rely on newly-licensed drivers for practical chores like shuttling younger siblings.'
+          }
+        ];
+        var gdlState = d.gdlState || {};
+        var gdlPassed = Object.keys(gdlState).filter(function(k){return gdlState[k] && gdlState[k].correct;}).length;
+        var gdlAllDone = Object.keys(gdlState).length === GDL_SCENARIOS.length;
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #065f46, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, '📘'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Teen GDL Drill'),
+            h('div', { style: { fontSize: '12px', color: '#a7f3d0' } }, 'Maine Graduated License rules · ' + gdlPassed + ' / ' + GDL_SCENARIOS.length + ' passed'),
+            gdlAllDone && gdlPassed === GDL_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ All correct — you know the GDL rules cold.') : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'The Maine GDL system'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              GDL_FACTS.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          GDL_SCENARIOS.map(function(sc) {
+            var state = gdlState[sc.id] || {};
+            var answered = state.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (state.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = state.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', { key: ci,
+                    disabled: answered,
+                    onClick: function() {
+                      if (answered) return;
+                      var ns = Object.assign({}, gdlState);
+                      ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+                      upd('gdlState', ns);
+                      if (ci === sc.correct) {
+                        addToast('✓ Correct!');
+                        var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
+                        if (passedNew === GDL_SCENARIOS.length) {
+                          var dBadges = Object.assign({}, d.badges || {});
+                          if (!dBadges.gdl_scholar) { dBadges.gdl_scholar = true; upd('badges', dBadges); addToast('🏅 Achievement: GDL Scholar'); }
+                        }
+                      } else {
+                        addToast('Not quite — see explanation');
+                      }
+                    },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid #34d399', lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() {
+                  var ns = Object.assign({}, gdlState);
+                  delete ns[sc.id];
+                  upd('gdlState', ns);
                 },
                 style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
               }, '↺ Retry') : null
@@ -13322,6 +17070,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       // ══════════════════════════════════════════════════════════
+      // RULES FOUNDATIONS — 9 universal pillars
+      // ══════════════════════════════════════════════════════════
+      if (view === 'rulesFoundations') {
+        var pillarKeys = ['rightOfWay', 'laneDiscipline', 'signaling', 'passing', 'merging', 'pedestrian', 'emergency', 'railroad', 'speedAndFollowing'];
+        var activePillarKey = d.rulesPillar && UNIVERSAL_RULES[d.rulesPillar] ? d.rulesPillar : 'rightOfWay';
+        var activePillar = UNIVERSAL_RULES[activePillarKey];
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #312e81, #0f172a)', borderRadius: '14px', padding: '22px', textAlign: 'center', marginBottom: '14px', border: '2px solid #818cf8' } },
+            h('div', { style: { fontSize: '40px' } }, '📚'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, 'Rules Foundations'),
+            h('div', { style: { fontSize: '12px', color: '#c7d2fe', lineHeight: '1.5' } },
+              'Nine universal pillars every US driver must know. State rules (like Maine\'s) layer specifics on top of these.')
+          ),
+          // Pillar tabs
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
+            pillarKeys.map(function(pk) {
+              var p = UNIVERSAL_RULES[pk];
+              var isActive = pk === activePillarKey;
+              return h('button', { key: pk,
+                onClick: function() { upd('rulesPillar', pk); },
+                style: {
+                  padding: '8px 12px', borderRadius: '8px',
+                  border: '1px solid ' + (isActive ? '#818cf8' : '#334155'),
+                  background: isActive ? 'rgba(129,140,248,0.25)' : '#1e293b',
+                  color: isActive ? '#fff' : '#cbd5e1',
+                  fontSize: '11px', fontWeight: isActive ? 800 : 600,
+                  cursor: 'pointer', whiteSpace: 'nowrap'
+                }
+              }, p.icon + ' ' + p.title);
+            })
+          ),
+          // Pillar detail card
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '20px', border: '1px solid #334155' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '36px' } }, activePillar.icon),
+              h('div', null,
+                h('div', { style: { fontSize: '17px', fontWeight: 900 } }, activePillar.title),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' } }, activePillar.summary)
+              )
+            ),
+            // If this pillar has a ranked ladder (right-of-way), render it numbered
+            activePillar.ladder ? h('div', { style: { marginTop: '14px' } },
+              activePillar.ladder.map(function(item, ix) {
+                return h('div', { key: ix,
+                  style: { display: 'flex', gap: '10px', padding: '10px', marginBottom: '6px',
+                    background: ix % 2 ? '#020617' : '#1e293b', borderRadius: '8px',
+                    borderLeft: '3px solid #818cf8' }
+                },
+                  h('div', { style: { minWidth: '28px', fontSize: '20px', fontWeight: 900, color: '#c7d2fe' } }, item.rank),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#e0e7ff', marginBottom: '4px' } }, item.who),
+                    h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.55' } }, item.rule)
+                  )
+                );
+              })
+            ) : null,
+            // If this pillar has a flat rules list, render it as bullets
+            activePillar.rules ? h('div', { style: { marginTop: '14px' } },
+              activePillar.rules.map(function(r, ix) {
+                return h('div', { key: ix,
+                  style: { display: 'flex', gap: '10px', padding: '10px', marginBottom: '6px',
+                    background: ix % 2 ? '#020617' : '#1e293b', borderRadius: '8px',
+                    borderLeft: '3px solid #818cf8' }
+                },
+                  h('div', { style: { minWidth: '20px', fontSize: '14px', color: '#818cf8' } }, '●'),
+                  h('div', { style: { flex: 1, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6' } }, r)
+                );
+              })
+            ) : null
+          ),
+          // Footer: cross-reference to Maine overrides + right-of-way quiz
+          h('div', { style: { marginTop: '14px', padding: '12px', background: '#1e293b', borderRadius: '10px', border: '1px dashed #475569' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } },
+              '↪ State rules layer on top. Maine has specific overrides for BAC, phone use, school buses, move-over fines, and winter driving.'),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+              h('button', { onClick: function() { updMulti({ view: 'rightOfWay', rowIdx: 0, rowAnswered: null, rowScore: 0 }); },
+                style: { padding: '8px 14px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }
+              }, 'Practice: Right-of-Way Quiz →'),
+              h('button', { onClick: function() { updMulti({ view: 'permitStart' }); },
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'transparent', color: '#60a5fa', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }
+              }, 'Take the Permit Test →')
+            )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // RIGHT-OF-WAY SCENARIOS (who goes first?)
       // ══════════════════════════════════════════════════════════
       if (view === 'rightOfWay') {
@@ -13396,6 +17232,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             choices: ['You go — you have momentum', 'The car going DOWNHILL must back up', 'The car going UPHILL goes first (has right-of-way)'],
             correct: 2,
             exp: 'Car going UPHILL has right-of-way. Backing downhill is much easier than backing uphill loaded. The descending driver yields.'
+          },
+          {
+            id: 'zipper_merge', title: 'Zipper Merge at Lane Closure',
+            q: 'A sign says "Right lane closed in 1 mile." Traffic is heavy. Some drivers are merging left immediately; others are staying in the right lane.',
+            choices: ['Merge immediately — it\'s polite', 'Stay in the closing lane until the merge point, then alternate one-for-one', 'Drive in the shoulder to get ahead'],
+            correct: 1,
+            exp: 'Zipper merge: use BOTH lanes fully until the merge point, then alternate. This is both legal and ~40% faster for total throughput. Early merging creates the backup.'
+          },
+          {
+            id: 'flashing_yellow_arrow', title: 'Flashing Yellow Arrow (Left Turn)',
+            q: 'You\'re turning left. The left-turn signal shows a FLASHING YELLOW arrow (not solid).',
+            choices: ['Stop — same as red', 'Yield to oncoming traffic, then turn when safe', 'Go immediately — you have the right-of-way'],
+            correct: 1,
+            exp: 'Flashing yellow arrow = "left turns permitted but YIELD to oncoming traffic and pedestrians." Different from solid green arrow (protected turn, no oncoming) and solid yellow (prepare to stop).'
+          },
+          {
+            id: 'flashing_red_intersection', title: 'Flashing Red at All Four Signals',
+            q: 'You approach an intersection where ALL four traffic lights are flashing red.',
+            choices: ['Treat it as a 4-way stop — full stop, then right-of-way rules', 'Treat as yield — slow but don\'t stop', 'Power is out — honk and go through'],
+            correct: 0,
+            exp: 'Flashing red = STOP SIGN. All four flashing red = treat as a 4-way stop: full stop, then first-arrived goes, simultaneous = car on right.'
+          },
+          {
+            id: 'stuck_on_tracks', title: 'Stuck on Railroad Tracks',
+            q: 'Your car stalls ON railroad tracks. You hear a train horn in the distance.',
+            choices: ['Try to restart the car quickly', 'Get out and walk TOWARD the train at a 45° angle', 'Get out and run AWAY from the train'],
+            correct: 1,
+            exp: 'Get out IMMEDIATELY. Walk toward the oncoming train at a 45° angle — debris from the collision flies forward. Running away puts you in the debris path. Call 911 and the emergency number on the crossing post.'
+          },
+          {
+            id: 'disabled_on_shoulder', title: 'Disabled Vehicle on Shoulder',
+            q: 'A car is pulled onto the right shoulder with its hazard lights flashing. You\'re in the right lane on a 2-lane highway.',
+            choices: ['Maintain speed — you have the right-of-way', 'Move one lane left if possible; otherwise slow substantially', 'Stop to help in your lane'],
+            correct: 1,
+            exp: '"Move Over" laws exist in all 50 states. If a lane change is safe, move left. Otherwise slow down significantly. Maine adds a $300 fine for violating this around emergency/utility vehicles.'
+          },
+          {
+            id: 'construction_flagger', title: 'Construction Zone Flagger',
+            q: 'You approach a work zone. A flagger holds a STOP paddle facing you, then flips it to SLOW.',
+            choices: ['Obey the flagger — they override signs and signals', 'Obey the signs — flaggers have no authority', 'Use your best judgment — ignore both if the road looks clear'],
+            correct: 0,
+            exp: 'In a work zone, a flagger\'s hand signals are the LAW — they override posted signs and signals. Ignoring a flagger is a serious traffic offense, usually with doubled fines in work zones.'
+          },
+          {
+            id: 'school_bus_divided', title: 'School Bus on Divided Highway',
+            q: 'A school bus stops with red lights flashing on the OPPOSITE side of a divided highway (physical median between directions). You\'re on the other side.',
+            choices: ['STOP — always stop for a school bus with red lights', 'Continue — only same-direction traffic must stop on divided roads', 'Slow down but don\'t stop'],
+            correct: 1,
+            exp: 'On a DIVIDED highway (physical median), only same-direction traffic stops. On undivided (no median, even 4 lanes), BOTH directions stop. This is federal law — learn the difference.'
+          },
+          {
+            id: 'white_cane_ped', title: 'Pedestrian with White Cane',
+            q: 'A pedestrian with a WHITE CANE is about to step off the curb — NOT at a marked crosswalk or intersection.',
+            choices: ['Continue — they\'re not in a crosswalk', 'Full stop and yield — mandatory', 'Honk to alert them'],
+            correct: 1,
+            exp: 'A pedestrian with a white cane or guide dog has MANDATORY right-of-way ANYWHERE on the roadway in all 50 states — crosswalk or not. Never honk; it can disorient them.'
+          },
+          {
+            id: 'roundabout_emergency', title: 'Emergency Vehicle at Roundabout',
+            q: 'You\'re circulating inside a roundabout. An ambulance with lights/siren approaches the roundabout entry.',
+            choices: ['Stop immediately in the roundabout', 'EXIT the roundabout first, then pull right', 'Speed up to clear it'],
+            correct: 1,
+            exp: 'Never stop INSIDE a roundabout — it blocks everyone. Exit at your next available exit, THEN pull right and stop for the emergency vehicle.'
+          },
+          {
+            id: 'cyclist_in_bike_lane', title: 'Right Turn Across Bike Lane',
+            q: 'You\'re about to make a right turn. A bike lane runs along the right curb, and a cyclist is in it, going straight.',
+            choices: ['Turn first — you\'re bigger', 'Yield to the cyclist — they\'re going straight in their lane', 'Honk and turn'],
+            correct: 1,
+            exp: 'Through-traffic (even a cyclist) has right-of-way over turning traffic. Wait for the cyclist to clear, then turn. Maine also requires 3 ft clearance when passing cyclists.'
           }
         ];
         var rIdx = d.rowIdx || 0;
@@ -13404,10 +17310,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (rIdx >= rowScenarios.length) {
           return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
             h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-            h('div', { style: { background: 'linear-gradient(135deg, ' + (rScore >= 8 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (rScore >= 8 ? '#4ade80' : '#f59e0b') } },
-              h('div', { style: { fontSize: '64px' } }, rScore >= 8 ? '🏆' : '📝'),
-              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, rScore >= 8 ? 'Right-of-Way Mastered!' : 'Keep Practicing'),
-              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 8 ? '#4ade80' : '#f59e0b', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
+            h('div', { style: { background: 'linear-gradient(135deg, ' + (rScore >= 14 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (rScore >= 14 ? '#4ade80' : '#f59e0b') } },
+              h('div', { style: { fontSize: '64px' } }, rScore >= 14 ? '🏆' : '📝'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, rScore >= 14 ? 'Right-of-Way Mastered!' : 'Keep Practicing'),
+              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 14 ? '#4ade80' : '#f59e0b', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
               h('button', { onClick: function() { updMulti({ rowIdx: 0, rowScore: 0, rowAnswered: null }); },
                 style: { marginTop: '12px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
               }, '↻ Try Again')
@@ -13775,7 +17681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   else if (act === 'maintenance') upd('view', 'maintenanceGame');
                   else if (act === 'row') updMulti({ view: 'rightOfWay', rowIdx: 0, rowScore: 0, rowAnswered: null });
                   else if (act === 'parking') upd('view', 'parking');
-                  else if (act === 'signs') updMulti({ view: 'signsView', signsQuizMode: true, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null });
+                  else if (act === 'signs') updMulti({ view: 'signsView', signsQuizMode: true, signsQuizReverse: false, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null });
                   else if (act === 'distracted') upd('view', 'distractedLab');
                   else if (act === 'reaction') updMulti({ view: 'reactionTest', rtPhase: 'intro' });
                   else if (act === 'emergency') upd('view', 'emergencyHandbook');
@@ -14265,6 +18171,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: 'Night Vision Training', desc: 'Focused night-drive drill with coach prompts.' },
           { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: 'Parent Ride Check', desc: '2-min structured eval — parent taps to mark errors.' },
           { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: 'Defensive Drills', desc: '8 hazard-response scenarios with correct-answer reveals.' },
+          { view: 'mooseSafety', goal: 'safety', icon: '🫎', name: 'Moose Encounter Drill', desc: 'Maine-specific: what to do when a moose is in the road.' },
+          { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: 'Emergency Vehicle Drill', desc: 'Maine Move Over law, pull-to-right rule, stopped responders.' },
+          { view: 'schoolBus', goal: 'safety', icon: '🚌', name: 'School Bus Stop Drill', desc: 'When to stop for a stopped school bus (Maine §2308).' },
+          { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: 'Railroad Crossing Drill', desc: 'Federal + Maine crossing rules — and the 45° escape if you stall.' },
+          { view: 'winterDriving', goal: 'safety', icon: '❄️', name: 'Winter Driving Drill', desc: 'Black ice, skid recovery, plow etiquette, and the 4WD myth.' },
+          { view: 'constructionZone', goal: 'safety', icon: '🚧', name: 'Construction Zone Drill', desc: 'Flaggers, zipper merges, barrels, pilot cars — fines doubled.' },
+          { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: 'Roundabout Drill', desc: 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.' },
+          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: 'DUI / Impaired-Driving Drill', desc: 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
@@ -14283,6 +18197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'maineWinter', goal: 'maine', icon: '❄️', name: 'Maine Winter Guide', desc: 'Moose warnings, black ice, winter kit, studded tires.' },
           { view: 'roundaboutGuide', goal: 'maine', icon: '🔄', name: 'Roundabout Tutorial', desc: 'Maine is adding these fast. Step-by-step how-to.' },
           { view: 'gdlTracker', goal: 'maine', icon: '🪪', name: 'GDL Stage Tracker', desc: 'Maine Graduated Driver License timeline + restrictions.' },
+          { view: 'teenGDL', goal: 'maine', icon: '📘', name: 'Teen GDL Drill', desc: 'Passenger, curfew, and phone rules teens get tested on.' },
           { view: 'insuranceCalc', goal: 'maine', icon: '💰', name: 'Insurance Calculator', desc: 'Estimate what your actual rate will be.' },
           { view: 'accidentProtocol', goal: 'maine', icon: '⚠️', name: 'Accident Protocol', desc: 'Maine-specific crash reporting & insurance steps.' },
           { view: 'logbook', goal: 'progress', icon: '📔', name: 'Driving Logbook', desc: 'All drives logged with 70-hour Maine progress bar.' },
@@ -15171,18 +19086,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' } },
                 list.map(function(ach) {
                   var earned = !!earnedBadges[ach.id];
+                  // Rarity: per-badge mapping by how frequently users typically earn it.
+                  // COMMON = most users get it. UNCOMMON = effort required. RARE = skill gate.
+                  // LEGENDARY = long-term dedication or edge-case wins.
+                  var rarityMap = {
+                    first_drive: 'COMMON', no_crash: 'COMMON', permit_pass: 'UNCOMMON', first_landmark: 'COMMON',
+                    first_challenge: 'COMMON', eco_warrior: 'UNCOMMON', safety_star: 'UNCOMMON',
+                    signal_perfect: 'UNCOMMON', full_stop: 'COMMON', night_drive: 'COMMON', night_owl: 'UNCOMMON',
+                    pretrip_pro: 'UNCOMMON', daily_streak_3: 'UNCOMMON', five_scenarios: 'UNCOMMON',
+                    all_weather: 'RARE', five_challenges: 'RARE', a_plus: 'RARE', speed_demon: 'RARE',
+                    park_master: 'RARE', three_point: 'RARE', hazard_ace: 'RARE', hypermiler: 'RARE',
+                    emergency_response: 'RARE', emergency_yield: 'RARE', five_landmarks: 'RARE',
+                    biome_tourist: 'RARE', defensive_drill: 'RARE', peer_pro: 'RARE',
+                    ten_drives: 'RARE', road_test_pass: 'RARE', winter_warrior: 'RARE',
+                    moose_dodge: 'RARE', bus_respect: 'UNCOMMON', school_hero: 'UNCOMMON',
+                    logbook_starter: 'UNCOMMON', safe_return: 'RARE', daily_streak_7: 'RARE',
+                    ten_landmarks: 'LEGENDARY', maintenance_master: 'LEGENDARY',
+                    civic_scholar: 'LEGENDARY', maine_explorer: 'LEGENDARY',
+                    logbook_ten_hr: 'LEGENDARY', daily_streak_30: 'LEGENDARY'
+                  };
+                  var rarity = rarityMap[ach.id] || 'COMMON';
+                  var rarityColors = {
+                    COMMON: '#94a3b8', UNCOMMON: '#22c55e', RARE: '#3b82f6', LEGENDARY: '#a78bfa'
+                  };
                   return h('div', { key: ach.id, className: 'rrBadgeCard',
                     style: {
                       background: earned ? 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95))' : '#0f172a',
-                      borderRadius: '12px', padding: '14px 10px', textAlign: 'center',
+                      borderRadius: '12px', padding: '14px 10px 10px', textAlign: 'center',
                       border: '2px solid ' + (earned ? c.ring : '#1e293b'),
                       boxShadow: earned ? '0 4px 16px ' + c.glow : 'none',
                       opacity: earned ? 1 : 0.55,
-                      cursor: 'default'
+                      cursor: 'default',
+                      position: 'relative'
                     }
                   },
+                    // Rarity badge — top-right corner
+                    h('div', { style: { position: 'absolute', top: '6px', right: '6px', padding: '2px 6px', borderRadius: '3px', fontSize: '8px', fontWeight: 900, letterSpacing: '0.08em', color: rarityColors[rarity], border: '1px solid ' + rarityColors[rarity], background: 'rgba(0,0,0,0.4)', opacity: earned ? 0.95 : 0.5 } }, rarity),
                     // Badge icon with tier ring
-                    h('div', { style: { position: 'relative', width: '56px', height: '56px', margin: '0 auto 8px' } },
+                    h('div', { style: { position: 'relative', width: '56px', height: '56px', margin: '8px auto 8px' } },
                       h('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', background: earned ? c.bg : '#1e293b', animation: earned ? 'rrGalGlow 2.5s ease-in-out infinite' : 'none', color: c.ring } }),
                       h('div', { style: { position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', filter: earned ? 'none' : 'grayscale(1)' } }, earned ? ach.icon : '🔒')
                     ),
@@ -16287,14 +20228,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ', UnsignaledLaneChanges=' + drivingStats.unsignaledLaneChanges +
                 ', CyclistClosePass=' + (drivingStats.cyclistClose || 0) +
                 '. Format as short paragraphs, each starting with an emoji.';
-              callGemini(prompt).then(function(response) {
-                upd('coachResponse', response);
+              if (!callGemini) {
+                upd('coachResponse', 'AI coach not available in this environment.');
                 upd('coachLoading', false);
-                if (response) speak('Your AI driving coach analysis is ready.');
-              }).catch(function() {
-                upd('coachResponse', 'Unable to connect to AI coach. Please try again.');
-                upd('coachLoading', false);
-              });
+              } else {
+                callGemini(prompt).then(function(response) {
+                  upd('coachResponse', response);
+                  upd('coachLoading', false);
+                  if (response) speak('Your AI driving coach analysis is ready.');
+                }).catch(function() {
+                  upd('coachResponse', 'Unable to connect to AI coach. Please try again.');
+                  upd('coachLoading', false);
+                });
+              }
             },
               style: { width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }
             }, '🤖 Analyze My Drive') : null,

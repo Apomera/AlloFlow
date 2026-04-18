@@ -8226,6 +8226,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             }
           });
+          // Update school-zone flashing beacons — alternating amber lamps (top ↔ bottom).
+          // Self-cleaning: drop any beacon whose mesh has been removed from the scene
+          // (happens when the chunk unloads). ~1.2 Hz alternation.
+          if (s3.flashingBeacons && s3.flashingBeacons.length) {
+            var beaconTick = Math.floor(timeRef.current * 2.4) % 2;
+            s3.flashingBeacons = s3.flashingBeacons.filter(function(b) {
+              // Walk up parents: if we ever lose the scene root, mesh was removed
+              var n = b.mesh; while (n.parent) n = n.parent;
+              if (n !== s3.scene) return false;
+              var lit = (beaconTick === b.phase);
+              b.mesh.material.opacity = lit ? 1.0 : 0.25;
+              b.mesh.material.color.setHex(lit ? 0xffd900 : 0x8a6a00);
+              return true;
+            });
+          }
 
           // Update traffic vehicles (low-poly car groups)
           var tGroup = s3.trafficGroup;
@@ -8323,15 +8338,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   cg.add(tsideR);
                 }
               }
-              // Wheels (4)
-              var wMat = new T.MeshLambertMaterial({ color: 0x111111 });
-              var wR = 0.18;
-              [[-bLen * 0.3, wR, 0.45], [-bLen * 0.3, wR, -0.45], [bLen * 0.3, wR, 0.45], [bLen * 0.3, wR, -0.45]].forEach(function(wp) {
-                var wGeo = new T.CylinderGeometry(wR, wR, 0.12, 10);
+              // Wheels (4) — sized per vehicle type so they visually ground the body.
+              // Trucks, buses, vans get bigger wheels (otherwise the tall body looks like
+              // it's floating on tiny donuts). Tire width also scales so wheels read
+              // clearly from a distance.
+              var wMat = new T.MeshLambertMaterial({ color: 0x0c0c0c });
+              var wR = isBus ? 0.32 : isTruck ? 0.27 : isVan ? 0.25 : isSUV ? 0.23 : 0.20;
+              var wWidth = isBus ? 0.18 : isTruck ? 0.17 : isVan ? 0.15 : isSUV ? 0.14 : 0.13;
+              // Position wheel center just inside the body edge so the outer half pokes
+              // out clearly (body is 0.85 wide → halfwidth 0.425, wheel center at 0.40).
+              var wZOff = 0.40;
+              // X positions: front + rear axle, pushed in from each end by a tire-width margin
+              var wXAxle = bLen * 0.30;
+              // Silver hub cap — makes the tire read as a wheel, not a solid cylinder
+              var hubMat = new T.MeshLambertMaterial({ color: 0x909096 });
+              [[-wXAxle, wR, wZOff], [-wXAxle, wR, -wZOff], [wXAxle, wR, wZOff], [wXAxle, wR, -wZOff]].forEach(function(wp) {
+                var wGeo = new T.CylinderGeometry(wR, wR, wWidth, 14);
                 var wheel = new T.Mesh(wGeo, wMat);
                 wheel.rotation.x = Math.PI / 2;
                 wheel.position.set(wp[0], wp[1], wp[2]);
                 cg.add(wheel);
+                // Hub cap — smaller disc with slightly wider Z so it reads outboard
+                var hubGeo = new T.CylinderGeometry(wR * 0.55, wR * 0.55, wWidth + 0.004, 12);
+                var hub = new T.Mesh(hubGeo, hubMat);
+                hub.rotation.x = Math.PI / 2;
+                hub.position.set(wp[0], wp[1], wp[2]);
+                cg.add(hub);
+              });
+              // Black wheel-well shading — a dark rectangle beneath each wheel so the wheel
+              // always contrasts against the body even in bright sun / fog.
+              var wellMat = new T.MeshBasicMaterial({ color: 0x050505 });
+              [[-wXAxle, 0.01, 0.40], [wXAxle, 0.01, 0.40], [-wXAxle, 0.01, -0.40], [wXAxle, 0.01, -0.40]].forEach(function(shp) {
+                var well = new T.Mesh(new T.PlaneGeometry(wR * 2.2, wWidth * 1.6), wellMat);
+                well.rotation.x = -Math.PI / 2;
+                well.position.set(shp[0], shp[1], shp[2]);
+                cg.add(well);
               });
               // ── Headlights (front) — per-car materials so each light is independently animatable ──
               // Named mesh tags ('rr_fl', 'rr_fr') let the render loop find them without scanning materials.
@@ -9313,6 +9354,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var flag = new T.Mesh(new T.BoxGeometry(0.8, 0.5, 0.02), new T.MeshLambertMaterial({ color: 0xef4444 }));
                     flag.position.set(lmCenterWX + lm.side * 2 + lm.side * 0.4, 3.5, lmCenterWZ + 1.5);
                     chunkGroup.add(flag);
+                    // ── Flashing yellow school-zone beacons on both sides of the road ──
+                    // Two poles with twin flashing amber lamps — alternating at ~1.2 Hz.
+                    // Placed on the APPROACH side of the school (~6m before the landmark Z).
+                    var beaconZ = lmCenterWZ - 6;
+                    s3.flashingBeacons = s3.flashingBeacons || [];
+                    [-1, 1].forEach(function(bSide) {
+                      var roadCtr = iw.spline ? (iw.spline.centerAt(beaconZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+                      var bPoleX = roadCtr + bSide * (roadHalfW + 0.8);
+                      var bHt = iw.spline ? iw.spline.heightAt(beaconZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var bPole = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 3.0, 6), new T.MeshLambertMaterial({ color: 0x888888 }));
+                      bPole.position.set(bPoleX, bHt + 1.5, beaconZ);
+                      chunkGroup.add(bPole);
+                      // Sign panel (yellow diamond — school zone warning)
+                      var schoolSignMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                      var schoolSign = new T.Mesh(new T.BoxGeometry(0.85, 0.85, 0.04), schoolSignMat);
+                      schoolSign.rotation.z = Math.PI / 4; // 45° diamond
+                      schoolSign.position.set(bPoleX, bHt + 2.6, beaconZ);
+                      chunkGroup.add(schoolSign);
+                      // Twin amber lamps (top + bottom of sign)
+                      [-0.55, 0.55].forEach(function(bdy, bi) {
+                        var lampMat = new T.MeshBasicMaterial({ color: 0xffbf00, transparent: true, opacity: 0.35 });
+                        var lampMesh = new T.Mesh(new T.SphereGeometry(0.11, 10, 10), lampMat);
+                        lampMesh.position.set(bPoleX, bHt + 2.6 + bdy, beaconZ + 0.05);
+                        chunkGroup.add(lampMesh);
+                        s3.flashingBeacons.push({ mesh: lampMesh, phase: (bi + (bSide > 0 ? 1 : 0)) % 2 });
+                      });
+                    });
                   } else if (lt.id === 'fire') {
                     // Garage door (larger)
                     var fdMat = new T.MeshLambertMaterial({ color: 0xfef3c7 });
@@ -10291,13 +10359,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   stopLine.rotation.x = -Math.PI / 2;
                   stopLine.position.set(stopLineCtr, stopLineHt + 0.014, stopLineZ);
                   chunkGroup.add(stopLine);
+                  // ── Tire skid marks on the approach side ──
+                  // Dark streaks that fade into the stop line — evidence of countless drivers
+                  // hard-braking just before the intersection. Two parallel streaks per lane
+                  // (one per wheel track), ~2m long, subtle dark gray.
+                  var skidMat = new T.MeshBasicMaterial({ color: 0x1a1816, transparent: true, opacity: 0.55, depthWrite: false });
+                  var skidApproachSign = cwOffset < 0 ? -1 : 1; // away from intersection
+                  var skidLaneOff = roadHalfW * 0.5; // center of each lane
+                  [-skidLaneOff, +skidLaneOff].forEach(function(skLaneX) {
+                    // 2 wheel tracks per lane, 0.45m apart
+                    [-0.22, 0.22].forEach(function(skWheelX) {
+                      var skZ = stopLineZ + skidApproachSign * 1.1; // starts just behind stop line
+                      var skCtr = markCenterAtZ(skZ);
+                      var skHt = iw.spline ? iw.spline.heightAt(skZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      var skid = new T.Mesh(new T.PlaneGeometry(0.16, 2.0), skidMat);
+                      skid.rotation.x = -Math.PI / 2;
+                      skid.position.set(skCtr + skLaneX + skWheelX, skHt + 0.0095, skZ);
+                      chunkGroup.add(skid);
+                    });
+                  });
 
                   // ── Lane arrows on the approach side (3m behind the stop line) ──
-                  // Paint a straight-ahead arrow in the center of each lane — one per direction.
-                  // Only on the APPROACH side (cwOffset < 0 means "before intersection from +Z direction",
-                  // cwOffset > 0 means "approach from -Z direction"). We paint both sides so both
-                  // approaches get arrows pointing TOWARD the intersection.
-                  var arrowPointsTowardIntersection = cwOffset < 0 ? -1 : 1;
+                  // Paint a straight-ahead arrow in the center of each lane, pointing
+                  // TOWARD the intersection (which is at crossZCenter, between the two
+                  // crosswalks). cwOffset < 0 means the crosswalk is at lower Z than the
+                  // intersection, so driver approaches from -Z and the arrow must point +Z.
+                  // cwOffset > 0: driver approaches from +Z, arrow must point -Z.
+                  var arrowPointsTowardIntersection = cwOffset < 0 ? +1 : -1;
                   var arrowZ = stopLineZ + (cwOffset < 0 ? -3.0 : 3.0);
                   var arrowCtr = markCenterAtZ(arrowZ);
                   var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -10624,16 +10712,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (chunk.hasIntersection) {
                 var crossZ = chunkWorldZ + chunk.intersectionY;
                 var crossCenterX = splineCenterAtZ(crossZ);
-                var crossRoadFlatMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x333842 });
-                var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, 6);
+                // Use MeshBasicMaterial so the cross-street reads the same in day/night/fog
+                // (unlit = no dark shaded corners). Matches ribbon asphalt tone.
+                var crossRoadFlatMat = new T.MeshBasicMaterial({ color: scn.weather === 'snow' ? 0x8899a6 : 0x2f343e });
+                var crossWidth = 6.5;
+                var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, crossWidth);
                 var crossRoad = new T.Mesh(crossRoadGeo, crossRoadFlatMat);
                 crossRoad.rotation.x = -Math.PI / 2;
                 // Lift the cross-street slightly above the main ribbon so it
                 // doesn't z-fight; the main road sits at ~0.011.
                 var crossHt = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + chunk.intersectionY) : 0;
                 crossRoad.position.set(0, crossHt + 0.013, crossZ);
-                crossRoad.receiveShadow = true;
                 chunkGroup.add(crossRoad);
+                // Cross-street white edge lines (solid ribbons) — ALWAYS rendered so
+                // the cross-street consistently reads as a real road, not a gray stripe.
+                var crossEdgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                [-1, 1].forEach(function(ceSide) {
+                  var crossEdge = new T.Mesh(new T.PlaneGeometry(MAP_SIZE, 0.1), crossEdgeMat);
+                  crossEdge.rotation.x = -Math.PI / 2;
+                  crossEdge.position.set(0, crossHt + 0.014, crossZ + ceSide * (crossWidth / 2 - 0.15));
+                  chunkGroup.add(crossEdge);
+                });
                 // Cross street center dashes — skip the section overlapping the main road
                 // (gap stays centered on the spline, not on world X = 0).
                 var crossDashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
@@ -10642,8 +10741,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var cdGeo = new T.PlaneGeometry(1.5, 0.12);
                   var cd = new T.Mesh(cdGeo, crossDashMat);
                   cd.rotation.x = -Math.PI / 2;
-                  cd.position.set(cdx, 0.02, crossZ);
+                  cd.position.set(cdx, crossHt + 0.015, crossZ);
                   chunkGroup.add(cd);
+                }
+                // Cross-street crosswalk stripes — zebra pattern across the MAIN road at the
+                // intersection, so peds crossing the main road get a visible crosswalk too
+                // (the existing crosswalks at ±2.8 from crossZ are for peds crossing the CROSS
+                // street). These stamp the main direction of travel.
+                if (scn.weather !== 'snow') {
+                  var mainZebraMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
+                  [-1, 1].forEach(function(mzSide) {
+                    var mzX = crossCenterX + mzSide * (crossWidth / 2 - 0.4);
+                    // 5 parallel stripes perpendicular to the cross-street axis (so running along main-road Z)
+                    var mStripeCount = 6;
+                    var mStripeSpan = roadHalfW * 2;
+                    var mStripeGap = 0.35;
+                    var mStripeW = (mStripeSpan - mStripeGap * (mStripeCount - 1)) / mStripeCount;
+                    for (var mzi = 0; mzi < mStripeCount; mzi++) {
+                      var mzZ = crossZ - roadHalfW + mStripeGap / 2 + mzi * (mStripeW + mStripeGap) + mStripeW / 2;
+                      var mzStripe = new T.Mesh(new T.PlaneGeometry(1.6, mStripeW), mainZebraMat);
+                      mzStripe.rotation.x = -Math.PI / 2;
+                      mzStripe.position.set(mzX, crossHt + 0.015, mzZ);
+                      chunkGroup.add(mzStripe);
+                    }
+                  });
                 }
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;

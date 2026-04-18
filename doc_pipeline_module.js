@@ -6672,6 +6672,9 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
       // swapped in at the very end of the pipeline, after all AI calls complete. This prevents
       // any AI pass from accidentally corrupting/truncating/stripping base64 image data.
       const _deferredImageMap = {}; // token -> dataUrl
+      // Reset per-run image diagnostic trackers so stale state from earlier runs doesn't bleed in.
+      window.__lastImageSrcMissing = [];
+      window.__lastImageDroppedByAi = [];
       if (extractedImages.length > 0) {
         let imgIdx = 0;
         // Find figure elements with data-img-placeholder marker (clean, no regex issues)
@@ -6695,6 +6698,16 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             if (hasSrc) {
               srcToken = '__ALLOFLOW_DATAURL_FINAL_' + imgIdx + '__';
               _deferredImageMap[srcToken] = imgInfo.generatedSrc;
+            } else {
+              // Extraction + Imagen both failed. Image falls to the upload UI inside the figure,
+              // but that's easy to miss — record it so the fidelity panel can surface the failure.
+              warnLog('[Images] generatedSrc null for img ' + imgIdx + ' — extraction + Imagen both failed. Rendering as upload placeholder.');
+              window.__lastImageSrcMissing.push({
+                idx: imgIdx,
+                description: desc || '',
+                page: imgInfo && imgInfo.page ? imgInfo.page : null,
+                reason: imgInfo ? 'extraction-and-imagen-failed' : 'no-extracted-info',
+              });
             }
             // If we have a regenerated image, show it; otherwise show placeholder with upload
             return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData ? ` data-crop="${cropJson}"` : ''} style="position:relative;margin:1em 0">
@@ -7637,16 +7650,50 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // string replacement on tokens that passed through every AI stage unchanged, we guarantee
       // zero image corruption regardless of what any AI pass tried to do.
       if (_deferredImageMap && Object.keys(_deferredImageMap).length > 0) {
-        const _tokenCountBefore = Object.keys(_deferredImageMap).reduce((acc, tok) => acc + (accessibleHtml.split(tok).length - 1), 0);
+        const _parseTokenIdx = (tok) => { const m = tok.match(/__ALLOFLOW_DATAURL_FINAL_(\d+)__/); return m ? parseInt(m[1], 10) : null; };
+        const _placedIdx = [];
+        const _droppedIdx = [];
         Object.keys(_deferredImageMap).forEach((token) => {
-          accessibleHtml = accessibleHtml.split(token).join(_deferredImageMap[token]);
+          const occurrences = accessibleHtml.split(token).length - 1;
+          const idx = _parseTokenIdx(token);
+          if (occurrences > 0) {
+            if (idx != null) _placedIdx.push(idx);
+            accessibleHtml = accessibleHtml.split(token).join(_deferredImageMap[token]);
+          } else {
+            if (idx != null) _droppedIdx.push(idx);
+          }
         });
+        const _tokenCountBefore = _placedIdx.length;
         const _expectedTokens = Object.keys(_deferredImageMap).length;
         _pipeLog('Images', 'Restored ' + _tokenCountBefore + '/' + _expectedTokens + ' image data URL(s) from placeholder tokens');
         if (_tokenCountBefore < _expectedTokens) {
-          warnLog('[Images] WARNING: ' + (_expectedTokens - _tokenCountBefore) + ' image placeholder token(s) were missing before restoration — some images may have been dropped by an AI pass. Investigate the log above.');
+          warnLog('[Images] WARNING: ' + (_expectedTokens - _tokenCountBefore) + ' image placeholder token(s) were missing before restoration — an AI pass dropped figures at indexes: ' + _droppedIdx.join(', '));
+          window.__lastImageDroppedByAi = _droppedIdx.slice();
         }
       }
+      // Always emit the image reinsertion report so the UI can surface any failures.
+      try {
+        const _srcMissing = Array.isArray(window.__lastImageSrcMissing) ? window.__lastImageSrcMissing : [];
+        const _aiDropped = Array.isArray(window.__lastImageDroppedByAi) ? window.__lastImageDroppedByAi : [];
+        const _totalImages = (typeof extractedImages !== 'undefined' && extractedImages) ? extractedImages.length : 0;
+        const _placedCount = _totalImages - _srcMissing.length - _aiDropped.length;
+        if (_srcMissing.length > 0 || _aiDropped.length > 0) {
+          window.dispatchEvent(new CustomEvent('alloflow:image-reinsertion-report', {
+            detail: {
+              total: _totalImages,
+              placed: Math.max(0, _placedCount),
+              missingSrc: _srcMissing.map(m => m.idx),
+              missingSrcDetails: _srcMissing,
+              droppedByAi: _aiDropped,
+              timestamp: Date.now(),
+            }
+          }));
+          if (typeof addToast === 'function') {
+            const failCount = _srcMissing.length + _aiDropped.length;
+            addToast('⚠️ ' + failCount + ' image' + (failCount === 1 ? '' : 's') + ' failed to reinsert — review in the fidelity panel.', 'warning');
+          }
+        }
+      } catch(e) { /* non-blocking */ }
 
       // ── Store results ──
       const _result = {
@@ -8131,6 +8178,172 @@ tr { page-break-inside: avoid; }
         doc.head.appendChild(inspectCSS);
       }
     }, 100);
+  };
+
+  // ── Word restoration (fidelity v2) ──
+  // Splice missing words from source OCR back into the remediated HTML using fuzzy ±5-word
+  // context anchoring. DOMParser walks text nodes only — attributes, <script>, <style>, and
+  // figure captions are never modified. Words that can't be uniquely placed go to a
+  // "Content recovery" <section> appendix so nothing is silently dropped.
+  const applyWordRestoration = (html, missingList, sourceText) => {
+    if (!html || !Array.isArray(missingList) || missingList.length === 0 || !sourceText) {
+      return { html: html || '', restored: [], unplaceable: [] };
+    }
+    const restored = [];
+    const unplaceable = [];
+    const doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
+    const doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
+    let doc;
+    try { doc = new DOMParser().parseFromString(html, 'text/html'); }
+    catch (e) { warnLog('[Restore] DOMParser failed:', e && e.message); return { html, restored: [], unplaceable: missingList.slice() }; }
+    const srcWordsRaw = sourceText.match(/\S+/g) || [];
+    const srcWordsLc = srcWordsRaw.map(w => w.toLowerCase().replace(/[^a-z0-9'-]/g, ''));
+    const wordPositions = {};
+    srcWordsLc.forEach((w, i) => { if (w) { (wordPositions[w] = wordPositions[w] || []).push(i); } });
+    const normalize = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ');
+    const findUniqueContext = (textLc, contextWords) => {
+      const needle = contextWords.join(' ');
+      if (!needle || needle.length < 4) return -1;
+      const firstIdx = textLc.indexOf(needle);
+      if (firstIdx === -1) return -1;
+      const secondIdx = textLc.indexOf(needle, firstIdx + 1);
+      if (secondIdx !== -1) return -1;
+      return firstIdx;
+    };
+    const SKIP_PARENTS = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, FIGCAPTION: 1 };
+    const textNodes = [];
+    const root = doc.body || doc.documentElement;
+    if (root && doc.createTreeWalker) {
+      const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = walker.nextNode())) {
+        let parent = n.parentNode;
+        let skip = false;
+        while (parent && parent.nodeType === 1) {
+          if (SKIP_PARENTS[parent.tagName]) { skip = true; break; }
+          parent = parent.parentNode;
+        }
+        if (!skip && n.nodeValue && n.nodeValue.trim()) textNodes.push(n);
+      }
+    }
+    const mapOffset = (orig, normOffset) => {
+      let normCur = 0, origCur = 0, inWhite = false;
+      for (; origCur < orig.length && normCur < normOffset; origCur++) {
+        const ch = orig[origCur];
+        if (/\s/.test(ch)) {
+          if (!inWhite) { normCur++; inWhite = true; }
+        } else { normCur++; inWhite = false; }
+      }
+      return origCur;
+    };
+    missingList.forEach(entry => {
+      const targetWord = entry && entry.word ? String(entry.word).toLowerCase() : '';
+      if (!targetWord) return;
+      const positions = wordPositions[targetWord] || [];
+      let placed = false;
+      for (const pos of positions) {
+        const winStart = Math.max(0, pos - 5);
+        const winEnd = Math.min(srcWordsLc.length - 1, pos + 5);
+        const beforeCtx = srcWordsLc.slice(winStart, pos).filter(Boolean);
+        const afterCtx = srcWordsLc.slice(pos + 1, winEnd + 1).filter(Boolean);
+        if (beforeCtx.length < 2 && afterCtx.length < 2) continue;
+        for (const node of textNodes) {
+          const nodeTextLc = normalize(node.nodeValue);
+          let splicePoint = -1;
+          if (beforeCtx.length >= 2) {
+            const idx = findUniqueContext(nodeTextLc, beforeCtx);
+            if (idx !== -1) splicePoint = idx + beforeCtx.join(' ').length;
+          }
+          if (splicePoint === -1 && afterCtx.length >= 2) {
+            const idx = findUniqueContext(nodeTextLc, afterCtx);
+            if (idx !== -1) splicePoint = idx;
+          }
+          if (splicePoint === -1) continue;
+          const orig = node.nodeValue;
+          const origCursor = mapOffset(orig, splicePoint);
+          const origWord = srcWordsRaw[pos] || targetWord;
+          const needsLeadingSpace = origCursor > 0 && !/\s/.test(orig[origCursor - 1]);
+          const needsTrailingSpace = origCursor < orig.length && !/\s/.test(orig[origCursor]);
+          const insert = (needsLeadingSpace ? ' ' : '') + origWord + (needsTrailingSpace ? ' ' : '');
+          node.nodeValue = orig.slice(0, origCursor) + insert + orig.slice(origCursor);
+          restored.push({ word: origWord, context: beforeCtx.concat([targetWord], afterCtx).join(' ') });
+          placed = true;
+          break;
+        }
+        if (placed) break;
+      }
+      if (!placed) {
+        const posForCtx = positions.length > 0 ? positions[0] : 0;
+        const winStart = Math.max(0, posForCtx - 5);
+        const winEnd = Math.min(srcWordsLc.length - 1, posForCtx + 5);
+        const contextSnippet = srcWordsRaw.slice(winStart, winEnd + 1).join(' ');
+        const origWord = srcWordsRaw[posForCtx] || targetWord;
+        unplaceable.push({ word: origWord, context: contextSnippet, missingCount: entry.missingCount || 1 });
+      }
+    });
+    if (unplaceable.length > 0) {
+      const body = doc.body || doc.documentElement;
+      let section = body && body.querySelector ? body.querySelector('section[data-content-recovery="true"]') : null;
+      if (!section) {
+        section = doc.createElement('section');
+        section.setAttribute('aria-label', 'Content recovery');
+        section.setAttribute('data-content-recovery', 'true');
+        section.style.cssText = 'margin-top:2em;padding:1em;border-top:2px solid #f59e0b;background:#fffbeb;border-radius:8px';
+        const h = doc.createElement('h2');
+        h.textContent = 'Content recovery';
+        h.style.cssText = 'color:#b45309;font-size:1.1em;margin-top:0';
+        section.appendChild(h);
+        const p = doc.createElement('p');
+        p.textContent = 'Words from the source document that could not be confidently placed in context appear here so no content is lost:';
+        p.style.cssText = 'color:#78350f;font-size:0.9em';
+        section.appendChild(p);
+        const ul = doc.createElement('ul');
+        ul.setAttribute('data-recovery-list', 'true');
+        ul.style.cssText = 'font-size:0.9em;color:#78350f';
+        section.appendChild(ul);
+        body.appendChild(section);
+      }
+      const ul = section.querySelector('ul[data-recovery-list="true"]') || section.querySelector('ul');
+      unplaceable.forEach(u => {
+        const li = doc.createElement('li');
+        const strong = doc.createElement('strong');
+        strong.textContent = u.word;
+        li.appendChild(strong);
+        li.appendChild(doc.createTextNode(' — source context: "' + u.context + '"'));
+        if (ul) ul.appendChild(li);
+      });
+    }
+    let outHtml;
+    try { outHtml = doctypePrefix + (doc.documentElement ? doc.documentElement.outerHTML : html); }
+    catch (e) { outHtml = html; }
+    return { html: outHtml, restored, unplaceable };
+  };
+
+  const applyWordRestorationInPlace = (missingList, sourceText) => {
+    try {
+      const currentHtml = (function() {
+        if (pdfPreviewRef && pdfPreviewRef.current) {
+          const d = pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document;
+          if (d) {
+            try { d.designMode = 'off'; } catch(_) {}
+            const h = '<!DOCTYPE html>\n' + d.documentElement.outerHTML;
+            try { d.designMode = 'on'; } catch(_) {}
+            return h;
+          }
+        }
+        return (pdfFixResult && pdfFixResult.accessibleHtml) || '';
+      })();
+      const result = applyWordRestoration(currentHtml, missingList, sourceText);
+      if (result.html && result.html !== currentHtml && typeof setPdfFixResult === 'function' && pdfFixResult) {
+        setPdfFixResult({ ...pdfFixResult, accessibleHtml: result.html });
+        pdfFixResult = { ...pdfFixResult, accessibleHtml: result.html };
+        setTimeout(() => { try { updatePdfPreview(); } catch(_) {} }, 30);
+      }
+      return result;
+    } catch (e) {
+      warnLog('[Restore] applyWordRestorationInPlace failed:', e && e.message);
+      return { html: '', restored: [], unplaceable: missingList || [] };
+    }
   };
 
   // ── PDF Preview: Get current edited HTML from iframe ──
@@ -9419,6 +9632,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
     getPdfPreviewHtml: _wrap(getPdfPreviewHtml),
     updatePdfPreview: _wrap(updatePdfPreview),
+    applyWordRestoration: applyWordRestoration,
+    applyWordRestorationInPlace: _wrap(applyWordRestorationInPlace),
     generateCustomExportStyle: _wrapAsync(generateCustomExportStyle),
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
     generateResourceHTML: _wrap(generateResourceHTML),

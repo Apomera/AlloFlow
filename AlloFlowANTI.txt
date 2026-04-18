@@ -13296,6 +13296,8 @@ Return only the corrected version of this exact text:`;
   const [fixIssuesList, setFixIssuesList] = useState(null); // specific issues found for display during Step 4
   const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {}, fullText: '', ocr: {} } — shown during wait
   const [fidelityResult, setFidelityResult] = useState(null); // { missing, fidelity, totalSrc, totalMissing } — output of text fidelity check vs source OCR
+  const [imageReinsertionReport, setImageReinsertionReport] = useState(null); // { total, placed, missingSrc, droppedByAi, missingSrcDetails } — surfaces image reinsertion failures
+  const [autoRestoreSummary, setAutoRestoreSummary] = useState(null); // { restored, unplaceable, beforeFidelity, afterFidelity } — result of the last auto- or manual-restore pass
 
   // ── Live chunk review: listen for events from doc_pipeline during remediation ──
   // MUST be in AlloFlowContent (not useTranslation) so setLiveChunkStream etc. are in scope
@@ -13303,8 +13305,9 @@ Return only the corrected version of this exact text:`;
     const onSessionStart = () => { setLiveChunkStream([]); setLiveChunkSessionActive(true); setLiveChunkExpanded({}); setLiveChunkRejected({}); setChunkResumePrompt(null); setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); };
     const onResumeAvailable = (e) => { setChunkResumePrompt(e.detail); };
     const onBoringPalette = () => { setBoringPalettePrompt(true); };
-    const onExtractionComplete = (e) => { setExtractionData(e.detail); };
+    const onExtractionComplete = (e) => { setExtractionData(e.detail); setFidelityResult(null); setImageReinsertionReport(null); setAutoRestoreSummary(null); };
     const onFixIssuesDetected = (e) => { setFixIssuesList(e.detail); };
+    const onImageReinsertionReport = (e) => { setImageReinsertionReport(e.detail); };
     const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
     const onChunkFixed = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; const existing = prev.find(c => c.index === idx); if (existing) { return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c); } return [...prev, { ...e.detail, status: 'complete' }]; }); setChunkSaveFlash(true); setTimeout(() => setChunkSaveFlash(false), 2000); };
     const onChunkRefixed = (e) => { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); };
@@ -13318,6 +13321,7 @@ Return only the corrected version of this exact text:`;
     window.addEventListener('alloflow:boring-palette-detected', onBoringPalette);
     window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
     window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
+    window.addEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
     return () => {
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
@@ -13328,6 +13332,7 @@ Return only the corrected version of this exact text:`;
       window.removeEventListener('alloflow:boring-palette-detected', onBoringPalette);
       window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
       window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
+      window.removeEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
     };
   }, []);
 
@@ -19539,6 +19544,7 @@ Return ONLY valid JSON:
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
+  const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
@@ -19549,6 +19555,106 @@ Return ONLY valid JSON:
   // Expert Workbench — Advanced remediation mode
   const runAutonomousRemediation = _docPipeline ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
   const processExpertCommand = _docPipeline ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
+
+  // ── Auto fidelity + auto-restore (fidelity v2) ──
+  // When pdfFixLoading transitions true → false, the remediation pipeline has just finished.
+  // Run fidelity against the source OCR; if any words are missing, auto-restore them in place
+  // (fully hands-off per user spec). Multi-session gate: skip if the user is mid-run and hasn't
+  // covered all pages yet — otherwise un-remediated ranges would false-flag as "missing words."
+  const _prevPdfFixLoadingRef = useRef(pdfFixLoading);
+  useEffect(() => {
+    const wasLoading = _prevPdfFixLoadingRef.current;
+    _prevPdfFixLoadingRef.current = pdfFixLoading;
+    if (!wasLoading || pdfFixLoading) return; // fire only on true → false
+    // Give pdfFixResult + the preview iframe a tick to settle before reading HTML out.
+    const tid = setTimeout(() => {
+      try {
+        if (!extractionData || !extractionData.fullText) return;
+        // Multi-session gate — skip auto-flow until all ranges covered.
+        if (pdfMultiSession && pdfMultiSession.ranges && pdfMultiSession.totalPages) {
+          const covered = new Set();
+          (pdfMultiSession.ranges || []).forEach(r => {
+            for (let p = (r.start || 1); p <= (r.end || 1); p++) covered.add(p);
+          });
+          const isFullDoc = covered.size >= pdfMultiSession.totalPages;
+          if (!isFullDoc) {
+            if (addToast) addToast('Auto-fidelity skipped — more page ranges pending. Click Run fidelity check once all ranges are remediated.', 'info');
+            return;
+          }
+        }
+        const tokenize = (s) => {
+          const out = {};
+          const matches = (s || '').toLowerCase().match(/[a-z0-9][\w'-]*/g);
+          if (matches) matches.forEach(w => { out[w] = (out[w] || 0) + 1; });
+          return out;
+        };
+        const extractText = () => {
+          try {
+            const html = (typeof getPdfPreviewHtml === 'function') ? getPdfPreviewHtml() : '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html || '';
+            return tmp.textContent || tmp.innerText || '';
+          } catch (e) { return ''; }
+        };
+        const sourceText = extractionData.fullText || '';
+        const srcCounts = tokenize(sourceText);
+        const totalSrc = Object.values(srcCounts).reduce((s, n) => s + n, 0);
+        // Pass 1 — baseline fidelity.
+        const remText1 = extractText();
+        const remCounts1 = tokenize(remText1);
+        const missing1 = [];
+        Object.keys(srcCounts).forEach(w => {
+          const delta = srcCounts[w] - (remCounts1[w] || 0);
+          if (delta > 0) missing1.push({ word: w, missingCount: delta, sourceCount: srcCounts[w] });
+        });
+        missing1.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
+        const totalMissing1 = missing1.reduce((s, m) => s + m.missingCount, 0);
+        const totalRem1 = Object.values(remCounts1).reduce((s, n) => s + n, 0);
+        const beforeFidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing1 / totalSrc) * 1000) / 10) : 100;
+        setFidelityResult({ missing: missing1, totalSrc, totalRem: totalRem1, totalMissing: totalMissing1, fidelity: beforeFidelity });
+        if (missing1.length === 0) {
+          if (addToast) addToast('✓ Fidelity 100% — no words missing.', 'success');
+          return;
+        }
+        // Auto-restore — pipeline's surgical helper.
+        let restoreResult = { restored: [], unplaceable: missing1 };
+        try { restoreResult = applyWordRestorationInPlace(missing1, sourceText) || restoreResult; }
+        catch (restoreErr) { /* warn already in pipeline */ }
+        // Pass 2 — fidelity after restoration. Small delay so the iframe re-renders via
+        // updatePdfPreview before we re-read.
+        setTimeout(() => {
+          try {
+            const remText2 = extractText();
+            const remCounts2 = tokenize(remText2);
+            const missing2 = [];
+            Object.keys(srcCounts).forEach(w => {
+              const delta = srcCounts[w] - (remCounts2[w] || 0);
+              if (delta > 0) missing2.push({ word: w, missingCount: delta, sourceCount: srcCounts[w] });
+            });
+            missing2.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
+            const totalMissing2 = missing2.reduce((s, m) => s + m.missingCount, 0);
+            const totalRem2 = Object.values(remCounts2).reduce((s, n) => s + n, 0);
+            const afterFidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing2 / totalSrc) * 1000) / 10) : 100;
+            setFidelityResult({ missing: missing2, totalSrc, totalRem: totalRem2, totalMissing: totalMissing2, fidelity: afterFidelity });
+            setAutoRestoreSummary({
+              restored: (restoreResult && restoreResult.restored) || [],
+              unplaceable: (restoreResult && restoreResult.unplaceable) || [],
+              beforeFidelity,
+              afterFidelity,
+            });
+            if (addToast) {
+              const rCount = ((restoreResult && restoreResult.restored) || []).length;
+              const uCount = ((restoreResult && restoreResult.unplaceable) || []).length;
+              const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '% · ' + rCount + ' restored' + (uCount > 0 ? ' · ' + uCount + ' in recovery appendix' : '');
+              addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
+            }
+          } catch (e) { /* non-blocking */ }
+        }, 500);
+      } catch (outerErr) { /* non-blocking */ }
+    }, 200);
+    return () => clearTimeout(tid);
+  }, [pdfFixLoading, extractionData, pdfMultiSession]);
+
   const [expertCommandInput, setExpertCommandInput] = useState('');
   const [agentActivityLog, setAgentActivityLog] = useState([]);
   const [isAgentRunning, setIsAgentRunning] = useState(false);
@@ -53978,8 +54084,65 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               };
                               const disagreements = (extractionData.ocr && extractionData.ocr.disagreements) || [];
                               const method = (extractionData.metadata && extractionData.metadata.extractionMethod) || 'pdfjs';
+                              const _manualRestore = () => {
+                                if (!fidelityResult || !fidelityResult.missing || fidelityResult.missing.length === 0) return;
+                                const beforeFidelity = fidelityResult.fidelity;
+                                let result;
+                                try { result = applyWordRestorationInPlace(fidelityResult.missing, extractionData.fullText); }
+                                catch (e) { result = { restored: [], unplaceable: [] }; }
+                                setTimeout(() => {
+                                  _runCheck();
+                                  setAutoRestoreSummary({
+                                    restored: (result && result.restored) || [],
+                                    unplaceable: (result && result.unplaceable) || [],
+                                    beforeFidelity,
+                                    afterFidelity: null,
+                                  });
+                                  if (typeof addToast === 'function') {
+                                    const rCount = ((result && result.restored) || []).length;
+                                    const uCount = ((result && result.unplaceable) || []).length;
+                                    addToast(rCount + ' word' + (rCount === 1 ? '' : 's') + ' restored' + (uCount > 0 ? ' · ' + uCount + ' in recovery appendix' : ''), 'success');
+                                  }
+                                }, 500);
+                              };
+                              const imgReport = imageReinsertionReport;
+                              const imgFailCount = imgReport ? ((imgReport.missingSrc || []).length + (imgReport.droppedByAi || []).length) : 0;
                               return (
                               <div className="mt-3">
+                                {/* Image reinsertion failures row — surfaces silently-dropped images so the user sees them. */}
+                                {imgFailCount > 0 && (
+                                  <details className="mb-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]" open>
+                                    <summary className="cursor-pointer font-bold text-amber-800 select-none">
+                                      ⚠️ {imgFailCount} image{imgFailCount === 1 ? '' : 's'} failed to reinsert — click to review
+                                    </summary>
+                                    <div className="mt-2 space-y-1">
+                                      {(imgReport.missingSrcDetails || []).map((m, i) => (
+                                        <div key={`src-${i}`} className="flex items-baseline gap-2">
+                                          <span className="font-mono text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded shrink-0">#{m.idx}</span>
+                                          <span className="text-[10px] text-slate-700 shrink-0">{m.page ? `Page ${m.page}` : 'Unknown page'} — extraction failed</span>
+                                          <span className="text-[10px] text-slate-500 italic truncate">{(m.description || '').substring(0, 80)}</span>
+                                        </div>
+                                      ))}
+                                      {(imgReport.droppedByAi || []).map((idx, i) => (
+                                        <div key={`ai-${i}`} className="flex items-baseline gap-2">
+                                          <span className="font-mono text-[10px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded shrink-0">#{idx}</span>
+                                          <span className="text-[10px] text-slate-700">Dropped by AI pass — placeholder token absent in final HTML</span>
+                                        </div>
+                                      ))}
+                                      <p className="text-[10px] text-slate-500 italic mt-2">Use the Upload or Replace button inside each image's figure in the preview to re-insert these manually.</p>
+                                    </div>
+                                  </details>
+                                )}
+                                {/* Auto-restore summary — shown after the auto-flow or a manual restore run. */}
+                                {autoRestoreSummary && (
+                                  <div className="mb-2 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1.5 text-[11px] text-emerald-900 flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold">✨ Restore applied:</span>
+                                    <span>{autoRestoreSummary.restored.length} word{autoRestoreSummary.restored.length === 1 ? '' : 's'} spliced back{autoRestoreSummary.unplaceable.length > 0 ? ` · ${autoRestoreSummary.unplaceable.length} in Content Recovery appendix` : ''}</span>
+                                    {autoRestoreSummary.beforeFidelity != null && fidelityResult && (
+                                      <span className="text-[10px] text-emerald-700 ml-auto">{autoRestoreSummary.beforeFidelity}% → {fidelityResult.fidelity}%</span>
+                                    )}
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🔍</span>
                                   <h4 className="text-sm font-bold text-slate-800">Verify Text Fidelity</h4>
@@ -53994,6 +54157,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   >
                                     🔍 Run fidelity check
                                   </button>
+                                  {fidelityResult && fidelityResult.missing && fidelityResult.missing.length > 0 && (
+                                    <button
+                                      onClick={_manualRestore}
+                                      className="text-[10px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 font-bold inline-flex items-center gap-1"
+                                      title="Splice missing words back into the remediated document using fuzzy context-anchor matching. Unplaceable words go to a Content Recovery appendix so nothing is lost."
+                                      aria-label="Restore missing words into the remediated document"
+                                    >
+                                      🔧 Restore missing words
+                                    </button>
+                                  )}
                                   {fidelityResult && (
                                     <span className="text-[10px] text-slate-500 ml-auto">
                                       {fidelityResult.fidelity}% · {fidelityResult.totalMissing === 0 ? 'no missing words ✓' : `${fidelityResult.totalMissing} potentially missing`}
