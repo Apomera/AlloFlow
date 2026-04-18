@@ -9045,10 +9045,13 @@ tr { page-break-inside: avoid; }
       try { const bg = hexToRgb(cssVars.bgColor); const lum = (0.2126*(bg[0]/255<=0.03928?bg[0]/255/12.92:Math.pow((bg[0]/255+0.055)/1.055,2.4))) + (0.7152*(bg[1]/255<=0.03928?bg[1]/255/12.92:Math.pow((bg[1]/255+0.055)/1.055,2.4))) + (0.0722*(bg[2]/255<=0.03928?bg[2]/255/12.92:Math.pow((bg[2]/255+0.055)/1.055,2.4))); return lum < 0.18 ? '#e2e8f0' : '#1e293b'; } catch(e) { return '#1e293b'; }
     })() || '#1e293b';
 
+    // Link underline satisfies WCAG 1.4.1 (Use of Color): a non-color signal
+    // distinguishes links from surrounding prose, so accent color alone isn't
+    // carrying the meaning. Print media strips the underline separately.
     const themeCSS = `
       body { font-family: ${cssVars.bodyFont}; font-size: ${fontSize}px; background: ${cssVars.bgColor}; color: ${textColor}; }
       h1, h2, h3, h4 { color: ${cssVars.headingColor}; }
-      a { color: ${cssVars.accentColor}; }
+      a { color: ${cssVars.accentColor}; text-decoration: underline; }
       table { border-color: ${cssVars.cardBorder}; }
       th { background: ${cssVars.cardBg}; }
       ${cssVars.extraCSS || ''}
@@ -9059,9 +9062,17 @@ tr { page-break-inside: avoid; }
     } else {
       themed = html.replace('</head>', '<style>' + themeCSS + '</style>\n</head>');
     }
-    // Run WCAG sanitizer — High Contrast uses AAA (7:1), all others use AA (4.5:1)
+    // Run WCAG sanitizer — High Contrast uses AAA (7:1), all others use AA (4.5:1).
+    // For matchOriginal, colors come from the uploaded PDF and may have AA-failing
+    // combinations that the seed-based themes don't. sanitizeStyleForWCAG already
+    // runs fixContrastViolations internally, but we run one explicit extra pass for
+    // matchOriginal as belt-and-suspenders insurance against PDF-extracted palettes.
     const wcagLevel = seed?.wcagLevel || 'AA';
-    const sanitized = sanitizeStyleForWCAG(themed, { level: wcagLevel });
+    let sanitized = sanitizeStyleForWCAG(themed, { level: wcagLevel });
+    if (seedId === 'matchOriginal') {
+      const extraContrast = fixContrastViolations(sanitized.html);
+      if (extraContrast && extraContrast.html) sanitized = { ...sanitized, html: extraContrast.html };
+    }
     return sanitized.html;
   };
   // Backward compat alias
@@ -11058,6 +11069,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .line { border-bottom: 2px solid #cbd5e1; flex-grow: 1; width: 100%; min-width: 50px; }
           .page-break { page-break-before: always; border-top: 2px dashed #ccc; margin: 4rem 0; padding-top: 2rem; text-align: center; color: #999; }
           .page-break:after { content: "${t('export.teacher_copy_divider')}"; }
+          /* WCAG 1.4.1 Use of Color — links carry a non-color distinguishing signal. Print
+             media strips this below so unclickable paper links don't look visually cluttered. */
+          a { text-decoration: underline; }
           @media (forced-colors: active) { .section { border: 2px solid CanvasText; } th { border: 1px solid CanvasText; } }
           @media print {
             body { padding: 0.5in; margin: 0; font-size: 11pt; }

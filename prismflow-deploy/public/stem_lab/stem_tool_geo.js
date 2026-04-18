@@ -192,6 +192,11 @@ var d = labToolData || {};
 
           }
 
+          // Auto-load the Globe library when the Globe View tab is active.
+          if ((d.geoTab === 'globeView') && !window._globeLibLoaded) {
+            loadGlobeLib().then(function() { upd('_globeLibReady', true); });
+          }
+
 
 
           // ── Country Data (compact: [iso3, name, capital, continent, region, lat, lng, areaKm2]) ──
@@ -550,6 +555,9 @@ var d = labToolData || {};
           var geoSessionStats = d.geoSessionStats || {};
           var geoStatsOpen = !!d.geoStatsOpen;
 
+          // Globe View: currently-selected country for the info card below the globe.
+          var geoGlobeInfo = d.geoGlobeInfo || null;
+
           function recordContinentStat(continent, correct) {
             if (!continent) return;
             var next = Object.assign({}, geoSessionStats);
@@ -675,7 +683,7 @@ var d = labToolData || {};
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! +' + (pts + bonus) + ' pts' + (bonus > 0 ? ' (\uD83D\uDD25 streak!)' : '') });
 
               if (typeof stemBeep === 'function') stemBeep('correct');
-              if (newStreak >= 5 && typeof stemCelebrate === 'function') stemCelebrate();
+              if (typeof stemCelebrate === 'function' && (newStreak === 5 || newStreak === 10 || newStreak === 15 || newStreak === 20 || (newStreak >= 25 && newStreak % 25 === 0))) stemCelebrate();
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Identified ' + geoTarget.name);
 
@@ -828,11 +836,15 @@ var d = labToolData || {};
 
 
 
-            // Load GeoJSON
+            // Load GeoJSON — cached on window so tab-switch rebuilds reuse the
+            // parsed ~20MB dataset instead of re-parsing it each time.
+            var geojsonPromise = window._geoCountriesGeoJSON
+              ? Promise.resolve(window._geoCountriesGeoJSON)
+              : fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+                  .then(function(r) { return r.json(); })
+                  .then(function(data) { window._geoCountriesGeoJSON = data; return data; });
 
-            fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-
-              .then(function(r) { return r.json(); })
+            geojsonPromise
 
               .then(function(geojson) {
 
@@ -888,7 +900,13 @@ var d = labToolData || {};
 
           window._geoClickHandler = function(iso, name) {
 
-            if (geoTab === 'findCountry') checkAnswer(iso, name);
+            if (geoTab === 'findCountry') { checkAnswer(iso, name); return; }
+
+            if (geoTab === 'globeView') {
+              var match = countries.find(function(c) { return c.iso === iso; })
+                      || countries.find(function(c) { return name && c.name.toLowerCase() === String(name).toLowerCase(); });
+              upd('geoGlobeInfo', match || { name: name || iso || 'Unknown', iso: iso || '', _unknown: true });
+            }
 
           };
 
@@ -1000,11 +1018,15 @@ var d = labToolData || {};
 
 
             // Load country polygons from GeoJSON (same source used by the 2D Leaflet map,
-            // so no topojson-client dependency needed)
+            // so no topojson-client dependency needed). Shares the cached copy with initMap.
 
-            fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+            var globeGeojsonPromise = window._geoCountriesGeoJSON
+              ? Promise.resolve(window._geoCountriesGeoJSON)
+              : fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+                  .then(function(r) { return r.json(); })
+                  .then(function(data) { window._geoCountriesGeoJSON = data; return data; });
 
-              .then(function(r) { return r.json(); })
+            globeGeojsonPromise
 
               .then(function(geojson) {
 
@@ -1288,7 +1310,17 @@ var d = labToolData || {};
 
                 React.createElement('span', { className: 'text-xs bg-yellow-400 text-yellow-900 rounded-full px-2 py-0.5 font-bold' }, '\u2B50 ' + geoScore),
 
-                geoStreak >= 3 && React.createElement('span', { className: 'text-xs bg-orange-400 text-orange-900 rounded-full px-2 py-0.5 font-bold animate-pulse' }, '\uD83D\uDD25 ' + geoStreak + 'x'),
+                geoStreak >= 3 && (function() {
+                  var tier = geoStreak >= 20 ? 'gold' : geoStreak >= 10 ? 'red' : geoStreak >= 5 ? 'orange' : 'amber';
+                  var icons = geoStreak >= 20 ? '\uD83D\uDD25\uD83D\uDD25\uD83D\uDD25'
+                            : geoStreak >= 10 ? '\uD83D\uDD25\uD83D\uDD25'
+                            : '\uD83D\uDD25';
+                  var cls = tier === 'gold' ? 'bg-gradient-to-r from-amber-300 to-yellow-500 text-amber-900 ring-2 ring-amber-200'
+                          : tier === 'red' ? 'bg-red-500 text-white'
+                          : tier === 'orange' ? 'bg-orange-400 text-orange-900'
+                          : 'bg-amber-300 text-amber-900';
+                  return React.createElement('span', { className: 'text-xs rounded-full px-2 py-0.5 font-bold animate-pulse ' + cls, title: 'Current streak: ' + geoStreak + ' in a row' }, icons + ' ' + geoStreak + 'x');
+                })(),
 
                 // Review badge — spaced-repetition pill. Clickable to toggle review-only mode.
                 geoMissed.length > 0 && React.createElement('button', {
@@ -2022,7 +2054,32 @@ var d = labToolData || {};
 
                 style: { height: 450, width: '100%', background: '#0a0a2e' }
 
-              })
+              }),
+
+              window._GlobeGLConstructor && React.createElement('div', { className: 'p-3 bg-slate-900 text-white' },
+                geoGlobeInfo ? React.createElement('div', { className: 'max-w-2xl mx-auto bg-slate-800/70 border border-slate-700 rounded-xl p-3 flex items-start justify-between gap-3' },
+                  React.createElement('div', { className: 'flex-1' },
+                    React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                      React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCD'),
+                      React.createElement('h4', { className: 'text-base font-bold' }, geoGlobeInfo.name),
+                      geoGlobeInfo.iso && React.createElement('span', { className: 'text-[10px] text-slate-400 font-mono bg-slate-700 px-1.5 py-0.5 rounded' }, geoGlobeInfo.iso)
+                    ),
+                    geoGlobeInfo._unknown
+                      ? React.createElement('p', { className: 'text-xs text-slate-400 italic' }, 'Not in the 117-country dataset \u2014 basic info only.')
+                      : React.createElement('div', { className: 'grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-200 mt-1' },
+                          geoGlobeInfo.capital && React.createElement('div', null, React.createElement('span', { className: 'text-slate-400' }, 'Capital: '), geoGlobeInfo.capital),
+                          geoGlobeInfo.continent && React.createElement('div', null, React.createElement('span', { className: 'text-slate-400' }, 'Continent: '), geoGlobeInfo.continent),
+                          geoGlobeInfo.region && React.createElement('div', null, React.createElement('span', { className: 'text-slate-400' }, 'Region: '), geoGlobeInfo.region),
+                          geoGlobeInfo.area && React.createElement('div', null, React.createElement('span', { className: 'text-slate-400' }, 'Area: '), geoGlobeInfo.area.toLocaleString() + ' km\u00b2')
+                        )
+                  ),
+                  React.createElement('button', {
+                    onClick: function() { upd('geoGlobeInfo', null); },
+                    'aria-label': 'Close country info',
+                    className: 'text-slate-400 hover:text-white text-sm leading-none'
+                  }, '\u2715')
+                ) : React.createElement('p', { className: 'text-xs text-slate-500 text-center italic' }, 'Click any country on the globe to see its info here.')
+              )
 
             ),
 
@@ -2457,7 +2514,7 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); upd('geoDistCorrect', 0); upd('geoBadges', {}); upd('geoMissed', []); upd('geoReviewMode', false); upd('geoSessionStats', {}); if (addToast) addToast('\u267B Score reset!', 'info'); },
+                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); upd('geoDistCorrect', 0); upd('geoBadges', {}); upd('geoMissed', []); upd('geoReviewMode', false); upd('geoSessionStats', {}); upd('geoGlobeInfo', null); upd('geoCapitalsChoices', null); upd('geoLandmarkChoices', null); upd('geoLandmarkQuizFb', null); if (addToast) addToast('\u267B Score reset!', 'info'); },
 
                 className: 'text-teal-600 hover:text-teal-800 font-bold'
 

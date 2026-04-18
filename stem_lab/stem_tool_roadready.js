@@ -4398,13 +4398,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Net formula: sample gradient in the FORWARD direction, multiply by −aheadDir
           // so uphill always maps to "nose-up" regardless of which way the car faces.
           var gradePitch = 0;
+          var aheadDirP = Math.sin(car.heading) >= 0 ? 1 : -1;
           if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
             var spP = infiniteWorldRef.current.spline;
-            var aheadDir = Math.sin(car.heading) >= 0 ? 1 : -1;
-            var gradeAhead = spP.heightAt(car.y + aheadDir) - spP.heightAt(car.y);
-            gradePitch = Math.atan2(gradeAhead, 1) * (-aheadDir);
+            var gradeAhead = spP.heightAt(car.y + aheadDirP) - spP.heightAt(car.y);
+            gradePitch = Math.atan2(gradeAhead, 1) * (-aheadDirP);
           }
-          car._pitchTarget = accel * 0.003 + gradePitch * 0.5;
+          // Accel pitch (weight transfer) also depends on direction: positive accel
+          // (accelerating forward) should tilt the nose UP. Same direction-sign multiplier
+          // as the grade pitch so SB drivers don't get an inverted weight-transfer feel.
+          car._pitchTarget = accel * 0.003 * (-aheadDirP) + gradePitch * 0.5;
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
           // Body roll on turns. Coefficient bumped 0.003 → 0.005 — was so subtle that you
           // couldn't see the lean unless you slow-mo'd a screenshot. Now visibly tilts on
@@ -5593,12 +5596,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Reset heading to match the new direction + local spline bend
                 var respIsSouth = t.heading > 0;
                 t.heading = respIsSouth ? (Math.PI / 2 - respawnHeadingSp) : (-Math.PI / 2 - respawnHeadingSp);
-                // Clear any in-flight lane-change state so the fresh spawn isn't
-                // committing to a lane it already left.
+                // Clear any in-flight per-event state so the fresh spawn behaves like
+                // a brand-new car. Without these resets, a respawned car could:
+                //  • commit a lane-change toward a lane that doesn't exist at its new Y
+                //  • be flagged as "already waited at the stop sign" and roll through
+                //  • inherit a stale "pulled over for emergency" lane-offset target
+                //  • remain immune to player collision for 5s due to old _hitCooldown
                 t._pendingLaneOffset = null;
                 t._pendingLaneTimer = 0;
                 t._blinkerCancelTimer = 0;
                 t.blinker = 0;
+                t._stopArrivedAt = 0;
+                t._stopWaitTarget = null;
+                t._stopReleasedAt = 0;
+                t._emergencyPullOver = false;
+                t._hitCooldown = 0;
+                t._rearEndCooldown = 0;
+                t._aeb = false;
+                t._honkCooldown = 0;
+                t._laneChangeCooldown = 0;
                 // Reset bus stop-arm cycle on respawn so a stopped bus doesn't teleport
                 // with its arm still extended somewhere unexpected.
                 if (t.type === 'schoolbus') {
