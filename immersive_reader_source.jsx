@@ -89,17 +89,17 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                 className={`p-4 flex justify-between items-center transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus-within:opacity-100'}`}
             >
                 <div className="flex items-center gap-4">
-                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-600">
                         <ArrowLeft size={24} />
                      </button>
                      <div className="flex flex-col">
                         <span className="font-bold text-lg">{t('adventure.focus_reader')}</span>
-                        <span className="text-xs text-slate-500">{currentIndex + 1} / {words.length}</span>
+                        <span className="text-xs text-slate-600">{currentIndex + 1} / {words.length}</span>
                      </div>
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500">COLOR</span>
+                        <span className="text-xs font-bold text-slate-600">COLOR</span>
                         <div className="flex gap-1">
                             {colorOptions.map(c => (
                                 <button
@@ -113,7 +113,7 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500">SPEED</span>
+                        <span className="text-xs font-bold text-slate-600">SPEED</span>
                         <input aria-label={t('common.speed')}
                             type="range"
                             min="100"
@@ -140,7 +140,7 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-slate-100 -translate-x-1/2 -z-10 h-full"></div>
                     <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-100 -translate-y-1/2 -z-10 w-full"></div>
                 </div>
-                <div className="mt-12 text-slate-500 animate-pulse text-sm">
+                <div className="mt-12 text-slate-600 animate-pulse text-sm">
                     {isPlaying ? (
                         <span className="flex items-center gap-2"><Pause size={16}/> Tap to Pause</span>
                     ) : (
@@ -176,14 +176,14 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   return (
     <div className="sticky top-0 z-[60] p-4 bg-white/95 backdrop-blur-sm border-b border-slate-200 flex justify-between items-center shadow-sm">
       <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 shrink-0">
+        <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2 shrink-0">
             <Settings2 size={14}/> {t('immersive.title')}
         </span>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0">
             <label className="text-xs font-bold text-slate-700">{t('immersive.text_size')}</label>
             <div className="flex items-center gap-1">
-                <span className="text-[10px] text-slate-500">A</span>
+                <span className="text-[11px] text-slate-600">A</span>
                 <input aria-label={t('common.adjust_settings')}
                     type="range"
                     min="12"
@@ -244,7 +244,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={t('immersive.tap_mode') || 'Tap action'}>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-2">{t('immersive.tap_mode') || 'Tap'}</span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{t('immersive.tap_mode') || 'Tap'}</span>
             <button
               onClick={() => setInteractionMode('read')}
               aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
@@ -276,16 +276,16 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-slate-500">1s</span>
+              <span className="text-[11px] text-slate-600">1s</span>
               <input type="range" min="1000" max="8000" step="500" value={chunkReaderSpeed} onChange={(e) => setChunkReaderSpeed(parseInt(e.target.value))} className="w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" title={`${(chunkReaderSpeed/1000).toFixed(1)}s`} aria-label={t('immersive.speed')}/>
-              <span className="text-[10px] text-slate-500 tabular-nums">{(chunkReaderSpeed/1000).toFixed(1)}s</span>
+              <span className="text-[11px] text-slate-600 tabular-nums">{(chunkReaderSpeed/1000).toFixed(1)}s</span>
             </div>
           </div>
           </>
         )}
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-bold text-slate-500">{t('immersive.grammar_label')}</span>
+            <span className="text-xs font-bold text-slate-600">{t('immersive.grammar_label')}</span>
             <ToggleButton
               active={settings.showNouns}
               settingKey="showNouns"
@@ -321,7 +321,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0 relative">
-            <span className="text-xs font-bold text-slate-500">{t('immersive.colors') || 'Colors'}</span>
+            <span className="text-xs font-bold text-slate-600">{t('immersive.colors') || 'Colors'}</span>
             <select
               aria-label={t('immersive.color_preset') || 'Color preset'}
               value=""
@@ -351,9 +351,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <option value="rose">🌸 Rose</option>
             </select>
             <div className="flex items-center gap-1.5">
-              <label className="text-[10px] text-slate-500">{t('immersive.bg') || 'Bg'}</label>
+              <label className="text-[11px] text-slate-600">{t('immersive.bg') || 'Bg'}</label>
               <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={t('immersive.bg_color') || 'Background color'}/>
-              <label className="text-[10px] text-slate-500">{t('immersive.text') || 'Text'}</label>
+              <label className="text-[11px] text-slate-600">{t('immersive.text') || 'Text'}</label>
               <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={t('immersive.text_color') || 'Text color'}/>
             </div>
         </div>

@@ -80,7 +80,7 @@ const GameThemeToggle = () => {
       type="button"
     >
       <span>{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
-      <span className="text-[10px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
+      <span className="text-[11px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
     </button>
   );
 };
@@ -123,7 +123,7 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm text-slate-800 truncate">{item.label}</div>
-                {item.detail && <div className="text-xs text-slate-500 truncate">{item.detail}</div>}
+                {item.detail && <div className="text-xs text-slate-600 truncate">{item.detail}</div>}
               </div>
               <SpeakButton text={item.label} size={12} />
             </div>
@@ -328,7 +328,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
               <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-500'} /> {t('memory.moves')}: {moves}
+                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-600'} /> {t('memory.moves')}: {moves}
               </span>
               <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full transition-all ${scoreDelta !== null ? (scoreDelta > 0 ? 'ring-2 ring-emerald-400 scale-105' : 'ring-2 ring-red-400 scale-105') : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
                 <Trophy size={10} className="text-yellow-500" /> {t('memory.score')}: {score}
@@ -373,19 +373,19 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </button>
           <button
             onClick={() => setIsFullscreen(prev => !prev)}
-            className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             aria-label={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             data-help-key="memory_fullscreen_btn"
           >
             {isFullscreen ? <Minimize size={18}/> : <Maximize size={18}/>}
           </button>
-          <button onClick={onClose} className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18}/></button>
+          <button onClick={onClose} className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18}/></button>
         </div>
       </div>
       {!isWon && totalPairs > 0 && (
         <div className={`mb-5 ${isFullscreen ? '' : ''}`}>
-          <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-300' : 'text-slate-500'}`}>
+          <div className={`flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-300' : 'text-slate-600'}`}>
             <span>{t('memory.pairs')}</span>
             <span>{progressPct}%</span>
           </div>
@@ -407,7 +407,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           const stars = perfect ? 3 : great ? 2 : 1;
           const accuracy = moves > 0 ? Math.round((totalPairs / moves) * 100) : 100;
           const cardBg = isFullscreen ? 'bg-white/10 border-white/20 backdrop-blur-md' : 'bg-white border-slate-200';
-          const labelColor = isFullscreen ? 'text-slate-300' : 'text-slate-500';
+          const labelColor = isFullscreen ? 'text-slate-300' : 'text-slate-600';
           const valueColor = isFullscreen ? 'text-white' : 'text-slate-900';
           return (
           <div className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
@@ -428,15 +428,15 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             </div>
             <div className={`grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6`}>
               <div className={`rounded-xl border p-3 ${cardBg}`}>
-                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.score')}</div>
+                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.score')}</div>
                 <div className={`text-xl font-black ${valueColor}`}>{score}</div>
               </div>
               <div className={`rounded-xl border p-3 ${cardBg}`}>
-                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.moves')}</div>
+                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.moves')}</div>
                 <div className={`text-xl font-black ${valueColor}`}>{moves}</div>
               </div>
               <div className={`rounded-xl border p-3 ${cardBg}`}>
-                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>Accuracy</div>
+                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>Accuracy</div>
                 <div className={`text-xl font-black ${valueColor}`}>{accuracy}%</div>
               </div>
             </div>
@@ -502,7 +502,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center overflow-y-auto custom-scrollbar px-1">
-                          <p className={`font-bold w-full leading-tight ${isMismatch ? 'text-red-900' : isMatched ? 'text-green-900' : 'text-slate-800'} ${card.isTerm ? 'text-xs sm:text-sm' : 'text-[10px] sm:text-[11px] font-normal text-slate-600 leading-snug'}`}>
+                          <p className={`font-bold w-full leading-tight ${isMismatch ? 'text-red-900' : isMatched ? 'text-green-900' : 'text-slate-800'} ${card.isTerm ? 'text-xs sm:text-sm' : 'text-[11px] sm:text-[11px] font-normal text-slate-600 leading-snug'}`}>
                             {card.content}
                           </p>
                       </div>
@@ -708,10 +708,10 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
                      <GitMerge size={20} className="text-orange-500"/> {t('matching.title')}
                  </h3>
-                 <p className="text-xs text-slate-500">{t('matching.instructions')}</p>
+                 <p className="text-xs text-slate-600">{t('matching.instructions')}</p>
                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                      <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full">
-                         <GitMerge size={10} className="text-slate-500"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
+                         <GitMerge size={10} className="text-slate-600"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
                      </span>
                      {isChecked && (
                          <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in zoom-in duration-300' : ''}`}>
@@ -732,7 +732,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                 </button>
                 <button
                     onClick={onClose}
-                    className="p-1.5 hover:bg-red-50 rounded-full text-slate-500 hover:text-red-500 transition-colors"
+                    className="p-1.5 hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors"
                     title={t('common.close')}
                     aria-label={t('matching.close_aria')}
                 >
@@ -940,7 +940,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                  aria-valuenow={connections.length}
                              />
                          </div>
-                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 tabular-nums">{connections.length}/{items.length}</span>
+                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 tabular-nums">{connections.length}/{items.length}</span>
                      </div>
                  )}
              </div>
@@ -1290,7 +1290,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                    <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
                                </div>
                                {progressionLabelEn && progressionLabelEn !== progressionLabel && (
-                                   <div className="text-[10px] font-normal italic opacity-80">{progressionLabelEn}</div>
+                                   <div className="text-[11px] font-normal italic opacity-80">{progressionLabelEn}</div>
                                )}
                            </div>
                        )}
@@ -1312,7 +1312,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                            )}
                        </div>
                        {!hintHidden && attempts === 0 && keyboardLiftedIdx === null && items.length > 0 && (
-                           <div className="text-[11px] text-slate-500 italic flex items-center gap-2">
+                           <div className="text-[11px] text-slate-600 italic flex items-center gap-2">
                                <span>{t('timeline.game.keyboard_hint') || 'Keyboard: Enter to lift, ↑/↓ to move, Enter to drop.'}</span>
                                <button onClick={() => setHintHidden(true)} className="underline hover:text-slate-700" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
                            </div>
@@ -1361,12 +1361,12 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                            : `${colorClass} hover:-translate-y-1 hover:shadow-md cursor-grab active:cursor-grabbing`
                                        }
                                    `}>
-                                       <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
+                                       <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
                                            {idx + 1}
                                        </div>
                                        <div className="pr-6 sm:px-2">
                                            {isWon && (item.date || item.date_en) && (
-                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
+                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
                                                    {item.date}
                                                </div>
                                            )}
@@ -1383,7 +1383,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                {!isWon && <SpeakButton text={item.event} size={11} />}
                                            </div>
                                            {item.event_en && (
-                                               <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-500'}`}>
+                                               <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-600'}`}>
                                                    {item.event_en}
                                                </div>
                                            )}
@@ -1391,7 +1391,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                <>
                                                    <button
                                                        onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
-                                                       className="mt-2 text-[10px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-2 py-0.5 transition-colors inline-flex items-center gap-1"
+                                                       className="mt-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-2 py-0.5 transition-colors inline-flex items-center gap-1"
                                                        aria-label={t('timeline.game.why_aria') || 'Explain why this is out of place'}
                                                        aria-busy={explanations[item.originalIndex] === 'loading'}
                                                    >
@@ -1416,8 +1416,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        )}
                                        {!isWon && (
                                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1 shadow-sm">
-                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
-                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
+                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
+                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
                                             </div>
                                        )}
                                    </div>
@@ -1445,7 +1445,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            )}
        </div>
        <div className="p-4 bg-white border-t border-slate-200 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-           <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+           <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16}/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
            </div>
            <div className="flex gap-3">
@@ -1465,7 +1465,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                        title={t('timeline.game.hint_tooltip') || 'Move one item to its correct position (-15 pts)'}
                        data-help-key="timeline_hint_btn"
                    >
-                       💡 {t('timeline.game.hint') || 'Hint'} <span className="text-[10px] opacity-60">({Math.ceil(items.length / 3) - hintsUsed} {t('common.left') || 'left'})</span>
+                       💡 {t('timeline.game.hint') || 'Hint'} <span className="text-[11px] opacity-60">({Math.ceil(items.length / 3) - hintsUsed} {t('common.left') || 'left'})</span>
                    </button>
                )}
                {!isWon && (
@@ -1746,20 +1746,20 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         {isChecked && item.currentContainer !== 'deck' && item.currentContainer !== item.categoryId && (
              <>
                <div className="absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5"><X size={12}/></div>
-               <div className="mt-1 text-[10px] font-bold text-red-600 text-center leading-tight">
+               <div className="mt-1 text-[11px] font-bold text-red-600 text-center leading-tight">
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
                {onExplainIncorrect && (
                  <button
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
-                   className="mt-1 w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
+                   className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
                    aria-label="Explain why this was incorrect"
                  >
                    {explanations[item.id] === 'loading' ? (t('concept_sort.why_loading') || '…') : (explanations[item.id] ? (t('concept_sort.why_hide') || 'Hide why') : (t('concept_sort.why_label') || 'Why?'))}
                  </button>
                )}
                {explanations[item.id] && explanations[item.id] !== 'loading' && (
-                 <div className="mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[10px] text-indigo-900 leading-snug text-left">
+                 <div className="mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-left">
                    {explanations[item.id]}
                  </div>
                )}
@@ -1768,7 +1768,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         {isChecked && item.currentContainer === item.categoryId && (
              <>
                <div className="absolute -top-2 -right-2 bg-green-700 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
-               <div className="mt-1 text-[10px] font-bold text-green-600 text-center">✓</div>
+               <div className="mt-1 text-[11px] font-bold text-green-600 text-center">✓</div>
              </>
         )}
       </div>
@@ -1842,7 +1842,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            <div className="flex-grow space-y-2 min-h-[100px]">
                                {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment key={item.id}>{renderCard(item)}</React.Fragment>)}
                                {items.filter(i => i.currentContainer === bucket.id).length === 0 && (
-                                   <div className="text-center text-slate-500 text-xs italic py-8 opacity-50">{t('concept_sort.drop_placeholder')}</div>
+                                   <div className="text-center text-slate-600 text-xs italic py-8 opacity-50">{t('concept_sort.drop_placeholder')}</div>
                                )}
                            </div>
                            {keyboardSelectedItemId && (
@@ -1880,14 +1880,14 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                <div className="max-w-6xl mx-auto relative">
                    <div className="flex justify-between items-start mb-2">
                        <div className="flex items-center gap-3 flex-wrap">
-                           <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                           <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
                            {keyboardSelectedItemId && !hasUsedKeyboardCard && (
                                <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
                                    Now pick a category to drop this card into.
                                </span>
                            )}
                            {!keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && (
-                               <span className="text-[11px] text-slate-500 italic">
+                               <span className="text-[11px] text-slate-600 italic">
                                    Tip: press Enter on a card to sort with the keyboard.
                                </span>
                            )}
@@ -1955,7 +1955,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </div>
                        ))}
                        {deckItems.length === 0 && !isWon && (
-                           <div className="text-slate-500 italic font-bold text-sm mt-4 text-center w-full">
+                           <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
                                {t('concept_sort.word_bank_empty')}
                            </div>
                        )}
@@ -2183,7 +2183,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
                         <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
-                        <p className="text-slate-500">{t('concept_map.venn.victory_desc')}</p>
+                        <p className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                     </div>
                     <ConfettiExplosion />
                 </div>
@@ -2220,7 +2220,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 {t('concept_map.venn.return_bank')}
                             </button>
                         </div>
-                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-500 hover:text-slate-600 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
+                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-600 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
                     </div>
                 </div>
               )}
@@ -2294,7 +2294,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       `}
                       data-help-key="venn_drop_zone_shared"
                   >
-                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[10px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
+                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[11px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
                       <div className="flex flex-wrap gap-1.5 justify-center w-full overflow-y-auto max-h-[80%] p-2 custom-scrollbar">
                           {vennShared.map(item => (
                               <div
@@ -2305,7 +2305,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 aria-pressed={keyboardSelectedItemId === item.id}
                                 onKeyDown={(e) => handleItemKeyDown(e, item)}
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[10px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
                                 {getText(item)}
                               </div>
@@ -2315,7 +2315,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
               </div>
           </div>
           <div className="h-44 bg-slate-50 border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40" data-help-key="venn_item_bank">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 text-center">{t('concept_sort.instructions')}</div>
+              <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2 text-center">{t('concept_sort.instructions')}</div>
               <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-8">
                   {vennBank.map(item => (
                       <div
@@ -2335,7 +2335,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       </div>
                   ))}
                   {vennBank.length === 0 && !isWon && (
-                      <div className="text-slate-500 italic font-bold text-sm mt-4 text-center w-full">
+                      <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
                           {t('concept_map.venn.bank_empty')}
                       </div>
                   )}
@@ -2711,7 +2711,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                           aria-selected={isSelected}
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
-                           {cell.number && <span className="absolute top-0.5 left-0.5 text-[10px] sm:text-[10px] leading-none text-slate-500 font-normal">{cell.number}</span>}
+                           {cell.number && <span className="absolute top-0.5 left-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal">{cell.number}</span>}
                            {userChar}
                         </div>
                      );
@@ -2721,7 +2721,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          </div>
          <div className="w-full md:w-1/3 bg-white border-l border-slate-200 flex flex-col h-1/2 md:h-full" data-help-key="crossword_clues_list">
              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                 <div className="text-sm font-bold text-slate-500">
+                 <div className="text-sm font-bold text-slate-600">
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
@@ -2780,7 +2780,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 onBlur={(e) => e.target.focus()}
                 aria-hidden="true"
              />
-             <div className="p-2 bg-slate-50 text-[10px] text-center text-slate-500 border-t">
+             <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t">
                  {t('games.crossword.footer_tip')}
              </div>
              {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: 'correct' }))} onPlayAgain={() => { setIsWon(false); setScore(0); setUserState({}); }} onClose={onClose} t={t} /></div>}
@@ -2897,12 +2897,12 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                </div>
            ) : (
                <>
-                <div className="w-full flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="w-full flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider">
                     <span>{t('games.syntax.progress', { current: currentSentenceIndex + 1, total: sentences.length })}</span>
                     <span>{t('games.syntax.subtitle')}</span>
                 </div>
                 <div className={`w-full min-h-[80px] p-4 rounded-xl border-2 border-dashed flex flex-wrap gap-2 items-center justify-center transition-colors ${gameStatus === 'correct' ? 'bg-green-50 border-green-400' : 'bg-white border-slate-300'}`}>
-                    {userOrder.length === 0 && <span className="text-slate-500 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
+                    {userOrder.length === 0 && <span className="text-slate-600 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
                     {userOrder.map((word) => (
                         <button
                             aria-label={t('common.continue')}
@@ -3068,7 +3068,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 autoFocus
                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
             >
@@ -3078,7 +3078,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
                     <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
                 </h2>
-                <p className="text-slate-500 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
+                <p className="text-slate-600 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-4 mb-4 no-print bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
                 {!isCallerMode ? (
@@ -3140,14 +3140,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     <div className="flex items-center gap-4 w-full justify-between">
                          <button
                             onClick={() => setIsCallerMode(false)}
-                            className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-bold text-xs"
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs"
                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
                         >
                             <ArrowDown className="rotate-90" size={14}/> {t('bingo.exit_caller')}
                         </button>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                                <span className="text-xs font-bold text-slate-500 uppercase">{t('bingo.speed')}</span>
+                                <span className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</span>
                                 <input
                                     type="range"
                                     min="3" max="15" step="1"
@@ -3161,7 +3161,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             </div>
                             <button
                                 onClick={() => setIsHistoryVisible(prev => !prev)}
-                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-500 hover:bg-slate-600'}`}
+                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-600 hover:bg-slate-600'}`}
                                 title={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
                                 data-help-key="bingo_toggle_history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
                             >
@@ -3193,7 +3193,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 <ArrowDown className="-rotate-90" size={20}/>
                             </button>
                         </div>
-                        <div className="text-xs font-bold text-slate-500">
+                        <div className="text-xs font-bold text-slate-600">
                             {currentCallIndex + 1} / {callerQueue.length}
                         </div>
                     </div>
@@ -3234,7 +3234,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 )}
                             </div>
                         ) : (
-                            <div className="text-slate-500">
+                            <div className="text-slate-600">
                                 <p className="text-xl font-bold">{t('bingo.ready')}</p>
                                 <p className="text-sm">{t('bingo.ready_sub')}</p>
                             </div>
@@ -3243,7 +3243,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     <div className="w-64 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden shrink-0">
                         <div className="bg-slate-200 p-3 text-center font-bold text-slate-600 text-xs uppercase tracking-wider border-b border-slate-300 flex justify-between items-center px-4">
                             <span>{t('bingo.called_terms')}</span>
-                            <span className="bg-white/50 px-2 py-0.5 rounded text-slate-500">{currentCallIndex + 1}</span>
+                            <span className="bg-white/50 px-2 py-0.5 rounded text-slate-600">{currentCallIndex + 1}</span>
                         </div>
                         <div className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
                             {isHistoryVisible ? (
@@ -3251,13 +3251,13 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
                                         <div key={i} className="bg-white p-3 rounded border border-slate-200 shadow-sm flex items-center justify-between animate-in slide-in-from-left-2">
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
-                                            <span className="text-[10px] text-slate-500 font-mono">#{currentCallIndex - i + 1}</span>
+                                            <span className="text-[11px] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
                                     ))}
-                                    {currentCallIndex === -1 && <p className="text-center text-slate-500 text-xs py-4 italic">{t('bingo.history_empty')}</p>}
+                                    {currentCallIndex === -1 && <p className="text-center text-slate-600 text-xs py-4 italic">{t('bingo.history_empty')}</p>}
                                 </>
                             ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500/50">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600/50">
                                     <EyeOff size={48} className="mb-2"/>
                                     <p className="text-sm font-bold">{t('bingo.hide_list')}</p>
                                 </div>
@@ -3285,7 +3285,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                         {card.map((cell, cellIdx) => (
                                             <div
                                                 key={cellIdx}
-                                                className={`border border-slate-300 flex flex-col items-center justify-center text-center p-1 text-[10px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
+                                                className={`border border-slate-300 flex flex-col items-center justify-center text-center p-1 text-[11px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
                                             >
                                                 {cell.type === 'free' ? (
                                                     <span className="text-black font-black print:text-white">★ {t('bingo.free_space')} ★</span>
@@ -3310,7 +3310,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     </div>
                 ) : (
                     <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64">
-                         <div className="flex flex-col items-center gap-3 text-slate-500">
+                         <div className="flex flex-col items-center gap-3 text-slate-600">
                              <RefreshCw size={32} className="animate-spin text-rose-400"/>
                              <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
                          </div>
@@ -3711,7 +3711,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                     {cell.imageUrl && (
                                         <img src={cell.imageUrl} alt={cell.text} className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
                                     )}
-                                    <span className={`text-[10px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
+                                    <span className={`text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
                                         {cell.text}
                                     </span>
                                     {isMarked && (
@@ -3824,7 +3824,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500">
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                 aria-label={t('common.close')}
             >
                 <X size={24} />
@@ -3834,7 +3834,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                     <Type size={32} />
                 </div>
                 <h2 className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
-                <p className="text-slate-500 font-medium">{t('games.scramble.subtitle')}</p>
+                <p className="text-slate-600 font-medium">{t('games.scramble.subtitle')}</p>
             </div>
             <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6">
                 {isGameOver ? (
@@ -3857,11 +3857,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                 ) : gameItems.length > 0 ? (
                     <>
                         <div className="flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2">
-                             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('games.scramble.progress', { current: currentIndex + 1, total: gameItems.length })}</span>
+                             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('games.scramble.progress', { current: currentIndex + 1, total: gameItems.length })}</span>
                              <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcards.score_label')} {score}</div>
                         </div>
                         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
                             <div className="flex items-center justify-center gap-2">
                                 <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>
                                 <SpeakButton text={gameItems[currentIndex].def} />
@@ -3907,7 +3907,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                     aria-label={t('common.skip')}
                                     data-help-key="wizard_skip_btn"
                     onClick={handleSkip}
-                                    className="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                                 >
                                     {t('games.scramble.skip')}
                                 </button>
@@ -3922,7 +3922,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                         </div>
                     </>
                 ) : (
-                    <p className="text-slate-500 italic">{t('games.scramble.loading')}</p>
+                    <p className="text-slate-600 italic">{t('games.scramble.loading')}</p>
                 )}
             </div>
         </div>

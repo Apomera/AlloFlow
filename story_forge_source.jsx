@@ -1889,7 +1889,7 @@ show();
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">📖</div>
             <h3 className="text-lg font-black text-slate-800 mb-2">Continue Where You Left Off?</h3>
-            <p className="text-sm text-slate-500 mb-4">A saved draft was found. Would you like to restore it?</p>
+            <p className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
               <button onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
               <button onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
@@ -1904,7 +1904,7 @@ show();
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
             <h3 className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
-            <p className="text-sm text-slate-500 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
+            <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
               <button onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
@@ -1994,13 +1994,13 @@ show();
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-black text-slate-800">Set Up Your Story</h3>
-                <p className="text-slate-500 text-sm mt-1">Name your story, choose a genre, and set your vocabulary ingredients</p>
+                <p className="text-slate-600 text-sm mt-1">Name your story, choose a genre, and set your vocabulary ingredients</p>
                 <div className="flex gap-2 justify-center mt-2 flex-wrap">
-                  <button onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[10px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
+                  <button onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
                     <Plus size={10} /> Import classmate's draft
                   </button>
                   {onSaveConfig && (
-                    <button onClick={saveAsConfig} disabled={vocabTerms.length === 0} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40">
+                    <button onClick={saveAsConfig} disabled={vocabTerms.length === 0} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40">
                       <Download size={10} /> Save as Assignment
                     </button>
                   )}
@@ -2010,7 +2010,7 @@ show();
               {/* ── Import from Lesson Resources ── */}
               {lessonResources && lessonResources.length > 0 && (
                 <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4">
-                  <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <BookOpen size={12} /> Import from Lesson Resources
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -2025,7 +2025,7 @@ show();
                       </button>
                     ))}
                   </div>
-                  <p className="text-[10px] text-indigo-400 mt-1.5">Click to auto-fill vocabulary, prompts, or scaffolds from your lesson</p>
+                  <p className="text-[11px] text-indigo-400 mt-1.5">Click to auto-fill vocabulary, prompts, or scaffolds from your lesson</p>
                 </div>
               )}
 
@@ -2046,7 +2046,7 @@ show();
                     <div className="w-full text-sm p-2.5 border border-slate-200 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
                       <span className="text-base">✍️</span> {authorName}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Your codename is your pen name — it keeps your identity private</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Your codename is your pen name — it keeps your identity private</p>
                   </div>
                 </div>
               </div>
@@ -2185,7 +2185,7 @@ show();
                     className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
                   />
                 )}
-                {language !== 'en' && <p className="mt-2 text-[10px] text-teal-500 font-medium">AI scaffolds, coaching, grading, and dictation will use {langLabel}</p>}
+                {language !== 'en' && <p className="mt-2 text-[11px] text-teal-500 font-medium">AI scaffolds, coaching, grading, and dictation will use {langLabel}</p>}
               </div>
 
               {/* Story Prompt */}
@@ -2203,7 +2203,7 @@ show();
                 {/* Story Starters */}
                 {genre !== 'free' && STORY_STARTERS[genre] && (
                   <div className="mt-3 pt-3 border-t border-amber-100">
-                    <div className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">💡 {GENRE_TEMPLATES[genre]?.label} Story Starters — click to use</div>
+                    <div className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">💡 {GENRE_TEMPLATES[genre]?.label} Story Starters — click to use</div>
                     <div className="space-y-2">
                       {STORY_STARTERS[genre].map((starter, si) => (
                         <button
@@ -2226,7 +2226,7 @@ show();
                 <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Star size={16} /> Custom Rubric (Optional)
                 </h4>
-                <p className="text-xs text-slate-500 mb-2">Paste a custom grading rubric. If empty, the default 4-criteria rubric is used.</p>
+                <p className="text-xs text-slate-600 mb-2">Paste a custom grading rubric. If empty, the default 4-criteria rubric is used.</p>
                 <textarea
                   id="sf-rubric"
                   value={rubricText} onChange={(e) => setRubricText(e.target.value)}
@@ -2248,7 +2248,7 @@ show();
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Write Your Story</h3>
-                  <p className="text-slate-500 text-sm mt-1">
+                  <p className="text-slate-600 text-sm mt-1">
                     Use your vocabulary ingredients in each paragraph
                     {revisionSnapshot && <span className="text-indigo-500 ml-2">Draft #{draftCount} — revising!</span>}
                   </p>
@@ -2258,12 +2258,12 @@ show();
                   {timerActive ? (
                     <div className="flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1">
                       <span className={`text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? 'text-red-600 animate-pulse' : 'text-rose-700'}`}>{formatTime(timerSeconds)}</span>
-                      <button onClick={() => { setTimerActive(false); clearTimeout(timerRef.current); }} className="text-[10px] font-bold text-rose-500 hover:text-rose-700">Stop</button>
+                      <button onClick={() => { setTimerActive(false); clearTimeout(timerRef.current); }} className="text-[11px] font-bold text-rose-500 hover:text-rose-700">Stop</button>
                     </div>
                   ) : (
                     <div className="flex bg-slate-100 rounded-full p-0.5">
                       {[3, 5, 10].map(min => (
-                        <button key={min} onClick={() => startTimer(min)} className="px-2 py-1 rounded-full text-[10px] font-bold text-slate-500 hover:text-rose-600 hover:bg-white transition-all" title={`${min}-minute writing sprint`}>
+                        <button key={min} onClick={() => startTimer(min)} className="px-2 py-1 rounded-full text-[11px] font-bold text-slate-600 hover:text-rose-600 hover:bg-white transition-all" title={`${min}-minute writing sprint`}>
                           {min}m
                         </button>
                       ))}
@@ -2275,8 +2275,8 @@ show();
                       <button
                         key={key}
                         onClick={() => setLayoutMode(key)}
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${
-                          layoutMode === key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
+                          layoutMode === key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'
                         }`}
                         aria-label={m.desc}
                         title={m.desc}
@@ -2319,7 +2319,7 @@ show();
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2">
                   <Sparkles size={14} className="text-emerald-500 mt-0.5 shrink-0" />
                   <div>
-                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Writing Coach Tip</div>
+                    <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Writing Coach Tip</div>
                     <p className="text-xs text-emerald-800 mt-0.5">{grammarResults._overallTip}</p>
                   </div>
                   <button onClick={() => setGrammarResults({})} className="text-emerald-400 hover:text-emerald-600 ml-auto shrink-0"><X size={14} /></button>
@@ -2329,8 +2329,8 @@ show();
               {/* Vocab Ingredients Bar — STICKY so it's always visible while writing */}
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm" style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,241,242,0.92)' }}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <div className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients — click to copy</div>
-                  <div className="text-[10px] font-bold text-rose-400">
+                  <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients — click to copy</div>
+                  <div className="text-[11px] font-bold text-rose-400">
                     {vocabTerms.filter(v => vocabUsage[v.term]).length}/{vocabTerms.length} used
                   </div>
                 </div>
@@ -2358,8 +2358,8 @@ show();
                         {/* Hover Tooltip Word Bank */}
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
-                          {v.definition && <div className="text-[10px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[10px] text-slate-400 italic">Click to copy · Paste into your paragraph</div>
+                          {v.definition && <div className="text-[11px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
+                          <div className="text-[11px] text-slate-400 italic">Click to copy · Paste into your paragraph</div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -2380,7 +2380,7 @@ show();
                   </button>
                   <div className="text-center">
                     <div className="text-xs font-bold text-indigo-700">Paragraph {focusParagraphIdx + 1} of {paragraphs.length}</div>
-                    <div className="text-[10px] text-indigo-400 mt-0.5">
+                    <div className="text-[11px] text-indigo-400 mt-0.5">
                       {paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? '...' : '') : 'Free write'}
                     </div>
                     {/* Mini progress dots */}
@@ -2425,17 +2425,17 @@ show();
                 }`}>
                   <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-500">Paragraph {idx + 1}</span>
+                      <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[10px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
-                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[10px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
+                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
+                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => toggleDictation(idx)}
-                        className={`text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
+                        className={`text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
                           dictation.isDictating && dictatingParagraphIdx === idx
                             ? 'bg-red-100 border-red-300 text-red-600 animate-pulse'
                             : 'bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700'
@@ -2447,7 +2447,7 @@ show();
                       <button
                         onClick={() => helpMeWrite(idx)}
                         disabled={isProcessing}
-                        className="text-amber-500 hover:text-amber-700 text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40"
+                        className="text-amber-500 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40"
                         aria-label="Get writing suggestions"
                       >
                         <Sparkles size={10} /> Help Me
@@ -2467,7 +2467,7 @@ show();
                   {/* Help Me Write suggestions */}
                   {helpMeParagraphIdx === idx && helpMeResult && (
                     <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100">
-                      <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1"><Sparkles size={10} /> Writing Coach Suggestions</div>
+                      <div className="text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1"><Sparkles size={10} /> Writing Coach Suggestions</div>
                       <div className="space-y-1.5">
                         {helpMeResult.map((s, si) => (
                           <div key={si} className="text-xs text-amber-800 flex items-start gap-2">
@@ -2476,7 +2476,7 @@ show();
                           </div>
                         ))}
                       </div>
-                      <button onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold">Dismiss</button>
+                      <button onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold">Dismiss</button>
                     </div>
                   )}
                   {layoutMode === 'comic' ? (
@@ -2484,7 +2484,7 @@ show();
                     <div className="p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white">
                       {/* Narration caption — top yellow bar */}
                       <div>
-                        <label className="text-[10px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
+                        <label className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
                           📖 Narration Caption
                         </label>
                         <textarea
@@ -2498,7 +2498,7 @@ show();
                       </div>
                       {/* Speech bubble */}
                       <div>
-                        <label className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
+                        <label className="text-[11px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
                           💬 Speech Bubble
                         </label>
                         <div className="flex gap-2">
@@ -2506,7 +2506,7 @@ show();
                             type="text"
                             value={(panelDialogue[p.id] || {}).speaker || ''}
                             onChange={(e) => updatePanelDialogue(p.id, 'speaker', e.target.value)}
-                            className="w-20 p-1.5 text-[10px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700"
+                            className="w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700"
                             placeholder="Who?"
                             aria-label={`Panel ${idx + 1} speaker name`}
                           />
@@ -2522,7 +2522,7 @@ show();
                       </div>
                       {/* Thought bubble */}
                       <div>
-                        <label className="text-[10px] font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
+                        <label className="text-[11px] font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
                           💭 Thought Bubble
                         </label>
                         <textarea
@@ -2536,7 +2536,7 @@ show();
                       </div>
                       {/* Sound effect */}
                       <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-bold text-red-500 uppercase tracking-widest">💥 SFX</label>
+                        <label className="text-[11px] font-bold text-red-500 uppercase tracking-widest">💥 SFX</label>
                         <input
                           type="text"
                           value={(panelDialogue[p.id] || {}).sfx || ''}
@@ -2553,7 +2553,7 @@ show();
                       value={p.text}
                       onChange={(e) => updateParagraph(idx, e.target.value)}
                       className={`w-full p-4 text-sm resize-none outline-none transition-colors ${
-                        layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:bg-slate-750 caret-cyan-400' :
+                        layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400' :
                         layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50' :
                         'focus:bg-rose-50/30'
                       }`}
@@ -2597,10 +2597,10 @@ show();
                         onClick={() => setHwPenmanshipOn(!hwPenmanshipOn)}
                         aria-label={`${hwPenmanshipOn ? 'Disable' : 'Enable'} penmanship feedback`}
                         aria-pressed={hwPenmanshipOn}
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${
                           hwPenmanshipOn
                             ? (layoutMode === 'dark' ? 'bg-cyan-900 border-cyan-600 text-cyan-300' : 'bg-violet-100 border-violet-300 text-violet-700')
-                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-500 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
+                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-600 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
                         }`}
                       >
                         ✏️ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
@@ -2613,7 +2613,7 @@ show();
                       layoutMode === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border-violet-200'
                     }`} role="region" aria-label="Penmanship feedback">
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>✏️ Penmanship Feedback</span>
+                        <span className={`text-[11px] font-bold uppercase tracking-widest ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>✏️ Penmanship Feedback</span>
                         <span className="text-lg font-black" style={{ color: hwResult.penmanship.score >= 75 ? '#eab308' : hwResult.penmanship.score >= 50 ? '#8b5cf6' : hwResult.penmanship.score >= 25 ? '#3b82f6' : '#94a3b8' }}>
                           {hwResult.penmanship.score}<span className="text-xs opacity-60">/100</span>
                         </span>
@@ -2621,22 +2621,22 @@ show();
                       <div className="flex gap-2 mb-2">
                         {[['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(([key, label]) => (
                           <div key={key} className="flex-1 text-center">
-                            <div className={`text-sm font-black ${(hwResult.penmanship[key] || 0) >= 18 ? 'text-green-600' : (hwResult.penmanship[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-500'}`}>
-                              {hwResult.penmanship[key] || 0}<span className="text-[10px] opacity-60">/25</span>
+                            <div className={`text-sm font-black ${(hwResult.penmanship[key] || 0) >= 18 ? 'text-green-600' : (hwResult.penmanship[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-600'}`}>
+                              {hwResult.penmanship[key] || 0}<span className="text-[11px] opacity-60">/25</span>
                             </div>
-                            <div className="text-[10px] text-slate-400 font-bold uppercase">{label}</div>
+                            <div className="text-[11px] text-slate-400 font-bold uppercase">{label}</div>
                           </div>
                         ))}
                       </div>
                       {hwResult.penmanship.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {hwResult.penmanship.strengths}</p>}
                       {hwResult.penmanship.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {hwResult.penmanship.tips}</p>}
-                      <button onClick={() => setHwResult(null)} className="text-[10px] text-slate-400 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
+                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-400 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
                     </div>
                   )}
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
-                    <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[10px] font-medium ${
-                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-400'
+                    <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[11px] font-medium ${
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-400'
                     }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
                       <span>·</span>
@@ -2657,8 +2657,8 @@ show();
                     const unused = vocabTerms.filter(v => !allText.includes(v.term.toLowerCase()));
                     if (unused.length === 0 || unused.length === vocabTerms.length) return null;
                     return (
-                      <div className={`px-4 py-1.5 border-t text-[10px] ${
-                        layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-500' : 'bg-rose-50/50 border-rose-100 text-rose-400'
+                      <div className={`px-4 py-1.5 border-t text-[11px] ${
+                        layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-rose-50/50 border-rose-100 text-rose-400'
                       }`}>
                         <span className="font-bold">Still needed: </span>
                         {unused.map((v, vi) => (
@@ -2678,7 +2678,7 @@ show();
                   {grammarResults[p.id] && grammarResults[p.id].length > 0 && (
                     <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100 space-y-1.5">
                       {grammarResults[p.id].map((issue, gi) => (
-                        <div key={gi} className="flex items-start gap-2 text-[10px]">
+                        <div key={gi} className="flex items-start gap-2 text-[11px]">
                           <span className={`shrink-0 px-1.5 py-0.5 rounded font-bold uppercase ${
                             issue.type === 'grammar' ? 'bg-red-100 text-red-700' :
                             issue.type === 'show_dont_tell' ? 'bg-purple-100 text-purple-700' :
@@ -2689,7 +2689,7 @@ show();
                           <div className="flex-1">
                             {issue.original && <span className="line-through text-slate-400 mr-1">"{issue.original}"</span>}
                             {issue.suggestion && <span className="text-emerald-700 font-bold">→ "{issue.suggestion}"</span>}
-                            {issue.tip && <div className="text-slate-500 mt-0.5">{issue.tip}</div>}
+                            {issue.tip && <div className="text-slate-600 mt-0.5">{issue.tip}</div>}
                           </div>
                         </div>
                       ))}
@@ -2702,7 +2702,7 @@ show();
                   <div className="flex items-center justify-center py-1">
                     <button
                       onClick={() => updateParagraph(idx + 1, suggestTransition(idx + 1) + ' ')}
-                      className="text-[10px] text-indigo-400 hover:text-indigo-600 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
+                      className="text-[11px] text-indigo-400 hover:text-indigo-600 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
                       title="Click to insert this transition word"
                     >
                       Tip: Start next paragraph with "{suggestTransition(idx + 1)}"
@@ -2726,7 +2726,7 @@ show();
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Illustrate Your Story</h3>
-                  <p className="text-slate-500 text-sm mt-1">AI will create artwork for each paragraph</p>
+                  <p className="text-slate-600 text-sm mt-1">AI will create artwork for each paragraph</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -2749,7 +2749,7 @@ show();
               {/* Cover Art Preview */}
               {(coverArt || coverArtLoading) && (
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
-                  <div className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-2">Book Cover</div>
+                  <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">Book Cover</div>
                   {coverArtLoading ? (
                     <div className="w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300">
                       <RefreshCw size={32} className="text-purple-400 animate-spin" />
@@ -2766,7 +2766,7 @@ show();
                   <div className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Eye size={14} /> Preview Image Prompt — Paragraph {promptPreview.idx + 1}
                   </div>
-                  <p className="text-[10px] text-slate-500 mb-2">Edit the prompt below before generating, or click Generate to proceed.</p>
+                  <p className="text-[11px] text-slate-600 mb-2">Edit the prompt below before generating, or click Generate to proceed.</p>
                   <textarea
                     value={promptPreview.prompt}
                     onChange={(e) => setPromptPreview(prev => ({ ...prev, prompt: e.target.value }))}
@@ -2792,7 +2792,7 @@ show();
                       <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-400">Empty paragraph</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
-                        <div className="mt-2 text-[10px] text-purple-400 italic truncate" title={illustrations[p.id].prompt}>
+                        <div className="mt-2 text-[11px] text-purple-400 italic truncate" title={illustrations[p.id].prompt}>
                           Prompt: {illustrations[p.id].prompt.substring(0, 80)}...
                         </div>
                       )}
@@ -2843,13 +2843,13 @@ show();
                                 onChange={(e) => setImageEditState(prev => ({ ...prev, prompt: e.target.value }))}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }}
                                 placeholder="e.g., make sky purple, add a dog..."
-                                className="w-full text-[10px] p-1.5 border border-purple-200 rounded-lg outline-none focus:ring-1 focus:ring-purple-300"
+                                className="w-full text-[11px] p-1.5 border border-purple-200 rounded-lg outline-none focus:ring-1 focus:ring-purple-300"
                                 aria-label="Describe illustration changes"
                                 autoFocus
                               />
                               <div className="flex gap-1 mt-1">
-                                <button onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[10px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">Apply</button>
-                                <button onClick={() => setImageEditState(null)} className="text-[10px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">Cancel</button>
+                                <button onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">Apply</button>
+                                <button onClick={() => setImageEditState(null)} className="text-[11px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">Cancel</button>
                               </div>
                             </div>
                           )}
@@ -2857,11 +2857,11 @@ show();
                       ) : illustrations[p.id]?.error ? (
                         <div className="w-48 h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
                           <span className="text-red-400 text-lg">{'\u26A0\uFE0F'}</span>
-                          <span className="text-[10px] font-bold text-red-500">Generation failed</span>
+                          <span className="text-[11px] font-bold text-red-500">Generation failed</span>
                           <button
                             onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, p.text, idx); }}
                             disabled={isProcessing}
-                            className="text-[10px] font-bold text-red-600 hover:text-red-800 underline disabled:opacity-40"
+                            className="text-[11px] font-bold text-red-600 hover:text-red-800 underline disabled:opacity-40"
                           >
                             Try Again
                           </button>
@@ -2879,7 +2879,7 @@ show();
                           <button
                             onClick={() => generateImagePrompt(p.id, p.text, idx)}
                             disabled={p.text.trim().length < 20 || isProcessing}
-                            className="w-48 py-1.5 bg-purple-100 rounded-lg text-[10px] font-bold text-purple-600 hover:bg-purple-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1"
+                            className="w-48 py-1.5 bg-purple-100 rounded-lg text-[11px] font-bold text-purple-600 hover:bg-purple-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1"
                           >
                             <Eye size={10} /> Preview Prompt First
                           </button>
@@ -2898,12 +2898,12 @@ show();
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Narrate Your Story</h3>
-                  <p className="text-slate-500 text-sm mt-1">AI reads your story aloud — or record your own voice</p>
+                  <p className="text-slate-600 text-sm mt-1">AI reads your story aloud — or record your own voice</p>
                 </div>
                 <div className="flex gap-2 items-center">
                   {/* Voice selector */}
                   <div className="flex items-center gap-1.5">
-                    <label htmlFor="sf-voice" className="text-[10px] font-bold text-indigo-500 uppercase">Voice:</label>
+                    <label htmlFor="sf-voice" className="text-[11px] font-bold text-indigo-500 uppercase">Voice:</label>
                     <select
                       id="sf-voice"
                       value={narratorVoice}
@@ -2933,7 +2933,7 @@ show();
               {/* Characters detected */}
               {characters.length > 0 && (
                 <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
-                  <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-2">Characters Detected</div>
+                  <div className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2">Characters Detected</div>
                   <div className="flex flex-wrap gap-3">
                     {characters.map((c, i) => (
                       <div key={i} className="bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs">
@@ -3032,16 +3032,16 @@ show();
                         <div className="flex items-center gap-3 mb-2">
                           <div className="text-center">
                             <div className={`text-2xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-600' : fluencyResult.accuracy >= 70 ? 'text-amber-600' : 'text-red-600'}`}>{fluencyResult.accuracy || 0}%</div>
-                            <div className="text-[10px] text-slate-500 font-bold">Accuracy</div>
+                            <div className="text-[11px] text-slate-600 font-bold">Accuracy</div>
                           </div>
                           <div className="text-center">
                             <div className="text-2xl font-black text-indigo-600">{fluencyResult.wcpm || 0}</div>
-                            <div className="text-[10px] text-slate-500 font-bold">WCPM</div>
+                            <div className="text-[11px] text-slate-600 font-bold">WCPM</div>
                           </div>
                           {fluencyResult.confidence && (
                             <div className="text-center">
                               <div className={`text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? 'text-green-600' : fluencyResult.confidence.overall >= 4 ? 'text-amber-600' : 'text-red-600'}`}>{fluencyResult.confidence.overall}/10</div>
-                              <div className="text-[10px] text-slate-500 font-bold">Confidence</div>
+                              <div className="text-[11px] text-slate-600 font-bold">Confidence</div>
                             </div>
                           )}
                           {fluencyResult.prosody && (
@@ -3049,7 +3049,7 @@ show();
                               {[{k:'pacing',l:'Pace'},{k:'expression',l:'Expr'},{k:'phrasing',l:'Phrase'}].map(({k,l}) => (
                                 <div key={k} className="text-center">
                                   <div className="text-sm font-bold text-slate-700">{fluencyResult.prosody[k]}/5</div>
-                                  <div className="text-[10px] text-slate-400">{l}</div>
+                                  <div className="text-[11px] text-slate-400">{l}</div>
                                 </div>
                               ))}
                             </div>
@@ -3072,15 +3072,15 @@ show();
                         )}
                         {/* Confidence note */}
                         {fluencyResult.confidence?.note && (
-                          <div className="mt-2 text-[10px] text-slate-500 italic">{fluencyResult.confidence.note}</div>
+                          <div className="mt-2 text-[11px] text-slate-600 italic">{fluencyResult.confidence.note}</div>
                         )}
                         {fluencyResult.confidence?.accentDetected && (
-                          <div className="mt-1 text-[10px] text-teal-600 font-medium">🌍 Accent patterns detected — scores adjusted conservatively to respect linguistic diversity.</div>
+                          <div className="mt-1 text-[11px] text-teal-600 font-medium">🌍 Accent patterns detected — scores adjusted conservatively to respect linguistic diversity.</div>
                         )}
                         {fluencyResult.feedback && (
                           <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
                         )}
-                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[10px] text-slate-400 hover:text-slate-600 font-bold">Dismiss</button>
+                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-400 hover:text-slate-600 font-bold">Dismiss</button>
                       </div>
                     )}
                   </div>
@@ -3095,7 +3095,7 @@ show();
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">Review & Feedback</h3>
-                  <p className="text-slate-500 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
+                  <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
                 </div>
                 <div className="flex gap-2">
                   {!gradingResult && (
@@ -3122,14 +3122,14 @@ show();
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-orange-500 mt-2">Tip: Check your character names are spelled consistently throughout the story</p>
+                  <p className="text-[11px] text-orange-500 mt-2">Tip: Check your character names are spelled consistently throughout the story</p>
                 </div>
               )}
 
               {/* Revision Delta */}
               {revisionSnapshot && draftCount >= 2 && (
                 <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4">
-                  <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-2">Revision Progress (vs. Draft #{draftCount - 1})</div>
+                  <div className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2">Revision Progress (vs. Draft #{draftCount - 1})</div>
                   <div className="flex flex-wrap gap-3">
                     {(() => {
                       const wordDelta = totalWords - (revisionSnapshot.words || 0);
@@ -3160,29 +3160,29 @@ show();
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{totalWords}</div>
-                    <div className="text-[10px] text-slate-500 font-bold">Words</div>
+                    <div className="text-[11px] text-slate-600 font-bold">Words</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{readingLevel?.sentences || 0}</div>
-                    <div className="text-[10px] text-slate-500 font-bold">Sentences</div>
+                    <div className="text-[11px] text-slate-600 font-bold">Sentences</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{paragraphs.length}</div>
-                    <div className="text-[10px] text-slate-500 font-bold">Paragraphs</div>
+                    <div className="text-[11px] text-slate-600 font-bold">Paragraphs</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{vocabUsedCount}/{vocabTerms.length}</div>
-                    <div className="text-[10px] text-slate-500 font-bold">Vocab Used</div>
+                    <div className="text-[11px] text-slate-600 font-bold">Vocab Used</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className={`text-2xl font-black ${readingLevel ? 'text-indigo-600' : 'text-slate-300'}`}>
                       {readingLevel ? `${readingLevel.grade}` : '—'}
                     </div>
-                    <div className="text-[10px] text-slate-500 font-bold">Reading Grade</div>
+                    <div className="text-[11px] text-slate-600 font-bold">Reading Grade</div>
                   </div>
                 </div>
                 {readingLevel && (
-                  <div className="mt-3 text-xs text-slate-500">
+                  <div className="mt-3 text-xs text-slate-600">
                     Avg {readingLevel.avgWordsPerSentence} words/sentence · Flesch-Kincaid Grade Level: {readingLevel.grade}
                     {gradeLevel && <span>{readingLevel.grade <= parseInt(gradeLevel) + 1 ? ' · ✓ On target' : ' · ⚠ May be above target level'}</span>}
                   </div>
@@ -3190,7 +3190,7 @@ show();
 
                 {/* Story Arc Visualization */}
                 <div className="mt-4 pt-4 border-t border-slate-100">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Story Arc</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">Story Arc</div>
                   <div className="flex items-end gap-1 h-16">
                     {paragraphs.map((p, idx) => {
                       const wordCount = p.text.trim().split(/\s+/).filter(Boolean).length;
@@ -3201,14 +3201,14 @@ show();
                       const barLabel = idx === 0 ? 'Beginning' : idx === paragraphs.length - 1 ? 'Resolution' : `Paragraph ${idx + 1}`;
                       return (
                         <div key={p.id} className="flex-1 flex flex-col items-center gap-1">
-                          <div className="text-[7px] text-slate-500 font-bold">{wordCount}</div>
+                          <div className="text-[7px] text-slate-600 font-bold">{wordCount}</div>
                           <div className={`w-full ${bgColor} rounded-t-md transition-all`} style={{ height: `${heightPct}%` }} title={`${barLabel}: ${wordCount} words`} role="img" aria-label={`${barLabel}: ${wordCount} words`} />
-                          <span className="text-[10px] text-slate-400">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
+                          <span className="text-[11px] text-slate-400">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <div className="flex justify-between text-[11px] text-slate-400 mt-1">
                     <span>Beginning</span><span>Rising Action</span><span>Climax</span><span>Resolution</span>
                   </div>
                 </div>
@@ -3223,12 +3223,12 @@ show();
                       <div key={word} className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 ${
                         count >= 4 ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-600'
                       }`} title={`"${word}" used ${count} times`}>
-                        {word} <span className="text-[10px] opacity-60">×{count}</span>
+                        {word} <span className="text-[11px] opacity-60">×{count}</span>
                       </div>
                     ))}
                   </div>
                   {overusedWords.length > 0 && (
-                    <p className="mt-2 text-[10px] text-amber-600 font-medium">
+                    <p className="mt-2 text-[11px] text-amber-600 font-medium">
                       Tip: Try varying your word choice — <strong>{overusedWords.join(', ')}</strong> {overusedWords.length === 1 ? 'appears' : 'appear'} 4+ times. Use synonyms for variety!
                     </p>
                   )}
@@ -3238,7 +3238,7 @@ show();
               {!gradingResult && !isProcessing && (
                 <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
                   <Star size={48} className="text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 font-bold">Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story</p>
+                  <p className="text-slate-600 font-bold">Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story</p>
                 </div>
               )}
 
@@ -3285,7 +3285,7 @@ show();
                           <div key={i} className="px-4 py-3 flex items-center justify-between">
                             <div>
                               <div className="text-sm font-bold text-slate-800">{s.criteria}</div>
-                              <div className="text-xs text-slate-500">{s.comment}</div>
+                              <div className="text-xs text-slate-600">{s.comment}</div>
                             </div>
                             <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">{s.score}</div>
                           </div>
@@ -3323,7 +3323,7 @@ show();
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-black text-slate-800">Your Storybook is Ready!</h3>
-                <p className="text-slate-500 text-sm mt-1">Preview your illustrated story and export it</p>
+                <p className="text-slate-600 text-sm mt-1">Preview your illustrated story and export it</p>
               </div>
 
               {/* Layout Toggle */}
@@ -3373,7 +3373,7 @@ show();
                         <div className="p-2.5 relative space-y-1.5">
                           {/* Narration caption — yellow bar */}
                           {p.text.trim() && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[10px] text-amber-800 italic leading-snug">
+                            <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug">
                               {p.text.length > 200 ? p.text.substring(0, 200) + '...' : p.text}
                             </div>
                           )}
@@ -3381,7 +3381,7 @@ show();
                           {(panelDialogue[p.id] || {}).speech && (
                             <div className="relative">
                               {(panelDialogue[p.id] || {}).speaker && (
-                                <div className="text-[10px] font-bold text-blue-600 mb-0.5">{panelDialogue[p.id].speaker}:</div>
+                                <div className="text-[11px] font-bold text-blue-600 mb-0.5">{panelDialogue[p.id].speaker}:</div>
                               )}
                               <div className="bg-white border-2 border-slate-800 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed" style={{ borderRadius: '18px' }}>
                                 {panelDialogue[p.id].speech}
@@ -3392,7 +3392,7 @@ show();
                           )}
                           {/* Thought bubble */}
                           {(panelDialogue[p.id] || {}).thought && (
-                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[10px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
+                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
                               💭 {panelDialogue[p.id].thought}
                             </div>
                           )}
@@ -3402,7 +3402,7 @@ show();
                                 <button key={emoji} onClick={() => setPanelStickers(prev => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji }))} className={`text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? 'scale-125' : 'opacity-50 hover:opacity-100'}`} title={`Add ${emoji} sticker`}>{emoji}</button>
                               ))}
                             </div>
-                            <span className="text-[10px] text-slate-400 font-bold">Panel {idx + 1}</span>
+                            <span className="text-[11px] text-slate-400 font-bold">Panel {idx + 1}</span>
                           </div>
                         </div>
                       </div>
@@ -3435,7 +3435,7 @@ show();
                       a.earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'
                     }`} title={a.desc}>
                       <div className="text-2xl">{a.icon}</div>
-                      <div className="text-[10px] font-bold text-slate-700 mt-1">{a.name}</div>
+                      <div className="text-[11px] font-bold text-slate-700 mt-1">{a.name}</div>
                     </div>
                   ))}
                 </div>
@@ -3480,14 +3480,14 @@ show();
                   <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <Eye size={16} /> Class Portfolio
                   </h4>
-                  <p className="text-xs text-slate-500 mb-3">Share your storybook to the class gallery so your teacher and classmates can view it. Teacher sees all shared stories as a gallery wall.</p>
+                  <p className="text-xs text-slate-600 mb-3">Share your storybook to the class gallery so your teacher and classmates can view it. Teacher sees all shared stories as a gallery wall.</p>
                   <button
                     onClick={shareToSession}
                     className="px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
                   >
                     <Star size={14} /> Publish to Class Gallery
                   </button>
-                  <p className="text-[10px] text-violet-400 mt-2">Your cover art, title, word count, and grade will be visible to the class.</p>
+                  <p className="text-[11px] text-violet-400 mt-2">Your cover art, title, word count, and grade will be visible to the class.</p>
                 </div>
               )}
 
@@ -3496,7 +3496,7 @@ show();
                 <h4 className="text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <RefreshCw size={16} /> Pass the Torch
                 </h4>
-                <p className="text-xs text-slate-500 mb-3">Export your draft as a file and share it with a classmate — they can continue where you left off!</p>
+                <p className="text-xs text-slate-600 mb-3">Export your draft as a file and share it with a classmate — they can continue where you left off!</p>
                 <div className="flex gap-3">
                   <button onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
                     <Download size={14} /> Export Draft (.json)

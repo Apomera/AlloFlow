@@ -276,6 +276,26 @@ const PLUGIN_FILES = [
 // Runs automatically at the start of `--mode=prod` so the dirty-tree guard
 // below will catch any compilation-produced changes that weren't committed.
 // Run `node build.js --compile` standalone to just do the compile step.
+// Lazy-loaded Babel handle — only required if a JSX-bearing pair is compiled.
+// Keeps the common --mode=prod path fast when no JSX modules are enrolled yet.
+let _babel = null;
+function getBabel() {
+    if (_babel) return _babel;
+    try { _babel = require('@babel/core'); }
+    catch (e) { console.error('❌ @babel/core is required for JSX compilation but is not installed.'); process.exit(1); }
+    return _babel;
+}
+
+function compileJsx(src) {
+    const babel = getBabel();
+    const r = babel.transformSync(src, {
+        plugins: ['@babel/plugin-transform-react-jsx'], // classic runtime → React.createElement output
+        configFile: false,
+        babelrc: false,
+    });
+    return r.code;
+}
+
 const COMPILE_PAIRS = [
     {
         name: 'DocPipeline',
@@ -300,6 +320,29 @@ const COMPILE_PAIRS = [
                 + 'window.AlloModules.DocPipelineModule = true;\n'
                 + "console.log('[DocPipelineModule] Pipeline factory registered');\n"
                 + '})();\n'
+            );
+        },
+    },
+    {
+        // ── persona_ui ── JSX-bearing module, verified zero-diff vs deployed module.js after
+        // the April 2026 WCAG back-port (slate-500→600 + text-[10px]→[11px]). First JSX module
+        // onboarded to Phase 2 auto-compile. To add more modules, verify `_phase2_diff_audit.js`
+        // reports PERFECT for that module after any needed source back-ports, then add an
+        // entry here with the module's specific wrapper.
+        name: 'PersonaUI',
+        srcPath: path.join(ROOT, 'persona_ui_source.jsx'),
+        modPath: path.join(ROOT, 'persona_ui_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'persona_ui_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + '  // WCAG 2.1 AA: Accessibility CSS\n'
+                + '  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }\n'
+                + "if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
             );
         },
     },

@@ -340,7 +340,7 @@
                                  {isProcessing ? 'Generating...' : 'Word Sounds'}
                              </span>
                          </div>
-                         <button data-help-key="ws_gen_expand" onClick={() => { setIsMinimized(false); if (onExpand) onExpand(); }} className="p-1 hover:bg-slate-100 rounded text-slate-500">
+                         <button data-help-key="ws_gen_expand" onClick={() => { setIsMinimized(false); if (onExpand) onExpand(); }} className="p-1 hover:bg-slate-100 rounded text-slate-600">
                              <Maximize2 size={18} />
                          </button>
                      </div>
@@ -421,7 +421,7 @@
                     <div className="flex flex-1 overflow-hidden">
                         <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">{t('word_sounds.settings', 'Settings')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.settings', 'Settings')}</label>
                                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.count', 'Word Count')}</span>
@@ -432,7 +432,7 @@
                                         data-help-key="ws_gen_count_slider" value={wordCount} onChange={(e) => setWordCount(parseInt(e.target.value))}
                                         className="w-full accent-violet-600 cursor-pointer"
                                     />
-                                    <p className="text-xs text-slate-500 mt-2">{t('word_sounds.auto_select_hint', `Auto-selects ${wordCount} words`)}</p>
+                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.auto_select_hint', `Auto-selects ${wordCount} words`)}</p>
                                 </div>
                                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
@@ -445,13 +445,13 @@
                                         onChange={(e) => setWordSoundsSessionGoal && setWordSoundsSessionGoal(parseInt(e.target.value))}
                                         className="w-full accent-emerald-500 cursor-pointer"
                                     />
-                                    <p className="text-xs text-slate-500 mt-2">{t('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
+                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
                                 </div>
                                 <div className="mt-3">
                                     <div className={`bg-white p-4 rounded-xl border ${includeLessonPlan ? 'opacity-50 cursor-not-allowed border-slate-200' : orthoSessionGoal > 0 ? 'border-indigo-300 bg-indigo-50/30' : 'border-slate-200'} shadow-sm`}>
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-bold text-slate-700">{t('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
-                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>{orthoSessionGoal || 'Off'}</span>
+                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>{orthoSessionGoal || 'Off'}</span>
                                         </div>
                                         <input aria-label={t('common.spelling_session_goal_slider')}
                                             type="range" min="0" max="100" step="5"
@@ -460,7 +460,7 @@
                                             className={`w-full ${includeLessonPlan ? 'opacity-50' : ''} accent-indigo-500 cursor-pointer`}
                                             disabled={includeLessonPlan}
                                         />
-                                        <p className="text-xs text-slate-500 mt-2">
+                                        <p className="text-xs text-slate-600 mt-2">
                                             {includeLessonPlan
                                                 ? '⚠️ Controlled by Lesson Plan mode'
                                                 : orthoSessionGoal > 0
@@ -482,7 +482,7 @@
                                         placeholder={t('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realistic...')}
                                         className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                     />
-                                    <p className="text-xs text-slate-500 mt-2">{t('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
+                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
                                 </div>
                                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
@@ -500,7 +500,7 @@
                                         <option value="progressive">📈 Progressive - After 1st response</option>
                                         <option value="afterCompletion">✅ After Completion - After correct or 2nd attempt</option>
                                     </select>
-                                    <p className="text-xs text-slate-500 mt-2">When should word images be revealed during activities (Smart = optimized per activity)</p>
+                                    <p className="text-xs text-slate-600 mt-2">When should word images be revealed during activities (Smart = optimized per activity)</p>
                                 </div>
                                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
@@ -509,7 +509,7 @@
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1">
-                                            <label className="text-xs text-slate-500 block mb-1">Min</label>
+                                            <label className="text-xs text-slate-600 block mb-1">Min</label>
                                             <input aria-label={t('common.min')}
                                                 type="number" min="1" max="4"
                                                 data-help-key="ws_gen_syllable_min" value={syllableRange.min}
@@ -520,9 +520,9 @@
                                                 className="w-full p-2 border rounded-lg text-center font-bold"
                                             />
                                         </div>
-                                        <span className="text-slate-500 mt-4">-</span>
+                                        <span className="text-slate-600 mt-4">-</span>
                                         <div className="flex-1">
-                                            <label className="text-xs text-slate-500 block mb-1">Max</label>
+                                            <label className="text-xs text-slate-600 block mb-1">Max</label>
                                             <input aria-label={t('common.max')}
                                                 type="number" min="1" max="4"
                                                 data-help-key="ws_gen_syllable_max" value={syllableRange.max}
@@ -534,11 +534,11 @@
                                             />
                                         </div>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-2">Limit word complexity (Min/Max Syllables)</p>
+                                    <p className="text-xs text-slate-600 mt-2">Limit word complexity (Min/Max Syllables)</p>
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">{t('word_sounds.sources', 'Active Sources')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.sources', 'Active Sources')}</label>
                                 <div role="button" tabIndex={0} className={`p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary" onClick={() => setIncludeGlossary(prev => !prev)}>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
@@ -673,7 +673,7 @@
                                 </div>
                             </div>
                             <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">📋 Lesson Plan (Advanced)</label><div className={`p-4 rounded-xl border-2 transition-all ${includeLessonPlan ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200'}`}>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 Lesson Plan (Advanced)</label><div className={`p-4 rounded-xl border-2 transition-all ${includeLessonPlan ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200'}`}>
                                     <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer mb-3" onClick={() => setIncludeLessonPlan(prev => !prev)}>
                                         <div className="flex items-center gap-2">
                                             <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
@@ -726,7 +726,7 @@
                                                 >
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center gap-2">
-                                                            <GripVertical size={14} className="text-slate-500 cursor-grab active:cursor-grabbing" />
+                                                            <GripVertical size={14} className="text-slate-600 cursor-grab active:cursor-grabbing" />
                                                             <input aria-label={t('common.toggle_enabled')}
                                                                 type="checkbox"
                                                                 checked={lessonPlan[activity.id]?.enabled}
@@ -767,7 +767,7 @@
                                 <div>
                                     <h3 className="text-2xl font-black text-slate-700">{t('word_sounds.preview_title', 'Lesson Preview')}</h3>
                                     <div className="flex items-center gap-4">
-                                        <p className="text-slate-500 font-medium">{selectedIndices.size} {t('word_sounds.of_total', 'of')} {previewList.length} {t('word_sounds.words_selected', 'words selected')}</p>
+                                        <p className="text-slate-600 font-medium">{selectedIndices.size} {t('word_sounds.of_total', 'of')} {previewList.length} {t('word_sounds.words_selected', 'words selected')}</p>
                                         {previewList.length > 0 && (
                                             <button
                                                 aria-label={t('common.toggle_all')}
@@ -787,7 +787,7 @@
                                             ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110'
                                             : isProcessing
                                                 ? 'bg-violet-400 text-white cursor-wait'
-                                                : 'bg-slate-100 text-slate-500 cursor-not-allowed'
+                                                : 'bg-slate-100 text-slate-600 cursor-not-allowed'
                                     }`}
                                 >
                                     {isProcessing ? <Loader2 className="animate-spin" /> : <PlayCircle fill="currentColor" className="text-white/20" size={28} />}
@@ -847,7 +847,7 @@
                                      })}
                                  </div>
                              ) : (
-                                 <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
+                                 <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
                                      <Layers size={48} className="mb-4 opacity-50" />
                                      <p className="text-xl font-bold">{t('word_sounds.no_words', 'No words selected')}</p>
                                      <p className="text-sm">{t('word_sounds.choose_source_hint', 'Choose a source to begin')}</p>
@@ -1144,7 +1144,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
                                 <strong className="block mb-1">📖 Phonics Counting Guide</strong>
                                 <p className="mb-2">R-controlled vowels (ar, er, ir, or, ur) are counted as <strong>single sounds</strong> because the vowel and R blend together.</p>
-                                <p className="text-slate-500">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
+                                <p className="text-slate-600">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
                             </div>
                         </span>
                     </h2>
@@ -1155,7 +1155,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                     {preloadedWords.length === 0 ? (
-                        <div className="text-center py-12 text-slate-500">
+                        <div className="text-center py-12 text-slate-600">
                             <div className="text-4xl mb-2">⏳</div>
                             {isLoading ? <p className="animate-pulse">Generating new words... this may take a moment</p> : <p>No words preloaded yet. Start the activity to generate words.</p>}
                         </div>
@@ -1206,14 +1206,14 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 aria-label={t('common.move_up')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'up'); }}
                                                 disabled={idx === 0}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-600'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_up')}
                                             >▲</button>
                                             <button
                                                 aria-label={t('common.move_down')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'down'); }}
                                                 disabled={idx === preloadedWords.length - 1}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-600'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_down')}
                                             >▼</button>
                                         </div>
@@ -1243,7 +1243,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 data-help-key="word_sounds_review_delete_word" title={t('common.delete_word')}
                                             >🗑️</button>
                                         </div>
-                                        <span className="text-xs font-mono text-slate-500 w-6">{idx + 1}.</span>
+                                        <span className="text-xs font-mono text-slate-600 w-6">{idx + 1}.</span>
                                         <button data-help-key="word_sounds_review_play_word"
                                             onClick={async (e) => {
                                                 e.stopPropagation();
@@ -1362,11 +1362,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             <option value="medium">🟡 Medium</option>
                                             <option value="hard">🔴 Hard</option>
                                         </select>
-                                        <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">
+                                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
                                             {word.phonemes?.length || 0} sounds
                                         </span>
                                     </div>
-                                    <ChevronDown size={20} className={`text-slate-500 transition-transform ${expandedIndex === idx ? 'rotate-180' : ''}`} />
+                                    <ChevronDown size={20} className={`text-slate-600 transition-transform ${expandedIndex === idx ? 'rotate-180' : ''}`} />
                                 </div>
                                 {expandedIndex === idx && (
                                     <div className="border-t border-slate-100 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
@@ -1374,11 +1374,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex items-center gap-2">
-                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
+                                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
                                                     <button
                                                         onClick={() => onRegenerateWord && onRegenerateWord(idx)}
                                                         disabled={regeneratingIndex === idx}
-                                                        className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-500' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
+                                                        className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
                                                         title="Re-check phonemes with Gemini"
                                                     >
                                                         {regeneratingIndex === idx ? <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" /> : '✨'}
@@ -1409,7 +1409,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onDragEnd={handleDragEnd}
                                                     >
                                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof p === "string" && typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : (typeof p === "string" ? p : "")}>
-                                                            <span className="text-slate-500 text-xs mr-1">⠿</span>
+                                                            <span className="text-slate-600 text-xs mr-1">⠿</span>
                                                             {p}
                                                             <button
                                                                 aria-label={t('common.remove')}
@@ -1421,17 +1421,17 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     </div>
                                                 ))}
                                                 {((() => { const p = word.phonemes; const a = Array.isArray(p) ? p : (p?.phonemes && Array.isArray(p.phonemes)) ? p.phonemes : []; return a.length === 0; })()) && (
-                                                    <span className="text-slate-500 text-sm italic">No phonemes - click "Add Sound" to build</span>
+                                                    <span className="text-slate-600 text-sm italic">No phonemes - click "Add Sound" to build</span>
                                                 )}
                                             </div>
                                             {showPhonemeBank === idx && (
                                                 <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs text-slate-500 italic">💡 Hover any sound for teaching tips</span>
+                                                        <span className="text-xs text-slate-600 italic">💡 Hover any sound for teaching tips</span>
                                                     </div>
                                                     {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
                                                         <div key={category} className="mb-3">
-                                                            <div className="text-xs font-bold text-slate-500 uppercase mb-1" title={
+                                                            <div className="text-xs font-bold text-slate-600 uppercase mb-1" title={
                                                                 category === 'Consonants' ? 'Single consonant sounds — pair voiced (b,d,g) with unvoiced (p,t,k)' :
                                                                 category === 'Vowels (Short)' ? 'Quick vowel sounds — cat, pet, sit, hot, cup, book' :
                                                                 category === 'Vowels (Long)' ? 'Longer vowel sounds — see, moon, cue, saw + vowel teams ai, ea, oa' :
@@ -1445,7 +1445,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     <div key={p} className="inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors">
                                                                         <button
                                                                             onClick={() => onPlayAudio && onPlayAudio(p)}
-                                                                            className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-500 hover:text-pink-600 transition-colors border-r border-slate-300"
+                                                                            className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"
                                                                             title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play sound: ${p}`}
                                                                         >🔊</button>
                                                                         <button
@@ -1494,7 +1494,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 transition-colors min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-600 hover:text-orange-600 transition-colors min-w-[32px] flex justify-center"
                                                                 data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
                                                             >
                                                                 {playingAudioKey === `${idx}-rhyme-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1551,7 +1551,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-500 hover:text-violet-600 transition-colors min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-600 transition-colors min-w-[32px] flex justify-center"
                                                                 data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
                                                             >
                                                                 {playingAudioKey === `${idx}-blend-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1583,7 +1583,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 </div>
                                             </div>
                                         <div>
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Sound Positions (Find Sounds Activity)</label>
+                                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">Sound Positions (Find Sounds Activity)</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {(() => {
                                                     const phonemesRaw = word.phonemes;
@@ -1594,13 +1594,13 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     const ordinalLabel = ordinals[soundIdx] || `${soundIdx + 1}th`;
                                                     return (
                                                         <div key={soundIdx} className="flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1">
-                                                            <span className="text-xs font-bold text-slate-500">{ordinalLabel}:</span>
+                                                            <span className="text-xs font-bold text-slate-600">{ordinalLabel}:</span>
                                                             <span className="font-bold text-violet-700 text-lg">{phoneme}</span>
                                                         </div>
                                                     );
                                                 })}
                                                 {(!word.phonemes || word.phonemes.length === 0) && (
-                                                    <span className="text-slate-500 text-sm italic">{t('word_sounds.no_phonemes')}</span>
+                                                    <span className="text-slate-600 text-sm italic">{t('word_sounds.no_phonemes')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -1617,7 +1617,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             className="w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
                                                         />
                                                     ) : (
-                                                        <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-500 bg-slate-50">
+                                                        <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-600 bg-slate-50">
                                                             <ImageIcon size={32} />
                                                         </div>
                                                     )}
@@ -1673,7 +1673,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     {generatingImageIndex === idx ? <RefreshCw size={12} className="animate-spin"/> : <Send size={12}/>}
                                                                 </button>
                                                             </div>
-                                                            <span className="text-[10px] text-slate-500 italic">✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"</span>
+                                                            <span className="text-[11px] text-slate-600 italic">✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"</span>
                                                         </div>
                                                     )}
                                                 </div>
