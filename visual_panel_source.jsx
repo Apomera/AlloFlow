@@ -1,13 +1,3 @@
-// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
-// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
-// Note: currently unused in visual_panel — defensive declaration mirroring module.js.
-// eslint-disable-next-line no-unused-vars
-var _alloFocusTrigger = null;
-// eslint-disable-next-line no-unused-vars
-function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-// eslint-disable-next-line no-unused-vars
-function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
 // HTML sanitizer — strips <script>, inline handlers, dangerous tags, and javascript: URLs.
 // Delegates to window.sanitizeHtml if AlloFlowANTI.txt's version is loaded; falls back to
 // inline regex-based stripping when this module runs standalone.

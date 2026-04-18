@@ -1,9 +1,3 @@
-// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
-// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
-var _alloFocusTrigger = null;
-function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
 // Fisher-Yates shuffle used by the unscramble game. Recurses if shuffle produces the same word.
 var scrambleWord = function(word) {
   if (!word || word.length < 2) return word;

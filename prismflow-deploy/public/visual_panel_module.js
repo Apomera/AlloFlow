@@ -24,11 +24,6 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
-  // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
-  var _alloFocusTrigger = null;
-  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
 

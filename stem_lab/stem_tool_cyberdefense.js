@@ -29,6 +29,33 @@
     document.body.appendChild(liveRegion);
   })();
 
+  // Inject War Room keyframe animations (respects prefers-reduced-motion)
+  (function() {
+    if (document.getElementById('allo-cyberd-keyframes')) return;
+    var style = document.createElement('style');
+    style.id = 'allo-cyberd-keyframes';
+    style.textContent = [
+      '@keyframes warPulse {',
+      '  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }',
+      '  50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(239,68,68,0); }',
+      '}',
+      '@keyframes warVictory {',
+      '  0% { transform: scale(0.6) rotate(-15deg); opacity: 0; }',
+      '  50% { transform: scale(1.25) rotate(8deg); opacity: 1; }',
+      '  100% { transform: scale(1) rotate(0); opacity: 1; }',
+      '}',
+      '@keyframes warShake {',
+      '  0%,100% { transform: translateX(0); }',
+      '  25% { transform: translateX(-3px); }',
+      '  75% { transform: translateX(3px); }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .war-pulse, .war-victory, .war-shake { animation: none !important; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+  })();
+
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   window.StemLab.registerTool('cyberDefense', {
@@ -135,6 +162,10 @@
           var warRoomTimeLeft = d.warRoomTimeLeft != null ? d.warRoomTimeLeft : 90;
           var warRoomAchievements = d.warRoomAchievements || {};
           var warRoomCampaignAchievements = d.warRoomCampaignAchievements || [];
+          var warRoomTotalCombos = d.warRoomTotalCombos || 0;
+          var warRoomTimedOutAny = d.warRoomTimedOutAny || false;
+          var warRoomStoryMode = d.warRoomStoryMode != null ? d.warRoomStoryMode : (warRoomCampaignsCompleted === 0);
+          var warRoomCampaignId = d.warRoomCampaignId || null;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -720,7 +751,15 @@
             { id: 'a_piiexfil', stage: 'actions', title: 'Customer PII exfiltration', description: 'Adversary packages a customer database for exfiltration.', indicators: ['Large archive creation on DB server', 'Sudden egress spike at 3am'], noiseIndicators: ['Scheduled nightly backup job'], mitigations: { isolate_host: 1.0, block_ip: 0.8, escalate: 1.0, hunt_iocs: 0.5 }, impact: { data: 60 } },
             { id: 'a_ransom', stage: 'actions', title: 'Ransomware detonation', description: 'Attacker pushes a ransomware payload across domain-joined hosts.', indicators: ['Mass file renames with unusual extension', 'Shadow-copy deletion commands'], noiseIndicators: ['Large file-migration project'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.8, patch: 0.3 }, impact: { servers: 5, data: 40 } },
             { id: 'a_wirefraud', stage: 'actions', title: 'Wire-transfer fraud (BEC)', description: 'Finance receives a forwarded email chain authorizing a $380k wire.', indicators: ['Mailbox forwarding rule created in last 48h', 'Reply-to domain differs from display'], noiseIndicators: ['Routine vendor onboarding'], mitigations: { escalate: 1.0, reset_credential: 0.9, awareness_blast: 0.8, investigate: 0.7 }, impact: { data: 50 } },
-            { id: 'a_sabotage', stage: 'actions', title: 'Destructive wiper on build server', description: 'Attacker wipes CI/CD infrastructure to disrupt operations.', indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } }
+            { id: 'a_sabotage', stage: 'actions', title: 'Destructive wiper on build server', description: 'Attacker wipes CI/CD infrastructure to disrupt operations.', indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } },
+
+            // ── Nation-State APT cards (unlocked via Trophy Room) ──
+            { id: 'r_supplychain', stage: 'recon', title: 'Supply-chain vendor mapping', description: 'State-sponsored actor profiles your software vendors to find a soft entry point upstream.', indicators: ['Your IT partner appears in breach-forum chatter', 'WHOIS lookups of your vendors from uncategorized ASNs'], noiseIndicators: ['Journalist researching industry'], mitigations: { hunt_iocs: 1.0, escalate: 0.5 }, impact: { data: 5 }, apt: true },
+            { id: 'd_signed_driver', stage: 'delivery', title: 'Malicious update via signed driver', description: 'Compromised code-signing certificate lets the adversary push a "trusted" update.', indicators: ['Legitimate vendor certificate used on unfamiliar binary', 'Update server redirected through unknown CDN'], noiseIndicators: ['Scheduled maintenance window'], mitigations: { hunt_iocs: 1.0, deploy_edr: 0.7, block_ip: 0.4 }, impact: { servers: 2, users: 2 }, apt: true },
+            { id: 'e_zeroday', stage: 'exploit', title: 'Zero-day kernel exploit', description: 'No patch exists \u2014 the vendor doesn\'t know about this bug yet.', indicators: ['Kernel crash dumps with unusual call stacks', 'BSoD events clustered by time'], noiseIndicators: ['Aging hardware'], mitigations: { isolate_host: 1.0, deploy_edr: 0.7, hunt_iocs: 0.5 }, impact: { servers: 3, data: 15 }, apt: true },
+            { id: 'p_firmware', stage: 'persist', title: 'Firmware-level implant', description: 'Adversary embeds persistence below the OS \u2014 survives re-imaging.', indicators: ['BIOS/UEFI integrity checks fail', 'Implant resurrects after full disk wipe'], noiseIndicators: ['Legitimate firmware update'], mitigations: { isolate_host: 1.0, escalate: 0.8, deploy_edr: 0.4 }, impact: { servers: 3 }, apt: true },
+            { id: 'c_slow_dns', stage: 'c2', title: 'Low-and-slow DNS C2 (1 query/hr)', description: 'Extremely low-volume beaconing designed to evade threshold-based detection.', indicators: ['Single anomalous DNS query per hour to same parent domain', 'Timing variance < 2%'], noiseIndicators: ['Cloud service keepalive'], mitigations: { hunt_iocs: 1.0, block_ip: 0.6, isolate_host: 0.7 }, impact: { data: 20 }, apt: true },
+            { id: 'a_longexfil', stage: 'actions', title: 'Multi-week intellectual property exfiltration', description: 'Classified designs siphoned in small chunks over 6 weeks to avoid egress alarms.', indicators: ['Cumulative egress to research domain exceeds baseline', 'Encrypted archives created on file server'], noiseIndicators: ['Legitimate research collaboration'], mitigations: { escalate: 1.0, isolate_host: 0.9, hunt_iocs: 0.7 }, impact: { data: 80 }, apt: true }
           ];
 
           // ── Combo bonuses: playing these pairs/triples together unlocks bonus effects ──
@@ -795,6 +834,23 @@
                 c2: ['c_slackhook'],
                 actions: ['a_piiexfil', 'a_sabotage']
               }
+            },
+            apt: {
+              id: 'apt', label: 'Nation-State APT', icon: '\uD83C\uDF10',
+              desc: 'A patient, well-funded adversary using zero-days, signed binaries, and firmware persistence. Only patching and scanning won\'t save you.',
+              preferred: {
+                recon: ['r_supplychain', 'r_dnsenum'],
+                delivery: ['d_signed_driver', 'd_spearcfo'],
+                exploit: ['e_zeroday', 'e_cve'],
+                persist: ['p_firmware', 'p_service'],
+                c2: ['c_slow_dns', 'c_httpscdn'],
+                actions: ['a_longexfil', 'a_piiexfil']
+              },
+              locked: true,
+              unlockCondition: function(dd) {
+                return Object.keys(dd.warRoomAchievements || {}).length >= 6;
+              },
+              unlockHint: 'Earn 6 Trophy Room achievements to unlock.'
             }
           };
 
@@ -925,6 +981,13 @@
             var baseBudget = diff === 'rookie' ? 18 : (diff === 'analyst' ? 14 : 10);
             var budget = baseBudget + (warCrossBonuses.budgetBonus || 0);
             var firstRed = rollRedAction('recon', diff, [], theme);
+            // Campaign ID: 4-char alphanumeric for sharing/reference
+            var campaignId = (function() {
+              var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+              var out = '';
+              for (var k = 0; k < 4; k++) out += chars[Math.floor(Math.random() * chars.length)];
+              return out;
+            })();
             var firstAlerts = generateAlerts(firstRed, diff);
             var openingLine = campaignThemes[theme].label !== 'Mixed Threat Landscape'
               ? 'Campaign begins. Threat intel flags this as a ' + campaignThemes[theme].label + ' operation. Stay sharp.'
@@ -953,7 +1016,11 @@
               warRoomHintsUsed: 0,
               warRoomHintRevealed: false,
               warRoomFreeUsed: [],
-              warRoomTimeLeft: 90
+              warRoomTimeLeft: 90,
+              warRoomTotalCombos: 0,
+              warRoomTimedOutAny: false,
+              warRoomCampaignAchievements: [],
+              warRoomCampaignId: campaignId
             });
             if (ctx.announceToSR) ctx.announceToSR('War Room campaign started on ' + diff + ' difficulty, ' + campaignThemes[theme].label + '. Round 1, Reconnaissance. ' + firstRed.title);
             sfxCyberdClick();
@@ -1077,6 +1144,16 @@
             return out;
           }
 
+          // ── Story Mode coach tips (shown in-round when Story Mode is on) ──
+          var stageCoachTips = {
+            recon: 'COACH: The attacker is just scouting right now \u2014 collecting info from public sources. You won\'t see malware yet. Watch for unusual scan patterns or clusters of profile views. Try **Hunt for IOCs** or **User Awareness Blast**.',
+            delivery: 'COACH: This is first contact. An email, text, or USB is arriving. Look at the sender carefully \u2014 real senders don\'t typo their own domain. **Block Sender/IP** is usually your best tool here.',
+            exploit: 'COACH: Code is running where it shouldn\'t. The attacker has a foothold if you do nothing. **Deploy EDR Rule** or **Isolate Endpoint** to catch or contain the execution. **Patch** works if the attack used a known CVE.',
+            persist: 'COACH: The adversary is setting up camp \u2014 installing ways to survive a reboot. **Deploy EDR Rule** excels here: it watches for the telltale patterns of persistence (scheduled tasks, registry keys, services).',
+            c2: 'COACH: The compromised host is phoning home. Cut the beacon! **Block Sender/IP** stops the traffic at the perimeter. **Isolate Endpoint** severs everything. **Hunt for IOCs** finds hidden C2 channels.',
+            actions: 'COACH: This is it \u2014 the payoff stage. Data exfil, ransomware, or fraud. **Escalate to CISO** is powerful here (if you haven\'t used it). **Isolate Endpoint** contains the damage. Move fast.'
+          };
+
           // ── Stage-level lesson templates (the "why" of each stage) ──
           var stageLessons = {
             recon: 'Reconnaissance is silent but foundational — every piece of info the adversary collects makes later stages cheaper and more convincing. Early detection here (hunt, awareness) pays compounding dividends.',
@@ -1116,6 +1193,8 @@
             var lesson = stageLessons[stageObj.id] || '';
 
             ctx.awardXP('cyberDefense', result.xpDelta);
+            var combosThisRound = (result.activeCombos || []).length;
+            var timedOutThisRound = warRoomDifficulty === 'threatHunter' && warRoomTimeLeft <= 0;
             upd({
               warRoomKillChain: newChain,
               warRoomAssets: newAssets,
@@ -1124,6 +1203,8 @@
               warRoomDetections: detections,
               warRoomMitigations: mitigations,
               warRoomRoundResolved: true,
+              warRoomTotalCombos: warRoomTotalCombos + combosThisRound,
+              warRoomTimedOutAny: warRoomTimedOutAny || timedOutThisRound,
               warRoomLastResolution: {
                 outcome: result.outcome,
                 outcomeLabel: outcomeLabel,
@@ -1150,14 +1231,37 @@
               var completed = warRoomCampaignsCompleted + 1;
               var perfectHard = warRoomDifficulty === 'threatHunter' && warRoomAssetsLost.users === 0 && warRoomAssetsLost.servers === 0 && warRoomAssetsLost.data === 0;
               var wonAnalyst = (won && warRoomDifficulty === 'analyst') || d.warRoomWonAnalyst;
+              // Achievements
+              var earnedIds = evaluateCampaignAchievements(warRoomKillChain, {
+                verdict: won ? 'won' : 'lost',
+                totalCombos: warRoomTotalCombos,
+                remainingBudget: warRoomBudget,
+                dataRemaining: warRoomAssets.data,
+                difficulty: warRoomDifficulty,
+                timedOut: warRoomTimedOutAny
+              });
+              // Merge new achievements into persistent collection
+              var mergedAchievements = Object.assign({}, warRoomAchievements);
+              var newlyEarned = [];
+              earnedIds.forEach(function(aid) {
+                if (!mergedAchievements[aid]) {
+                  mergedAchievements[aid] = { earnedAt: Date.now() };
+                  newlyEarned.push(aid);
+                }
+              });
               upd({
                 warRoomLog: warRoomLog.concat([won ? '\uD83C\uDFC6 Campaign won. Environment held.' : '\u26A0\uFE0F Campaign ended. Review the after-action report.']),
                 warRoomVerdict: won ? 'won' : 'lost',
                 warRoomCampaignsCompleted: completed,
                 warRoomPerfectDefense: perfectHard || d.warRoomPerfectDefense,
                 warRoomWonAnalyst: wonAnalyst,
-                warRoomLastResolution: null
+                warRoomLastResolution: null,
+                warRoomAchievements: mergedAchievements,
+                warRoomCampaignAchievements: earnedIds
               });
+              if (newlyEarned.length > 0 && ctx.addToast) {
+                ctx.addToast('\uD83C\uDFC5 ' + newlyEarned.length + ' new achievement' + (newlyEarned.length > 1 ? 's' : '') + ' unlocked!', 'success');
+              }
               if (ctx.announceToSR) ctx.announceToSR('Campaign complete. Verdict: ' + (won ? 'victory' : 'defeat') + '. ' + warRoomDetections + ' of 6 attacks detected.');
               if (ctx.addToast) ctx.addToast(won ? 'Campaign won!' : 'Campaign lost \u2014 review the debrief', won ? 'success' : 'info');
             } else {
@@ -1861,6 +1965,17 @@
                       ': reconnaissance, delivery, exploitation, persistence, command-and-control, and actions on objectives. Each round, the Red Team plays a move; you read the alerts, spend defensive budget wisely, and try to detect or mitigate before assets are lost.'
                     )
                   ),
+                  // Story Mode toggle
+                  el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 } },
+                    el('button', { onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
+                      role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': 'Toggle Story Mode',
+                      style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#22c55e' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
+                      warRoomStoryMode ? 'ON' : 'OFF'),
+                    el('div', { style: { flex: 1 } },
+                      el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomStoryMode ? '#86efac' : '#cbd5e1' } }, '\uD83C\uDFAC Story Mode \u2014 Guided Coaching'),
+                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, 'Each round shows a "Coach" tip explaining what the attacker is doing and which defenses to consider. Recommended for your first few campaigns.')
+                    )
+                  ),
                   // Cross-mode bonuses earned from other Cyber Defense modes
                   warCrossBonuses.earned.length > 0 && el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.04))', border: '1px solid rgba(34,197,94,0.3)', marginBottom: 16 } },
                     el('div', { style: { color: '#86efac', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83C\uDF96\uFE0F EARNED PERKS (from other Cyber Defense modes)'),
@@ -1880,15 +1995,17 @@
                     el('div', { role: 'radiogroup', 'aria-label': 'Adversary theme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8 } },
                       Object.keys(campaignThemes).map(function(tid) {
                         var t = campaignThemes[tid];
-                        var selected = warRoomCampaignTheme === tid;
-                        return el('button', { key: tid, role: 'radio', 'aria-checked': selected,
-                          onClick: function() { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); },
-                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : '#cbd5e1', cursor: 'pointer', textAlign: 'left' } },
+                        var isLocked = t.locked && !(t.unlockCondition && t.unlockCondition(d));
+                        var selected = warRoomCampaignTheme === tid && !isLocked;
+                        return el('button', { key: tid, role: 'radio', 'aria-checked': selected, disabled: isLocked,
+                          'aria-label': t.label + (isLocked ? ' (locked — ' + (t.unlockHint || 'keep playing to unlock') + ')' : ''),
+                          onClick: function() { if (!isLocked) { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); } },
+                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : (isLocked ? '#64748b' : '#cbd5e1'), cursor: isLocked ? 'not-allowed' : 'pointer', textAlign: 'left', opacity: isLocked ? 0.55 : 1 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
-                            el('span', { style: { fontSize: 16 } }, t.icon),
+                            el('span', { style: { fontSize: 16, filter: isLocked ? 'grayscale(1)' : 'none' } }, isLocked ? '\uD83D\uDD12' : t.icon),
                             el('span', { style: { fontSize: 13, fontWeight: 800 } }, t.label)
                           ),
-                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, t.desc)
+                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, isLocked ? (t.unlockHint || 'Locked') : t.desc)
                         );
                       })
                     )
@@ -1911,8 +2028,25 @@
                       })
                     )
                   ),
-                  el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
+                  el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', textAlign: 'center', marginBottom: 14 } },
                     warRoomCampaignsCompleted > 0 ? ('Campaigns completed: ' + warRoomCampaignsCompleted + (d.warRoomWonAnalyst ? ' \u2022 Analyst victory \uD83C\uDF96\uFE0F' : '') + (d.warRoomPerfectDefense ? ' \u2022 Perfect defense \uD83D\uDEE1\uFE0F' : '')) : 'Your first campaign awaits.'
+                  ),
+                  // Trophy room — all-time achievement collection
+                  el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(99,102,241,0.2)' } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83C\uDFC6 TROPHY ROOM (' + Object.keys(warRoomAchievements).length + ' / ' + warAchievements.length + ')'),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
+                      warAchievements.map(function(a) {
+                        var earned = !!warRoomAchievements[a.id];
+                        return el('div', { key: a.id, title: a.desc,
+                          style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.5 } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 } },
+                            el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
+                            el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#64748b', flex: 1 } }, a.label)
+                          ),
+                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, a.desc)
+                        );
+                      })
+                    )
                   )
                 ),
 
@@ -1921,7 +2055,8 @@
                   el('div', { style: { textAlign: 'center', marginBottom: 16 } },
                     el('div', { style: { fontSize: 44, marginBottom: 4 } }, warRoomVerdict === 'won' ? '\uD83C\uDFC6' : '\u26A0\uFE0F'),
                     el('div', { style: { fontSize: 20, fontWeight: 900, color: warRoomVerdict === 'won' ? '#86efac' : '#fca5a5' } }, warRoomVerdict === 'won' ? 'Environment Held' : 'Adversary Advanced'),
-                    el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label)
+                    el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label),
+                    warRoomCampaignId && el('div', { style: { marginTop: 6, fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Campaign #' + warRoomCampaignId)
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
                     [
@@ -1937,15 +2072,59 @@
                       );
                     })
                   ),
-                  // Kill chain recap
+                  // Achievements earned this campaign
+                  warRoomCampaignAchievements && warRoomCampaignAchievements.length > 0 && el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.04))', border: '1px solid rgba(245,158,11,0.35)', marginBottom: 14 } },
+                    el('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83C\uDFC5 ACHIEVEMENTS EARNED THIS CAMPAIGN'),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                      warRoomCampaignAchievements.map(function(aid) {
+                        var a = warAchievements.filter(function(x) { return x.id === aid; })[0];
+                        if (!a) return null;
+                        var isNew = !(d.warRoomAchievements && d.warRoomAchievements[aid] && d.warRoomAchievements[aid].earnedAt < Date.now() - 60000);
+                        return el('div', { key: aid, style: { padding: 8, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(245,158,11,0.25)' } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                            el('span', { style: { fontSize: 16 } }, a.icon),
+                            el('span', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', flex: 1 } }, a.label),
+                            isNew && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '1px 5px', borderRadius: 3, background: 'rgba(34,197,94,0.25)', color: '#86efac' } }, 'NEW')
+                          ),
+                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, a.desc)
+                        );
+                      })
+                    )
+                  ),
+                  // Kill chain recap (expandable)
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
-                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, 'KILL CHAIN RECAP'),
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, 'KILL CHAIN RECAP (click a round to expand)'),
                     warRoomKillChain.map(function(r, i) {
                       var oc = r.outcome === 'mitigated' ? { c: '#22c55e', label: 'MITIGATED' } : (r.outcome === 'detected' ? { c: '#3b82f6', label: 'DETECTED' } : { c: '#ef4444', label: 'SUCCEEDED' });
-                      return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < warRoomKillChain.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' } },
-                        el('span', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, minWidth: 30 } }, 'R' + (i + 1)),
-                        el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
-                        el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
+                      var expandedKey = 'expand_r' + i;
+                      var isExpanded = d[expandedKey];
+                      var ideals = idealPlaysFor(r.red);
+                      return el('div', { key: i, style: { borderBottom: i < warRoomKillChain.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' } },
+                        el('button', { onClick: function() { var o = {}; o[expandedKey] = !isExpanded; upd(o); sfxCyberdClick(); },
+                          'aria-expanded': !!isExpanded, 'aria-controls': 'round-detail-' + i,
+                          style: { width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' } },
+                          el('span', { style: { fontSize: 10, color: '#64748b', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
+                          el('span', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, minWidth: 28 } }, 'R' + (i + 1)),
+                          el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
+                          el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
+                        ),
+                        isExpanded && el('div', { id: 'round-detail-' + i, style: { padding: '4px 0 10px 26px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.6 } },
+                          el('div', { style: { marginBottom: 4 } }, el('strong', { style: { color: '#fca5a5' } }, 'Attack: '), r.red.description),
+                          el('div', { style: { marginBottom: 4 } },
+                            el('strong', { style: { color: '#86efac' } }, 'Your plays: '),
+                            r.bluePlays.length > 0 ? r.bluePlays.map(function(pid) {
+                              var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0];
+                              return c ? c.label : pid;
+                            }).join(', ') : 'none'
+                          ),
+                          ideals.length > 0 && el('div', null,
+                            el('strong', { style: { color: '#a5b4fc' } }, 'Ideal plays: '),
+                            ideals.map(function(c) { return c.label; }).join(' or ')
+                          ),
+                          (r.assetsLost.users || r.assetsLost.servers || r.assetsLost.data) && el('div', { style: { marginTop: 4, color: '#fca5a5' } },
+                            'Lost: ' + r.assetsLost.users + ' users, ' + r.assetsLost.servers + ' servers, ' + r.assetsLost.data + ' data'
+                          )
+                        )
                       );
                     })
                   ),
@@ -1960,9 +2139,37 @@
                     warRoomAAR ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, warRoomAAR)
                       : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
                   ),
-                  el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null }); sfxCyberdClick(); },
-                    style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                    '\u2694\uFE0F New Campaign')
+                  // Share summary + new campaign buttons
+                  el('div', { style: { display: 'flex', gap: 10 } },
+                    el('button', {
+                      onClick: function() {
+                        var summary = 'SOC War Room \u2014 Campaign #' + (warRoomCampaignId || '????') + '\n' +
+                          (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].label : 'Mixed') + ' \u2022 ' + warRoomDifficulty + '\n' +
+                          'Verdict: ' + (warRoomVerdict === 'won' ? 'WON \uD83C\uDFC6' : 'LOST \u26A0\uFE0F') + '\n' +
+                          'Detections: ' + warRoomDetections + '/6 | Mitigations: ' + warRoomMitigations + '/6\n' +
+                          'Assets preserved: ' + warRoomAssets.users + '/10 users, ' + warRoomAssets.servers + '/5 servers, ' + warRoomAssets.data + '/100 data\n' +
+                          'Combos: ' + warRoomTotalCombos + ' | Rank: ' + warRoomRank.label + '\n' +
+                          (warRoomCampaignAchievements.length > 0 ? 'Achievements: ' + warRoomCampaignAchievements.length + ' earned\n' : '') +
+                          'AlloFlow \u2022 Cyber Defense Lab';
+                        try {
+                          if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(summary).then(function() {
+                              if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Summary copied to clipboard', 'success');
+                            }, function() {
+                              if (ctx.addToast) ctx.addToast('Copy failed \u2014 check your browser permissions', 'info');
+                            });
+                          } else if (ctx.addToast) {
+                            ctx.addToast('Clipboard unavailable in this browser', 'info');
+                          }
+                        } catch(e) { if (ctx.addToast) ctx.addToast('Copy failed', 'info'); }
+                      },
+                      'aria-label': 'Copy campaign summary to clipboard',
+                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      '\uD83D\uDCCB Copy Summary'),
+                    el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
+                      style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                      '\u2694\uFE0F New Campaign')
+                  )
                 ),
 
                 // Active campaign (not ended)
@@ -1973,7 +2180,7 @@
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
                       el('div', null,
-                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
+                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '') + (warRoomCampaignId ? ' \u2022 #' + warRoomCampaignId : '')),
                         el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name)
                       )
                     ),
@@ -1990,7 +2197,9 @@
                       })
                     ),
                     // Timer (Threat Hunter only)
-                    warRoomDifficulty === 'threatHunter' && el('div', { 'aria-live': 'off', style: { padding: '4px 10px', borderRadius: 6, background: warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.15)', border: '1px solid ' + (warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.4)' : 'rgba(234,179,8,0.3)') } },
+                    warRoomDifficulty === 'threatHunter' && el('div', { 'aria-live': 'off',
+                      className: warRoomTimeLeft <= 15 && warRoomTimeLeft > 0 ? 'war-pulse' : '',
+                      style: { padding: '4px 10px', borderRadius: 6, background: warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.15)', border: '1px solid ' + (warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.4)' : 'rgba(234,179,8,0.3)'), animation: (warRoomTimeLeft <= 15 && warRoomTimeLeft > 0) ? 'warPulse 1s ease-in-out infinite' : 'none' } },
                       el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Clock'),
                       el('div', { style: { fontSize: 14, color: warRoomTimeLeft <= 15 ? '#fca5a5' : '#fcd34d', fontWeight: 900 } },
                         (Math.floor(warRoomTimeLeft / 60)) + ':' + (warRoomTimeLeft % 60 < 10 ? '0' : '') + (warRoomTimeLeft % 60))
@@ -2005,6 +2214,46 @@
                       el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Assets'),
                       el('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } },
                         warRoomAssets.users + 'u \u2022 ' + warRoomAssets.servers + 's \u2022 ' + warRoomAssets.data + 'd')
+                    )
+                  ),
+
+                  // Network diagram — visual asset map
+                  el('div', { role: 'img', 'aria-label': 'Network status: ' + warRoomAssets.users + ' of 10 users safe, ' + warRoomAssets.servers + ' of 5 servers safe, ' + warRoomAssets.data + ' of 100 data units preserved',
+                    style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(99,102,241,0.15)', marginBottom: 12 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800, letterSpacing: 0.5, marginBottom: 8 } }, '\uD83C\uDF10 YOUR NETWORK'),
+                    // Users row
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Users'),
+                      el('div', { style: { display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' } },
+                        Array.from({length: 10}, function(_, i) { return i; }).map(function(i) {
+                          var compromised = i < warRoomAssetsLost.users;
+                          return el('span', { key: i, title: compromised ? 'User account compromised' : 'User account safe',
+                            style: { fontSize: 18, filter: compromised ? 'grayscale(1) opacity(0.3)' : 'none', transition: 'filter 0.3s' } },
+                            compromised ? '\uD83D\uDC64' : '\uD83D\uDC68\u200D\uD83D\uDCBB');
+                        })
+                      ),
+                      el('span', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } }, warRoomAssets.users + '/10')
+                    ),
+                    // Servers row
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Servers'),
+                      el('div', { style: { display: 'flex', gap: 6, flex: 1 } },
+                        Array.from({length: 5}, function(_, i) { return i; }).map(function(i) {
+                          var compromised = i < warRoomAssetsLost.servers;
+                          return el('span', { key: i, title: compromised ? 'Server compromised' : 'Server healthy',
+                            style: { fontSize: 18, filter: compromised ? 'grayscale(1) opacity(0.3)' : 'none', transition: 'filter 0.3s' } },
+                            compromised ? '\uD83D\uDCBF' : '\uD83D\uDDA5\uFE0F');
+                        })
+                      ),
+                      el('span', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } }, warRoomAssets.servers + '/5')
+                    ),
+                    // Data bar
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Data'),
+                      el('div', { style: { flex: 1, height: 12, borderRadius: 6, background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(148,163,184,0.2)', overflow: 'hidden', position: 'relative' } },
+                        el('div', { style: { height: '100%', width: Math.max(0, Math.min(100, warRoomAssets.data)) + '%', background: warRoomAssets.data >= 70 ? 'linear-gradient(90deg, #22c55e, #86efac)' : (warRoomAssets.data >= 40 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #ef4444, #fca5a5)'), transition: 'width 0.4s ease' } })
+                      ),
+                      el('span', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } }, warRoomAssets.data + '/100')
                     )
                   ),
 
@@ -2076,6 +2325,23 @@
 
                     // LEFT: red team action + alerts
                     el('div', null,
+                      // Coach tip (Story Mode only)
+                      warRoomStoryMode && stageCoachTips[warRoomCurrentStage.id] && (function() {
+                        var tip = stageCoachTips[warRoomCurrentStage.id];
+                        // Convert **bold** markers to strong tags
+                        var parts = tip.split(/\*\*/);
+                        return el('div', { role: 'note', style: { padding: 10, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.04))', border: '1px solid rgba(34,197,94,0.3)', marginBottom: 10 } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                            el('span', { style: { fontSize: 16 } }, '\uD83C\uDFAC'),
+                            el('span', { style: { fontSize: 11, fontWeight: 900, color: '#86efac', letterSpacing: 0.5 } }, 'STORY MODE \u2014 COACH TIP')
+                          ),
+                          el('div', { style: { fontSize: 12, color: '#d9f99d', lineHeight: 1.55 } },
+                            parts.map(function(p, i) {
+                              return i % 2 === 1 ? el('strong', { key: i, style: { color: '#bbf7d0' } }, p) : p;
+                            })
+                          )
+                        );
+                      })(),
                       // Red team action card
                       el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(220,38,38,0.04))', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },

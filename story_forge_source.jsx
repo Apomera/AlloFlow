@@ -3,13 +3,6 @@
 // Narration, Grading, and Storybook Export
 // ═══════════════════════════════════════════════════════════════
 
-// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
-// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
-// Note: currently unused in story_forge — defensive declaration mirroring module.js.
-var _alloFocusTrigger = null;
-function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
 // ── Utilities ──
 const cleanJson = (str) => {
   if (!str) return '{}';

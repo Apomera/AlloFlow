@@ -4788,6 +4788,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Slowly drift stable toward current to tolerate gentle drift inside a lane.
           laneChangeRef.current.stableLane += (playerPerpOffset - laneChangeRef.current.stableLane) * dt * 0.3;
 
+          // ── Wrong-side / oncoming-lane detection ──
+          // For US right-side driving: NB driver (heading < 0) belongs at perp > 0.
+          // SB driver (heading > 0) belongs at perp < 0. If the player drifts more than
+          // 0.4m onto the OTHER side of the spline AND stays there for 1.5s while moving,
+          // they're driving in the oncoming lane — major safety violation.
+          if (Math.abs(car.speed) > 3 && timeRef.current > 5) {
+            var pRightSign = car.heading > 0 ? -1 : 1; // NB: +1, SB: -1
+            // playerPerpOffset > 0 = +X side. Driver belongs on `pRightSign` side.
+            // wrongSide = perp on OPPOSITE side of pRightSign by > 0.4m
+            var inOncoming = (playerPerpOffset * pRightSign) < -0.4;
+            var ws = laneChangeRef.current;
+            if (inOncoming) {
+              if (!ws._wrongSideStart) ws._wrongSideStart = timeRef.current;
+              var wrongDuration = timeRef.current - ws._wrongSideStart;
+              // After 1.5s in oncoming, log a violation. Re-arm every 5s so a long stretch
+              // in oncoming doesn't farm bonuses but DOES keep getting flagged.
+              if (wrongDuration > 1.5 && (!ws._wrongSideLogged || timeRef.current - ws._wrongSideLogged > 5)) {
+                ws._wrongSideLogged = timeRef.current;
+                statsRef.current.safetyScore -= 15;
+                if (!statsRef.current.wrongSideViolations) statsRef.current.wrongSideViolations = 0;
+                statsRef.current.wrongSideViolations++;
+                addToast('🚨 WRONG SIDE — you crossed into oncoming! -15');
+                eventToastRef.current = { msg: '🚨 You drove in oncoming traffic. Solid yellow = NO crossing. Get back to your side.', until: timeRef.current + 5 };
+                speak('Wrong side of the road. Return to your lane immediately.');
+                if (roadTestRef.current.active) {
+                  roadTestRef.current.deductions.push({ type: 'wrong_side', pts: 10, t: timeRef.current, detail: 'Drove in oncoming lane' });
+                  roadTestRef.current.score -= 10;
+                }
+              }
+            } else {
+              ws._wrongSideStart = null;
+            }
+            // ── Lane departure warning (LDW) — milder, just a coaching prompt ──
+            // If the player drifts onto the painted centerline (perp within ±0.4 of 0)
+            // without signaling, gentle nudge them back. Doesn't affect score.
+            var nearCenter = Math.abs(playerPerpOffset) < 0.4 && Math.abs(car.speed) > 8;
+            if (nearCenter && blinkerRef.current === 0) {
+              if (!ws._ldwLast || timeRef.current - ws._ldwLast > 8) {
+                ws._ldwLast = timeRef.current;
+                addToast('⚠️ Lane Departure — drifting toward the centerline');
+              }
+            }
+          }
+
           // MPG history for sparkline (sample every 0.5s)
           if (car.speed > 1 && mpg < 999) {
             if (!mpgHistoryRef.current._lastSample || timeRef.current - mpgHistoryRef.current._lastSample > 0.5) {
@@ -4822,6 +4866,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (t._busCycleTimer <= 0) {
                 t._stopArmActive = !t._stopArmActive;
                 t._busCycleTimer = t._stopArmActive ? 6 : (28 + Math.random() * 18);
+                // Reset per-cycle compliance + child-spawn flags so the next stop-arm
+                // cycle is treated as a fresh event (not the same one being re-armed).
+                if (t._stopArmActive) {
+                  t._busCompArmed = false;
+                  t._busCompLogged = null;
+                  t._childSpawned = false;
+                  t._childSpawnTimer = null;
+                }
               }
               // While stop arm is active, override speed → 0 and set hard slowFor later.
             }
@@ -5565,7 +5617,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dist = Math.hypot(dx, dy);
             if (!w.hit && dist < 1.2) {
               w.hit = true;
-              if (w.mass === 'massive') {
+              // Special case: hitting a CHILD is the worst possible outcome — it's the
+              // exact thing the school-bus stop-arm exists to prevent.
+              if (w.kind === 'child') {
+                statsRef.current.crashes++;
+                statsRef.current.safetyScore -= 80;
+                if (!statsRef.current.childStrike) statsRef.current.childStrike = 0;
+                statsRef.current.childStrike++;
+                addToast('🚨 YOU HIT A CHILD. This is what the stop-arm prevents. -80');
+                eventToastRef.current = { msg: '🚨 The federal stop-arm law exists because of moments exactly like this. Always stop for a school bus with red flashers.', until: timeRef.current + 8 };
+                speak('You struck a child. Always stop for a school bus with red flashers.');
+                car.speed *= 0.05;
+              } else if (w.mass === 'massive') {
                 statsRef.current.crashes++;
                 statsRef.current.safetyScore -= 60;
                 addToast('💥 MOOSE STRIKE — catastrophic. -60 safety');
@@ -5843,6 +5906,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (!bus._busCompArmed && !bus._busCompLogged) {
               bus._busCompArmed = true;
               eventToastRef.current = { msg: '🚌 SCHOOL BUS with red flashers — STOP. Both directions must stop on an undivided road.', until: timeRef.current + 5 };
+            }
+            // ── Child runs from the bus ──
+            // 50% chance per arming: a child sprite crosses the road from the bus side ~3s after arming.
+            // Pedagogical: this is WHY the stop-arm exists. If the player ignores the bus,
+            // they may hit a child — which delivers a visceral lesson + a major safety penalty.
+            // Skipped if a wildlife/event entity is already active (only one hazard at a time).
+            if (bus._busCompArmed && !bus._childSpawned && !wildlifeRef.current) {
+              if (!bus._childSpawnTimer) bus._childSpawnTimer = timeRef.current + 2.5;
+              if (timeRef.current >= bus._childSpawnTimer) {
+                bus._childSpawned = true;
+                if (Math.random() < 0.5) {
+                  // Spawn a "kid" hazard that crosses from the bus side toward the road.
+                  // Use spline-perpendicular so the kid actually appears next to the bus.
+                  var childSpawnY = bus.y;
+                  var childSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                  var childSplineCx = childSpline ? childSpline.centerAt(childSpawnY) : bus.x;
+                  var childSplineTheta = childSpline ? childSpline.headingAt(childSpawnY) : 0;
+                  var childPerpX = Math.cos(childSplineTheta);
+                  var childPerpY = -Math.sin(childSplineTheta);
+                  // Side of the road the bus is on (signed perp offset)
+                  var busPerpOff = (bus.x - childSplineCx) * childPerpX;
+                  var childSideSign = busPerpOff > 0 ? 1 : -1;
+                  // Spawn the kid 1m further out on the bus side, at the bus's Y.
+                  var childStartX = bus.x + childSideSign * 1.0 * childPerpX;
+                  var childStartY = bus.y + childSideSign * 1.0 * childPerpY;
+                  // Move the kid TOWARD the spline center (perpendicular inward, away from bus side)
+                  wildlifeRef.current = {
+                    kind: 'child', icon: '🧒', mass: 'small',
+                    x: childStartX, y: childStartY,
+                    vx: -childSideSign * 1.6 * childPerpX,
+                    vy: -childSideSign * 1.6 * childPerpY,
+                    hit: false, life: 6,
+                    fromBus: true,
+                    color: '#fbbf24'
+                  };
+                  eventToastRef.current = { msg: '🧒 CHILD running from the bus! BRAKE NOW.', until: timeRef.current + 5 };
+                  speak('Child crossing! Brake immediately.');
+                }
+              }
             }
             // Success: player at near-stop within 8 cells of the bus
             if (bus._busCompArmed && !bus._busCompLogged && dist < 8 && Math.abs(car.speed) < 1.2) {
