@@ -192,7 +192,9 @@ var d = labToolData || {};
 
           }
 
-          // Auto-load the Globe library when the Globe View tab is active.
+          // Auto-load the Globe library when the Globe View tab is active but the
+          // library hasn't been kicked off yet (e.g. user switched directly to the
+          // tab or rehydrated on it). The function is idempotent.
           if ((d.geoTab === 'globeView') && !window._globeLibLoaded) {
             loadGlobeLib().then(function() { upd('_globeLibReady', true); });
           }
@@ -683,6 +685,8 @@ var d = labToolData || {};
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! +' + (pts + bonus) + ' pts' + (bonus > 0 ? ' (\uD83D\uDD25 streak!)' : '') });
 
               if (typeof stemBeep === 'function') stemBeep('correct');
+              // Confetti on milestone streaks only (was firing on every correct at 5+,
+              // which spammed the celebration on long streaks).
               if (typeof stemCelebrate === 'function' && (newStreak === 5 || newStreak === 10 || newStreak === 15 || newStreak === 20 || (newStreak >= 25 && newStreak % 25 === 0))) stemCelebrate();
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Identified ' + geoTarget.name);
@@ -896,7 +900,10 @@ var d = labToolData || {};
 
 
 
-          // Set click handler
+          // Set click handler — dispatches based on which tab the student is on.
+          // findCountry tab: scores the click as an answer attempt.
+          // globeView tab: surfaces a country info card so "Click countries for info"
+          // in the tab header actually does something.
 
           window._geoClickHandler = function(iso, name) {
 
@@ -1311,6 +1318,8 @@ var d = labToolData || {};
                 React.createElement('span', { className: 'text-xs bg-yellow-400 text-yellow-900 rounded-full px-2 py-0.5 font-bold' }, '\u2B50 ' + geoScore),
 
                 geoStreak >= 3 && (function() {
+                  // Tiered streak pill: color + icon escalate as the streak grows,
+                  // giving visual feedback beyond a raw number.
                   var tier = geoStreak >= 20 ? 'gold' : geoStreak >= 10 ? 'red' : geoStreak >= 5 ? 'orange' : 'amber';
                   var icons = geoStreak >= 20 ? '\uD83D\uDD25\uD83D\uDD25\uD83D\uDD25'
                             : geoStreak >= 10 ? '\uD83D\uDD25\uD83D\uDD25'
@@ -2056,6 +2065,8 @@ var d = labToolData || {};
 
               }),
 
+              // Country info card — populated when user clicks a country on the globe.
+              // Sits below the globe so the 3D view stays full-size.
               window._GlobeGLConstructor && React.createElement('div', { className: 'p-3 bg-slate-900 text-white' },
                 geoGlobeInfo ? React.createElement('div', { className: 'max-w-2xl mx-auto bg-slate-800/70 border border-slate-700 rounded-xl p-3 flex items-start justify-between gap-3' },
                   React.createElement('div', { className: 'flex-1' },

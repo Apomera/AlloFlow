@@ -185,6 +185,7 @@
           var warRoomHintsUsed = d.warRoomHintsUsed || 0;
           var warRoomHintRevealed = d.warRoomHintRevealed || false;
           var warRoomGlossaryOpen = d.warRoomGlossaryOpen || false;
+          var warRoomGlossaryFilter = d.warRoomGlossaryFilter || '';
           var warRoomAICardLoading = d.warRoomAICardLoading || false;
           var warRoomFreeUsed = d.warRoomFreeUsed || []; // card ids whose free use is spent this campaign
           var warRoomTimeLeft = d.warRoomTimeLeft != null ? d.warRoomTimeLeft : 90;
@@ -391,7 +392,9 @@
               // Announce key thresholds to screen reader users (30s, 10s warnings)
               if (nextTime === 30 && ctx.announceToSR) ctx.announceToSR('30 seconds remaining in this round.');
               else if (nextTime === 10 && ctx.announceToSR) ctx.announceToSR('10 seconds remaining \u2014 decide now.');
-              if (nextTime <= 0 && warRoomBluePlays.length > 0) {
+              // WCAG 2.2.1 Timing Adjustable: if user disabled auto-resolve, clock floors at 0 but doesn't act
+              var autoResolveDisabled = warRoomA11y && warRoomA11y.noTimerAutoResolve;
+              if (nextTime <= 0 && warRoomBluePlays.length > 0 && !autoResolveDisabled) {
                 if (ctx.addToast) ctx.addToast('\u23F0 Time up \u2014 resolving round', 'info');
                 upd('warRoomTimeLeft', 0);
                 resolveCurrentRound();
@@ -414,6 +417,18 @@
               setTimeout(function() { warTtsSpeak('Red team: ' + speakTitle + '. ' + speakDesc); }, 300);
             }
           }
+          // Auto read-aloud for Quick Quiz (speaks new questions before answering)
+          if (cyberTab === 'warroom' && warRoomTtsAuto && warRoomTtsAvailable && warRoomQuizOpen && warRoomQuizCurrent && warRoomQuizCurrent.answered === -1) {
+            if (window._cyberWarQuizLastSpoken !== warRoomQuizCurrent.redId) {
+              window._cyberWarQuizLastSpoken = warRoomQuizCurrent.redId;
+              var rc = redTeamCards.filter(function(c) { return c.id === warRoomQuizCurrent.redId; })[0];
+              if (rc) {
+                var qTitle = rc.title || '';
+                var qDesc = (warRoomPlainLanguage && plainRedDescriptions[rc.id]) || rc.description || '';
+                setTimeout(function() { warTtsSpeak('Question: ' + qTitle + '. ' + qDesc); }, 300);
+              }
+            }
+          }
 
           // ── Replay auto-advance timer ──
           if (window._cyberWarReplayTimer) { clearTimeout(window._cyberWarReplayTimer); window._cyberWarReplayTimer = null; }
@@ -431,11 +446,12 @@
           }
 
           // ── War Room keyboard shortcuts (reattaches each render; latest closure wins) ──
+          // WCAG 2.1.4 Character Key Shortcuts: can be disabled via UDL options
           if (window._cyberWarRoomKeydown) {
             try { window.removeEventListener('keydown', window._cyberWarRoomKeydown); } catch(e) {}
             window._cyberWarRoomKeydown = null;
           }
-          if (cyberTab === 'warroom') {
+          if (cyberTab === 'warroom' && !(warRoomA11y && warRoomA11y.noShortcuts)) {
             window._cyberWarRoomKeydown = function(e) {
               // Ignore if user is typing in a form field or modifier keys are held
               var tag = (e.target && e.target.tagName) || '';
@@ -444,12 +460,24 @@
               // Help toggle — always available
               if (key === '?' || (key === '/' && e.shiftKey)) { e.preventDefault(); upd('warRoomHelpOpen', !warRoomHelpOpen); return; }
               if (key === 'Escape') {
+                if (warRoomQuizOpen) { e.preventDefault(); upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); return; }
                 if (warRoomHelpOpen) { e.preventDefault(); upd('warRoomHelpOpen', false); return; }
                 if (warRoomPlaybookOpen) { e.preventDefault(); upd('warRoomPlaybookOpen', false); return; }
                 if (warRoomStatsOpen) { e.preventDefault(); upd('warRoomStatsOpen', false); return; }
                 if (warRoomGlossaryOpen) { e.preventDefault(); upd('warRoomGlossaryOpen', false); return; }
                 if (warRoomTeacherDashOpen) { e.preventDefault(); upd('warRoomTeacherDashOpen', false); return; }
                 return;
+              }
+              // Quiz shortcuts: 1/2/3 pick answer, Enter/N advance to next question
+              if (warRoomQuizOpen && warRoomQuizCurrent) {
+                var qnum = parseInt(key, 10);
+                if (qnum >= 1 && qnum <= (warRoomQuizCurrent.choices || []).length && warRoomQuizCurrent.answered === -1) {
+                  e.preventDefault(); submitQuizAnswer(qnum - 1); return;
+                }
+                if ((key === 'Enter' || key.toLowerCase() === 'n') && warRoomQuizCurrent.answered !== -1) {
+                  e.preventDefault(); upd({ warRoomQuizCurrent: generateQuizQuestion() }); return;
+                }
+                return; // swallow other shortcuts while quiz is open
               }
               // Game shortcuts — only when campaign is active, not observing, not on pass screen
               if (!warRoomActive || warLiveIsObserving) return;
@@ -1027,7 +1055,8 @@
             { id: 'perimeter_hunt', ids: ['block_ip', 'hunt_iocs'], label: 'Perimeter + Hunt', effect: 'bonusXP', value: 2, description: 'Block known-bad AND hunt for unknown-bad. Full surface coverage.' },
             { id: 'deep_analysis', ids: ['investigate', 'hunt_iocs'], label: 'Deep Analysis', effect: 'bonusXP', value: 2, description: 'Surface-level and deep-level investigation \u2014 nothing slips through.' },
             { id: 'defense_in_depth', ids: ['patch', 'deploy_edr'], label: 'Defense in Depth', effect: 'minEffect', value: 0.6, description: 'Patch the known hole AND watch for zero-days \u2014 layered defense.' },
-            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: 'Crisis Response', effect: 'effectBoost', value: 0.4, description: 'Emergency containment + executive authorization. Overwhelming late-stage response.' }
+            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: 'Crisis Response', effect: 'effectBoost', value: 0.4, description: 'Emergency containment + executive authorization. Overwhelming late-stage response.' },
+            { id: 'rapid_response', ids: ['investigate', 'isolate_host'], label: 'Rapid Response', effect: 'effectBoost', value: 0.2, description: 'See it, stop it. Investigation confirms the threat; isolation cuts it off before damage spreads.' }
           ];
 
           // ── Detect which combos are active in the current blue plays ──
@@ -1875,7 +1904,11 @@
               return Object.keys(mits).some(function(k) { return mits[k] >= 1.0; });
             });
             if (eligible.length === 0) return null;
-            var redCard = eligible[Math.floor(Math.random() * eligible.length)];
+            // Prefer cards the student hasn't seen yet in this quiz session
+            var seen = d.warRoomQuizSeenIds || [];
+            var unseen = eligible.filter(function(c) { return seen.indexOf(c.id) === -1; });
+            var pool = unseen.length > 0 ? unseen : eligible;
+            var redCard = pool[Math.floor(Math.random() * pool.length)];
             var idealIds = Object.keys(redCard.mitigations || {}).filter(function(k) { return redCard.mitigations[k] >= 1.0; });
             var correctId = idealIds[Math.floor(Math.random() * idealIds.length)];
             // Distractors: any 2 blue cards that are NOT ideal for this red card
@@ -1910,12 +1943,21 @@
             if (newStreak >= 5 && !mergedAch.quiz_novice) { mergedAch.quiz_novice = { earnedAt: Date.now() }; unlockedNow.push('quiz_novice'); }
             if (newCorrect >= 25 && !mergedAch.quiz_master) { mergedAch.quiz_master = { earnedAt: Date.now() }; unlockedNow.push('quiz_master'); }
             var bestStreak = Math.max(d.warRoomQuizBestStreak || 0, newStreak);
+            // Track seen cards; reset rotation when every eligible card has been shown
+            var seen = (d.warRoomQuizSeenIds || []).slice();
+            if (warRoomQuizCurrent.redId && seen.indexOf(warRoomQuizCurrent.redId) === -1) seen.push(warRoomQuizCurrent.redId);
+            var eligibleCount = redTeamCards.filter(function(c) {
+              var m = c.mitigations || {};
+              return Object.keys(m).some(function(k) { return m[k] >= 1.0; });
+            }).length;
+            if (seen.length >= eligibleCount) seen = [];
             upd({
               warRoomQuizCurrent: Object.assign({}, warRoomQuizCurrent, { answered: choiceIdx }),
               warRoomQuizTotal: warRoomQuizTotal + 1,
               warRoomQuizCorrect: newCorrect,
               warRoomQuizStreak: newStreak,
               warRoomQuizBestStreak: bestStreak,
+              warRoomQuizSeenIds: seen,
               warRoomAchievements: unlockedNow.length > 0 ? mergedAch : warRoomAchievements
             });
             if (isCorrect) { ctx.awardXP('cyberDefense', 1); sfxWarMitigated(); }
@@ -3029,7 +3071,7 @@
               ),
 
               // ======= SOC WAR ROOM (red team / blue team simulation) =======
-              cyberTab === 'warroom' && el('div', { className: 'allo-warroom-root', style: Object.assign({
+              cyberTab === 'warroom' && el('div', { className: 'allo-warroom-root', role: 'region', 'aria-label': 'SOC War Room', lang: 'en', style: Object.assign({
                 maxWidth: 960, margin: '0 auto', position: 'relative',
                 fontFamily: warRoomA11y.dyslexiaFont ? '"OpenDyslexic","Comic Sans MS","Atkinson Hyperlegible",sans-serif' : undefined,
                 fontSize: warRoomA11y.largeText ? '1.18em' : undefined,
@@ -3068,15 +3110,24 @@
                         el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Stage: ' + stage.icon + ' ' + stage.name)
                       ),
                       el('button', {
-                        onClick: function() { upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
+                        onClick: function() { warTtsStop(); upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
                         'aria-label': 'Close quiz',
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
                     ),
                     // Red card question
                     el('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
-                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' } },
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM MOVE'),
-                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id)
+                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
+                        warRoomTtsAvailable && el('button', {
+                          onClick: function() {
+                            var title = redCard.title || '';
+                            var desc = (warRoomPlainLanguage && plainRedDescriptions[redCard.id]) || redCard.description || '';
+                            warTtsSpeak('Question: ' + title + '. ' + desc);
+                          },
+                          'aria-label': 'Read this quiz question aloud',
+                          title: 'Read aloud',
+                          style: { marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD0A Read')
                       ),
                       el('div', { style: { fontSize: 14, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, redCard.title),
                       el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
@@ -3108,11 +3159,29 @@
                       })
                     ),
                     // Feedback + Next
-                    answered && el('div', { role: 'status', 'aria-live': 'polite',
-                      style: { padding: 10, borderRadius: 6, background: gotIt ? (warOutcomeColors.mitigated + '14') : 'rgba(234,179,8,0.08)', border: '1px solid ' + (gotIt ? (warOutcomeColors.mitigated + '4d') : 'rgba(234,179,8,0.3)'), fontSize: 12, color: gotIt ? warOutcomeColors.mitigatedSoft : '#fcd34d', lineHeight: 1.55, marginBottom: 10 } },
-                      el('strong', null, gotIt ? '\u2728 Correct! +1 XP. ' : '\uD83D\uDCA1 Close! '),
-                      (blueTeamCards.filter(function(b) { return b.id === q.choices[q.correctIdx]; })[0] || {}).label + ' fully mitigates this attack because it directly counters the attack\'s main technique.'
-                    ),
+                    answered && (function() {
+                      var correctCard = blueTeamCards.filter(function(b) { return b.id === q.choices[q.correctIdx]; })[0];
+                      var pickedCard = q.answered >= 0 ? blueTeamCards.filter(function(b) { return b.id === q.choices[q.answered]; })[0] : null;
+                      var pickedEffect = pickedCard && redCard.mitigations && (redCard.mitigations[pickedCard.id] || 0);
+                      var lesson = (warRoomPlainLanguage && plainStageLessons[stage.id]) || stageLessons[stage.id] || '';
+                      return el('div', { role: 'status', 'aria-live': 'polite',
+                        style: { padding: 10, borderRadius: 6, background: gotIt ? (warOutcomeColors.mitigated + '14') : 'rgba(234,179,8,0.08)', border: '1px solid ' + (gotIt ? (warOutcomeColors.mitigated + '4d') : 'rgba(234,179,8,0.3)'), fontSize: 12, color: gotIt ? warOutcomeColors.mitigatedSoft : '#fcd34d', lineHeight: 1.55, marginBottom: 10 } },
+                        el('div', { style: { marginBottom: 6 } },
+                          el('strong', null, gotIt ? '\u2728 Correct! +1 XP. ' : '\uD83D\uDCA1 Close! '),
+                          (correctCard ? correctCard.label : '?') + ' fully mitigates this attack because it directly counters its main technique.'),
+                        // Why the wrong pick isn't as good (only on incorrect)
+                        !gotIt && pickedCard && el('div', { style: { marginBottom: 6, color: '#cbd5e1', fontSize: 11.5 } },
+                          'Your pick (',
+                          el('strong', null, pickedCard.label),
+                          ') ',
+                          pickedEffect >= 0.5 ? 'partially blunts this but can\'t stop it fully.' : 'doesn\'t match the attack\'s primary technique, so it lets the attack through.'
+                        ),
+                        // Stage lesson context
+                        lesson && el('div', { style: { paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.15)', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                          el('strong', { style: { color: '#cbd5e1', fontStyle: 'normal' } }, stage.name + ' lesson: '),
+                          lesson)
+                      );
+                    })(),
                     // Controls
                     el('div', { style: { display: 'flex', gap: 8 } },
                       el('button', {
@@ -3152,15 +3221,24 @@
                         el('div', { style: { fontSize: 15, fontWeight: 900, color: stage.color } }, 'Round ' + (idx + 1) + ' / ' + chain.length + ' \u2014 ' + stage.icon + ' ' + stage.name)
                       ),
                       el('button', {
-                        onClick: function() { upd('warRoomReplay', null); sfxCyberdClick(); },
+                        onClick: function() { warTtsStop(); upd('warRoomReplay', null); sfxCyberdClick(); },
                         'aria-label': 'Close replay',
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
                     ),
                     // Red card
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 8 } },
-                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' } },
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM'),
-                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id)
+                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
+                        warRoomTtsAvailable && el('button', {
+                          onClick: function() {
+                            var title = (step.red && step.red.title) || '';
+                            var desc = (step.red && step.red.description) || '';
+                            warTtsSpeak('Red team: ' + title + '. ' + desc);
+                          },
+                          'aria-label': 'Read this round\'s attack aloud',
+                          title: 'Read aloud',
+                          style: { marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD0A Read')
                       ),
                       el('div', { style: { fontSize: 13, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, (step.red && step.red.title) || ''),
                       el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5 } }, (step.red && step.red.description) || '')
@@ -3322,7 +3400,9 @@
                       { k: 'Enter',            t: 'Resolve round \u2022 Advance from debrief' },
                       { k: 'A',                t: 'Advance from debrief to next round' },
                       { k: 'Esc',              t: 'Close glossary / dashboard / help overlay' },
-                      { k: '?',                t: 'Toggle this help panel' }
+                      { k: '?',                t: 'Toggle this help panel' },
+                      { k: '(in Quiz) 1-3',    t: 'Pick an answer in Quick Quiz' },
+                      { k: '(in Quiz) N',      t: 'Next question after answering' }
                     ].map(function(row, i) {
                       return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8 } },
                         el('kbd', { style: { padding: '3px 8px', borderRadius: 4, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', color: '#fde68a', fontFamily: 'monospace', fontSize: 11, fontWeight: 800, minWidth: 48, textAlign: 'center' } }, row.k),
@@ -3464,6 +3544,46 @@
                           })
                         )
                       ),
+                      // Activity heatmap — last 28 days, like a GitHub contribution graph
+                      (function() {
+                        var daily = d.warRoomDailyCompletions || {};
+                        var historyByDay = {};
+                        (h || []).forEach(function(entry) {
+                          var dt = new Date(entry.at);
+                          var k = dt.getUTCFullYear() + '-' + (dt.getUTCMonth() + 1 < 10 ? '0' : '') + (dt.getUTCMonth() + 1) + '-' + (dt.getUTCDate() < 10 ? '0' : '') + dt.getUTCDate();
+                          historyByDay[k] = (historyByDay[k] || 0) + 1;
+                        });
+                        var now = new Date();
+                        var cells = [];
+                        for (var i = 27; i >= 0; i--) {
+                          var d2 = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+                          var key = d2.getUTCFullYear() + '-' + (d2.getUTCMonth() + 1 < 10 ? '0' : '') + (d2.getUTCMonth() + 1) + '-' + (d2.getUTCDate() < 10 ? '0' : '') + d2.getUTCDate();
+                          var count = (historyByDay[key] || 0) + (daily[key] ? 1 : 0);
+                          cells.push({ key: key, date: d2, count: count });
+                        }
+                        var maxC = cells.reduce(function(m, c) { return c.count > m ? c.count : m; }, 0);
+                        var activeDays = cells.filter(function(c) { return c.count > 0; }).length;
+                        return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
+                          el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+                            el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Activity \u2014 last 28 days'),
+                            el('div', { style: { color: '#86efac', fontSize: 10, fontWeight: 700 } }, activeDays + ' active day' + (activeDays === 1 ? '' : 's'))
+                          ),
+                          el('div', { role: 'img', 'aria-label': 'Activity heatmap over last 28 days. ' + activeDays + ' active days.',
+                            style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 } },
+                            cells.map(function(c) {
+                              var intensity = maxC > 0 ? (c.count / maxC) : 0;
+                              var bg = c.count === 0 ? 'rgba(30,41,59,0.6)'
+                                : intensity >= 0.75 ? '#22c55e'
+                                : intensity >= 0.4 ? '#86efac'
+                                : '#4ade8050';
+                              var dateStr = (c.date.getUTCMonth() + 1) + '/' + c.date.getUTCDate();
+                              return el('div', { key: c.key, title: dateStr + (c.count > 0 ? ' \u2014 ' + c.count + ' activity' + (c.count === 1 ? '' : 'ies') : ' \u2014 no activity'),
+                                style: { aspectRatio: '1', height: 16, borderRadius: 3, background: bg, border: '1px solid rgba(148,163,184,0.1)' } });
+                            })
+                          ),
+                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#64748b', fontStyle: 'italic' } }, 'Older \u2190  \u2192 Today')
+                        );
+                      })(),
                       // Grade trend strip (last 12 campaigns as letter badges)
                       (function() {
                         if (h.length === 0) return null;
@@ -3802,7 +3922,10 @@
                       style: { width: '100%', minHeight: 140, padding: 8, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.8)', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5, fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' } }),
                     warRoomCustomCardsError && el('div', { role: 'alert',
                       style: { marginTop: 6, padding: 8, borderRadius: 5, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 11, whiteSpace: 'pre-wrap', lineHeight: 1.5 } },
-                      warRoomCustomCardsError),
+                      warRoomCustomCardsError,
+                      // WCAG 3.3.3 — suggest fixes
+                      el('div', { style: { marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(239,68,68,0.2)', color: '#fbbf24', fontSize: 10.5, fontStyle: 'italic' } },
+                        '\uD83D\uDCA1 Try: click "Sample Pack" to load a working example, fix the highlighted fields, then Validate & Save again.')),
                     el('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' } },
                       el('button', {
                         onClick: function() {
@@ -3864,14 +3987,30 @@
                   )
                 ),
                 warRoomGlossaryOpen && el('div', { id: 'warroom-glossary-panel', role: 'region', 'aria-label': 'Cybersecurity glossary',
-                  style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 14, maxHeight: 280, overflowY: 'auto' } },
-                  el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83D\uDCD6 GLOSSARY'),
-                  warGlossary.map(function(g) {
-                    return el('div', { key: g.term, style: { padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' } },
-                      el('span', { style: { color: '#fca5a5', fontSize: 12, fontWeight: 800, marginRight: 8 } }, g.term),
-                      el('span', { style: { color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, g.defn)
-                    );
-                  })
+                  style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 14, maxHeight: 340, overflowY: 'auto' } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, letterSpacing: 0.5 } }, '\uD83D\uDCD6 GLOSSARY'),
+                    el('label', { htmlFor: 'warroom-glossary-filter', className: 'allo-sr-only' }, 'Filter glossary terms'),
+                    el('input', { id: 'warroom-glossary-filter', type: 'search', placeholder: 'Filter\u2026', value: warRoomGlossaryFilter,
+                      onChange: function(ev) { upd('warRoomGlossaryFilter', (ev.target.value || '').slice(0, 40)); },
+                      'aria-label': 'Filter glossary terms',
+                      style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 11, boxSizing: 'border-box' } }),
+                    warRoomGlossaryFilter && el('button', {
+                      onClick: function() { upd('warRoomGlossaryFilter', ''); },
+                      'aria-label': 'Clear glossary filter',
+                      style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(30,41,59,0.5)', color: '#cbd5e1', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
+                  ),
+                  (function() {
+                    var q = (warRoomGlossaryFilter || '').toLowerCase().trim();
+                    var filtered = q ? warGlossary.filter(function(g) { return g.term.toLowerCase().indexOf(q) !== -1 || g.defn.toLowerCase().indexOf(q) !== -1; }) : warGlossary;
+                    if (filtered.length === 0) return el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', padding: '8px 0' } }, 'No terms match "' + warRoomGlossaryFilter + '".');
+                    return filtered.map(function(g) {
+                      return el('div', { key: g.term, style: { padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' } },
+                        el('span', { style: { color: '#fca5a5', fontSize: 12, fontWeight: 800, marginRight: 8 } }, g.term),
+                        el('span', { style: { color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, g.defn)
+                      );
+                    });
+                  })()
                 ),
 
                 // Start screen — no active campaign
@@ -3911,6 +4050,8 @@
                         { id: 'a_highContrast',       label: '\u25D1 High Contrast', desc: 'Stronger color contrast for clarity.', val: warRoomA11y.highContrast },
                         { id: 'a_colorBlind',         label: '\uD83C\uDFA8 Color-Blind Friendly', desc: 'Orange / yellow / blue outcomes (no red-green).', val: warRoomA11y.colorBlind },
                         warRoomTtsAvailable ? { id: 'a_ttsAuto', label: '\uD83D\uDD0A Auto Read-Aloud', desc: 'Text-to-speech reads each new attack.', val: warRoomA11y.ttsAuto } : null,
+                        { id: 'a_noShortcuts',        label: '\u2328\uFE0F Disable Keyboard Shortcuts', desc: 'WCAG 2.1.4 \u2014 turn off single-key shortcuts if they trigger accidentally.', val: warRoomA11y.noShortcuts },
+                        { id: 'a_noTimerAutoResolve', label: '\u23F8 No Timer Auto-Resolve', desc: 'WCAG 2.2.1 \u2014 Threat Hunter timer shows but never force-ends a round.', val: warRoomA11y.noTimerAutoResolve },
                         { id: 'warRoomSoundMuted',    label: '\uD83D\uDD07 Mute War Room Sounds', desc: 'Silence the click / outcome tones.', val: warRoomSoundMuted }
                       ].filter(Boolean).map(function(opt) {
                         var isOn = !!opt.val;
@@ -3935,14 +4076,14 @@
                       })
                     ),
                     // Reset settings — restores UDL/accessibility defaults without touching progress
-                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind || warRoomA11y.ttsAuto) ? el('button', {
+                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind || warRoomA11y.ttsAuto || warRoomA11y.noShortcuts || warRoomA11y.noTimerAutoResolve) ? el('button', {
                       onClick: function() {
                         if (!confirm('Reset UDL / Access options to defaults? Achievements and history are kept.')) return;
                         warTtsStop();
                         upd({
                           warRoomPlainLanguage: false,
                           warRoomSoundMuted: false,
-                          warRoomA11y: { dyslexiaFont: false, largeText: false, highContrast: false, colorBlind: false, ttsAuto: false }
+                          warRoomA11y: { dyslexiaFont: false, largeText: false, highContrast: false, colorBlind: false, ttsAuto: false, noShortcuts: false, noTimerAutoResolve: false }
                         });
                         if (ctx.addToast) ctx.addToast('Access options reset to defaults', 'info');
                       },
@@ -4267,7 +4408,7 @@
                             el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
                             el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#64748b', flex: 1 } }, a.label)
                           ),
-                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, a.desc),
+                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, a.desc),
                           !earned && prog && el('div', { style: { marginTop: 5 } },
                             el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } },
                               el('span', null, prog.label),
@@ -4469,7 +4610,7 @@
                         warRoomAARLoading ? '\u23F3 Generating...' : '\uD83E\uDD16 Generate Debrief')
                     ),
                     warRoomAAR ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, warRoomAAR)
-                      : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
+                      : el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
                   ),
                   // Share summary + new campaign buttons
                   el('div', { style: { display: 'flex', gap: 10 } },

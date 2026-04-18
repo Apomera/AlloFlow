@@ -3081,6 +3081,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (scn.id === 'construction') introMsg = '🚧 WORK ZONE: Fines double. Watch for flaggers. Slow, smooth, patient.';
         else if (scn.id === 'downtown') introMsg = '🏙️ DOWNTOWN: Dense traffic, many signals, pedestrians everywhere. Patience is the skill here.';
         else if (scn.id === 'dawn') introMsg = '🌅 DAWN/DUSK: Low sun glare, reduced visibility. Peak moose/deer danger. Scan tree lines.';
+        // Clear infinite-world state from any prior Free Explore session — without this,
+        // a scenario drive that follows a Free Explore drive would still see the old
+        // procedural world (every `if (infiniteWorldRef.current)` check throughout the
+        // codebase would trigger, mixing scenario-mode rendering with stale spline lookups).
+        infiniteWorldRef.current = null;
         // Free explore gets its own welcome
         if (d.freeExplore && d.freeExploreScenario) {
           var fes = d.freeExploreScenario;
