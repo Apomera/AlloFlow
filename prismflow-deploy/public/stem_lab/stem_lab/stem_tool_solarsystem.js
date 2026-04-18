@@ -2309,7 +2309,7 @@ const d = labToolData.solarSystem;
         }
         ctx.fillRect(0, 0, W, H);
 
-        // ── Nebula clouds (dark mode only, cached to offscreen canvas once) ──
+        // ── Nebula clouds + Milky Way band (dark mode only, cached to offscreen once) ──
         // Drawing big blurred blobs every frame would tank performance, so we bake them
         // into an offscreen canvas and blit. Gives the background real depth instead of
         // a flat gradient.
@@ -2317,6 +2317,29 @@ const d = labToolData.solarSystem;
           var neb = document.createElement("canvas");
           neb.width = W; neb.height = H;
           var nctx = neb.getContext("2d");
+          // Milky Way band — a diffuse diagonal stripe of warm, dusty glow that reads as
+          // the galactic disk seen edge-on. Draw first so nebulas layer on top.
+          nctx.save();
+          nctx.translate(W / 2, H / 2);
+          nctx.rotate(-0.45); // diagonal tilt
+          var mwGrad = nctx.createLinearGradient(0, -H * 0.35, 0, H * 0.35);
+          mwGrad.addColorStop(0, "rgba(180,140,120,0)");
+          mwGrad.addColorStop(0.35, "rgba(210,175,145,0.08)");
+          mwGrad.addColorStop(0.5, "rgba(235,200,170,0.14)");
+          mwGrad.addColorStop(0.65, "rgba(210,175,145,0.08)");
+          mwGrad.addColorStop(1, "rgba(180,140,120,0)");
+          nctx.fillStyle = mwGrad;
+          nctx.fillRect(-W * 1.2, -H * 0.35, W * 2.4, H * 0.7);
+          // Dark dust lanes — thin subtracting streaks across the band for texture
+          nctx.globalCompositeOperation = "destination-out";
+          nctx.fillStyle = "rgba(0,0,0,0.35)";
+          for (var dl = 0; dl < 3; dl++) {
+            var lanePosY = (-H * 0.18) + dl * (H * 0.18);
+            nctx.fillRect(-W * 1.2, lanePosY, W * 2.4, 3 + dl);
+          }
+          nctx.globalCompositeOperation = "source-over";
+          nctx.restore();
+          // Nebula clouds layered on top
           var nebulas = [
             { x: W * 0.22, y: H * 0.28, r: W * 0.35, hue: "99,102,241", alpha: 0.055 },  // indigo cloud
             { x: W * 0.78, y: H * 0.72, r: W * 0.28, hue: "168,85,247", alpha: 0.045 },  // violet cloud
@@ -2390,6 +2413,64 @@ const d = labToolData.solarSystem;
             }
           }
           ctx.globalAlpha = 1;
+        }
+
+        // ── Shooting stars (dark mode only, rare + brief) ──
+        // A single meteor streaks across the canvas at random intervals. State is cached
+        // on the canvas; when the streak finishes (progress > 1), schedule a new one
+        // after a 6-18 second gap. Subtle — most of the time there's nothing happening.
+        if (isDark) {
+          if (!cv._shoot) cv._shoot = { active: false, nextAt: (timestamp || 0) + 4000 };
+          var sh = cv._shoot;
+          var now = timestamp || 0;
+          if (!sh.active && now >= sh.nextAt) {
+            // Start a new streak — random edge entry with a shallow angle
+            var edge = Math.floor(Math.random() * 4);
+            var startX, startY, dirX, dirY;
+            var angle = (Math.random() * 0.8 - 0.4); // ±0.4 rad slope
+            if (edge === 0) { startX = -30; startY = Math.random() * H * 0.6; dirX = 1; dirY = Math.tan(angle); }
+            else if (edge === 1) { startX = W + 30; startY = Math.random() * H * 0.6; dirX = -1; dirY = Math.tan(angle); }
+            else if (edge === 2) { startX = Math.random() * W; startY = -30; dirX = Math.tan(angle); dirY = 1; }
+            else { startX = Math.random() * W; startY = H + 30; dirX = Math.tan(angle); dirY = -1; }
+            var mag = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+            sh.active = true;
+            sh.startTime = now;
+            sh.duration = 900 + Math.random() * 700; // 0.9–1.6 sec streak
+            sh.startX = startX; sh.startY = startY;
+            sh.vx = (dirX / mag) * (W * 0.8);
+            sh.vy = (dirY / mag) * (W * 0.8);
+          }
+          if (sh.active) {
+            var progress = (now - sh.startTime) / sh.duration;
+            if (progress >= 1) {
+              sh.active = false;
+              sh.nextAt = now + 6000 + Math.random() * 12000; // 6-18s between meteors
+            } else {
+              var headX = sh.startX + sh.vx * progress;
+              var headY = sh.startY + sh.vy * progress;
+              var tailLen = 80;
+              var tailX = headX - (sh.vx / sh.duration) * tailLen;
+              var tailY = headY - (sh.vy / sh.duration) * tailLen;
+              // Fade head-bright to tail-transparent
+              var metGrad = ctx.createLinearGradient(headX, headY, tailX, tailY);
+              var metAlpha = Math.sin(progress * Math.PI) * 0.95; // eased in/out
+              metGrad.addColorStop(0, "rgba(255,255,255," + metAlpha + ")");
+              metGrad.addColorStop(0.3, "rgba(230,240,255," + (metAlpha * 0.6) + ")");
+              metGrad.addColorStop(1, "rgba(200,220,255,0)");
+              ctx.strokeStyle = metGrad;
+              ctx.lineWidth = 2;
+              ctx.lineCap = "round";
+              ctx.beginPath();
+              ctx.moveTo(tailX, tailY);
+              ctx.lineTo(headX, headY);
+              ctx.stroke();
+              // Bright head point
+              ctx.fillStyle = "rgba(255,255,255," + metAlpha + ")";
+              ctx.beginPath();
+              ctx.arc(headX, headY, 1.5, 0, TAU);
+              ctx.fill();
+            }
+          }
         }
 
         var t = timeRef.current;
@@ -2672,6 +2753,38 @@ const d = labToolData.solarSystem;
           // ── Planet dot with glow ──
           var dotR = b.type === "comet" ? 3 : (b.type === "dwarf" ? 4 : clamp(Math.log(b.R + 1) * 1.2, 4, 10));
 
+          // ── Shadow cone (umbra) cast away from the Sun ──
+          // Planet's actual shadow extends radially outward. Visible in dark mode when the
+          // body is big enough. Gives a real sense of "these are 3D bodies in space."
+          if (isDark && dotR >= 4) {
+            var shDx = sx - st.cx, shDy = sy - st.cy;
+            var shDist = Math.sqrt(shDx * shDx + shDy * shDy) || 1;
+            var shUx = shDx / shDist, shUy = shDy / shDist;
+            // Perpendicular for cone width
+            var shPx = -shUy, shPy = shUx;
+            var coneLen = dotR * 20;
+            var coneWidthNear = dotR * 0.85;
+            var coneWidthFar = dotR * 0.25;
+            var p1x = sx + shPx * coneWidthNear, p1y = sy + shPy * coneWidthNear;
+            var p2x = sx - shPx * coneWidthNear, p2y = sy - shPy * coneWidthNear;
+            var p3x = sx + shUx * coneLen - shPx * coneWidthFar;
+            var p3y = sy + shUy * coneLen - shPy * coneWidthFar;
+            var p4x = sx + shUx * coneLen + shPx * coneWidthFar;
+            var p4y = sy + shUy * coneLen + shPy * coneWidthFar;
+            var shadGrad = ctx.createLinearGradient(sx, sy, sx + shUx * coneLen, sy + shUy * coneLen);
+            shadGrad.addColorStop(0, "rgba(0,0,0,0.55)");
+            shadGrad.addColorStop(0.4, "rgba(0,0,0,0.18)");
+            shadGrad.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = shadGrad;
+            ctx.beginPath();
+            ctx.moveTo(p1x, p1y);
+            ctx.lineTo(p2x, p2y);
+            ctx.lineTo(p3x, p3y);
+            ctx.lineTo(p4x, p4y);
+            ctx.closePath();
+            ctx.fill();
+          }
+
           // Glow halo
           var glowGrad = ctx.createRadialGradient(sx, sy, dotR * 0.5, sx, sy, dotR * 3);
           glowGrad.addColorStop(0, b.color + "60");
@@ -2680,6 +2793,18 @@ const d = labToolData.solarSystem;
           ctx.arc(sx, sy, dotR * 3, 0, TAU);
           ctx.fillStyle = glowGrad;
           ctx.fill();
+
+          // ── Earth atmospheric halo (soft blue ring at the edge of Earth's disc) ──
+          if (b.id === "earth" && dotR >= 4) {
+            var atmoGrad = ctx.createRadialGradient(sx, sy, dotR * 0.95, sx, sy, dotR * 1.45);
+            atmoGrad.addColorStop(0, "rgba(100,180,255,0.35)");
+            atmoGrad.addColorStop(0.5, "rgba(140,200,255,0.18)");
+            atmoGrad.addColorStop(1, "rgba(180,220,255,0)");
+            ctx.beginPath();
+            ctx.arc(sx, sy, dotR * 1.45, 0, TAU);
+            ctx.fillStyle = atmoGrad;
+            ctx.fill();
+          }
 
           // Solid planet body with sun-direction lighting
           // Terminator (day/night boundary) is computed from the actual body→Sun vector,
@@ -2858,7 +2983,28 @@ const d = labToolData.solarSystem;
             ctx.ellipse(0, 0, dotR * 1.75, dotR * 0.50, 0, Math.PI, 0);
             ctx.strokeStyle = "rgba(240,212,140,0.88)"; ctx.lineWidth = 2.8; ctx.stroke();
             ctx.restore();
-            // Planet is drawn above — redraw the body shadow line as a subtle highlight on the ring edge behind it
+            // ── Ring shadow cast on Saturn's body (small polish detail) ──
+            // A thin dark arc across the planet mimics the real ring shadow. Only shows
+            // when Saturn is zoomed in enough for the detail to register.
+            if (dotR >= 6) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(sx, sy, dotR - 0.5, 0, TAU);
+              ctx.clip();
+              ctx.translate(sx, sy);
+              ctx.rotate(ringTilt);
+              ctx.strokeStyle = "rgba(40,25,10,0.45)";
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.ellipse(0, 0, dotR * 2.05, dotR * 0.58, 0, 0.15, Math.PI - 0.15);
+              ctx.stroke();
+              ctx.strokeStyle = "rgba(40,25,10,0.32)";
+              ctx.lineWidth = 1.0;
+              ctx.beginPath();
+              ctx.ellipse(0, 0, dotR * 1.75, dotR * 0.50, 0, 0.15, Math.PI - 0.15);
+              ctx.stroke();
+              ctx.restore();
+            }
           }
 
           // ── Uranus ring (vertical, faint blue-cyan — axis is tilted 98°) ──
@@ -2982,6 +3128,56 @@ const d = labToolData.solarSystem;
             ctx.textBaseline = "alphabetic";
           }
         }
+
+        // ── Scale reference bar (bottom-left corner) ──
+        // A small ruler showing how many AU a fixed pixel distance represents at the
+        // current zoom level. Bar length auto-adjusts so the label is always a round
+        // number (0.1, 0.5, 1, 5, 10, 50 AU). Helps students grasp solar system distances.
+        (function() {
+          var targetPx = 100; // desired bar length in pixels
+          var rawAU = targetPx / st.scale;
+          // Snap to a nice round number
+          var niceSteps = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
+          var chosen = niceSteps[0];
+          for (var ns = 0; ns < niceSteps.length; ns++) {
+            if (niceSteps[ns] >= rawAU) { chosen = niceSteps[ns]; break; }
+            chosen = niceSteps[ns];
+          }
+          var barPx = chosen * st.scale;
+          if (barPx < 20 || barPx > 220) return; // out of useful range
+          var baseX = 14, baseY = H - 18;
+          // Backdrop pill for legibility
+          ctx.fillStyle = isDark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.88)";
+          ctx.strokeStyle = isDark ? "rgba(148,163,184,0.3)" : "rgba(100,116,139,0.3)";
+          ctx.lineWidth = 1;
+          var bgW = barPx + 70, bgH = 22;
+          ctx.beginPath();
+          var bgR = 6;
+          ctx.moveTo(baseX + bgR, baseY - bgH + 2);
+          ctx.arcTo(baseX + bgW, baseY - bgH + 2, baseX + bgW, baseY + 6, bgR);
+          ctx.arcTo(baseX + bgW, baseY + 6, baseX, baseY + 6, bgR);
+          ctx.arcTo(baseX, baseY + 6, baseX, baseY - bgH + 2, bgR);
+          ctx.arcTo(baseX, baseY - bgH + 2, baseX + bgW, baseY - bgH + 2, bgR);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          // Tick marks
+          var tickX = baseX + 8;
+          ctx.strokeStyle = isDark ? "#93c5fd" : "#2563eb";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(tickX, baseY - 3); ctx.lineTo(tickX, baseY + 3);
+          ctx.moveTo(tickX, baseY); ctx.lineTo(tickX + barPx, baseY);
+          ctx.moveTo(tickX + barPx, baseY - 3); ctx.lineTo(tickX + barPx, baseY + 3);
+          ctx.stroke();
+          // Label
+          ctx.font = "bold 10px sans-serif";
+          ctx.fillStyle = isDark ? "#e2e8f0" : "#1e293b";
+          ctx.textBaseline = "middle";
+          var scaleLabel = chosen >= 1 ? chosen + " AU" : chosen.toFixed(1) + " AU";
+          ctx.fillText(scaleLabel, tickX + barPx + 6, baseY);
+          ctx.textBaseline = "alphabetic";
+        })();
 
         // ── Hover tooltip ──
         // Hit-test the cursor against every body and the Sun. If a match is found,

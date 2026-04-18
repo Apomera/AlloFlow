@@ -7546,6 +7546,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var brakeR = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
           brakeR.position.set(-0.92, 0.55, 0.3);
           playerCarGroup.add(brakeR);
+          // Reverse lights — white, lit only when actively reversing.
+          var playerRevMat = new T.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.15 });
+          var playerRevL = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), playerRevMat);
+          playerRevL.position.set(-0.93, 0.45, -0.15);
+          playerRevL.name = 'rr_playerRev';
+          playerCarGroup.add(playerRevL);
+          var playerRevR = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), playerRevMat);
+          playerRevR.position.set(-0.93, 0.45, 0.15);
+          playerRevR.name = 'rr_playerRev';
+          playerCarGroup.add(playerRevR);
 
           scene.add(playerCarGroup);
 
@@ -7805,7 +7815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             trafficGroup: trafficGroup, pedGroup: pedGroup,
             cyclistGroup: cyclistGroup, wildlifeGroup: wildlifeGroup,
             emergencyGroup: emergencyGroup,
-            brakeMat: brakeMat, headlightL: headlightL, headlightR: headlightR,
+            brakeMat: brakeMat, playerRevMat: playerRevMat, headlightL: headlightL, headlightR: headlightR,
             weatherParticles: weatherParticles,
             snowParticles: snowParticles,
             lightningLight: lightningLight,
@@ -8100,6 +8110,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Brake lights
           s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
+          // Player reverse lights: white when the car is actively moving backward.
+          if (s3.playerRevMat) {
+            var isPlayerReversing = car.speed < -0.3;
+            s3.playerRevMat.opacity = isPlayerReversing ? 0.95 : 0.15;
+            s3.playerRevMat.color.setHex(isPlayerReversing ? 0xffffff : 0x888888);
+          }
 
           // Reverse lights (white glow when in reverse)
           if (s3.playerCarGroup && s3.playerCarGroup.children) {
@@ -8226,6 +8242,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             }
           });
+          // Update mast-arm signals in the infinite world — match each chunk's lamps
+          // to the signalsRef entry for that chunk. Prune stale chunks as they unload.
+          if (s3.trafficLampsByChunk) {
+            Object.keys(s3.trafficLampsByChunk).forEach(function(chunkKey) {
+              var lampList = s3.trafficLampsByChunk[chunkKey];
+              if (!lampList || !lampList.length) return;
+              // Chunk unloaded? Drop the list.
+              var firstLampParent = lampList[0].mesh;
+              var p = firstLampParent; while (p.parent) p = p.parent;
+              if (p !== s3.scene) { delete s3.trafficLampsByChunk[chunkKey]; return; }
+              // Find the signalsRef entry for this chunk to know current state.
+              var sigEntry = null;
+              for (var si = 0; si < signalsRef.current.length; si++) {
+                if (signalsRef.current[si]._chunk === parseInt(chunkKey)) { sigEntry = signalsRef.current[si]; break; }
+              }
+              if (!sigEntry) return;
+              var curState = sigEntry.state === 'red' ? 'red' : sigEntry.state === 'yellow' ? 'yellow' : 'green';
+              lampList.forEach(function(lamp) {
+                var lit = lamp.state === curState;
+                lamp.mesh.material.color.setHex(lit ? lamp.onHex : lamp.offHex);
+              });
+            });
+          }
           // Update school-zone flashing beacons — alternating amber lamps (top ↔ bottom).
           // Self-cleaning: drop any beacon whose mesh has been removed from the scene
           // (happens when the chunk unloads). ~1.2 Hz alternation.
@@ -8426,6 +8465,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 blink.name = bi === 0 ? 'rr_rrBlinkR' : 'rr_rrBlinkL';
                 cg.add(blink);
               });
+              // ── Rear reverse lights — white, lit only when the car is moving backward ──
+              // Small rectangles inboard of the brake lights, just below the CHMSL.
+              [0.15, -0.15].forEach(function(z, ri) {
+                var revGeo = new T.BoxGeometry(0.04, 0.08, 0.16);
+                var revMat = new T.MeshBasicMaterial({ color: 0xeeeeee, transparent: true, opacity: 0.15 });
+                var rev = new T.Mesh(revGeo, revMat);
+                rev.position.set(-bLen / 2 + 0.02, bH / 2 + 0.1, z);
+                rev.name = ri === 0 ? 'rr_revR' : 'rr_revL';
+                cg.add(rev);
+              });
               tGroup.add(cg);
               m = cg;
             }
@@ -8467,6 +8516,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Third brake light only lights when braking (more realistic — CHMSL doesn't do running-light mode)
                   child.material.color.setHex(isBraking ? 0xff1a1a : 0x550000);
                   child.material.opacity = isBraking ? 0.9 : 0.12;
+                  return;
+                }
+                // Reverse lights — white, on only when the vehicle is actively moving backward.
+                // For AI cars this is rare (we don't simulate reversing), but kept consistent.
+                if (n === 'rr_revR' || n === 'rr_revL') {
+                  var isReversing = t.speed < -0.3;
+                  child.material.opacity = isReversing ? 0.95 : 0.15;
+                  child.material.color.setHex(isReversing ? 0xffffff : 0x888888);
                   return;
                 }
                 // Rear turn signals — amber blinker on the active side only.
@@ -10769,22 +10826,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;
                 if (isTrafficLight) {
-                  var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
-                  sigPole.position.set(crossCenterX + 4.0, crossHt + 2.1, crossZ);
+                  // ── Proper mast-arm traffic signal ──
+                  // Thick vertical pole (8m) with a horizontal mast arm (6m) extending over
+                  // the approach lane. TWO signal heads: one near the pole, one at the far end
+                  // over the center of the approaching lane — this is how US intersections are
+                  // actually built for visibility.
+                  var poleBaseX = crossCenterX + 4.5;
+                  var poleBaseZ = crossZ - 3.0; // offset back from the crosswalk
+                  // Vertical pole
+                  var sigPole = new T.Mesh(new T.CylinderGeometry(0.10, 0.14, 6.0, 8), sigPoleMat2);
+                  sigPole.position.set(poleBaseX, crossHt + 3.0, poleBaseZ);
                   chunkGroup.add(sigPole);
-                  var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
-                  sigArm.position.set(crossCenterX + 1.8, crossHt + 4.0, crossZ);
-                  sigArm.rotation.z = Math.PI / 2;
-                  chunkGroup.add(sigArm);
-                  var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
-                  sigHousing.position.set(crossCenterX, crossHt + 3.5, crossZ);
-                  chunkGroup.add(sigHousing);
-                  var lightColors = [0xef4444, 0xfbbf24, 0x22c55e];
-                  for (var lci = 0; lci < 3; lci++) {
-                    var lightMesh = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: lightColors[lci] }));
-                    lightMesh.position.set(crossCenterX + 0.16, crossHt + 3.75 - lci * 0.25, crossZ);
-                    chunkGroup.add(lightMesh);
-                  }
+                  // Horizontal mast arm (extends over the road toward the intersection)
+                  var mastArm = new T.Mesh(new T.CylinderGeometry(0.06, 0.08, 7.5, 8), sigPoleMat2);
+                  mastArm.position.set(poleBaseX - 3.75, crossHt + 5.7, poleBaseZ);
+                  mastArm.rotation.z = Math.PI / 2;
+                  chunkGroup.add(mastArm);
+                  // Short brace (diagonal support from pole top to mid-arm)
+                  var brace = new T.Mesh(new T.CylinderGeometry(0.03, 0.04, 2.2, 6), sigPoleMat2);
+                  brace.position.set(poleBaseX - 1.0, crossHt + 5.1, poleBaseZ);
+                  brace.rotation.z = Math.PI / 3;
+                  chunkGroup.add(brace);
+                  // Build TWO signal heads: one over each lane of the approach.
+                  var signalHeadPositions = [
+                    { x: poleBaseX - 2.0, label: 'near' },  // over near-side lane
+                    { x: poleBaseX - 6.5, label: 'far' }    // over far-side lane
+                  ];
+                  s3.trafficLampsByChunk = s3.trafficLampsByChunk || {};
+                  s3.trafficLampsByChunk[ci] = [];
+                  signalHeadPositions.forEach(function(sp) {
+                    // Housing: tall black box holding 3 lights
+                    var housingH = 1.2, housingW = 0.38, housingD = 0.28;
+                    var sigHousing = new T.Mesh(new T.BoxGeometry(housingW, housingH, housingD), new T.MeshLambertMaterial({ color: 0x111115 }));
+                    sigHousing.position.set(sp.x, crossHt + 5.1, poleBaseZ);
+                    chunkGroup.add(sigHousing);
+                    // Visor awnings over each light (tiny black rectangles jutting out)
+                    [0.38, 0, -0.38].forEach(function(vy) {
+                      var visor = new T.Mesh(new T.BoxGeometry(0.42, 0.04, 0.12), new T.MeshLambertMaterial({ color: 0x080808 }));
+                      visor.position.set(sp.x, crossHt + 5.1 + vy + 0.20, poleBaseZ + housingD / 2 + 0.06);
+                      chunkGroup.add(visor);
+                    });
+                    // 3 lamps (red top, yellow middle, green bottom) — named so the render
+                    // loop can toggle them based on the signal state.
+                    var lampDefs = [
+                      { dy: 0.38, onHex: 0xff2420, offHex: 0x3a0808, name: 'red' },
+                      { dy: 0, onHex: 0xffc015, offHex: 0x3a2a08, name: 'yellow' },
+                      { dy: -0.38, onHex: 0x21d762, offHex: 0x083a15, name: 'green' }
+                    ];
+                    lampDefs.forEach(function(ld) {
+                      var lampGeo = new T.SphereGeometry(0.14, 12, 10);
+                      var lampMat = new T.MeshBasicMaterial({ color: ld.offHex });
+                      var lampMesh = new T.Mesh(lampGeo, lampMat);
+                      lampMesh.position.set(sp.x, crossHt + 5.1 + ld.dy, poleBaseZ + housingD / 2 + 0.02);
+                      chunkGroup.add(lampMesh);
+                      s3.trafficLampsByChunk[ci].push({
+                        mesh: lampMesh,
+                        onHex: ld.onHex,
+                        offHex: ld.offHex,
+                        state: ld.name,
+                        chunkIdx: ci
+                      });
+                    });
+                  });
+                  // Pedestrian signal on the near pole — small "WALK/DONT WALK" box
+                  var pedSigGeo = new T.BoxGeometry(0.32, 0.28, 0.18);
+                  var pedSigBox = new T.Mesh(pedSigGeo, new T.MeshLambertMaterial({ color: 0x111115 }));
+                  pedSigBox.position.set(poleBaseX, crossHt + 3.2, poleBaseZ);
+                  chunkGroup.add(pedSigBox);
+                  var pedSigFace = new T.Mesh(new T.PlaneGeometry(0.28, 0.24), new T.MeshBasicMaterial({ color: 0xff7a20 }));
+                  pedSigFace.position.set(poleBaseX, crossHt + 3.2, poleBaseZ + 0.10);
+                  chunkGroup.add(pedSigFace);
                 } else {
                   // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text
                   // Place on both sides of the approach for the main road, offset by spline center.
