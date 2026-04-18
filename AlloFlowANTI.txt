@@ -13199,6 +13199,21 @@ Return only the corrected version of this exact text:`;
   // PDF (or null if no record / not loaded yet).
   const [pdfPageRange, setPdfPageRange] = useState(null);
   const [pdfMultiSession, setPdfMultiSession] = useState(null);
+
+  // Resets all state the PDF audit/remediation modal depends on. Includes isExtracting +
+  // generationStep because the Source Material loader sets them true when a PDF is picked,
+  // then waits on the audit modal — cancelling without this reset left the Source Material
+  // card stuck on "Extracting text from source…" after the modal closed.
+  const _closePdfAuditModal = () => {
+    setPdfAuditResult(null);
+    setPdfFixResult(null);
+    setPdfFixLoading(false);
+    setPdfFixStep('');
+    setPendingPdfBase64(null);
+    setPendingPdfFile(null);
+    setIsExtracting(false);
+    setGenerationStep('');
+  };
   // Auto-save toggle: when on, every completed range triggers a project-file
   // download so the user always has a portable artifact. Critical in Canvas,
   // where IndexedDB is wiped per session — the JSON file is the only durable
@@ -52262,12 +52277,12 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
             // Backdrop click closes (only when the click lands on the backdrop itself, not bubbled from inside content).
             // Block close while a remediation is actively running so users don't accidentally abort.
             if (e.target === e.currentTarget && !pdfFixLoading && !pdfAutoContinueRunning) {
-              setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null);
+              _closePdfAuditModal();
             }
           }}
           onKeyDown={(e) => {
             if (e.key === 'Escape' && !pdfFixLoading && !pdfAutoContinueRunning) {
-              setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null);
+              _closePdfAuditModal();
             }
           }}
           ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
@@ -52278,7 +52293,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
             <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
               <button
                 type="button"
-                onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }}
+                onClick={() => { _closePdfAuditModal(); }}
                 disabled={pdfFixLoading || pdfAutoContinueRunning}
                 aria-label="Close audit modal"
                 title={(pdfFixLoading || pdfAutoContinueRunning) ? 'Wait for remediation to finish or click Stop first' : 'Close (Esc)'}
@@ -52961,7 +52976,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
+                  <button onClick={() => { _closePdfAuditModal(); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
                 </div>
               </div>
             ) : pdfAuditLoading ? (
@@ -53085,7 +53100,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <p className="text-xs text-slate-600 text-center">You can still proceed — Fix & Verify will transform the document and run a full audit afterward.</p>
                   <div className="flex gap-2 justify-center">
                     <button onClick={async () => { setPdfAuditResult(null); addToast('Retrying audit...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
-                    <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -55880,7 +55895,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button onClick={() => {
                           const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                           setInputText(temp.textContent || temp.innerText || '');
-                          setPdfAuditResult(null); setPdfFixResult(null); setPendingPdfBase64(null); setPendingPdfFile(null);
+                          _closePdfAuditModal();
                           addToast('Content loaded — generate leveled text, glossary, quiz, and more', 'success');
                         }} className="w-full px-3 py-2 bg-white border border-violet-200 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
                           ✨ Full Differentiation Pipeline

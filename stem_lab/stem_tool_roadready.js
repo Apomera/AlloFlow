@@ -5916,12 +5916,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (cySpline && !cy.crossStreet) {
               var cyTheta = cySpline.headingAt(cy.y);
               var cyCenter = cySpline.centerAt(cy.y);
-              // Determine cyclist's bike-lane offset from spline center based on direction.
-              // Cyclists travel ON THE RIGHT (US convention). Default offsets:
-              //   heading=+π/2 (south, sin>0): right side of spline = perpendicular -direction → lane offset ≈ -2.3
-              //   heading=-π/2 (north, sin<0): right side of spline = +direction → lane offset ≈ +2.3
+              // Bike lane offset matches the PAINTED bike lane center (roadHalfW − 0.7 ≈ 2.8m).
+              // Previously was 2.3 which placed cyclists slightly inside the painted lane —
+              // they'd ride on the inner edge instead of in the center of the bike lane.
               var cyDirSign = cy.heading > 0 ? 1 : -1;
-              var bikeLaneOff = cyDirSign === 1 ? -2.3 : 2.3;
+              var bikeLaneOff = cyDirSign === 1 ? -2.8 : 2.8;
               if (cy._bikeLane === undefined) cy._bikeLane = bikeLaneOff;
               // Target heading aligned with spline tangent ± π/2
               var cyTargetHeading = (cyDirSign === 1) ? (Math.PI / 2 - cyTheta) : (-Math.PI / 2 - cyTheta);
@@ -14829,9 +14828,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var active = currentScenario.traffic === t[0];
                 return h('button', { key: t[0], onClick: function() {
                   Object.assign(currentScenario, { traffic: t[0] });
-                  // Respawn traffic to match
+                  // Respawn traffic to match. Also clear the renderer's traffic mesh
+                  // group so old vehicle meshes (built for prior types) don't get
+                  // re-assigned to the new entities — that caused visual type mismatches
+                  // (e.g., a truck mesh "becoming" a car after a traffic toggle).
                   trafficRef.current = spawnTraffic(currentScenario);
                   cyclistsRef.current = spawnCyclists(currentScenario).concat(spawnMotorcycles(currentScenario));
+                  if (threeRef.current && threeRef.current.trafficGroup) {
+                    var tg = threeRef.current.trafficGroup;
+                    while (tg.children.length) {
+                      var oldM = tg.children[tg.children.length - 1];
+                      oldM.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      tg.remove(oldM);
+                    }
+                  }
+                  if (threeRef.current && threeRef.current.cyclistGroup) {
+                    var cgY = threeRef.current.cyclistGroup;
+                    while (cgY.children.length) {
+                      var oldC = cgY.children[cgY.children.length - 1];
+                      oldC.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      cgY.remove(oldC);
+                    }
+                  }
                 },
                   style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, t[1]);
               })
