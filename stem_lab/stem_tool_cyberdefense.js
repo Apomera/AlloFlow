@@ -193,6 +193,12 @@
           var warRoomAICoachLoading = d.warRoomAICoachLoading || false;
           // Per-play log for Undo: stack of { cardId, costPaid, wasFree, markedEscalate } pushed on each play
           var warRoomPlayLog = d.warRoomPlayLog || [];
+          // Snapshot of round-start state for Try Again. Set on round advance / campaign start.
+          var warRoomRoundStartSnapshot = d.warRoomRoundStartSnapshot || null;
+          var warRoomRetryUsedThisRound = !!d.warRoomRetryUsedThisRound;
+          // Challenge presets / house rules (selected on start, locked for the campaign)
+          var warRoomHouseRulesDraft = d.warRoomHouseRulesDraft || { noEscalate: false, tightBudget: false, allStealth: false, noCombos: false };
+          var warRoomHouseRulesActive = d.warRoomHouseRulesActive || null; // snapshot of rules applied to the CURRENT campaign
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -1193,7 +1199,9 @@
             var real = (redCard.indicators || []).slice();
             var noise = (redCard.noiseIndicators || []).slice();
             var out = [];
+            var stealth = warRoomHouseRulesActive && warRoomHouseRulesActive.allStealth;
             var realCount = diff === 'rookie' ? real.length : (diff === 'analyst' ? Math.max(1, real.length - 1) : Math.max(1, real.length - 1));
+            if (stealth) realCount = Math.max(1, realCount - 1);
             var noiseCount = diff === 'rookie' ? 0 : (diff === 'analyst' ? 1 : 2);
             for (var i = 0; i < realCount && real.length > 0; i++) {
               out.push({ id: 'a_real_' + i, text: real.shift(), real: true });
@@ -1219,8 +1227,9 @@
               if (eff > bestEffect) bestEffect = eff;
             });
 
-            // Apply combos
-            var activeCombos = detectActiveCombos(bluePlayIds);
+            // Apply combos (suppressed by the 'noCombos' house rule)
+            var suppressCombos = warRoomHouseRulesActive && warRoomHouseRulesActive.noCombos;
+            var activeCombos = suppressCombos ? [] : detectActiveCombos(bluePlayIds);
             var bonusXP = 0;
             activeCombos.forEach(function(combo) {
               if (combo.effect === 'effectBoost') {
@@ -1255,8 +1264,10 @@
           // ── Start a new campaign ──
           function startCampaign(diff, themeId, seedId) {
             var theme = campaignThemes[themeId] ? themeId : 'mixed';
+            // Lock the house rules draft for this campaign (can't change mid-run)
+            var activeRules = Object.assign({ noEscalate: false, tightBudget: false, allStealth: false, noCombos: false }, warRoomHouseRulesDraft || {});
             var baseBudget = diff === 'rookie' ? 18 : (diff === 'analyst' ? 14 : 10);
-            var budget = baseBudget + (warCrossBonuses.budgetBonus || 0);
+            var budget = baseBudget + (warCrossBonuses.budgetBonus || 0) + (activeRules.tightBudget ? -3 : 0);
             // Campaign ID: either player-supplied (shared seed) or freshly generated. Seeds the PRNG.
             var campaignId;
             if (seedId && /^[A-HJ-NP-Z2-9]{4}$/.test(seedId.toUpperCase())) {
@@ -1307,7 +1318,20 @@
               warRoomHotSeatStats: {},
               warRoomHotSeatPassScreen: warRoomHotSeatEnabled && warRoomHotSeatPlayers.length > 1,
               warRoomRngStep: localRngStep,
-              warRoomPlayLog: []
+              warRoomPlayLog: [],
+              warRoomHouseRulesActive: activeRules,
+              warRoomRoundStartSnapshot: {
+                budget: budget,
+                assets: { users: 10, servers: 5, data: 100 },
+                assetsLost: { users: 0, servers: 0, data: 0 },
+                killChainLength: 0,
+                detections: 0,
+                mitigations: 0,
+                totalCombos: 0,
+                escalateUsed: false,
+                freeUsed: []
+              },
+              warRoomRetryUsedThisRound: false
             });
             if (ctx.announceToSR) ctx.announceToSR('War Room campaign started on ' + diff + ' difficulty, ' + campaignThemes[theme].label + '. Round 1, Reconnaissance. ' + firstRed.title);
             sfxCyberdClick();
@@ -1704,23 +1728,64 @@
             }
           }
 
+          // ── Try Again: revert the current round's resolve and let the player retry ──
+          function tryAgainRound() {
+            if (warLiveIsObserving) return;
+            if (!warRoomRoundResolved) return;
+            if (warRoomRetryUsedThisRound) return;
+            var snap = warRoomRoundStartSnapshot;
+            if (!snap) { if (ctx.addToast) ctx.addToast('No snapshot available to retry', 'info'); return; }
+            // Revert to round-start state; keep the red card + alerts + seed position so the scenario is identical
+            upd({
+              warRoomBudget: snap.budget,
+              warRoomAssets: snap.assets,
+              warRoomAssetsLost: snap.assetsLost,
+              warRoomKillChain: warRoomKillChain.slice(0, snap.killChainLength),
+              warRoomDetections: snap.detections,
+              warRoomMitigations: snap.mitigations,
+              warRoomTotalCombos: snap.totalCombos,
+              warRoomEscalateUsed: snap.escalateUsed,
+              warRoomFreeUsed: snap.freeUsed || [],
+              warRoomBluePlays: [],
+              warRoomAlertsSeen: [],
+              warRoomHintRevealed: false,
+              warRoomRoundResolved: false,
+              warRoomLastResolution: null,
+              warRoomAICoachTip: null,
+              warRoomAICoachLoading: false,
+              warRoomPlayLog: [],
+              warRoomTimeLeft: 90,
+              warRoomRetryUsedThisRound: true
+            });
+            sfxCyberdClick();
+            if (ctx.announceToSR) ctx.announceToSR('Round reverted. Try again.');
+            if (warLiveIsHosting) setTimeout(warLivePush, 100);
+          }
+
           // ── Request a plain-English coaching tip for a lost round ──
           function requestAICoachTip(redCard, playsThisRound, idealCards, stageObj) {
             if (!redCard || !stageObj) return;
-            var idealList = (idealCards || []).map(function(c) { return c.label; }).join(', ');
-            var playedList = (playsThisRound || []).map(function(pid) { var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0]; return c ? c.label : pid; }).join(', ') || 'nothing';
+            // Sanitize: strip quote/newline characters that could break prompt formatting (AI cards are user-ish input)
+            var clean = function(s) { return String(s == null ? '' : s).replace(/["`\r\n]/g, ' ').replace(/\s+/g, ' ').slice(0, 240).trim(); };
+            var idealList = (idealCards || []).map(function(c) { return clean(c.label); }).join(', ');
+            var playedList = (playsThisRound || []).map(function(pid) { var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0]; return clean(c ? c.label : pid); }).join(', ') || 'nothing';
+            var safeTitle = clean(redCard.title);
+            var safeDesc = clean(redCard.description);
+            var safeStage = clean(stageObj.name);
             // Template fallback (used if aiChat missing or fails)
-            var templated = 'Coaching: The ideal play for ' + stageObj.name + ' was ' + (idealList || 'a strong containment move') + '. You played ' + playedList + '. Try those defenses next time for a full mitigation.';
+            var templated = 'Coaching: The ideal play for ' + safeStage + ' was ' + (idealList || 'a strong containment move') + '. You played ' + playedList + '. Try those defenses next time for a full mitigation.';
             if (!ctx.aiChat) { upd({ warRoomAICoachTip: templated, warRoomAICoachLoading: false }); return; }
             upd({ warRoomAICoachLoading: true, warRoomAICoachTip: null });
             var prompt = 'You are a supportive SOC instructor giving one short coaching tip to a student whose defense just failed. ' +
               'Tone: encouraging, specific, under 60 words. Use plain English (K-12 friendly).\n\n' +
-              'STAGE: ' + stageObj.name + '\nRED TEAM MOVE: "' + (redCard.title || '') + '" \u2014 ' + (redCard.description || '') + '\n' +
+              'STAGE: ' + safeStage + '\nRED TEAM MOVE: ' + safeTitle + ' \u2014 ' + safeDesc + '\n' +
               'STUDENT PLAYED: ' + playedList + '\nIDEAL PLAY: ' + (idealList || 'a strong containment move') + '\n\n' +
               'Write 2 short sentences: (1) name the key signal the student could have acted on, (2) say which defense would have stopped it and why.';
             try {
               ctx.aiChat(prompt, function(resp) {
-                upd({ warRoomAICoachTip: (resp && String(resp).trim()) || templated, warRoomAICoachLoading: false });
+                try {
+                  upd({ warRoomAICoachTip: (resp && String(resp).trim()) || templated, warRoomAICoachLoading: false });
+                } catch(e2) { /* tool may have unmounted; swallow */ }
               });
             } catch(e) {
               upd({ warRoomAICoachTip: templated, warRoomAICoachLoading: false });
@@ -1759,6 +1824,10 @@
               var priorHistory = d.warRoomCampaignHistory || [];
               var patchesPlayed = warRoomKillChain.filter(function(r) { return r.bluePlays.indexOf('patch') !== -1; }).length;
               var huntsPlayed = warRoomKillChain.filter(function(r) { return r.bluePlays.indexOf('hunt_iocs') !== -1; }).length;
+              var bluePlaysCounts = {};
+              warRoomKillChain.forEach(function(r) {
+                (r.bluePlays || []).forEach(function(id) { bluePlaysCounts[id] = (bluePlaysCounts[id] || 0) + 1; });
+              });
               var historyEntry = {
                 id: warRoomCampaignId,
                 at: Date.now(),
@@ -1771,6 +1840,7 @@
                 combos: warRoomTotalCombos,
                 patchesPlayed: patchesPlayed,
                 huntsPlayed: huntsPlayed,
+                bluePlaysCounts: bluePlaysCounts,
                 budgetRemaining: warRoomBudget,
                 achievementsEarned: earnedIds.length,
                 rank: warRoomRank.label,
@@ -1838,7 +1908,20 @@
                 warRoomRngStep: localRngStep,
                 warRoomAICoachTip: null,
                 warRoomAICoachLoading: false,
-                warRoomPlayLog: []
+                warRoomPlayLog: [],
+                warRoomRetryUsedThisRound: false,
+                // Snapshot CURRENT state (post-resolve of just-completed round) as the next round's start
+                warRoomRoundStartSnapshot: {
+                  budget: warRoomBudget,
+                  assets: warRoomAssets,
+                  assetsLost: warRoomAssetsLost,
+                  killChainLength: warRoomKillChain.length,
+                  detections: warRoomDetections,
+                  mitigations: warRoomMitigations,
+                  totalCombos: warRoomTotalCombos,
+                  escalateUsed: warRoomEscalateUsed,
+                  freeUsed: warRoomFreeUsed.slice()
+                }
               });
               if (ctx.announceToSR) ctx.announceToSR('Advancing to round ' + (warRoomRound + 1) + ': ' + warStages[warRoomRound].name + '. Red team: ' + nextRed.title);
             }
@@ -2710,7 +2793,42 @@
                             );
                           })
                         )
-                      )
+                      ),
+                      // Defensive loadout analysis — aggregate across all campaigns
+                      (function() {
+                        var totals = {};
+                        h.forEach(function(r) {
+                          if (r.bluePlaysCounts) {
+                            Object.keys(r.bluePlaysCounts).forEach(function(id) { totals[id] = (totals[id] || 0) + r.bluePlaysCounts[id]; });
+                          }
+                        });
+                        var entries = Object.keys(totals).map(function(id) {
+                          var card = blueTeamCards.filter(function(b) { return b.id === id; })[0];
+                          return { id: id, card: card, count: totals[id] };
+                        }).filter(function(e) { return !!e.card; }).sort(function(a, b) { return b.count - a.count; });
+                        if (entries.length === 0) return null;
+                        var maxCount = entries[0].count || 1;
+                        return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
+                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Your Defensive Loadout \u2014 card usage across campaigns'),
+                          entries.map(function(e, i) {
+                            var pct = Math.round(e.count / maxCount * 100);
+                            return el('div', { key: e.id, style: { marginBottom: 4 } },
+                              el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1', marginBottom: 2 } },
+                                el('span', { style: { fontSize: 13 } }, e.card.icon),
+                                el('span', { style: { flex: 1, fontWeight: 700 } }, e.card.label),
+                                el('span', { style: { color: '#94a3b8', fontWeight: 800 } }, e.count + ' play' + (e.count === 1 ? '' : 's'))
+                              ),
+                              el('div', { 'aria-hidden': 'true', style: { height: 3, borderRadius: 1.5, background: 'rgba(30,41,59,0.8)', overflow: 'hidden' } },
+                                el('div', { style: { height: '100%', width: pct + '%', background: (i === 0 ? '#f59e0b' : '#6366f1'), transition: 'width 0.3s' } })
+                              )
+                            );
+                          }),
+                          entries.length > 0 && el('div', { style: { marginTop: 6, fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic' } },
+                            'Top card: ', el('strong', { style: { color: '#fde68a' } }, entries[0].card.label),
+                            entries.length >= 2 ? ', then ' + entries[1].card.label : '',
+                            '. Try varying your loadout to unlock underused cards.')
+                        );
+                      })()
                     );
                   })()
                 ),
@@ -3016,6 +3134,32 @@
                   // Difficulty picker
                   el('div', { style: { marginBottom: 12 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '2. CHOOSE DIFFICULTY & BEGIN'),
+                    // Adaptive suggestion based on recent streak
+                    (function() {
+                      var recent = (warRoomCampaignHistory || []).slice(0, 3);
+                      if (recent.length < 3) return null;
+                      var allLost = recent.every(function(r) { return r.verdict === 'lost'; });
+                      var allWon  = recent.every(function(r) { return r.verdict === 'won'; });
+                      var allSameDiff = recent.every(function(r) { return r.difficulty === recent[0].difficulty; });
+                      if (!allSameDiff) return null;
+                      var d0 = recent[0].difficulty;
+                      if (allLost && (d0 === 'analyst' || d0 === 'threatHunter')) {
+                        var easier = d0 === 'threatHunter' ? 'analyst' : 'rookie';
+                        return el('div', { role: 'note', style: { padding: 8, borderRadius: 6, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.3)', marginBottom: 10, fontSize: 11, color: '#93c5fd' } },
+                          el('strong', null, '\uD83D\uDCA1 Suggestion: '),
+                          'Three losses in a row at ', el('strong', null, d0 + ' difficulty'),
+                          '. Try ', el('strong', null, easier),
+                          ' first to sharpen your fundamentals, then climb back up.');
+                      }
+                      if (allWon && (d0 === 'rookie' || d0 === 'analyst')) {
+                        var harder = d0 === 'rookie' ? 'analyst' : 'threatHunter';
+                        return el('div', { role: 'note', style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', marginBottom: 10, fontSize: 11, color: '#86efac' } },
+                          el('strong', null, '\uD83C\uDFC6 Nice streak! '),
+                          'You\'ve won three straight on ', el('strong', null, d0),
+                          '. Ready to step up to ', el('strong', null, harder), '?');
+                      }
+                      return null;
+                    })(),
                     el('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                       [
                         { id: 'rookie',       label: 'Rookie',        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e' },
@@ -3027,6 +3171,34 @@
                           style: { flex: '1 1 200px', padding: '14px 16px', borderRadius: 10, border: '1px solid ' + tier.color + '55', background: 'linear-gradient(135deg, ' + tier.color + '1a, ' + tier.color + '05)', color: tier.color, cursor: 'pointer', textAlign: 'left' } },
                           el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 4 } }, tier.label),
                           el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, tier.sub)
+                        );
+                      })
+                    )
+                  ),
+                  // House Rules / Challenge Presets (optional, for replayability)
+                  el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px solid rgba(148,163,184,0.15)', marginBottom: 10 } },
+                    el('div', { style: { color: '#fda4af', fontSize: 11, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\u2696\uFE0F HOUSE RULES (OPTIONAL \u2014 MAKE IT HARDER)'),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
+                      [
+                        { id: 'noEscalate', label: 'No Escalate', desc: 'The Escalate to CISO card is disabled.' },
+                        { id: 'tightBudget', label: 'Tight Budget', desc: 'Start with 3 fewer budget points.' },
+                        { id: 'allStealth', label: 'All Stealth', desc: 'One fewer real IOC per alert panel.' },
+                        { id: 'noCombos', label: 'No Combos', desc: 'Combo bonuses are suppressed.' }
+                      ].map(function(opt) {
+                        var isOn = !!(warRoomHouseRulesDraft && warRoomHouseRulesDraft[opt.id]);
+                        return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
+                          onClick: function() {
+                            var next = Object.assign({}, warRoomHouseRulesDraft || {});
+                            next[opt.id] = !isOn;
+                            upd('warRoomHouseRulesDraft', next);
+                            sfxCyberdClick();
+                          },
+                          style: { display: 'flex', alignItems: 'center', gap: 6, padding: 7, borderRadius: 6, border: '1px solid ' + (isOn ? 'rgba(244,63,94,0.4)' : 'rgba(148,163,184,0.2)'), background: isOn ? 'rgba(244,63,94,0.08)' : 'rgba(30,41,59,0.6)', color: isOn ? '#fda4af' : '#cbd5e1', cursor: 'pointer', textAlign: 'left' } },
+                          el('span', { style: { fontSize: 10, fontWeight: 900, padding: '1px 5px', borderRadius: 3, background: isOn ? '#f43f5e' : '#475569', color: 'white', minWidth: 24, textAlign: 'center' } }, isOn ? 'ON' : 'OFF'),
+                          el('div', { style: { flex: 1 } },
+                            el('div', { style: { fontSize: 11.5, fontWeight: 700 } }, opt.label),
+                            el('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.3 } }, opt.desc)
+                          )
                         );
                       })
                     )
@@ -3405,7 +3577,15 @@
                       el('div', null,
                         el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '') + (warRoomCampaignId ? ' \u2022 #' + warRoomCampaignId : '')),
                         el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name),
-                        warRoomHotSeatEnabled && el('div', { style: { fontSize: 10, color: '#d8b4fe', fontWeight: 800, marginTop: 1 } }, '\uD83E\uDD1D ' + (warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))) + '\'s turn')
+                        warRoomHotSeatEnabled && el('div', { style: { fontSize: 10, color: '#d8b4fe', fontWeight: 800, marginTop: 1 } }, '\uD83E\uDD1D ' + (warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))) + '\'s turn'),
+                        warRoomHouseRulesActive && (function() {
+                          var labels = [];
+                          if (warRoomHouseRulesActive.noEscalate) labels.push('No Escalate');
+                          if (warRoomHouseRulesActive.tightBudget) labels.push('Tight Budget');
+                          if (warRoomHouseRulesActive.allStealth) labels.push('All Stealth');
+                          if (warRoomHouseRulesActive.noCombos) labels.push('No Combos');
+                          return labels.length > 0 ? el('div', { style: { fontSize: 10, color: '#fca5a5', fontWeight: 700, marginTop: 1 } }, '\u2696\uFE0F ' + labels.join(' \u2022 ')) : null;
+                        })()
                       )
                     ),
                     // Kill chain progress bar
@@ -3556,6 +3736,15 @@
                         el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
                           (warRoomPlainLanguage && plainStageLessons[warRoomCurrentStage.id]) || res.stageLesson)
                       ),
+                      // Try Again (only on lost rounds, once per round, unless observing or final campaign verdict)
+                      res.outcome === 'succeeded' && !warRoomRetryUsedThisRound && !warLiveIsObserving && el('button', {
+                        onClick: tryAgainRound, 'aria-label': 'Try this round again with the same scenario',
+                        title: 'Revert this round and replay it from scratch (once per round).',
+                        style: { width: '100%', marginBottom: 8, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.15)', color: '#fcd34d', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                        '\uD83D\uDD04 Try This Round Again'),
+                      res.outcome === 'succeeded' && warRoomRetryUsedThisRound && !warLiveIsObserving && el('div', {
+                        style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(148,163,184,0.1)', color: '#94a3b8', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
+                        'Retry used this round \u2014 one try per round.'),
                       // Advance button (observers see it but can't act)
                       el('button', { onClick: advanceFromDebrief, disabled: warLiveIsObserving,
                         'aria-label': warRoomRound >= 6 ? 'View final report' : 'Advance to next round',
@@ -3652,8 +3841,9 @@
                         var played = warRoomBluePlays.indexOf(card.id) !== -1;
                         var isFreeAvail = warCrossBonuses.freeFirstUse.indexOf(card.id) !== -1 && warRoomFreeUsed.indexOf(card.id) === -1;
                         var effectiveCost = isFreeAvail ? 0 : card.cost;
-                        var disabled = warLiveIsObserving || warRoomRoundResolved || played || effectiveCost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
-                        var hint = card.id === 'escalate' && warRoomEscalateUsed ? '(already used)' : (played ? '(played)' : '');
+                        var ruleBlocked = card.id === 'escalate' && warRoomHouseRulesActive && warRoomHouseRulesActive.noEscalate;
+                        var disabled = ruleBlocked || warLiveIsObserving || warRoomRoundResolved || played || effectiveCost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
+                        var hint = ruleBlocked ? '(house rule: no escalate)' : (card.id === 'escalate' && warRoomEscalateUsed ? '(already used)' : (played ? '(played)' : ''));
                         return el('button', { key: card.id, onClick: function() { if (!disabled) playBlueCard(card.id); },
                           disabled: disabled, 'aria-pressed': played, 'aria-keyshortcuts': String(cardIdx + 1),
                           'aria-label': card.label + ', shortcut ' + (cardIdx + 1) + ', cost ' + effectiveCost + ' budget' + (isFreeAvail ? ' (free first use)' : '') + '. ' + card.description,
@@ -3711,7 +3901,19 @@
                           'aria-label': 'Resolve round ' + warRoomRound,
                           style: { width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', background: resolveDisabled ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, #f43f5e, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: resolveDisabled ? 'not-allowed' : 'pointer', marginTop: 8 } },
                           warLiveIsObserving ? '\uD83D\uDC41\uFE0F Observer Mode' : (warRoomBluePlays.length === 0 ? '\u2026 Play at least one defense' : '\u25B6 Resolve Round ' + warRoomRound));
-                      })()
+                      })(),
+                      // Quit Campaign (abandon mid-run; confirms first)
+                      !warLiveIsObserving && el('button', {
+                        onClick: function() {
+                          if (confirm('Quit this campaign? Your progress this run will be lost and it will NOT appear in your history.')) {
+                            upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null, warRoomRoundResolved: false, warRoomLastResolution: null, warRoomHouseRulesActive: null });
+                            sfxCyberdClick();
+                            if (ctx.announceToSR) ctx.announceToSR('Campaign abandoned.');
+                          }
+                        },
+                        'aria-label': 'Quit this campaign',
+                        style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: '#64748b', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                        'Quit Campaign')
                     )
                   )
                 )

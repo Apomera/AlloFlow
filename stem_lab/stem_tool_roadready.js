@@ -9143,13 +9143,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             m.rotation.y = -t.heading;
             // ── Wheel spin + proper brake + turn signal animation ──
             if (m.children) {
-              // Wheel rotation: accumulate Δangle each frame (speed * dt / radius). Previous
-              // formula was `timeRef * speed * 2` which (a) snapped the rotation each time
-              // speed changed and (b) used too-low an angular rate. Now physically correct
-              // — wheel circumference 2πr at speed v traverses ω = v/r rad/s.
+              // Wheel rotation: accumulate Δangle each frame (speed * dt / radius).
+              // dt isn't in scope here (this is the render function, not the sim update);
+              // compute it from the AI car's own last-render timestamp. Clamped to [0, 0.1]
+              // so a tab-resume doesn't blast wheel angle by a huge accumulated dt.
               if (t._wheelSpinAngle === undefined) t._wheelSpinAngle = 0;
-              // Use 0.22 as a representative wheel radius (matches the per-type wR range).
-              t._wheelSpinAngle += Math.abs(t.speed) * dt / 0.22;
+              if (t._lastWheelT === undefined) t._lastWheelT = timeRef.current;
+              var aiWheelDt = Math.max(0, Math.min(0.1, timeRef.current - t._lastWheelT));
+              t._lastWheelT = timeRef.current;
+              t._wheelSpinAngle += Math.abs(t.speed) * aiWheelDt / 0.22;
               var tWheelAngle = t._wheelSpinAngle;
               var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
               // Braking: bright red if actively slowing or told to slow/stop. The _slowFor

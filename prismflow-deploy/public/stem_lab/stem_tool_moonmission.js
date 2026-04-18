@@ -1304,7 +1304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     drawVignette(ctx, W, H, 0.3);
-                    if (document.contains(canvasEl)) requestAnimationFrame(drawLaunch);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawLaunch);
                   }
                   drawLaunch();
                 }
@@ -1334,7 +1334,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // ═══ PHASE 2: EARTH ORBIT ═══
         phase === 2 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
+          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+            // Earth orbit canvas — shows CSM orbiting while TLI window sweeps toward Moon alignment
+            h('div', { className: 'relative', style: { height: '260px' } },
+              h('canvas', {
+                role: 'img',
+                'aria-label': 'Animated view of spacecraft in low Earth orbit at 185 kilometers. CSM completes 1.5 orbits while a trans-lunar injection burn window aligns with the Moon\'s future position. Orbit counter, altitude, velocity, and TLI readiness displayed.',
+                style: { width: '100%', height: '100%', display: 'block' },
+                ref: function(cvEl) {
+                  if (!cvEl || cvEl._orbitLeoInit) return;
+                  cvEl._orbitLeoInit = true;
+                  var ctx = cvEl.getContext('2d');
+                  var W = cvEl.offsetWidth || 500, HL = cvEl.offsetHeight || 260;
+                  cvEl.width = W * 2; cvEl.height = HL * 2; ctx.scale(2, 2);
+                  var tick = 0;
+                  var orbitAngSpeed = 0.0071;
+                  function drawEarthOrbit() {
+                    tick++;
+                    ctx.clearRect(0, 0, W, HL);
+                    ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, HL);
+                    drawStarfield(ctx, W, HL, tick, 110);
+                    var eX = W * 0.34, eY = HL * 0.52, eR = Math.min(42, HL * 0.18);
+                    drawDetailedEarth(ctx, eX, eY, eR, tick);
+                    var orbR = eR + 26;
+                    var orbRy = orbR * 0.92;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+                    ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.ellipse(eX, eY, orbR, orbRy, -0.12, 0, Math.PI * 2); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                    var moonX = W - 32, moonY = HL * 0.38, moonR = 10;
+                    drawDetailedMoon(ctx, moonX, moonY, moonR, 42);
+                    ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                    ctx.fillText('Moon (in 3 days)', moonX, moonY + moonR + 12);
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(251,191,36,0.25)';
+                    ctx.setLineDash([2, 5]); ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(eX + orbR * 0.98, eY);
+                    ctx.quadraticCurveTo((eX + moonX) * 0.5, eY - 40, moonX - moonR - 2, moonY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                    var orbAng = -Math.PI * 0.5 + tick * orbitAngSpeed;
+                    var orbits = (tick * orbitAngSpeed) / (Math.PI * 2);
+                    var tliTargetAng = 0;
+                    var angDiff = ((orbAng - tliTargetAng + Math.PI) % (Math.PI * 2)) - Math.PI;
+                    var windowHalfWidth = 0.35;
+                    var inWindow = Math.abs(angDiff) < windowHalfWidth && orbits > 1.35;
+                    ctx.save();
+                    ctx.strokeStyle = inWindow ? 'rgba(34,197,94,0.85)' : 'rgba(251,191,36,0.55)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.ellipse(eX, eY, orbR, orbRy, -0.12, tliTargetAng - windowHalfWidth, tliTargetAng + windowHalfWidth);
+                    ctx.stroke();
+                    ctx.restore();
+                    var cosT = Math.cos(-0.12), sinT = Math.sin(-0.12);
+                    var px = Math.cos(orbAng) * orbR, py = Math.sin(orbAng) * orbRy;
+                    var scX = eX + px * cosT - py * sinT;
+                    var scY = eY + px * sinT + py * cosT;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(56,189,248,0.45)'; ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.ellipse(eX, eY, orbR, orbRy, -0.12, orbAng - 1.0, orbAng);
+                    ctx.stroke();
+                    ctx.restore();
+                    ctx.save();
+                    ctx.translate(scX, scY);
+                    var tanAng = orbAng + Math.PI * 0.5;
+                    ctx.rotate(tanAng - 0.12);
+                    ctx.fillStyle = '#c0c8d0'; ctx.fillRect(-6, -2, 8, 4);
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(-1, -2); ctx.lineTo(-4, -2); ctx.lineTo(-4, 2); ctx.lineTo(-1, 2); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#a0a8b0'; ctx.fillRect(-10, -2.5, 4, 5);
+                    ctx.fillStyle = '#38bdf8'; ctx.fillRect(-2, -0.8, 1.5, 1.5);
+                    if (inWindow) {
+                      var glowR = 3 + Math.sin(tick * 0.25) * 1.5;
+                      var glowGrad = ctx.createRadialGradient(-12, 0, 0, -12, 0, glowR + 2);
+                      glowGrad.addColorStop(0, 'rgba(56,189,248,0.9)');
+                      glowGrad.addColorStop(1, 'rgba(56,189,248,0)');
+                      ctx.fillStyle = glowGrad;
+                      ctx.beginPath(); ctx.arc(-12, 0, glowR + 2, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.restore();
+                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                    ctx.fillRect(8, 8, 138, 64);
+                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#38bdf8'; ctx.fillText('ALTITUDE', 14, 22);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
+                    ctx.fillText('185 km', 14, 36);
+                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
+                    ctx.fillText('VELOCITY', 14, 50);
+                    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
+                    ctx.fillText('7.8 km/s (28,000 km/h)', 14, 64);
+                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                    ctx.fillRect(W - 112, 8, 104, 64);
+                    ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#fbbf24'; ctx.fillText('ORBITS', W - 14, 22);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 18px monospace';
+                    ctx.fillText(Math.min(1.5, orbits).toFixed(2), W - 14, 42);
+                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = inWindow ? '#22c55e' : '#94a3b8';
+                    ctx.fillText(inWindow ? 'TLI WINDOW \u25B6 GO' : 'TLI WINDOW', W - 14, 58);
+                    ctx.font = '8px monospace';
+                    ctx.fillText(orbits >= 1.35 ? (inWindow ? 'BURN NOW' : 'aligning...') : ('in ' + Math.max(0, (1.35 - orbits)).toFixed(2) + ' orbit'), W - 14, 68);
+                    var lessons = [
+                      'At 7.8 km/s, one orbit takes ~90 minutes.',
+                      'TLI must fire at the right point to hit the Moon\'s future position.',
+                      'The Moon moves ~1 km/s — you aim where it WILL be.',
+                      '1.5 orbits gives Houston time to verify systems before TLI.',
+                      'A 1\u00B0 burn error misses the Moon by thousands of km.'
+                    ];
+                    var lIdx = Math.floor(tick / 260) % lessons.length;
+                    var lFade = Math.min(1, (tick % 260) < 210 ? (tick % 260) / 25 : (260 - tick % 260) / 50);
+                    if (tick > 120) {
+                      ctx.globalAlpha = lFade * 0.85;
+                      ctx.textAlign = 'center'; ctx.font = 'italic 10px system-ui';
+                      ctx.fillStyle = '#a5b4fc';
+                      ctx.fillText(lessons[lIdx], W * 0.5, HL - 10);
+                      ctx.globalAlpha = 1;
+                    }
+                    drawVignette(ctx, W, HL, 0.25);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawEarthOrbit);
+                  }
+                  drawEarthOrbit();
+                }
+              })
+            ),
+            h('div', { className: 'p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, 'Low Earth Orbit'),
@@ -1359,6 +1486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
               h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+            )
             )
           ),
           h('button', {
@@ -1464,7 +1592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(commsMessages[commsIdx], W * 0.5, H3 - 12);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, H3, 0.25);
-                    if (document.contains(canvasEl)) requestAnimationFrame(drawTransit);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawTransit);
                   }
                   drawTransit();
                 }
@@ -1562,7 +1690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(orbitComms[ocIdx], W * 0.5, HO - 10);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HO, 0.2);
-                    if (document.contains(canvasEl)) requestAnimationFrame(drawOrbit);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawOrbit);
                   }
                   drawOrbit();
                 }
@@ -1909,7 +2037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     drawVignette(ctx, W, H, 0.2);
-                    if (!landed && !crashed && document.contains(canvasEl)) requestAnimationFrame(drawDescent);
+                    if (!landed && !crashed && document.contains(cvEl)) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
                       setTimeout(function() { drawDescent(); }, 100);
@@ -2826,7 +2954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(reComms[reentryPhase], W * 0.5, 16);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HR, 0.35);
-                    if (reentryPhase < 4 && document.contains(canvasEl)) requestAnimationFrame(drawReentry);
+                    if (reentryPhase < 4 && document.contains(cvEl)) requestAnimationFrame(drawReentry);
                   }
                   drawReentry();
                 }

@@ -574,13 +574,52 @@ var createDocPipeline = function(deps) {
     return _restoreImages(fixed.join(''));
   };
 
+  // Strip JSON array/object wrapper artifacts (`[ "`, `"]`, `<p>[ "</p>` etc.) that leak
+  // when Gemini wraps its HTML output as a JSON string or when the response is truncated
+  // mid-wrapper. Applied to final HTML in all paths (single-chunk, multi-chunk, heuristic).
+  const _stripJsonWrapperArtifacts = (html) => {
+    if (!html) return html;
+    return html
+      .replace(/<p[^>]*>\s*\[\s*"?\s*<\/p>/gi, '')
+      .replace(/<p[^>]*>\s*"\s*\]\s*<\/p>/gi, '')
+      .replace(/>\s*\[\s*"?\s*(<\/[^>]+>)/g, '>$1')
+      .replace(/\[\s*"\s*<\//g, '</')
+      .replace(/^\s*\[\s*"\s*$/gm, '')
+      .replace(/\[\s*"\s*(?=<)/g, '');
+  };
+
   // ── Heuristic text structuring (RECITATION fallback) ──
   // When Vision refuses to process copyrighted content, structure the pre-extracted text
   // using formatting heuristics. Not as accurate as Vision, but preserves all content.
   const structureTextHeuristic = (rawText, startPage, endPage) => {
     if (!rawText || rawText.trim().length < 10) return [];
     const blocks = [];
-    const lines = rawText.split(/\n/);
+    // Multi-column PDFs often capture running-page headers twice: once clipped on one line,
+    // then the full header on the next, producing pairs like ["Part II The", "II The Context
+    // of the Assessment Chapter"] where line A's suffix overlaps line B's prefix. If left
+    // alone, the heuristic classifies the short first line as a heading and the second as
+    // body, producing a duplicated-looking header. Merge these pairs before classification.
+    // Guards keep the merge from eating legitimately adjacent distinct lines: short-only,
+    // non-sentence-terminated, ≥8-char overlap, ≥2 tokens, ≥1 token of 4+ letters.
+    const mergeRunningHeaderOverlaps = (lns) => {
+      const out = [];
+      for (let i = 0; i < lns.length; i++) {
+        const a = (lns[i] || '').trim();
+        const b = i + 1 < lns.length ? (lns[i + 1] || '').trim() : '';
+        if (!a || !b || a.length > 60 || /[.!?]$/.test(a)) { out.push(lns[i]); continue; }
+        let overlap = '';
+        for (let k = Math.min(a.length, b.length); k >= 8; k--) {
+          if (a.slice(-k).toLowerCase() === b.slice(0, k).toLowerCase()) { overlap = a.slice(-k); break; }
+        }
+        if (!overlap) { out.push(lns[i]); continue; }
+        const tokens = overlap.trim().split(/\s+/).filter(Boolean);
+        if (tokens.length < 2 || !tokens.some(t => /[A-Za-z]{4,}/.test(t))) { out.push(lns[i]); continue; }
+        out.push(a + b.slice(overlap.length));
+        i++;
+      }
+      return out;
+    };
+    const lines = mergeRunningHeaderOverlaps(rawText.split(/\n/));
     let currentParagraph = [];
 
     const flushParagraph = () => {
@@ -2962,6 +3001,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       // Short document: single call, same as before
       const singlePrompt = buildTransformPrompt(textChunks[0], { isFirst: true, isLast: true, chunkIdx: 0, totalChunks: 1 });
       accessibleHtml = await callGemini(singlePrompt, true);
+      accessibleHtml = _stripJsonWrapperArtifacts(accessibleHtml);
     } else {
       // Long document: parallel chunks in batches of 5
       const MAX_PARALLEL = 5;
@@ -3013,12 +3053,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         return c;
       });
       accessibleHtml = cleanChunks.join('\n');
-      // Final sweep: nuke stray JSON fragments that leaked past chunk cleanup.
-      // Target: a trailing `[ "` or `[ "` at the end of the body (or just before a closing tag).
-      accessibleHtml = accessibleHtml
-        .replace(/>\s*\[\s*"?\s*(<\/[^>]+>)/g, '>$1') // `> [ "</tag>` → `></tag>`
-        .replace(/\[\s*"\s*<\//g, '</')               // `[ "</` → `</`
-        .replace(/^\s*\[\s*"\s*$/gm, '');             // standalone `[ "` line
+      accessibleHtml = _stripJsonWrapperArtifacts(accessibleHtml);
       // Ensure the document is properly closed (in case the last chunk's AI forgot)
       if (!accessibleHtml.includes('</html>')) {
         if (!accessibleHtml.includes('</body>')) {
@@ -6945,7 +6980,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           };
           const blocks = repairSingle(cleaned);
           if (!blocks) throw new Error('JSON repair failed');
-          bodyContent = renderJsonToHtml(blocks);
+          bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(blocks));
           warnLog(`[PDF Fix] JSON pipeline: ${blocks.length} blocks rendered`);
         } catch(jsonErr) {
           // Fallback: direct HTML generation if JSON parsing fails
@@ -7215,7 +7250,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         });
         updateProgress(2, `${allBlocks.length} blocks extracted from ${transformChunks} chunks`);
 
-        bodyContent = renderJsonToHtml(allBlocks);
+        bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(allBlocks));
         warnLog(`[PDF Fix] JSON pipeline (chunked): ${allBlocks.length} blocks rendered`);
 
         // ── Chunk retry function (exposed on window) ──
@@ -9300,7 +9335,16 @@ tr { page-break-inside: avoid; }
         const winEnd = Math.min(srcWordsLc.length - 1, posForCtx + 5);
         const contextSnippet = srcWordsRaw.slice(winStart, winEnd + 1).join(' ');
         const origWord = srcWordsRaw[posForCtx] || targetWord;
-        unplaceable.push({ word: origWord, context: contextSnippet, missingCount: entry.missingCount || 1 });
+        // Guard: if the word is already present anywhere in the doc, it's a count-diff
+        // artifact (e.g. running-header dedupe), not a real content loss — skip appendix.
+        const docText = ((root && root.textContent) || '').toLowerCase();
+        const escaped = targetWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const alreadyPresent = escaped && new RegExp('\\b' + escaped + '\\b').test(docText);
+        if (alreadyPresent) {
+          restored.push({ word: origWord, context: '(present in doc — count-diff artifact)' });
+        } else {
+          unplaceable.push({ word: origWord, context: contextSnippet, missingCount: entry.missingCount || 1 });
+        }
       }
     });
     // Appendix — nothing silently dropped.
