@@ -2733,43 +2733,339 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           )
         ),
 
-        // ═══ PHASES 7-9: RETURN JOURNEY ═══
-        (phase === 7 || phase === 8) && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+        // ═══ PHASE 7: LUNAR ASCENT & RENDEZVOUS (Animated Canvas) ═══
+        phase === 7 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+            h('div', { className: 'relative', style: { height: '300px' } },
+              h('canvas', {
+                role: 'img',
+                'aria-label': 'Animated lunar ascent sequence. Ascent stage lifts off the Moon leaving the descent stage behind, climbs to lunar orbit over 60 kilometers, then rendezvous-docks with the orbiting Command Module Columbia. HUD shows altitude, phase, distance to CSM.',
+                style: { width: '100%', height: '100%', display: 'block' },
+                ref: function(cvEl) {
+                  if (!cvEl || cvEl._ascentInit) return;
+                  cvEl._ascentInit = true;
+                  var ctx = cvEl.getContext('2d');
+                  var W = cvEl.offsetWidth || 500, HA = cvEl.offsetHeight || 300;
+                  cvEl.width = W * 2; cvEl.height = HA * 2; ctx.scale(2, 2);
+                  var tick = 0;
+                  function drawAscent() {
+                    tick++;
+                    ctx.clearRect(0, 0, W, HA);
+                    // Black lunar sky + stars
+                    ctx.fillStyle = '#000008'; ctx.fillRect(0, 0, W, HA);
+                    drawStarfield(ctx, W, HA, tick, 130);
+                    // Phase timing (frames): 0-90 prelaunch, 90-450 ascent, 450-780 rendezvous, 780+ docked
+                    var prelaunch = tick < 90;
+                    var launching = tick >= 90 && tick < 450;
+                    var rendezvous = tick >= 450 && tick < 780;
+                    var docked = tick >= 780;
+                    // Lunar surface with curving horizon (we're on a small world)
+                    var horizonY = HA * 0.78;
+                    ctx.save();
+                    ctx.fillStyle = '#8a8080';
+                    ctx.beginPath();
+                    ctx.moveTo(0, HA); ctx.lineTo(0, horizonY);
+                    ctx.arc(W * 0.5, horizonY + W * 1.14, W * 1.2, -Math.PI * 0.58, -Math.PI * 0.42);
+                    ctx.lineTo(W, HA); ctx.closePath(); ctx.fill();
+                    // Regolith texture
+                    ctx.fillStyle = 'rgba(60,55,50,0.35)';
+                    for (var di = 0; di < 60; di++) {
+                      var dx = (di * 17.3) % W;
+                      var dy = horizonY + 4 + (di * 2.7) % (HA - horizonY - 4);
+                      ctx.fillRect(dx, dy, 2, 1);
+                    }
+                    // Small craters
+                    ctx.fillStyle = 'rgba(45,40,38,0.5)';
+                    for (var ci = 0; ci < 6; ci++) {
+                      var ccx = 40 + ci * 80;
+                      var ccy = horizonY + 18 + (ci % 2) * 16;
+                      ctx.beginPath(); ctx.arc(ccx, ccy, 5 + (ci % 3), 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.restore();
+                    // Earthrise on horizon (far left)
+                    drawDetailedEarth(ctx, W * 0.12, horizonY - 24, 14, tick);
+                    ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                    ctx.fillText('Earthrise', W * 0.12, horizonY - 44);
+                    // LM descent stage left behind on surface
+                    var descentX = W * 0.44;
+                    var descentY = horizonY - 8;
+                    ctx.save();
+                    ctx.translate(descentX, descentY);
+                    ctx.fillStyle = '#c9a444'; // gold thermal foil
+                    ctx.fillRect(-14, 0, 28, 10);
+                    ctx.fillStyle = '#7a7a7a';
+                    ctx.fillRect(-14, 9, 28, 3);
+                    // Landing legs (4 visible as 2)
+                    ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.moveTo(-14, 12); ctx.lineTo(-22, 18); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(14, 12); ctx.lineTo(22, 18); ctx.stroke();
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(-24, 16, 4, 2); ctx.fillRect(20, 16, 4, 2);
+                    // Panel line
+                    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(-14, 5); ctx.lineTo(14, 5); ctx.stroke();
+                    // US flag next to stage (post-EVA)
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(-34, -4, 5, 3);
+                    ctx.strokeStyle = '#999'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(-32, -4); ctx.lineTo(-32, 12); ctx.stroke();
+                    ctx.restore();
+                    // CSM orbital position (across the sky)
+                    var csmX, csmY;
+                    if (prelaunch) {
+                      csmX = W * 0.8 - (tick * 0.4);
+                      csmY = HA * 0.15 + Math.sin(tick * 0.02) * 2;
+                    } else if (launching) {
+                      csmX = W * 0.8 - 36 - ((tick - 90) * 0.15);
+                      csmY = HA * 0.17 + Math.sin(tick * 0.02) * 2;
+                    } else if (rendezvous) {
+                      var rF = (tick - 450) / 330;
+                      csmX = W * 0.7 - 18 + rF * 8;
+                      csmY = HA * 0.22 + rF * 6;
+                    } else {
+                      csmX = W * 0.62;
+                      csmY = HA * 0.3;
+                    }
+                    // Ascent stage position
+                    var ascentX, ascentY, ascentAng = 0;
+                    if (prelaunch) {
+                      ascentX = descentX; ascentY = descentY - 10;
+                    } else if (launching) {
+                      var lF = (tick - 90) / 360;
+                      ascentX = descentX + lF * lF * 70;
+                      ascentY = (descentY - 10) - lF * (descentY - 10 - HA * 0.28);
+                      ascentAng = lF * 0.5;
+                    } else if (rendezvous) {
+                      var rF2 = (tick - 450) / 330;
+                      var sX = descentX + 70, sY = HA * 0.28;
+                      ascentX = sX + (csmX - 14 - sX) * rF2;
+                      ascentY = sY + (csmY - sY) * rF2;
+                      ascentAng = 0.5 + rF2 * 0.4;
+                    } else {
+                      ascentX = csmX - 14; ascentY = csmY;
+                      ascentAng = 0.9;
+                    }
+                    // Trajectory trail (dashed arc from descent stage to ascent stage)
+                    if (launching || rendezvous) {
+                      ctx.save();
+                      ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+                      ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+                      ctx.beginPath();
+                      ctx.moveTo(descentX, descentY - 10);
+                      ctx.quadraticCurveTo(descentX + 50, descentY - 60, ascentX, ascentY);
+                      ctx.stroke();
+                      ctx.setLineDash([]);
+                      ctx.restore();
+                    }
+                    // Dust plume at liftoff
+                    if (tick >= 85 && tick < 220) {
+                      ctx.save();
+                      var dustF = tick - 85;
+                      for (var pi = 0; pi < 18; pi++) {
+                        var pAlpha = Math.max(0, 0.55 - dustF * 0.004 - pi * 0.015);
+                        ctx.globalAlpha = pAlpha;
+                        ctx.fillStyle = pi < 9 ? '#e0d8c8' : '#b8b0a0';
+                        var ppx = descentX + (Math.sin(pi * 1.7) * 35) + (Math.random() - 0.5) * 8;
+                        var ppy = descentY + 10 + (Math.random() - 0.5) * 6;
+                        var ppr = 3 + dustF * 0.1 + Math.random() * 2;
+                        ctx.beginPath(); ctx.arc(ppx, ppy, ppr, 0, Math.PI * 2); ctx.fill();
+                      }
+                      ctx.restore();
+                    }
+                    // Draw CSM (Columbia)
+                    ctx.save();
+                    ctx.translate(csmX, csmY);
+                    // Engine bell (rear)
+                    ctx.fillStyle = '#888';
+                    ctx.beginPath(); ctx.moveTo(-20, -2.5); ctx.lineTo(-24, -4.5); ctx.lineTo(-24, 4.5); ctx.lineTo(-20, 2.5); ctx.closePath(); ctx.fill();
+                    // Service module
+                    ctx.fillStyle = '#c0c8d0';
+                    ctx.fillRect(-20, -3.5, 22, 7);
+                    // Command module cone
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.beginPath();
+                    ctx.moveTo(7, 0); ctx.lineTo(2, -3.5); ctx.lineTo(-3, -3.5); ctx.lineTo(-3, 3.5); ctx.lineTo(2, 3.5); ctx.closePath(); ctx.fill();
+                    // Docking port
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(7, -1.5, 2, 3);
+                    // Window
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(0, -1.2, 2, 2.4);
+                    // RCS thruster quad
+                    ctx.fillStyle = '#999';
+                    ctx.fillRect(-10, -5, 3, 1.5); ctx.fillRect(-10, 3.5, 3, 1.5);
+                    ctx.restore();
+                    // CSM label
+                    ctx.fillStyle = 'rgba(148,163,184,0.75)';
+                    ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                    ctx.fillText('CSM "Columbia"', csmX, csmY - 12);
+                    // Draw ascent stage ("Eagle")
+                    ctx.save();
+                    ctx.translate(ascentX, ascentY);
+                    ctx.rotate(ascentAng);
+                    // Octagonal ascent body (gold foil)
+                    ctx.fillStyle = '#c9a444';
+                    ctx.fillRect(-5, -4, 10, 8);
+                    // Top white section (RCS + docking tunnel)
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.fillRect(-3, -6, 6, 2);
+                    ctx.fillStyle = '#888';
+                    ctx.fillRect(-1, -7, 2, 1);
+                    // Window (front-facing)
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(-3.5, -2, 2, 2);
+                    // Antenna
+                    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(2, -10); ctx.stroke();
+                    // Engine flame (below)
+                    if (launching || rendezvous) {
+                      var flameLen = launching ? (7 + Math.random() * 5) : (2 + Math.random() * 1.5);
+                      var flameW = launching ? 3 : 1.5;
+                      var fg = ctx.createLinearGradient(0, 4, 0, 4 + flameLen);
+                      fg.addColorStop(0, 'rgba(255,220,100,0.9)');
+                      fg.addColorStop(0.5, 'rgba(255,120,20,0.6)');
+                      fg.addColorStop(1, 'rgba(200,0,0,0)');
+                      ctx.fillStyle = fg;
+                      ctx.beginPath();
+                      ctx.moveTo(-flameW, 4); ctx.lineTo(0, 4 + flameLen); ctx.lineTo(flameW, 4); ctx.closePath();
+                      ctx.fill();
+                    }
+                    ctx.restore();
+                    // Ascent label (only during launch/rendezvous, fades when docked)
+                    if (!docked) {
+                      ctx.fillStyle = 'rgba(251,191,36,0.75)';
+                      ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                      ctx.fillText('"Eagle" ascent', ascentX, ascentY + 14);
+                    }
+                    // HUD left (altitude + phase)
+                    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                    ctx.fillRect(8, 8, 140, 74);
+                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#fbbf24'; ctx.fillText('LM ASCENT STAGE', 14, 22);
+                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText('ALTITUDE', 14, 36);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
+                    var altKm = 0;
+                    if (launching) altKm = ((tick - 90) / 360) * 110;
+                    else if (rendezvous || docked) altKm = 110;
+                    ctx.fillText(altKm.toFixed(1) + ' km', 14, 50);
+                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText('PHASE', 14, 64);
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillStyle = prelaunch ? '#fbbf24' : launching ? '#ef4444' : rendezvous ? '#38bdf8' : '#22c55e';
+                    ctx.fillText(prelaunch ? 'PRE-LAUNCH' : launching ? 'ASCENT' : rendezvous ? 'RENDEZVOUS' : 'DOCKED', 14, 78);
+                    // HUD right (distance to CSM)
+                    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                    ctx.fillRect(W - 128, 8, 120, 58);
+                    ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#fbbf24'; ctx.fillText('DIST TO CSM', W - 14, 22);
+                    var dx1 = csmX - ascentX, dy1 = csmY - ascentY;
+                    var pxDist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                    var distKm = (pxDist * 2.5).toFixed(1);
+                    ctx.font = 'bold 17px monospace';
+                    ctx.fillStyle = pxDist < 10 ? '#22c55e' : pxDist < 60 ? '#fbbf24' : '#fff';
+                    ctx.fillText(distKm + ' km', W - 14, 42);
+                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText(docked ? 'HARD DOCK' : rendezvous ? 'closing...' : prelaunch ? 'aligned' : 'pursuing', W - 14, 56);
+                    // Countdown during prelaunch
+                    if (prelaunch) {
+                      var secs = Math.max(1, Math.ceil((90 - tick) / 30));
+                      ctx.textAlign = 'center'; ctx.font = 'bold 40px monospace';
+                      ctx.globalAlpha = 0.75 + Math.sin(tick * 0.3) * 0.25;
+                      ctx.fillStyle = '#fbbf24';
+                      ctx.fillText('T-' + secs, W * 0.5, HA * 0.38);
+                      ctx.globalAlpha = 1;
+                      ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+                      ctx.fillText('Ascent engine — single-start, cannot abort', W * 0.5, HA * 0.46);
+                    }
+                    // DOCKED confirmation
+                    if (docked) {
+                      var dPulse = 0.65 + Math.sin(tick * 0.15) * 0.3;
+                      ctx.globalAlpha = dPulse;
+                      ctx.textAlign = 'center'; ctx.font = 'bold 18px system-ui';
+                      ctx.fillStyle = '#22c55e';
+                      ctx.fillText('\u2705 HARD DOCK CONFIRMED', W * 0.5, HA * 0.52);
+                      ctx.globalAlpha = 1;
+                      ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+                      ctx.fillText('Ready to jettison "Eagle" and head home', W * 0.5, HA * 0.58);
+                    }
+                    // Comms chatter
+                    var msgs = prelaunch ? ['Houston: "Eagle, you are GO for ascent."'] :
+                               launching ? ['Aldrin: "We\'re lifting off! Beautiful."', 'Houston: "Nominal ascent, Eagle."'] :
+                               rendezvous ? ['Collins: "I have visual on Eagle."', 'Armstrong: "Closing to 100 feet."'] :
+                                            ['Aldrin: "We are docked, Houston."', 'Houston: "Roger, Eagle. Great job."'];
+                    var mIdx = Math.floor(tick / 180) % msgs.length;
+                    var mFade = Math.min(1, (tick % 180) < 150 ? (tick % 180) / 25 : (180 - tick % 180) / 30);
+                    ctx.globalAlpha = mFade * 0.85;
+                    ctx.textAlign = 'center'; ctx.font = 'italic 10px system-ui';
+                    ctx.fillStyle = '#a5b4fc';
+                    ctx.fillText(msgs[mIdx], W * 0.5, HA - 10);
+                    ctx.globalAlpha = 1;
+                    drawVignette(ctx, W, HA, 0.25);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawAscent);
+                  }
+                  drawAscent();
+                }
+              })
+            ),
+            h('div', { className: 'p-4 text-white border-t border-slate-700' },
+              h('div', { className: 'text-center mb-3' },
+                h('div', { className: 'text-3xl' }, '\u2B06\uFE0F'),
+                h('h4', { className: 'text-base font-bold' }, 'Lunar Ascent & Rendezvous'),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Ascent stage launches from Moon, docks with Columbia')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
+                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
+                  'The LM\'s ascent engine — a single-start hypergolic motor with no abort option — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle" (it eventually crashes into the Moon).'),
+                h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
+                  h('p', { className: 'text-[11px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
+                  (d.lunarSamples || []).map(function(s, i) {
+                    return h('p', { key: i, className: 'text-[11px] text-slate-600 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
+                  })
+                )
+              ),
+              h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
+                h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+              )
+            )
+          ),
+          h('button', {
+            'aria-label': 'Fire trans-Earth injection burn to begin 3-day return journey home',
+            onClick: function() {
+              advancePhase(8);
+              log('\u2B06\uFE0F Docked with Columbia. LM jettisoned.');
+              addXP(15);
+              if (addToast) addToast('\uD83C\uDF0D TEI burn complete. Heading home.', 'success');
+            },
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
+          }, '\uD83D\uDE80 TEI Burn \u2014 Head Home')
+        ),
+
+        // ═══ PHASE 8: TRANS-EARTH COAST ═══
+        phase === 8 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
-              h('div', { className: 'text-3xl' }, phase === 7 ? '\u2B06\uFE0F' : '\uD83C\uDF0D'),
-              h('h4', { className: 'text-base font-bold' }, phase === 7 ? 'Lunar Ascent & Rendezvous' : 'Trans-Earth Coast'),
-              h('p', { className: 'text-[11px] text-slate-600' },
-                phase === 7 ? 'Ascent stage launches from Moon, docks with Columbia' : 'Returning home \u2022 384,400 km \u2022 ~3 days')
+              h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
+              h('h4', { className: 'text-base font-bold' }, 'Trans-Earth Coast'),
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Returning home \u2022 384,400 km \u2022 ~3 days')
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
-              phase === 7 ?
-                h('div', null,
-                  h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
-                    'The Lunar Module\'s ascent engine fires, launching you off the Moon\'s surface. You rendezvous and dock with Columbia in lunar orbit. The Lunar Module "Eagle" is jettisoned \u2014 it will eventually crash into the Moon.'),
-                  h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
-                    h('p', { className: 'text-[11px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
-                    (d.lunarSamples || []).map(function(s, i) {
-                      return h('p', { key: i, className: 'text-[11px] text-slate-600 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
-                    })
-                  )
-                ) :
-                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
-                  'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.')
+              h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
+                'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.')
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
               h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
             )
           ),
           h('button', {
-            'aria-label': phase === 7 ? 'Fire trans-Earth injection burn to begin 3-day return journey home' : 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour',
+            'aria-label': 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour',
             onClick: function() {
-              advancePhase(phase + 1);
-              log(phase === 7 ? '\u2B06\uFE0F Docked with Columbia. LM jettisoned.' : '\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
+              advancePhase(9);
+              log('\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
               addXP(15);
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg'
-          }, phase === 7 ? '\uD83D\uDE80 TEI Burn \u2014 Head Home' : '\uD83C\uDF0A Begin Re-entry Sequence')
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
+          }, '\uD83C\uDF0A Begin Re-entry Sequence')
         ),
 
         // ═══ PHASE 9: RE-ENTRY & SPLASHDOWN (Animated Canvas) ═══

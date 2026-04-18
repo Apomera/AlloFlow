@@ -7031,8 +7031,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(haloGroup);
 
             // Starfield — several hundred tiny bright points on a sphere just
-            // inside the skydome. Night + dawn twilight only.
-            if ((isNight && !isDawn) || isDawn) {
+            // inside the skydome. ALWAYS created so the per-frame visibility toggle
+            // works whether the user starts the drive in day or night.
+            {
               var starCount = isDawn ? 120 : 420;
               var starGeo = new T.BufferGeometry();
               var starPos = new Float32Array(starCount * 3);
@@ -11974,7 +11975,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!s3._starsRef) s3._starsRef = s3.scene.getObjectByName('starfield');
           if (s3._starsRef) {
             s3._starsRef.position.set(carWorldX, 0, carWorldZ);
-            if (s3._starsRef.material) {
+            // Visible only at night/dawn — Day toggle hides them. Without this gate, stars
+            // built at night-init would persist in the daytime sky after a Day toggle.
+            s3._starsRef.visible = isNightNow || scn.time === 'dawn';
+            if (s3._starsRef.material && s3._starsRef.visible) {
               s3._starsRef.material.opacity = 0.75 + Math.sin(timeRef.current * 0.7) * 0.15 + Math.sin(timeRef.current * 1.9) * 0.08;
             }
           }

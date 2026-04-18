@@ -1027,22 +1027,30 @@ var d = labToolData || {};
             { id: 'streak10', icon: '⚡', name: 'Lightning', desc: '10x streak', check: function() { return geoStreak >= 10; } }
           ];
 
-          function checkGeoBadges() {
-            var newBadges = Object.assign({}, geoBadges);
-            var earned = false;
-            GEO_BADGES.forEach(function(b) {
-              if (!newBadges[b.id] && b.check()) {
-                newBadges[b.id] = true;
-                earned = true;
+          // Derive newly-earned badges this render (pure — no side effects)
+          var _newlyEarnedBadges = [];
+          GEO_BADGES.forEach(function(b) {
+            if (!geoBadges[b.id] && b.check()) _newlyEarnedBadges.push(b);
+          });
+          // Schedule a single deferred burst OUTSIDE React's render cycle.
+          // The window-level flag prevents duplicate bursts from rapid re-renders that
+          // would otherwise pile up pending timers and fire addToast mid-render
+          // (root cause of "Cannot update StemLabModal while rendering StemPluginBridge").
+          if (_newlyEarnedBadges.length > 0 && !window._geoBadgeAwardPending) {
+            window._geoBadgeAwardPending = true;
+            var _earnedSnapshot = _newlyEarnedBadges;
+            var _prevBadges = geoBadges;
+            setTimeout(function() {
+              window._geoBadgeAwardPending = false;
+              var merged = Object.assign({}, _prevBadges);
+              _earnedSnapshot.forEach(function(b) {
+                merged[b.id] = true;
                 if (addToast) addToast(b.icon + ' Badge: ' + b.name + '!', 'success');
                 if (typeof stemCelebrate === 'function') stemCelebrate();
-              }
-            });
-            if (earned) upd('geoBadges', newBadges);
+              });
+              upd('geoBadges', merged);
+            }, 0);
           }
-
-          // Check badges whenever score/streak changes
-          if (geoScore > 0 || geoStreak > 0 || geoDistCorrect > 0) setTimeout(checkGeoBadges, 100);
 
 
           // ── Tab definitions ──
