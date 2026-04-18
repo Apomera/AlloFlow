@@ -2512,14 +2512,34 @@
     var _srchStats = useState(function () { return load(STORAGE_SEARCH_STATS, { sessions: 0, totalCorrect: 0, totalTrials: 0, bestStreak: 0 }); });
     var srchStats = _srchStats[0]; var setSrchStats = _srchStats[1];
     var srchTimerRef = useRef(null);
+    // Session-level UX state added in the UX refinement pass:
+    //   srchCategoryFilter — which symbol category to draw from on the menu (null = all)
+    //   srchLastCelebratedStreak — last streak value we already celebrated, prevents re-firing
+    //                              the confetti/toast for the same streak after minor re-renders.
+    //   srchShowSummary — when true, renders the "session summary" card before returning to menu
+    //                     instead of jumping straight back. Populated when the player taps Back.
+    var _srchCategoryFilter = useState(null); var srchCategoryFilter = _srchCategoryFilter[0]; var setSrchCategoryFilter = _srchCategoryFilter[1];
+    var _srchLastCelebratedStreak = useState(0); var srchLastCelebratedStreak = _srchLastCelebratedStreak[0]; var setSrchLastCelebratedStreak = _srchLastCelebratedStreak[1];
+    var _srchShowSummary = useState(false); var srchShowSummary = _srchShowSummary[0]; var setSrchShowSummary = _srchShowSummary[1];
+    // Snapshot of the session's final stats (captured when the player ends a session) so the
+    // summary card keeps showing numbers even after we've reset srchCorrect/srchTotal/srchStreak.
+    var _srchSummaryData = useState(null); var srchSummaryData = _srchSummaryData[0]; var setSrchSummaryData = _srchSummaryData[1];
 
     // ── Symbol Search logic ──
-    function srchSpeakWord(label) {
+    // speed: 1.0 = normal, 0.7 = slow replay for students with auditory-processing needs.
+    function srchSpeakWord(label, speed) {
+      var rate = typeof speed === 'number' ? speed : 1;
       setSrchSpeaking(true);
       setSrchRevealed(false);
       if (onCallTTS) {
-        onCallTTS(label, selectedVoice || 'Kore', 1).then(function (url) {
-          if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+        onCallTTS(label, selectedVoice || 'Kore', rate).then(function (url) {
+          if (url) {
+            var a = new Audio(url);
+            // Chain the playback rate onto the Audio element too, so a slow request
+            // that gets fulfilled at normal speed still plays back slowly.
+            try { a.playbackRate = rate; } catch (_) {}
+            a.play().catch(function () {});
+          }
           setSrchSpeaking(false);
         }).catch(function () {
           // Fallback to browser TTS
@@ -2527,6 +2547,7 @@
             window.speechSynthesis.cancel();
             var utt = new SpeechSynthesisUtterance(label);
             applyVoice(utt);
+            utt.rate = rate;
             utt.onend = function () { setSrchSpeaking(false); };
             window.speechSynthesis.speak(utt);
           } else { setSrchSpeaking(false); }
@@ -2535,6 +2556,7 @@
         window.speechSynthesis.cancel();
         var utt = new SpeechSynthesisUtterance(label);
         applyVoice(utt);
+        utt.rate = rate;
         utt.onend = function () { setSrchSpeaking(false); };
         window.speechSynthesis.speak(utt);
       } else { setSrchSpeaking(false); }
@@ -2619,6 +2641,32 @@
       setTimeout(function () { srchSpeakWord(target.label); }, 300);
     }
 
+    // Build the active pool for a round, respecting the category filter set on the menu.
+    // Kept in one place so every call site picks up the filter. (Named `srchPool` to avoid
+    // colliding with `srchBuildPool`, which is the state variable holding the shuffled option
+    // tiles in Listen & Build mode.)
+    function srchPool() {
+      var p = gallery.filter(function (g) { return g.image; });
+      if (srchCategoryFilter) p = p.filter(function (g) { return g.category === srchCategoryFilter; });
+      return p;
+    }
+
+    // Fires a small celebration toast at streak milestones. The guard in
+    // srchLastCelebratedStreak prevents re-firing if a re-render re-runs
+    // the check handler for the same streak count.
+    function srchMaybeCelebrate(streak) {
+      var milestones = [3, 5, 10, 15, 20];
+      if (milestones.indexOf(streak) === -1) return;
+      if (streak <= srchLastCelebratedStreak) return;
+      setSrchLastCelebratedStreak(streak);
+      var msg = streak >= 20 ? '🏆 ' + streak + ' in a row! Legendary!' :
+                streak >= 15 ? '🎉 ' + streak + ' in a row! Incredible!' :
+                streak >= 10 ? '🔥 ' + streak + ' in a row! On fire!' :
+                streak >= 5  ? '⚡ ' + streak + ' in a row! Keep going!' :
+                                '✨ ' + streak + ' in a row!';
+      if (addToast) addToast(msg);
+    }
+
     function srchCheckAnswer(picked) {
       if (!srchTarget) return;
       var correct = picked.id === srchTarget.id;
@@ -2636,14 +2684,14 @@
         setSrchScore(function (s) { return s + pts; });
         setSrchCorrect(function (c) { return c + 1; });
         setSrchFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
-        var pool = gallery.filter(function (g) { return g.image; });
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool); }, 1200);
+        srchMaybeCelebrate(ns);
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 1200);
       } else {
         setSrchStreak(0);
+        setSrchLastCelebratedStreak(0);
         setSrchRevealed(true);
         setSrchFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". Listen for "' + srchTarget.label + '".' });
-        var pool2 = gallery.filter(function (g) { return g.image; });
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool2); }, 2500);
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 2500);
       }
     }
 
@@ -2668,13 +2716,14 @@
           // IEP trial for expressive goal
           var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
           if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'search:build:' + srchSentenceTarget.map(function (w) { return w.label; }).join('+'));
-          var pool3 = gallery.filter(function (g) { return g.image; });
-          srchTimerRef.current = setTimeout(function () { srchPickRound('build', pool3); }, 1800);
+          srchMaybeCelebrate(ns2);
+          srchTimerRef.current = setTimeout(function () { srchPickRound('build', srchPool()); }, 1800);
         } else {
           setSrchFeedback({ ok: true, msg: '✅ ' + picked.label + '!' });
         }
       } else {
         setSrchStreak(0);
+        setSrchLastCelebratedStreak(0);
         setSrchTotal(function (t) { return t + 1; });
         setSrchFeedback({ ok: false, msg: '❌ Next word should be "' + expected.label + '"' });
         // Reset the sentence and retry
@@ -2691,9 +2740,10 @@
     function srchStartSession(mode) {
       setSrchMode(mode);
       setSrchScore(0); setSrchTotal(0); setSrchCorrect(0); setSrchStreak(0); setSrchBest(0);
+      setSrchLastCelebratedStreak(0);
       setSrchFeedback(null); setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
-      var pool = gallery.filter(function (g) { return g.image; });
-      srchPickRound(mode, pool);
+      setSrchShowSummary(false); setSrchSummaryData(null);
+      srchPickRound(mode, srchPool());
       // Increment session count
       setSrchStats(function (prev) {
         var upd = Object.assign({}, prev, { sessions: (prev.sessions || 0) + 1 });
@@ -2714,6 +2764,21 @@
         store(STORAGE_SEARCH_STATS, upd);
         return upd;
       });
+      // If the student actually played any rounds this session, capture a snapshot and show
+      // the summary card before returning to the menu. Zero-round sessions jump straight back
+      // (no point showing a "you got 0/0" recap).
+      if (srchTotal > 0) {
+        setSrchSummaryData({
+          mode: srchMode,
+          correct: srchCorrect,
+          total: srchTotal,
+          score: srchScore,
+          bestStreak: srchBest,
+          accuracy: srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0,
+          filter: srchCategoryFilter
+        });
+        setSrchShowSummary(true);
+      }
       setSrchMode('menu');
       setSrchTarget(null); setSrchOptions([]); setSrchFeedback(null);
       setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
@@ -3315,11 +3380,88 @@
       // Menu screen
       if (srchMode === 'menu') {
         var allTimeAcc = srchStats.totalTrials > 0 ? Math.round((srchStats.totalCorrect / srchStats.totalTrials) * 100) : 0;
+        // Count symbols per category so the category chips can show live counts and auto-disable
+        // categories with no symbols (nothing to practice).
+        var catCounts = { verb: 0, noun: 0, adjective: 0, other: 0 };
+        pool.forEach(function (g) { if (catCounts[g.category] !== undefined) catCounts[g.category]++; });
+        var filteredPoolSize = srchCategoryFilter ? (catCounts[srchCategoryFilter] || 0) : pool.length;
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', overflowY: 'auto' } },
+          // ── Session summary card (shown briefly after ending a session) ──
+          srchShowSummary && srchSummaryData && e('div', {
+            style: {
+              width: '100%', maxWidth: '420px', padding: '18px 20px',
+              background: 'linear-gradient(135deg, #f0fdf4, #ecfccb)',
+              border: '2px solid #86efac', borderRadius: '16px',
+              boxShadow: '0 6px 20px rgba(34,197,94,0.15)'
+            }
+          },
+            e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+              e('div', { style: { fontWeight: 800, fontSize: '14px', color: '#166534' } }, '🎯 Session complete'),
+              e('button', { onClick: function () { setSrchShowSummary(false); }, 'aria-label': 'Dismiss session summary', style: { background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px', padding: '0 4px' } }, '✕')
+            ),
+            e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' } },
+              e('div', { style: { textAlign: 'center' } },
+                e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#15803d' } }, srchSummaryData.correct + '/' + srchSummaryData.total),
+                e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'correct')
+              ),
+              e('div', { style: { textAlign: 'center' } },
+                e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, srchSummaryData.accuracy + '%'),
+                e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'accuracy')
+              ),
+              e('div', { style: { textAlign: 'center' } },
+                e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#d97706' } }, srchSummaryData.bestStreak + 'x'),
+                e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'best streak')
+              )
+            ),
+            e('div', { style: { display: 'flex', gap: '8px' } },
+              e('button', {
+                onClick: function () { setSrchShowSummary(false); srchStartSession(srchSummaryData.mode); },
+                'aria-label': 'Play another session',
+                style: Object.assign({}, S.btn(PURPLE, '#fff', false), { flex: 1 })
+              }, '▶ Play again'),
+              e('button', {
+                onClick: function () { setSrchShowSummary(false); },
+                'aria-label': 'Dismiss summary',
+                style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { flex: 1 })
+              }, 'Close')
+            )
+          ),
           e('div', { style: { fontSize: '48px' } }, '🔍'),
           e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Search'),
           e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '420px', margin: 0 } },
             'Train the auditory-to-visual connection that AAC learners need. Hear a word or phrase, then find the matching symbol(s).'),
+          // Category filter — lets SLPs run targeted practice sessions (e.g. verbs-only).
+          // "All" keeps the default behavior (draws from every category).
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '12px', color: '#374151', maxWidth: '420px' } },
+            e('span', { style: { fontWeight: 600 } }, 'Practice:'),
+            [
+              { id: null, label: 'All', icon: '🎯', count: pool.length },
+              { id: 'verb', label: 'Verbs', icon: '🏃', count: catCounts.verb },
+              { id: 'noun', label: 'Nouns', icon: '📦', count: catCounts.noun },
+              { id: 'adjective', label: 'Adjectives', icon: '🎨', count: catCounts.adjective },
+              { id: 'other', label: 'Core', icon: '💬', count: catCounts.other }
+            ].map(function (c) {
+              var sel = srchCategoryFilter === c.id;
+              var disabled = c.count < 3;
+              return e('button', {
+                key: String(c.id),
+                onClick: function () { if (!disabled) setSrchCategoryFilter(c.id); },
+                disabled: disabled,
+                'aria-label': c.label + (disabled ? ' — need at least 3 symbols' : ' · ' + c.count + ' symbols'),
+                'aria-pressed': sel,
+                title: disabled ? 'Need at least 3 ' + c.label.toLowerCase() + ' symbols' : c.count + ' symbol' + (c.count === 1 ? '' : 's'),
+                style: {
+                  padding: '5px 12px', borderRadius: '999px', border: '2px solid ' + (sel ? PURPLE : '#d1d5db'),
+                  background: sel ? LIGHT_PURPLE : disabled ? '#f3f4f6' : '#fff',
+                  color: sel ? PURPLE : disabled ? '#9ca3af' : '#374151',
+                  fontWeight: sel ? 700 : 500, fontSize: '12px',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  opacity: disabled ? 0.6 : 1,
+                  display: 'inline-flex', alignItems: 'center', gap: '4px'
+                }
+              }, c.icon + ' ' + c.label, e('span', { style: { fontSize: '10px', opacity: 0.7, fontWeight: 500 } }, '(' + c.count + ')'));
+            })
+          ),
           // Difficulty selector
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151' } },
             e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
@@ -3352,11 +3494,12 @@
               e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
             )
           ),
-          // Mode selection
+          // Mode selection — now respects the category filter; if the filtered pool is too
+          // small, the mode card becomes disabled and explains why.
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '400px' } },
             SEARCH_MODES.map(function (m) {
               var minPool = m.id === 'build' ? 4 : 3;
-              var disabled = pool.length < minPool;
+              var disabled = filteredPoolSize < minPool;
               return e('button', {
                 key: m.id,
                 onClick: function () { if (!disabled) srchStartSession(m.id); },
@@ -3392,7 +3535,11 @@
       // Active session — controls bar
       var backBtn = e('button', { onClick: function () { srchEndSession(); }, 'aria-label': 'Back to menu', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
       var pctAcc = srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0;
-      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
+      // Round counter gives students/SLPs a sense of session length. Starts at 1 once the first
+      // round loads so there isn't a confusing "Round 0".
+      var roundNum = (srchTotal || 0) + (srchFeedback ? 0 : 1);
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Round ' + roundNum + ', Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280', flexWrap: 'wrap' } },
+        e('span', { style: { fontWeight: 600, color: '#64748b' } }, 'Round ' + roundNum),
         e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + srchScore),
         e('span', null, '🎯 ' + srchCorrect + '/' + srchTotal),
         srchStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700 } }, '🔥 x' + srchStreak),
@@ -3404,22 +3551,37 @@
       if (srchMode === 'listen') {
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '14px', gap: '12px', overflowY: 'auto' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
-          // Audio prompt area
+          // Audio prompt area — main 🔊 plays at normal speed, 🐢 plays at 0.7× for students
+          // with auditory-processing delays or unfamiliar words.
           e('div', { style: { textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
-            e('button', {
-              onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
-              disabled: srchSpeaking,
-              'aria-label': 'Play word audio',
-              style: {
-                padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
-                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
-                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', transition: 'all 0.2s',
-                width: '72px', height: '72px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-              }
-            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '10px' } },
+              e('button', {
+                onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
+                disabled: srchSpeaking,
+                'aria-label': 'Play word audio',
+                style: {
+                  padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                  border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', transition: 'all 0.2s',
+                  width: '72px', height: '72px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, srchSpeaking ? '⏳' : '🔊'),
+              e('button', {
+                onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label, 0.7); },
+                disabled: srchSpeaking,
+                'aria-label': 'Play word audio at slow speed',
+                title: 'Slow replay (0.7× speed)',
+                style: {
+                  padding: '8px', fontSize: '16px', background: srchSpeaking ? '#e5e7eb' : '#fff', color: PURPLE,
+                  border: '2px solid ' + (srchSpeaking ? '#e5e7eb' : '#c4b5fd'),
+                  borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  width: '48px', height: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, '🐢')
+            ),
             e('div', { style: { marginTop: '8px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } },
-              srchSpeaking ? 'Playing...' : 'Tap to hear again'),
+              srchSpeaking ? 'Playing...' : 'Tap 🔊 to hear again · 🐢 for slow'),
             // Reveal hint
             srchRevealed && srchTarget && e('div', { style: { marginTop: '8px', fontSize: '16px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
               '→ ' + srchTarget.label)
@@ -3471,19 +3633,33 @@
           // Audio prompt
           e('div', { style: { textAlign: 'center', padding: '16px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Build the phrase:'),
-            e('button', {
-              onClick: function () { srchSpeakWord(phraseText); },
-              disabled: srchSpeaking,
-              'aria-label': 'Replay phrase',
-              style: {
-                padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
-                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
-                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)',
-                width: '64px', height: '64px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-              }
-            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '10px' } },
+              e('button', {
+                onClick: function () { srchSpeakWord(phraseText); },
+                disabled: srchSpeaking,
+                'aria-label': 'Replay phrase',
+                style: {
+                  padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                  border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)',
+                  width: '64px', height: '64px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, srchSpeaking ? '⏳' : '🔊'),
+              e('button', {
+                onClick: function () { srchSpeakWord(phraseText, 0.7); },
+                disabled: srchSpeaking,
+                'aria-label': 'Replay phrase at slow speed',
+                title: 'Slow replay (0.7× speed)',
+                style: {
+                  padding: '8px', fontSize: '14px', background: srchSpeaking ? '#e5e7eb' : '#fff', color: PURPLE,
+                  border: '2px solid ' + (srchSpeaking ? '#e5e7eb' : '#c4b5fd'),
+                  borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  width: '44px', height: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, '🐢')
+            ),
             e('div', { style: { marginTop: '6px', fontSize: '11px', color: '#7c3aed', fontWeight: 600 } },
-              srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — tap to hear again'),
+              srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — 🔊 normal · 🐢 slow'),
             // Reveal full phrase hint
             srchRevealed && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
               phraseText)

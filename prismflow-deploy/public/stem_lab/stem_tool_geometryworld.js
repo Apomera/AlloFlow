@@ -2030,15 +2030,16 @@
         function spawnBreakParticles(eng, px, py, pz, color) {
           var THREE = window.THREE;
           if (!THREE) return;
-          var count = 6;
+          // Chunkier shatter: more shards, wider size range, a bit more vertical lift.
+          var count = 10;
           for (var i = 0; i < count; i++) {
-            var size = 0.08 + Math.random() * 0.08;
+            var size = 0.06 + Math.random() * 0.14;
             var geo = new THREE.BoxGeometry(size, size, size);
             var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true });
             var p = new THREE.Mesh(geo, mat);
-            p.position.set(px + (Math.random() - 0.5) * 0.5, py + (Math.random() - 0.5) * 0.5, pz + (Math.random() - 0.5) * 0.5);
-            p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 3, 1.5 + Math.random() * 3, (Math.random() - 0.5) * 3);
-            p.userData._life = 0.5 + Math.random() * 0.3;
+            p.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
+            p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 4, 2 + Math.random() * 3.5, (Math.random() - 0.5) * 4);
+            p.userData._life = 0.55 + Math.random() * 0.4;
             p.userData._age = 0;
             eng.scene.add(p);
             eng._particles.push(p);
@@ -2049,14 +2050,16 @@
         function spawnPlaceParticles(eng, px, py, pz) {
           var THREE = window.THREE;
           if (!THREE) return;
-          for (var i = 0; i < 5; i++) {
-            var size = 0.04 + Math.random() * 0.04;
+          // Mix of gold sparks + white-hot flashes for a more reactive place feel.
+          for (var i = 0; i < 8; i++) {
+            var size = 0.03 + Math.random() * 0.06;
             var geo = new THREE.BoxGeometry(size, size, size);
-            var mat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true });
+            var sparkColor = Math.random() < 0.35 ? 0xffffff : 0xfbbf24;
+            var mat = new THREE.MeshBasicMaterial({ color: sparkColor, transparent: true });
             var sp = new THREE.Mesh(geo, mat);
             sp.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
-            sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2, 0.5 + Math.random() * 2, (Math.random() - 0.5) * 2);
-            sp.userData._life = 0.3 + Math.random() * 0.2;
+            sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2.2, 0.6 + Math.random() * 2.2, (Math.random() - 0.5) * 2.2);
+            sp.userData._life = 0.3 + Math.random() * 0.25;
             sp.userData._age = 0;
             eng.scene.add(sp);
             eng._particles.push(sp);
@@ -3056,6 +3059,13 @@
               engine._ghostMesh.position.set(gx + 0.5, gy + 0.5, gz + 0.5);
             }
             engine._ghostMesh.visible = true;
+            // Gentle breathing pulse — subtle opacity + scale oscillation so the preview
+            // reads as "alive" without distracting from the block it's snapping to.
+            var ghostT = engine.clock.getElapsedTime();
+            var ghostPulse = 0.5 + Math.sin(ghostT * 2.5) * 0.5; // 0..1
+            engine._ghostMesh.material.opacity = 0.12 + ghostPulse * 0.14;
+            var ghostScale = 1 + ghostPulse * 0.02;
+            engine._ghostMesh.scale.set(ghostScale, ghostScale, ghostScale);
           } else {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
           }
@@ -3617,17 +3627,20 @@
                 var lp = wm.userData.gridPos;
                 wm.material.emissiveIntensity = 0.5 + Math.sin(wt * 1.2 + lp.x * 0.5 + lp.z * 0.3) * 0.25;
               } else if (wm && wm.userData.blockType === 'diamond') {
-                // Diamond: periodic sparkle particles (1 in 200 chance per frame per block)
-                if (Math.random() < 0.005) {
+                // Diamond: periodic sparkle particles. Bumped from 0.005 (~1/3s) to 0.015 (~1/s)
+                // and added an occasional white-hot flash for a shinier crystal feel.
+                if (Math.random() < 0.015) {
                   var dp = wm.userData.gridPos;
                   var THREE2 = window.THREE;
                   if (THREE2) {
-                    var sparkGeo = new THREE2.BoxGeometry(0.06, 0.06, 0.06);
-                    var sparkMat = new THREE2.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.9 });
+                    var sparkSize = 0.05 + Math.random() * 0.04;
+                    var sparkGeo = new THREE2.BoxGeometry(sparkSize, sparkSize, sparkSize);
+                    var sparkColor = Math.random() < 0.2 ? 0xffffff : 0x00ffff;
+                    var sparkMat = new THREE2.MeshBasicMaterial({ color: sparkColor, transparent: true, opacity: 0.9 });
                     var spark = new THREE2.Mesh(sparkGeo, sparkMat);
                     spark.position.set(dp.x + Math.random(), dp.y + Math.random(), dp.z + Math.random());
-                    spark.userData._age = 0; spark.userData._life = 0.6;
-                    spark.userData._vel = { x: (Math.random() - 0.5) * 2, y: 1.5 + Math.random(), z: (Math.random() - 0.5) * 2 };
+                    spark.userData._age = 0; spark.userData._life = 0.55 + Math.random() * 0.25;
+                    spark.userData._vel = { x: (Math.random() - 0.5) * 2, y: 1.2 + Math.random() * 1.2, z: (Math.random() - 0.5) * 2 };
                     engine.scene.add(spark);
                     engine._particles.push(spark);
                   }
@@ -4965,6 +4978,17 @@
 
         // (Block palette hotbar already exists at bottom-center further below — line ~5060)
 
+        // ── Cinematic vignette overlay ──
+        // Subtle radial darkening at the frame edges draws the eye to the center of the
+        // view. Pure DOM, pointer-events: none, so it has zero effect on WebGL perf or
+        // input handling. z-index 4 keeps it below the compass (5) and HUD (20).
+        worldActive && el('div', {
+          'aria-hidden': 'true',
+          style: { position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.28) 100%)',
+            mixBlendMode: 'multiply' }
+        }),
+
         // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
         // Lets students instantly dismiss all overlays and return to the 3D world.
         // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
@@ -5469,11 +5493,13 @@
               border: '1px solid ' + (engine._coordAnnounce ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.2)') }
           }, engine._coordAnnounce ? '\uD83D\uDD0A SR ON' : '\uD83D\uDD07 SR OFF')
         ),
-        // ── Mode indicators (fly, grid) ──
+        // ── Unified action bar (mode toggles, undo/redo, world actions) ──
+        // All pills live in one wrapping flex row so they align regardless of which are
+        // visible, and wrap gracefully on narrow viewports instead of colliding.
         engine && el('div', {
-          style: { position: 'absolute', bottom: '10px', left: '130px', zIndex: 20, display: 'flex', gap: '4px' }
+          style: { position: 'absolute', bottom: '10px', left: '130px', right: '120px', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }
         },
-          // Fly mode toggle (always visible as a button)
+          // Fly mode toggle (always visible)
           el('button', {
             onClick: function() {
               var eng = window[engineKey];
@@ -5482,38 +5508,33 @@
               if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
             },
             title: 'Toggle fly mode (or double-tap Space)',
-            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#64748b', fontWeight: 600, cursor: 'pointer' }
+            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#64748b', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
           }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
-          engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600 } }, '\uD83D\uDCCF GRID')
-        ),
-        // ── Undo/Redo indicator ──
-        engine && (engine._undoStack && engine._undoStack.length > 0 || engine._redoStack && engine._redoStack.length > 0) && el('div', {
-          style: { position: 'absolute', bottom: '10px', left: '220px', zIndex: 20, display: 'flex', gap: '4px', alignItems: 'center' }
-        },
+          engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
+          // Undo — conditional
           engine._undoStack && engine._undoStack.length > 0 && el('div', {
-            style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer' },
+            style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.undo) engine.undo(); },
             title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
           }, '\u21A9 ' + engine._undoStack.length),
+          // Redo — conditional
           engine._redoStack && engine._redoStack.length > 0 && el('div', {
-            style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer' },
+            style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
           }, '\u21AA ' + engine._redoStack.length),
-          // Return to spawn (home)
+          // Home (return to spawn)
           worldActive && el('div', {
-            style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer' },
+            style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
             title: 'Return to spawn point (H)'
           }, '\uD83C\uDFE0 Home'),
-          // (Screenshot button already exists in top toolbar as "📸 Photo" — line ~4347)
           // Clear my blocks
           worldActive && el('div', {
-            style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer' },
+            style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() {
               if (!engine || !engine.clearPlayerBlocks) return;
               var count = 0;
-              // Count first for confirm message
               Object.keys(engine.blocks || {}).forEach(function(k) {
                 var m = engine.blocks[k];
                 if (m && m.userData && !m.userData._lessonBlock) count++;
@@ -5524,7 +5545,7 @@
               }
               if (window.confirm('Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.')) {
                 var cleared = engine.clearPlayerBlocks();
-                upd('blocksPlaced', 0); // keep React state in sync after bulk clear
+                upd('blocksPlaced', 0);
                 if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
               }
             },
