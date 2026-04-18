@@ -201,6 +201,7 @@ var createContentEngine = function(deps) {
       selectedFont, includeSourceCitations,
       interactionMode, revisionData, standardsPromptString,
       ai, webSearchProvider,
+      selectedVoice, voiceSpeed,
       setActiveView, setConceptInput, setError, setGeneratedContent,
       setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
       setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
@@ -213,6 +214,7 @@ var createContentEngine = function(deps) {
   var isPlayingRef = { current: false };
   var isSystemAudioActiveRef = { current: false };
   var currentAudioRef = { current: null };
+  var _phonicsReqId = 0;
   _bindState = function() {
     var s = _s();
     inputText = s.inputText; gradeLevel = s.gradeLevel;
@@ -235,6 +237,8 @@ var createContentEngine = function(deps) {
     standardsPromptString = s.standardsPromptString || '';
     ai = s.ai || null;
     webSearchProvider = s.webSearchProvider || null;
+    selectedVoice = s.selectedVoice || 'Puck';
+    voiceSpeed = s.voiceSpeed || 1;
     alloBotRef = s.alloBotRef || { current: null };
     isBotVisible = s.isBotVisible || false;
     isPlayingRef = s.isPlayingRef || { current: false };
@@ -1183,6 +1187,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
       if (!word) return;
       if (e) e.stopPropagation();
+      const reqId = ++_phonicsReqId;
       setPhonicsData({
           word,
           data: null,
@@ -1193,29 +1198,42 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       try {
           const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
           const result = await callGemini(prompt, true);
+          if (reqId !== _phonicsReqId) return;
           let data;
           try {
               data = JSON.parse(cleanJson(result));
           } catch (jsonError) {
               warnLog("Phonics JSON Parse Error:", jsonError);
+              if (reqId !== _phonicsReqId) return;
               setPhonicsData(null);
               addToast(t('toasts.phonics_parse_failed'), "error");
               return;
           }
-          const audioUrl = await callTTS(word, selectedVoice);
-          if (audioUrl) {
-              const audio = new Audio(audioUrl);
-              audio.playbackRate = voiceSpeed;
-              await audio.play();
-          }
-          setPhonicsData(prev => ({
+          setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
               ...prev,
               data: data,
-              audioUrl: audioUrl,
               isLoading: false
-          }));
+          } : prev));
+          try {
+              const audioUrl = await callTTS(word, selectedVoice);
+              if (reqId !== _phonicsReqId) return;
+              if (audioUrl) {
+                  const audio = new Audio(audioUrl);
+                  audio.playbackRate = voiceSpeed;
+                  await audio.play();
+                  if (reqId !== _phonicsReqId) return;
+                  setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
+                      ...prev,
+                      audioUrl: audioUrl
+                  } : prev));
+              }
+          } catch (audioError) {
+              warnLog("Phonics audio error:", audioError);
+              if (reqId === _phonicsReqId) addToast(t('toasts.phonics_audio_failed'), "error");
+          }
       } catch (error) {
           warnLog("Phonics Error:", error);
+          if (reqId !== _phonicsReqId) return;
           addToast(t('toasts.phonics_analyze_failed'), "error");
           setPhonicsData(null);
       }
