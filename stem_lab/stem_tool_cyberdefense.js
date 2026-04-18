@@ -130,6 +130,7 @@
           var warRoomHintsUsed = d.warRoomHintsUsed || 0;
           var warRoomHintRevealed = d.warRoomHintRevealed || false;
           var warRoomGlossaryOpen = d.warRoomGlossaryOpen || false;
+          var warRoomAICardLoading = d.warRoomAICardLoading || false;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -585,6 +586,30 @@
           // SOC WAR ROOM — Red Team / Blue Team Simulation
           // ══════════════════════════════════════════════════════════════
 
+          // ── Glossary of cybersecurity terms used in the War Room ──
+          var warGlossary = [
+            { term: 'SOC', defn: 'Security Operations Center \u2014 the team (or single analyst) watching security alerts and responding to incidents.' },
+            { term: 'IOC', defn: 'Indicator of Compromise \u2014 a piece of forensic evidence (a hash, IP, filename, behavior) that points to an intrusion.' },
+            { term: 'TTP', defn: 'Tactics, Techniques, and Procedures \u2014 how an adversary operates. Defenders study TTPs to anticipate the next move.' },
+            { term: 'C2', defn: 'Command and Control \u2014 the channel a compromised host uses to receive instructions from the attacker.' },
+            { term: 'EDR', defn: 'Endpoint Detection and Response \u2014 security software on laptops/servers that spots and stops suspicious behavior.' },
+            { term: 'CVE', defn: 'Common Vulnerabilities and Exposures \u2014 the catalog of publicly known software flaws. Each has a CVE-YYYY-NNNNN ID.' },
+            { term: 'MFA', defn: 'Multi-Factor Authentication \u2014 logging in with something you know (password) plus something you have (phone code, security key).' },
+            { term: 'SSO', defn: 'Single Sign-On \u2014 one login that works across many apps. Convenient but a juicy target if stolen.' },
+            { term: 'BEC', defn: 'Business Email Compromise \u2014 attackers impersonate an executive to trick staff into wiring money or sharing data.' },
+            { term: 'OAuth', defn: 'A protocol that lets one app get permission to use another on your behalf (e.g., "sign in with Google"). Abused via rogue consent apps.' },
+            { term: 'OSINT', defn: 'Open-Source Intelligence \u2014 information gathered from public sources like LinkedIn, news, social media.' },
+            { term: 'DNS Tunneling', defn: 'Smuggling data inside DNS queries. Looks like normal name lookups but carries commands or exfiltrated data.' },
+            { term: 'Spear Phish', defn: 'A phishing email personalized to a specific target \u2014 uses their name, role, or recent activity to feel legitimate.' },
+            { term: 'Smishing', defn: 'Phishing via SMS text messages.' },
+            { term: 'Vishing', defn: 'Phishing via voice calls (voice + phishing).' },
+            { term: 'Kill Chain', defn: 'A model of the stages an intrusion passes through: recon, delivery, exploit, persist, C2, objectives. Stopping it at any stage breaks the attack.' },
+            { term: 'Macro', defn: 'Code embedded in an Office document (Word, Excel). Malicious macros run on open to drop malware.' },
+            { term: 'Scheduled Task', defn: 'A Windows feature that runs a program on a schedule. Attackers abuse it to re-launch malware after reboots.' },
+            { term: 'Typo-Squat', defn: 'Registering a look-alike domain (e.g. rnicrosoft.com) to trick users into thinking it\'s the real site.' },
+            { term: 'Living Off The Land', defn: 'Using built-in OS tools (PowerShell, schtasks, certutil) to avoid dropping detectable malware.' }
+          ];
+
           var warStages = [
             { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: '#64748b' },
             { num: 2, id: 'delivery',    name: 'Weaponization/Delivery', icon: '\uD83D\uDCE8', color: '#f59e0b' },
@@ -635,15 +660,15 @@
 
           // ── Blue Team card library ──
           var blueTeamCards = [
-            { id: 'investigate',      label: 'Investigate Alert',   icon: '\uD83D\uDD0E', cost: 1, description: 'Read deeper into an alert. Reveals whether a signal is real or noise, and highlights the active attack step.' },
-            { id: 'block_ip',         label: 'Block Sender/IP',     icon: '\uD83D\uDEAB', cost: 1, description: 'Block a sender domain or IP at the perimeter. Strong vs delivery and C2 traffic.' },
-            { id: 'reset_credential', label: 'Reset Credential',    icon: '\uD83D\uDD10', cost: 1, description: 'Force password reset and kill active sessions. Neutralizes credential theft and rogue app tokens.' },
-            { id: 'patch',            label: 'Emergency Patch',     icon: '\uD83E\uDDF0', cost: 2, description: 'Apply a known security update. Prevents exploitation of unpatched systems.' },
-            { id: 'isolate_host',     label: 'Isolate Endpoint',    icon: '\uD83E\uDDF1', cost: 2, description: 'Network-quarantine a suspicious host. Strong vs lateral movement, persistence, and C2.' },
-            { id: 'awareness_blast',  label: 'User Awareness Blast',icon: '\uD83D\uDCE3', cost: 1, description: 'Urgent notice to staff about an active campaign. Reduces human-factor attack success.' },
-            { id: 'deploy_edr',       label: 'Deploy EDR Rule',     icon: '\uD83D\uDEE1\uFE0F', cost: 2, description: 'Push a detection rule to endpoints. Excellent against execution and persistence.' },
-            { id: 'hunt_iocs',        label: 'Hunt for IOCs',       icon: '\uD83E\uDDEC', cost: 2, description: 'Proactive threat hunt across logs. Surfaces indicators early — especially strong in recon and C2.' },
-            { id: 'escalate',         label: 'Escalate to CISO',    icon: '\uD83D\uDEA8', cost: 3, description: 'Pull the emergency brake. Once per campaign. Major impact on late-stage attacks.' }
+            { id: 'investigate',      label: 'Investigate Alert',   icon: '\uD83D\uDD0E', cost: 1, category: 'Analysis',              description: 'Read deeper into an alert. Reveals whether a signal is real or noise, and highlights the active attack step.' },
+            { id: 'block_ip',         label: 'Block Sender/IP',     icon: '\uD83D\uDEAB', cost: 1, category: 'Perimeter',             description: 'Block a sender domain or IP at the perimeter. Strong vs delivery and C2 traffic.' },
+            { id: 'reset_credential', label: 'Reset Credential',    icon: '\uD83D\uDD10', cost: 1, category: 'Identity',              description: 'Force password reset and kill active sessions. Neutralizes credential theft and rogue app tokens.' },
+            { id: 'patch',            label: 'Emergency Patch',     icon: '\uD83E\uDDF0', cost: 2, category: 'Vulnerability mgmt',    description: 'Apply a known security update. Prevents exploitation of unpatched systems.' },
+            { id: 'isolate_host',     label: 'Isolate Endpoint',    icon: '\uD83E\uDDF1', cost: 2, category: 'Containment',           description: 'Network-quarantine a suspicious host. Strong vs lateral movement, persistence, and C2.' },
+            { id: 'awareness_blast',  label: 'User Awareness Blast',icon: '\uD83D\uDCE3', cost: 1, category: 'Human layer',           description: 'Urgent notice to staff about an active campaign. Reduces human-factor attack success.' },
+            { id: 'deploy_edr',       label: 'Deploy EDR Rule',     icon: '\uD83D\uDEE1\uFE0F', cost: 2, category: 'Endpoint',         description: 'Push a detection rule to endpoints. Excellent against execution and persistence.' },
+            { id: 'hunt_iocs',        label: 'Hunt for IOCs',       icon: '\uD83E\uDDEC', cost: 2, category: 'Threat hunting',        description: 'Proactive threat hunt across logs. Surfaces indicators early — especially strong in recon and C2.' },
+            { id: 'escalate',         label: 'Escalate to CISO',    icon: '\uD83D\uDEA8', cost: 3, category: 'Crisis management',     description: 'Pull the emergency brake. Once per campaign. Major impact on late-stage attacks.' }
           ];
 
           // ── Campaign themes — bias the red team's card pool ──
@@ -829,6 +854,85 @@
             upd(updates);
             sfxCyberdClick();
             if (ctx.announceToSR) ctx.announceToSR('Played ' + card.label + '. Budget: ' + (warRoomBudget - card.cost) + '.');
+          }
+
+          // ── Request a hint (costs 1 budget, reveals the ideal play's CATEGORY without naming the card) ──
+          function requestHint() {
+            if (warRoomHintRevealed || warRoomRoundResolved) return;
+            if (warRoomBudget < 1) { if (ctx.addToast) ctx.addToast('Not enough budget for a hint', 'info'); return; }
+            upd({
+              warRoomHintRevealed: true,
+              warRoomHintsUsed: warRoomHintsUsed + 1,
+              warRoomBudget: warRoomBudget - 1
+            });
+            sfxCyberdClick();
+            if (ctx.announceToSR) ctx.announceToSR('Hint revealed.');
+          }
+
+          // ── Generate a fresh red team card for the current stage using Gemini ──
+          function generateAIRedCard() {
+            if (warRoomAICardLoading || warRoomRoundResolved || warRoomBluePlays.length > 0) return;
+            if (!ctx.callGemini) {
+              if (ctx.addToast) ctx.addToast('AI unavailable \u2014 keeping current scenario', 'info');
+              return;
+            }
+            upd('warRoomAICardLoading', true);
+            var stageObj = warStages[warRoomRound - 1];
+            var blueIds = blueTeamCards.map(function(c) { return c.id; });
+            var themeLabel = campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].label : 'Mixed';
+            var prompt = 'You are designing a Red Team card for a SOC training simulation. Generate a realistic but abstracted attack scenario. ' +
+              'Stage: ' + stageObj.name + ' (' + stageObj.id + '). Campaign theme: ' + themeLabel + '. Difficulty: ' + warRoomDifficulty + '.\n\n' +
+              'Valid blue team card IDs (pick 1-3 for the mitigations map): ' + blueIds.join(', ') + '.\n' +
+              'Categorize each by how well it would stop this attack: 1.0 = fully mitigates, 0.6 = partial (detect/degrade), 0.3 = minor help.\n\n' +
+              'Return ONLY valid JSON with this exact structure:\n' +
+              '{"id":"ai_<short_unique>","stage":"' + stageObj.id + '","title":"<10-word attack name>","description":"<1-2 sentence plain-English description>",' +
+              '"indicators":["<real IOC 1>","<real IOC 2>"],"noiseIndicators":["<red-herring signal 1>"],' +
+              '"mitigations":{"<blue_id>":1.0,"<blue_id>":0.6},"impact":{"users":<0-3>,"servers":<0-3>,"data":<0-30>}}\n\n' +
+              'Rules:\n' +
+              '- Title: punchy, concrete. E.g. "Spear phish Legal with fake subpoena PDF".\n' +
+              '- description: plain, no jargon overload. Suitable for a K-12 student analyst.\n' +
+              '- 1-3 real indicators, 0-2 noise indicators.\n' +
+              '- Mitigations keys MUST be from the valid ID list above.\n' +
+              '- impact.data cap at 30 unless actions stage.\n' +
+              '- Avoid reusing these titles: ' + (warRoomKillChain.map(function(h) { return h.red.title; }).join('; ') || 'none') + '.';
+
+            ctx.callGemini(prompt, true, false, 0.85).then(function(response) {
+              try {
+                var parsed = typeof response === 'string' ? JSON.parse(response) : response;
+                // Validate
+                if (parsed && parsed.title && parsed.description && parsed.mitigations && typeof parsed.mitigations === 'object') {
+                  // Sanitize mitigations: drop any keys not in blueIds
+                  var cleanMit = {};
+                  Object.keys(parsed.mitigations).forEach(function(k) {
+                    if (blueIds.indexOf(k) !== -1) cleanMit[k] = Math.max(0, Math.min(1, Number(parsed.mitigations[k]) || 0));
+                  });
+                  if (Object.keys(cleanMit).length === 0) throw new Error('no valid mitigations');
+                  parsed.mitigations = cleanMit;
+                  parsed.stage = stageObj.id;
+                  parsed.id = parsed.id || ('ai_' + Date.now());
+                  parsed.indicators = Array.isArray(parsed.indicators) ? parsed.indicators : [];
+                  parsed.noiseIndicators = Array.isArray(parsed.noiseIndicators) ? parsed.noiseIndicators : [];
+                  parsed.impact = parsed.impact || {};
+                  parsed._aiGenerated = true;
+                  var newAlerts = generateAlerts(parsed, warRoomDifficulty);
+                  upd({
+                    warRoomRedAction: parsed,
+                    warRoomAlerts: newAlerts,
+                    warRoomAlertsSeen: [],
+                    warRoomAICardLoading: false,
+                    warRoomHintRevealed: false
+                  });
+                  if (ctx.addToast) ctx.addToast('\uD83E\uDD16 New AI scenario generated', 'info');
+                  if (ctx.announceToSR) ctx.announceToSR('AI generated a new red team card: ' + parsed.title);
+                  return;
+                }
+              } catch (e) { /* fall through */ }
+              upd('warRoomAICardLoading', false);
+              if (ctx.addToast) ctx.addToast('AI generation failed \u2014 keeping current scenario', 'info');
+            }).catch(function() {
+              upd('warRoomAICardLoading', false);
+              if (ctx.addToast) ctx.addToast('AI generation failed \u2014 keeping current scenario', 'info');
+            });
           }
 
           // ── Find the "ideal plays" for a red card (cards with mitigation >= 1.0) ──
@@ -1593,6 +1697,24 @@
               // ======= SOC WAR ROOM (red team / blue team simulation) =======
               cyberTab === 'warroom' && el('div', { style: { maxWidth: 960, margin: '0 auto' } },
 
+                // Floating glossary toggle (always visible in War Room)
+                el('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 8 } },
+                  el('button', { onClick: function() { upd('warRoomGlossaryOpen', !warRoomGlossaryOpen); sfxCyberdClick(); },
+                    'aria-expanded': warRoomGlossaryOpen, 'aria-controls': 'warroom-glossary-panel',
+                    style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: warRoomGlossaryOpen ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                    (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary')
+                ),
+                warRoomGlossaryOpen && el('div', { id: 'warroom-glossary-panel', role: 'region', 'aria-label': 'Cybersecurity glossary',
+                  style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 14, maxHeight: 280, overflowY: 'auto' } },
+                  el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83D\uDCD6 GLOSSARY'),
+                  warGlossary.map(function(g) {
+                    return el('div', { key: g.term, style: { padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' } },
+                      el('span', { style: { color: '#fca5a5', fontSize: 12, fontWeight: 800, marginRight: 8 } }, g.term),
+                      el('span', { style: { color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, g.defn)
+                    );
+                  })
+                ),
+
                 // Start screen — no active campaign
                 !warRoomActive && el('div', { style: { padding: '20px 8px' } },
                   el('div', { style: { textAlign: 'center', marginBottom: 20 } },
@@ -1798,7 +1920,14 @@
                       el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(220,38,38,0.04))', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
                           el('span', { style: { fontSize: 11, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 8px', borderRadius: 4, letterSpacing: 0.5 } }, 'RED TEAM'),
-                          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, warRoomCurrentStage.name)
+                          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, warRoomCurrentStage.name),
+                          warRoomRedAction && warRoomRedAction._aiGenerated && el('span', { style: { fontSize: 9, fontWeight: 800, color: '#a5b4fc', background: 'rgba(99,102,241,0.2)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3 } }, '\uD83E\uDD16 AI'),
+                          ctx.callGemini && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', {
+                            onClick: generateAIRedCard, disabled: warRoomAICardLoading,
+                            'aria-label': 'Generate a new AI red team scenario',
+                            title: 'Ask the AI to generate a fresh scenario for this stage. Only available before playing any defenses.',
+                            style: { marginLeft: 'auto', padding: '3px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: warRoomAICardLoading ? 'rgba(99,102,241,0.35)' : 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 700, cursor: warRoomAICardLoading ? 'wait' : 'pointer' } },
+                            warRoomAICardLoading ? '\u23F3' : '\uD83E\uDD16 Replace')
                         ),
                         el('div', { style: { fontSize: 15, fontWeight: 800, color: '#fecaca', marginBottom: 6 } }, warRoomRedAction && warRoomRedAction.title),
                         el('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } }, warRoomRedAction && warRoomRedAction.description)
@@ -1860,6 +1989,24 @@
                           el('div', { style: { fontSize: 10.5, color: played ? '#86efac' : '#94a3b8', lineHeight: 1.4 } }, card.description)
                         );
                       }),
+                      // Hint button (costs 1 budget, once per round, reveals category of ideal play)
+                      el('div', { style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(234,179,8,0.06)', border: '1px dashed rgba(234,179,8,0.3)' } },
+                        !warRoomHintRevealed && el('button', { onClick: requestHint, disabled: warRoomRoundResolved || warRoomBudget < 1,
+                          'aria-label': 'Request a hint for 1 budget',
+                          style: { width: '100%', padding: '8px 12px', borderRadius: 6, border: 'none', background: 'rgba(234,179,8,0.18)', color: '#fbbf24', fontSize: 11, fontWeight: 700, cursor: warRoomBudget < 1 ? 'not-allowed' : 'pointer', opacity: warRoomBudget < 1 ? 0.55 : 1 } },
+                          '\uD83D\uDCA1 Request Hint (\u2212 1 budget)'),
+                        warRoomHintRevealed && (function() {
+                          var ideals = idealPlaysFor(warRoomRedAction);
+                          if (ideals.length === 0) return el('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'No ideal play this round \u2014 any detection helps.');
+                          var cats = {};
+                          ideals.forEach(function(c) { cats[c.category] = true; });
+                          var catList = Object.keys(cats).join(' or ');
+                          return el('div', null,
+                            el('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, marginBottom: 3 } }, '\uD83D\uDCA1 HINT'),
+                            el('div', { style: { fontSize: 11.5, color: '#fde68a', lineHeight: 1.5 } }, 'The ideal defense this round falls in the ', el('strong', null, catList), ' category.')
+                          );
+                        })()
+                      ),
                       // Resolve button
                       el('button', { onClick: resolveCurrentRound, disabled: warRoomRoundResolved || warRoomBluePlays.length === 0,
                         'aria-label': 'Resolve round ' + warRoomRound,

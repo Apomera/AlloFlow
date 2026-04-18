@@ -5576,12 +5576,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Normal mode: rare, checked once per second
             if (!spawn) spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
             if (spawn) {
+              // Spawn the emergency vehicle in the player's lane on the spline at +15..+23m
+              // BEHIND them. Previously the X was just car.x copied — on curves that placed
+              // it off the road. Now: project player's perp-offset onto the spline at the
+              // emergency vehicle's spawn Y and use the same perp position.
+              var emSpawnY = car.y + 15 + Math.random() * 8;
+              var emSpawnSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              var playerSplineAtCar = emSpawnSpline ? emSpawnSpline.centerAt(car.y) : car.x;
+              var playerThetaAtCar = emSpawnSpline ? emSpawnSpline.headingAt(car.y) : 0;
+              var playerLaneOff = (car.x - playerSplineAtCar) * Math.cos(playerThetaAtCar);
+              var emCenterAtSpawn = emSpawnSpline ? emSpawnSpline.centerAt(emSpawnY) : car.x;
+              var emThetaAtSpawn = emSpawnSpline ? emSpawnSpline.headingAt(emSpawnY) : 0;
+              var emSpawnX = emCenterAtSpawn + playerLaneOff * Math.cos(emThetaAtSpawn) + (Math.random() - 0.5) * 0.5;
+              // Heading should match the spline direction at spawn (so the emergency vehicle
+              // actually faces along the curving road, not pure ±π/2).
+              var emSpawnHeading = car.heading > 0
+                ? (Math.PI / 2 - emThetaAtSpawn)
+                : (-Math.PI / 2 - emThetaAtSpawn);
               emergencyRef.current = {
                 kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
-                // Spawn in the same lane as the player (slightly offset), BEHIND them
-                x: car.x + (Math.random() - 0.5) * 0.5,
-                y: car.y + 15 + Math.random() * 8,
-                heading: car.heading,
+                x: emSpawnX,
+                y: emSpawnY,
+                heading: emSpawnHeading,
                 speed: Math.abs(car.speed) + 12,
                 life: 20,
                 responded: false,
@@ -5615,8 +5631,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             return;
           }
-          // Move emergency vehicle toward player (from behind, fast)
-          em.y -= em.speed * dt / 5;
+          // Move emergency vehicle toward player (from behind, fast). Now spline-aware:
+          // align heading + lane-offset to the spline so the emergency vehicle stays
+          // on the actual road through curves.
+          var emiSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          if (emiSpline) {
+            var emiTheta = emiSpline.headingAt(em.y);
+            var emiCenter = emiSpline.centerAt(em.y);
+            // Direction sign matches sign of sin(em.heading) — spawn used same convention as player.
+            var emiDirSign = em.heading > 0 ? 1 : -1;
+            var emiTargetHeading = emiDirSign === 1
+              ? (Math.PI / 2 - emiTheta)
+              : (-Math.PI / 2 - emiTheta);
+            // Lerp heading
+            var emiDh = emiTargetHeading - em.heading;
+            while (emiDh > Math.PI) emiDh -= 2 * Math.PI;
+            while (emiDh < -Math.PI) emiDh += 2 * Math.PI;
+            em.heading += emiDh * (1 - Math.exp(-dt / 0.3));
+            // Forward motion in current heading
+            em.y += Math.sin(em.heading) * em.speed * dt / 5;
+            em.x += Math.cos(em.heading) * em.speed * dt / 5;
+            // Lateral correction toward player's lane (use car's lane perp-offset)
+            if (em._laneOff === undefined) {
+              var pCenterAtCar = emiSpline.centerAt(carRef.current.y);
+              var pThetaAtCar = emiSpline.headingAt(carRef.current.y);
+              em._laneOff = (carRef.current.x - pCenterAtCar) * Math.cos(pThetaAtCar);
+            }
+            var emiPerpX = Math.cos(emiTheta);
+            var emiPerpY = -Math.sin(emiTheta);
+            var emiCurPerp = (em.x - emiCenter) * emiPerpX;
+            var emiPerpErr = emiCurPerp - em._laneOff;
+            var emiCorr = emiPerpErr * (1 - Math.exp(-dt / 0.25));
+            em.x -= emiCorr * emiPerpX;
+            em.y -= emiCorr * emiPerpY;
+          } else {
+            em.y -= em.speed * dt / 5;
+          }
           em.life -= dt;
           // Siren warble
           try {
