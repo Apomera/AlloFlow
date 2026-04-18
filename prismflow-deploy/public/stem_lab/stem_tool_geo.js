@@ -2022,49 +2022,75 @@ var d = labToolData || {};
 
                   value: d.geoQuizInput || '',
 
+                  disabled: !!d.geoQuizLoading,
+
                   onChange: function(e) { upd('geoQuizInput', e.target.value); },
 
-                  className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
+                  onKeyDown: function(e) { if (e.key === 'Enter' && d.geoQuizInput && !d.geoQuizLoading) { document.activeElement && document.activeElement.blur(); setTimeout(function() { var btn = document.querySelector('[data-geo-quiz-generate]'); if (btn) btn.click(); }, 0); } },
+
+                  className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50'
 
                 }),
 
                 React.createElement('button', {
+
+                  'data-geo-quiz-generate': 'true',
 
                   onClick: function() {
 
                     if (!d.geoQuizInput) return;
 
                     upd('geoQuizLoading', true);
+                    upd('geoQuizQuestions', null);
+                    upd('geoQuizIdx', 0);
+                    upd('geoQuizCorrectCount', 0);
+                    upd('geoQuizAnswer', '');
+                    upd('geoFeedback', null);
 
-                    var prompt = 'Generate 10 geography quiz questions about: ' + d.geoQuizInput + '. Return JSON array: [{"question":"...","answer":"...","hint":"...","fact":"..."}]. Questions should be factual and educational. Return ONLY valid JSON.';
+                    var prompt = 'Generate 10 geography quiz questions about: ' + d.geoQuizInput + '. Return JSON array: [{"question":"...","answer":"...","hint":"...","fact":"..."}]. Keep answers short (1-3 words ideally). Questions should be factual and educational. Return ONLY valid JSON, no markdown fences.';
 
-                    if (typeof callAI === 'function') {
+                    if (typeof callGemini === 'function') {
 
-                      callAI(prompt, function(resp) {
+                      callGemini(prompt, true, false, 0.7).then(function(resp) {
 
                         try {
 
-                          var qs = JSON.parse(resp.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());
+                          var cleaned = String(resp || '').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+                          var qs = JSON.parse(cleaned);
+                          if (!Array.isArray(qs) || qs.length === 0) throw new Error('Not an array');
 
                           upd('geoQuizQuestions', qs);
-
                           upd('geoQuizIdx', 0);
-
+                          upd('geoQuizCorrectCount', 0);
                           upd('geoQuizLoading', false);
+                          if (addToast) addToast('\u2728 ' + qs.length + ' questions ready!', 'success');
 
-                        } catch(e) { upd('geoQuizLoading', false); upd('geoFeedback', { correct: false, msg: 'AI response error. Try again!' }); }
+                        } catch(e) {
+                          upd('geoQuizLoading', false);
+                          if (addToast) addToast('\u26A0 AI response wasn\'t valid JSON. Try a simpler prompt.', 'error');
+                          console.warn('Quiz Builder parse error:', e, resp);
+                        }
+
+                      }).catch(function(err) {
+
+                        upd('geoQuizLoading', false);
+                        if (addToast) addToast('\u26A0 AI request failed. Check your connection.', 'error');
+                        console.warn('Quiz Builder network error:', err);
 
                       });
 
+                    } else {
+                      upd('geoQuizLoading', false);
+                      if (addToast) addToast('\u26A0 AI is not available in this build.', 'error');
                     }
 
                   },
 
-                  disabled: d.geoQuizLoading,
+                  disabled: !!d.geoQuizLoading || !d.geoQuizInput,
 
-                  className: 'px-4 py-2 rounded-lg text-sm font-bold text-white ' + (d.geoQuizLoading ? 'bg-slate-300' : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:shadow-lg')
+                  className: 'px-4 py-2 rounded-lg text-sm font-bold text-white ' + (d.geoQuizLoading ? 'bg-slate-400 cursor-wait' : !d.geoQuizInput ? 'bg-slate-300 cursor-not-allowed' : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:shadow-lg')
 
-                }, d.geoQuizLoading ? '\u23F3' : '\uD83D\uDE80 Generate')
+                }, d.geoQuizLoading ? '\u23F3 Generating\u2026' : '\uD83D\uDE80 Generate')
 
               ),
 
@@ -2089,75 +2115,120 @@ var d = labToolData || {};
               ),
 
               // Display generated quiz
-
               d.geoQuizQuestions && d.geoQuizQuestions.length > 0 && (function() {
 
                 var idx = d.geoQuizIdx || 0;
+                var total = d.geoQuizQuestions.length;
+                var quizCorrectCount = d.geoQuizCorrectCount || 0;
 
-                var q = d.geoQuizQuestions[idx % d.geoQuizQuestions.length];
+                if (idx >= total) {
+                  var pct = Math.round((quizCorrectCount / total) * 100);
+                  var medal = pct >= 90 ? '\uD83E\uDD47' : pct >= 70 ? '\uD83E\uDD48' : pct >= 50 ? '\uD83E\uDD49' : '\uD83C\uDFAF';
+                  return React.createElement('div', { className: 'max-w-md mx-auto bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200 text-center' },
+                    React.createElement('p', { className: 'text-5xl mb-2' }, medal),
+                    React.createElement('h4', { className: 'text-lg font-bold text-slate-800 mb-1' }, 'Quiz complete!'),
+                    React.createElement('p', { className: 'text-sm text-slate-700 mb-4' },
+                      'You got ',
+                      React.createElement('span', { className: 'font-bold text-teal-700' }, quizCorrectCount + ' / ' + total),
+                      ' correct (' + pct + '%).'
+                    ),
+                    React.createElement('div', { className: 'flex gap-2 justify-center' },
+                      React.createElement('button', {
+                        onClick: function() {
+                          upd('geoQuizIdx', 0);
+                          upd('geoQuizCorrectCount', 0);
+                          upd('geoQuizAnswer', '');
+                          upd('geoFeedback', null);
+                        },
+                        className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 shadow'
+                      }, '\uD83D\uDD01 Retake'),
+                      React.createElement('button', {
+                        onClick: function() {
+                          upd('geoQuizQuestions', null);
+                          upd('geoQuizIdx', 0);
+                          upd('geoQuizCorrectCount', 0);
+                          upd('geoQuizAnswer', '');
+                          upd('geoFeedback', null);
+                        },
+                        className: 'px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300'
+                      }, '\u2728 New Quiz')
+                    )
+                  );
+                }
+
+                var q = d.geoQuizQuestions[idx];
+                var answered = !!geoFeedback;
+
+                var norm = function(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
+                function submitAnswer(userAnswer) {
+                  if (answered) return;
+                  var userNorm = norm(userAnswer);
+                  var expectedNorm = norm(q.answer);
+                  if (!userNorm) {
+                    if (addToast) addToast('Type an answer first', 'info');
+                    return;
+                  }
+                  var correct = userNorm === expectedNorm || userNorm.indexOf(expectedNorm) !== -1;
+                  if (correct) {
+                    upd('geoScore', geoScore + 10);
+                    upd('geoQuizCorrectCount', quizCorrectCount + 1);
+                    upd('geoFeedback', { correct: true, msg: '\u2705 Correct! ' + (q.fact || '') });
+                    if (typeof stemBeep === 'function') stemBeep('correct');
+                    if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'AI quiz answer');
+                  } else {
+                    upd('geoFeedback', { correct: false, msg: '\u274C Answer: ' + q.answer + '. ' + (q.fact || '') });
+                    if (typeof stemBeep === 'function') stemBeep('wrong');
+                  }
+                  upd('geoQuizAnswer', '');
+                  setTimeout(function() { upd('geoQuizIdx', idx + 1); upd('geoFeedback', null); }, correct ? 2200 : 3500);
+                }
 
                 return React.createElement('div', { className: 'max-w-md mx-auto bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200' },
 
-                  React.createElement('p', { className: 'text-[11px] text-teal-500 mb-1' }, 'Question ' + (idx + 1) + '/' + d.geoQuizQuestions.length),
+                  React.createElement('div', { className: 'flex justify-between items-center mb-2' },
+                    React.createElement('p', { className: 'text-[11px] text-teal-700 font-bold' }, 'Question ' + (idx + 1) + ' / ' + total),
+                    React.createElement('p', { className: 'text-[11px] text-slate-600' }, '\u2705 ' + quizCorrectCount + ' correct')
+                  ),
+
+                  React.createElement('div', { className: 'h-1.5 bg-white/60 rounded-full overflow-hidden mb-3' },
+                    React.createElement('div', { style: { width: ((idx / total) * 100) + '%', height: '100%', background: '#14b8a6', transition: 'width 0.3s' } })
+                  ),
 
                   React.createElement('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, q.question),
 
                   q.hint && React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
 
+                  answered && React.createElement('div', {
+                    className: 'text-xs font-bold mb-2 p-2 rounded ' + (geoFeedback.correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')
+                  }, geoFeedback.msg),
+
                   React.createElement('div', { className: 'flex gap-2' },
 
                     React.createElement('input', {
-
                       type: 'text',
-
                       placeholder: 'Your answer...',
-
                       'aria-label': 'Quiz answer',
-
                       value: d.geoQuizAnswer || '',
-
+                      disabled: answered,
                       onChange: function(e) { upd('geoQuizAnswer', e.target.value); },
-
-                      onKeyDown: function(e) {
-
-                        if (e.key === 'Enter') {
-
-                          var ans = (d.geoQuizAnswer || '').trim().toLowerCase();
-
-                          var correct = q.answer.toLowerCase().indexOf(ans) !== -1 || ans.indexOf(q.answer.toLowerCase()) !== -1;
-
-                          if (correct) {
-
-                            upd('geoScore', geoScore + 10);
-
-                            upd('geoFeedback', { correct: true, msg: '\u2705 Correct! ' + (q.fact || '') });
-
-                            if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'AI quiz answer');
-
-                          } else {
-
-                            upd('geoFeedback', { correct: false, msg: '\u274C Answer: ' + q.answer + '. ' + (q.fact || '') });
-
-                          }
-
-                          upd('geoQuizAnswer', '');
-
-                          setTimeout(function() { upd('geoQuizIdx', idx + 1); upd('geoFeedback', null); }, 2000);
-
-                        }
-
-                      },
-
-                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
-
+                      onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(d.geoQuizAnswer || ''); },
+                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-500'
                     }),
 
                     React.createElement('button', {
+                      onClick: function() { submitAnswer(d.geoQuizAnswer || ''); },
+                      disabled: answered,
+                      className: 'px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:bg-slate-300'
+                    }, 'Check'),
 
-                      onClick: function() { upd('geoFeedback', { correct: false, msg: 'Answer: ' + q.answer }); setTimeout(function() { upd('geoQuizIdx', idx + 1); upd('geoFeedback', null); }, 2000); },
-
-                      className: 'px-3 py-2 bg-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-300'
-
+                    React.createElement('button', {
+                      onClick: function() {
+                        if (answered) return;
+                        upd('geoFeedback', { correct: false, msg: '\u27A1 Answer: ' + q.answer + '. ' + (q.fact || '') });
+                        setTimeout(function() { upd('geoQuizIdx', idx + 1); upd('geoFeedback', null); }, 2500);
+                      },
+                      disabled: answered,
+                      className: 'px-3 py-2 bg-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-300 disabled:opacity-50'
                     }, 'Skip')
 
                   )

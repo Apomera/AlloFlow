@@ -9708,6 +9708,12 @@ tr { page-break-inside: avoid; }
     }
     const restored = [];
     const usedSentenceIndices = new Set();
+    // Orphan tracking: source-sentence indices whose anchor-match failed, and which missing words
+    // map to which sentence. Populated during the main loop; drained into a single end-of-doc
+    // "Preserved source content" section after the loop so nothing silently falls through to the
+    // orange Content Recovery appendix as orphan-word bullets.
+    const orphanSentenceIndices = new Set();
+    const orphanByWord = [];
     for (const m of missingList) {
       const raw = m && m.word ? String(m.word).toLowerCase() : '';
       if (!raw) continue;
@@ -9721,25 +9727,51 @@ tr { page-break-inside: avoid; }
       }
       if (sentIdx === -1) continue;
       const targetSentence = sourceSentences[sentIdx];
-      // Anchor: prefer previous sentence, fall back to following sentence, then the target itself.
+      // Anchor candidates: preceding and following source sentences only. Target-as-anchor was
+      // removed because it trivially matches itself when the sentence content is already partially
+      // present in the doc (e.g. heading "Conclusion" + body "Our planet…" caused a duplicate
+      // "Conclusion Our planet is seven-tenths ocean." paragraph to be inserted).
       const anchorCandidates = [];
       if (sentIdx > 0) anchorCandidates.push(sourceSentences[sentIdx - 1]);
       if (sentIdx + 1 < sourceSentences.length) anchorCandidates.push(sourceSentences[sentIdx + 1]);
-      anchorCandidates.push(targetSentence);
-      let bestBlock = null;
-      let bestScore = 0;
-      for (const anchor of anchorCandidates) {
-        const anchorWords = wordSet(anchor);
-        if (anchorWords.size < 3) continue;
-        for (const b of blocks) {
-          let common = 0;
-          anchorWords.forEach(w => { if (b.words.has(w)) common++; });
-          const score = common / anchorWords.size;
-          if (score > bestScore) { bestScore = score; bestBlock = b; }
+      // Two-tier threshold: 0.6 first pass over all candidates, 0.4 fallback. Catches cases where
+      // both neighbors were heavily paraphrased but still share distinctive vocabulary.
+      const pickBest = (minScore) => {
+        let best = null, bestSc = 0;
+        for (const anchor of anchorCandidates) {
+          const anchorWords = wordSet(anchor);
+          if (anchorWords.size < 3) continue;
+          for (const b of blocks) {
+            let common = 0;
+            anchorWords.forEach(w => { if (b.words.has(w)) common++; });
+            const score = common / anchorWords.size;
+            if (score > bestSc) { bestSc = score; best = b; }
+          }
         }
-        if (bestScore >= 0.6) break;
+        return bestSc >= minScore ? { block: best, score: bestSc } : null;
+      };
+      const matched = pickBest(0.6) || pickBest(0.4);
+      if (!matched) {
+        orphanSentenceIndices.add(sentIdx);
+        orphanByWord.push({ word: m.word, sentIdx });
+        continue;
       }
-      if (!bestBlock || bestScore < 0.6) continue;
+      const bestBlock = matched.block;
+      const bestScore = matched.score;
+      // Duplicate guard: if the target sentence's distinctive content words (length >= 5) are
+      // already ≥60% present in the matched block's text, skip the insertion — the sentence is
+      // already substantively there, just counted differently by the tokenizer.
+      const targetContentWords = normalize(targetSentence).split(' ').filter(w => w.length >= 5).slice(0, 6);
+      if (targetContentWords.length >= 3) {
+        const blockText = normalize(bestBlock.el.textContent || '');
+        let matchedCount = 0;
+        targetContentWords.forEach(w => { if (blockText.indexOf(w) !== -1) matchedCount++; });
+        if (matchedCount / targetContentWords.length >= 0.6) {
+          usedSentenceIndices.add(sentIdx);
+          restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100, alreadyPresent: true });
+          continue;
+        }
+      }
       const newP = doc.createElement('p');
       newP.setAttribute('data-source-restored', 'true');
       newP.textContent = targetSentence;
@@ -9750,6 +9782,37 @@ tr { page-break-inside: avoid; }
         // Refresh the inserted block's word set so subsequent anchors can match it if needed
         blocks.push({ el: newP, words: wordSet(targetSentence) });
       }
+    }
+    // End-of-doc "Preserved source content" section for sentences that failed to anchor. Groups
+    // orphan sentences into one section inserted just before </main> so related missing words
+    // (typically clustered in one heavily-paraphrased source sentence) appear as integrated prose
+    // rather than 5 orphan-word bullets in Stage C's appendix.
+    if (orphanSentenceIndices.size > 0) {
+      const orphanIdxSorted = Array.from(orphanSentenceIndices).sort((a, b) => a - b);
+      const section = doc.createElement('section');
+      section.setAttribute('data-source-preserved-block', 'true');
+      section.setAttribute('aria-label', 'Preserved source content');
+      section.setAttribute('style', 'margin-top:2em;padding:1em;border-top:2px solid #f59e0b;background:#fffbeb;border-radius:8px');
+      const h = doc.createElement('h2');
+      h.textContent = 'Preserved source content';
+      h.setAttribute('style', 'color:#b45309;font-size:1.1em;margin-top:0');
+      section.appendChild(h);
+      const lead = doc.createElement('p');
+      lead.textContent = 'These sentences from the source document could not be anchored to a specific location during remediation. They appear here so no content is lost — move them inline if needed.';
+      lead.setAttribute('style', 'color:#78350f;font-size:0.9em');
+      section.appendChild(lead);
+      orphanIdxSorted.forEach(i => {
+        const p = doc.createElement('p');
+        p.setAttribute('data-source-restored', 'true');
+        p.textContent = sourceSentences[i];
+        section.appendChild(p);
+      });
+      const main = body.querySelector('main');
+      if (main) main.appendChild(section);
+      else body.appendChild(section);
+      orphanByWord.forEach(o => {
+        restored.push({ word: o.word, sentence: sourceSentences[o.sentIdx], anchorScore: 0, viaPreservedSection: true });
+      });
     }
     if (restored.length === 0) {
       return { html, stillMissing: missingList, restoredViaSentence: [] };

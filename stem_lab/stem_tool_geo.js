@@ -798,7 +798,18 @@ var d = labToolData || {};
 
           function initMap(container) {
 
-            if (!container || !window.L || mapRef.current) return;
+            if (!container || !window.L) return;
+
+            // If the stored map is attached to a DIFFERENT (detached) container — e.g.
+            // the user tab-switched away and back — tear it down before making a new one.
+            if (mapRef.current) {
+              var sameContainer = typeof mapRef.current.getContainer === 'function' && mapRef.current.getContainer() === container;
+              if (sameContainer) return; // still live, reuse
+              try { mapRef.current.remove(); } catch(e) {}
+              mapRef.current = null;
+              if (window._geoGeoJsonLayer) window._geoGeoJsonLayer.current = null;
+              window._geoLastZoomedRegion = null; // force re-zoom on the new map instance
+            }
 
             var map = window.L.map(container, {
               worldCopyJump: false,
@@ -809,7 +820,7 @@ var d = labToolData || {};
 
             window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 
-              attribution: '\u00a9 OpenStreetMap \u00a9 CARTO', maxZoom: 18, noWrap: true, noWrap: true
+              attribution: '\u00a9 OpenStreetMap \u00a9 CARTO', maxZoom: 18, noWrap: true
 
             }).addTo(map);
 
@@ -959,7 +970,14 @@ var d = labToolData || {};
 
           function initGlobe(container) {
 
-            if (!container || !window._GlobeGLConstructor || globeRef.current) return;
+            if (!container || !window._GlobeGLConstructor) return;
+
+            // Stamp the container element itself — if the same DOM node is still here
+            // we skip re-init, but when the tab unmounts and a fresh node comes back
+            // there's no stamp, so we do re-init and get a working globe.
+            if (container._geoGlobeInit) return;
+            container._geoGlobeInit = true;
+            globeRef.current = null; // drop any stale reference from an earlier mount
 
             var globe = window._GlobeGLConstructor()(container)
 
@@ -1403,7 +1421,7 @@ var d = labToolData || {};
 
               React.createElement('div', {
 
-                ref: function(el) { if (el && window.L && !mapRef.current) initMap(el); },
+                ref: function(el) { if (el && window.L) initMap(el); },
 
                 style: { height: '100%', minHeight: 400, maxHeight: 'calc(100vh - 200px)', width: '100%', background: '#1a202c' },
 
@@ -1457,7 +1475,8 @@ var d = labToolData || {};
                     if (!window._geoCapitalMapRef) window._geoCapitalMapRef = { current: null, iso: '', answered: false };
                     var cmRef = window._geoCapitalMapRef;
                     var answered = !!geoFeedback;
-                    if (cmRef.current && cmRef.iso === geoTarget.iso && cmRef.answered === answered) return;
+                    var sameContainer = cmRef.current && typeof cmRef.current.getContainer === 'function' && cmRef.current.getContainer() === el;
+                    if (sameContainer && cmRef.iso === geoTarget.iso && cmRef.answered === answered) return;
                     if (cmRef.current) { try { cmRef.current.remove(); } catch(e) {} cmRef.current = null; }
                     el.innerHTML = '';
                     setTimeout(function() {
@@ -1581,7 +1600,11 @@ var d = labToolData || {};
                     if (!window._geoContinentMapRef) window._geoContinentMapRef = { current: null, iso: '', answered: false };
                     var cmRef = window._geoContinentMapRef;
                     var answered = !!geoFeedback;
-                    if (cmRef.current && cmRef.iso === geoTarget.iso && cmRef.answered === answered) return;
+                    // Skip rebuild only if state AND the container DOM node are the same.
+                    // Checking the container guards against stale maps attached to an
+                    // unmounted DOM node after the user tab-switched away and back.
+                    var sameContainer = cmRef.current && typeof cmRef.current.getContainer === 'function' && cmRef.current.getContainer() === el;
+                    if (sameContainer && cmRef.iso === geoTarget.iso && cmRef.answered === answered) return;
                     if (cmRef.current) { try { cmRef.current.remove(); } catch(e) {} cmRef.current = null; }
                     el.innerHTML = '';
                     setTimeout(function() {
@@ -1797,8 +1820,11 @@ var d = labToolData || {};
 
                       if (!el || !window.L) return;
 
-                      // Rebuild map when landmark OR mode changes (quiz hides country in popup)
-                      var shouldRebuild = !lmMapRef.current || lmMapRef.idx !== geoLandmarkIdx || lmMapRef.mode !== geoLandmarkMode || lmMapRef.revealed !== revealed;
+                      // Rebuild map when landmark OR mode changes (quiz hides country in popup).
+                      // Also rebuild if the DOM container changed — tab-switching leaves the
+                      // old map attached to an unmounted node.
+                      var sameContainer = lmMapRef.current && typeof lmMapRef.current.getContainer === 'function' && lmMapRef.current.getContainer() === el;
+                      var shouldRebuild = !sameContainer || lmMapRef.idx !== geoLandmarkIdx || lmMapRef.mode !== geoLandmarkMode || lmMapRef.revealed !== revealed;
                       if (!shouldRebuild) return;
 
                       if (lmMapRef.current) { try { lmMapRef.current.remove(); } catch(e) {} lmMapRef.current = null; }
@@ -1992,7 +2018,7 @@ var d = labToolData || {};
 
               ) : React.createElement('div', {
 
-                ref: function(el) { if (el && window._GlobeGLConstructor && !globeRef.current) initGlobe(el); },
+                ref: function(el) { if (el && window._GlobeGLConstructor) initGlobe(el); },
 
                 style: { height: 450, width: '100%', background: '#0a0a2e' }
 
@@ -2131,7 +2157,11 @@ var d = labToolData || {};
                   return React.createElement('div', { className: 'max-w-md mx-auto bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200 text-center' },
                     React.createElement('p', { className: 'text-5xl mb-2' }, medal),
                     React.createElement('h4', { className: 'text-lg font-bold text-slate-800 mb-1' }, 'Quiz complete!'),
-                    React.createElement('p', { className: 'text-sm text-slate-700 mb-4' }, 'You got ' + React.createElement('span', { className: 'font-bold text-teal-700' }, quizCorrectCount + ' / ' + total) + ' correct (' + pct + '%).'),
+                    React.createElement('p', { className: 'text-sm text-slate-700 mb-4' },
+                      'You got ',
+                      React.createElement('span', { className: 'font-bold text-teal-700' }, quizCorrectCount + ' / ' + total),
+                      ' correct (' + pct + '%).'
+                    ),
                     React.createElement('div', { className: 'flex gap-2 justify-center' },
                       React.createElement('button', {
                         onClick: function() {
@@ -2279,7 +2309,8 @@ var d = labToolData || {};
                     var dmRef = window._geoDistMapRef;
                     var answered = !!(geoDistFeedback && typeof geoDistFeedback.actual === 'number');
                     var pairKey = geoDistA.iso + '-' + geoDistB.iso;
-                    if (dmRef.current && dmRef.pairKey === pairKey && dmRef.answered === answered) return;
+                    var sameContainer = dmRef.current && typeof dmRef.current.getContainer === 'function' && dmRef.current.getContainer() === el;
+                    if (sameContainer && dmRef.pairKey === pairKey && dmRef.answered === answered) return;
                     if (dmRef.current) { try { dmRef.current.remove(); } catch(e) {} dmRef.current = null; }
                     el.innerHTML = '';
                     setTimeout(function() {

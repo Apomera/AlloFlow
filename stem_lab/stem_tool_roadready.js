@@ -4390,10 +4390,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Weight transfer (affects car pitch — visible in 3D) PLUS road grade.
           // Grade pitch tilts the whole car to follow the slope; accel pitch adds
           // the suspension nose-dip/lift on top.
+          //
+          // Direction matters. For NB driver (sin(heading) < 0, moving toward smaller Y),
+          // "ahead" is at car.y − 1 and positive pitch (rotation.x > 0) means nose UP.
+          // For SB driver, "ahead" is at car.y + 1 and NEGATIVE rotation.x means nose UP
+          // (the car group's heading rotation around Y reverses the pitch axis).
+          // Net formula: sample gradient in the FORWARD direction, multiply by −aheadDir
+          // so uphill always maps to "nose-up" regardless of which way the car faces.
           var gradePitch = 0;
           if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
             var spP = infiniteWorldRef.current.spline;
-            gradePitch = Math.atan2(spP.heightAt(car.y + 1) - spP.heightAt(car.y), 1);
+            var aheadDir = Math.sin(car.heading) >= 0 ? 1 : -1;
+            var gradeAhead = spP.heightAt(car.y + aheadDir) - spP.heightAt(car.y);
+            gradePitch = Math.atan2(gradeAhead, 1) * (-aheadDir);
           }
           car._pitchTarget = accel * 0.003 + gradePitch * 0.5;
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
@@ -5002,7 +5011,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Cross-axis AI traffic inside the intersection box (4 cells)
                 traffic.forEach(function(other, oi) {
                   if (!intersectionClear || oi === idx) return;
-                  var oYaxis = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                  // Direct flag, curve-safe (heading-based inference misfires on bent roads).
+                  var oYaxis = !other.crossStreet;
                   if (oYaxis === travelsY) {
                     // Same axis: only a concern if another car is immediately in front of us at the same stop
                     var rel2 = aheadOf(other.x, other.y);
@@ -5079,7 +5089,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // perpendicular to ours AND close to the intersection point (s.x, s.y).
               traffic.forEach(function(other, oi) {
                 if (oi === idx) return;
-                var otherTravelsY = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                // Direct flag check (curve-safe). Heading-based inference would misfire
+                // on bent main-road cars whose heading deviates >0.3 rad from pure ±π/2.
+                var otherTravelsY = !other.crossStreet;
                 var sameAxis = (otherTravelsY && travelsY) || (!otherTravelsY && !travelsY);
                 if (sameAxis) return; // only concerned with cross-axis traffic
                 var odx = other.x - s.x, ody = other.y - s.y;
@@ -5239,10 +5251,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (other4.type !== 'schoolbus') return;
               if (!other4._stopArmActive) return;
               // Bus is stopped with flashers — all traffic within ~15 cells must stop.
-              // Lateral check: same road (within the full road width), any direction.
-              if (Math.abs(other4.x - t.x) > 10) return; // ~full road width + shoulder
+              // Lateral check: same road. Curve-safe — compare spline-perpendicular
+              // distances. The previous raw |bus.x − t.x| < 10 false-negated on bent
+              // roads where spline shift alone could exceed 10 between two same-road cars.
+              var busSameRoad = true;
+              if (!t.crossStreet && !other4.crossStreet) {
+                var bSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                if (bSp) {
+                  var bSpCx_t = bSp.centerAt(t.y);
+                  var bSpCx_b = bSp.centerAt(other4.y);
+                  var bSpTh_t = bSp.headingAt(t.y);
+                  var bSpTh_b = bSp.headingAt(other4.y);
+                  var tPerpForBus = (t.x - bSpCx_t) * Math.cos(bSpTh_t);
+                  var bPerpForBus = (other4.x - bSpCx_b) * Math.cos(bSpTh_b);
+                  busSameRoad = Math.abs(tPerpForBus - bPerpForBus) < 6; // road width + shoulder
+                } else {
+                  busSameRoad = Math.abs(other4.x - t.x) < 10;
+                }
+              } else {
+                busSameRoad = Math.abs(other4.x - t.x) < 10;
+              }
+              if (!busSameRoad) return;
               var busRel = aheadOf(other4.x, other4.y);
-              // Stop whether approaching from behind OR oncoming — this is the rule.
               if (Math.abs(busRel.ahead) < 15) {
                 slowFor = Math.max(slowFor, 2);
               }
@@ -8779,14 +8809,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
           // Player wheel rotation + front-wheel steering visualization.
-          // Spin angle accumulated from speed × dt / radius. Front-wheel pivots yaw with
-          // the steering input so the wheels visibly turn left/right with the wheel.
+          // Spin angle accumulated from SIGNED speed × dt / radius — so when the player
+          // reverses, the wheels visibly spin backward instead of forward (was using
+          // Math.abs which made them always look forward, even in reverse).
           if (s3.playerCarGroup) {
             if (s3._playerWheelAngle === undefined) s3._playerWheelAngle = 0;
             if (s3._lastWheelT === undefined) s3._lastWheelT = timeRef.current;
             var wheelDt = Math.max(0, Math.min(0.1, timeRef.current - s3._lastWheelT));
             s3._lastWheelT = timeRef.current;
-            s3._playerWheelAngle += Math.abs(car.speed) * wheelDt / 0.20;
+            s3._playerWheelAngle += car.speed * wheelDt / 0.20;
             // Steering angle: clamp ~30° max (Math.PI/5 ≈ 36°). Reverse-sign so positive
             // steering input (right) yaws the wheels to the right (negative pivot.y in
             // the player car's local frame, where +X is forward).

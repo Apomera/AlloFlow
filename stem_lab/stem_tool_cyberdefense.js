@@ -1930,6 +1930,25 @@
             } else if (ctx.announceToSR) ctx.announceToSR(isCorrect ? 'Correct!' : 'Not quite.');
           }
 
+          // ── Compute a retrospective letter grade from a history entry (approximates live grade) ──
+          function computeHistoryGrade(h) {
+            if (!h) return { letter: '?', color: '#64748b', score: 0 };
+            var rounds = (h.chain && h.chain.length) || 6;
+            var scale = 6 / Math.max(1, rounds);
+            var raw = (h.detections || 0) * 8 * scale
+                    + (h.mitigations || 0) * 5 * scale
+                    + ((h.dataRemaining || 0) / 100) * 15
+                    + Math.min(10, (h.combos || 0) * 2)
+                    + Math.min(10, (h.achievementsEarned || 0) * 2);
+            var score = Math.max(0, Math.min(100, Math.round(raw)));
+            if (score >= 95)      return { letter: 'A+', color: '#22c55e', score: score };
+            else if (score >= 88) return { letter: 'A',  color: '#22c55e', score: score };
+            else if (score >= 80) return { letter: 'B',  color: '#3b82f6', score: score };
+            else if (score >= 70) return { letter: 'C',  color: '#f59e0b', score: score };
+            else if (score >= 60) return { letter: 'D',  color: '#f97316', score: score };
+            else                  return { letter: 'F',  color: '#ef4444', score: score };
+          }
+
           // ── Validate teacher-authored red card JSON ──
           function validateCustomCardsJson(rawText) {
             try {
@@ -3445,6 +3464,47 @@
                           })
                         )
                       ),
+                      // Grade trend strip (last 12 campaigns as letter badges)
+                      (function() {
+                        if (h.length === 0) return null;
+                        var last = h.slice(0, 12).reverse(); // oldest → newest left-to-right
+                        return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
+                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Grade Trend \u2014 ' + last.length + ' most-recent (newest \u2192)'),
+                          el('div', { role: 'img', 'aria-label': 'Grade trend over last ' + last.length + ' campaigns',
+                            style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                            last.map(function(entry, i) {
+                              var g = computeHistoryGrade(entry);
+                              return el('div', { key: i, title: 'Campaign #' + (entry.id || '????') + ': ' + g.letter + ' (' + g.score + '/100)',
+                                style: { width: 32, height: 32, borderRadius: 4, background: g.color + '22', border: '1px solid ' + g.color + '66', color: g.color, fontSize: 13, fontWeight: 900, fontFamily: 'Georgia, serif', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, g.letter);
+                            })
+                          )
+                        );
+                      })(),
+                      // Theme Conquest — which adversaries you've beaten
+                      (function() {
+                        var wonBy = {};
+                        h.forEach(function(entry) { if (entry.verdict === 'won' && entry.theme) wonBy[entry.theme] = true; });
+                        var themeIds = Object.keys(campaignThemes);
+                        var unlockedThemes = themeIds.filter(function(tid) {
+                          var t = campaignThemes[tid];
+                          return !(t.locked && !(t.unlockCondition && t.unlockCondition(d)));
+                        });
+                        if (unlockedThemes.length === 0) return null;
+                        return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
+                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\uD83C\uDFC6 Theme Conquest'),
+                          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6 } },
+                            unlockedThemes.map(function(tid) {
+                              var t = campaignThemes[tid];
+                              var beaten = !!wonBy[tid];
+                              return el('div', { key: tid, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 5, background: beaten ? 'rgba(34,197,94,0.08)' : 'rgba(30,41,59,0.5)', border: '1px solid ' + (beaten ? 'rgba(34,197,94,0.25)' : 'rgba(148,163,184,0.15)'), opacity: beaten ? 1 : 0.7, fontSize: 11 } },
+                                el('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, beaten ? '\u2705' : '\u2B1C'),
+                                el('span', { style: { fontSize: 13 } }, t.icon),
+                                el('span', { style: { color: beaten ? '#86efac' : '#cbd5e1', fontWeight: 700, flex: 1 } }, t.label)
+                              );
+                            })
+                          )
+                        );
+                      })(),
                       // Defensive loadout analysis — aggregate across all campaigns
                       (function() {
                         var totals = {};
