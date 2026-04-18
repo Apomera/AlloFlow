@@ -2051,6 +2051,10 @@ const d = labToolData.solarSystem;
         st.lastY = ev.clientY;
       }
       function onMove(ev) {
+        // Track cursor position in canvas coords for hover tooltips (always, even when not dragging).
+        var rect = cv.getBoundingClientRect();
+        st.hoverX = ev.clientX - rect.left;
+        st.hoverY = ev.clientY - rect.top;
         if (!st.dragging) return;
         var dx = ev.clientX - st.lastX;
         var dy = ev.clientY - st.lastY;
@@ -2058,6 +2062,10 @@ const d = labToolData.solarSystem;
         st.vx = dx * 0.5; st.vy = dy * 0.5;
         st.lastX = ev.clientX;
         st.lastY = ev.clientY;
+      }
+      function onLeave() {
+        // Clear hover position so tooltip disappears when cursor leaves canvas.
+        st.hoverX = null; st.hoverY = null;
       }
       function onUp() {
         st.dragging = false;
@@ -2078,6 +2086,7 @@ const d = labToolData.solarSystem;
         cv.addEventListener("pointerdown", onDown);
         window.addEventListener("pointermove", onMove);
         window.addEventListener("pointerup", onUp);
+        cv.addEventListener("pointerleave", onLeave);
       }
 
       if (props.onClick || clickRef.current) {
@@ -2095,6 +2104,7 @@ const d = labToolData.solarSystem;
           cv.removeEventListener("pointerdown", onDown);
           window.removeEventListener("pointermove", onMove);
           window.removeEventListener("pointerup", onUp);
+          cv.removeEventListener("pointerleave", onLeave);
         }
       };
     }, [props.redrawKey || 0]);
@@ -2207,9 +2217,10 @@ const d = labToolData.solarSystem;
       maxScale: 300,
       redrawKey: zoomMode,
       onClick: function(mx, my, st) {
-        // hit-test bodies — on hit, select + kick off smooth camera interpolation to center
-        // the body at a scale that frames it nicely (bigger planets = less zoom, small bodies
-        // get more zoom so users can actually see detail).
+        // hit-test bodies — first click selects + kicks off smooth zoom-in animation.
+        // A second click on the SAME already-selected body toggles "follow mode" —
+        // camera stays locked to the body as it orbits. Click anywhere else or select
+        // another body to release the follow lock.
         var t = timeRef.current;
         for (var i = OB.length - 1; i >= 0; i--) {
           var b = OB[i];
@@ -2220,19 +2231,27 @@ const d = labToolData.solarSystem;
           var dx = mx - sx;
           var dy = my - sy;
           if (dx * dx + dy * dy < 144) {
+            var alreadySelected = (st._selBodyId === b.id);
             upd("orr_sel", b.id);
-            // Compute target zoom: scale such that the body's semi-major axis fills
-            // ~40% of the canvas width. Clamped to the panel's min/max.
-            var targetScale = clamp((W * 0.40) / Math.max(b.a, 0.3), 8, 280);
-            // Target camera center: the body's current screen position should end up at canvas center.
-            // Screen X of body = st.targetCx + pos.x * targetScale  →  so targetCx = W/2 - pos.x * targetScale
-            st.targetCx = W / 2 - pos.x * targetScale;
-            st.targetCy = H / 2 + pos.y * targetScale;
-            st.targetScale = targetScale;
-            st._zoomAnim = true;
+            st._selBodyId = b.id;
+            if (alreadySelected) {
+              // Toggle follow mode on repeat-click
+              st._followBody = !st._followBody ? b.id : null;
+              try { _toast && _toast(st._followBody ? ('🎯 Following ' + b.name) : 'Follow mode off'); } catch (e) {}
+            } else {
+              // Fresh selection → start zoom animation, clear any prior follow
+              st._followBody = null;
+              var targetScale = clamp((W * 0.40) / Math.max(b.a, 0.3), 8, 280);
+              st.targetCx = W / 2 - pos.x * targetScale;
+              st.targetCy = H / 2 + pos.y * targetScale;
+              st.targetScale = targetScale;
+              st._zoomAnim = true;
+            }
             return;
           }
         }
+        // Click on empty space cancels follow mode
+        st._followBody = null;
       },
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
@@ -2253,6 +2272,25 @@ const d = labToolData.solarSystem;
             st.cy = st.targetCy;
             st.scale = st.targetScale;
             st._zoomAnim = false;
+          }
+        }
+
+        // ── Follow-body camera: keep the selected body at canvas center as it orbits ──
+        // Recomputes target each frame so camera glides along with the body's motion.
+        // User pan/zoom still works; if they drag the canvas, the follow will fight back
+        // and re-center — repeat-click the body (or click empty space) to release.
+        if (st._followBody && !st.dragging) {
+          for (var fbi = 0; fbi < OB.length; fbi++) {
+            var fbb = OB[fbi];
+            if (fbb.id !== st._followBody) continue;
+            var fbM = (TAU * timeRef.current / fbb.T) % TAU;
+            var fbPos = orbitalPos(fbb.a, fbb.e, fbM);
+            var desiredCx = W / 2 - fbPos.x * st.scale;
+            var desiredCy = H / 2 + fbPos.y * st.scale;
+            // Smoothly interpolate camera so it doesn't snap jarringly
+            st.cx += (desiredCx - st.cx) * 0.15;
+            st.cy += (desiredCy - st.cy) * 0.15;
+            break;
           }
         }
 
@@ -2423,6 +2461,45 @@ const d = labToolData.solarSystem;
         ctx.fillStyle = coreGrad;
         ctx.fill();
 
+        // ── Solar wind particles (dark mode only, outward-flowing streaks) ──
+        // A handful of faint streaks drifting radially outward from the Sun. Cached positions
+        // loop around the corona; each particle has a slight perpendicular wobble so the
+        // streams look organic rather than robotic spokes.
+        if (isDark) {
+          if (!cv._solarWind) {
+            cv._solarWind = [];
+            for (var wi = 0; wi < 26; wi++) {
+              cv._solarWind.push({
+                angle: Math.random() * TAU,
+                phase: Math.random() * 1000,
+                speed: 0.35 + Math.random() * 0.35,
+                wobble: Math.random() * 0.15
+              });
+            }
+          }
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,210,140,0.28)";
+          ctx.lineWidth = 0.9;
+          ctx.lineCap = "round";
+          for (var wj = 0; wj < cv._solarWind.length; wj++) {
+            var wind = cv._solarWind[wj];
+            // Cyclical distance — particle emerges from sunR*2.5, travels outward, fades at sunR*9
+            var phase = ((timestamp || 0) * 0.00022 * wind.speed + wind.phase) % 1;
+            var d0 = sunR * (2.5 + phase * 6.5);
+            var d1 = d0 + sunR * 1.5;
+            var wobbleA = Math.sin(phase * Math.PI * 4) * wind.wobble;
+            var aOut = wind.angle + wobbleA;
+            var alpha = Math.sin(phase * Math.PI) * 0.55; // fade in/out across lifetime
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.moveTo(st.cx + Math.cos(aOut) * d0, st.cy + Math.sin(aOut) * d0);
+            ctx.lineTo(st.cx + Math.cos(aOut) * d1, st.cy + Math.sin(aOut) * d1);
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          ctx.restore();
+        }
+
         // ── Asteroid belt (between Mars and Jupiter, ~2.2–3.2 AU) ──
         // Small rotating dots for ambient detail. Cached angular positions so they drift
         // slowly rather than all jitter — looks like a proper orbiting belt.
@@ -2449,6 +2526,40 @@ const d = labToolData.solarSystem;
             ctx.beginPath();
             ctx.arc(ax, ay, ast.size, 0, TAU);
             ctx.fillStyle = isDark ? "#c4b5a0" : "#94825f";
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        // ── Kuiper belt (past Neptune, ~30–48 AU) ──
+        // Sparser + bluer than the asteroid belt. Only appears when zoomed OUT enough to
+        // see past Neptune (st.scale < 12) so we don't clutter the inner system view.
+        if (!cv._kuiperBelt) {
+          cv._kuiperBelt = [];
+          for (var ki = 0; ki < 240; ki++) {
+            cv._kuiperBelt.push({
+              a: 30 + Math.random() * 18,
+              angle: Math.random() * TAU,
+              speed: 0.01 + Math.random() * 0.03,
+              size: 0.5 + Math.random() * 0.9,
+              dim: 0.3 + Math.random() * 0.45,
+              tint: Math.random() < 0.3  // 30% get a cooler blue tint (icy bodies)
+            });
+          }
+        }
+        if (st.scale < 12 && st.scale > 0.6) {
+          var kuiperAlpha = clamp((12 - st.scale) / 8, 0, 1);
+          for (var kj = 0; kj < cv._kuiperBelt.length; kj++) {
+            var kb = cv._kuiperBelt[kj];
+            var kAng = kb.angle + (timestamp || 0) * 0.00004 * kb.speed;
+            var kx = st.cx + Math.cos(kAng) * kb.a * st.scale;
+            var ky = st.cy - Math.sin(kAng) * kb.a * st.scale;
+            // Skip bodies that would render far outside the canvas — tiny perf win
+            if (kx < -20 || kx > W + 20 || ky < -20 || ky > H + 20) continue;
+            ctx.globalAlpha = kb.dim * kuiperAlpha;
+            ctx.beginPath();
+            ctx.arc(kx, ky, kb.size, 0, TAU);
+            ctx.fillStyle = kb.tint ? (isDark ? "#93c5fd" : "#3b82f6") : (isDark ? "#cbd5e1" : "#94a3b8");
             ctx.fill();
           }
           ctx.globalAlpha = 1;
@@ -2586,6 +2697,119 @@ const d = labToolData.solarSystem;
           ctx.arc(sx, sy, dotR, 0, TAU);
           ctx.fillStyle = bodyGrad;
           ctx.fill();
+
+          // ── Per-planet surface character (each has distinct visual personality) ──
+          // All clipped to the body circle so nothing spills outside. Only rendered when
+          // the body is large enough (dotR >= 5) for the detail to actually be visible.
+          if (dotR >= 5) {
+            // Mars — subtle darker crater spots + polar ice cap hint
+            if (b.id === "mars") {
+              ctx.save();
+              ctx.beginPath(); ctx.arc(sx, sy, dotR - 0.3, 0, TAU); ctx.clip();
+              // A few darker "craters"
+              ctx.fillStyle = "rgba(80,30,15,0.35)";
+              var craters = [[-0.4, -0.2, 0.18], [0.25, 0.15, 0.14], [-0.1, 0.4, 0.12], [0.5, -0.4, 0.10]];
+              for (var mc = 0; mc < craters.length; mc++) {
+                var cr = craters[mc];
+                ctx.beginPath();
+                ctx.arc(sx + cr[0] * dotR, sy + cr[1] * dotR, cr[2] * dotR, 0, TAU);
+                ctx.fill();
+              }
+              // North polar ice cap
+              ctx.fillStyle = "rgba(255,250,245,0.75)";
+              ctx.beginPath();
+              ctx.ellipse(sx, sy - dotR * 0.75, dotR * 0.35, dotR * 0.15, 0, 0, TAU);
+              ctx.fill();
+              ctx.restore();
+            }
+            // Venus — swirling cloud bands
+            else if (b.id === "venus") {
+              ctx.save();
+              ctx.beginPath(); ctx.arc(sx, sy, dotR - 0.3, 0, TAU); ctx.clip();
+              ctx.globalAlpha = 0.35;
+              ctx.strokeStyle = "#fef3c7";
+              ctx.lineWidth = 1.2;
+              for (var vc = -3; vc <= 3; vc++) {
+                ctx.beginPath();
+                ctx.ellipse(sx, sy + vc * dotR * 0.22, dotR * 1.1, dotR * 0.25, 0, 0, TAU);
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 1;
+              ctx.restore();
+            }
+            // Earth — ocean + continent blobs + white swirl (cloud)
+            else if (b.id === "earth") {
+              ctx.save();
+              ctx.beginPath(); ctx.arc(sx, sy, dotR - 0.3, 0, TAU); ctx.clip();
+              // Green continents
+              ctx.fillStyle = "rgba(34,139,80,0.75)";
+              var conts = [[-0.35, -0.15, 0.35, 0.22], [0.25, 0.20, 0.28, 0.18], [-0.15, 0.45, 0.22, 0.14]];
+              for (var ec = 0; ec < conts.length; ec++) {
+                var co = conts[ec];
+                ctx.beginPath();
+                ctx.ellipse(sx + co[0] * dotR, sy + co[1] * dotR, co[2] * dotR, co[3] * dotR, 0.3, 0, TAU);
+                ctx.fill();
+              }
+              // Cloud wisp (white, semi-transparent)
+              ctx.fillStyle = "rgba(255,255,255,0.35)";
+              ctx.beginPath();
+              ctx.ellipse(sx + dotR * 0.1, sy - dotR * 0.3, dotR * 0.55, dotR * 0.15, -0.4, 0, TAU);
+              ctx.fill();
+              ctx.restore();
+            }
+            // Mercury — darker crater pocks
+            else if (b.id === "mercury") {
+              ctx.save();
+              ctx.beginPath(); ctx.arc(sx, sy, dotR - 0.3, 0, TAU); ctx.clip();
+              ctx.fillStyle = "rgba(50,50,50,0.35)";
+              var mcraters = [[-0.3, -0.3, 0.12], [0.3, -0.1, 0.10], [-0.1, 0.3, 0.14], [0.4, 0.4, 0.09], [0, 0, 0.08]];
+              for (var mi2 = 0; mi2 < mcraters.length; mi2++) {
+                var mc2 = mcraters[mi2];
+                ctx.beginPath();
+                ctx.arc(sx + mc2[0] * dotR, sy + mc2[1] * dotR, mc2[2] * dotR, 0, TAU);
+                ctx.fill();
+              }
+              ctx.restore();
+            }
+            // Uranus — faint horizontal methane bands (gentle blue-cyan layering)
+            else if (b.id === "uranus") {
+              ctx.save();
+              ctx.beginPath(); ctx.arc(sx, sy, dotR - 0.3, 0, TAU); ctx.clip();
+              ctx.globalAlpha = 0.25;
+              ctx.strokeStyle = "#a5f3fc";
+              ctx.lineWidth = 1;
+              for (var un = -2; un <= 2; un++) {
+                ctx.beginPath();
+                ctx.ellipse(sx, sy + un * dotR * 0.3, dotR * 1.05, dotR * 0.18, 0, 0, TAU);
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 1;
+              ctx.restore();
+            }
+            // Neptune — blue bands + a stormy dark spot
+            else if (b.id === "neptune") {
+              ctx.save();
+              ctx.beginPath(); ctx.arc(sx, sy, dotR - 0.3, 0, TAU); ctx.clip();
+              // Horizontal bands (like Jupiter but blue tones)
+              var nbands = [
+                { y: -0.5, h: 0.20, color: "rgba(30,60,150,0.55)" },
+                { y: -0.1, h: 0.18, color: "rgba(60,100,190,0.50)" },
+                { y: 0.25, h: 0.20, color: "rgba(30,70,160,0.55)" },
+                { y: 0.55, h: 0.15, color: "rgba(20,50,140,0.45)" }
+              ];
+              for (var nbi = 0; nbi < nbands.length; nbi++) {
+                var nb = nbands[nbi];
+                ctx.fillStyle = nb.color;
+                ctx.fillRect(sx - dotR, sy + nb.y * dotR, dotR * 2, nb.h * dotR);
+              }
+              // Great Dark Spot
+              ctx.fillStyle = "rgba(10,20,60,0.7)";
+              ctx.beginPath();
+              ctx.ellipse(sx - dotR * 0.2, sy + dotR * 0.1, dotR * 0.18, dotR * 0.11, 0, 0, TAU);
+              ctx.fill();
+              ctx.restore();
+            }
+          }
 
           // ── Jupiter atmospheric banding (only visible when zoomed in enough) ──
           if (b.id === "jupiter" && dotR >= 5) {
@@ -2756,6 +2980,138 @@ const d = labToolData.solarSystem;
             ctx.textBaseline = "middle";
             ctx.fillText(labelText, pillX + padX + accentW, pillY + pillH / 2 + 0.5);
             ctx.textBaseline = "alphabetic";
+          }
+        }
+
+        // ── Hover tooltip ──
+        // Hit-test the cursor against every body and the Sun. If a match is found,
+        // render a compact info card near the cursor with name / distance / speed /
+        // description snippet. Uses cached position data from cv._liveState to avoid
+        // recomputing orbital positions.
+        if (st.hoverX != null && st.hoverY != null) {
+          var hoveredBody = null;
+          var hoveredIsSun = false;
+          // Sun first (center of canvas)
+          var sunDxH = st.hoverX - st.cx, sunDyH = st.hoverY - st.cy;
+          var sunHitR = Math.max(8, sunR * 2);
+          if (sunDxH * sunDxH + sunDyH * sunDyH < sunHitR * sunHitR) {
+            hoveredIsSun = true;
+          } else {
+            for (var hi = OB.length - 1; hi >= 0; hi--) {
+              var hb = OB[hi];
+              if (hb.type === "comet" && !showComets) continue;
+              if (hb.type === "dwarf" && !showDwarfs) continue;
+              var hls = cv._liveState && cv._liveState.bodies[hb.id];
+              if (!hls) continue;
+              var hsx = st.cx + hls.x * st.scale;
+              var hsy = st.cy - hls.y * st.scale;
+              var hitR = hb.type === "comet" ? 10 : (hb.type === "dwarf" ? 10 : 14);
+              var hdx = st.hoverX - hsx, hdy = st.hoverY - hsy;
+              if (hdx * hdx + hdy * hdy < hitR * hitR) {
+                hoveredBody = hb;
+                break;
+              }
+            }
+          }
+          if (hoveredIsSun || hoveredBody) {
+            // Build tooltip lines
+            var lines = [];
+            var titleColor;
+            if (hoveredIsSun) {
+              titleColor = "#ffcc22";
+              lines.push({ kind: "title", text: "☀ The Sun" });
+              lines.push({ kind: "row", text: "Mass: 333,000 M⊕" });
+              lines.push({ kind: "row", text: "Radius: 696,340 km" });
+              lines.push({ kind: "desc", text: "Our star — a G-type main-sequence star fusing hydrogen into helium." });
+            } else {
+              var hbls = cv._liveState.bodies[hoveredBody.id] || {};
+              titleColor = hoveredBody.color;
+              lines.push({ kind: "title", text: (hoveredBody.emoji || "•") + " " + hoveredBody.name });
+              lines.push({ kind: "row", text: "Distance: " + (hbls.r != null ? hbls.r.toFixed(2) : hoveredBody.a.toFixed(2)) + " AU" });
+              if (hbls.speed) lines.push({ kind: "row", text: "Speed: " + hbls.speed.toFixed(1) + " km/s" });
+              if (hoveredBody.T) lines.push({ kind: "row", text: "Orbital period: " + (hoveredBody.T < 1 ? (hoveredBody.T * 365.25).toFixed(0) + " days" : hoveredBody.T.toFixed(2) + " yr") });
+              if (hoveredBody.e != null) lines.push({ kind: "row", text: "Eccentricity: " + hoveredBody.e.toFixed(3) });
+              if (hoveredBody.desc) lines.push({ kind: "desc", text: hoveredBody.desc });
+            }
+            // Measure + draw
+            ctx.save();
+            ctx.font = "bold 12px sans-serif";
+            var tipW = 0;
+            for (var li = 0; li < lines.length; li++) {
+              ctx.font = lines[li].kind === "title" ? "bold 13px sans-serif" : (lines[li].kind === "desc" ? "italic 11px sans-serif" : "11px sans-serif");
+              tipW = Math.max(tipW, ctx.measureText(lines[li].text).width);
+            }
+            var padH = 10, padV = 8, lineH = 16, descLineH = 14;
+            var tipH = padV * 2 + lines.length * lineH + 2;
+            tipW = Math.min(Math.max(tipW + padH * 2, 160), 260);
+            // Position to avoid clipping the canvas edges
+            var tipX = st.hoverX + 18;
+            var tipY = st.hoverY + 14;
+            if (tipX + tipW > W - 4) tipX = st.hoverX - tipW - 18;
+            if (tipY + tipH > H - 4) tipY = st.hoverY - tipH - 14;
+            if (tipX < 4) tipX = 4;
+            if (tipY < 4) tipY = 4;
+            // Card background
+            ctx.beginPath();
+            var tipR = 10;
+            ctx.moveTo(tipX + tipR, tipY);
+            ctx.arcTo(tipX + tipW, tipY, tipX + tipW, tipY + tipH, tipR);
+            ctx.arcTo(tipX + tipW, tipY + tipH, tipX, tipY + tipH, tipR);
+            ctx.arcTo(tipX, tipY + tipH, tipX, tipY, tipR);
+            ctx.arcTo(tipX, tipY, tipX + tipW, tipY, tipR);
+            ctx.closePath();
+            ctx.fillStyle = isDark ? "rgba(15,23,42,0.96)" : "rgba(255,255,255,0.98)";
+            ctx.fill();
+            ctx.strokeStyle = titleColor + "bb";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            // Top color bar
+            ctx.fillStyle = titleColor;
+            ctx.beginPath();
+            ctx.moveTo(tipX, tipY + tipR);
+            ctx.arcTo(tipX, tipY, tipX + tipR, tipY, tipR);
+            ctx.lineTo(tipX + tipW - tipR, tipY);
+            ctx.arcTo(tipX + tipW, tipY, tipX + tipW, tipY + tipR, tipR);
+            ctx.lineTo(tipX + tipW, tipY + 3);
+            ctx.lineTo(tipX, tipY + 3);
+            ctx.closePath();
+            ctx.fill();
+            // Lines
+            var lineY = tipY + padV + 6;
+            for (var lj = 0; lj < lines.length; lj++) {
+              var ln = lines[lj];
+              if (ln.kind === "title") {
+                ctx.font = "bold 13px sans-serif";
+                ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
+              } else if (ln.kind === "desc") {
+                ctx.font = "italic 11px sans-serif";
+                ctx.fillStyle = isDark ? "#cbd5e1" : "#475569";
+              } else {
+                ctx.font = "11px sans-serif";
+                ctx.fillStyle = isDark ? "#e2e8f0" : "#334155";
+              }
+              ctx.textBaseline = "alphabetic";
+              // Wrap desc if too long
+              if (ln.kind === "desc" && ctx.measureText(ln.text).width > tipW - padH * 2) {
+                var words = ln.text.split(" ");
+                var curLine = "";
+                for (var wi = 0; wi < words.length; wi++) {
+                  var test = curLine ? curLine + " " + words[wi] : words[wi];
+                  if (ctx.measureText(test).width > tipW - padH * 2 && curLine) {
+                    ctx.fillText(curLine, tipX + padH, lineY);
+                    lineY += descLineH;
+                    curLine = words[wi];
+                  } else {
+                    curLine = test;
+                  }
+                }
+                if (curLine) { ctx.fillText(curLine, tipX + padH, lineY); lineY += descLineH; }
+              } else {
+                ctx.fillText(ln.text, tipX + padH, lineY);
+                lineY += (ln.kind === "title") ? lineH + 2 : lineH;
+              }
+            }
+            ctx.restore();
           }
         }
       }

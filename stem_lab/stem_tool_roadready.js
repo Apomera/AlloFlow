@@ -4732,6 +4732,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           traffic.forEach(function(t, idx) {
             // Default personality for legacy/cross-street cars that didn't get one.
             var pers = t.personality || { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0 };
+            // ── School bus stop-arm cycle ──
+            // Periodically a school bus stops to pick up/drop off kids, extending its stop arm
+            // and flashing red lights. Surrounding traffic must stop (enforced in the yield block
+            // below). Cycle: 25–45s rolling, then 6s stopped, then resume. Deterministic per-bus
+            // by seeding with the traffic index.
+            if (t.type === 'schoolbus' && !t.crossStreet) {
+              if (t._busCycleTimer === undefined) {
+                // Stagger by index so all buses don't stop at the same moment
+                t._busCycleTimer = 25 + (idx * 7) % 20;
+                t._stopArmActive = false;
+              }
+              t._busCycleTimer -= dt;
+              if (t._busCycleTimer <= 0) {
+                t._stopArmActive = !t._stopArmActive;
+                t._busCycleTimer = t._stopArmActive ? 6 : (28 + Math.random() * 18);
+              }
+              // While stop arm is active, override speed → 0 and set hard slowFor later.
+            }
             // ── Direction-aware forward-vector helper ──
             // Cars travel along either Y (heading = ±π/2) or X (heading = 0 or π).
             // "ahead" of a car depends on which axis it travels along.
@@ -4965,6 +4983,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (otherRel.ahead > 0 && otherRel.ahead < followNear) slowFor = Math.max(slowFor, 2);
               else if (otherRel.ahead > 0 && otherRel.ahead < followFar) slowFor = Math.max(slowFor, 1);
             });
+            // ── Yield to pedestrians in/near crosswalks ahead ──
+            // Real drivers slow to stop when a pedestrian is in the crosswalk OR about to
+            // enter it. The AI scans peds along its path and reacts if any are within the
+            // crosswalk span (or waiting curbside in our direction of travel).
+            var pedsForYield = pedsRef.current || [];
+            for (var pyi = 0; pyi < pedsForYield.length; pyi++) {
+              var py = pedsForYield[pyi];
+              if (!py.crossing && !py.waitingAtCrosswalk) continue;
+              var pedRel = aheadOf(py.x, py.y);
+              // Only react to peds AHEAD of us, within 10 cells, that are close to our path.
+              if (pedRel.ahead < 0 || pedRel.ahead > 10) continue;
+              if (Math.abs(pedRel.lat) > 5) continue; // not near the road
+              if (py.crossing) {
+                // Active crossing: mandatory stop if close.
+                if (pedRel.ahead < 7) slowFor = Math.max(slowFor, 2);
+                else if (pedRel.ahead < 10) slowFor = Math.max(slowFor, 1);
+              } else if (py.waitingAtCrosswalk) {
+                // Waiting at curb: slow down — in many states, drivers must yield to peds
+                // waiting at a marked crosswalk intending to cross.
+                if (pedRel.ahead < 6) slowFor = Math.max(slowFor, 1);
+              }
+            }
+            // If THIS vehicle is a school bus with active stop-arm, it must be stopped.
+            if (t.type === 'schoolbus' && t._stopArmActive) slowFor = 2;
+            // ── Yield to school buses with red flashers (stop-arm extended) ──
+            // Federal + state law: both directions stop on undivided roads; same-direction
+            // only on divided highways. We treat Free Explore / scenarios as undivided
+            // (single physical road surface). The bus marks itself with _stopArmActive.
+            traffic.forEach(function(other4, j4) {
+              if (j4 === idx) return;
+              if (other4.type !== 'schoolbus') return;
+              if (!other4._stopArmActive) return;
+              // Bus is stopped with flashers — all traffic within ~15 cells must stop.
+              // Lateral check: same road (within the full road width), any direction.
+              if (Math.abs(other4.x - t.x) > 10) return; // ~full road width + shoulder
+              var busRel = aheadOf(other4.x, other4.y);
+              // Stop whether approaching from behind OR oncoming — this is the rule.
+              if (Math.abs(busRel.ahead) < 15) {
+                slowFor = Math.max(slowFor, 2);
+              }
+            });
             // React to PLAYER car — slow down, honk, or AEB (emergency brake)
             var playerCar = carRef.current;
             if (Math.abs(playerCar.x - t.x) < 2) {
@@ -5059,8 +5118,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             t.speed += (targetSpeed - t.speed) * speedLerp;
             // Expose slowFor to the renderer so brake lights match the AI's braking state.
             t._slowFor = slowFor;
-            // Turn signal on AI vehicles — blink when slowing for a signal
-            t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
+            // Turn signal on AI vehicles — blink when slowing for a signal, BUT do not
+            // clobber a pending-lane-change blinker or its cancel-drift.
+            if (!t._pendingLaneOffset && !t._blinkerCancelTimer) {
+              t.blinker = slowFor >= 1 ? ((idx % 3 === 0) ? -1 : (idx % 3 === 1) ? 1 : 0) : 0;
+            }
             // ── Lane discipline: compute target X from spline center + laneOffset ──
             // Traffic now follows the road curve. t.laneOffset is the signed distance
             // from road centerline (positive = +X side). Cars gently steer toward their
@@ -5103,23 +5165,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Aggressive drivers overtake — but only if safe and only WITHIN their direction's side.
               // For heading > 0 (+Y): our side is x < centerXt, safe lanes: [-2.5, -0.5] from center.
               // For heading < 0 (-Y): our side is x > centerXt, safe lanes: [+0.5, +2.5] from center.
-              if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.015) {
-                // Choose the lane closer to centerline (more overtake-like).
+              // ── Realistic signaling: set blinker FIRST, wait ~1.2s, THEN move. ──
+              // t._pendingLaneOffset + t._pendingLaneTimer track the pre-signal phase.
+              if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.015 && !t._pendingLaneOffset) {
                 var newOffset = t.heading > 0 ? -0.5 : 0.5;
                 var blocked = (newOffset > t.laneOffset) ? blockedRight : blockedLeft;
                 if (!blocked && Math.abs(t.laneOffset - newOffset) > 0.5) {
-                  t.laneOffset = newOffset;
-                  t.blinker = newOffset > 0 ? 1 : -1;
-                  t._laneChangeCooldown = 10;
+                  // Start the pre-signal phase — blinker on, lane hasn't moved yet.
+                  t._pendingLaneOffset = newOffset;
+                  t._pendingLaneTimer = 1.2; // legally required 1s+ signal before move
+                  t.blinker = newOffset > t.laneOffset ? 1 : -1;
                 }
-              } else if (!wantOvertake && t._laneChangeCooldown <= 0 && Math.random() < 0.0008) {
-                // Return to default lane (right side for direction)
+              } else if (!wantOvertake && t._laneChangeCooldown <= 0 && !t._pendingLaneOffset && Math.random() < 0.0008) {
+                // Return to default lane (right side for direction) — also pre-signaled.
                 var defaultOffset = t.heading > 0 ? -1.5 : 1.5;
                 if (Math.abs(t.laneOffset - defaultOffset) > 0.3) {
-                  t.laneOffset = defaultOffset;
-                  t._laneChangeCooldown = 6;
+                  t._pendingLaneOffset = defaultOffset;
+                  t._pendingLaneTimer = 1.0;
+                  t.blinker = defaultOffset > t.laneOffset ? 1 : -1;
                 }
               }
+            }
+            // Pending lane change: count down, then commit. If the adjacent lane becomes
+            // blocked during the signal phase, cancel cleanly and cancel the blinker.
+            if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
+              t._pendingLaneTimer -= dt;
+              // Re-check blockage each frame
+              var stillBlocked = false;
+              var pOff = t._pendingLaneOffset;
+              traffic.forEach(function(other3, j3) {
+                if (j3 === idx) return;
+                if (Math.abs(other3.x - t.x) > 3) return;
+                var ahp = (t.heading > 0 ? other3.y - t.y : t.y - other3.y);
+                if (Math.abs(ahp) < 5) {
+                  if (pOff > t.laneOffset && other3.x > t.x && other3.x - t.x < 2.2) stillBlocked = true;
+                  if (pOff < t.laneOffset && other3.x < t.x && t.x - other3.x < 2.2) stillBlocked = true;
+                }
+              });
+              if (stillBlocked) {
+                t._pendingLaneOffset = null;
+                t._pendingLaneTimer = 0;
+                t.blinker = 0;
+                t._laneChangeCooldown = 3; // cooldown before retry
+              } else if (t._pendingLaneTimer <= 0) {
+                // Commit the lane change
+                t.laneOffset = t._pendingLaneOffset;
+                t._pendingLaneOffset = null;
+                t._laneChangeCooldown = 10;
+                // Blinker stays on briefly post-change (realism), then cancels
+                t._blinkerCancelTimer = 0.6;
+              }
+            }
+            // Cancel blinker after lane change completes
+            if (t._blinkerCancelTimer > 0) {
+              t._blinkerCancelTimer -= dt;
+              if (t._blinkerCancelTimer <= 0) t.blinker = 0;
             }
             if (t._laneChangeCooldown > 0) t._laneChangeCooldown -= dt;
             // Move forward along direction of travel
@@ -8165,12 +8265,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var stripe2 = new T.Mesh(stripeGeo2, stripeMat2);
                 stripe2.position.set(0, bH * 0.55 + 0.2, 0);
                 cg.add(stripe2);
-                // Stop arm hint (red rectangle on side)
-                var stopArmMat = new T.MeshBasicMaterial({ color: 0xff0000 });
-                var stopArmGeo = new T.BoxGeometry(0.3, 0.08, 0.01);
+                // Stop arm hint (red octagonal paddle on side) — animates out when active
+                var stopArmMat = new T.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.2 });
+                var stopArmGeo = new T.BoxGeometry(0.5, 0.35, 0.02);
                 var stopArm = new T.Mesh(stopArmGeo, stopArmMat);
                 stopArm.position.set(-bLen * 0.15, bH * 0.6 + 0.2, 0.51);
+                stopArm.name = 'rr_busStopArm';
                 cg.add(stopArm);
+                // Twin red flasher lights on top of the bus (front + rear of the roof)
+                [bLen * 0.35, -bLen * 0.35].forEach(function(rx, ri) {
+                  var flMat = new T.MeshBasicMaterial({ color: 0x440000, transparent: true, opacity: 0.3 });
+                  var flGeo = new T.SphereGeometry(0.10, 8, 8);
+                  var fl = new T.Mesh(flGeo, flMat);
+                  fl.position.set(rx, bH + 0.45, 0);
+                  fl.name = 'rr_busFlash' + (ri === 0 ? 'F' : 'R');
+                  cg.add(fl);
+                });
               } else if (isVan) {
                 // Van: tall boxy roof
                 var vanRoofGeo = new T.BoxGeometry(bLen * 0.75, 0.5, 0.88);
@@ -8308,6 +8418,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   } else {
                     child.material.color.setHex(0xff8800);
                     child.material.opacity = 0.18;
+                  }
+                  return;
+                }
+                // School bus stop arm — swing outward and glow red when active.
+                if (n === 'rr_busStopArm') {
+                  if (t._stopArmActive) {
+                    child.material.opacity = 0.95;
+                    // Rotate the arm ~90° outward (around local Y axis) when extended
+                    child.rotation.y = Math.PI / 2;
+                    child.position.z = 0.85; // push it outboard
+                  } else {
+                    child.material.opacity = 0.25;
+                    child.rotation.y = 0;
+                    child.position.z = 0.51;
+                  }
+                  return;
+                }
+                // Bus roof flashers — alternating red lamps (front and rear flash opposite).
+                if (n === 'rr_busFlashF' || n === 'rr_busFlashR') {
+                  if (t._stopArmActive) {
+                    // Alternate front/rear at 2 Hz
+                    var flashOn = Math.floor(timeRef.current * 2) % 2 === 0;
+                    var meOn = (n === 'rr_busFlashF') ? flashOn : !flashOn;
+                    child.material.color.setHex(meOn ? 0xff2020 : 0x550000);
+                    child.material.opacity = meOn ? 1.0 : 0.35;
+                  } else {
+                    child.material.color.setHex(0x440000);
+                    child.material.opacity = 0.3;
                   }
                 }
               });
