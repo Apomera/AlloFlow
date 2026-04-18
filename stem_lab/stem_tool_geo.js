@@ -528,23 +528,48 @@ var d = labToolData || {};
           // Badge state
           var geoBadges = d.geoBadges || {};
 
-          // Filter countries by region
+          // ── Region filter ──
+          // Supports: 'world', continent keys (africa/asia/europe/n_america/s_america/oceania),
+          // 'americas' (legacy combined), and 'r:<Sub-Region Name>' for finer-grained UN regions.
+          var _continentByRegionId = {
+            africa: 'Africa', asia: 'Asia', europe: 'Europe',
+            n_america: 'North America', s_america: 'South America', oceania: 'Oceania'
+          };
+          var filteredCountries = (function() {
+            if (geoRegion === 'world') return countries;
+            if (geoRegion && geoRegion.indexOf('r:') === 0) {
+              var regionName = geoRegion.slice(2);
+              return countries.filter(function(c) { return c.region === regionName; });
+            }
+            if (geoRegion === 'americas') {
+              return countries.filter(function(c) { return c.continent === 'North America' || c.continent === 'South America'; });
+            }
+            var cont = _continentByRegionId[geoRegion];
+            if (cont) return countries.filter(function(c) { return c.continent === cont; });
+            return countries;
+          })();
 
-          var filteredCountries = geoRegion === 'world' ? countries : countries.filter(function(c) {
-
-            if (geoRegion === 'africa') return c.continent === 'Africa';
-
-            if (geoRegion === 'asia') return c.continent === 'Asia';
-
-            if (geoRegion === 'europe') return c.continent === 'Europe';
-
-            if (geoRegion === 'americas') return c.continent === 'North America' || c.continent === 'South America';
-
-            if (geoRegion === 'oceania') return c.continent === 'Oceania';
-
-            return true;
-
-          });
+          // ── Graduated region options (grouped, counted, difficulty-ordered) ──
+          // Continents ordered ascending by country count (fewest = easier start).
+          // Within each continent, sub-regions listed by count (smallest first).
+          var _regionGroups = (function() {
+            var groups = [];
+            Object.keys(_continentByRegionId).forEach(function(id) {
+              var contName = _continentByRegionId[id];
+              var contCountries = countries.filter(function(c) { return c.continent === contName; });
+              if (contCountries.length === 0) return;
+              // Unique sub-regions + counts; skip any that equal the full continent (redundant)
+              var subCounts = {};
+              contCountries.forEach(function(c) { subCounts[c.region] = (subCounts[c.region] || 0) + 1; });
+              var subs = Object.keys(subCounts)
+                .filter(function(r) { return subCounts[r] > 0 && subCounts[r] < contCountries.length; })
+                .sort(function(a, b) { return subCounts[a] - subCounts[b]; })
+                .map(function(r) { return { id: 'r:' + r, label: r, count: subCounts[r] }; });
+              groups.push({ id: id, label: contName, count: contCountries.length, subs: subs });
+            });
+            groups.sort(function(a, b) { return a.count - b.count; });
+            return groups;
+          })();
 
 
 

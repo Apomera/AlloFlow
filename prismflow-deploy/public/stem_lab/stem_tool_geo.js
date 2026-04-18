@@ -613,6 +613,8 @@ var d = labToolData || {};
 
             } else {
 
+              // Prefer the name from the GeoJSON click (covers all countries);
+              // fall back to the 117-country local array; then the iso code itself.
               var clicked = countries.find(function(c) { return c.iso === clickedIso; });
               var pickedLabel = clickedName || (clicked ? clicked.name : '') || clickedIso || 'that country';
 
@@ -872,6 +874,7 @@ var d = labToolData || {};
 
                 globe.polygonsData(geojson.features)
                   .polygonCapColor(function(d) {
+                    // Highlight the currently-targeted country if one is set
                     var fIso = d.properties.ISO_A3 || d.properties.ADM0_A3 || '';
                     if (geoTarget && fIso === geoTarget.iso) return 'rgba(251,191,36,0.55)';
                     return 'rgba(79,209,197,0.28)';
