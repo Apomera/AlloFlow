@@ -36,11 +36,25 @@ Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > **Source → Module mapping:**
 > - `doc_pipeline_source.jsx` (root) → `doc_pipeline_module.js` (+ copy to `prismflow-deploy/public/`)
-> - `prismflow-deploy/src/games_source.jsx` → `games_module.js`
-> - `prismflow-deploy/src/adventure_source.jsx` → `adventure_module.js`
-> - `prismflow-deploy/src/content_engine_source.jsx` → `content_engine_module.js`
+> - `games_source.jsx` (root) → `games_module.js`  ← **canonical is ROOT, not prismflow-deploy/src**
+> - `adventure_source.jsx` (root) → `adventure_module.js`
+> - `content_engine_source.jsx` (root) → `content_engine_module.js`
+>
+> **Note on prismflow-deploy/src/ duplicates:** `prismflow-deploy/src/` previously
+> contained duplicate `games_source.jsx`, `adventure_source.jsx`, and
+> `content_engine_source.jsx` files. These are **kept in sync** with root (the
+> pre-commit hook enforces byte-identity) but the **root** version is the one
+> that gets compiled to `*_module.js`. An earlier version of this doc listed the
+> `prismflow-deploy/src/` paths as canonical; that was wrong — verified by
+> checking `games_module.js` for root-only props like `onExplainIncorrect` which
+> matched the root source verbatim, not the stale dup.
+>
 > Each compiled module wraps the source in an IIFE with a duplicate-load guard.
 > **Always run `node -c <module>.js` after compiling to verify syntax.**
+>
+> **Automated:** `node build.js --compile` (and `--mode=prod`) now runs the
+> doc_pipeline compile step automatically. Other modules (games/teacher/etc.)
+> still require manual compilation until Phase 2 of the JSX compiler lands.
 
 1b. Copy updated module files to `prismflow-deploy/public/`:
 ```
