@@ -9483,10 +9483,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           while (wGroup.children.length > 0) wGroup.remove(wGroup.children[0]);
           if (wildlifeRef.current) {
             var wl = wildlifeRef.current;
+            // Look up road height at the wildlife position so children/animals stand
+            // ON the road instead of at world Y=0 (which on hills puts them under it).
+            var wlRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
+              ? infiniteWorldRef.current.spline.heightAt(wl.y) : 0;
             if (wl.kind === 'child') {
-              // Child: small bright-yellow figure, two-piece (head + torso) so it reads
-              // as a person at a glance, not a brown box. Highly contrasting color so it
-              // pops against the road and reminds the driver this is a HUMAN.
               var childGroup = new T.Group();
               var bodyMat = new T.MeshLambertMaterial({ color: 0xfbbf24 });
               var torsoChild = new T.Mesh(new T.CylinderGeometry(0.13, 0.16, 0.45, 8), bodyMat);
@@ -9496,18 +9497,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var headChild = new T.Mesh(new T.SphereGeometry(0.13, 10, 8), new T.MeshLambertMaterial({ color: 0xf4c8a8 }));
               headChild.position.y = 0.78;
               childGroup.add(headChild);
-              // Backpack (red)
               var packChild = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.12), new T.MeshLambertMaterial({ color: 0xdc2626 }));
               packChild.position.set(-0.13, 0.45, 0);
               childGroup.add(packChild);
-              childGroup.position.set(wl.x - MAP_SIZE / 2, 0, wl.y - MAP_SIZE / 2);
+              childGroup.position.set(wl.x - MAP_SIZE / 2, wlRoadH, wl.y - MAP_SIZE / 2);
               wGroup.add(childGroup);
             } else {
               var wSize = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
               var wGeo = new T.BoxGeometry(wSize * 1.5, wSize, wSize * 0.6);
               var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
               var wMesh = new T.Mesh(wGeo, wMat);
-              wMesh.position.set(wl.x - MAP_SIZE / 2, wSize / 2, wl.y - MAP_SIZE / 2);
+              wMesh.position.set(wl.x - MAP_SIZE / 2, wlRoadH + wSize / 2, wl.y - MAP_SIZE / 2);
               wMesh.castShadow = true;
               wGroup.add(wMesh);
             }

@@ -214,6 +214,9 @@
           var warRoomLiveLastSync = d.warRoomLiveLastSync || 0;
           var warRoomChatDraft = d.warRoomChatDraft || '';
           var warRoomChatMessages = d.warRoomChatMessages || [];
+          var warRoomCustomCards = Array.isArray(d.warRoomCustomCards) ? d.warRoomCustomCards : [];
+          var warRoomCustomCardsDraft = d.warRoomCustomCardsDraft || '';
+          var warRoomCustomCardsError = d.warRoomCustomCardsError || null;
           var warRoomHelpOpen = d.warRoomHelpOpen || false;
           var warRoomWelcomeSeen = d.warRoomWelcomeSeen || false;
           var warRoomSoundMuted = d.warRoomSoundMuted || false;
@@ -1043,6 +1046,14 @@
                 return Object.keys(dd.warRoomAchievements || {}).length >= 6;
               },
               unlockHint: 'Earn 6 Trophy Room achievements to unlock.'
+            },
+            custom: {
+              id: 'custom', label: 'Custom Scenario', icon: '\uD83E\uDDEA',
+              desc: 'Scenarios authored by your teacher. Falls back to default red cards for any stage the teacher didn\'t cover.',
+              preferred: null,
+              locked: true,
+              unlockCondition: function(dd) { return Array.isArray(dd.warRoomCustomCards) && dd.warRoomCustomCards.length > 0; },
+              unlockHint: 'No custom scenarios yet \u2014 ask your teacher to add some in the Teacher Dashboard.'
             }
           };
 
@@ -1338,7 +1349,13 @@
 
           // ── Pick a red card for a given stage & difficulty, avoiding repeats ──
           function rollRedAction(stage, diff, history, themeId) {
-            var pool = redTeamCards.filter(function(c) { return c.stage === stage; });
+            var basePool = redTeamCards.filter(function(c) { return c.stage === stage; });
+            // Custom theme: prefer teacher-authored cards for this stage if any; else fall back to defaults
+            if (themeId === 'custom') {
+              var customForStage = warRoomCustomCards.filter(function(c) { return c && c.stage === stage; });
+              if (customForStage.length > 0) basePool = customForStage;
+            }
+            var pool = basePool;
             var usedIds = (history || []).map(function(h) { return h.red && h.red.id; });
             var fresh = pool.filter(function(c) { return usedIds.indexOf(c.id) === -1; });
             if (fresh.length === 0) fresh = pool;
@@ -1781,6 +1798,52 @@
             c2: 'If exploit landed, cut the beacon: block the IP, isolate the host, or hunt for the hidden channel.',
             actions: 'Time matters most. Escalate early \u2014 the CISO plus containment is the strongest late-game play.'
           };
+
+          // ── Validate teacher-authored red card JSON ──
+          function validateCustomCardsJson(rawText) {
+            try {
+              var parsed = JSON.parse(rawText);
+              if (!Array.isArray(parsed)) return { error: 'Top-level must be a JSON array of card objects.' };
+              var validStages = warStages.map(function(s) { return s.id; });
+              var validBlueIds = blueTeamCards.map(function(c) { return c.id; });
+              var cleaned = [];
+              var errors = [];
+              parsed.forEach(function(card, i) {
+                var prefix = 'Card ' + (i + 1) + ': ';
+                if (!card || typeof card !== 'object') { errors.push(prefix + 'not an object'); return; }
+                if (!card.id) { errors.push(prefix + 'missing "id"'); return; }
+                if (!card.stage || validStages.indexOf(card.stage) === -1) { errors.push(prefix + 'invalid "stage" (must be one of ' + validStages.join(', ') + ')'); return; }
+                if (!card.title) { errors.push(prefix + 'missing "title"'); return; }
+                if (!card.description) { errors.push(prefix + 'missing "description"'); return; }
+                if (!Array.isArray(card.indicators) || card.indicators.length === 0) { errors.push(prefix + '"indicators" must be a non-empty array'); return; }
+                if (!card.mitigations || typeof card.mitigations !== 'object') { errors.push(prefix + 'missing "mitigations" object'); return; }
+                var cleanMit = {};
+                Object.keys(card.mitigations).forEach(function(k) {
+                  if (validBlueIds.indexOf(k) !== -1) {
+                    cleanMit[k] = Math.max(0, Math.min(1, Number(card.mitigations[k]) || 0));
+                  }
+                });
+                if (Object.keys(cleanMit).length === 0) { errors.push(prefix + 'mitigations has no valid blue card IDs (valid: ' + validBlueIds.join(', ') + ')'); return; }
+                cleaned.push({
+                  id: 'custom_' + String(card.id).replace(/[^a-z0-9_]/gi, '').slice(0, 40),
+                  stage: card.stage,
+                  title: String(card.title).slice(0, 120),
+                  description: String(card.description).slice(0, 600),
+                  indicators: card.indicators.map(function(s) { return String(s).slice(0, 200); }),
+                  noiseIndicators: Array.isArray(card.noiseIndicators) ? card.noiseIndicators.map(function(s) { return String(s).slice(0, 200); }) : [],
+                  mitigations: cleanMit,
+                  impact: card.impact && typeof card.impact === 'object' ? {
+                    users: Math.max(0, Math.min(10, Number(card.impact.users) || 0)),
+                    servers: Math.max(0, Math.min(5, Number(card.impact.servers) || 0)),
+                    data: Math.max(0, Math.min(100, Number(card.impact.data) || 0))
+                  } : {},
+                  _custom: true
+                });
+              });
+              if (errors.length > 0 && cleaned.length === 0) return { error: errors.join('\n') };
+              return { cards: cleaned, warnings: errors };
+            } catch(e) { return { error: 'Invalid JSON: ' + (e.message || 'parse error') }; }
+          }
 
           // ── Compute the strongest defenses for a stage by scanning red-card mitigation matrices ──
           function playbookDefensesForStage(stageId) {
@@ -3387,6 +3450,50 @@
                         })
                       )
                     )
+                  ),
+                  // Custom Red Cards editor (teacher-authored scenarios)
+                  el('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px dashed rgba(168,85,247,0.3)' } },
+                    el('div', { style: { color: '#d8b4fe', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, marginBottom: 6 } }, '\uD83E\uDDEA CUSTOM RED CARDS (' + warRoomCustomCards.length + ' saved)'),
+                    el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginBottom: 8 } },
+                      'Paste a JSON array of custom red team cards. Schema per card: ',
+                      el('code', { style: { color: '#fde68a', fontFamily: 'monospace' } },
+                        '{ id, stage, title, description, indicators[], mitigations{blue_id:0..1}, impact{} }'),
+                      '. Valid stages: ', el('code', { style: { color: '#fde68a' } }, warStages.map(function(s) { return s.id; }).join(', ')),
+                      '. Valid blue IDs: ', el('code', { style: { color: '#fde68a' } }, blueTeamCards.map(function(c) { return c.id; }).join(', ')),
+                      '. Students pick the "Custom Scenario" theme to use these.'),
+                    el('label', { htmlFor: 'warroom-custom-cards-input', className: 'allo-sr-only' }, 'Custom red cards JSON'),
+                    el('textarea', {
+                      id: 'warroom-custom-cards-input',
+                      value: warRoomCustomCardsDraft,
+                      placeholder: '[{"id":"myphish","stage":"delivery","title":"Fake homework portal login","description":"An email links to a fake school portal page.","indicators":["Sender address uses \\"login-portal.net\\""],"mitigations":{"block_ip":1.0,"awareness_blast":0.8},"impact":{"users":2}}]',
+                      onChange: function(ev) { upd({ warRoomCustomCardsDraft: ev.target.value, warRoomCustomCardsError: null }); },
+                      style: { width: '100%', minHeight: 140, padding: 8, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.8)', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5, fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' } }),
+                    warRoomCustomCardsError && el('div', { role: 'alert',
+                      style: { marginTop: 6, padding: 8, borderRadius: 5, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 11, whiteSpace: 'pre-wrap', lineHeight: 1.5 } },
+                      warRoomCustomCardsError),
+                    el('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                      el('button', {
+                        onClick: function() {
+                          var res = validateCustomCardsJson(warRoomCustomCardsDraft || '[]');
+                          if (res.error) { upd('warRoomCustomCardsError', res.error); return; }
+                          upd({ warRoomCustomCards: res.cards, warRoomCustomCardsError: res.warnings && res.warnings.length > 0 ? 'Saved with ' + res.cards.length + ' card(s). Skipped: ' + res.warnings.length : null });
+                          if (ctx.addToast) ctx.addToast('\u2705 Saved ' + res.cards.length + ' custom card(s)', 'success');
+                        },
+                        style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.15)', color: '#86efac', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, '\u2705 Validate & Save'),
+                      el('button', {
+                        onClick: function() {
+                          upd({ warRoomCustomCardsDraft: JSON.stringify(warRoomCustomCards, null, 2), warRoomCustomCardsError: null });
+                        },
+                        'aria-label': 'Load currently-saved cards into the editor',
+                        style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21BB Load Saved'),
+                      warRoomCustomCards.length > 0 && el('button', {
+                        onClick: function() {
+                          if (!confirm('Remove all ' + warRoomCustomCards.length + ' custom card(s)?')) return;
+                          upd({ warRoomCustomCards: [], warRoomCustomCardsError: null });
+                          if (ctx.addToast) ctx.addToast('Custom cards cleared', 'info');
+                        },
+                        style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.1)', color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDDD1\uFE0F Clear Custom Cards')
+                    )
                   )
                 ),
                 warRoomGlossaryOpen && el('div', { id: 'warroom-glossary-panel', role: 'region', 'aria-label': 'Cybersecurity glossary',
@@ -3458,7 +3565,21 @@
                           )
                         );
                       })
-                    )
+                    ),
+                    // Reset settings — restores UDL/accessibility defaults without touching progress
+                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind) ? el('button', {
+                      onClick: function() {
+                        if (!confirm('Reset UDL / Access options to defaults? Achievements and history are kept.')) return;
+                        upd({
+                          warRoomPlainLanguage: false,
+                          warRoomSoundMuted: false,
+                          warRoomA11y: { dyslexiaFont: false, largeText: false, highContrast: false, colorBlind: false }
+                        });
+                        if (ctx.addToast) ctx.addToast('Access options reset to defaults', 'info');
+                      },
+                      'aria-label': 'Reset UDL and accessibility options to their defaults',
+                      style: { marginTop: 6, padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.25)', background: 'transparent', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                      '\u21BB Reset to defaults') : null)
                   ),
                   // Live Session broadcast (only shown when Firebase + session code available)
                   warLive.available && el('div', { style: { padding: 10, borderRadius: 8, background: warRoomLiveMode !== 'off' ? 'rgba(239,68,68,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomLiveMode !== 'off' ? 'rgba(239,68,68,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 10 } },

@@ -634,6 +634,9 @@ var d = labToolData || {};
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Identified ' + geoTarget.name);
 
+              // Celebrate the correct polygon with a green pulse
+              highlightCountry(geoTarget.iso, '#22c55e', 1400);
+
               setTimeout(function() { pickTarget(geoTab); }, 1500);
 
             } else {
@@ -648,6 +651,12 @@ var d = labToolData || {};
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, msg: '\u274C You picked ' + pickedLabel + '. The answer is ' + geoTarget.name + '.' });
+
+              // Spatial learning: flash the wrong pick in red, then reveal the
+              // correct country in green and fly to it so the student SEES where it is.
+              if (clickedIso) highlightCountry(clickedIso, '#ef4444', 2400);
+              highlightCountry(geoTarget.iso, '#22c55e', 2400);
+              flyToCountry(geoTarget);
 
               setTimeout(function() { pickTarget(geoTab); }, 2500);
 
@@ -794,13 +803,13 @@ var d = labToolData || {};
 
 
 
-          // Highlight a country
-
-          function highlightCountry(iso, color) {
+          // Highlight a country on the Leaflet map. Duration controls how long
+          // the highlight stays visible before reverting to the default style.
+          function highlightCountry(iso, color, duration) {
 
             var layer = window._geoGeoJsonLayer.current;
 
-            if (!layer) return;
+            if (!layer || !iso) return;
 
             layer.eachLayer(function(l) {
 
@@ -808,9 +817,9 @@ var d = labToolData || {};
 
               if (fIso === iso) {
 
-                l.setStyle({ fillColor: color || '#48bb78', fillOpacity: 0.9 });
+                l.setStyle({ fillColor: color || '#48bb78', fillOpacity: 0.9, weight: 2 });
 
-                setTimeout(function() { l.setStyle({ fillColor: '#2d3748', fillOpacity: 0.6 }); }, 2000);
+                setTimeout(function() { l.setStyle({ fillColor: '#2d3748', fillOpacity: 0.6, weight: 1 }); }, duration || 2000);
 
               }
 
