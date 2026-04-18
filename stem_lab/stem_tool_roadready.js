@@ -3234,7 +3234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cy.y = startY + (cy.y >= startY ? 25 : -25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0 };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -5318,7 +5318,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
             if (noPassZone) { t._laneChangeCooldown = Math.max(t._laneChangeCooldown || 0, 2); }
-            if (!t.crossStreet && t._laneChangeCooldown <= 0) {
+            // Lane-change decisions require the car to actually be moving — a stopped
+            // car at a red light shouldn't randomly slide sideways into the next lane.
+            if (!t.crossStreet && t._laneChangeCooldown <= 0 && Math.abs(t.speed) > 1.5) {
               // Driver-relative geometry.
               //   myDirSign: +1 southbound (heading ~+π/2), -1 northbound (~−π/2).
               //   innerSign: +laneOffset delta that means "toward centerline" for THIS driver.
@@ -9591,9 +9593,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var iw = infiniteWorldRef.current;
             var currentChunk = Math.floor(car.y / CHUNK_SIZE);
             if (!s3._loadedChunks) s3._loadedChunks = {};
-            // Load chunks within range (-2 to +2 from current)
-            // Load chunks 4 ahead and 2 behind (seamless — you never see them pop in)
-            for (var ci = currentChunk - 2; ci <= currentChunk + 4; ci++) {
+            // Load chunks ASYMMETRICALLY based on direction of travel.
+            // Player moving -Y (heading sin < 0, default NB) → ahead = lower chunkIndex.
+            // Player moving +Y (sin > 0, SB) → ahead = higher chunkIndex.
+            // Previously the range was hardcoded `currentChunk - 2 to currentChunk + 4`
+            // which loaded 4 chunks AHEAD only for SB players. NB players (default in Free
+            // Explore) saw chunks pop in 64m ahead (~2 sec at highway speed). Now: 4 chunks
+            // ahead in the direction of travel + 2 behind.
+            var travelSign = Math.sin(car.heading) < 0 ? -1 : 1; // -1 = moving toward lower chunks
+            var loFromTravel = travelSign === -1 ? -4 : -2;
+            var hiFromTravel = travelSign === -1 ? +2 : +4;
+            for (var ci = currentChunk + loFromTravel; ci <= currentChunk + hiFromTravel; ci++) {
               if (s3._loadedChunks[ci]) continue;
               var chunk = iw.getChunk(ci);
               var chunkGroup = new T.Group();
@@ -11691,8 +11701,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               s3.scene.add(chunkGroup);
               s3._loadedChunks[ci] = chunkGroup;
             }
-            // Add traffic signals at chunk intersections (for physics compliance)
-            for (var sci = currentChunk - 2; sci <= currentChunk + 4; sci++) {
+            // Add traffic signals at chunk intersections — match the load range so we
+            // never have a chunk visually rendered without its signal entry, OR a
+            // signal entry without its rendered chunk.
+            for (var sci = currentChunk + loFromTravel; sci <= currentChunk + hiFromTravel; sci++) {
               var sigChunk = iw.getChunk(sci);
               if (sigChunk && sigChunk.hasIntersection && !sigChunk._signalAdded) {
                 sigChunk._signalAdded = true;
@@ -11709,10 +11721,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
 
-            // Unload distant chunks
+            // Unload distant chunks. Hysteresis: keep one extra chunk past the load
+            // range so chunks at the edge don't unload + reload every frame as currentChunk
+            // ticks over. Match the asymmetric direction-aware load range.
+            var unloadLo = currentChunk + loFromTravel - 1;
+            var unloadHi = currentChunk + hiFromTravel + 1;
             Object.keys(s3._loadedChunks).forEach(function(key) {
               var ki = parseInt(key);
-              if (ki < currentChunk - 3 || ki > currentChunk + 5) {
+              if (ki < unloadLo || ki > unloadHi) {
                 var cg = s3._loadedChunks[ki];
                 if (cg) {
                   cg.traverse(function(obj) { if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });

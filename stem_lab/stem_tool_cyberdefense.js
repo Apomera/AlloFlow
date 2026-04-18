@@ -166,6 +166,12 @@
           var warRoomTimedOutAny = d.warRoomTimedOutAny || false;
           var warRoomStoryMode = d.warRoomStoryMode != null ? d.warRoomStoryMode : (warRoomCampaignsCompleted === 0);
           var warRoomCampaignId = d.warRoomCampaignId || null;
+          // Hot-seat (classroom pass-and-play) mode
+          var warRoomHotSeatEnabled = d.warRoomHotSeatEnabled || false;
+          var warRoomHotSeatPlayers = d.warRoomHotSeatPlayers || ['Player 1', 'Player 2'];
+          var warRoomHotSeatCurrentIdx = d.warRoomHotSeatCurrentIdx || 0;
+          var warRoomHotSeatPassScreen = d.warRoomHotSeatPassScreen || false;
+          var warRoomHotSeatStats = d.warRoomHotSeatStats || {}; // { playerIdx: { rounds, detections, mitigations, combos } }
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -286,7 +292,7 @@
 
           // ── War Room Timer (Threat Hunter difficulty only; auto-resolves when time hits 0 if plays exist) ──
           if (window._cyberWarRoomTimer) { clearTimeout(window._cyberWarRoomTimer); window._cyberWarRoomTimer = null; }
-          var warTimerActive = cyberTab === 'warroom' && d.warRoomActive && d.warRoomDifficulty === 'threatHunter' && !d.warRoomRoundResolved && !d.warRoomVerdict;
+          var warTimerActive = cyberTab === 'warroom' && d.warRoomActive && d.warRoomDifficulty === 'threatHunter' && !d.warRoomRoundResolved && !d.warRoomVerdict && !d.warRoomHotSeatPassScreen;
           if (warTimerActive && warRoomTimeLeft > 0) {
             window._cyberWarRoomTimer = setTimeout(function() {
               var nextTime = warRoomTimeLeft - 1;
@@ -1020,7 +1026,10 @@
               warRoomTotalCombos: 0,
               warRoomTimedOutAny: false,
               warRoomCampaignAchievements: [],
-              warRoomCampaignId: campaignId
+              warRoomCampaignId: campaignId,
+              warRoomHotSeatCurrentIdx: 0,
+              warRoomHotSeatStats: {},
+              warRoomHotSeatPassScreen: warRoomHotSeatEnabled && warRoomHotSeatPlayers.length > 1
             });
             if (ctx.announceToSR) ctx.announceToSR('War Room campaign started on ' + diff + ' difficulty, ' + campaignThemes[theme].label + '. Round 1, Reconnaissance. ' + firstRed.title);
             sfxCyberdClick();
@@ -1195,6 +1204,18 @@
             ctx.awardXP('cyberDefense', result.xpDelta);
             var combosThisRound = (result.activeCombos || []).length;
             var timedOutThisRound = warRoomDifficulty === 'threatHunter' && warRoomTimeLeft <= 0;
+            // Per-player stats (hot-seat mode)
+            var newHotSeatStats = Object.assign({}, warRoomHotSeatStats);
+            if (warRoomHotSeatEnabled) {
+              var key = String(warRoomHotSeatCurrentIdx);
+              var prev = newHotSeatStats[key] || { rounds: 0, detections: 0, mitigations: 0, combos: 0 };
+              newHotSeatStats[key] = {
+                rounds: prev.rounds + 1,
+                detections: prev.detections + (result.outcome !== 'succeeded' ? 1 : 0),
+                mitigations: prev.mitigations + (result.outcome === 'mitigated' ? 1 : 0),
+                combos: prev.combos + combosThisRound
+              };
+            }
             upd({
               warRoomKillChain: newChain,
               warRoomAssets: newAssets,
@@ -1205,6 +1226,7 @@
               warRoomRoundResolved: true,
               warRoomTotalCombos: warRoomTotalCombos + combosThisRound,
               warRoomTimedOutAny: warRoomTimedOutAny || timedOutThisRound,
+              warRoomHotSeatStats: newHotSeatStats,
               warRoomLastResolution: {
                 outcome: result.outcome,
                 outcomeLabel: outcomeLabel,
@@ -1268,6 +1290,9 @@
               var nextStage = warStages[warRoomRound].id;
               var nextRed = rollRedAction(nextStage, warRoomDifficulty, warRoomKillChain, warRoomCampaignTheme);
               var nextAlerts = generateAlerts(nextRed, warRoomDifficulty);
+              var nextPlayerIdx = warRoomHotSeatEnabled && warRoomHotSeatPlayers.length > 0
+                ? (warRoomHotSeatCurrentIdx + 1) % warRoomHotSeatPlayers.length
+                : warRoomHotSeatCurrentIdx;
               upd({
                 warRoomRound: warRoomRound + 1,
                 warRoomRedAction: nextRed,
@@ -1277,7 +1302,9 @@
                 warRoomRoundResolved: false,
                 warRoomLastResolution: null,
                 warRoomHintRevealed: false,
-                warRoomTimeLeft: 90
+                warRoomTimeLeft: 90,
+                warRoomHotSeatCurrentIdx: nextPlayerIdx,
+                warRoomHotSeatPassScreen: warRoomHotSeatEnabled && warRoomHotSeatPlayers.length > 1
               });
               if (ctx.announceToSR) ctx.announceToSR('Advancing to round ' + (warRoomRound + 1) + ': ' + warStages[warRoomRound].name + '. Red team: ' + nextRed.title);
             }
@@ -1966,7 +1993,7 @@
                     )
                   ),
                   // Story Mode toggle
-                  el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 } },
+                  el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 } },
                     el('button', { onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
                       role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': 'Toggle Story Mode',
                       style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#22c55e' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
@@ -1974,6 +2001,54 @@
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomStoryMode ? '#86efac' : '#cbd5e1' } }, '\uD83C\uDFAC Story Mode \u2014 Guided Coaching'),
                       el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, 'Each round shows a "Coach" tip explaining what the attacker is doing and which defenses to consider. Recommended for your first few campaigns.')
+                    )
+                  ),
+                  // Hot Seat (classroom pass-and-play)
+                  el('div', { style: { padding: 10, borderRadius: 8, background: warRoomHotSeatEnabled ? 'rgba(168,85,247,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomHotSeatEnabled ? 'rgba(168,85,247,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 16 } },
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: warRoomHotSeatEnabled ? 10 : 0 } },
+                      el('button', { onClick: function() { upd('warRoomHotSeatEnabled', !warRoomHotSeatEnabled); sfxCyberdClick(); },
+                        role: 'switch', 'aria-checked': warRoomHotSeatEnabled, 'aria-label': 'Toggle Hot Seat classroom mode',
+                        style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomHotSeatEnabled ? '#a855f7' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
+                        warRoomHotSeatEnabled ? 'ON' : 'OFF'),
+                      el('div', { style: { flex: 1 } },
+                        el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomHotSeatEnabled ? '#d8b4fe' : '#cbd5e1' } }, '\uD83E\uDD1D Hot Seat \u2014 Classroom Pass-and-Play'),
+                        el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, 'Rotate through 2\u20136 students on one device. Each player takes a round, pass screen hides intel until they\'re ready.')
+                      )
+                    ),
+                    warRoomHotSeatEnabled && el('div', null,
+                      el('div', { style: { color: '#d8b4fe', fontSize: 10, fontWeight: 700, marginBottom: 6, letterSpacing: 0.5 } }, 'PLAYERS (' + warRoomHotSeatPlayers.length + ')'),
+                      el('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                        warRoomHotSeatPlayers.map(function(name, idx) {
+                          return el('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                            el('span', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 800, minWidth: 20 } }, (idx + 1) + '.'),
+                            el('input', { type: 'text', value: name, maxLength: 20,
+                              'aria-label': 'Player ' + (idx + 1) + ' name',
+                              onChange: function(ev) {
+                                var newList = warRoomHotSeatPlayers.slice();
+                                newList[idx] = ev.target.value.slice(0, 20) || ('Player ' + (idx + 1));
+                                upd('warRoomHotSeatPlayers', newList);
+                              },
+                              style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 12 } }),
+                            warRoomHotSeatPlayers.length > 2 && el('button', {
+                              onClick: function() {
+                                var newList = warRoomHotSeatPlayers.slice();
+                                newList.splice(idx, 1);
+                                upd('warRoomHotSeatPlayers', newList);
+                                sfxCyberdClick();
+                              },
+                              'aria-label': 'Remove ' + name,
+                              style: { padding: '2px 8px', borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.15)', color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
+                          );
+                        })
+                      ),
+                      warRoomHotSeatPlayers.length < 6 && el('button', {
+                        onClick: function() {
+                          var newList = warRoomHotSeatPlayers.concat(['Player ' + (warRoomHotSeatPlayers.length + 1)]);
+                          upd('warRoomHotSeatPlayers', newList);
+                          sfxCyberdClick();
+                        },
+                        style: { marginTop: 6, padding: '4px 12px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add Player'),
+                      el('div', { style: { marginTop: 8, fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.4 } }, 'Rounds assigned round-robin. With ' + warRoomHotSeatPlayers.length + ' players, each plays ' + (warRoomHotSeatPlayers.length === 6 ? '1 round' : (warRoomHotSeatPlayers.length === 3 ? '2 rounds' : (warRoomHotSeatPlayers.length === 2 ? '3 rounds' : '~' + Math.ceil(6 / warRoomHotSeatPlayers.length) + ' rounds'))) + '.')
                     )
                   ),
                   // Cross-mode bonuses earned from other Cyber Defense modes
@@ -2092,6 +2167,37 @@
                       })
                     )
                   ),
+                  // Hot-seat per-player scoreboard + MVP (only when hot-seat was enabled)
+                  warRoomHotSeatEnabled && Object.keys(warRoomHotSeatStats).length > 0 && (function() {
+                    var rows = warRoomHotSeatPlayers.map(function(name, idx) {
+                      var s = warRoomHotSeatStats[String(idx)] || { rounds: 0, detections: 0, mitigations: 0, combos: 0 };
+                      var score = s.mitigations * 3 + s.detections + s.combos * 2; // weighted
+                      return { idx: idx, name: name, stats: s, score: score };
+                    });
+                    var maxScore = Math.max.apply(null, rows.map(function(r) { return r.score; }));
+                    var mvpIdx = maxScore > 0 ? rows.filter(function(r) { return r.score === maxScore; })[0].idx : -1;
+                    return el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.04))', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 14 } },
+                      el('div', { style: { color: '#d8b4fe', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83E\uDD1D TEAM SCOREBOARD'),
+                      el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                        rows.map(function(r) {
+                          var isMvp = r.idx === mvpIdx;
+                          return el('div', { key: r.idx, style: { padding: 10, borderRadius: 8, background: isMvp ? 'rgba(245,158,11,0.1)' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (isMvp ? 'rgba(245,158,11,0.35)' : 'rgba(148,163,184,0.15)') } },
+                            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                              isMvp && el('span', { style: { fontSize: 14 } }, '\uD83C\uDF96\uFE0F'),
+                              el('span', { style: { fontSize: 13, fontWeight: 800, color: isMvp ? '#fde68a' : '#e2e8f0', flex: 1 } }, r.name),
+                              isMvp && el('span', { style: { fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 3, background: 'rgba(245,158,11,0.25)', color: '#fbbf24', letterSpacing: 0.3 } }, 'MVP')
+                            ),
+                            el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.55 } },
+                              r.stats.rounds + ' round' + (r.stats.rounds === 1 ? '' : 's') + ' \u2022 ',
+                              el('span', { style: { color: '#86efac', fontWeight: 700 } }, r.stats.mitigations + ' mitigated'), ' \u2022 ',
+                              el('span', { style: { color: '#93c5fd', fontWeight: 700 } }, r.stats.detections + ' detected'),
+                              r.stats.combos > 0 && el('span', null, ' \u2022 ', el('span', { style: { color: '#fbbf24', fontWeight: 700 } }, r.stats.combos + ' combo' + (r.stats.combos === 1 ? '' : 's')))
+                            )
+                          );
+                        })
+                      )
+                    );
+                  })(),
                   // Kill chain recap (expandable)
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, 'KILL CHAIN RECAP (click a round to expand)'),
@@ -2144,12 +2250,23 @@
                   el('div', { style: { display: 'flex', gap: 10 } },
                     el('button', {
                       onClick: function() {
+                        var hotSeatLine = '';
+                        if (warRoomHotSeatEnabled) {
+                          var hsRows = warRoomHotSeatPlayers.map(function(name, idx) {
+                            var s = warRoomHotSeatStats[String(idx)] || { rounds: 0, mitigations: 0, detections: 0 };
+                            return { name: name, score: s.mitigations * 3 + s.detections };
+                          });
+                          var hsMax = Math.max.apply(null, hsRows.map(function(r) { return r.score; }));
+                          var mvp = hsMax > 0 ? hsRows.filter(function(r) { return r.score === hsMax; })[0] : null;
+                          hotSeatLine = 'Team: ' + warRoomHotSeatPlayers.join(', ') + (mvp ? ' | MVP: ' + mvp.name : '') + '\n';
+                        }
                         var summary = 'SOC War Room \u2014 Campaign #' + (warRoomCampaignId || '????') + '\n' +
                           (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].label : 'Mixed') + ' \u2022 ' + warRoomDifficulty + '\n' +
                           'Verdict: ' + (warRoomVerdict === 'won' ? 'WON \uD83C\uDFC6' : 'LOST \u26A0\uFE0F') + '\n' +
                           'Detections: ' + warRoomDetections + '/6 | Mitigations: ' + warRoomMitigations + '/6\n' +
                           'Assets preserved: ' + warRoomAssets.users + '/10 users, ' + warRoomAssets.servers + '/5 servers, ' + warRoomAssets.data + '/100 data\n' +
                           'Combos: ' + warRoomTotalCombos + ' | Rank: ' + warRoomRank.label + '\n' +
+                          hotSeatLine +
                           (warRoomCampaignAchievements.length > 0 ? 'Achievements: ' + warRoomCampaignAchievements.length + ' earned\n' : '') +
                           'AlloFlow \u2022 Cyber Defense Lab';
                         try {
@@ -2173,8 +2290,22 @@
                   )
                 ),
 
-                // Active campaign (not ended)
-                warRoomActive && !warRoomVerdict && el('div', null,
+                // Hot-seat "pass the device" screen (blocks view until current player taps)
+                warRoomActive && !warRoomVerdict && warRoomHotSeatEnabled && warRoomHotSeatPassScreen && el('div', { style: { padding: '40px 20px', textAlign: 'center', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.04))', border: '2px solid rgba(168,85,247,0.35)' } },
+                  el('div', { style: { fontSize: 60, marginBottom: 12, animation: 'warVictory 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) both' } }, '\uD83E\uDD1D'),
+                  el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 } }, 'PASS THE DEVICE'),
+                  el('div', { style: { fontSize: 24, fontWeight: 900, color: '#d8b4fe', marginBottom: 8 } }, warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))),
+                  el('div', { style: { fontSize: 14, color: '#cbd5e1', marginBottom: 4 } }, 'Your turn \u2014 Round ' + warRoomRound + ' of 6'),
+                  el('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 20 } }, warRoomCurrentStage.icon + ' ' + warRoomCurrentStage.name),
+                  el('button', { onClick: function() { upd('warRoomHotSeatPassScreen', false); sfxCyberdClick(); if (ctx.announceToSR) ctx.announceToSR(warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] + ' is now playing. Round ' + warRoomRound + '.'); },
+                    'aria-label': 'Ready to play, ' + warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx],
+                    style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: 'white', fontSize: 15, fontWeight: 800, cursor: 'pointer' } },
+                    '\uD83D\uDC4A I\'m Ready'),
+                  el('div', { style: { marginTop: 16, fontSize: 10.5, color: '#64748b', fontStyle: 'italic' } }, 'Other players: look away until the active player confirms.')
+                ),
+
+                // Active campaign (not ended, and past the pass screen)
+                warRoomActive && !warRoomVerdict && !(warRoomHotSeatEnabled && warRoomHotSeatPassScreen) && el('div', null,
 
                   // Header strip
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(244,63,94,0.2)', marginBottom: 12, flexWrap: 'wrap' } },
@@ -2182,7 +2313,8 @@
                       el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
                       el('div', null,
                         el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '') + (warRoomCampaignId ? ' \u2022 #' + warRoomCampaignId : '')),
-                        el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name)
+                        el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name),
+                        warRoomHotSeatEnabled && el('div', { style: { fontSize: 10, color: '#d8b4fe', fontWeight: 800, marginTop: 1 } }, '\uD83E\uDD1D ' + (warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))) + '\'s turn')
                       )
                     ),
                     // Kill chain progress bar

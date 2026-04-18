@@ -1853,6 +1853,20 @@ var TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardDa
   const [studentFilter, setStudentFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("students");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  // WCAG 2.1.2 + 2.4.3: Escape closes the Clear Confirm modal + restores focus.
+  // Proper top-of-component useEffect — the previous version was wedged inside a
+  // st.tools.map() callback (React Hook Rules violation, registered N listeners per
+  // render, and referenced out-of-scope state vars). See April 2026 cleanup pass.
+  useEffect(function() {
+    function _alloEscHandler(e) {
+      if (e.key === 'Escape' && showClearConfirm) {
+        setShowClearConfirm(false);
+        if (typeof alloRestoreFocus === 'function') alloRestoreFocus();
+      }
+    }
+    document.addEventListener('keydown', _alloEscHandler);
+    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  }, [showClearConfirm]);
   const toggleGraded = (id) => {
     setGradedIds((prev) => {
       const next = new Set(prev);
@@ -2770,20 +2784,7 @@ var TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardDa
         return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-4 border border-slate-200 hover:border-emerald-300 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {
           const registry = window.STEM_TOOL_REGISTRY || [];
           const meta = registry.find((r) => r.id === toolId);
-          
-  // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
-  useEffect(function() {
-    function _alloEscHandler(e) {
-      if (e.key === 'Escape' && (showBatchConfig || showConfetti || showEndConfirm || showLocalStats || showDiagnostics || showClearConfirm || showBatchConfig || showConfetti || showEndConfirm || showLocalStats || showDiagnostics || showClearConfirm)) {
-        setShowBatchConfig(false); setShowConfetti(false); setShowEndConfirm(false); setShowLocalStats(false); setShowDiagnostics(false); setShowClearConfirm(false); setShowBatchConfig(false); setShowConfetti(false); setShowEndConfirm(false); setShowLocalStats(false); setShowDiagnostics(false); setShowClearConfirm(false);
-        alloRestoreFocus();
-      }
-    }
-    document.addEventListener('keydown', _alloEscHandler);
-    return function() { document.removeEventListener('keydown', _alloEscHandler); };
-  });
-
-  return /* @__PURE__ */ React.createElement("span", { key: toolId, className: "bg-white text-slate-600 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-200" }, "\u{1F9EA} ", meta ? meta.name : toolId);
+          return /* @__PURE__ */ React.createElement("span", { key: toolId, className: "bg-white text-slate-600 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-200" }, "\u{1F9EA} ", meta ? meta.name : toolId);
         })), st.teacherNote && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic mt-2" }, '"', st.teacherNote, '"'));
       }));
     })()))))),

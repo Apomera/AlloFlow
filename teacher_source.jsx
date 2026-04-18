@@ -2693,6 +2693,19 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  // WCAG 2.1.2 + 2.4.3: Escape closes the Clear Confirm modal + restores focus.
+  // Proper top-of-component useEffect — previously in module.js only, wedged inside
+  // an st.tools.map() callback (React Hook Rules violation). Fixed April 2026.
+  useEffect(function() {
+    function _alloEscHandler(e) {
+      if (e.key === 'Escape' && showClearConfirm) {
+        setShowClearConfirm(false);
+        if (typeof alloRestoreFocus === 'function') alloRestoreFocus();
+      }
+    }
+    document.addEventListener('keydown', _alloEscHandler);
+    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  }, [showClearConfirm]);
   const toggleGraded = (id) => {
       setGradedIds(prev => {
           const next = new Set(prev);
