@@ -11932,6 +11932,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 delete s3._loadedChunks[ki];
                 // Remove signals from this chunk
                 signalsRef.current = signalsRef.current.filter(function(sig) { return sig._chunk !== ki; });
+                // Clear the chunk's _signalAdded flag so the signal gets re-added if the
+                // player drives back into this chunk later. Without this, the signal entry
+                // would be removed AND never re-created — silent bug where intersections
+                // lost their signal logic on backtrack.
+                var unloadedChunk = iw.chunks && iw.chunks[ki];
+                if (unloadedChunk) unloadedChunk._signalAdded = false;
+                // Same for the mast-arm signal lamps — they get re-built next time.
+                if (s3.trafficLampsByChunk && s3.trafficLampsByChunk[ki]) {
+                  delete s3.trafficLampsByChunk[ki];
+                }
               }
             });
           }
@@ -15437,7 +15447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.aiCausedCrashes > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #60a5fa' } }, 'ℹ️ ' + drivingStats.aiCausedCrashes + ' of your ' + drivingStats.crashes + ' crashes were caused by other drivers (mostly tailgating). In real life you\'d file an insurance claim — your safety score was only lightly penalized.') : null,
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
                 drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
-                drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, R=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
+                drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, V=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
                 drivingStats.busStopCompliance > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚌 ' + drivingStats.busStopCompliance + ' correct stop(s) for school bus with red flashers. Federal law — you nailed it.') : null,
                 drivingStats.pedYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚶 ' + drivingStats.pedYields + ' pedestrian yield(s) at crosswalks. This is the single most important habit for urban driving.') : null,
                 drivingStats.emergencyYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚑 ' + drivingStats.emergencyYields + ' emergency vehicle yield(s) — pulled right and stopped. Good instinct.') : null,

@@ -1113,6 +1113,69 @@ var createDocPipeline = function(deps) {
         return html.replace(new RegExp(escapeForRegex(p.oldColor), 'gi'), p.newColor);
       }
     },
+    // Deterministic per-element contrast fix driven by axe-core's reported data
+    // (fgColor, bgColor, expectedContrastRatio, target selector). Computes a passing
+    // foreground via luminance-descent and injects an inline style attribute — inline
+    // beats any class or <style>-block rule that caused the original violation.
+    fix_color_contrast: {
+      category: 'VISUAL', wcag: '1.4.3', params: '{target, fgColor, bgColor, expectedContrastRatio}',
+      fn: function(html, p) {
+        if (!p || !p.target || !p.fgColor || !p.bgColor) return html;
+        var parseColor = function(c) {
+          if (!c) return null;
+          var s = String(c).trim();
+          if (s[0] === '#') {
+            var h = s.slice(1);
+            if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+            if (h.length < 6) return null;
+            return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+          }
+          var m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+          return m ? [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])] : null;
+        };
+        var rgbToHex = function(r,g,b) { return '#' + [r,g,b].map(function(x) { return Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0'); }).join(''); };
+        var lum = function(r,g,b) {
+          var map = function(c) { c = c/255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+          return 0.2126*map(r) + 0.7152*map(g) + 0.0722*map(b);
+        };
+        var ratio = function(a,b) { var l1=lum(a[0],a[1],a[2]), l2=lum(b[0],b[1],b[2]); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
+        var fgRgb = parseColor(p.fgColor);
+        var bgRgb = parseColor(p.bgColor);
+        if (!fgRgb || !bgRgb) return html;
+        var target = p.expectedContrastRatio || 4.5;
+        var r = fgRgb[0], g = fgRgb[1], b = fgRgb[2];
+        var isDarkBg = lum(bgRgb[0],bgRgb[1],bgRgb[2]) < 0.18;
+        for (var i = 0; i < 30; i++) {
+          if (ratio([r,g,b], bgRgb) >= target) break;
+          if (isDarkBg) {
+            r = Math.min(255, Math.round(r + (255-r)*0.15));
+            g = Math.min(255, Math.round(g + (255-g)*0.15));
+            b = Math.min(255, Math.round(b + (255-b)*0.15));
+          } else {
+            r = Math.max(0, Math.round(r*0.82));
+            g = Math.max(0, Math.round(g*0.82));
+            b = Math.max(0, Math.round(b*0.82));
+          }
+        }
+        var newFg = rgbToHex(r,g,b);
+        // axe target can be nested (frames): [["sel1"], ["sel2"]] → use last frame's selector.
+        var rawTarget = p.target;
+        var selector = Array.isArray(rawTarget) ? (Array.isArray(rawTarget[rawTarget.length-1]) ? rawTarget[rawTarget.length-1].join(' ') : rawTarget.join(' ')) : String(rawTarget);
+        try {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var el = doc.querySelector(selector);
+          if (!el) return html;
+          var existing = el.getAttribute('style') || '';
+          var cleaned = existing.replace(/(?:^|;)\s*color\s*:\s*[^;]+/gi, '').replace(/^;+/, '').trim();
+          el.setAttribute('style', (cleaned ? cleaned + ';' : '') + 'color:' + newFg);
+          var doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
+          var doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
+          return doctypePrefix + doc.documentElement.outerHTML;
+        } catch (e) {
+          return html;
+        }
+      }
+    },
     fix_image_decorative: {
       category: 'VISUAL', wcag: '1.1.1', params: '{index}',
       fn: function(html, p) {
@@ -4369,15 +4432,31 @@ HTML section ${chunkNum}/${chunks.length}:
       const moderate = results.violations.filter(v => v.impact === 'moderate');
       const minor = results.violations.filter(v => v.impact === 'minor');
 
+      // Carry axe's color-contrast check data (fgColor, bgColor, expectedContrastRatio) on
+      // nodeDetails so the deterministic surgical fixer can act on it without reparsing the
+      // failure summary string.
+      const _mapNode = (n) => {
+        const base = { html: n.html, target: n.target, failureSummary: n.failureSummary };
+        const contrastCheck = (n.any || []).find(a => a && (a.id === 'color-contrast' || a.id === 'color-contrast-enhanced'));
+        if (contrastCheck && contrastCheck.data) {
+          base.fgColor = contrastCheck.data.fgColor;
+          base.bgColor = contrastCheck.data.bgColor;
+          base.contrastRatio = contrastCheck.data.contrastRatio;
+          base.expectedContrastRatio = contrastCheck.data.expectedContrastRatio;
+          base.fontSize = contrastCheck.data.fontSize;
+          base.fontWeight = contrastCheck.data.fontWeight;
+        }
+        return base;
+      };
       return {
         engine: 'axe-core',
         version: results.testEngine?.version || '4.10.3',
         totalViolations: results.violations.length,
         totalPasses: results.passes.length,
         totalIncomplete: (results.incomplete || []).length,
-        critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(n => ({ html: n.html, target: n.target, failureSummary: n.failureSummary })) })),
-        serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(n => ({ html: n.html, target: n.target, failureSummary: n.failureSummary })) })),
-        moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(n => ({ html: n.html, target: n.target, failureSummary: n.failureSummary })) })),
+        critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
+        serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
+        moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
         minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', ') })),
         passes: results.passes.map(p => ({ id: p.id, description: p.help, wcag: (p.tags || []).filter(t => t.startsWith('wcag')).join(', '), nodes: p.nodes.length })),
         incomplete: (results.incomplete || []).map(i => ({ id: i.id, description: i.help, nodes: i.nodes.length })),
@@ -5155,7 +5234,15 @@ HTML section ${chunkNum}/${chunks.length}:
       'frame-title':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_iframe_title', params: { index: i, title: 'Embedded content' } })),
       'empty-heading':  (nodes) => nodes.map((n, i) => ({ tool: 'fix_remove_empty_heading', params: { index: i } })),
       'skip-link':      () => ({ tool: 'fix_skip_nav', params: {} }),
-      'landmark-one-main': () => ({ tool: 'fix_add_landmark', params: { tag: 'main', label: 'Main content' } })
+      'landmark-one-main': () => ({ tool: 'fix_add_landmark', params: { tag: 'main', label: 'Main content' } }),
+      'color-contrast': (nodes) => nodes.map(n => {
+        if (!n || !n.target || !n.fgColor || !n.bgColor) return null;
+        return { tool: 'fix_color_contrast', params: { target: n.target, fgColor: n.fgColor, bgColor: n.bgColor, expectedContrastRatio: n.expectedContrastRatio || 4.5 } };
+      }).filter(Boolean),
+      'color-contrast-enhanced': (nodes) => nodes.map(n => {
+        if (!n || !n.target || !n.fgColor || !n.bgColor) return null;
+        return { tool: 'fix_color_contrast', params: { target: n.target, fgColor: n.fgColor, bgColor: n.bgColor, expectedContrastRatio: n.expectedContrastRatio || 7.0 } };
+      }).filter(Boolean)
     };
     try {
       const allAxeViolations = [].concat(currentAxe.critical || [], currentAxe.serious || [], currentAxe.moderate || [], currentAxe.minor || []);
@@ -10425,13 +10512,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     },
     academic: {
       name: 'Academic', emoji: '📚', wcagLevel: 'AA',
-      promptInstructions: 'STYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#b8860b) color scheme, formal spacing, scholarly appearance suitable for university submissions.',
-      cssVars: { bodyFont: "'Georgia', 'Times New Roman', serif", headingColor: '#1b3a5c', accentColor: '#b8860b', bgColor: '#ffffff', cardBg: '#fefce8', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1b3a5c, #2c5f8a)', headerText: '#ffffff', extraCSS: 'h1 { border-bottom: 2px solid #b8860b; padding-bottom: 0.5rem; } blockquote { border-left: 3px solid #b8860b; padding-left: 1rem; font-style: italic; }' },
+      promptInstructions: 'STYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#8b6508) color scheme, formal spacing, scholarly appearance suitable for university submissions.',
+      cssVars: { bodyFont: "'Georgia', 'Times New Roman', serif", headingColor: '#1b3a5c', accentColor: '#8b6508', bgColor: '#ffffff', cardBg: '#fefce8', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1b3a5c, #2c5f8a)', headerText: '#ffffff', extraCSS: 'h1 { border-bottom: 2px solid #8b6508; padding-bottom: 0.5rem; } blockquote { border-left: 3px solid #8b6508; padding-left: 1rem; font-style: italic; }' },
     },
     elementary: {
       name: 'Kid-Friendly', emoji: '🌈', wcagLevel: 'AA',
-      promptInstructions: 'STYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows, Comic Sans or Lexend font.',
-      cssVars: { bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#ec4899', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #ec4899; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
+      promptInstructions: 'STYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows, Comic Sans or Lexend font. Use #be185d for pink accents (WCAG AA compliant).',
+      cssVars: { bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#be185d', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #be185d, #d97706)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #be185d; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
     },
     minimal: {
       name: 'Minimalist', emoji: '✨', wcagLevel: 'AA',
@@ -10460,8 +10547,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     },
     magazine: {
       name: 'Magazine', emoji: '📰', wcagLevel: 'AA',
-      promptInstructions: 'STYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel with editorial flair.',
-      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#1a1a2e', accentColor: '#e63946', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#e5e7eb', headerBg: 'linear-gradient(135deg, #1a1a2e, #16213e)', headerText: '#ffffff', extraCSS: 'h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; } blockquote { border-left: 4px solid #e63946; padding: 1rem 1.5rem; font-size: 1.2rem; font-style: italic; color: #374151; } .section { border-bottom: 1px solid #e5e7eb; padding-bottom: 2rem; }' },
+      promptInstructions: 'STYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel with editorial flair. Use #c1272d for red accents (WCAG AA compliant).',
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#1a1a2e', accentColor: '#c1272d', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#e5e7eb', headerBg: 'linear-gradient(135deg, #1a1a2e, #16213e)', headerText: '#ffffff', extraCSS: 'h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; } blockquote { border-left: 4px solid #c1272d; padding: 1rem 1.5rem; font-size: 1.2rem; font-style: italic; color: #374151; } .section { border-bottom: 1px solid #e5e7eb; padding-bottom: 2rem; }' },
     },
     matchOriginal: {
       name: 'Match Original', emoji: '📎', wcagLevel: 'AA',

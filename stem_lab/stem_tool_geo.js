@@ -582,7 +582,7 @@ var d = labToolData || {};
 
           // Check answer
 
-          function checkAnswer(clickedIso) {
+          function checkAnswer(clickedIso, clickedName) {
 
             if (!geoTarget) return;
 
@@ -613,13 +613,16 @@ var d = labToolData || {};
 
             } else {
 
+              // Prefer the name from the GeoJSON click (covers all countries);
+              // fall back to the 117-country local array; then the iso code itself.
               var clicked = countries.find(function(c) { return c.iso === clickedIso; });
+              var pickedLabel = clickedName || (clicked ? clicked.name : '') || clickedIso || 'that country';
 
               upd('geoStreak', 0);
 
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
-              upd('geoFeedback', { correct: false, msg: '\u274C That was ' + (clicked ? clicked.name : 'unknown') + '. The answer is ' + geoTarget.name + '.' });
+              upd('geoFeedback', { correct: false, msg: '\u274C You picked ' + pickedLabel + '. The answer is ' + geoTarget.name + '.' });
 
               setTimeout(function() { pickTarget(geoTab); }, 2500);
 
@@ -760,7 +763,7 @@ var d = labToolData || {};
 
           window._geoClickHandler = function(iso, name) {
 
-            if (geoTab === 'findCountry') checkAnswer(iso);
+            if (geoTab === 'findCountry') checkAnswer(iso, name);
 
           };
 
@@ -858,35 +861,50 @@ var d = labToolData || {};
 
 
 
-            // Load country polygons
+            // Load country polygons from GeoJSON (same source used by the 2D Leaflet map,
+            // so no topojson-client dependency needed)
 
-            fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
+            fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
 
               .then(function(r) { return r.json(); })
 
-              .then(function(topo) {
+              .then(function(geojson) {
 
-                // Need topojson-client for parsing, use inline conversion
+                if (!geojson || !geojson.features) return;
 
-                if (window.topojson) {
-
-                  var geoData = window.topojson.feature(topo, topo.objects.countries);
-
-                  globe.polygonsData(geoData.features)
-
-                    .polygonCapColor(function() { return 'rgba(79,209,197,0.3)'; })
-
-                    .polygonSideColor(function() { return 'rgba(79,209,197,0.15)'; })
-
-                    .polygonStrokeColor(function() { return '#4fd1c5'; })
-
-                    .polygonLabel(function(d) { return '<b>' + (d.properties.name || '') + '</b>'; });
-
-                }
+                globe.polygonsData(geojson.features)
+                  .polygonCapColor(function(d) {
+                    // Highlight the currently-targeted country if one is set
+                    var fIso = d.properties.ISO_A3 || d.properties.ADM0_A3 || '';
+                    if (geoTarget && fIso === geoTarget.iso) return 'rgba(251,191,36,0.55)';
+                    return 'rgba(79,209,197,0.28)';
+                  })
+                  .polygonSideColor(function() { return 'rgba(79,209,197,0.15)'; })
+                  .polygonStrokeColor(function() { return '#4fd1c5'; })
+                  .polygonAltitude(function(d) {
+                    var fIso = d.properties.ISO_A3 || d.properties.ADM0_A3 || '';
+                    return (geoTarget && fIso === geoTarget.iso) ? 0.012 : 0.006;
+                  })
+                  .polygonLabel(function(d) {
+                    var name = d.properties.ADMIN || d.properties.NAME || d.properties.name || '';
+                    return '<div style="background:rgba(15,23,42,0.92);color:#fff;padding:4px 8px;border-radius:4px;font:11px system-ui"><b>' + name + '</b></div>';
+                  })
+                  .onPolygonClick(function(d) {
+                    var iso = d.properties.ISO_A3 || d.properties.ADM0_A3 || '';
+                    var name = d.properties.ADMIN || d.properties.NAME || d.properties.name || '';
+                    if (typeof window._geoClickHandler === 'function') window._geoClickHandler(iso, name);
+                  })
+                  .onPolygonHover(function(hovered) {
+                    globe.polygonAltitude(function(d) {
+                      if (d === hovered) return 0.02;
+                      var fIso = d.properties.ISO_A3 || d.properties.ADM0_A3 || '';
+                      return (geoTarget && fIso === geoTarget.iso) ? 0.012 : 0.006;
+                    });
+                  });
 
               })
 
-              .catch(function() {});
+              .catch(function(e) { console.warn('Globe polygons load failed:', e); });
 
 
 

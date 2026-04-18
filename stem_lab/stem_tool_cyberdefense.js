@@ -215,6 +215,8 @@
           var warRoomHouseRulesActive = d.warRoomHouseRulesActive || null; // snapshot of rules applied to the CURRENT campaign
           var warRoomIsBossMode = !!d.warRoomIsBossMode;
           var warRoomFocusMode = !!d.warRoomFocusMode;
+          var warRoomScratchpad = d.warRoomScratchpad || '';
+          var warRoomScratchOpen = !!d.warRoomScratchOpen;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -1188,6 +1190,37 @@
               difficulty: diffRotation[dayNum % diffRotation.length]
             };
           }
+          // ── Weekly Challenge: one campaign seed per UTC-week, themed tougher than daily ──
+          function weeklyChallenge() {
+            var today = new Date();
+            var pad2 = function(n) { return (n < 10 ? '0' : '') + n; };
+            // Compute Monday (start of week) in UTC
+            var utc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+            var dow = utc.getUTCDay(); // 0=Sun..6=Sat
+            var daysToMon = (dow + 6) % 7;
+            utc.setUTCDate(utc.getUTCDate() - daysToMon);
+            var weekKey = utc.getUTCFullYear() + '-W-' + pad2(Math.floor(((utc - Date.UTC(utc.getUTCFullYear(), 0, 0)) / 86400000 - 1) / 7) + 1);
+            // Hash weekKey into a 4-char id
+            var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            var h = 2166136261;
+            for (var i = 0; i < weekKey.length; i++) { h ^= weekKey.charCodeAt(i); h = Math.imul(h, 16777619); }
+            var x = h >>> 0;
+            var id = '';
+            for (var k = 0; k < 4; k++) { id += chars[x % chars.length]; x = Math.floor(x / chars.length); }
+            // Rotate theme by week index
+            var themeRotation = ['ransomware', 'bec', 'insider', 'mixed'];
+            var weekIdx = Math.floor((utc - Date.UTC(utc.getUTCFullYear(), 0, 0)) / (86400000 * 7));
+            return {
+              id: id,
+              weekKey: weekKey,
+              theme: themeRotation[weekIdx % themeRotation.length],
+              difficulty: 'threatHunter'
+            };
+          }
+          var thisWeeksChallenge = weeklyChallenge();
+          var weeklyCompletions = d.warRoomWeeklyCompletions || {};
+          var weekCompletion = weeklyCompletions[thisWeeksChallenge.weekKey] || null;
+
           var todaysChallenge = dailyChallenge();
           var dailyCompletions = d.warRoomDailyCompletions || {};
           var todayCompletion = dailyCompletions[todaysChallenge.dateStr] || null;
@@ -1384,6 +1417,7 @@
               warRoomAlertFocusIdx: -1,
               warRoomHouseRulesActive: activeRules,
               warRoomIsBossMode: isBoss,
+              warRoomScratchpad: '',
               warRoomRoundStartSnapshot: {
                 budget: budget,
                 assets: { users: 10, servers: 5, data: 100 },
@@ -1938,6 +1972,26 @@
                   };
                 }
               }
+              // Mark this week's Weekly Challenge as completed if this campaign matches
+              var weekInfo = weeklyChallenge();
+              var nextWeeklyCompletions = Object.assign({}, weeklyCompletions);
+              if (warRoomCampaignId === weekInfo.id &&
+                  warRoomCampaignTheme === weekInfo.theme &&
+                  warRoomDifficulty === weekInfo.difficulty) {
+                var existingW = nextWeeklyCompletions[weekInfo.weekKey];
+                var shouldReplaceW = !existingW ||
+                  (won && existingW.verdict !== 'won') ||
+                  (won === (existingW.verdict === 'won') && warRoomDetections > (existingW.detections || 0));
+                if (shouldReplaceW) {
+                  nextWeeklyCompletions[weekInfo.weekKey] = {
+                    id: weekInfo.id,
+                    verdict: won ? 'won' : 'lost',
+                    detections: warRoomDetections,
+                    mitigations: warRoomMitigations,
+                    at: Date.now()
+                  };
+                }
+              }
               upd({
                 warRoomLog: warRoomLog.concat([won ? '\uD83C\uDFC6 Campaign won. Environment held.' : '\u26A0\uFE0F Campaign ended. Review the after-action report.']),
                 warRoomVerdict: won ? 'won' : 'lost',
@@ -1948,7 +2002,10 @@
                 warRoomAchievements: mergedAchievements,
                 warRoomCampaignAchievements: earnedIds,
                 warRoomCampaignHistory: newHistory,
-                warRoomDailyCompletions: nextDailyCompletions
+                warRoomDailyCompletions: nextDailyCompletions,
+                warRoomWeeklyCompletions: nextWeeklyCompletions,
+                // Pre-fill reflection from scratchpad if student took notes during play
+                warRoomReflection: warRoomScratchpad ? ('Notes from play:\n' + warRoomScratchpad + '\n\nReflection:\n') : ''
               });
               if (newlyEarned.length > 0 && ctx.addToast) {
                 ctx.addToast('\uD83C\uDFC5 ' + newlyEarned.length + ' new achievement' + (newlyEarned.length > 1 ? 's' : '') + ' unlocked!', 'success');
@@ -3193,6 +3250,21 @@
                       style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: todayCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #f59e0b, #f43f5e)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       todayCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
                   ),
+                  // Weekly Challenge banner
+                  el('div', { style: { padding: 12, borderRadius: 10, background: weekCompletion ? 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(99,102,241,0.04))' : 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(236,72,153,0.06))', border: '1px solid ' + (weekCompletion ? 'rgba(34,197,94,0.3)' : 'rgba(168,85,247,0.35)'), marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+                    el('div', { style: { fontSize: 28 } }, '\uD83D\uDDD3\uFE0F'),
+                    el('div', { style: { flex: '1 1 200px' } },
+                      el('div', { style: { fontSize: 11, color: weekCompletion ? '#86efac' : '#d8b4fe', fontWeight: 800, letterSpacing: 0.5, marginBottom: 2 } }, weekCompletion ? 'THIS WEEK\'S CHALLENGE \u2022 COMPLETED \u2713' : 'THIS WEEK\'S CHALLENGE'),
+                      el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Campaign #' + thisWeeksChallenge.id + ' \u2022 ' + (campaignThemes[thisWeeksChallenge.theme] ? campaignThemes[thisWeeksChallenge.theme].label : thisWeeksChallenge.theme) + ' \u2022 Threat Hunter'),
+                      weekCompletion
+                        ? el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'Result: ' + (weekCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + weekCompletion.detections + ' detections \u2022 Runs all week \u2014 replay for a better score.')
+                        : el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'Toughest challenge of the week (Threat Hunter). Same seed every day until Sunday.')
+                    ),
+                    el('button', { onClick: function() { startCampaign(thisWeeksChallenge.difficulty, thisWeeksChallenge.theme, thisWeeksChallenge.id); },
+                      'aria-label': 'Start this week\'s challenge',
+                      style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: weekCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #a855f7, #ec4899)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                      weekCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
+                  ),
                   // Theme picker
                   el('div', { style: { marginBottom: 14 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '1. PICK YOUR ADVERSARY'),
@@ -3716,6 +3788,90 @@
                       'aria-label': 'Print campaign report',
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDDA8\uFE0F Print Report'),
+                    el('button', {
+                      onClick: function() {
+                        try {
+                          var lines = [];
+                          lines.push('SOC WAR ROOM \u2014 Campaign Transcript');
+                          lines.push('=' .repeat(48));
+                          lines.push('Campaign: #' + (warRoomCampaignId || '????'));
+                          lines.push('Theme: ' + ((campaignThemes[warRoomCampaignTheme] && campaignThemes[warRoomCampaignTheme].label) || warRoomCampaignTheme));
+                          lines.push('Difficulty: ' + warRoomDifficulty + (warRoomIsBossMode ? ' (Boss Mode)' : ''));
+                          lines.push('Verdict: ' + (warRoomVerdict === 'won' ? 'VICTORY' : 'DEFEAT'));
+                          lines.push('Rank: ' + warRoomRank.label);
+                          lines.push('Stats: ' + warRoomDetections + '/' + warRoomRoundsTotal + ' detected, ' + warRoomMitigations + '/' + warRoomRoundsTotal + ' mitigated, ' + warRoomAssets.data + '/100 data preserved, ' + warRoomTotalCombos + ' combos');
+                          if (warRoomHotSeatEnabled) lines.push('Team: ' + warRoomHotSeatPlayers.join(', '));
+                          if (warRoomHouseRulesActive) {
+                            var rules = [];
+                            if (warRoomHouseRulesActive.noEscalate) rules.push('No Escalate');
+                            if (warRoomHouseRulesActive.tightBudget) rules.push('Tight Budget');
+                            if (warRoomHouseRulesActive.allStealth) rules.push('All Stealth');
+                            if (warRoomHouseRulesActive.noCombos) rules.push('No Combos');
+                            if (rules.length > 0) lines.push('House Rules: ' + rules.join(', '));
+                          }
+                          lines.push('');
+                          lines.push('ROUND-BY-ROUND');
+                          lines.push('-'.repeat(48));
+                          warRoomKillChain.forEach(function(r, i) {
+                            var stageName = ((warStages.filter(function(s){return s.id===r.stage;})[0] || {}).name) || r.stage;
+                            var outcome = r.outcome.toUpperCase();
+                            var mitre = mitreTechniques[r.red.id];
+                            lines.push('Round ' + (i + 1) + ' \u2014 ' + stageName + (mitre ? ' [' + mitre.id + ']' : ''));
+                            lines.push('  Red: ' + r.red.title);
+                            var plays = (r.bluePlays || []).map(function(pid) {
+                              var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0];
+                              return c ? c.label : pid;
+                            }).join(', ') || 'none';
+                            lines.push('  Defenses: ' + plays);
+                            lines.push('  Outcome: ' + outcome + (r.assetsLost.users || r.assetsLost.servers || r.assetsLost.data ?
+                              ' (lost ' + r.assetsLost.users + 'u/' + r.assetsLost.servers + 's/' + r.assetsLost.data + 'd)' : ''));
+                            lines.push('');
+                          });
+                          if (warRoomCampaignAchievements && warRoomCampaignAchievements.length > 0) {
+                            lines.push('ACHIEVEMENTS EARNED');
+                            lines.push('-'.repeat(48));
+                            warRoomCampaignAchievements.forEach(function(aid) {
+                              var a = warAchievements.filter(function(x) { return x.id === aid; })[0];
+                              if (a) lines.push('  ' + a.icon + ' ' + a.label + ' \u2014 ' + a.desc);
+                            });
+                            lines.push('');
+                          }
+                          if (warRoomHotSeatEnabled) {
+                            lines.push('TEAM SCOREBOARD');
+                            lines.push('-'.repeat(48));
+                            warRoomHotSeatPlayers.forEach(function(name, idx) {
+                              var s = warRoomHotSeatStats[String(idx)] || { rounds: 0, mitigations: 0, detections: 0, combos: 0 };
+                              lines.push('  ' + name + ': ' + s.rounds + ' round(s), ' + s.mitigations + ' mitigated, ' + s.detections + ' detected, ' + s.combos + ' combo(s)');
+                            });
+                            lines.push('');
+                          }
+                          if (warRoomScratchpad) {
+                            lines.push('SCRATCHPAD NOTES');
+                            lines.push('-'.repeat(48));
+                            lines.push(warRoomScratchpad);
+                            lines.push('');
+                          }
+                          if (warRoomReflection) {
+                            lines.push('REFLECTION');
+                            lines.push('-'.repeat(48));
+                            lines.push(warRoomReflection);
+                            lines.push('');
+                          }
+                          lines.push('=' .repeat(48));
+                          lines.push('Exported ' + new Date().toLocaleString() + ' \u2014 AlloFlow Cyber Defense Lab');
+                          var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+                          var url = URL.createObjectURL(blob);
+                          var a = document.createElement('a');
+                          a.href = url; a.download = 'warroom-' + (warRoomCampaignId || 'campaign') + '-' + new Date().toISOString().slice(0,10) + '.txt';
+                          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                          setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+                          if (ctx.addToast) ctx.addToast('\uD83D\uDCDD Transcript downloaded', 'success');
+                        } catch(e) { if (ctx.addToast) ctx.addToast('Transcript export failed', 'info'); }
+                      },
+                      'aria-label': 'Download plain-text transcript of this campaign',
+                      title: 'Download .txt transcript \u2014 easy to share or paste into a gradebook',
+                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      '\uD83D\uDCDD Transcript'),
                     el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
                       style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                       '\u2694\uFE0F New Campaign')
@@ -4013,11 +4169,31 @@
                         })
                       ),
                       // Campaign log
-                      el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px solid rgba(148,163,184,0.15)', maxHeight: 140, overflowY: 'auto' } },
+                      el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px solid rgba(148,163,184,0.15)', maxHeight: 140, overflowY: 'auto', marginBottom: 8 } },
                         el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.5 } }, 'Campaign Log'),
                         warRoomLog.map(function(line, i) {
                           return el('div', { key: i, style: { fontSize: 11, color: '#94a3b8', padding: '2px 0', lineHeight: 1.5 } }, '\u203A ' + line);
                         })
+                      ),
+                      // Scratchpad — jot notes during play; carries into the reflection at end
+                      el('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px dashed rgba(234,179,8,0.25)' } },
+                        el('button', {
+                          onClick: function() { upd('warRoomScratchOpen', !warRoomScratchOpen); sfxCyberdClick(); },
+                          'aria-expanded': warRoomScratchOpen, 'aria-controls': 'warroom-scratchpad-input',
+                          style: { width: '100%', textAlign: 'left', padding: '4px 6px', borderRadius: 4, border: 'none', background: 'transparent', color: '#fcd34d', fontSize: 11, fontWeight: 800, cursor: 'pointer', letterSpacing: 0.4 } },
+                          (warRoomScratchOpen ? '\u25BC' : '\u25B6') + ' \uD83D\uDCDD SCRATCHPAD' + (warRoomScratchpad.length > 0 ? ' (' + warRoomScratchpad.length + ' chars)' : '')),
+                        warRoomScratchOpen && el('div', null,
+                          el('textarea', {
+                            id: 'warroom-scratchpad-input',
+                            placeholder: 'Jot anything here \u2014 what you spotted, what to try next round. Saved for your reflection at campaign\'s end.',
+                            maxLength: 2000,
+                            value: warRoomScratchpad,
+                            onChange: function(ev) {
+                              upd('warRoomScratchpad', (ev.target.value || '').slice(0, 2000));
+                            },
+                            style: { width: '100%', marginTop: 6, minHeight: 70, padding: 8, borderRadius: 6, border: '1px solid rgba(234,179,8,0.25)', background: 'rgba(15,23,42,0.7)', color: '#fde68a', fontSize: 11.5, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
+                          el('div', { style: { marginTop: 3, fontSize: 9, color: '#64748b', textAlign: 'right' } }, warRoomScratchpad.length + ' / 2000')
+                        )
                       )
                     ),
 
