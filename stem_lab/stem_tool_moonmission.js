@@ -363,6 +363,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var callTTS = ctx.callTTS;
+      var callGemini = ctx.callGemini;
+      var sourceText = ctx.sourceText || ctx.inputText || '';
       var announceToSR = ctx.announceToSR;
       var gradeLevel = ctx.gradeLevel;
 
@@ -520,6 +522,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         { q: 'What does the Moon smell like?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: 'Every Apollo astronaut reported that Moon dust smells like spent gunpowder when brought inside the LM!' },
         { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!' }
       ];
+
+      // ── AI-customized content override ──
+      // When the teacher ran "Customize from source text," d.aiBriefing holds a parsed
+      // { objectives, quiz, samples } object. Use that content in place of the hardcoded
+      // defaults so the mission ties to the teacher's uploaded material.
+      if (d.aiBriefing && typeof d.aiBriefing === 'object') {
+        try {
+          if (Array.isArray(d.aiBriefing.samples) && d.aiBriefing.samples.length >= 4) {
+            // Preserve icons/types from defaults; apply AI names/facts/descriptions.
+            LUNAR_SAMPLES_DATA = d.aiBriefing.samples.slice(0, 8).map(function(s, i) {
+              var fallback = LUNAR_SAMPLES_DATA[i] || LUNAR_SAMPLES_DATA[0];
+              return {
+                name: String(s.name || fallback.name).substring(0, 30),
+                icon: fallback.icon,
+                type: String(s.desc || fallback.type).substring(0, 60),
+                xp: typeof s.xp === 'number' ? Math.max(5, Math.min(30, s.xp)) : fallback.xp,
+                fact: String(s.fact || fallback.fact).substring(0, 280)
+              };
+            });
+          }
+          if (Array.isArray(d.aiBriefing.quiz) && d.aiBriefing.quiz.length >= 3) {
+            QUIZ_BANK = d.aiBriefing.quiz.slice(0, 10).filter(function(q) {
+              return q && typeof q.q === 'string' && Array.isArray(q.opts) && q.opts.length >= 2 && typeof q.a === 'number';
+            }).map(function(q) {
+              return {
+                q: String(q.q).substring(0, 220),
+                opts: q.opts.slice(0, 4).map(function(o) { return String(o).substring(0, 80); }),
+                a: Math.max(0, Math.min((q.opts.length - 1), q.a)),
+                fact: String(q.fact || '').substring(0, 220)
+              };
+            });
+            if (QUIZ_BANK.length < 3) {
+              // Fallback: if validation dropped too many, restore defaults.
+              QUIZ_BANK = [
+                { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!' }
+              ];
+            }
+          }
+        } catch (_aiErr) { /* fall back to defaults on any parsing issue */ }
+      }
 
       // ═══════════════════════════════════════════════════════════════
       // MISSION EVENTS — Strategic decision points inspired by real missions
@@ -853,14 +895,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('p', { className: 'text-xs text-slate-600' }, 'Apollo-style lunar landing mission')
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 mb-3 border border-white/10' },
-              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-1' }, '\uD83C\uDFAF MISSION OBJECTIVES'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-1' },
+                '\uD83C\uDFAF MISSION OBJECTIVES',
+                d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && h('span', { className: 'ml-2 text-[10px] text-emerald-300 font-normal' }, '\u2728 AI-customized')
+              ),
               h('div', { className: 'space-y-1' },
-                [
-                  'Launch from Kennedy Space Center aboard Saturn V',
-                  'Enter lunar orbit and descend to the surface',
-                  'Conduct EVA: collect geological samples, deploy instruments',
-                  'Return safely to Earth with lunar samples'
-                ].map(function(obj, i) {
+                ((d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && d.aiBriefing.objectives.length >= 3)
+                  ? d.aiBriefing.objectives.slice(0, 6).map(function(o) { return String(o).substring(0, 120); })
+                  : [
+                      'Launch from Kennedy Space Center aboard Saturn V',
+                      'Enter lunar orbit and descend to the surface',
+                      'Conduct EVA: collect geological samples, deploy instruments',
+                      'Return safely to Earth with lunar samples'
+                    ]
+                ).map(function(obj, i) {
                   return h('div', { key: i, className: 'flex items-start gap-2 text-xs text-slate-300' },
                     h('span', { className: 'text-green-400 mt-0.5' }, '\u25CB'),
                     h('span', null, obj)
@@ -906,6 +954,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mb-3' },
               h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+            ),
+            // AI-customize briefing — pulls in teacher's source text and regenerates objectives,
+            // quiz questions, and sample descriptions tied to that content.
+            callGemini && sourceText && sourceText.trim().length > 120 && h('div', { className: 'bg-emerald-500/10 rounded-lg p-3 border border-emerald-500/30 mb-3' },
+              h('p', { className: 'text-[11px] text-emerald-300 font-bold mb-1' }, d.aiBriefing ? '\u2728 AI-customized briefing active' : '\uD83E\uDDE0 Customize with your source text'),
+              h('p', { className: 'text-[11px] text-emerald-200/80 mb-2' }, d.aiBriefing
+                ? 'Objectives, quiz, and sample facts are tied to your uploaded text.'
+                : 'Generate mission objectives, quiz questions, and sample descriptions from the text you\'ve loaded (\u223C' + Math.round(sourceText.length / 100) * 100 + ' chars available). Adds ~10-15 sec.'),
+              h('button', {
+                disabled: !!d.aiBriefingLoading,
+                'aria-busy': d.aiBriefingLoading ? 'true' : 'false',
+                onClick: function() {
+                  if (d.aiBriefingLoading) return;
+                  upd('aiBriefingLoading', true);
+                  var gradeHint = gradeLevel ? 'Target grade: ' + gradeLevel + '. ' : '';
+                  var prompt = 'You are designing a Moon Mission space-exploration simulator for a student. Customize the mission content using this source text as inspiration.\n\n' +
+                    gradeHint + 'Source text (first 3000 chars):\n"""\n' + sourceText.substring(0, 3000) + '\n"""\n\n' +
+                    'Return ONLY a JSON object with this EXACT structure (no prose, no code fences):\n' +
+                    '{\n' +
+                    '  "objectives": ["4 short mission-phase objectives (one per line, 50-90 chars each, imperative verbs)"],\n' +
+                    '  "quiz": [\n' +
+                    '    {"q": "question text", "opts": ["A","B","C","D"], "a": 0, "fact": "1-sentence explanation"}\n' +
+                    '  ],\n' +
+                    '  "samples": [\n' +
+                    '    {"name": "short sample name", "desc": "1-sentence description tying to source text", "fact": "1 educational fact", "xp": 15}\n' +
+                    '  ]\n' +
+                    '}\n' +
+                    'Constraints: 4 objectives, 6 quiz questions (mix of space science and source-text concepts), 8 sample descriptions. All content must be accurate and age-appropriate.';
+                  callGemini(prompt, true).then(function(raw) {
+                    try {
+                      var cleaned = String(raw || '').trim();
+                      if (cleaned.indexOf('```') !== -1) { cleaned = cleaned.split('```')[1] || cleaned; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.substring(cleaned.indexOf('\n') + 1); }
+                      var parsed = JSON.parse(cleaned);
+                      if (!parsed || !Array.isArray(parsed.objectives) || !Array.isArray(parsed.quiz) || !Array.isArray(parsed.samples)) throw new Error('malformed');
+                      setLabToolData(function(prev) {
+                        return Object.assign({}, prev, { moonMission: Object.assign({}, (prev && prev.moonMission) || {}, {
+                          aiBriefing: parsed,
+                          aiBriefingLoading: false
+                        })});
+                      });
+                      if (addToast) addToast('\u2728 Mission customized from your source text!', 'success');
+                      if (typeof announceToSR === 'function') announceToSR('Mission customized with your source content. Objectives, quiz, and samples updated.');
+                    } catch (e) {
+                      upd('aiBriefingLoading', false);
+                      if (addToast) addToast('Couldn\'t parse AI response \u2014 using default briefing.', 'error');
+                    }
+                  }).catch(function() {
+                    upd('aiBriefingLoading', false);
+                    if (addToast) addToast('Couldn\'t reach AI \u2014 using default briefing.', 'error');
+                  });
+                },
+                className: 'w-full py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all disabled:opacity-60'
+              }, d.aiBriefingLoading
+                ? '\u231B Customizing mission\u2026'
+                : (d.aiBriefing ? '\uD83D\uDD04 Regenerate from source text' : '\u2728 Customize from my source text'))
             )
           ),
           h('button', {
@@ -913,7 +1016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             onClick: function() {
               setPhase(1);
               upd('missionStartTime', Date.now());
-              log('\uD83D\uDCCB Mission briefing complete (' + DIFFICULTIES[difficulty].label + ' difficulty)');
+              log('\uD83D\uDCCB Mission briefing complete (' + DIFFICULTIES[difficulty].label + ' difficulty)' + (d.aiBriefing ? ' \u2014 AI customized' : ''));
               addXP(10);
               if (addToast) addToast('\uD83D\uDE80 Mission authorized! Difficulty: ' + DIFFICULTIES[difficulty].label, 'success');
             },
@@ -2125,7 +2228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Auto-enable if OS prefers-reduced-motion; persisted per-student in toolData.
                     var prefersReducedMotion = false;
                     try { prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(_e) {}
-                    var storedComfort = (toolData && toolData.moonMission && typeof toolData.moonMission.comfortMode === 'boolean') ? toolData.moonMission.comfortMode : null;
+                    var storedComfort = (d && typeof d.comfortMode === 'boolean') ? d.comfortMode : null;
                     var comfortMode = storedComfort !== null ? storedComfort : prefersReducedMotion;
                     var lookSensitivity = 0.003;
                     var applyComfortFactors = function() {
@@ -2134,7 +2237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     };
                     applyComfortFactors();
                     // Click-to-move toggle (motor-impaired students: point-and-click instead of WASD)
-                    var storedClick = (toolData && toolData.moonMission && typeof toolData.moonMission.clickToMove === 'boolean') ? toolData.moonMission.clickToMove : false;
+                    var storedClick = (d && typeof d.clickToMove === 'boolean') ? d.clickToMove : false;
                     var clickToMove = storedClick;
                     var clickTarget = null; // THREE.Vector3 or null
                     // Vignette overlay (reduces peripheral motion-sickness triggers during fast movement)
@@ -2158,8 +2261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           // Toggle comfort mode
                           comfortMode = !comfortMode;
                           applyComfortFactors();
-                          if (toolData && toolData.moonMission) toolData.moonMission.comfortMode = comfortMode;
-                          if (setToolData && toolData) { try { setToolData(Object.assign({}, toolData)); } catch(_){} }
+                          try { upd('comfortMode', comfortMode); } catch(_){}
                           if (vignetteEl) { vignetteEl.parentElement && vignetteEl.parentElement.removeChild(vignetteEl); vignetteEl = null; }
                           if (comfortMode) {
                             vignetteEl = document.createElement('div');
@@ -2174,8 +2276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           // Toggle click-to-move
                           clickToMove = !clickToMove;
                           clickTarget = null;
-                          if (toolData && toolData.moonMission) toolData.moonMission.clickToMove = clickToMove;
-                          if (setToolData && toolData) { try { setToolData(Object.assign({}, toolData)); } catch(_){} }
+                          try { upd('clickToMove', clickToMove); } catch(_){}
                           if (addToast) addToast(clickToMove ? '🖱 Click-to-move ON — click terrain to walk there' : 'Click-to-move OFF', 'info');
                           if (typeof announceToSR === 'function') announceToSR(clickToMove ? 'Click to move enabled. Click on the ground to walk there.' : 'Click to move disabled.');
                           break;

@@ -10001,6 +10001,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               alwaysStripe(0, true, 1.0, 2.2);
               alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 1.8);
               alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 1.8);
+              // ── Shoulder rumble strips: short dark dashes just OUTSIDE each edge line ──
+              // These are the scored grooves you hear/feel when drifting off the road.
+              // Cheap visual: small dark dashes at 1.4m intervals, offset 0.25m outside the edge line.
+              // Skip at intersections (the shoulder disappears into the crosswalk area).
+              var rumbleMat = new T.MeshBasicMaterial({ color: scn.weather === 'snow' ? 0x707078 : 0x2a2a28 });
+              var rumbleOffset = roadHalfW + 0.08; // just outside the painted edge
+              for (var rz = chunkWorldZ + 0.4; rz < chunkWorldZ + CHUNK_SIZE - 0.4; rz += 1.1) {
+                if (rz > skipZ1 && rz < skipZ2) continue;
+                var rCtr = markCenterAtZ(rz);
+                var rHt = iw.spline ? iw.spline.heightAt(rz - chunkWorldZ + ribbonChunkBaseY) : 0;
+                // left shoulder
+                var rL = new T.Mesh(new T.PlaneGeometry(0.28, 0.18), rumbleMat);
+                rL.rotation.x = -Math.PI / 2;
+                rL.position.set(rCtr - rumbleOffset, rHt + 0.009, rz);
+                chunkGroup.add(rL);
+                // right shoulder
+                var rR = new T.Mesh(new T.PlaneGeometry(0.28, 0.18), rumbleMat);
+                rR.rotation.x = -Math.PI / 2;
+                rR.position.set(rCtr + rumbleOffset, rHt + 0.009, rz);
+                chunkGroup.add(rR);
+              }
               // ── Zebra crosswalk stripes at intersections ──
               // Paint the classic white ladder-style crosswalk at each intersection,
               // on both sides of the cross street (approach + exit). 6 stripes per crossing.
@@ -10034,6 +10055,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   stopLine.rotation.x = -Math.PI / 2;
                   stopLine.position.set(stopLineCtr, stopLineHt + 0.014, stopLineZ);
                   chunkGroup.add(stopLine);
+
+                  // ── Lane arrows on the approach side (3m behind the stop line) ──
+                  // Paint a straight-ahead arrow in the center of each lane — one per direction.
+                  // Only on the APPROACH side (cwOffset < 0 means "before intersection from +Z direction",
+                  // cwOffset > 0 means "approach from -Z direction"). We paint both sides so both
+                  // approaches get arrows pointing TOWARD the intersection.
+                  var arrowPointsTowardIntersection = cwOffset < 0 ? -1 : 1;
+                  var arrowZ = stopLineZ + (cwOffset < 0 ? -3.0 : 3.0);
+                  var arrowCtr = markCenterAtZ(arrowZ);
+                  var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // Build a single reusable arrow geometry (3-plane approach for perf).
+                  // Shaft: 0.12 wide × 1.4 long. Head: two 0.38-long chevron arms at ~30°.
+                  var laneOffset = roadHalfW * 0.5; // middle of each lane
+                  [-laneOffset, +laneOffset].forEach(function(arrowX) {
+                    // Shaft
+                    var shaft = new T.Mesh(new T.PlaneGeometry(0.18, 1.4), zebraMat);
+                    shaft.rotation.x = -Math.PI / 2;
+                    shaft.position.set(arrowCtr + arrowX, arrowHt + 0.016, arrowZ);
+                    chunkGroup.add(shaft);
+                    // Arrowhead tip position (toward intersection)
+                    var tipZ = arrowZ + arrowPointsTowardIntersection * 0.7;
+                    // Two chevron arms: 0.55 long each, angled 30° off the axis
+                    [-1, 1].forEach(function(side) {
+                      var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.55), zebraMat);
+                      arm.rotation.x = -Math.PI / 2;
+                      // rotate around Y to form the chevron — 30° off axis, mirrored by side
+                      arm.rotation.z = side * arrowPointsTowardIntersection * (Math.PI / 6);
+                      // position so arm meets at the tip
+                      var armZ = tipZ - arrowPointsTowardIntersection * 0.22;
+                      var armX = arrowCtr + arrowX + side * 0.19;
+                      arm.position.set(armX, arrowHt + 0.016, armZ);
+                      chunkGroup.add(arm);
+                    });
+                  });
                 });
               }
               // ── Wet road sheen: glossy puddle patches + reflective streaks in rain ──
@@ -16827,6 +16882,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             choices: ['You go — you have momentum', 'The car going DOWNHILL must back up', 'The car going UPHILL goes first (has right-of-way)'],
             correct: 2,
             exp: 'Car going UPHILL has right-of-way. Backing downhill is much easier than backing uphill loaded. The descending driver yields.'
+          },
+          {
+            id: 'zipper_merge', title: 'Zipper Merge at Lane Closure',
+            q: 'A sign says "Right lane closed in 1 mile." Traffic is heavy. Some drivers are merging left immediately; others are staying in the right lane.',
+            choices: ['Merge immediately — it\'s polite', 'Stay in the closing lane until the merge point, then alternate one-for-one', 'Drive in the shoulder to get ahead'],
+            correct: 1,
+            exp: 'Zipper merge: use BOTH lanes fully until the merge point, then alternate. This is both legal and ~40% faster for total throughput. Early merging creates the backup.'
+          },
+          {
+            id: 'flashing_yellow_arrow', title: 'Flashing Yellow Arrow (Left Turn)',
+            q: 'You\'re turning left. The left-turn signal shows a FLASHING YELLOW arrow (not solid).',
+            choices: ['Stop — same as red', 'Yield to oncoming traffic, then turn when safe', 'Go immediately — you have the right-of-way'],
+            correct: 1,
+            exp: 'Flashing yellow arrow = "left turns permitted but YIELD to oncoming traffic and pedestrians." Different from solid green arrow (protected turn, no oncoming) and solid yellow (prepare to stop).'
+          },
+          {
+            id: 'flashing_red_intersection', title: 'Flashing Red at All Four Signals',
+            q: 'You approach an intersection where ALL four traffic lights are flashing red.',
+            choices: ['Treat it as a 4-way stop — full stop, then right-of-way rules', 'Treat as yield — slow but don\'t stop', 'Power is out — honk and go through'],
+            correct: 0,
+            exp: 'Flashing red = STOP SIGN. All four flashing red = treat as a 4-way stop: full stop, then first-arrived goes, simultaneous = car on right.'
+          },
+          {
+            id: 'stuck_on_tracks', title: 'Stuck on Railroad Tracks',
+            q: 'Your car stalls ON railroad tracks. You hear a train horn in the distance.',
+            choices: ['Try to restart the car quickly', 'Get out and walk TOWARD the train at a 45° angle', 'Get out and run AWAY from the train'],
+            correct: 1,
+            exp: 'Get out IMMEDIATELY. Walk toward the oncoming train at a 45° angle — debris from the collision flies forward. Running away puts you in the debris path. Call 911 and the emergency number on the crossing post.'
+          },
+          {
+            id: 'disabled_on_shoulder', title: 'Disabled Vehicle on Shoulder',
+            q: 'A car is pulled onto the right shoulder with its hazard lights flashing. You\'re in the right lane on a 2-lane highway.',
+            choices: ['Maintain speed — you have the right-of-way', 'Move one lane left if possible; otherwise slow substantially', 'Stop to help in your lane'],
+            correct: 1,
+            exp: '"Move Over" laws exist in all 50 states. If a lane change is safe, move left. Otherwise slow down significantly. Maine adds a $300 fine for violating this around emergency/utility vehicles.'
+          },
+          {
+            id: 'construction_flagger', title: 'Construction Zone Flagger',
+            q: 'You approach a work zone. A flagger holds a STOP paddle facing you, then flips it to SLOW.',
+            choices: ['Obey the flagger — they override signs and signals', 'Obey the signs — flaggers have no authority', 'Use your best judgment — ignore both if the road looks clear'],
+            correct: 0,
+            exp: 'In a work zone, a flagger\'s hand signals are the LAW — they override posted signs and signals. Ignoring a flagger is a serious traffic offense, usually with doubled fines in work zones.'
+          },
+          {
+            id: 'school_bus_divided', title: 'School Bus on Divided Highway',
+            q: 'A school bus stops with red lights flashing on the OPPOSITE side of a divided highway (physical median between directions). You\'re on the other side.',
+            choices: ['STOP — always stop for a school bus with red lights', 'Continue — only same-direction traffic must stop on divided roads', 'Slow down but don\'t stop'],
+            correct: 1,
+            exp: 'On a DIVIDED highway (physical median), only same-direction traffic stops. On undivided (no median, even 4 lanes), BOTH directions stop. This is federal law — learn the difference.'
+          },
+          {
+            id: 'white_cane_ped', title: 'Pedestrian with White Cane',
+            q: 'A pedestrian with a WHITE CANE is about to step off the curb — NOT at a marked crosswalk or intersection.',
+            choices: ['Continue — they\'re not in a crosswalk', 'Full stop and yield — mandatory', 'Honk to alert them'],
+            correct: 1,
+            exp: 'A pedestrian with a white cane or guide dog has MANDATORY right-of-way ANYWHERE on the roadway in all 50 states — crosswalk or not. Never honk; it can disorient them.'
+          },
+          {
+            id: 'roundabout_emergency', title: 'Emergency Vehicle at Roundabout',
+            q: 'You\'re circulating inside a roundabout. An ambulance with lights/siren approaches the roundabout entry.',
+            choices: ['Stop immediately in the roundabout', 'EXIT the roundabout first, then pull right', 'Speed up to clear it'],
+            correct: 1,
+            exp: 'Never stop INSIDE a roundabout — it blocks everyone. Exit at your next available exit, THEN pull right and stop for the emergency vehicle.'
+          },
+          {
+            id: 'cyclist_in_bike_lane', title: 'Right Turn Across Bike Lane',
+            q: 'You\'re about to make a right turn. A bike lane runs along the right curb, and a cyclist is in it, going straight.',
+            choices: ['Turn first — you\'re bigger', 'Yield to the cyclist — they\'re going straight in their lane', 'Honk and turn'],
+            correct: 1,
+            exp: 'Through-traffic (even a cyclist) has right-of-way over turning traffic. Wait for the cyclist to clear, then turn. Maine also requires 3 ft clearance when passing cyclists.'
           }
         ];
         var rIdx = d.rowIdx || 0;
@@ -16835,10 +16960,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (rIdx >= rowScenarios.length) {
           return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
             h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-            h('div', { style: { background: 'linear-gradient(135deg, ' + (rScore >= 8 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (rScore >= 8 ? '#4ade80' : '#f59e0b') } },
-              h('div', { style: { fontSize: '64px' } }, rScore >= 8 ? '🏆' : '📝'),
-              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, rScore >= 8 ? 'Right-of-Way Mastered!' : 'Keep Practicing'),
-              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 8 ? '#4ade80' : '#f59e0b', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
+            h('div', { style: { background: 'linear-gradient(135deg, ' + (rScore >= 14 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (rScore >= 14 ? '#4ade80' : '#f59e0b') } },
+              h('div', { style: { fontSize: '64px' } }, rScore >= 14 ? '🏆' : '📝'),
+              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, rScore >= 14 ? 'Right-of-Way Mastered!' : 'Keep Practicing'),
+              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 14 ? '#4ade80' : '#f59e0b', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
               h('button', { onClick: function() { updMulti({ rowIdx: 0, rowScore: 0, rowAnswered: null }); },
                 style: { marginTop: '12px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
               }, '↻ Try Again')
