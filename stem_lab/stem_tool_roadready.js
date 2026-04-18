@@ -8076,13 +8076,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerCarGroup.add(mirR);
           // Wheels — lifted by 0.04 to prevent Z-fighting with the road surface mesh
           // (player car group is positioned AT road height, so wheel bottom would otherwise
-          // sit exactly on the road and flicker as "sinking in").
+          // sit exactly on the road and flicker as "sinking in"). Name-tagged so the
+          // rotation update can find them without false-positives on other cylinders.
           var wheelMat = new T.MeshLambertMaterial({ color: 0x111111 });
           [[-0.55, 0.24, 0.5], [-0.55, 0.24, -0.5], [0.55, 0.24, 0.5], [0.55, 0.24, -0.5]].forEach(function(pos) {
             var wGeo = new T.CylinderGeometry(0.2, 0.2, 0.15, 12);
             var wMesh = new T.Mesh(wGeo, wheelMat);
             wMesh.rotation.x = Math.PI / 2;
             wMesh.position.set(pos[0], pos[1], pos[2]);
+            wMesh.name = 'rr_playerWheel';
             playerCarGroup.add(wMesh);
           });
           // Headlights
@@ -8709,18 +8711,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             });
           }
-          // Player wheel rotation — accumulate Δangle = speed * dt / radius. Player wheels
-          // are CylinderGeometry rotated x = π/2; their position.y matches local 0.24 (lifted).
-          // Without this, the player's wheels stayed perfectly still even at 70 mph.
+          // Player wheel rotation — accumulate Δangle = speed * dt / radius.
           if (s3.playerCarGroup) {
             if (s3._playerWheelAngle === undefined) s3._playerWheelAngle = 0;
-            s3._playerWheelAngle += Math.abs(car.speed) * dt / 0.20; // 0.20 = player wheel radius
+            s3._playerWheelAngle += Math.abs(car.speed) * dt / 0.20;
             s3.playerCarGroup.children.forEach(function(child) {
-              if (child.geometry && child.geometry.type === 'CylinderGeometry'
-                  && Math.abs(child.rotation.x - Math.PI / 2) < 0.1
-                  && child.position.y < 0.5) { // wheels are low; skip other cylinders
-                child.rotation.y = s3._playerWheelAngle;
-              }
+              if (child.name === 'rr_playerWheel') child.rotation.y = s3._playerWheelAngle;
             });
           }
 
