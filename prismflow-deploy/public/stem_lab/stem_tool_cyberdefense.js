@@ -29,6 +29,33 @@
     document.body.appendChild(liveRegion);
   })();
 
+  // Inject War Room keyframe animations (respects prefers-reduced-motion)
+  (function() {
+    if (document.getElementById('allo-cyberd-keyframes')) return;
+    var style = document.createElement('style');
+    style.id = 'allo-cyberd-keyframes';
+    style.textContent = [
+      '@keyframes warPulse {',
+      '  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }',
+      '  50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(239,68,68,0); }',
+      '}',
+      '@keyframes warVictory {',
+      '  0% { transform: scale(0.6) rotate(-15deg); opacity: 0; }',
+      '  50% { transform: scale(1.25) rotate(8deg); opacity: 1; }',
+      '  100% { transform: scale(1) rotate(0); opacity: 1; }',
+      '}',
+      '@keyframes warShake {',
+      '  0%,100% { transform: translateX(0); }',
+      '  25% { transform: translateX(-3px); }',
+      '  75% { transform: translateX(3px); }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .war-pulse, .war-victory, .war-shake { animation: none !important; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+  })();
+
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   window.StemLab.registerTool('cyberDefense', {
@@ -131,6 +158,14 @@
           var warRoomHintRevealed = d.warRoomHintRevealed || false;
           var warRoomGlossaryOpen = d.warRoomGlossaryOpen || false;
           var warRoomAICardLoading = d.warRoomAICardLoading || false;
+          var warRoomFreeUsed = d.warRoomFreeUsed || []; // card ids whose free use is spent this campaign
+          var warRoomTimeLeft = d.warRoomTimeLeft != null ? d.warRoomTimeLeft : 90;
+          var warRoomAchievements = d.warRoomAchievements || {};
+          var warRoomCampaignAchievements = d.warRoomCampaignAchievements || [];
+          var warRoomTotalCombos = d.warRoomTotalCombos || 0;
+          var warRoomTimedOutAny = d.warRoomTimedOutAny || false;
+          var warRoomStoryMode = d.warRoomStoryMode != null ? d.warRoomStoryMode : (warRoomCampaignsCompleted === 0);
+          var warRoomCampaignId = d.warRoomCampaignId || null;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -247,6 +282,22 @@
             }, 1000);
           } else if (phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft <= 0) {
             upd({ phishAnswer: 'timeout', phishStreak: 0 });
+          }
+
+          // ── War Room Timer (Threat Hunter difficulty only; auto-resolves when time hits 0 if plays exist) ──
+          if (window._cyberWarRoomTimer) { clearTimeout(window._cyberWarRoomTimer); window._cyberWarRoomTimer = null; }
+          var warTimerActive = cyberTab === 'warroom' && d.warRoomActive && d.warRoomDifficulty === 'threatHunter' && !d.warRoomRoundResolved && !d.warRoomVerdict;
+          if (warTimerActive && warRoomTimeLeft > 0) {
+            window._cyberWarRoomTimer = setTimeout(function() {
+              var nextTime = warRoomTimeLeft - 1;
+              if (nextTime <= 0 && warRoomBluePlays.length > 0) {
+                if (ctx.addToast) ctx.addToast('\u23F0 Time up \u2014 resolving round', 'info');
+                upd('warRoomTimeLeft', 0);
+                resolveCurrentRound();
+              } else {
+                upd('warRoomTimeLeft', Math.max(0, nextTime));
+              }
+            }, 1000);
           }
 
           // â”€â”€ Clue discovery helper â”€â”€
@@ -610,6 +661,51 @@
             { term: 'Living Off The Land', defn: 'Using built-in OS tools (PowerShell, schtasks, certutil) to avoid dropping detectable malware.' }
           ];
 
+          // ── Achievement badges catalog ──
+          var warAchievements = [
+            { id: 'first_blood', icon: '\uD83C\uDFAF', label: 'First Blood', desc: 'Mitigate the Reconnaissance attack.' },
+            { id: 'no_phish', icon: '\uD83D\uDEE1\uFE0F', label: 'No Phish Shall Pass', desc: 'Stop the Delivery stage (mitigate or detect).' },
+            { id: 'patchwork', icon: '\uD83E\uDDF0', label: 'Patchwork', desc: 'Play Emergency Patch in 3+ rounds of one campaign.' },
+            { id: 'zero_tolerance', icon: '\uD83C\uDF96\uFE0F', label: 'Zero Tolerance', desc: 'Win without using Escalate to CISO.' },
+            { id: 'combo_artist', icon: '\u2728', label: 'Combo Artist', desc: 'Trigger 3+ combos in one campaign.' },
+            { id: 'budget_master', icon: '\uD83D\uDCB5', label: 'Budget Master', desc: 'Win with 3+ budget remaining.' },
+            { id: 'hunter', icon: '\uD83E\uDDEC', label: 'Apex Hunter', desc: 'Play Hunt for IOCs in 4+ rounds of one campaign.' },
+            { id: 'perfect_run', icon: '\uD83C\uDFC6', label: 'Flawless Defense', desc: 'Achieve 6/6 full mitigations in one campaign.' },
+            { id: 'data_guardian', icon: '\uD83D\uDDC4\uFE0F', label: 'Data Guardian', desc: 'Finish a campaign with 100/100 data intact.' },
+            { id: 'speedrun', icon: '\u26A1', label: 'Lightning Reflexes', desc: 'Win a Threat Hunter campaign without the clock running out on any round.' }
+          ];
+
+          // ── Evaluate which achievements were earned this campaign ──
+          function evaluateCampaignAchievements(chain, finalState) {
+            var earned = [];
+            var won = finalState.verdict === 'won';
+            // First Blood
+            if (chain[0] && chain[0].outcome === 'mitigated') earned.push('first_blood');
+            // No Phish Shall Pass
+            if (chain[1] && chain[1].outcome !== 'succeeded') earned.push('no_phish');
+            // Patchwork
+            var patchCount = chain.filter(function(r) { return r.bluePlays.indexOf('patch') !== -1; }).length;
+            if (patchCount >= 3) earned.push('patchwork');
+            // Zero Tolerance — won without escalate
+            var escalateUsed = chain.some(function(r) { return r.bluePlays.indexOf('escalate') !== -1; });
+            if (won && !escalateUsed) earned.push('zero_tolerance');
+            // Combo Artist
+            if (finalState.totalCombos >= 3) earned.push('combo_artist');
+            // Budget Master
+            if (won && finalState.remainingBudget >= 3) earned.push('budget_master');
+            // Hunter
+            var huntCount = chain.filter(function(r) { return r.bluePlays.indexOf('hunt_iocs') !== -1; }).length;
+            if (huntCount >= 4) earned.push('hunter');
+            // Perfect Run
+            var mitigated = chain.filter(function(r) { return r.outcome === 'mitigated'; }).length;
+            if (mitigated === 6) earned.push('perfect_run');
+            // Data Guardian
+            if (finalState.dataRemaining >= 100) earned.push('data_guardian');
+            // Speedrun (Threat Hunter, won, no time-outs)
+            if (won && finalState.difficulty === 'threatHunter' && !finalState.timedOut) earned.push('speedrun');
+            return earned;
+          }
+
           var warStages = [
             { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: '#64748b' },
             { num: 2, id: 'delivery',    name: 'Weaponization/Delivery', icon: '\uD83D\uDCE8', color: '#f59e0b' },
@@ -655,8 +751,33 @@
             { id: 'a_piiexfil', stage: 'actions', title: 'Customer PII exfiltration', description: 'Adversary packages a customer database for exfiltration.', indicators: ['Large archive creation on DB server', 'Sudden egress spike at 3am'], noiseIndicators: ['Scheduled nightly backup job'], mitigations: { isolate_host: 1.0, block_ip: 0.8, escalate: 1.0, hunt_iocs: 0.5 }, impact: { data: 60 } },
             { id: 'a_ransom', stage: 'actions', title: 'Ransomware detonation', description: 'Attacker pushes a ransomware payload across domain-joined hosts.', indicators: ['Mass file renames with unusual extension', 'Shadow-copy deletion commands'], noiseIndicators: ['Large file-migration project'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.8, patch: 0.3 }, impact: { servers: 5, data: 40 } },
             { id: 'a_wirefraud', stage: 'actions', title: 'Wire-transfer fraud (BEC)', description: 'Finance receives a forwarded email chain authorizing a $380k wire.', indicators: ['Mailbox forwarding rule created in last 48h', 'Reply-to domain differs from display'], noiseIndicators: ['Routine vendor onboarding'], mitigations: { escalate: 1.0, reset_credential: 0.9, awareness_blast: 0.8, investigate: 0.7 }, impact: { data: 50 } },
-            { id: 'a_sabotage', stage: 'actions', title: 'Destructive wiper on build server', description: 'Attacker wipes CI/CD infrastructure to disrupt operations.', indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } }
+            { id: 'a_sabotage', stage: 'actions', title: 'Destructive wiper on build server', description: 'Attacker wipes CI/CD infrastructure to disrupt operations.', indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } },
+
+            // ── Nation-State APT cards (unlocked via Trophy Room) ──
+            { id: 'r_supplychain', stage: 'recon', title: 'Supply-chain vendor mapping', description: 'State-sponsored actor profiles your software vendors to find a soft entry point upstream.', indicators: ['Your IT partner appears in breach-forum chatter', 'WHOIS lookups of your vendors from uncategorized ASNs'], noiseIndicators: ['Journalist researching industry'], mitigations: { hunt_iocs: 1.0, escalate: 0.5 }, impact: { data: 5 }, apt: true },
+            { id: 'd_signed_driver', stage: 'delivery', title: 'Malicious update via signed driver', description: 'Compromised code-signing certificate lets the adversary push a "trusted" update.', indicators: ['Legitimate vendor certificate used on unfamiliar binary', 'Update server redirected through unknown CDN'], noiseIndicators: ['Scheduled maintenance window'], mitigations: { hunt_iocs: 1.0, deploy_edr: 0.7, block_ip: 0.4 }, impact: { servers: 2, users: 2 }, apt: true },
+            { id: 'e_zeroday', stage: 'exploit', title: 'Zero-day kernel exploit', description: 'No patch exists \u2014 the vendor doesn\'t know about this bug yet.', indicators: ['Kernel crash dumps with unusual call stacks', 'BSoD events clustered by time'], noiseIndicators: ['Aging hardware'], mitigations: { isolate_host: 1.0, deploy_edr: 0.7, hunt_iocs: 0.5 }, impact: { servers: 3, data: 15 }, apt: true },
+            { id: 'p_firmware', stage: 'persist', title: 'Firmware-level implant', description: 'Adversary embeds persistence below the OS \u2014 survives re-imaging.', indicators: ['BIOS/UEFI integrity checks fail', 'Implant resurrects after full disk wipe'], noiseIndicators: ['Legitimate firmware update'], mitigations: { isolate_host: 1.0, escalate: 0.8, deploy_edr: 0.4 }, impact: { servers: 3 }, apt: true },
+            { id: 'c_slow_dns', stage: 'c2', title: 'Low-and-slow DNS C2 (1 query/hr)', description: 'Extremely low-volume beaconing designed to evade threshold-based detection.', indicators: ['Single anomalous DNS query per hour to same parent domain', 'Timing variance < 2%'], noiseIndicators: ['Cloud service keepalive'], mitigations: { hunt_iocs: 1.0, block_ip: 0.6, isolate_host: 0.7 }, impact: { data: 20 }, apt: true },
+            { id: 'a_longexfil', stage: 'actions', title: 'Multi-week intellectual property exfiltration', description: 'Classified designs siphoned in small chunks over 6 weeks to avoid egress alarms.', indicators: ['Cumulative egress to research domain exceeds baseline', 'Encrypted archives created on file server'], noiseIndicators: ['Legitimate research collaboration'], mitigations: { escalate: 1.0, isolate_host: 0.9, hunt_iocs: 0.7 }, impact: { data: 80 }, apt: true }
           ];
+
+          // ── Combo bonuses: playing these pairs/triples together unlocks bonus effects ──
+          var blueCombos = [
+            { id: 'full_containment', ids: ['isolate_host', 'deploy_edr'], label: 'Full Containment', effect: 'effectBoost', value: 0.3, description: 'Isolate + EDR together prevent lateral spread and catch payloads mid-flight.' },
+            { id: 'identity_hardening', ids: ['reset_credential', 'awareness_blast'], label: 'Identity Hardening', effect: 'effectBoost', value: 0.25, description: 'Reset creds AND warn users before they reuse old ones elsewhere.' },
+            { id: 'perimeter_hunt', ids: ['block_ip', 'hunt_iocs'], label: 'Perimeter + Hunt', effect: 'bonusXP', value: 2, description: 'Block known-bad AND hunt for unknown-bad. Full surface coverage.' },
+            { id: 'deep_analysis', ids: ['investigate', 'hunt_iocs'], label: 'Deep Analysis', effect: 'bonusXP', value: 2, description: 'Surface-level and deep-level investigation \u2014 nothing slips through.' },
+            { id: 'defense_in_depth', ids: ['patch', 'deploy_edr'], label: 'Defense in Depth', effect: 'minEffect', value: 0.6, description: 'Patch the known hole AND watch for zero-days \u2014 layered defense.' },
+            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: 'Crisis Response', effect: 'effectBoost', value: 0.4, description: 'Emergency containment + executive authorization. Overwhelming late-stage response.' }
+          ];
+
+          // ── Detect which combos are active in the current blue plays ──
+          function detectActiveCombos(playIds) {
+            return blueCombos.filter(function(combo) {
+              return combo.ids.every(function(id) { return playIds.indexOf(id) !== -1; });
+            });
+          }
 
           // ── Blue Team card library ──
           var blueTeamCards = [
@@ -713,8 +834,52 @@
                 c2: ['c_slackhook'],
                 actions: ['a_piiexfil', 'a_sabotage']
               }
+            },
+            apt: {
+              id: 'apt', label: 'Nation-State APT', icon: '\uD83C\uDF10',
+              desc: 'A patient, well-funded adversary using zero-days, signed binaries, and firmware persistence. Only patching and scanning won\'t save you.',
+              preferred: {
+                recon: ['r_supplychain', 'r_dnsenum'],
+                delivery: ['d_signed_driver', 'd_spearcfo'],
+                exploit: ['e_zeroday', 'e_cve'],
+                persist: ['p_firmware', 'p_service'],
+                c2: ['c_slow_dns', 'c_httpscdn'],
+                actions: ['a_longexfil', 'a_piiexfil']
+              },
+              locked: true,
+              unlockCondition: function(dd) {
+                return Object.keys(dd.warRoomAchievements || {}).length >= 6;
+              },
+              unlockHint: 'Earn 6 Trophy Room achievements to unlock.'
             }
           };
+
+          // ── Cross-mode rewards: mastery of other Cyber Defense modes grants War Room perks ──
+          function computeCrossModeBonuses(dd) {
+            var b = { budgetBonus: 0, freeFirstUse: [], earned: [] };
+            if ((dd.phishScore || 0) >= 5) {
+              b.budgetBonus += 3;
+              b.earned.push({ id: 'phishing_master', icon: '\uD83C\uDFA3', label: 'Phishing Master', perk: '+3 starting budget', source: 'Cyber Detective: 5+ correct IDs' });
+            }
+            if ((dd.casesClosed || 0) >= 10) {
+              if (b.freeFirstUse.indexOf('awareness_blast') === -1) b.freeFirstUse.push('awareness_blast');
+              b.earned.push({ id: 'seasoned_detective', icon: '\uD83D\uDD75\uFE0F', label: 'Seasoned Detective', perk: 'First Awareness Blast is free', source: 'Cyber Detective: 10+ cases closed' });
+            }
+            if (dd.pwInput && dd.pwInput.length >= 12) {
+              if (b.freeFirstUse.indexOf('reset_credential') === -1) b.freeFirstUse.push('reset_credential');
+              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: 'Password Pro', perk: 'First Reset Credential is free', source: 'Password Forge: tested a 12+ char password' });
+            }
+            if ((dd.seQuizScore || 0) >= 5) {
+              if (b.freeFirstUse.indexOf('investigate') === -1) b.freeFirstUse.push('investigate');
+              b.earned.push({ id: 'social_shield', icon: '\uD83C\uDFAD', label: 'Social Shield', perk: 'First Investigate is free', source: 'Social Engineering: 5+ correct' });
+            }
+            if ((dd.netScore || 0) >= 5) {
+              if (b.freeFirstUse.indexOf('hunt_iocs') === -1) b.freeFirstUse.push('hunt_iocs');
+              b.earned.push({ id: 'traffic_analyst', icon: '\uD83D\uDCE1', label: 'Traffic Analyst', perk: 'First Hunt for IOCs is free', source: 'Traffic Analyzer: 5+ correct flags' });
+            }
+            return b;
+          }
+          var warCrossBonuses = computeCrossModeBonuses(d);
 
           // ── War Room seeded RNG (for reproducible campaigns within a round) ──
           function warRng() { return Math.random(); }
@@ -776,32 +941,53 @@
               if (eff > 0) matchedPlays.push({ id: cid, eff: eff });
               if (eff > bestEffect) bestEffect = eff;
             });
+
+            // Apply combos
+            var activeCombos = detectActiveCombos(bluePlayIds);
+            var bonusXP = 0;
+            activeCombos.forEach(function(combo) {
+              if (combo.effect === 'effectBoost') {
+                bestEffect = Math.min(1.0, bestEffect + combo.value);
+              } else if (combo.effect === 'minEffect') {
+                bestEffect = Math.max(bestEffect, combo.value);
+              } else if (combo.effect === 'bonusXP') {
+                bonusXP += combo.value;
+              }
+            });
+
             var outcome, xpDelta, assetsLost = { users: 0, servers: 0, data: 0 };
             if (bestEffect >= 1.0) {
               outcome = 'mitigated';
-              xpDelta = 6;
+              xpDelta = 6 + bonusXP;
             } else if (bestEffect >= 0.5) {
               outcome = 'detected';
-              xpDelta = 4;
-              // partial impact
+              xpDelta = 4 + bonusXP;
               ['users', 'servers', 'data'].forEach(function(k) {
                 if (redCard.impact && redCard.impact[k]) assetsLost[k] = Math.ceil(redCard.impact[k] * (1 - bestEffect));
               });
             } else {
               outcome = 'succeeded';
-              xpDelta = 1;
+              xpDelta = 1 + bonusXP;
               ['users', 'servers', 'data'].forEach(function(k) {
                 if (redCard.impact && redCard.impact[k]) assetsLost[k] = redCard.impact[k];
               });
             }
-            return { outcome: outcome, xpDelta: xpDelta, assetsLost: assetsLost, matchedPlays: matchedPlays };
+            return { outcome: outcome, xpDelta: xpDelta, assetsLost: assetsLost, matchedPlays: matchedPlays, activeCombos: activeCombos, bestEffect: bestEffect };
           }
 
           // ── Start a new campaign ──
           function startCampaign(diff, themeId) {
             var theme = campaignThemes[themeId] ? themeId : 'mixed';
-            var budget = diff === 'rookie' ? 18 : (diff === 'analyst' ? 14 : 10);
+            var baseBudget = diff === 'rookie' ? 18 : (diff === 'analyst' ? 14 : 10);
+            var budget = baseBudget + (warCrossBonuses.budgetBonus || 0);
             var firstRed = rollRedAction('recon', diff, [], theme);
+            // Campaign ID: 4-char alphanumeric for sharing/reference
+            var campaignId = (function() {
+              var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+              var out = '';
+              for (var k = 0; k < 4; k++) out += chars[Math.floor(Math.random() * chars.length)];
+              return out;
+            })();
             var firstAlerts = generateAlerts(firstRed, diff);
             var openingLine = campaignThemes[theme].label !== 'Mixed Threat Landscape'
               ? 'Campaign begins. Threat intel flags this as a ' + campaignThemes[theme].label + ' operation. Stay sharp.'
@@ -828,7 +1014,13 @@
               warRoomRoundResolved: false,
               warRoomLastResolution: null,
               warRoomHintsUsed: 0,
-              warRoomHintRevealed: false
+              warRoomHintRevealed: false,
+              warRoomFreeUsed: [],
+              warRoomTimeLeft: 90,
+              warRoomTotalCombos: 0,
+              warRoomTimedOutAny: false,
+              warRoomCampaignAchievements: [],
+              warRoomCampaignId: campaignId
             });
             if (ctx.announceToSR) ctx.announceToSR('War Room campaign started on ' + diff + ' difficulty, ' + campaignThemes[theme].label + '. Round 1, Reconnaissance. ' + firstRed.title);
             sfxCyberdClick();
@@ -841,19 +1033,23 @@
             if (!card) return;
             if (warRoomBluePlays.indexOf(cardId) !== -1) return; // no double-play
             if (card.id === 'escalate' && warRoomEscalateUsed) return;
-            if (card.cost > warRoomBudget) {
+            // Cross-mode free first use
+            var isFree = warCrossBonuses.freeFirstUse.indexOf(cardId) !== -1 && warRoomFreeUsed.indexOf(cardId) === -1;
+            var effectiveCost = isFree ? 0 : card.cost;
+            if (effectiveCost > warRoomBudget) {
               if (ctx.addToast) ctx.addToast('Not enough budget for ' + card.label, 'info');
               return;
             }
             var newPlays = warRoomBluePlays.concat([cardId]);
             var updates = {
               warRoomBluePlays: newPlays,
-              warRoomBudget: warRoomBudget - card.cost
+              warRoomBudget: warRoomBudget - effectiveCost
             };
             if (card.id === 'escalate') updates.warRoomEscalateUsed = true;
+            if (isFree) updates.warRoomFreeUsed = warRoomFreeUsed.concat([cardId]);
             upd(updates);
             sfxCyberdClick();
-            if (ctx.announceToSR) ctx.announceToSR('Played ' + card.label + '. Budget: ' + (warRoomBudget - card.cost) + '.');
+            if (ctx.announceToSR) ctx.announceToSR('Played ' + card.label + (isFree ? ' (free use)' : '') + '. Budget: ' + (warRoomBudget - effectiveCost) + '.');
           }
 
           // ── Request a hint (costs 1 budget, reveals the ideal play's CATEGORY without naming the card) ──
@@ -948,6 +1144,16 @@
             return out;
           }
 
+          // ── Story Mode coach tips (shown in-round when Story Mode is on) ──
+          var stageCoachTips = {
+            recon: 'COACH: The attacker is just scouting right now \u2014 collecting info from public sources. You won\'t see malware yet. Watch for unusual scan patterns or clusters of profile views. Try **Hunt for IOCs** or **User Awareness Blast**.',
+            delivery: 'COACH: This is first contact. An email, text, or USB is arriving. Look at the sender carefully \u2014 real senders don\'t typo their own domain. **Block Sender/IP** is usually your best tool here.',
+            exploit: 'COACH: Code is running where it shouldn\'t. The attacker has a foothold if you do nothing. **Deploy EDR Rule** or **Isolate Endpoint** to catch or contain the execution. **Patch** works if the attack used a known CVE.',
+            persist: 'COACH: The adversary is setting up camp \u2014 installing ways to survive a reboot. **Deploy EDR Rule** excels here: it watches for the telltale patterns of persistence (scheduled tasks, registry keys, services).',
+            c2: 'COACH: The compromised host is phoning home. Cut the beacon! **Block Sender/IP** stops the traffic at the perimeter. **Isolate Endpoint** severs everything. **Hunt for IOCs** finds hidden C2 channels.',
+            actions: 'COACH: This is it \u2014 the payoff stage. Data exfil, ransomware, or fraud. **Escalate to CISO** is powerful here (if you haven\'t used it). **Isolate Endpoint** contains the damage. Move fast.'
+          };
+
           // ── Stage-level lesson templates (the "why" of each stage) ──
           var stageLessons = {
             recon: 'Reconnaissance is silent but foundational — every piece of info the adversary collects makes later stages cheaper and more convincing. Early detection here (hunt, awareness) pays compounding dividends.',
@@ -987,6 +1193,8 @@
             var lesson = stageLessons[stageObj.id] || '';
 
             ctx.awardXP('cyberDefense', result.xpDelta);
+            var combosThisRound = (result.activeCombos || []).length;
+            var timedOutThisRound = warRoomDifficulty === 'threatHunter' && warRoomTimeLeft <= 0;
             upd({
               warRoomKillChain: newChain,
               warRoomAssets: newAssets,
@@ -995,6 +1203,8 @@
               warRoomDetections: detections,
               warRoomMitigations: mitigations,
               warRoomRoundResolved: true,
+              warRoomTotalCombos: warRoomTotalCombos + combosThisRound,
+              warRoomTimedOutAny: warRoomTimedOutAny || timedOutThisRound,
               warRoomLastResolution: {
                 outcome: result.outcome,
                 outcomeLabel: outcomeLabel,
@@ -1004,7 +1214,8 @@
                 idealPlayIds: ideals.map(function(c) { return c.id; }),
                 stageLesson: lesson,
                 redTitle: warRoomRedAction.title,
-                redDescription: warRoomRedAction.description
+                redDescription: warRoomRedAction.description,
+                activeCombos: result.activeCombos || []
               }
             });
             if (ctx.announceToSR) ctx.announceToSR('Round ' + warRoomRound + ' resolved: ' + outcomeLabel + '. Review the debrief and advance when ready.');
@@ -1020,14 +1231,37 @@
               var completed = warRoomCampaignsCompleted + 1;
               var perfectHard = warRoomDifficulty === 'threatHunter' && warRoomAssetsLost.users === 0 && warRoomAssetsLost.servers === 0 && warRoomAssetsLost.data === 0;
               var wonAnalyst = (won && warRoomDifficulty === 'analyst') || d.warRoomWonAnalyst;
+              // Achievements
+              var earnedIds = evaluateCampaignAchievements(warRoomKillChain, {
+                verdict: won ? 'won' : 'lost',
+                totalCombos: warRoomTotalCombos,
+                remainingBudget: warRoomBudget,
+                dataRemaining: warRoomAssets.data,
+                difficulty: warRoomDifficulty,
+                timedOut: warRoomTimedOutAny
+              });
+              // Merge new achievements into persistent collection
+              var mergedAchievements = Object.assign({}, warRoomAchievements);
+              var newlyEarned = [];
+              earnedIds.forEach(function(aid) {
+                if (!mergedAchievements[aid]) {
+                  mergedAchievements[aid] = { earnedAt: Date.now() };
+                  newlyEarned.push(aid);
+                }
+              });
               upd({
                 warRoomLog: warRoomLog.concat([won ? '\uD83C\uDFC6 Campaign won. Environment held.' : '\u26A0\uFE0F Campaign ended. Review the after-action report.']),
                 warRoomVerdict: won ? 'won' : 'lost',
                 warRoomCampaignsCompleted: completed,
                 warRoomPerfectDefense: perfectHard || d.warRoomPerfectDefense,
                 warRoomWonAnalyst: wonAnalyst,
-                warRoomLastResolution: null
+                warRoomLastResolution: null,
+                warRoomAchievements: mergedAchievements,
+                warRoomCampaignAchievements: earnedIds
               });
+              if (newlyEarned.length > 0 && ctx.addToast) {
+                ctx.addToast('\uD83C\uDFC5 ' + newlyEarned.length + ' new achievement' + (newlyEarned.length > 1 ? 's' : '') + ' unlocked!', 'success');
+              }
               if (ctx.announceToSR) ctx.announceToSR('Campaign complete. Verdict: ' + (won ? 'victory' : 'defeat') + '. ' + warRoomDetections + ' of 6 attacks detected.');
               if (ctx.addToast) ctx.addToast(won ? 'Campaign won!' : 'Campaign lost \u2014 review the debrief', won ? 'success' : 'info');
             } else {
@@ -1042,7 +1276,8 @@
                 warRoomBluePlays: [],
                 warRoomRoundResolved: false,
                 warRoomLastResolution: null,
-                warRoomHintRevealed: false
+                warRoomHintRevealed: false,
+                warRoomTimeLeft: 90
               });
               if (ctx.announceToSR) ctx.announceToSR('Advancing to round ' + (warRoomRound + 1) + ': ' + warStages[warRoomRound].name + '. Red team: ' + nextRed.title);
             }
@@ -1730,21 +1965,47 @@
                       ': reconnaissance, delivery, exploitation, persistence, command-and-control, and actions on objectives. Each round, the Red Team plays a move; you read the alerts, spend defensive budget wisely, and try to detect or mitigate before assets are lost.'
                     )
                   ),
+                  // Story Mode toggle
+                  el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 } },
+                    el('button', { onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
+                      role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': 'Toggle Story Mode',
+                      style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#22c55e' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
+                      warRoomStoryMode ? 'ON' : 'OFF'),
+                    el('div', { style: { flex: 1 } },
+                      el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomStoryMode ? '#86efac' : '#cbd5e1' } }, '\uD83C\uDFAC Story Mode \u2014 Guided Coaching'),
+                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, 'Each round shows a "Coach" tip explaining what the attacker is doing and which defenses to consider. Recommended for your first few campaigns.')
+                    )
+                  ),
+                  // Cross-mode bonuses earned from other Cyber Defense modes
+                  warCrossBonuses.earned.length > 0 && el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.04))', border: '1px solid rgba(34,197,94,0.3)', marginBottom: 16 } },
+                    el('div', { style: { color: '#86efac', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83C\uDF96\uFE0F EARNED PERKS (from other Cyber Defense modes)'),
+                    warCrossBonuses.earned.map(function(perk) {
+                      return el('div', { key: perk.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '4px 0', fontSize: 11.5 } },
+                        el('span', { style: { fontSize: 15 } }, perk.icon),
+                        el('div', { style: { flex: 1 } },
+                          el('div', { style: { color: '#d9f99d', fontWeight: 800 } }, perk.label, el('span', { style: { color: '#86efac', fontWeight: 600, marginLeft: 6 } }, perk.perk)),
+                          el('div', { style: { color: '#64748b', fontSize: 10, fontStyle: 'italic' } }, perk.source)
+                        )
+                      );
+                    })
+                  ),
                   // Theme picker
                   el('div', { style: { marginBottom: 14 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '1. PICK YOUR ADVERSARY'),
                     el('div', { role: 'radiogroup', 'aria-label': 'Adversary theme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8 } },
                       Object.keys(campaignThemes).map(function(tid) {
                         var t = campaignThemes[tid];
-                        var selected = warRoomCampaignTheme === tid;
-                        return el('button', { key: tid, role: 'radio', 'aria-checked': selected,
-                          onClick: function() { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); },
-                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : '#cbd5e1', cursor: 'pointer', textAlign: 'left' } },
+                        var isLocked = t.locked && !(t.unlockCondition && t.unlockCondition(d));
+                        var selected = warRoomCampaignTheme === tid && !isLocked;
+                        return el('button', { key: tid, role: 'radio', 'aria-checked': selected, disabled: isLocked,
+                          'aria-label': t.label + (isLocked ? ' (locked — ' + (t.unlockHint || 'keep playing to unlock') + ')' : ''),
+                          onClick: function() { if (!isLocked) { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); } },
+                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : (isLocked ? '#64748b' : '#cbd5e1'), cursor: isLocked ? 'not-allowed' : 'pointer', textAlign: 'left', opacity: isLocked ? 0.55 : 1 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
-                            el('span', { style: { fontSize: 16 } }, t.icon),
+                            el('span', { style: { fontSize: 16, filter: isLocked ? 'grayscale(1)' : 'none' } }, isLocked ? '\uD83D\uDD12' : t.icon),
                             el('span', { style: { fontSize: 13, fontWeight: 800 } }, t.label)
                           ),
-                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, t.desc)
+                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, isLocked ? (t.unlockHint || 'Locked') : t.desc)
                         );
                       })
                     )
@@ -1756,7 +2017,7 @@
                       [
                         { id: 'rookie',       label: 'Rookie',        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e' },
                         { id: 'analyst',      label: 'Analyst',       sub: 'Some noise \u2022 14 budget', color: '#3b82f6' },
-                        { id: 'threatHunter', label: 'Threat Hunter', sub: 'Adaptive red team \u2022 10 budget', color: '#f43f5e' }
+                        { id: 'threatHunter', label: 'Threat Hunter', sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#f43f5e' }
                       ].map(function(tier) {
                         return el('button', { key: tier.id, onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
                           'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label,
@@ -1767,17 +2028,36 @@
                       })
                     )
                   ),
-                  el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
+                  el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', textAlign: 'center', marginBottom: 14 } },
                     warRoomCampaignsCompleted > 0 ? ('Campaigns completed: ' + warRoomCampaignsCompleted + (d.warRoomWonAnalyst ? ' \u2022 Analyst victory \uD83C\uDF96\uFE0F' : '') + (d.warRoomPerfectDefense ? ' \u2022 Perfect defense \uD83D\uDEE1\uFE0F' : '')) : 'Your first campaign awaits.'
+                  ),
+                  // Trophy room — all-time achievement collection
+                  el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(99,102,241,0.2)' } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83C\uDFC6 TROPHY ROOM (' + Object.keys(warRoomAchievements).length + ' / ' + warAchievements.length + ')'),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
+                      warAchievements.map(function(a) {
+                        var earned = !!warRoomAchievements[a.id];
+                        return el('div', { key: a.id, title: a.desc,
+                          style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.5 } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 } },
+                            el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
+                            el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#64748b', flex: 1 } }, a.label)
+                          ),
+                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, a.desc)
+                        );
+                      })
+                    )
                   )
                 ),
 
                 // End-of-campaign scorecard
                 warRoomActive && warRoomVerdict && el('div', { style: { padding: '8px 8px' } },
                   el('div', { style: { textAlign: 'center', marginBottom: 16 } },
-                    el('div', { style: { fontSize: 44, marginBottom: 4 } }, warRoomVerdict === 'won' ? '\uD83C\uDFC6' : '\u26A0\uFE0F'),
+                    el('div', { className: warRoomVerdict === 'won' ? 'war-victory' : 'war-shake',
+                      style: { fontSize: 44, marginBottom: 4, display: 'inline-block', animation: warRoomVerdict === 'won' ? 'warVictory 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28) both' : 'warShake 0.4s ease-in-out' } }, warRoomVerdict === 'won' ? '\uD83C\uDFC6' : '\u26A0\uFE0F'),
                     el('div', { style: { fontSize: 20, fontWeight: 900, color: warRoomVerdict === 'won' ? '#86efac' : '#fca5a5' } }, warRoomVerdict === 'won' ? 'Environment Held' : 'Adversary Advanced'),
-                    el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label)
+                    el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label),
+                    warRoomCampaignId && el('div', { style: { marginTop: 6, fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Campaign #' + warRoomCampaignId)
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
                     [
@@ -1793,15 +2073,59 @@
                       );
                     })
                   ),
-                  // Kill chain recap
+                  // Achievements earned this campaign
+                  warRoomCampaignAchievements && warRoomCampaignAchievements.length > 0 && el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.04))', border: '1px solid rgba(245,158,11,0.35)', marginBottom: 14 } },
+                    el('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83C\uDFC5 ACHIEVEMENTS EARNED THIS CAMPAIGN'),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                      warRoomCampaignAchievements.map(function(aid) {
+                        var a = warAchievements.filter(function(x) { return x.id === aid; })[0];
+                        if (!a) return null;
+                        var isNew = !(d.warRoomAchievements && d.warRoomAchievements[aid] && d.warRoomAchievements[aid].earnedAt < Date.now() - 60000);
+                        return el('div', { key: aid, style: { padding: 8, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(245,158,11,0.25)' } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                            el('span', { style: { fontSize: 16 } }, a.icon),
+                            el('span', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', flex: 1 } }, a.label),
+                            isNew && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '1px 5px', borderRadius: 3, background: 'rgba(34,197,94,0.25)', color: '#86efac' } }, 'NEW')
+                          ),
+                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, a.desc)
+                        );
+                      })
+                    )
+                  ),
+                  // Kill chain recap (expandable)
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
-                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, 'KILL CHAIN RECAP'),
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, 'KILL CHAIN RECAP (click a round to expand)'),
                     warRoomKillChain.map(function(r, i) {
                       var oc = r.outcome === 'mitigated' ? { c: '#22c55e', label: 'MITIGATED' } : (r.outcome === 'detected' ? { c: '#3b82f6', label: 'DETECTED' } : { c: '#ef4444', label: 'SUCCEEDED' });
-                      return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < warRoomKillChain.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' } },
-                        el('span', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, minWidth: 30 } }, 'R' + (i + 1)),
-                        el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
-                        el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
+                      var expandedKey = 'expand_r' + i;
+                      var isExpanded = d[expandedKey];
+                      var ideals = idealPlaysFor(r.red);
+                      return el('div', { key: i, style: { borderBottom: i < warRoomKillChain.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' } },
+                        el('button', { onClick: function() { var o = {}; o[expandedKey] = !isExpanded; upd(o); sfxCyberdClick(); },
+                          'aria-expanded': !!isExpanded, 'aria-controls': 'round-detail-' + i,
+                          style: { width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' } },
+                          el('span', { style: { fontSize: 10, color: '#64748b', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
+                          el('span', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, minWidth: 28 } }, 'R' + (i + 1)),
+                          el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
+                          el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
+                        ),
+                        isExpanded && el('div', { id: 'round-detail-' + i, style: { padding: '4px 0 10px 26px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.6 } },
+                          el('div', { style: { marginBottom: 4 } }, el('strong', { style: { color: '#fca5a5' } }, 'Attack: '), r.red.description),
+                          el('div', { style: { marginBottom: 4 } },
+                            el('strong', { style: { color: '#86efac' } }, 'Your plays: '),
+                            r.bluePlays.length > 0 ? r.bluePlays.map(function(pid) {
+                              var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0];
+                              return c ? c.label : pid;
+                            }).join(', ') : 'none'
+                          ),
+                          ideals.length > 0 && el('div', null,
+                            el('strong', { style: { color: '#a5b4fc' } }, 'Ideal plays: '),
+                            ideals.map(function(c) { return c.label; }).join(' or ')
+                          ),
+                          (r.assetsLost.users || r.assetsLost.servers || r.assetsLost.data) && el('div', { style: { marginTop: 4, color: '#fca5a5' } },
+                            'Lost: ' + r.assetsLost.users + ' users, ' + r.assetsLost.servers + ' servers, ' + r.assetsLost.data + ' data'
+                          )
+                        )
                       );
                     })
                   ),
@@ -1816,9 +2140,37 @@
                     warRoomAAR ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, warRoomAAR)
                       : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
                   ),
-                  el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null }); sfxCyberdClick(); },
-                    style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                    '\u2694\uFE0F New Campaign')
+                  // Share summary + new campaign buttons
+                  el('div', { style: { display: 'flex', gap: 10 } },
+                    el('button', {
+                      onClick: function() {
+                        var summary = 'SOC War Room \u2014 Campaign #' + (warRoomCampaignId || '????') + '\n' +
+                          (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].label : 'Mixed') + ' \u2022 ' + warRoomDifficulty + '\n' +
+                          'Verdict: ' + (warRoomVerdict === 'won' ? 'WON \uD83C\uDFC6' : 'LOST \u26A0\uFE0F') + '\n' +
+                          'Detections: ' + warRoomDetections + '/6 | Mitigations: ' + warRoomMitigations + '/6\n' +
+                          'Assets preserved: ' + warRoomAssets.users + '/10 users, ' + warRoomAssets.servers + '/5 servers, ' + warRoomAssets.data + '/100 data\n' +
+                          'Combos: ' + warRoomTotalCombos + ' | Rank: ' + warRoomRank.label + '\n' +
+                          (warRoomCampaignAchievements.length > 0 ? 'Achievements: ' + warRoomCampaignAchievements.length + ' earned\n' : '') +
+                          'AlloFlow \u2022 Cyber Defense Lab';
+                        try {
+                          if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(summary).then(function() {
+                              if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Summary copied to clipboard', 'success');
+                            }, function() {
+                              if (ctx.addToast) ctx.addToast('Copy failed \u2014 check your browser permissions', 'info');
+                            });
+                          } else if (ctx.addToast) {
+                            ctx.addToast('Clipboard unavailable in this browser', 'info');
+                          }
+                        } catch(e) { if (ctx.addToast) ctx.addToast('Copy failed', 'info'); }
+                      },
+                      'aria-label': 'Copy campaign summary to clipboard',
+                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      '\uD83D\uDCCB Copy Summary'),
+                    el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
+                      style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                      '\u2694\uFE0F New Campaign')
+                  )
                 ),
 
                 // Active campaign (not ended)
@@ -1829,7 +2181,7 @@
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
                       el('div', null,
-                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
+                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '') + (warRoomCampaignId ? ' \u2022 #' + warRoomCampaignId : '')),
                         el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name)
                       )
                     ),
@@ -1845,6 +2197,14 @@
                           style: { flex: 1, height: 8, borderRadius: 4, background: bg, opacity: done || i === warRoomRound - 1 ? 1 : 0.35 } });
                       })
                     ),
+                    // Timer (Threat Hunter only)
+                    warRoomDifficulty === 'threatHunter' && el('div', { 'aria-live': 'off',
+                      className: warRoomTimeLeft <= 15 && warRoomTimeLeft > 0 ? 'war-pulse' : '',
+                      style: { padding: '4px 10px', borderRadius: 6, background: warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.15)', border: '1px solid ' + (warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.4)' : 'rgba(234,179,8,0.3)'), animation: (warRoomTimeLeft <= 15 && warRoomTimeLeft > 0) ? 'warPulse 1s ease-in-out infinite' : 'none' } },
+                      el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Clock'),
+                      el('div', { style: { fontSize: 14, color: warRoomTimeLeft <= 15 ? '#fca5a5' : '#fcd34d', fontWeight: 900 } },
+                        (Math.floor(warRoomTimeLeft / 60)) + ':' + (warRoomTimeLeft % 60 < 10 ? '0' : '') + (warRoomTimeLeft % 60))
+                    ),
                     // Budget
                     el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' } },
                       el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Budget'),
@@ -1855,6 +2215,46 @@
                       el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Assets'),
                       el('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } },
                         warRoomAssets.users + 'u \u2022 ' + warRoomAssets.servers + 's \u2022 ' + warRoomAssets.data + 'd')
+                    )
+                  ),
+
+                  // Network diagram — visual asset map
+                  el('div', { role: 'img', 'aria-label': 'Network status: ' + warRoomAssets.users + ' of 10 users safe, ' + warRoomAssets.servers + ' of 5 servers safe, ' + warRoomAssets.data + ' of 100 data units preserved',
+                    style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(99,102,241,0.15)', marginBottom: 12 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800, letterSpacing: 0.5, marginBottom: 8 } }, '\uD83C\uDF10 YOUR NETWORK'),
+                    // Users row
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Users'),
+                      el('div', { style: { display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' } },
+                        Array.from({length: 10}, function(_, i) { return i; }).map(function(i) {
+                          var compromised = i < warRoomAssetsLost.users;
+                          return el('span', { key: i, title: compromised ? 'User account compromised' : 'User account safe',
+                            style: { fontSize: 18, filter: compromised ? 'grayscale(1) opacity(0.3)' : 'none', transition: 'filter 0.3s' } },
+                            compromised ? '\uD83D\uDC64' : '\uD83D\uDC68\u200D\uD83D\uDCBB');
+                        })
+                      ),
+                      el('span', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } }, warRoomAssets.users + '/10')
+                    ),
+                    // Servers row
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Servers'),
+                      el('div', { style: { display: 'flex', gap: 6, flex: 1 } },
+                        Array.from({length: 5}, function(_, i) { return i; }).map(function(i) {
+                          var compromised = i < warRoomAssetsLost.servers;
+                          return el('span', { key: i, title: compromised ? 'Server compromised' : 'Server healthy',
+                            style: { fontSize: 18, filter: compromised ? 'grayscale(1) opacity(0.3)' : 'none', transition: 'filter 0.3s' } },
+                            compromised ? '\uD83D\uDCBF' : '\uD83D\uDDA5\uFE0F');
+                        })
+                      ),
+                      el('span', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } }, warRoomAssets.servers + '/5')
+                    ),
+                    // Data bar
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Data'),
+                      el('div', { style: { flex: 1, height: 12, borderRadius: 6, background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(148,163,184,0.2)', overflow: 'hidden', position: 'relative' } },
+                        el('div', { style: { height: '100%', width: Math.max(0, Math.min(100, warRoomAssets.data)) + '%', background: warRoomAssets.data >= 70 ? 'linear-gradient(90deg, #22c55e, #86efac)' : (warRoomAssets.data >= 40 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #ef4444, #fca5a5)'), transition: 'width 0.4s ease' } })
+                      ),
+                      el('span', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } }, warRoomAssets.data + '/100')
                     )
                   ),
 
@@ -1899,6 +2299,16 @@
                         }),
                         missedIdeals.length > 0 && el('div', { style: { marginTop: 6, fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Next time, try one of the plays above for a full mitigation.')
                       ),
+                      // Combo callout
+                      res.activeCombos && res.activeCombos.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.35)', marginBottom: 10 } },
+                        el('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, marginBottom: 6 } }, '\u2728 COMBO' + (res.activeCombos.length > 1 ? 'S (' + res.activeCombos.length + ')' : '') + ' TRIGGERED'),
+                        res.activeCombos.map(function(combo) {
+                          return el('div', { key: combo.id, style: { padding: '4px 0', fontSize: 12, color: '#fde68a' } },
+                            el('div', { style: { fontWeight: 800, marginBottom: 2 } }, '\u2728 ' + combo.label),
+                            el('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.4 } }, combo.description)
+                          );
+                        })
+                      ),
                       // Stage lesson
                       res.stageLesson && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 10 } },
                         el('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCDA STAGE LESSON \u2014 ' + warRoomCurrentStage.name),
@@ -1916,6 +2326,23 @@
 
                     // LEFT: red team action + alerts
                     el('div', null,
+                      // Coach tip (Story Mode only)
+                      warRoomStoryMode && stageCoachTips[warRoomCurrentStage.id] && (function() {
+                        var tip = stageCoachTips[warRoomCurrentStage.id];
+                        // Convert **bold** markers to strong tags
+                        var parts = tip.split(/\*\*/);
+                        return el('div', { role: 'note', style: { padding: 10, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.04))', border: '1px solid rgba(34,197,94,0.3)', marginBottom: 10 } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                            el('span', { style: { fontSize: 16 } }, '\uD83C\uDFAC'),
+                            el('span', { style: { fontSize: 11, fontWeight: 900, color: '#86efac', letterSpacing: 0.5 } }, 'STORY MODE \u2014 COACH TIP')
+                          ),
+                          el('div', { style: { fontSize: 12, color: '#d9f99d', lineHeight: 1.55 } },
+                            parts.map(function(p, i) {
+                              return i % 2 === 1 ? el('strong', { key: i, style: { color: '#bbf7d0' } }, p) : p;
+                            })
+                          )
+                        );
+                      })(),
                       // Red team action card
                       el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(220,38,38,0.04))', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
@@ -1975,20 +2402,34 @@
                       ),
                       blueTeamCards.map(function(card) {
                         var played = warRoomBluePlays.indexOf(card.id) !== -1;
-                        var disabled = warRoomRoundResolved || played || card.cost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
+                        var isFreeAvail = warCrossBonuses.freeFirstUse.indexOf(card.id) !== -1 && warRoomFreeUsed.indexOf(card.id) === -1;
+                        var effectiveCost = isFreeAvail ? 0 : card.cost;
+                        var disabled = warRoomRoundResolved || played || effectiveCost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
                         var hint = card.id === 'escalate' && warRoomEscalateUsed ? '(already used)' : (played ? '(played)' : '');
                         return el('button', { key: card.id, onClick: function() { if (!disabled) playBlueCard(card.id); },
-                          disabled: disabled, 'aria-pressed': played, 'aria-label': card.label + ', cost ' + card.cost + ' budget. ' + card.description,
-                          style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + (played ? 'rgba(34,197,94,0.4)' : 'rgba(148,163,184,0.2)'), background: played ? 'rgba(34,197,94,0.1)' : (disabled ? 'rgba(30,41,59,0.4)' : 'rgba(30,41,59,0.7)'), color: played ? '#86efac' : (disabled ? '#475569' : '#cbd5e1'), cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left', marginBottom: 6, opacity: disabled && !played ? 0.55 : 1 } },
+                          disabled: disabled, 'aria-pressed': played, 'aria-label': card.label + ', cost ' + effectiveCost + ' budget' + (isFreeAvail ? ' (free first use)' : '') + '. ' + card.description,
+                          style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + (played ? 'rgba(34,197,94,0.4)' : (isFreeAvail ? 'rgba(34,197,94,0.4)' : 'rgba(148,163,184,0.2)')), background: played ? 'rgba(34,197,94,0.1)' : (disabled ? 'rgba(30,41,59,0.4)' : 'rgba(30,41,59,0.7)'), color: played ? '#86efac' : (disabled ? '#475569' : '#cbd5e1'), cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left', marginBottom: 6, opacity: disabled && !played ? 0.55 : 1 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                             el('span', { style: { fontSize: 14 } }, card.icon),
                             el('span', { style: { fontSize: 12.5, fontWeight: 800, flex: 1 } }, card.label),
-                            el('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc' } }, card.cost + ' \u26A1'),
+                            isFreeAvail && !played && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.25)', color: '#86efac', letterSpacing: 0.3 } }, 'FREE'),
+                            el('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', textDecoration: isFreeAvail && !played ? 'line-through' : 'none' } }, card.cost + ' \u26A1'),
                             hint && el('span', { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic' } }, hint)
                           ),
                           el('div', { style: { fontSize: 10.5, color: played ? '#86efac' : '#94a3b8', lineHeight: 1.4 } }, card.description)
                         );
                       }),
+                      // Live combo preview (shows any combos staged by current plays)
+                      (function() {
+                        var staged = detectActiveCombos(warRoomBluePlays);
+                        if (staged.length === 0) return null;
+                        return el('div', { 'aria-live': 'polite', style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)' } },
+                          el('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, marginBottom: 3 } }, '\u2728 COMBO STAGED'),
+                          staged.map(function(c) {
+                            return el('div', { key: c.id, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.4 } }, c.label + ' \u2014 ' + c.description);
+                          })
+                        );
+                      })(),
                       // Hint button (costs 1 budget, once per round, reveals category of ideal play)
                       el('div', { style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(234,179,8,0.06)', border: '1px dashed rgba(234,179,8,0.3)' } },
                         !warRoomHintRevealed && el('button', { onClick: requestHint, disabled: warRoomRoundResolved || warRoomBudget < 1,
