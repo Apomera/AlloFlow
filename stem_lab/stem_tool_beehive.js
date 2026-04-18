@@ -1428,12 +1428,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         React.useEffect(function() {
           console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
           if (viewMode !== 'beekeeper') { console.log('[Beehive DEBUG] early return: viewMode not beekeeper'); return; }
+          // DOM diagnostic: is the canvas actually in the rendered DOM?
+          var domCanvases = document.querySelectorAll('canvas');
+          console.log('[Beehive DEBUG] DOM scan: found ' + domCanvases.length + ' <canvas> elements on page');
+          for (var i = 0; i < domCanvases.length; i++) {
+            var dc = domCanvases[i];
+            var al = dc.getAttribute('aria-label') || '';
+            console.log('[Beehive DEBUG]   canvas[' + i + ']: aria-label="' + al.slice(0, 50) + '" size=' + dc.clientWidth + 'x' + dc.clientHeight + ' parent=' + (dc.parentElement ? dc.parentElement.tagName : '?'));
+          }
           var tries = 0;
           var retryTimer = null;
           var teardownFn = null;
           function tryInit() {
             var cv = _cvRef.current;
-            console.log('[Beehive DEBUG] tryInit #' + tries + ', cv=' + (cv ? 'ATTACHED (' + cv.tagName + ')' : 'NULL'));
+            // On every try, also recheck DOM directly
+            if (!cv && tries === 0) {
+              var foundByLabel = document.querySelector('canvas[aria-label*="beehive"]') || document.querySelector('canvas[aria-label*="Animated"]');
+              console.log('[Beehive DEBUG] ref null but DOM query found: ' + (foundByLabel ? 'YES (' + foundByLabel.outerHTML.slice(0, 100) + '...)' : 'NO'));
+            }
+            console.log('[Beehive DEBUG] tryInit #' + tries + ', cv=' + (cv ? 'ATTACHED (' + cv.tagName + ')' : 'NULL') + ', _cvRef obj id=' + (_cvRef.__id || (_cvRef.__id = Math.random().toString(36).slice(2, 6))));
             if (!cv) {
               if (tries++ < 12) {
                 retryTimer = setTimeout(tryInit, 50);
