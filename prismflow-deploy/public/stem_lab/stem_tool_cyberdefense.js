@@ -14,11 +14,11 @@
   var _cyberdAC = null;
   function getCyberdAC() { if (!_cyberdAC) { try { _cyberdAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_cyberdAC && _cyberdAC.state === "suspended") { try { _cyberdAC.resume(); } catch(e) {} } return _cyberdAC; }
   function cyberdTone(f,d,tp,v) { var ac = getCyberdAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
-  function sfxCyberdClick() { cyberdTone(600, 0.03, "sine", 0.04); }
+  function sfxCyberdClick() { if (window.__cyberWarMuted) return; cyberdTone(600, 0.03, "sine", 0.04); }
   // War Room outcome SFX — distinct tones for each resolution
-  function sfxWarMitigated() { cyberdTone(523, 0.08, "sine", 0.05); setTimeout(function(){ cyberdTone(659, 0.08, "sine", 0.05); }, 80); setTimeout(function(){ cyberdTone(784, 0.14, "sine", 0.05); }, 160); }
-  function sfxWarDetected()  { cyberdTone(440, 0.1, "triangle", 0.05); setTimeout(function(){ cyberdTone(554, 0.12, "triangle", 0.05); }, 110); }
-  function sfxWarSucceeded() { cyberdTone(220, 0.2, "sawtooth", 0.04); setTimeout(function(){ cyberdTone(165, 0.3, "sawtooth", 0.04); }, 180); }
+  function sfxWarMitigated() { if (window.__cyberWarMuted) return; cyberdTone(523, 0.08, "sine", 0.05); setTimeout(function(){ cyberdTone(659, 0.08, "sine", 0.05); }, 80); setTimeout(function(){ cyberdTone(784, 0.14, "sine", 0.05); }, 160); }
+  function sfxWarDetected()  { if (window.__cyberWarMuted) return; cyberdTone(440, 0.1, "triangle", 0.05); setTimeout(function(){ cyberdTone(554, 0.12, "triangle", 0.05); }, 110); }
+  function sfxWarSucceeded() { if (window.__cyberWarMuted) return; cyberdTone(220, 0.2, "sawtooth", 0.04); setTimeout(function(){ cyberdTone(165, 0.3, "sawtooth", 0.04); }, 180); }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -186,6 +186,13 @@
           var warRoomLiveLastSync = d.warRoomLiveLastSync || 0;
           var warRoomHelpOpen = d.warRoomHelpOpen || false;
           var warRoomWelcomeSeen = d.warRoomWelcomeSeen || false;
+          var warRoomSoundMuted = d.warRoomSoundMuted || false;
+          var warRoomPlaybookOpen = d.warRoomPlaybookOpen || false;
+          var warRoomStatsOpen = d.warRoomStatsOpen || false;
+          var warRoomAICoachTip = d.warRoomAICoachTip || null;
+          var warRoomAICoachLoading = d.warRoomAICoachLoading || false;
+          // Per-play log for Undo: stack of { cardId, costPaid, wasFree, markedEscalate } pushed on each play
+          var warRoomPlayLog = d.warRoomPlayLog || [];
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -335,6 +342,8 @@
               if (key === '?' || (key === '/' && e.shiftKey)) { e.preventDefault(); upd('warRoomHelpOpen', !warRoomHelpOpen); return; }
               if (key === 'Escape') {
                 if (warRoomHelpOpen) { e.preventDefault(); upd('warRoomHelpOpen', false); return; }
+                if (warRoomPlaybookOpen) { e.preventDefault(); upd('warRoomPlaybookOpen', false); return; }
+                if (warRoomStatsOpen) { e.preventDefault(); upd('warRoomStatsOpen', false); return; }
                 if (warRoomGlossaryOpen) { e.preventDefault(); upd('warRoomGlossaryOpen', false); return; }
                 if (warRoomTeacherDashOpen) { e.preventDefault(); upd('warRoomTeacherDashOpen', false); return; }
                 return;
@@ -741,6 +750,28 @@
             { id: 'speedrun', icon: '\u26A1', label: 'Lightning Reflexes', desc: 'Win a Threat Hunter campaign without the clock running out on any round.' }
           ];
 
+          // ── Best-progress helpers for unearned achievements (read from history) ──
+          function achievementProgress(achId) {
+            var h = d.warRoomCampaignHistory || [];
+            var maxOf = function(field) {
+              return h.reduce(function(best, row) {
+                var v = row[field]; return (v != null && v > best) ? v : best;
+              }, 0);
+            };
+            switch (achId) {
+              case 'patchwork':     return { cur: maxOf('patchesPlayed'), goal: 3, label: 'Best patch count' };
+              case 'combo_artist':  return { cur: maxOf('combos'), goal: 3, label: 'Best combo count' };
+              case 'hunter':        return { cur: maxOf('huntsPlayed'), goal: 4, label: 'Best hunt count' };
+              case 'perfect_run':   return { cur: maxOf('mitigations'), goal: 6, label: 'Best mitigations' };
+              case 'data_guardian': return { cur: maxOf('dataRemaining'), goal: 100, label: 'Best data remaining' };
+              case 'budget_master': {
+                var best = h.reduce(function(b, row) { return (row.verdict === 'won' && row.budgetRemaining != null && row.budgetRemaining > b) ? row.budgetRemaining : b; }, 0);
+                return { cur: best, goal: 3, label: 'Best leftover budget on a win' };
+              }
+              default: return null;
+            }
+          }
+
           // ── Evaluate which achievements were earned this campaign ──
           function evaluateCampaignAchievements(chain, finalState) {
             var earned = [];
@@ -950,6 +981,8 @@
           // ── prefers-reduced-motion detection (cached per render) ──
           var reducedMotion = false;
           try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch(e) {}
+          // Sync sound-muted flag for sfx helpers (defined at file load, read window flag)
+          try { window.__cyberWarMuted = !!warRoomSoundMuted; } catch(e) {}
 
           // ── Live Session Broadcast (best-effort; silently disabled if Firebase unavailable) ──
           var warLive = (function() {
@@ -1294,15 +1327,45 @@
               return;
             }
             var newPlays = warRoomBluePlays.concat([cardId]);
+            var logEntry = { cardId: cardId, costPaid: effectiveCost, wasFree: isFree, markedEscalate: card.id === 'escalate' };
             var updates = {
               warRoomBluePlays: newPlays,
-              warRoomBudget: warRoomBudget - effectiveCost
+              warRoomBudget: warRoomBudget - effectiveCost,
+              warRoomPlayLog: warRoomPlayLog.concat([logEntry])
             };
             if (card.id === 'escalate') updates.warRoomEscalateUsed = true;
             if (isFree) updates.warRoomFreeUsed = warRoomFreeUsed.concat([cardId]);
             upd(updates);
             sfxCyberdClick();
             if (ctx.announceToSR) ctx.announceToSR('Played ' + card.label + (isFree ? ' (free use)' : '') + '. Budget: ' + (warRoomBudget - effectiveCost) + '.');
+          }
+
+          // ── Undo the most recent blue card play this round (before resolve) ──
+          function undoLastPlay() {
+            if (warLiveIsObserving) return;
+            if (warRoomRoundResolved) return;
+            if (!warRoomPlayLog || warRoomPlayLog.length === 0) return;
+            var last = warRoomPlayLog[warRoomPlayLog.length - 1];
+            var newPlays = warRoomBluePlays.slice();
+            var idx = newPlays.lastIndexOf(last.cardId);
+            if (idx !== -1) newPlays.splice(idx, 1);
+            var newLog = warRoomPlayLog.slice(0, -1);
+            var updates = {
+              warRoomBluePlays: newPlays,
+              warRoomBudget: warRoomBudget + (last.costPaid || 0),
+              warRoomPlayLog: newLog
+            };
+            if (last.markedEscalate) updates.warRoomEscalateUsed = false;
+            if (last.wasFree) {
+              var nf = warRoomFreeUsed.slice();
+              var fidx = nf.lastIndexOf(last.cardId);
+              if (fidx !== -1) nf.splice(fidx, 1);
+              updates.warRoomFreeUsed = nf;
+            }
+            upd(updates);
+            sfxCyberdClick();
+            var card = blueTeamCards.filter(function(c) { return c.id === last.cardId; })[0];
+            if (ctx.announceToSR) ctx.announceToSR('Undid ' + (card ? card.label : last.cardId) + '. Budget restored.');
           }
 
           // ── Request a hint (costs 1 budget, reveals the ideal play's CATEGORY without naming the card) ──
@@ -1506,6 +1569,48 @@
             actions: 'COACH: This is it \u2014 the payoff stage. Data exfil, ransomware, or fraud. **Escalate to CISO** is powerful here (if you haven\'t used it). **Isolate Endpoint** contains the damage. Move fast.'
           };
 
+          // ── Stage strategy tips (shown in Playbook; the "how" complement to the "why" lessons) ──
+          var stageStrategyTips = {
+            recon: 'You can\'t stop every lookup, but you CAN detect sweeps. Reserve budget for Hunt for IOCs, and use Awareness Blasts against social reconnaissance.',
+            delivery: 'This is your best chokepoint. Block the sender or warn users \u2014 these often fully stop the attack before exploit.',
+            exploit: 'Patching is strongest against known flaws. For zero-days, rely on EDR behavioral detection and fast Isolation.',
+            persist: 'Persistence tricks (scheduled tasks, registry keys, rogue services) are exactly what EDR rules are built to catch.',
+            c2: 'If exploit landed, cut the beacon: block the IP, isolate the host, or hunt for the hidden channel.',
+            actions: 'Time matters most. Escalate early \u2014 the CISO plus containment is the strongest late-game play.'
+          };
+
+          // ── Compute the strongest defenses for a stage by scanning red-card mitigation matrices ──
+          function playbookDefensesForStage(stageId) {
+            var cardsInStage = redTeamCards.filter(function(c) { return c.stage === stageId; });
+            var fullMitCount = {}; // blueId -> how many red cards it fully mitigates
+            var partialMitCount = {};
+            cardsInStage.forEach(function(rc) {
+              Object.keys(rc.mitigations || {}).forEach(function(bid) {
+                var eff = rc.mitigations[bid];
+                if (eff >= 1.0) fullMitCount[bid] = (fullMitCount[bid] || 0) + 1;
+                else if (eff >= 0.5) partialMitCount[bid] = (partialMitCount[bid] || 0) + 1;
+              });
+            });
+            var combined = {};
+            Object.keys(fullMitCount).forEach(function(bid) { combined[bid] = (combined[bid] || 0) + fullMitCount[bid] * 2; });
+            Object.keys(partialMitCount).forEach(function(bid) { combined[bid] = (combined[bid] || 0) + partialMitCount[bid]; });
+            var ranked = Object.keys(combined).sort(function(a, b) { return combined[b] - combined[a]; });
+            return ranked.slice(0, 3).map(function(bid) {
+              var card = blueTeamCards.filter(function(b) { return b.id === bid; })[0];
+              return { card: card, fullMit: fullMitCount[bid] || 0, partialMit: partialMitCount[bid] || 0, total: cardsInStage.length };
+            }).filter(function(r) { return !!r.card; });
+          }
+
+          // ── Compute combos relevant to a stage ──
+          function playbookCombosForStage(stageId) {
+            var cardsInStage = redTeamCards.filter(function(c) { return c.stage === stageId; });
+            return blueCombos.filter(function(combo) {
+              return combo.ids.some(function(bid) {
+                return cardsInStage.some(function(rc) { return (rc.mitigations && (rc.mitigations[bid] || 0) >= 0.5); });
+              });
+            });
+          }
+
           // ── Stage-level lesson templates (the "why" of each stage) ──
           var stageLessons = {
             recon: 'Reconnaissance is silent but foundational — every piece of info the adversary collects makes later stages cheaper and more convincing. Early detection here (hunt, awareness) pays compounding dividends.',
@@ -1590,6 +1695,33 @@
             else if (result.outcome === 'detected') sfxWarDetected();
             else sfxWarSucceeded();
             if (warLiveIsHosting) setTimeout(warLivePush, 100);
+            // Kick off an AI coaching tip on failed rounds (best-effort; falls back to templated tip)
+            if (result.outcome === 'succeeded') {
+              setTimeout(function() { requestAICoachTip(warRoomRedAction, warRoomBluePlays, ideals, warRoomCurrentStage); }, 50);
+            }
+          }
+
+          // ── Request a plain-English coaching tip for a lost round ──
+          function requestAICoachTip(redCard, playsThisRound, idealCards, stageObj) {
+            if (!redCard || !stageObj) return;
+            var idealList = (idealCards || []).map(function(c) { return c.label; }).join(', ');
+            var playedList = (playsThisRound || []).map(function(pid) { var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0]; return c ? c.label : pid; }).join(', ') || 'nothing';
+            // Template fallback (used if aiChat missing or fails)
+            var templated = 'Coaching: The ideal play for ' + stageObj.name + ' was ' + (idealList || 'a strong containment move') + '. You played ' + playedList + '. Try those defenses next time for a full mitigation.';
+            if (!ctx.aiChat) { upd({ warRoomAICoachTip: templated, warRoomAICoachLoading: false }); return; }
+            upd({ warRoomAICoachLoading: true, warRoomAICoachTip: null });
+            var prompt = 'You are a supportive SOC instructor giving one short coaching tip to a student whose defense just failed. ' +
+              'Tone: encouraging, specific, under 60 words. Use plain English (K-12 friendly).\n\n' +
+              'STAGE: ' + stageObj.name + '\nRED TEAM MOVE: "' + (redCard.title || '') + '" \u2014 ' + (redCard.description || '') + '\n' +
+              'STUDENT PLAYED: ' + playedList + '\nIDEAL PLAY: ' + (idealList || 'a strong containment move') + '\n\n' +
+              'Write 2 short sentences: (1) name the key signal the student could have acted on, (2) say which defense would have stopped it and why.';
+            try {
+              ctx.aiChat(prompt, function(resp) {
+                upd({ warRoomAICoachTip: (resp && String(resp).trim()) || templated, warRoomAICoachLoading: false });
+              });
+            } catch(e) {
+              upd({ warRoomAICoachTip: templated, warRoomAICoachLoading: false });
+            }
           }
 
           // ── Advance from debrief to next round or final verdict ──
@@ -1622,6 +1754,8 @@
               });
               // Append to campaign history (cap at 20 most recent)
               var priorHistory = d.warRoomCampaignHistory || [];
+              var patchesPlayed = warRoomKillChain.filter(function(r) { return r.bluePlays.indexOf('patch') !== -1; }).length;
+              var huntsPlayed = warRoomKillChain.filter(function(r) { return r.bluePlays.indexOf('hunt_iocs') !== -1; }).length;
               var historyEntry = {
                 id: warRoomCampaignId,
                 at: Date.now(),
@@ -1632,6 +1766,9 @@
                 mitigations: warRoomMitigations,
                 dataRemaining: warRoomAssets.data,
                 combos: warRoomTotalCombos,
+                patchesPlayed: patchesPlayed,
+                huntsPlayed: huntsPlayed,
+                budgetRemaining: warRoomBudget,
                 achievementsEarned: earnedIds.length,
                 rank: warRoomRank.label,
                 hotSeat: warRoomHotSeatEnabled,
@@ -1695,7 +1832,9 @@
                 warRoomTimeLeft: 90,
                 warRoomHotSeatCurrentIdx: nextPlayerIdx,
                 warRoomHotSeatPassScreen: warRoomHotSeatEnabled && warRoomHotSeatPlayers.length > 1,
-                warRoomRngStep: localRngStep
+                warRoomRngStep: localRngStep,
+                warRoomAICoachTip: null,
+                warRoomAICoachLoading: false
               });
               if (ctx.announceToSR) ctx.announceToSR('Advancing to round ' + (warRoomRound + 1) + ': ' + warStages[warRoomRound].name + '. Red team: ' + nextRed.title);
             }
@@ -2389,19 +2528,68 @@
                 ),
                 // Floating toolbar (glossary + teacher dashboard + help)
                 el('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 8 } },
-                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomTeacherDashOpen: !warRoomTeacherDashOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false }); sfxCyberdClick(); },
+                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomTeacherDashOpen: !warRoomTeacherDashOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomTeacherDashOpen, 'aria-controls': 'warroom-teacher-dash',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(34,197,94,0.3)', background: warRoomTeacherDashOpen ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.12)', color: '#86efac', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomTeacherDashOpen ? '\u2715 Close' : '\uD83D\uDCCA Open') + ' Teacher Dashboard'),
-                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomTeacherDashOpen: false, warRoomHelpOpen: false }); sfxCyberdClick(); },
+                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomStatsOpen: !warRoomStatsOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
+                    'aria-expanded': warRoomStatsOpen, 'aria-controls': 'warroom-stats-panel',
+                    title: 'Your personal performance stats',
+                    style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(59,130,246,0.3)', background: warRoomStatsOpen ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', color: '#93c5fd', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                    (warRoomStatsOpen ? '\u2715 Close' : '\uD83D\uDCC8 My') + ' Stats'),
+                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomGlossaryOpen, 'aria-controls': 'warroom-glossary-panel',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: warRoomGlossaryOpen ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary'),
-                  el('button', { onClick: function() { upd({ warRoomHelpOpen: !warRoomHelpOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
+                  el('button', { onClick: function() { upd({ warRoomPlaybookOpen: !warRoomPlaybookOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                    'aria-expanded': warRoomPlaybookOpen, 'aria-controls': 'warroom-playbook-panel',
+                    title: 'Strategy guide — which defenses work against which stages',
+                    style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(236,72,153,0.3)', background: warRoomPlaybookOpen ? 'rgba(236,72,153,0.25)' : 'rgba(236,72,153,0.12)', color: '#f9a8d4', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                    (warRoomPlaybookOpen ? '\u2715 Close' : '\uD83D\uDCD2 Open') + ' Playbook'),
+                  el('button', { onClick: function() { upd({ warRoomHelpOpen: !warRoomHelpOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomHelpOpen, 'aria-controls': 'warroom-help-panel',
                     title: 'Keyboard shortcuts (shortcut: ?)',
                     style: { padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)', background: warRoomHelpOpen ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.12)', color: '#fcd34d', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     warRoomHelpOpen ? '\u2715' : '? Help')
+                ),
+                // Playbook panel
+                warRoomPlaybookOpen && el('div', { id: 'warroom-playbook-panel', role: 'region', 'aria-label': 'Strategy playbook',
+                  style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(236,72,153,0.3)', marginBottom: 14, maxHeight: 520, overflowY: 'auto' } },
+                  el('div', { style: { color: '#f9a8d4', fontSize: 12, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\uD83D\uDCD2 STRATEGY PLAYBOOK'),
+                  el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12, lineHeight: 1.5 } }, 'Which defenses work best at each kill-chain stage. These rankings are computed from every red team card in the catalog \u2014 the more cards a defense fully mitigates, the higher it ranks.'),
+                  warStages.map(function(stage) {
+                    var defenses = playbookDefensesForStage(stage.id);
+                    var combos = playbookCombosForStage(stage.id);
+                    var tip = (warRoomPlainLanguage && plainStageLessons[stage.id]) ? null : stageStrategyTips[stage.id];
+                    var plainTip = warRoomPlainLanguage ? 'Tip: Use the top defenses listed first. Combos multiply effectiveness when timing is right.' : null;
+                    return el('div', { key: stage.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid ' + stage.color + '35', marginBottom: 8 } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                        el('span', { style: { fontSize: 18 } }, stage.icon),
+                        el('span', { style: { fontSize: 13, fontWeight: 900, color: stage.color } }, stage.num + '. ' + stage.name)
+                      ),
+                      el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6, fontStyle: 'italic' } }, plainTip || tip),
+                      defenses.length > 0 && el('div', { style: { marginBottom: 6 } },
+                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Strongest defenses here'),
+                        defenses.map(function(d2, i) {
+                          return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: 11.5, color: '#e2e8f0' } },
+                            el('span', { style: { fontSize: 14 } }, d2.card.icon),
+                            el('span', { style: { fontWeight: 700, flex: 1 } }, d2.card.label),
+                            el('span', { style: { fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 3, background: 'rgba(34,197,94,0.15)', color: '#86efac' } }, d2.fullMit + ' full'),
+                            d2.partialMit > 0 && el('span', { style: { fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 3, background: 'rgba(59,130,246,0.15)', color: '#93c5fd' } }, d2.partialMit + ' partial')
+                          );
+                        })
+                      ),
+                      combos.length > 0 && el('div', null,
+                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Combos worth setting up'),
+                        combos.map(function(c, i) {
+                          return el('div', { key: i, style: { padding: '3px 0', fontSize: 11, color: '#fde68a' } },
+                            el('span', { style: { fontWeight: 800 } }, '\u2728 ' + c.label),
+                            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, ' \u2014 ' + c.ids.map(function(bid) { var bc = blueTeamCards.filter(function(b) { return b.id === bid; })[0]; return bc ? bc.label : bid; }).join(' + '))
+                          );
+                        })
+                      )
+                    );
+                  })
                 ),
                 // Help / shortcuts overlay
                 warRoomHelpOpen && el('div', { id: 'warroom-help-panel', role: 'region', 'aria-label': 'Keyboard shortcuts and help',
@@ -2424,6 +2612,102 @@
                     })
                   ),
                   el('div', { style: { marginTop: 10, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Shortcuts are disabled while typing in text fields or in Observer mode.')
+                ),
+                // Personal Stats panel
+                warRoomStatsOpen && el('div', { id: 'warroom-stats-panel', role: 'region', 'aria-label': 'Your personal stats',
+                  style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(59,130,246,0.3)', marginBottom: 14 } },
+                  el('div', { style: { color: '#93c5fd', fontSize: 12, fontWeight: 800, marginBottom: 10, letterSpacing: 0.5 } }, '\uD83D\uDCC8 YOUR STATS'),
+                  (function() {
+                    var h = warRoomCampaignHistory;
+                    if (h.length === 0) return el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'Play a campaign to start tracking stats.');
+                    var wins = h.filter(function(r) { return r.verdict === 'won'; }).length;
+                    var winPct = Math.round(wins / h.length * 100);
+                    var avgDet = (h.reduce(function(a, r){return a + (r.detections||0);}, 0) / h.length).toFixed(1);
+                    var avgMit = (h.reduce(function(a, r){return a + (r.mitigations||0);}, 0) / h.length).toFixed(1);
+                    var avgData = Math.round(h.reduce(function(a, r){return a + (r.dataRemaining||0);}, 0) / h.length);
+                    // Longest win streak (from newest history, which is h.slice().reverse())
+                    var chron = h.slice().reverse();
+                    var longestStreak = 0, curStreak = 0;
+                    chron.forEach(function(r) {
+                      if (r.verdict === 'won') { curStreak += 1; if (curStreak > longestStreak) longestStreak = curStreak; }
+                      else curStreak = 0;
+                    });
+                    var currentStreak = 0;
+                    for (var si = chron.length - 1; si >= 0; si--) {
+                      if (chron[si].verdict === 'won') currentStreak += 1; else break;
+                    }
+                    // Per-difficulty breakdown
+                    var byDiff = { rookie: { c: 0, w: 0 }, analyst: { c: 0, w: 0 }, threatHunter: { c: 0, w: 0 } };
+                    h.forEach(function(r) { if (byDiff[r.difficulty]) { byDiff[r.difficulty].c++; if (r.verdict === 'won') byDiff[r.difficulty].w++; } });
+                    // Per-theme breakdown
+                    var byTheme = {};
+                    h.forEach(function(r) {
+                      var tid = r.theme || 'mixed';
+                      if (!byTheme[tid]) byTheme[tid] = { c: 0, w: 0 };
+                      byTheme[tid].c++;
+                      if (r.verdict === 'won') byTheme[tid].w++;
+                    });
+                    // Data-preserved sparkline (last 10 campaigns, newest first in history, reversed for chronological)
+                    var sparkData = h.slice(0, 10).reverse().map(function(r) { return r.dataRemaining != null ? r.dataRemaining : 0; });
+                    var maxBar = 100;
+                    return el('div', null,
+                      // Top stats row
+                      el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 14 } },
+                        [
+                          { label: 'Campaigns', val: String(h.length), color: '#cbd5e1' },
+                          { label: 'Wins', val: wins + ' (' + winPct + '%)', color: '#86efac' },
+                          { label: 'Avg Detections', val: avgDet + '/6', color: '#93c5fd' },
+                          { label: 'Avg Data Saved', val: avgData + '/100', color: '#fcd34d' },
+                          { label: 'Longest Streak', val: longestStreak + ' win' + (longestStreak === 1 ? '' : 's'), color: '#a855f7' },
+                          { label: 'Current Streak', val: currentStreak + ' win' + (currentStreak === 1 ? '' : 's'), color: '#f472b6' }
+                        ].map(function(s, i) {
+                          return el('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'rgba(30,41,59,0.6)' } },
+                            el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                            el('div', { style: { fontSize: 15, color: s.color, fontWeight: 900, marginTop: 2 } }, s.val)
+                          );
+                        })
+                      ),
+                      // Data-preserved bar chart (last 10 campaigns)
+                      sparkData.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)', marginBottom: 12 } },
+                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Data Preserved \u2014 last ' + sparkData.length + ' campaign' + (sparkData.length === 1 ? '' : 's') + ' (newest \u2192)'),
+                        el('div', { role: 'img', 'aria-label': 'Bar chart showing data preserved across recent campaigns',
+                          style: { display: 'flex', alignItems: 'flex-end', gap: 3, height: 70 } },
+                          sparkData.map(function(v, i) {
+                            var pct = Math.max(2, (v / maxBar) * 100);
+                            var color = v >= 70 ? '#22c55e' : (v >= 40 ? '#f59e0b' : '#ef4444');
+                            return el('div', { key: i, title: 'Campaign ' + (i + 1) + ': ' + v + '/100 data saved',
+                              style: { flex: 1, height: pct + '%', background: color, borderRadius: '3px 3px 0 0', minHeight: 3, transition: 'height 0.3s' } });
+                          })
+                        )
+                      ),
+                      // By difficulty + by theme side by side
+                      el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+                        el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
+                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'By Difficulty'),
+                          ['rookie','analyst','threatHunter'].map(function(did) {
+                            var s = byDiff[did]; var pct = s.c > 0 ? Math.round(s.w / s.c * 100) : 0;
+                            var labelMap = { rookie: 'Rookie', analyst: 'Analyst', threatHunter: 'Threat Hunter' };
+                            return el('div', { key: did, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: '#cbd5e1' } },
+                              el('span', { style: { minWidth: 80, fontWeight: 700 } }, labelMap[did]),
+                              el('span', { style: { flex: 1 } }, s.c + ' played'),
+                              el('span', { style: { color: s.w > 0 ? '#86efac' : '#64748b', fontWeight: 800 } }, s.w + ' won (' + pct + '%)')
+                            );
+                          })
+                        ),
+                        el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
+                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'By Adversary'),
+                          Object.keys(byTheme).sort(function(a, b) { return byTheme[b].c - byTheme[a].c; }).map(function(tid) {
+                            var s = byTheme[tid]; var label = (campaignThemes[tid] && campaignThemes[tid].label) || tid;
+                            return el('div', { key: tid, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: '#cbd5e1' } },
+                              el('span', { style: { flex: 1, fontWeight: 700 } }, label),
+                              el('span', { style: { color: '#94a3b8' } }, s.c + ' played'),
+                              el('span', { style: { color: s.w > 0 ? '#86efac' : '#64748b', fontWeight: 800, minWidth: 50, textAlign: 'right' } }, s.w + ' won')
+                            );
+                          })
+                        )
+                      )
+                    );
+                  })()
                 ),
                 // Teacher Dashboard panel
                 warRoomTeacherDashOpen && el('div', { id: 'warroom-teacher-dash', role: 'region', 'aria-label': 'Teacher dashboard',
@@ -2584,12 +2868,14 @@
                         { id: 'warRoomPlainLanguage', label: '\uD83D\uDCDD Plain Language', desc: 'Simpler words for attacks and defenses.', val: warRoomPlainLanguage },
                         { id: 'a_dyslexiaFont',       label: '\uD83D\uDD24 Dyslexia-friendly Font', desc: 'Switch to an easier-to-read font.', val: warRoomA11y.dyslexiaFont },
                         { id: 'a_largeText',          label: '\uD83D\uDD0D Larger Text', desc: 'Increase font size across the tool.', val: warRoomA11y.largeText },
-                        { id: 'a_highContrast',       label: '\u25D1 High Contrast', desc: 'Stronger color contrast for clarity.', val: warRoomA11y.highContrast }
+                        { id: 'a_highContrast',       label: '\u25D1 High Contrast', desc: 'Stronger color contrast for clarity.', val: warRoomA11y.highContrast },
+                        { id: 'warRoomSoundMuted',    label: '\uD83D\uDD07 Mute War Room Sounds', desc: 'Silence the click / outcome tones.', val: warRoomSoundMuted }
                       ].map(function(opt) {
                         var isOn = !!opt.val;
                         return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
                           onClick: function() {
                             if (opt.id === 'warRoomPlainLanguage') { upd('warRoomPlainLanguage', !isOn); }
+                            else if (opt.id === 'warRoomSoundMuted') { upd('warRoomSoundMuted', !isOn); }
                             else {
                               var k = opt.id.slice(2); // strip "a_"
                               var next = Object.assign({}, warRoomA11y); next[k] = !isOn;
@@ -2774,13 +3060,24 @@
                     el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
                       warAchievements.map(function(a) {
                         var earned = !!warRoomAchievements[a.id];
+                        var prog = !earned ? achievementProgress(a.id) : null;
+                        var pct = prog && prog.goal > 0 ? Math.min(100, Math.round((prog.cur / prog.goal) * 100)) : 0;
                         return el('div', { key: a.id, title: a.desc,
-                          style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.5 } },
+                          style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.65 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 } },
                             el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
                             el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#64748b', flex: 1 } }, a.label)
                           ),
-                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, a.desc)
+                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, a.desc),
+                          !earned && prog && el('div', { style: { marginTop: 5 } },
+                            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } },
+                              el('span', null, prog.label),
+                              el('span', null, prog.cur + ' / ' + prog.goal)
+                            ),
+                            el('div', { 'aria-hidden': 'true', style: { height: 4, borderRadius: 2, background: 'rgba(30,41,59,0.8)', overflow: 'hidden' } },
+                              el('div', { style: { height: '100%', width: pct + '%', background: pct >= 100 ? '#22c55e' : 'linear-gradient(90deg, #6366f1, #a855f7)', transition: 'width 0.3s' } })
+                            )
+                          )
                         );
                       })
                     )
@@ -3193,6 +3490,18 @@
                           );
                         }),
                         missedIdeals.length > 0 && el('div', { style: { marginTop: 6, fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Next time, try one of the plays above for a full mitigation.')
+                      ),
+                      // AI coaching tip (only on lost rounds)
+                      res.outcome === 'succeeded' && el('div', { role: 'status', 'aria-live': 'polite',
+                        style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.05))', border: '1px solid rgba(59,130,246,0.35)', marginBottom: 10 } },
+                        el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                          el('span', { style: { fontSize: 14 } }, '\uD83E\uDD16'),
+                          el('span', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', letterSpacing: 0.5 } }, 'AI COACH TIP'),
+                          warRoomAICoachLoading && el('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '\u23F3 analyzing\u2026')
+                        ),
+                        warRoomAICoachTip
+                          ? el('div', { style: { fontSize: 12, color: '#dbeafe', lineHeight: 1.55 } }, warRoomAICoachTip)
+                          : !warRoomAICoachLoading && el('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Analyzing your play\u2026 will appear here in a moment.')
                       ),
                       // Combo callout
                       res.activeCombos && res.activeCombos.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.35)', marginBottom: 10 } },

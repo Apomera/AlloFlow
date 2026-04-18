@@ -8120,20 +8120,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             hl.position.set(0.92, 0.55, z);
             playerCarGroup.add(hl);
           });
-          // Headlight spotlights (at night)
-          var headlightL = null, headlightR = null;
-          if (isNight) {
-            headlightL = new T.SpotLight(0xfff5cc, 1.5, 30, Math.PI / 6, 0.5, 1);
-            headlightL.position.set(0.95, 0.55, -0.3);
-            headlightL.target.position.set(10, 0, -0.3);
-            playerCarGroup.add(headlightL);
-            playerCarGroup.add(headlightL.target);
-            headlightR = new T.SpotLight(0xfff5cc, 1.5, 30, Math.PI / 6, 0.5, 1);
-            headlightR.position.set(0.95, 0.55, 0.3);
-            headlightR.target.position.set(10, 0, 0.3);
-            playerCarGroup.add(headlightR);
-            playerCarGroup.add(headlightR.target);
-          }
+          // Headlight spotlights — always created so a Day→Night toggle mid-drive
+          // actually lights up the beams. Intensity is set to 0 in day mode and
+          // ramped up by the per-frame update when night/fog/rain conditions apply.
+          var headlightL = new T.SpotLight(0xfff5cc, isNight ? 1.5 : 0, 30, Math.PI / 6, 0.5, 1);
+          headlightL.position.set(0.95, 0.55, -0.3);
+          headlightL.target.position.set(10, 0, -0.3);
+          playerCarGroup.add(headlightL);
+          playerCarGroup.add(headlightL.target);
+          var headlightR = new T.SpotLight(0xfff5cc, isNight ? 1.5 : 0, 30, Math.PI / 6, 0.5, 1);
+          headlightR.position.set(0.95, 0.55, 0.3);
+          headlightR.target.position.set(10, 0, 0.3);
+          playerCarGroup.add(headlightR);
+          playerCarGroup.add(headlightR.target);
           // Visible headlight beam cones — a stretched cone per headlight with
           // additive blending. Shows up best at night + fog; hidden by day.
           if (isNight || isFog || isRain) {
@@ -8586,26 +8585,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             col.needsUpdate = true;
           };
-          // Update fog + skydome dynamically.
-          if (isFogNow && (!s3.scene.fog || s3.scene.fog.far !== 40)) {
-            s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
-            s3.scene.background = new T.Color(0x94a3b8);
-            recolorSky();
-          } else if (isSnowNow && (!s3.scene.fog || s3.scene.fog.far !== 60)) {
-            s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
-            s3.scene.background = new T.Color(0xcbd5e1);
-            recolorSky();
-          } else if (isRainNow && (!s3.scene.fog || s3.scene.fog.far !== 50)) {
-            s3.scene.fog = new T.Fog(0x475569, 8, 50);
-            s3.scene.background = new T.Color(0x475569);
-            recolorSky();
-          } else if (isNightNow && (!s3.scene.fog || s3.scene.fog.far !== 120)) {
-            s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
-            s3.scene.background = new T.Color(0x0a0f1e);
-            recolorSky();
-          } else if (!isFogNow && !isSnowNow && !isRainNow && !isNightNow && s3.scene.fog && s3.scene.fog.far !== 120) {
-            s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
-            s3.scene.background = new T.Color(0x87ceeb);
+          // Update fog + skydome dynamically. Use a state-key string instead of
+          // sniffing fog.far values — both night and clear-day used far=120, which made
+          // the day branch unreachable on a night→day toggle (sky stayed night-blue).
+          var skyState = isFogNow ? 'fog'
+            : isSnowNow ? 'snow'
+            : isRainNow ? 'rain'
+            : isNightNow ? 'night'
+            : 'day';
+          if (s3._lastSkyState !== skyState) {
+            s3._lastSkyState = skyState;
+            if (skyState === 'fog') {
+              s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
+              s3.scene.background = new T.Color(0x94a3b8);
+            } else if (skyState === 'snow') {
+              s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
+              s3.scene.background = new T.Color(0xcbd5e1);
+            } else if (skyState === 'rain') {
+              s3.scene.fog = new T.Fog(0x475569, 8, 50);
+              s3.scene.background = new T.Color(0x475569);
+            } else if (skyState === 'night') {
+              s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
+              s3.scene.background = new T.Color(0x0a0f1e);
+            } else {
+              s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
+              s3.scene.background = new T.Color(0x87ceeb);
+            }
             recolorSky();
           }
           // Update ambient light intensity for time-of-day, plus cloud-shadow
@@ -8619,6 +8624,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var baseInt = isNightNow ? 0.15 : 0.5;
               child.intensity = baseInt * cloudShadow;
               child.color.setHex(isNightNow ? 0x1a1a3a : 0xffffff);
+            }
+            // Sun directional light also needs to track time-of-day. Without this it
+            // stayed at its initial intensity/color forever — toggling Day/Night
+            // would only change ambient + sky, while shadows + warmth stayed wrong.
+            if (child.isDirectionalLight) {
+              child.intensity = (isNightNow ? 0.3 : 0.9) * cloudShadow;
+              child.color.setHex(isNightNow ? 0x4466aa : 0xfff5e0);
             }
           });
 
@@ -8737,9 +8749,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
           // Player wheel rotation — accumulate Δangle = speed * dt / radius.
+          // dt isn't a parameter of updateThreeScene; compute it locally from timeRef.
           if (s3.playerCarGroup) {
             if (s3._playerWheelAngle === undefined) s3._playerWheelAngle = 0;
-            s3._playerWheelAngle += Math.abs(car.speed) * dt / 0.20;
+            if (s3._lastWheelT === undefined) s3._lastWheelT = timeRef.current;
+            var wheelDt = Math.max(0, Math.min(0.1, timeRef.current - s3._lastWheelT));
+            s3._lastWheelT = timeRef.current;
+            s3._playerWheelAngle += Math.abs(car.speed) * wheelDt / 0.20;
             s3.playerCarGroup.children.forEach(function(child) {
               if (child.name === 'rr_playerWheel') child.rotation.y = s3._playerWheelAngle;
             });
@@ -8750,7 +8766,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var highBeams = d.highBeams;
             var hlDist = highBeams ? 50 : 25;
             var hlAngle = highBeams ? Math.PI / 5 : Math.PI / 6;
-            var hlInt = highBeams ? 2.5 : 1.5;
+            // Headlights only emit when actually needed: night, fog, or rain. In clear
+            // daylight they cost render time without adding visual value, AND if the
+            // user toggled to day from night the lights would otherwise still be on.
+            var hlActive = isNightNow || scn.weather === 'fog' || scn.weather === 'rain';
+            var hlInt = hlActive ? (highBeams ? 2.5 : 1.5) : 0;
             s3.headlightL.distance = hlDist;
             s3.headlightL.angle = hlAngle;
             s3.headlightL.intensity = hlInt;
@@ -8881,6 +8901,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               lampList.forEach(function(lamp) {
                 var lit = lamp.state === curState;
                 lamp.mesh.material.color.setHex(lit ? lamp.onHex : lamp.offHex);
+              });
+            });
+          }
+          // ── Streetlight per-frame update ──
+          // Walk loaded chunks once and toggle streetlight head color + glow opacity
+          // based on current time-of-day. Without this update, lights baked at
+          // chunk-load time stayed stale when the user toggled Day↔Night mid-drive.
+          if (s3._loadedChunks) {
+            var slLit = isNightNow || scn.time === 'dawn' || scn.weather === 'fog';
+            var slHeadColor = slLit ? 0xfef3c7 : 0x4b5563;
+            var slGlowOp = slLit ? 0.22 : 0;
+            var slPoolOp = slLit ? 0.32 : 0;
+            Object.keys(s3._loadedChunks).forEach(function(slCk) {
+              var slGroup = s3._loadedChunks[slCk];
+              if (!slGroup) return;
+              slGroup.children.forEach(function(c) {
+                if (c.name === 'rr_streetlightHead') c.material.color.setHex(slHeadColor);
+                else if (c.name === 'rr_streetlightGlow') c.material.opacity = slGlowOp;
+                else if (c.name === 'rr_streetlightPool') c.material.opacity = slPoolOp;
               });
             });
           }
@@ -10331,9 +10370,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chunkGroup.add(fhNozzle);
                   }
                 } else if (ambRoll < 0.58) {
-                  // Streetlight (urban/suburban)
+                  // Streetlight (urban/suburban). Components are name-tagged so the
+                  // render loop can update their lit/unlit state when the user toggles
+                  // Day/Night mid-drive. Previously the lit color + glow were baked at
+                  // chunk-load time and never updated.
                   if (chunk.biome === 'commercial' || chunk.biome === 'suburban' || chunk.biome === 'residential') {
-                    var isLit = scn.time === 'night' || scn.time === 'dawn' || scn.weather === 'fog';
                     var slPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), new T.MeshLambertMaterial({ color: 0x4b5563 }));
                     slPole.position.set(ambX, 2.1, ambZ);
                     chunkGroup.add(slPole);
@@ -10341,29 +10382,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     slArm.rotation.z = Math.PI / 2;
                     slArm.position.set(ambX - ambSide * 0.6, 4.0, ambZ);
                     chunkGroup.add(slArm);
-                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: isLit ? 0xfef3c7 : 0x4b5563 }));
+                    // Head — color updated per-frame based on time
+                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: 0x4b5563 }));
                     slHead.position.set(ambX - ambSide * 1.1, 3.9, ambZ);
+                    slHead.name = 'rr_streetlightHead';
                     chunkGroup.add(slHead);
-                    // At night/fog: add a downward glow cone + a lit pool on the ground.
-                    // Cone is additive-blended and dim (0.18 opacity) so it reads as atmospheric.
-                    if (isLit) {
+                    // Glow cone + ground pool — always create, opacity toggled per-frame
+                    {
                       var slGlowGeo = new T.ConeGeometry(1.5, 3.6, 14, 1, true);
                       var slGlowMat = new T.MeshBasicMaterial({
-                        color: 0xfff6cc, transparent: true, opacity: 0.22,
+                        color: 0xfff6cc, transparent: true, opacity: 0,
                         blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
                       });
                       var slGlow = new T.Mesh(slGlowGeo, slGlowMat);
                       slGlow.position.set(ambX - ambSide * 1.1, 2.1, ambZ);
+                      slGlow.name = 'rr_streetlightGlow';
                       chunkGroup.add(slGlow);
-                      // Ground light pool — warm circular disc on the ground beneath the head
                       var slPoolGeo = new T.CircleGeometry(1.6, 20);
                       var slPoolMat = new T.MeshBasicMaterial({
-                        color: 0xffe8a0, transparent: true, opacity: 0.32,
+                        color: 0xffe8a0, transparent: true, opacity: 0,
                         blending: T.AdditiveBlending, depthWrite: false
                       });
                       var slPool = new T.Mesh(slPoolGeo, slPoolMat);
                       slPool.rotation.x = -Math.PI / 2;
                       slPool.position.set(ambX - ambSide * 1.1, 0.015, ambZ);
+                      slPool.name = 'rr_streetlightPool';
                       chunkGroup.add(slPool);
                     }
                   }
