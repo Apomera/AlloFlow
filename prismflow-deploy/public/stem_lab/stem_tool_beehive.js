@@ -1428,17 +1428,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         React.useEffect(function() {
           if (viewMode !== 'beekeeper') return;
           var cv = _cvRef.current;
-          if (!cv) return;
+          if (!cv) {
+            // Ref not attached on first useEffect tick — rare but possible if canvas mounted
+            // AFTER the effect fired. Try once more; if still null, give up (no infinite loops).
+            if (!_cvRef._retryCount) _cvRef._retryCount = 0;
+            if (_cvRef._retryCount < 3) {
+              _cvRef._retryCount++;
+              setTimeout(function() { upd('_cvRetry', Date.now()); }, 50);
+            } else {
+              console.warn('[Beehive] canvas ref never attached after retries; animation disabled');
+            }
+            return;
+          }
+          _cvRef._retryCount = 0; // reset on successful attach
           var c = cv.getContext('2d');
           if (!c) return;
 
-          // Size canvas from parent container (with resize observer)
+          // Size canvas from parent container (with resize observer).
+          // Outer W/H are mutable and read fresh by frame() closure each tick.
           var par = cv.parentElement;
           var W = (par ? par.clientWidth : cv.clientWidth) || 500;
           var H = (par ? par.clientHeight : cv.clientHeight) || 300;
           function resizeCanvas() {
-            W = (par ? par.clientWidth : cv.clientWidth) || 500;
-            H = (par ? par.clientHeight : cv.clientHeight) || 300;
+            var newW = (par ? par.clientWidth : cv.clientWidth) || 500;
+            var newH = (par ? par.clientHeight : cv.clientHeight) || 300;
+            // Safety: some browsers report clientWidth=0 during layout. Fall back to previous
+            // good values or sensible defaults so the canvas never ends up invisible.
+            if (newW < 80) newW = Math.max(W, 500);
+            if (newH < 80) newH = Math.max(H, 300);
+            W = newW; H = newH;
             cv.width = W * 2; cv.height = H * 2;
             c.setTransform(2, 0, 0, 2, 0, 0);
             // Re-init bees and flowers for new dimensions
@@ -1464,31 +1482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             };
           }
 
-          // Initialize bee particles once
-          if (!_bees.current || _bees.current.length === 0) {
-            var ba = [], nb = Math.max(8, Math.min(60, Math.floor((workers || 10000) / 300)));
-            for (var i = 0; i < nb; i++) ba.push({
-              x: W * 0.3 + Math.random() * W * 0.5, y: H * 0.15 + Math.random() * H * 0.45,
-              vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 1.5,
-              sz: 2.5 + Math.random() * 2, ph: Math.random() * 6.28,
-              carry: Math.random() > 0.6, toFlower: Math.random() > 0.5, wp: Math.random() * 6.28
-            });
-            _bees.current = ba;
-          }
-          // Initialize flowers once
-          if (!_flowers.current || _flowers.current.length === 0) {
-            var fa = [], nf = Math.min(12, 3 + Math.floor((habitat || 50) / 10));
-            var flColors = ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa','#e879f9','#38bdf8'];
-            for (var j = 0; j < nf; j++) fa.push({
-              x: W * 0.52 + j * (W * 0.42 / nf) + (Math.random() - 0.5) * 16,
-              y: H * 0.68 + (Math.random() - 0.5) * 14,
-              col: flColors[j % flColors.length], sz: 4.5 + Math.random() * 4, sp: Math.random() * 6.28
-            });
-            _flowers.current = fa;
-          }
-
-          var bees = _bees.current, flowers = _flowers.current;
-          var hiveX = W * 0.10, hiveY = H * 0.20, hiveW = W * 0.30, hiveH = H * 0.56;
+          // Bees & flowers now (re)initialized lazily inside frame() so resize works correctly.
 
           function frame() {
             try {
@@ -1501,6 +1495,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               gardenBonus = ls.gardenBonus || 0;
               colonyHealth = typeof ls.colonyHealth === 'number' ? ls.colonyHealth : 50;
               var t2 = ++_tick.current;
+              // Recompute bee/flower arrays + hive rect each frame so resize/reinit is live.
+              // Previously these were captured once before frame() → stale after resize.
+              if (!_bees.current || _bees.current.length === 0) {
+                var ba = [], nb = Math.max(8, Math.min(60, Math.floor((safeWorkers || 10000) / 300)));
+                for (var bi = 0; bi < nb; bi++) ba.push({
+                  x: W * 0.3 + Math.random() * W * 0.5, y: H * 0.15 + Math.random() * H * 0.45,
+                  vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 1.5,
+                  sz: 2.5 + Math.random() * 2, ph: Math.random() * 6.28,
+                  carry: Math.random() > 0.6, toFlower: Math.random() > 0.5, wp: Math.random() * 6.28
+                });
+                _bees.current = ba;
+              }
+              if (!_flowers.current || _flowers.current.length === 0) {
+                var fa = [], nf = Math.min(12, 3 + Math.floor(((ls && ls.habitat) || 50) / 10));
+                var flColors2 = ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa','#e879f9','#38bdf8'];
+                for (var fj = 0; fj < nf; fj++) fa.push({
+                  x: W * 0.52 + fj * (W * 0.42 / nf) + (Math.random() - 0.5) * 16,
+                  y: H * 0.68 + (Math.random() - 0.5) * 14,
+                  col: flColors2[fj % flColors2.length], sz: 4.5 + Math.random() * 4, sp: Math.random() * 6.28
+                });
+                _flowers.current = fa;
+              }
+              var bees = _bees.current, flowers = _flowers.current;
+              var hiveX = W * 0.10, hiveY = H * 0.20, hiveW = W * 0.30, hiveH = H * 0.56;
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──

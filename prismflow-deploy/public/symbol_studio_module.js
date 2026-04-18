@@ -2076,20 +2076,40 @@
     }, [onCallGemini, addToast]);
 
     // ── IEP Goal Tracking helpers ──
+    // Schema expanded beyond the original {text, type, targetCount} so goals carry the fields SLPs
+    // actually need in team meetings: priority tier, baseline level, target date, cue-level required,
+    // accommodations, and how trial data is collected. All new fields are optional — older goals
+    // loaded from localStorage stay valid (missing fields just don't render in the UI).
     var addIepGoal = useCallback(function (goal) {
       var g = {
         id: Date.now().toString(36),
         text: goal.text || '',
-        type: goal.type || 'expressive',  // expressive | receptive | social
+        type: goal.type || 'expressive',  // expressive | receptive | social | pragmatic | articulation
         targetCount: goal.targetCount || 20,
         currentCount: 0,
         trials: [],
         createdAt: new Date().toISOString(),
-        profileId: activeProfileId || 'default'
+        profileId: activeProfileId || 'default',
+        // New IEP-team fields (all optional)
+        priority: goal.priority || 'standard',        // 'high' | 'standard' | 'maintenance'
+        baseline: goal.baseline || '',                // free-text starting performance (e.g. "2/10 accuracy")
+        targetDate: goal.targetDate || '',            // ISO date string; blank = no deadline
+        cueLevel: goal.cueLevel || 'independent',     // 'independent' | 'visual' | 'verbal' | 'gestural' | 'physical'
+        accommodations: goal.accommodations || '',    // free-text: supports the student needs during trials
+        dataMethod: goal.dataMethod || 'frequency',   // 'frequency' | 'percentage' | 'duration' | 'rubric'
+        linkedIepSection: goal.linkedIepSection || '' // e.g. "Communication" / "Social-Emotional" — paper IEP mapping
       };
       setIepGoals(function (prev) { var updated = prev.concat([g]); store(STORAGE_GOALS, updated); return updated; });
       return g;
     }, [activeProfileId]);
+
+    var updateIepGoal = useCallback(function (goalId, patch) {
+      setIepGoals(function (prev) {
+        var updated = prev.map(function (g) { return g.id === goalId ? Object.assign({}, g, patch) : g; });
+        store(STORAGE_GOALS, updated);
+        return updated;
+      });
+    }, []);
 
     var recordIepTrial = useCallback(function (goalId, success, context) {
       setIepGoals(function (prev) {
@@ -2125,6 +2145,35 @@
     }, []);
 
     var activeGoals = iepGoals.filter(function (g) { return g.profileId === (activeProfileId || 'default'); });
+
+    // ── Cross-tool bridge: window.AlloStudent ──
+    // Publishes the current student profile and their communication goals so that OTHER AlloFlow
+    // tools (Document Builder, Leveled Reader, Quiz Gen, etc.) can read them WITHOUT tight
+    // coupling to SymbolStudio. The API is intentionally minimal:
+    //   window.AlloStudent.getProfile()   → { id, name, description, codename, image } | null
+    //   window.AlloStudent.getGoals()     → [ { id, text, type, priority, cueLevel, ... } ]
+    //   window.AlloStudent.onChange(cb)   → () => unsubscribe
+    // This is the thin-central-store pattern described in the student-profile proposal.
+    // When AlloFlow eventually grows a proper StudentProfile module, the same three methods can
+    // be reimplemented against that central store and no consumer has to change.
+    React.useEffect(function () {
+      var api = window.AlloStudent = window.AlloStudent || { _subs: [] };
+      var activeProfile = (profiles || []).filter(function (p) { return p.id === activeProfileId; })[0] || null;
+      api.getProfile = function () { return activeProfile ? Object.assign({}, activeProfile) : null; };
+      api.getGoals = function () { return activeGoals.map(function (g) { return Object.assign({}, g); }); };
+      // subscribe/unsubscribe: gives consumers a change notification whenever the student or
+      // their goals change. Consumer owns its own re-read via getProfile / getGoals.
+      api.onChange = api.onChange || function (cb) {
+        if (typeof cb !== 'function') return function () {};
+        (api._subs = api._subs || []).push(cb);
+        return function () { api._subs = (api._subs || []).filter(function (f) { return f !== cb; }); };
+      };
+      // Fire subscribers exactly once per render where profile or goals changed. React's effect
+      // deps below make this automatic: the effect only runs when the compared values change.
+      (api._subs || []).forEach(function (cb) {
+        try { cb({ profile: api.getProfile(), goals: api.getGoals() }); } catch (e) { /* subscriber errors don't crash the bridge */ }
+      });
+    }, [activeProfileId, profiles, iepGoals]);
 
     var speakPage = useCallback(function (text) {
       if (!onCallTTS) return;
@@ -5189,14 +5238,37 @@
               var pct = g.targetCount > 0 ? Math.round((g.currentCount / g.targetCount) * 100) : 0;
               var recentTrials = (g.trials || []).slice(-10);
               var recentAcc = recentTrials.length > 0 ? Math.round((recentTrials.filter(function (t) { return t.success; }).length / recentTrials.length) * 100) : 0;
-              var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
+              var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669', pragmatic: '#c026d3', articulation: '#ea580c' };
               var typeColor = goalTypeColors[g.type] || '#6b7280';
+              // Compute a days-until-target readout (if a target date is set).
+              var daysTo = null;
+              if (g.targetDate) {
+                var dt = new Date(g.targetDate);
+                if (!isNaN(dt.getTime())) { daysTo = Math.ceil((dt.getTime() - Date.now()) / 86400000); }
+              }
+              var priorityBadge = (g.priority && g.priority !== 'standard')
+                ? { high: { bg: '#fef2f2', color: '#991b1b', border: '#fecaca', label: 'HIGH PRIORITY' }, maintenance: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0', label: 'MAINTENANCE' } }[g.priority]
+                : null;
               return e('div', { key: g.id, style: { background: '#f9fafb', borderRadius: '8px', padding: '8px 10px', border: '1px solid #e5e7eb' } },
-                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' } },
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px', flexWrap: 'wrap' } },
                   e('span', { style: { fontSize: '9px', background: typeColor, color: '#fff', borderRadius: '4px', padding: '1px 6px', fontWeight: 700, textTransform: 'uppercase' } }, g.type),
-                  e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1 } }, g.text),
+                  priorityBadge && e('span', { style: { fontSize: '9px', background: priorityBadge.bg, color: priorityBadge.color, border: '1px solid ' + priorityBadge.border, borderRadius: '4px', padding: '1px 6px', fontWeight: 700 } }, priorityBadge.label),
+                  daysTo !== null && e('span', {
+                    style: { fontSize: '9px', background: daysTo < 0 ? '#fef2f2' : daysTo <= 14 ? '#fef3c7' : '#eff6ff', color: daysTo < 0 ? '#991b1b' : daysTo <= 14 ? '#92400e' : '#1e40af', border: '1px solid', borderColor: daysTo < 0 ? '#fecaca' : daysTo <= 14 ? '#fde68a' : '#bfdbfe', borderRadius: '4px', padding: '1px 6px', fontWeight: 700 },
+                    title: 'Target: ' + g.targetDate
+                  }, daysTo < 0 ? 'OVERDUE · ' + Math.abs(daysTo) + 'd' : daysTo === 0 ? 'DUE TODAY' : daysTo + 'd left'),
+                  e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1, minWidth: '120px' } }, g.text),
                   e('button', { onClick: function () { removeIepGoal(g.id); }, 'aria-label': '✕', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
                 ),
+                // Meta row: cue level, data method, and IEP section — collapses if none are set.
+                (g.cueLevel || g.dataMethod || g.linkedIepSection) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '5px', fontSize: '9px', color: '#6b7280' } },
+                  g.cueLevel && g.cueLevel !== 'independent' && e('span', { style: { background: '#ede9fe', color: '#5b21b6', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Cue level currently required' }, '🫳 ' + g.cueLevel + ' cue'),
+                  g.cueLevel === 'independent' && e('span', { style: { background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Independent — no cue needed' }, '⭐ independent'),
+                  g.dataMethod && e('span', { style: { background: '#f1f5f9', color: '#334155', padding: '1px 6px', borderRadius: '999px' }, title: 'Data collection method' }, '📊 ' + g.dataMethod),
+                  g.linkedIepSection && e('span', { style: { background: '#fff7ed', color: '#9a3412', padding: '1px 6px', borderRadius: '999px', fontStyle: 'italic' }, title: 'Linked IEP section' }, '📎 ' + g.linkedIepSection)
+                ),
+                g.baseline && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: 'Starting performance' }, 'Baseline: ' + g.baseline),
+                g.accommodations && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: 'Required supports' }, 'Accommodations: ' + g.accommodations),
                 // Progress bar
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   e('div', { style: { flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' } },
@@ -5227,9 +5299,9 @@
             })
           ),
           activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: '#6b7280', fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
-          // Add goal form
+          // Add goal form — progressive disclosure: primary fields visible, IEP-meta under a toggle.
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-            e('div', { style: { display: 'flex', gap: '6px' } },
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
               e('select', {
                 id: 'iep-goal-type',
                 'aria-label': 'IEP goal type',
@@ -5237,14 +5309,16 @@
               },
                 e('option', { value: 'expressive' }, 'Expressive'),
                 e('option', { value: 'receptive' }, 'Receptive'),
-                e('option', { value: 'social' }, 'Social')
+                e('option', { value: 'social' }, 'Social'),
+                e('option', { value: 'pragmatic' }, 'Pragmatic'),
+                e('option', { value: 'articulation' }, 'Articulation')
               ),
               e('input', {
                 id: 'iep-goal-text',
                 type: 'text',
                 placeholder: 'e.g. Request items using 2-word phrases',
                 'aria-label': 'IEP goal description',
-                style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px' })
+                style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px', minWidth: '200px' })
               }),
               e('input', {
                 id: 'iep-goal-target',
@@ -5254,15 +5328,83 @@
                 style: { width: '60px', fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', textAlign: 'center' }
               })
             ),
+            // Collapsible IEP-team metadata — priority, baseline, target date, cue level, etc.
+            // Hidden by default so quick adds stay fast; SLPs get the full field set when they need it.
+            e('details', { style: { fontSize: '10px' } },
+              e('summary', { style: { cursor: 'pointer', color: '#6b7280', fontWeight: 700, padding: '2px 0' } }, '+ IEP team details (priority, baseline, target date, cue level)'),
+              e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px', marginTop: '6px' } },
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Priority'),
+                  e('select', { id: 'iep-goal-priority', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } },
+                    e('option', { value: 'standard' }, 'Standard'),
+                    e('option', { value: 'high' }, 'High'),
+                    e('option', { value: 'maintenance' }, 'Maintenance')
+                  )
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Cue level'),
+                  e('select', { id: 'iep-goal-cue', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' }, title: 'Support required for the student to succeed on this goal' },
+                    e('option', { value: 'independent' }, 'Independent'),
+                    e('option', { value: 'visual' }, 'Visual cue'),
+                    e('option', { value: 'verbal' }, 'Verbal cue'),
+                    e('option', { value: 'gestural' }, 'Gestural cue'),
+                    e('option', { value: 'physical' }, 'Physical prompt')
+                  )
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Data method'),
+                  e('select', { id: 'iep-goal-datamethod', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } },
+                    e('option', { value: 'frequency' }, 'Frequency count'),
+                    e('option', { value: 'percentage' }, 'Percentage accuracy'),
+                    e('option', { value: 'duration' }, 'Duration'),
+                    e('option', { value: 'rubric' }, 'Rubric score')
+                  )
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Target date'),
+                  e('input', { id: 'iep-goal-targetdate', type: 'date', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Baseline'),
+                  e('input', { id: 'iep-goal-baseline', type: 'text', placeholder: 'e.g. 2/10 accuracy on probe trials (Sept 2026)', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Accommodations'),
+                  e('input', { id: 'iep-goal-accom', type: 'text', placeholder: 'e.g. AAC device available, visual supports, extended time', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Linked IEP section (optional)'),
+                  e('input', { id: 'iep-goal-iepsection', type: 'text', placeholder: 'e.g. Communication — Expressive Language', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                )
+              )
+            ),
             e('button', {
               onClick: function () {
                 var text = document.getElementById('iep-goal-text');
                 var type = document.getElementById('iep-goal-type');
                 var target = document.getElementById('iep-goal-target');
                 if (!text || !text.value.trim()) return;
-                addIepGoal({ text: text.value.trim(), type: type ? type.value : 'expressive', targetCount: target ? (parseInt(target.value, 10) || 20) : 20 });
+                // Pull the enriched fields too. Each getElementById is guarded because the details
+                // block may not be rendered yet if the browser hasn't expanded it.
+                var g = (function (id) { var el = document.getElementById(id); return el ? el.value : ''; });
+                addIepGoal({
+                  text: text.value.trim(),
+                  type: type ? type.value : 'expressive',
+                  targetCount: target ? (parseInt(target.value, 10) || 20) : 20,
+                  priority: g('iep-goal-priority') || 'standard',
+                  cueLevel: g('iep-goal-cue') || 'independent',
+                  dataMethod: g('iep-goal-datamethod') || 'frequency',
+                  targetDate: g('iep-goal-targetdate') || '',
+                  baseline: g('iep-goal-baseline') || '',
+                  accommodations: g('iep-goal-accom') || '',
+                  linkedIepSection: g('iep-goal-iepsection') || ''
+                });
+                // Clear text + numeric fields; leave select defaults as-is for the next entry.
                 text.value = '';
                 if (target) target.value = '';
+                ['iep-goal-targetdate', 'iep-goal-baseline', 'iep-goal-accom', 'iep-goal-iepsection'].forEach(function (id) {
+                  var el = document.getElementById(id); if (el) el.value = '';
+                });
               },
               'aria-label': 'Add new IEP goal',
               style: S.btn(PURPLE, '#fff', false)

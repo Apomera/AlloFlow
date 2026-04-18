@@ -2603,6 +2603,152 @@
                 setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               }
               break;
+            case 'KeyC': // Toggle coordinate announcements for screen-reader users
+              engine._coordAnnounce = !engine._coordAnnounce;
+              announceToSR(engine._coordAnnounce
+                ? 'Coordinate announcements on. Position at X ' + Math.floor(engine.camera.position.x) + ' Y ' + Math.floor(engine.camera.position.y) + ' Z ' + Math.floor(engine.camera.position.z)
+                : 'Coordinate announcements off');
+              upd('actionFeedback', engine._coordAnnounce ? '\uD83D\uDD0A Coord SR ON' : '\uD83D\uDD07 Coord SR OFF');
+              setTimeout(function() { upd('actionFeedback', ''); }, 1500);
+              break;
+            case 'KeyV': // 3-point angle tool: click 3 blocks (A, vertex B, C), get the angle at B
+              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+              var vHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+              if (vHits.length > 0 && vHits[0].object.userData.gridPos) {
+                var vp = vHits[0].object.userData.gridPos;
+                // Use block center as the geometric point for the angle calc.
+                var vPoint = new THREE.Vector3(vp.x + 0.5, vp.y + 0.5, vp.z + 0.5);
+                if (!engine._anglePoints) engine._anglePoints = [];
+                engine._anglePoints.push(vPoint);
+                if (engine._anglePoints.length === 1) {
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: A set \u2014 press V on the vertex');
+                  announceToSR('Angle point A set. Aim at the vertex and press V.');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else if (engine._anglePoints.length === 2) {
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: Vertex set \u2014 press V on the third point');
+                  announceToSR('Angle vertex set. Aim at the third point and press V.');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else {
+                  // Three points collected: compute angle at the middle point (the vertex).
+                  var aPt = engine._anglePoints[0];
+                  var bPt = engine._anglePoints[1];
+                  var cPt = engine._anglePoints[2];
+                  var ba = new THREE.Vector3().subVectors(aPt, bPt);
+                  var bc = new THREE.Vector3().subVectors(cPt, bPt);
+                  var deg = 0;
+                  if (ba.length() > 0.0001 && bc.length() > 0.0001) {
+                    var cosang = ba.dot(bc) / (ba.length() * bc.length());
+                    cosang = Math.max(-1, Math.min(1, cosang));
+                    deg = Math.acos(cosang) * (180 / Math.PI);
+                  }
+                  var degStr = deg.toFixed(1);
+                  // Clear any prior angle helpers, then draw two lines (A→B, B→C) and a label at B.
+                  if (engine._angleHelpers) {
+                    engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  }
+                  engine._angleHelpers = [];
+                  var aMat = new THREE.LineBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.9, linewidth: 2 });
+                  var aGeo1 = new THREE.BufferGeometry().setFromPoints([bPt, aPt]);
+                  var aGeo2 = new THREE.BufferGeometry().setFromPoints([bPt, cPt]);
+                  var aLine1 = new THREE.LineSegments(aGeo1, aMat);
+                  var aLine2 = new THREE.LineSegments(aGeo2, aMat.clone());
+                  engine.scene.add(aLine1); engine.scene.add(aLine2);
+                  engine._angleHelpers.push(aLine1); engine._angleHelpers.push(aLine2);
+                  var aLbl = makeDimLabel(degStr + '\u00b0', '#f472b6');
+                  aLbl.position.set(bPt.x, bPt.y + 0.7, bPt.z);
+                  aLbl.scale.set(1.8, 0.7, 1);
+                  engine.scene.add(aLbl);
+                  engine._angleHelpers.push(aLbl);
+                  var kind = deg < 89.5 ? 'acute' : (deg > 90.5 ? (deg > 179.5 ? 'straight' : 'obtuse') : 'right');
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: ' + degStr + '\u00b0 (' + kind + ')');
+                  announceToSR('Angle measured. ' + degStr + ' degrees. ' + kind + ' angle.');
+                  if (engine.logEvent) engine.logEvent('angle_measure', { degrees: parseFloat(degStr), kind: kind });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 3500);
+                  // Auto-clear helpers after 20s so the scene stays tidy.
+                  if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+                  engine._angleClearTimer = setTimeout(function() {
+                    if (engine._angleHelpers) {
+                      engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._angleHelpers = [];
+                    }
+                  }, 20000);
+                  engine._anglePoints = [];
+                }
+              } else if (engine._anglePoints && engine._anglePoints.length > 0) {
+                // Cancel in-progress angle if no hit.
+                engine._anglePoints = [];
+                upd('actionFeedback', '\uD83D\uDCD0 Angle cancelled');
+                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              }
+              break;
+            case 'KeyN': // Net unfolding: show the 6 faces of the targeted structure's bounding box flat
+              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+              var nHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+              if (nHits.length > 0 && nHits[0].object.userData.gridPos) {
+                var ngp = nHits[0].object.userData.gridPos;
+                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z, nHits[0].object.userData.blockType);
+                if (nm) {
+                  // Clear any prior net helpers.
+                  if (engine._netHelpers) {
+                    engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  }
+                  engine._netHelpers = [];
+                  var L = nm.L, W = nm.W, H = nm.H;
+                  var areaTop = L * W, areaFront = L * H, areaSide = W * H;
+                  var surface = 2 * (areaTop + areaFront + areaSide);
+                  // Lay out the classic cross-shape net on the ground 2 blocks east of the structure.
+                  // Centered vertically on the structure's midline; each face is a flat quad with a label.
+                  var baseX = nm.minX + L + 3;
+                  var baseY = 0.02; // just above ground to avoid z-fighting
+                  var baseZ = nm.minZ;
+                  function addQuad(ox, oz, w, h, color, label) {
+                    // Quad: lying flat on XZ plane, with width = w (X) and depth = h (Z).
+                    var g = new THREE.PlaneGeometry(w, h);
+                    var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
+                    var mesh = new THREE.Mesh(g, mat);
+                    mesh.rotation.x = -Math.PI / 2;
+                    mesh.position.set(baseX + ox + w / 2, baseY, baseZ + oz + h / 2);
+                    engine.scene.add(mesh); engine._netHelpers.push(mesh);
+                    var edgeGeo = new THREE.EdgesGeometry(g);
+                    var edgeMat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
+                    var edges = new THREE.LineSegments(edgeGeo, edgeMat);
+                    edges.rotation.x = -Math.PI / 2;
+                    edges.position.copy(mesh.position);
+                    engine.scene.add(edges); engine._netHelpers.push(edges);
+                    var lbl = makeDimLabel(label, '#f8fafc');
+                    lbl.position.set(mesh.position.x, baseY + 0.8, mesh.position.z);
+                    lbl.scale.set(1.2, 0.5, 1);
+                    engine.scene.add(lbl); engine._netHelpers.push(lbl);
+                  }
+                  // Cross layout: middle row = [left W×H, front L×H, right W×H, back L×H]
+                  // with top L×W above the front, bottom L×W below the front.
+                  // Origin (0,0) is the front face's NW corner.
+                  addQuad(-W, 0, W, H, 0x60a5fa, 'Left ' + W + '\u00d7' + H + '=' + areaSide);
+                  addQuad(0, 0, L, H, 0x22d3ee, 'Front ' + L + '\u00d7' + H + '=' + areaFront);
+                  addQuad(L, 0, W, H, 0x60a5fa, 'Right ' + W + '\u00d7' + H + '=' + areaSide);
+                  addQuad(L + W, 0, L, H, 0x22d3ee, 'Back ' + L + '\u00d7' + H + '=' + areaFront);
+                  addQuad(0, -W, L, W, 0x34d399, 'Top ' + L + '\u00d7' + W + '=' + areaTop);
+                  addQuad(0, H, L, W, 0xfbbf24, 'Bottom ' + L + '\u00d7' + W + '=' + areaTop);
+                  // Total surface area label floating above the net.
+                  var totalLbl = makeDimLabel('SA = ' + surface, '#a78bfa');
+                  totalLbl.position.set(baseX + L / 2, 2.4, baseZ + H / 2 - W);
+                  totalLbl.scale.set(2.4, 0.9, 1);
+                  engine.scene.add(totalLbl); engine._netHelpers.push(totalLbl);
+                  upd('actionFeedback', '\uD83D\uDCCB Net: SA = 2(' + areaTop + '+' + areaFront + '+' + areaSide + ') = ' + surface);
+                  announceToSR('Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
+                  if (engine.logEvent) engine.logEvent('net_unfold', { L: L, W: W, H: H, surfaceArea: surface });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 4000);
+                  // Auto-clear after 30s so the scene doesn't get cluttered.
+                  if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+                  engine._netClearTimer = setTimeout(function() {
+                    if (engine._netHelpers) {
+                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._netHelpers = [];
+                    }
+                  }, 30000);
+                }
+              }
+              break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
             case 'KeyH':
               // H = return to spawn (home)
@@ -2830,6 +2976,31 @@
           }
           var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
           if (hits.length > 0) engine._crosshairTarget = engine._crosshairTarget === 'none' ? 'block' : engine._crosshairTarget;
+          // Track targeted block grid position so the HUD and SR-announcer can read it.
+          if (hits.length > 0 && hits[0].object.userData.gridPos) {
+            var tg = hits[0].object.userData.gridPos;
+            var tbt = hits[0].object.userData.blockType || null;
+            engine._targetGrid = { x: tg.x, y: tg.y, z: tg.z, type: tbt };
+          } else {
+            engine._targetGrid = null;
+          }
+          // Periodic coord announcer for low-vision / screen-reader users.
+          // Fires on movement > ~3 blocks OR every 6 seconds idle, while _coordAnnounce is on.
+          if (engine._coordAnnounce) {
+            var nowMs = Date.now();
+            var cp = engine.camera.position;
+            var cx3 = Math.floor(cp.x), cy3 = Math.floor(cp.y), cz3 = Math.floor(cp.z);
+            if (!engine._lastAnnouncePos) engine._lastAnnouncePos = { x: cx3, y: cy3, z: cz3, t: 0 };
+            var lp = engine._lastAnnouncePos;
+            var moved = Math.abs(cx3 - lp.x) + Math.abs(cy3 - lp.y) + Math.abs(cz3 - lp.z);
+            var elapsed = nowMs - lp.t;
+            if ((moved >= 3 && elapsed > 1500) || elapsed > 6000) {
+              var msg = 'X ' + cx3 + ' Y ' + cy3 + ' Z ' + cz3;
+              if (engine._targetGrid) msg += '. Looking at ' + (engine._targetGrid.type || 'block') + ' at X ' + engine._targetGrid.x + ' Y ' + engine._targetGrid.y + ' Z ' + engine._targetGrid.z;
+              announceToSR(msg);
+              engine._lastAnnouncePos = { x: cx3, y: cy3, z: cz3, t: nowMs };
+            }
+          }
 
           // ── Break highlight — colored wireframe on the targeted block ──
           if (hits.length > 0 && hits[0].object.userData.gridPos) {
@@ -4848,6 +5019,9 @@
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)',
+            el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'V'), 'Angle (3 points \u2014 A, vertex, C)',
+            el('span', { style: { color: '#34d399', fontWeight: 600 } }, 'N'), 'Net unfolding (surface area)',
+            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'C'), 'Toggle coord SR announcements',
             el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
             el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
             el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
@@ -5261,7 +5435,39 @@
               el('span', { style: { color: '#fbbf24', fontWeight: 700, fontSize: '11px' } }, dirs[idx]),
               el('span', { style: { color: '#475569' } }, Math.round(angle) + '\u00b0')
             );
-          })()
+          })(),
+          // Target block line — shows the XYZ of the block the player is aiming at.
+          engine._targetGrid && el('div', { style: { marginTop: '3px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
+            el('span', { style: { color: '#64748b', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
+            el('span', { style: { color: '#ef4444' } }, 'X'),
+            ' ' + engine._targetGrid.x + '  ',
+            el('span', { style: { color: '#22c55e' } }, 'Y'),
+            ' ' + engine._targetGrid.y + '  ',
+            el('span', { style: { color: '#3b82f6' } }, 'Z'),
+            ' ' + engine._targetGrid.z
+          ),
+          // SR-announce pill — indicator + click toggle (matches 'C' key). When on, position
+          // is announced periodically to the shared live region so low-vision students can
+          // navigate by coordinate.
+          el('div', {
+            role: 'button', tabIndex: 0,
+            onClick: function() {
+              var eng = window[engineKey]; if (!eng) return;
+              eng._coordAnnounce = !eng._coordAnnounce;
+              if (addToast) addToast(eng._coordAnnounce ? '\uD83D\uDD0A Coord announcements ON (press C to toggle)' : '\uD83D\uDD07 Coord announcements OFF', 'info');
+              if (eng._coordAnnounce && typeof announceToSR === 'function') {
+                announceToSR('Coordinate announcements on. Position at X ' + Math.floor(eng.camera.position.x) + ' Y ' + Math.floor(eng.camera.position.y) + ' Z ' + Math.floor(eng.camera.position.z));
+              }
+            },
+            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.currentTarget.click(); } },
+            'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
+            'aria-label': 'Toggle coordinate screen-reader announcements (key C)',
+            title: 'Announce coordinates to screen reader (C)',
+            style: { marginTop: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.5px', display: 'inline-block',
+              background: engine._coordAnnounce ? 'rgba(34,211,238,0.25)' : 'rgba(100,116,139,0.15)',
+              color: engine._coordAnnounce ? '#67e8f9' : '#64748b',
+              border: '1px solid ' + (engine._coordAnnounce ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.2)') }
+          }, engine._coordAnnounce ? '\uD83D\uDD0A SR ON' : '\uD83D\uDD07 SR OFF')
         ),
         // ── Mode indicators (fly, grid) ──
         engine && el('div', {
