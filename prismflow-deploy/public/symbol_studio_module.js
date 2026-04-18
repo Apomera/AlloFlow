@@ -2523,6 +2523,18 @@
     // Keep the recent-miss queue short — 4 entries is enough to guarantee a failed item surfaces
     // within a round or two without dominating the session.
     var SRCH_RECENT_MISS_LIMIT = 4;
+    // Errorless learning mode — for pre-receptive / early-intervention students where any wrong
+    // answer risks forming an incorrect association. When enabled:
+    //   • Forces 2 choices regardless of difficulty setting
+    //   • Distractors are drawn from OFF-category pool (maximum contrast)
+    //   • Wrong picks don't break streak or count as failed trials; student retries same target
+    //   • No red feedback — warm "Try again" + re-speak
+    var _srchErrorless = useState(false); var srchErrorless = _srchErrorless[0]; var setSrchErrorless = _srchErrorless[1];
+    // Optional session length. `null` = unlimited (legacy behavior). Numeric = auto-end after N trials.
+    var _srchSessionLength = useState(null); var srchSessionLength = _srchSessionLength[0]; var setSrchSessionLength = _srchSessionLength[1];
+    // Set of labels missed at least once this session. Used to populate the summary card's
+    // "words to practice next time" chip row. Ref because we don't need to re-render on changes.
+    var srchMissedSetRef = useRef({});
     // Session-level UX state added in the UX refinement pass:
     //   srchCategoryFilter — which symbol category to draw from on the menu (null = all)
     //   srchLastCelebratedStreak — last streak value we already celebrated, prevents re-firing
@@ -2617,15 +2629,14 @@
         target = targetPool[Math.floor(Math.random() * targetPool.length)];
       }
 
-      // Pick distractors for a target, preferring same-category items when enough are available.
-      // Same-category distractors (cup / bowl / plate) challenge real semantic discrimination;
-      // purely random distractors (cup / run / happy) are trivially easy. We fall back to random
-      // when the same-category pool is too thin.
+      // Pick distractors for a target. Behavior depends on mode:
+      //   • Standard: 70% same-category (challenges semantic discrimination) + 30% off-category.
+      //   • Errorless: 100% off-category (maximum contrast — answer is obvious so student
+      //     builds confidence without risk of forming wrong associations).
       function pickDistractors(forTarget, count) {
         var cat = forTarget.category;
         var sameCat = pool.filter(function (it) { return it.id !== forTarget.id && it.category === cat; });
         var otherCat = pool.filter(function (it) { return it.id !== forTarget.id && it.category !== cat; });
-        // Shuffle helpers
         function shuf(a) {
           for (var si = a.length - 1; si > 0; si--) {
             var sj = Math.floor(Math.random() * (si + 1));
@@ -2634,13 +2645,19 @@
           return a;
         }
         shuf(sameCat); shuf(otherCat);
-        // Aim for ~70% same-category when we have enough; the remaining slots are off-category
-        // so the round still includes some easy-to-eliminate options (keeps the round winnable
-        // for earlier learners who can't yet make fine semantic distinctions).
+        if (srchErrorless) {
+          // Errorless: prefer off-category distractors for maximum visual + semantic contrast.
+          // Fall back to same-category only if off-category pool is too thin.
+          var ePrimary = otherCat.slice(0, count);
+          if (ePrimary.length < count) {
+            ePrimary = ePrimary.concat(sameCat.slice(0, count - ePrimary.length));
+          }
+          return shuf(ePrimary);
+        }
+        // Standard: 70% same-category, 30% off-category.
         var same = sameCat.slice(0, Math.ceil(count * 0.7));
         var rest = otherCat.slice(0, count - same.length);
         var combined = same.concat(rest);
-        // If we still don't have enough (rare — tiny pool), pad from whatever's left.
         if (combined.length < count) {
           var leftover = sameCat.slice(same.length).concat(otherCat.slice(rest.length));
           combined = combined.concat(leftover.slice(0, count - combined.length));
@@ -2687,8 +2704,10 @@
         return;
       }
 
-      // Listen & Find mode (single word)
-      var numOpts = Math.max(2, Math.min(srchDifficulty, pool.length));
+      // Listen & Find mode (single word). In errorless mode, force to 2 choices regardless
+      // of the difficulty setting — students in errorless mode need maximum success rate.
+      var effectiveDifficulty = srchErrorless ? 2 : srchDifficulty;
+      var numOpts = Math.max(2, Math.min(effectiveDifficulty, pool.length));
       var opts = [target].concat(pickDistractors(target, numOpts - 1));
       // Shuffle
       for (var si = opts.length - 1; si > 0; si--) {
@@ -2733,12 +2752,33 @@
     function srchCheckAnswer(picked) {
       if (!srchTarget) return;
       var correct = picked.id === srchTarget.id;
+      // Light haptic (mobile only). Ignored on desktop + Safari where vibrate isn't supported.
+      try { if (navigator.vibrate) navigator.vibrate(correct ? 40 : [40, 60, 40]); } catch (_) {}
+      // Errorless mode: wrong picks don't count as trials, don't break streak, don't record a
+      // failed IEP trial. Student just retries the same target. This is the core errorless-
+      // learning contract — no chance to learn the wrong association.
+      if (srchErrorless && !correct) {
+        setSrchFeedback({ ok: false, msg: '💛 Not that one. Listen again — try "' + srchTarget.label + '".' });
+        recordFamiliarity(srchTarget.label, 'exposure');
+        // Re-speak the correct label right away so the pairing sticks.
+        var speakErrLabel = srchTarget.label;
+        setTimeout(function () { srchSpeakWord(speakErrLabel); }, 600);
+        // Clear feedback and let the student try again on the SAME target.
+        srchTimerRef.current = setTimeout(function () { setSrchFeedback(null); }, 2200);
+        return;
+      }
       setSrchTotal(function (t) { return t + 1; });
       recordFamiliarity(srchTarget.label, correct ? 'quest-correct' : 'quest-wrong');
       if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
       // IEP trial
       var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
       if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'search:listen:' + srchTarget.label);
+      // Track missed labels for the end-of-session miss list. Use a ref-backed set so we don't
+      // re-render the active-session UI on each miss.
+      if (!correct) {
+        srchMissedSetRef.current = srchMissedSetRef.current || {};
+        srchMissedSetRef.current[srchTarget.label] = (srchMissedSetRef.current[srchTarget.label] || 0) + 1;
+      }
       if (correct) {
         var ns = srchStreak + 1;
         setSrchStreak(ns);
@@ -2748,28 +2788,34 @@
         setSrchCorrect(function (c) { return c + 1; });
         setSrchFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
         srchMaybeCelebrate(ns);
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 1200);
+        // Session-length check: auto-end if we've hit the target trial count.
+        var nextTotalOk = (srchTotal + 1);
+        if (srchSessionLength && nextTotalOk >= srchSessionLength) {
+          srchTimerRef.current = setTimeout(function () { srchEndSession(); }, 1200);
+        } else {
+          srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 1200);
+        }
       } else {
         setSrchStreak(0);
         setSrchLastCelebratedStreak(0);
         setSrchRevealed(true);
         setSrchFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". Listen for "' + srchTarget.label + '".' });
-        // Push the missed label onto the recent-miss queue so it gets boosted weight next pick.
         (function () {
           var q = (srchRecentMissRef.current || []).slice();
           var key = srchTarget.label;
-          // Remove duplicate if present, then push to back
           q = q.filter(function (l) { return l !== key; });
           q.push(key);
           while (q.length > SRCH_RECENT_MISS_LIMIT) q.shift();
           srchRecentMissRef.current = q;
         })();
-        // Teaching moment: 900ms after the reveal, auto-speak the CORRECT label so the student
-        // hears the right audio paired with the right symbol. Previously they had to tap 🔊 —
-        // which most students didn't — and the audio-visual pairing was lost.
         var speakTargetLabel = srchTarget.label;
         setTimeout(function () { srchSpeakWord(speakTargetLabel); }, 900);
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 3000);
+        var nextTotalMiss = (srchTotal + 1);
+        if (srchSessionLength && nextTotalMiss >= srchSessionLength) {
+          srchTimerRef.current = setTimeout(function () { srchEndSession(); }, 3000);
+        } else {
+          srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 3000);
+        }
       }
     }
 
@@ -2780,6 +2826,7 @@
       var correct = picked.id === expected.id;
       recordFamiliarity(expected.label, correct ? 'quest-correct' : 'quest-wrong');
       if (correct) {
+        try { if (navigator.vibrate) navigator.vibrate(40); } catch (_) {}
         var newSentence = srchSentence.concat([picked]);
         setSrchSentence(newSentence);
         if (newSentence.length === srchSentenceTarget.length) {
@@ -2804,13 +2851,17 @@
         setSrchLastCelebratedStreak(0);
         setSrchTotal(function (t) { return t + 1; });
         setSrchFeedback({ ok: false, msg: '❌ Next word should be "' + expected.label + '"' });
-        // Track the miss so future rounds surface this label sooner.
+        try { if (navigator.vibrate) navigator.vibrate([40, 60, 40]); } catch (_) {}
+        // Track the miss so future rounds surface this label sooner, AND so it shows up on
+        // the end-of-session miss list.
         (function () {
           var q = (srchRecentMissRef.current || []).slice();
           q = q.filter(function (l) { return l !== expected.label; });
           q.push(expected.label);
           while (q.length > SRCH_RECENT_MISS_LIMIT) q.shift();
           srchRecentMissRef.current = q;
+          srchMissedSetRef.current = srchMissedSetRef.current || {};
+          srchMissedSetRef.current[expected.label] = (srchMissedSetRef.current[expected.label] || 0) + 1;
         })();
         // Record IEP trial for Build-mode misses too — was previously only logged on full-phrase
         // success, which masked struggling students in the goal data. Expressive goals need to
@@ -2835,10 +2886,11 @@
       setSrchLastCelebratedStreak(0);
       setSrchFeedback(null); setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
       setSrchShowSummary(false); setSrchSummaryData(null);
-      // Reset pedagogy refs for a fresh session — last-target and recent-miss queues shouldn't
-      // leak across sessions (that would surprise the student on round 1).
+      // Reset pedagogy refs for a fresh session — last-target, recent-miss queue, and the
+      // session-wide miss set shouldn't leak across sessions.
       srchLastTargetRef.current = null;
       srchRecentMissRef.current = [];
+      srchMissedSetRef.current = {};
       srchPickRound(mode, srchPool());
       // Increment session count
       setSrchStats(function (prev) {
@@ -2864,6 +2916,12 @@
       // the summary card before returning to the menu. Zero-round sessions jump straight back
       // (no point showing a "you got 0/0" recap).
       if (srchTotal > 0) {
+        // Sort missed labels by miss count descending — the labels the student struggled with
+        // most appear first. That's what the SLP wants to see at the top.
+        var missedMap = srchMissedSetRef.current || {};
+        var missedLabels = Object.keys(missedMap)
+          .sort(function (a, b) { return (missedMap[b] || 0) - (missedMap[a] || 0); })
+          .slice(0, 8); // cap at 8 so the card stays scannable
         setSrchSummaryData({
           mode: srchMode,
           correct: srchCorrect,
@@ -2871,7 +2929,9 @@
           score: srchScore,
           bestStreak: srchBest,
           accuracy: srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0,
-          filter: srchCategoryFilter
+          filter: srchCategoryFilter,
+          missedLabels: missedLabels,
+          errorless: srchErrorless
         });
         setSrchShowSummary(true);
       }
@@ -3509,6 +3569,23 @@
                 e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'best streak')
               )
             ),
+            // Miss list — "Words to practice next time". Only shown when there were actually
+            // missed items; otherwise a "✓ No misses!" celebration replaces it.
+            srchSummaryData.missedLabels && srchSummaryData.missedLabels.length > 0
+              ? e('div', { style: { marginBottom: '12px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Words to practice next time'),
+                  e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                    srchSummaryData.missedLabels.map(function (lbl, li) {
+                      return e('span', {
+                        key: li,
+                        title: 'Tap to hear',
+                        onClick: function () { srchSpeakWord(lbl); },
+                        style: { cursor: 'pointer', background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 }
+                      }, lbl);
+                    })
+                  )
+                )
+              : (srchSummaryData.total > 0 && e('div', { style: { fontSize: '11px', color: '#166534', fontWeight: 700, marginBottom: '10px', textAlign: 'center' } }, '✨ No misses — every target correct!')),
             e('div', { style: { display: 'flex', gap: '8px' } },
               e('button', {
                 onClick: function () { setSrchShowSummary(false); srchStartSession(srchSummaryData.mode); },
@@ -3558,21 +3635,63 @@
               }, c.icon + ' ' + c.label, e('span', { style: { fontSize: '10px', opacity: 0.7, fontWeight: 500 } }, '(' + c.count + ')'));
             })
           ),
-          // Difficulty selector
-          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151' } },
+          // Difficulty selector. In errorless mode the difficulty is forced to 2 internally,
+          // so we visually disable the difficulty chips to avoid confusion about what's in effect.
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', opacity: srchErrorless ? 0.5 : 1 } },
             e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
             [2, 3, 4, 6].map(function (n) {
               return e('button', {
                 key: n,
-                onClick: function () { setSrchDifficulty(n); },
+                onClick: function () { if (!srchErrorless) setSrchDifficulty(n); },
+                disabled: srchErrorless,
+                title: srchErrorless ? 'Errorless mode uses 2 choices' : '',
                 'aria-label': n + ' options',
                 style: {
-                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (srchDifficulty === n ? PURPLE : '#d1d5db'),
-                  background: srchDifficulty === n ? LIGHT_PURPLE : '#f9fafb',
-                  color: srchDifficulty === n ? PURPLE : '#6b7280',
-                  fontWeight: srchDifficulty === n ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                  padding: '4px 12px', borderRadius: '16px',
+                  border: '2px solid ' + ((!srchErrorless && srchDifficulty === n) ? PURPLE : '#d1d5db'),
+                  background: (!srchErrorless && srchDifficulty === n) ? LIGHT_PURPLE : '#f9fafb',
+                  color: (!srchErrorless && srchDifficulty === n) ? PURPLE : '#6b7280',
+                  fontWeight: (!srchErrorless && srchDifficulty === n) ? 700 : 500, fontSize: '12px',
+                  cursor: srchErrorless ? 'not-allowed' : 'pointer'
                 }
               }, n + ' choices');
+            })
+          ),
+          // Errorless learning mode toggle — for pre-receptive students. When on, wrong answers
+          // don't penalize the student; distractors are always off-category; difficulty forced to 2.
+          e('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', cursor: 'pointer', background: srchErrorless ? '#fef3c7' : 'transparent', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + (srchErrorless ? '#fcd34d' : 'transparent') } },
+            e('input', {
+              type: 'checkbox',
+              checked: srchErrorless,
+              onChange: function (ev) { setSrchErrorless(ev.target.checked); },
+              'aria-label': 'Toggle errorless learning mode'
+            }),
+            e('span', { style: { fontWeight: 600 } }, '💛 Errorless mode'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280' } }, '(beginner — wrong picks retry same target)')
+          ),
+          // Session length selector — optional auto-end after N rounds. Default "Unlimited" matches
+          // legacy behavior. Good for structured practice blocks or data-probe sessions.
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', flexWrap: 'wrap' } },
+            e('span', { style: { fontWeight: 600 } }, 'Session length:'),
+            [
+              { val: null, label: 'Unlimited' },
+              { val: 10, label: '10 rounds' },
+              { val: 20, label: '20 rounds' },
+              { val: 30, label: '30 rounds' }
+            ].map(function (opt) {
+              var sel = srchSessionLength === opt.val;
+              return e('button', {
+                key: String(opt.val),
+                onClick: function () { setSrchSessionLength(opt.val); },
+                'aria-label': opt.label,
+                'aria-pressed': sel,
+                style: {
+                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (sel ? PURPLE : '#d1d5db'),
+                  background: sel ? LIGHT_PURPLE : '#f9fafb',
+                  color: sel ? PURPLE : '#6b7280',
+                  fontWeight: sel ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                }
+              }, opt.label);
             })
           ),
           // All-time stats

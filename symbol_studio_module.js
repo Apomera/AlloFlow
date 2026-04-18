@@ -465,6 +465,10 @@
     var importFileRef = useRef(null);
     var importBoardRef = useRef(null);
     var qbUploadRef = useRef(null);
+    // Holds FCT metadata (function + phase + optional goal text) between the moment the
+    // Communication Builder builds a new board and the moment the save pipeline persists
+    // it. Consumed by the board-save effect below and cleared after use.
+    var pendingFctMetaRef = useRef(null);
 
     // Symbols tab state
     var _gallery = useState(function () { return load(STORAGE_GALLERY, []); });
@@ -1448,11 +1452,20 @@
     var saveBoard = useCallback(function () {
       if (!boardWords.length && (!boardPages || boardPages.every(function (p) { return !p.words.length; }))) return;
       var finalPages = boardPages ? commitCurrentPage(boardPages, activePageIdx, boardWords, boardCols, null) : null;
+      // If the Communication Builder populated this board, attach its metadata so the
+      // saved record can be filtered or analytically grouped by FCT function / phase.
+      var fctMeta = pendingFctMetaRef.current || null;
       var saved = {
         id: uid(), title: boardTitle || boardTopic, profileId: activeProfileId || null, createdAt: Date.now(),
         words: boardWords, cols: boardCols,
-        pages: finalPages || null
+        pages: finalPages || null,
+        fctFunction: fctMeta && fctMeta.fctFunction || null,
+        fctPhase: fctMeta && fctMeta.fctPhase != null ? fctMeta.fctPhase : null,
+        fctGoal: fctMeta && fctMeta.fctGoal || null
       };
+      // Consume the pending metadata after saving so the next save (manual or template-only)
+      // doesn't accidentally inherit it.
+      pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
@@ -1473,6 +1486,102 @@
       setBoardTopic(template.label);
       addToast && addToast(template.label + ' template loaded — click ✨ Generate Images to start!', 'success');
     }, [addToast]);
+
+    // ── FCT template loader — Communication Builder entry point ──────────────
+    // Loads one of the FCT_PHASE_TEMPLATES entries into the Board Builder, auto-switches
+    // to the Board tab, and kicks off Imagen generation for any cells not already cached
+    // in the gallery. Tags the new board with fctFunction + fctPhase metadata so later
+    // analytics / filtering can group FCT boards by function.
+    var applyFctTemplate = useCallback(function (functionId, phase) {
+      var fmap = FCT_MAP[functionId];
+      var labels = (FCT_PHASE_TEMPLATES[functionId] && FCT_PHASE_TEMPLATES[functionId][phase]) || [];
+      if (!labels.length || !fmap) {
+        addToast && addToast('Invalid FCT template', 'error');
+        return;
+      }
+      var words = labels.map(function (lbl) {
+        return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: fmap.tip || '', image: null };
+      });
+      setBoardWords(words);
+      var phaseMeta = FCT_PHASE_META[phase] || { label: 'Phase ' + phase };
+      var title = fmap.label + ' — ' + phaseMeta.label;
+      setBoardTitle(title);
+      setBoardTopic(fmap.label);
+      // Set cell count to match phase (keeps the grid tight).
+      // 1 cell → 1 col; 3 → 3 cols; 6 → 3 cols (2 rows); 12 → 4 cols (3 rows).
+      var cols = phase === 1 ? 1 : phase === 2 ? 3 : phase === 3 ? 3 : 4;
+      setBoardCols(cols);
+      // Jump to Board Builder so the teacher can see the board populating.
+      setTab('board');
+      addToast && addToast('🗣 ' + title + ' — images generating…', 'success');
+      // Kick off image generation on the next tick so setBoardWords has committed.
+      // We temporarily store the fct metadata on a ref so the save pipeline picks it up.
+      pendingFctMetaRef.current = { fctFunction: functionId, fctPhase: phase };
+      setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+    }, [addToast, generateBoardImages]);
+
+    // ── Free-text goal → board builder (uses Gemini to interpret the goal) ─
+    // Asks Gemini for 3–6 symbol labels + an inferred FCT function. Falls back to an
+    // empty 6-cell scaffold + a toast when the model returns malformed JSON or when
+    // onCallGemini isn't available (offline or School Box mode).
+    var buildBoardFromGoal = useCallback(async function (goalText) {
+      var goal = String(goalText || '').trim();
+      if (!goal) { addToast && addToast('Enter a communication goal first', 'error'); return; }
+      // Offline / no-Gemini fallback: empty 6-cell scaffold with the goal as title.
+      if (!onCallGemini) {
+        var scaffold = [];
+        for (var si = 0; si < 6; si++) scaffold.push({ id: uid(), label: '', category: 'other', description: '', image: null });
+        setBoardWords(scaffold);
+        setBoardTitle('Goal: ' + goal);
+        setBoardTopic(goal);
+        setBoardCols(3);
+        setTab('board');
+        addToast && addToast('AI goal parser unavailable — blank 6-cell board ready to edit', 'info');
+        return;
+      }
+      addToast && addToast('🧠 Planning symbols for "' + goal + '"…', 'info');
+      try {
+        var prompt = [
+          'You are helping build a communication board for a non-verbal or emerging-communicator student.',
+          'The communication goal is: "' + goal + '".',
+          'Return ONLY a compact JSON object (no markdown fences, no prose) with this shape:',
+          '{ "words": ["label1", "label2", ...], "function": "attention"|"escape"|"tangible"|"sensory", "rationale": "one sentence" }',
+          'Rules:',
+          '- "words" must have 3 to 6 short symbol labels (1-2 words each).',
+          '- Choose concrete, imageable labels — they will be rendered as picture symbols.',
+          '- Include small function words like "I", "want", "please" where they help form a phrase.',
+          '- "function" is the ABA behavioral function this goal serves.',
+          '- Keep "rationale" under 20 words.'
+        ].join('\n');
+        var raw = await onCallGemini(prompt);
+        // Gemini usually returns text; strip any code fences it slipped in.
+        var stripped = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        var parsed; try { parsed = JSON.parse(stripped); } catch (pe) { parsed = null; }
+        if (!parsed || !Array.isArray(parsed.words) || parsed.words.length === 0) {
+          addToast && addToast('Goal parser returned unexpected output — try rewording', 'error');
+          return;
+        }
+        var labels = parsed.words.map(function (w) { return String(w).trim(); }).filter(function (w) { return w; }).slice(0, 6);
+        if (!labels.length) { addToast && addToast('No usable labels from goal — try rewording', 'error'); return; }
+        var words = labels.map(function (lbl) {
+          return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: '', image: null };
+        });
+        setBoardWords(words);
+        setBoardTitle('Goal: ' + goal);
+        setBoardTopic(goal);
+        setBoardCols(labels.length <= 3 ? labels.length : 3);
+        setTab('board');
+        // Capitalise the function tag to match FCT_MAP keys if recognized.
+        var fnRaw = String(parsed.function || '').trim().toLowerCase();
+        var fnMap = { attention: 'Attention', escape: 'Escape', tangible: 'Tangible', sensory: 'Sensory' };
+        var fnNormalized = fnMap[fnRaw] || null;
+        pendingFctMetaRef.current = fnNormalized ? { fctFunction: fnNormalized, fctPhase: null, fctGoal: goal } : { fctGoal: goal };
+        addToast && addToast('🗣 Board ready' + (fnNormalized ? ' (' + fnNormalized + ')' : '') + ' — images generating…', 'success');
+        setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+      } catch (err) {
+        addToast && addToast('Could not reach AI goal parser — try again', 'error');
+      }
+    }, [addToast, onCallGemini, generateBoardImages]);
 
     var loadBoard = useCallback(function (board) {
       var pages = board.pages && board.pages.length > 0 ? board.pages : null;
@@ -3335,6 +3444,74 @@
       }
     };
     var FCT_FUNCTIONS = ['Attention', 'Escape', 'Tangible', 'Sensory'];
+
+    // ── FCT Phase Templates ────────────────────────────────────────────────
+    // Four functions × four pedagogical phases. Each entry is a short word list that
+    // the Communication Builder wizard uses to auto-populate a board.
+    // Phase 1 = single FCR (Functional Communication Response) — isolated
+    // Phase 2 = 3-cell carrier phrase (e.g. "I + WANT + BREAK")
+    // Phase 3 = 6-cell mixed (FCR + common frames)
+    // Phase 4 = 12-cell with integrated core vocabulary
+    // Word lists are derived from FCT_MAP.priorityWords — same data, shaped into phases.
+    var FCT_PHASE_TEMPLATES = {
+      Attention: {
+        1: ['look'],
+        2: ['look', 'at', 'me'],
+        3: ['look', 'hi', 'come here', 'help', 'play', 'friend'],
+        4: ['look', 'hi', 'come here', 'help', 'play', 'friend', 'my turn', 'watch me', 'excuse me', 'please', 'yes', 'no']
+      },
+      Escape: {
+        1: ['break'],
+        2: ['I', 'want', 'break'],
+        3: ['break', 'stop', 'all done', 'help', 'too hard', 'wait'],
+        4: ['break', 'stop', 'all done', 'help', 'too hard', 'wait', 'need help', 'not now', 'finished', 'no', 'yes', 'please']
+      },
+      Tangible: {
+        1: ['want'],
+        2: ['I', 'want', 'it'],
+        3: ['want', 'more', 'please', 'give', 'my turn', 'eat'],
+        4: ['want', 'more', 'please', 'give', 'my turn', 'eat', 'drink', 'play', 'open', 'can I', 'yes', 'no']
+      },
+      Sensory: {
+        1: ['break'],
+        2: ['need', 'quiet', 'please'],
+        3: ['need break', 'too loud', 'too bright', 'need quiet', 'help', 'deep breath'],
+        4: ['need break', 'too loud', 'too bright', 'need quiet', 'need to move', 'need fidget', 'need headphones', 'feel overwhelmed', 'deep breath', 'help', 'yes', 'no']
+      }
+    };
+    // Metadata for each phase, used by the wizard to explain the choice to the teacher.
+    var FCT_PHASE_META = {
+      1: { label: 'Phase 1 · Single FCR', desc: '1 symbol — teach the replacement in isolation.' },
+      2: { label: 'Phase 2 · Carrier phrase', desc: '3 symbols — combine into a short sentence.' },
+      3: { label: 'Phase 3 · Mixed', desc: '6 symbols — FCR plus common frames.' },
+      4: { label: 'Phase 4 · Integrated', desc: '12 symbols — full board with core vocabulary.' }
+    };
+    // Word → category mapping for the few FCT-specific words that aren't in any existing
+    // template. Prevents every word from defaulting to "other" when applied to a board.
+    var FCT_WORD_CATEGORY = {
+      'I': 'other', 'me': 'other', 'it': 'other', 'at': 'other',
+      'yes': 'other', 'no': 'other', 'please': 'other', 'hi': 'other',
+      'more': 'other', 'all done': 'other',
+      'look': 'verb', 'want': 'verb', 'need': 'verb', 'give': 'verb',
+      'help': 'verb', 'stop': 'verb', 'wait': 'verb', 'come here': 'verb',
+      'play': 'verb', 'eat': 'verb', 'drink': 'verb', 'open': 'verb',
+      'watch me': 'verb', 'excuse me': 'verb', 'need help': 'verb',
+      'need break': 'verb', 'need quiet': 'verb', 'need headphones': 'verb',
+      'need to move': 'verb', 'need fidget': 'verb', 'deep breath': 'verb',
+      'break': 'noun', 'friend': 'noun', 'my turn': 'noun',
+      'too loud': 'adjective', 'too bright': 'adjective', 'too hard': 'adjective',
+      'quiet': 'adjective', 'finished': 'adjective', 'feel overwhelmed': 'adjective',
+      'not now': 'adjective', 'can I': 'other'
+    };
+    function fctWordCategory(label) {
+      var key = String(label || '').trim().toLowerCase();
+      // Scan the map case-insensitively so "I" and "i" both resolve
+      var keys = Object.keys(FCT_WORD_CATEGORY);
+      for (var i = 0; i < keys.length; i++) {
+        if (keys[i].toLowerCase() === key) return FCT_WORD_CATEGORY[keys[i]];
+      }
+      return 'other';
+    }
 
     function computeWordBank() {
       var bank = {};
