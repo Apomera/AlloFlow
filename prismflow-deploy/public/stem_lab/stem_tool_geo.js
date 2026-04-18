@@ -543,7 +543,10 @@ var d = labToolData || {};
           // re-shuffle on every render — previously a misclick hazard).
           var geoCapitalsChoices = d.geoCapitalsChoices || null;
 
-          // Per-continent accuracy stats for the session.
+          // Per-continent accuracy stats for the session. Shape:
+          //   { 'Africa': { c: 3, w: 1 }, 'Asia': { c: 5, w: 2 }, ... }
+          // Recorded from all country-based quizzes (Find Country, Capitals,
+          // Continents, Landmark Quiz) via recordContinentStat() below.
           var geoSessionStats = d.geoSessionStats || {};
           var geoStatsOpen = !!d.geoStatsOpen;
 
@@ -611,13 +614,16 @@ var d = labToolData || {};
             var pool;
 
             if (geoReviewMode && missedPool.length > 0) {
+              // Review-only: drill the countries they actually got wrong
               pool = missedPool;
             } else if (missedPool.length > 0 && Math.random() < 0.4) {
+              // Adaptive: 40% of the time, surface a missed country to reinforce learning
               pool = missedPool;
             } else {
               pool = freshPool;
             }
 
+            // Exhausted the fresh pool — recycle the answered list
             if (pool.length === 0) { upd('geoAnswered', []); pool = filteredCountries; }
 
             var t = pool[Math.floor(Math.random() * pool.length)];
@@ -750,7 +756,7 @@ var d = labToolData || {};
               recordContinentStat(geoTarget.continent, true);
 
               setTimeout(function() {
-                upd('geoCapitalsChoices', null);
+                upd('geoCapitalsChoices', null); // fresh options for next country
                 pickTarget('capitals');
               }, 1500);
 
@@ -1087,6 +1093,7 @@ var d = labToolData || {};
               if (typeof stemBeep === 'function') stemBeep('correct');
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Size compare');
 
+              // Longer delay so students can study the proportional bars
               setTimeout(pickSizePair, 2200);
 
             } else {
@@ -1117,7 +1124,10 @@ var d = labToolData || {};
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
           }
 
-          // ── Great-circle interpolation via spherical slerp ──
+          // ── Great-circle interpolation — returns N+1 lat/lng points along the
+          // shortest path on the sphere between two points. A straight line on
+          // a Mercator map is NOT the shortest path (e.g. NYC→Tokyo curves
+          // over the Arctic), so we interpolate with spherical slerp.
           function greatCircleLatLngs(lat1, lon1, lat2, lon2, numPoints) {
             var toRad = Math.PI / 180, toDeg = 180 / Math.PI;
             var f1 = lat1 * toRad, l1 = lon1 * toRad;
@@ -1439,6 +1449,8 @@ var d = labToolData || {};
 
                 ),
 
+                // Mini-map: where the country sits. Helps recall by anchoring the
+                // capital question in spatial memory ("oh right, near the Indus...").
                 window.L && React.createElement('div', {
                   ref: function(el) {
                     if (!el || !window.L) return;
@@ -1454,8 +1466,10 @@ var d = labToolData || {};
                         var m = window.L.map(el, { zoomControl: true, scrollWheelZoom: false, dragging: true, attributionControl: false, maxBounds: [[-85, -180], [85, 180]], minZoom: 2 }).setView([geoTarget.lat, geoTarget.lng], zoom);
                         window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
                         var markerColor = answered ? (geoFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
+                        // Capital marker = star-like diamond; country area = soft circle
                         window.L.circle([geoTarget.lat, geoTarget.lng], { radius: 80000, color: markerColor, weight: 1.5, fillColor: markerColor, fillOpacity: 0.12 }).addTo(m);
                         var cap = window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 10, color: markerColor, weight: 3, fillColor: markerColor, fillOpacity: 0.5 }).addTo(m);
+                        // After answer, reveal the capital name in a popup
                         if (answered) cap.bindPopup('<b>\uD83D\uDCCD ' + geoTarget.capital + '</b>').openPopup();
                         cmRef.current = m;
                         cmRef.iso = geoTarget.iso;
@@ -1500,6 +1514,9 @@ var d = labToolData || {};
 
                 ),
 
+                // Multiple choice hints for easy mode — choices generated ONCE per target
+                // and stashed in state so they don't re-shuffle on every render
+                // (previously caused misclicks if React re-rendered during a click).
                 geoDifficulty === 'easy' && (function() {
 
                   if (!geoCapitalsChoices) {
@@ -1515,7 +1532,7 @@ var d = labToolData || {};
                       var tmp = opts[si]; opts[si] = opts[sj]; opts[sj] = tmp;
                     }
                     upd('geoCapitalsChoices', opts);
-                    return null;
+                    return null; // render nothing this frame; next render has stable opts
                   }
 
                   return React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
@@ -1557,6 +1574,7 @@ var d = labToolData || {};
                   React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, geoTarget.name + '?')
                 ),
 
+                // Mini-map: highlight the target country's location so students reason spatially
                 window.L && React.createElement('div', {
                   ref: function(el) {
                     if (!el || !window.L) return;
@@ -1571,6 +1589,7 @@ var d = labToolData || {};
                         var zoom = geoTarget.area > 5000000 ? 2 : geoTarget.area > 1500000 ? 3 : geoTarget.area > 300000 ? 4 : 5;
                         var m = window.L.map(el, { zoomControl: true, scrollWheelZoom: false, dragging: true, attributionControl: false, maxBounds: [[-85, -180], [85, 180]], minZoom: 2 }).setView([geoTarget.lat, geoTarget.lng], zoom);
                         window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
+                        // Yellow pulsing marker for the target country
                         var markerColor = answered ? (geoFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
                         window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 14, color: markerColor, weight: 3, fillColor: markerColor, fillOpacity: 0.35 }).addTo(m);
                         cmRef.current = m;
@@ -1582,6 +1601,7 @@ var d = labToolData || {};
                   style: { height: 200, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #e2e8f0' }
                 }),
 
+                // Feedback line (inline with the map + buttons, not below everything)
                 geoFeedback && React.createElement('div', {
                   className: 'text-center text-sm font-bold mb-2 ' + (geoFeedback.correct ? 'text-green-600' : 'text-red-600')
                 }, geoFeedback.msg),
@@ -1620,6 +1640,7 @@ var d = labToolData || {};
 
                           if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Continent sort');
 
+                          // Spaced repetition: remove from review if they nailed it
                           if (geoMissed.indexOf(geoTarget.iso) !== -1) {
                             upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
                           }
@@ -1636,6 +1657,7 @@ var d = labToolData || {};
 
                           if (typeof stemBeep === 'function') stemBeep('wrong');
 
+                          // Spaced repetition: add to review
                           if (geoMissed.indexOf(geoTarget.iso) === -1) {
                             upd('geoMissed', geoMissed.concat([geoTarget.iso]));
                           }
@@ -1674,6 +1696,7 @@ var d = labToolData || {};
 
               React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDFD4\uFE0F Famous Landmarks'),
 
+              // Mode toggle: Browse (passive) vs Quiz (4-choice country ID)
               React.createElement('div', { className: 'flex justify-center gap-2 mb-3' },
                 ['browse', 'quiz'].map(function(m) {
                   var isActive = geoLandmarkMode === m;
@@ -1695,6 +1718,7 @@ var d = labToolData || {};
 
                 var lm = GEO_LANDMARKS[geoLandmarkIdx % GEO_LANDMARKS.length];
 
+                // Quiz mode: ensure we have 4 multiple-choice country options (1 correct + 3 distractors)
                 if (geoLandmarkMode === 'quiz' && !geoLandmarkChoices) {
                   var used = {}; used[lm.country] = true;
                   var distractors = [];
@@ -1719,8 +1743,9 @@ var d = labToolData || {};
                 }
 
                 function answerLandmark(pickedName) {
-                  if (geoLandmarkQuizFb) return;
+                  if (geoLandmarkQuizFb) return; // already answered this round
                   var correct = pickedName === lm.country;
+                  // Look up the continent of the landmark's country for stats
                   var lmCountry = countries.find(function(c) { return c.name === lm.country; });
                   var lmContinent = lmCountry ? lmCountry.continent : null;
                   if (correct) {
@@ -1740,12 +1765,13 @@ var d = labToolData || {};
                   }
                 }
 
+                // Landmark mini-map ref
                 if (!window._geoLandmarkMapRef) window._geoLandmarkMapRef = { current: null, idx: -1, mode: '' };
                 var lmMapRef = window._geoLandmarkMapRef;
 
                 var isQuiz = geoLandmarkMode === 'quiz';
                 var fb = geoLandmarkQuizFb;
-                var revealed = !!fb;
+                var revealed = !!fb; // in quiz mode, reveal country name after answer
 
                 return React.createElement('div', { className: 'max-w-lg mx-auto' },
 
@@ -1757,18 +1783,21 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, lm.fact),
 
+                    // Country label: always visible in browse; hidden in quiz until answered
                     (!isQuiz || revealed) && React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0'),
 
                     isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-500 italic mt-2' }, 'Which country is this in?')
 
                   ),
 
+                  // Leaflet map showing landmark location (marker popup hides country until answered)
                   window.L && React.createElement('div', {
 
                     ref: function(el) {
 
                       if (!el || !window.L) return;
 
+                      // Rebuild map when landmark OR mode changes (quiz hides country in popup)
                       var shouldRebuild = !lmMapRef.current || lmMapRef.idx !== geoLandmarkIdx || lmMapRef.mode !== geoLandmarkMode || lmMapRef.revealed !== revealed;
                       if (!shouldRebuild) return;
 
@@ -1807,10 +1836,12 @@ var d = labToolData || {};
 
                   }),
 
+                  // Feedback line (quiz mode)
                   isQuiz && fb && React.createElement('div', {
                     className: 'text-center text-sm font-bold mb-2 ' + (fb.correct ? 'text-green-600' : 'text-red-600')
                   }, fb.msg),
 
+                  // Quiz choices OR browse navigation
                   isQuiz ? (geoLandmarkChoices && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
                     geoLandmarkChoices.map(function(name) {
                       var isCorrect = revealed && name === lm.country;
@@ -1865,6 +1896,7 @@ var d = labToolData || {};
                 var answered = !!geoFeedback;
                 var bigger = sizeTarget1.area >= sizeTarget2.area ? sizeTarget1 : sizeTarget2;
                 var biggerArea = Math.max(sizeTarget1.area, sizeTarget2.area);
+                // For revealing a proportional ratio (how much times bigger)
                 var ratio = biggerArea / Math.min(sizeTarget1.area, sizeTarget2.area);
 
                 return React.createElement('div', { className: 'max-w-lg mx-auto' },
@@ -1877,6 +1909,7 @@ var d = labToolData || {};
                       var isPicked = answered && geoFeedback.picked === c.iso;
                       var isCorrect = answered && isBigger;
                       var isWrongPick = answered && isPicked && !geoFeedback.correct;
+                      // Fill % = country area as fraction of the bigger country's area
                       var fillPct = Math.max(4, Math.round((c.area / biggerArea) * 100));
 
                       return React.createElement('button', {
@@ -1895,6 +1928,7 @@ var d = labToolData || {};
 
                       },
 
+                        // Proportional fill bar at the bottom — reveals the ratio visually
                         answered && React.createElement('div', {
                           style: {
                             position: 'absolute', left: 0, bottom: 0, height: '6px', width: fillPct + '%',
@@ -1910,6 +1944,7 @@ var d = labToolData || {};
 
                         React.createElement('p', { className: 'text-xs text-slate-600' }, c.continent),
 
+                        // Area reveal — only after answering, color-coded
                         answered
                           ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-500') },
                               c.area.toLocaleString() + ' km\u00b2')
@@ -1921,6 +1956,7 @@ var d = labToolData || {};
 
                   ),
 
+                  // Feedback + ratio context
                   answered && React.createElement('div', { className: 'mt-3 text-center' },
 
                     React.createElement('div', {
@@ -2156,6 +2192,8 @@ var d = labToolData || {};
                 ),
 
                 // Mini-map with both countries and the great-circle arc between them.
+                // Dashed before answer (you're visualizing; not yet graded); solid +
+                // midpoint label after answer (shows the real distance on the path).
                 window.L && React.createElement('div', {
                   ref: function(el) {
                     if (!el || !window.L) return;
@@ -2170,8 +2208,10 @@ var d = labToolData || {};
                       try {
                         var m = window.L.map(el, { zoomControl: true, scrollWheelZoom: false, dragging: true, attributionControl: false, maxBounds: [[-85, -180], [85, 180]], minZoom: 1 });
                         window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
+                        // Markers for each country (teal for A, cyan for B — match the cards)
                         window.L.circleMarker([geoDistA.lat, geoDistA.lng], { radius: 10, color: '#14b8a6', weight: 3, fillColor: '#14b8a6', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistA.name, { permanent: true, direction: 'top', className: 'geo-dist-label' });
                         window.L.circleMarker([geoDistB.lat, geoDistB.lng], { radius: 10, color: '#06b6d4', weight: 3, fillColor: '#06b6d4', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistB.name, { permanent: true, direction: 'top', className: 'geo-dist-label' });
+                        // Great-circle arc
                         var arc = greatCircleLatLngs(geoDistA.lat, geoDistA.lng, geoDistB.lat, geoDistB.lng, 64);
                         var lineColor = answered ? (geoDistFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
                         var line = window.L.polyline(arc, {
@@ -2179,6 +2219,7 @@ var d = labToolData || {};
                           dashArray: answered ? null : '6,6',
                           opacity: 0.85
                         }).addTo(m);
+                        // Midpoint label with the actual distance — only after answering
                         if (answered && arc.length > 0) {
                           var mid = arc[Math.floor(arc.length / 2)];
                           window.L.marker(mid, {
@@ -2189,6 +2230,7 @@ var d = labToolData || {};
                             })
                           }).addTo(m);
                         }
+                        // Fit bounds around the arc with padding
                         m.fitBounds(line.getBounds(), { padding: [35, 35], maxZoom: 5 });
                         dmRef.current = m;
                         dmRef.pairKey = pairKey;
@@ -2247,6 +2289,7 @@ var d = labToolData || {};
 
             // ── Per-continent progress panel (collapsible) ──
             (function() {
+              // Has the student attempted ANY continent this session?
               var hasStats = Object.keys(geoSessionStats).length > 0;
               var totalCorrect = 0, totalAttempted = 0;
               Object.keys(geoSessionStats).forEach(function(k) {

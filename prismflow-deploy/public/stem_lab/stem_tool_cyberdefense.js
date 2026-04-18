@@ -217,6 +217,29 @@
           var warRoomCustomCards = Array.isArray(d.warRoomCustomCards) ? d.warRoomCustomCards : [];
           var warRoomCustomCardsDraft = d.warRoomCustomCardsDraft || '';
           var warRoomCustomCardsError = d.warRoomCustomCardsError || null;
+          // Quick Quiz: flashcard-style drill for rapid learning
+          var warRoomQuizOpen = !!d.warRoomQuizOpen;
+          var warRoomQuizCurrent = d.warRoomQuizCurrent || null; // { redId, choices: [blueId], correctIdx, answered: idx|-1 }
+          var warRoomQuizTotal = d.warRoomQuizTotal || 0;
+          var warRoomQuizCorrect = d.warRoomQuizCorrect || 0;
+          var warRoomQuizStreak = d.warRoomQuizStreak || 0;
+          var warRoomTtsAuto = !!(warRoomA11y && warRoomA11y.ttsAuto);
+          var warRoomTtsAvailable = (function() { try { return typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'; } catch(e) { return false; } })();
+
+          // ── Read aloud (text-to-speech) for UDL. Cancels any in-progress speech first. ──
+          function warTtsSpeak(text) {
+            if (!warRoomTtsAvailable || !text) return;
+            try {
+              window.speechSynthesis.cancel();
+              var u = new SpeechSynthesisUtterance(String(text).slice(0, 800));
+              u.rate = 0.95; u.pitch = 1.0; u.volume = 0.9;
+              window.speechSynthesis.speak(u);
+            } catch(e) { /* silent */ }
+          }
+          function warTtsStop() {
+            if (!warRoomTtsAvailable) return;
+            try { window.speechSynthesis.cancel(); } catch(e) {}
+          }
           var warRoomHelpOpen = d.warRoomHelpOpen || false;
           var warRoomWelcomeSeen = d.warRoomWelcomeSeen || false;
           var warRoomSoundMuted = d.warRoomSoundMuted || false;
@@ -376,6 +399,20 @@
                 upd('warRoomTimeLeft', Math.max(0, nextTime));
               }
             }, 1000);
+          }
+
+          // Cancel any in-progress TTS if we've left the War Room tab
+          if (cyberTab !== 'warroom' && warRoomTtsAvailable) warTtsStop();
+
+          // ── Auto read-aloud: speaks each new red card once per round when the toggle is on ──
+          if (cyberTab === 'warroom' && warRoomTtsAuto && warRoomTtsAvailable && warRoomActive && !warRoomVerdict && !warRoomRoundResolved && !(warRoomHotSeatEnabled && warRoomHotSeatPassScreen) && warRoomRedAction) {
+            var lastSpokenKey = 'warRoomTtsLastRedId_' + (warRoomCampaignId || '');
+            if (window[lastSpokenKey] !== warRoomRedAction.id) {
+              window[lastSpokenKey] = warRoomRedAction.id;
+              var speakTitle = warRoomRedAction.title || '';
+              var speakDesc = (warRoomPlainLanguage && plainRedDescriptions[warRoomRedAction.id]) || warRoomRedAction.description || '';
+              setTimeout(function() { warTtsSpeak('Red team: ' + speakTitle + '. ' + speakDesc); }, 300);
+            }
           }
 
           // ── Replay auto-advance timer ──
@@ -838,7 +875,12 @@
             { id: 'perfect_run', icon: '\uD83C\uDFC6', label: 'Flawless Defense', desc: 'Achieve 6/6 full mitigations in one campaign.' },
             { id: 'data_guardian', icon: '\uD83D\uDDC4\uFE0F', label: 'Data Guardian', desc: 'Finish a campaign with 100/100 data intact.' },
             { id: 'speedrun', icon: '\u26A1', label: 'Lightning Reflexes', desc: 'Win a Threat Hunter campaign without the clock running out on any round.' },
-            { id: 'boss_slayer', icon: '\uD83D\uDC79', label: 'Boss Slayer', desc: 'Win a Boss Mode campaign.' }
+            { id: 'boss_slayer', icon: '\uD83D\uDC79', label: 'Boss Slayer', desc: 'Win a Boss Mode campaign.' },
+            { id: 'weekly_champion', icon: '\uD83D\uDDD3\uFE0F', label: 'Weekly Champion', desc: 'Win a Challenge of the Week campaign.' },
+            { id: 'diverse_strategy', icon: '\uD83C\uDF08', label: 'Diverse Strategy', desc: 'Use at least 6 different blue cards in one campaign.' },
+            { id: 'rookie_perfect', icon: '\uD83C\uDF31', label: 'First Steps', desc: 'Mitigate every round of a Rookie campaign.' },
+            { id: 'quiz_novice', icon: '\uD83D\uDD25', label: 'Quiz Apprentice', desc: 'Get a Quick Quiz streak of 5 correct in a row.' },
+            { id: 'quiz_master', icon: '\uD83C\uDF93', label: 'Quiz Master', desc: 'Answer 25 Quick Quiz questions correctly.' }
           ];
 
           // ── Best-progress helpers for unearned achievements (read from history) ──
@@ -859,6 +901,17 @@
                 var best = h.reduce(function(b, row) { return (row.verdict === 'won' && row.budgetRemaining != null && row.budgetRemaining > b) ? row.budgetRemaining : b; }, 0);
                 return { cur: best, goal: 3, label: 'Best leftover budget on a win' };
               }
+              case 'diverse_strategy': {
+                var bestUnique = h.reduce(function(b, row) {
+                  var set = {};
+                  (row.chain || []).forEach(function(r) { (r.bluePlays || []).forEach(function(id) { set[id] = true; }); });
+                  var cnt = Object.keys(set).length;
+                  return cnt > b ? cnt : b;
+                }, 0);
+                return { cur: bestUnique, goal: 6, label: 'Best unique-card count' };
+              }
+              case 'quiz_novice':   return { cur: warRoomQuizStreak || 0, goal: 5, label: 'Current quiz streak' };
+              case 'quiz_master':   return { cur: warRoomQuizCorrect || 0, goal: 25, label: 'Lifetime quiz correct' };
               default: return null;
             }
           }
@@ -898,6 +951,14 @@
             if (won && finalState.difficulty === 'threatHunter' && !finalState.timedOut) earned.push('speedrun');
             // Boss Slayer
             if (boss && won) earned.push('boss_slayer');
+            // Weekly Champion
+            if (won && finalState.isWeekly) earned.push('weekly_champion');
+            // Diverse Strategy — 6+ unique blue cards across the campaign
+            var uniqueCards = {};
+            chain.forEach(function(r) { (r.bluePlays || []).forEach(function(id) { uniqueCards[id] = true; }); });
+            if (Object.keys(uniqueCards).length >= 6) earned.push('diverse_strategy');
+            // Rookie Perfectionist — all rounds mitigated on Rookie difficulty
+            if (finalState.difficulty === 'rookie' && chain.length > 0 && chain.every(function(r) { return r.outcome === 'mitigated'; })) earned.push('rookie_perfect');
             return earned;
           }
 
@@ -917,6 +978,7 @@
             { id: 'r_dnsenum', stage: 'recon', title: 'DNS enumeration of public assets', description: 'Attacker fingerprints subdomains and exposed services.', indicators: ['Burst of DNS TXT/AXFR queries from one ASN', 'Scans of staging.* subdomains'], noiseIndicators: ['Search engine crawler traffic'], mitigations: { hunt_iocs: 1.0, block_ip: 0.8, investigate: 0.4 }, impact: { servers: 1 } },
             { id: 'r_s3scan', stage: 'recon', title: 'Public S3 bucket scan', description: 'Automated scanner searches for misconfigured cloud storage.', indicators: ['S3 list-bucket attempts on unfamiliar names', '403 spike on staging buckets'], noiseIndicators: ['Legitimate vendor health check'], mitigations: { patch: 1.0, hunt_iocs: 0.7, block_ip: 0.5 }, impact: { data: 5 } },
             { id: 'r_osint', stage: 'recon', title: 'OSINT on IT admins', description: 'Attacker maps IT staff schedules and toolchain via social media.', indicators: ['Screenshots of helpdesk tickets appearing on paste sites'], noiseIndicators: ['Conference talk references'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.6 }, impact: { users: 1 } },
+            { id: 'r_darkweb', stage: 'recon', title: 'Dark web credential marketplace purchase', description: 'Attacker buys a bundle of leaked credentials matching your domain on a dark-web marketplace.', indicators: ['Password-dump mention on a tracked forum', 'Unusual MFA prompts for old or dormant accounts'], noiseIndicators: ['Routine security vendor notice'], mitigations: { reset_credential: 1.0, hunt_iocs: 0.8, awareness_blast: 0.5 }, impact: { users: 2 } },
 
             // Stage 2: Delivery
             { id: 'd_spearcfo', stage: 'delivery', title: 'Spear phish CFO with invoice.docx', description: 'Targeted email with a look-alike domain and a macro-laden attachment arrives in the CFO\'s inbox.', indicators: ['Look-alike sender domain (single-char swap)', 'Attachment with embedded macros', 'Urgent wire-transfer language'], noiseIndicators: ['Legitimate AP invoice from a known vendor'], mitigations: { block_ip: 0.9, awareness_blast: 1.0, reset_credential: 0.4, investigate: 0.5 }, impact: { users: 2 } },
@@ -941,6 +1003,7 @@
             { id: 'c_httpscdn', stage: 'c2', title: 'HTTPS C2 hidden behind CDN', description: 'Beacon blends into legitimate CDN traffic.', indicators: ['JA3 fingerprint mismatch for a known CDN tenant', 'User-agent inconsistent with browser'], noiseIndicators: ['Normal video-streaming traffic'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7, block_ip: 0.5 }, impact: { data: 10, servers: 1 } },
             { id: 'c_slackhook', stage: 'c2', title: 'Slack webhook exfil channel', description: 'Adversary abuses an incoming webhook as a low-noise C2.', indicators: ['Outbound POSTs to hooks.slack.com from a server that never used Slack'], noiseIndicators: ['Monitoring integration alerts'], mitigations: { block_ip: 1.0, hunt_iocs: 0.8, investigate: 0.5 }, impact: { data: 10 } },
             { id: 'c_icmp', stage: 'c2', title: 'ICMP covert channel', description: 'Implant tunnels commands inside ICMP echo payloads.', indicators: ['Unusually large ICMP packets', 'Sustained ICMP to a single external host'], noiseIndicators: ['Network monitoring pings'], mitigations: { block_ip: 1.0, isolate_host: 0.8, deploy_edr: 0.6 }, impact: { servers: 1, data: 5 } },
+            { id: 'c_websocket', stage: 'c2', title: 'WebSocket tunnel to a SaaS allow-listed domain', description: 'Malware hides C2 traffic inside WebSocket connections to a legitimate-looking SaaS provider that\'s on the corporate allow-list.', indicators: ['WebSocket connections from a server process to an uncommon SaaS subdomain', 'Off-hours keep-alive frames to a single endpoint'], noiseIndicators: ['Active chat or collaboration session'], mitigations: { hunt_iocs: 1.0, isolate_host: 0.8, block_ip: 0.6, deploy_edr: 0.5 }, impact: { data: 12 } },
 
             // Stage 6: Actions on Objectives
             { id: 'a_piiexfil', stage: 'actions', title: 'Customer PII exfiltration', description: 'Adversary packages a customer database for exfiltration.', indicators: ['Large archive creation on DB server', 'Sudden egress spike at 3am'], noiseIndicators: ['Scheduled nightly backup job'], mitigations: { isolate_host: 1.0, block_ip: 0.8, escalate: 1.0, hunt_iocs: 0.5 }, impact: { data: 60 } },
@@ -1449,6 +1512,7 @@
 
           // ── Start a new campaign ──
           function startCampaign(diff, themeId, seedId, opts) {
+            warTtsStop(); // cancel any in-progress read-aloud from a prior campaign
             var theme = campaignThemes[themeId] ? themeId : 'mixed';
             var isBoss = !!(opts && opts.bossMode);
             // Lock the house rules draft for this campaign (can't change mid-run)
@@ -1690,6 +1754,7 @@
             r_dnsenum:      { id: 'T1590.002', name: 'Gather Victim Network: DNS' },
             r_s3scan:       { id: 'T1595.002', name: 'Active Scanning: Vulnerability Scanning' },
             r_osint:        { id: 'T1591',     name: 'Gather Victim Org Information' },
+            r_darkweb:      { id: 'T1589.001', name: 'Gather Victim Identity: Credentials' },
             d_spearcfo:     { id: 'T1566.001', name: 'Phishing: Spearphishing Attachment' },
             d_usb:          { id: 'T1091',     name: 'Replication Through Removable Media' },
             d_typosquat:    { id: 'T1583.001', name: 'Acquire Infrastructure: Domains' },
@@ -1706,6 +1771,7 @@
             c_httpscdn:     { id: 'T1071.001', name: 'Application Layer Protocol: Web' },
             c_slackhook:    { id: 'T1567.002', name: 'Exfiltration to Cloud Storage' },
             c_icmp:         { id: 'T1095',     name: 'Non-Application Layer Protocol' },
+            c_websocket:    { id: 'T1071.001', name: 'Application Layer Protocol: Web (WebSocket)' },
             a_piiexfil:     { id: 'T1041',     name: 'Exfiltration Over C2 Channel' },
             a_ransom:       { id: 'T1486',     name: 'Data Encrypted for Impact' },
             a_wirefraud:    { id: 'T1534',     name: 'Internal Spearphishing (BEC)' },
@@ -1751,6 +1817,7 @@
             r_dnsenum: 'Attacker scans the internet for all your website addresses, including hidden test pages.',
             r_s3scan: 'Attacker looks for cloud storage boxes that were left open by accident.',
             r_osint: 'Attacker studies your IT team online \u2014 when they work, what tools they use \u2014 to plan the attack.',
+            r_darkweb: 'Attacker buys a list of stolen passwords online that might work on your school\'s accounts.',
             d_spearcfo: 'A fake email goes to the school\'s finance chief. It looks real, but it\'s from a look-alike address and has a dangerous attachment.',
             d_usb: 'Attacker drops branded USB sticks in the parking lot, hoping someone plugs one in.',
             d_typosquat: 'Attacker makes a fake website that looks like a real vendor\'s \u2014 same logo, but the web address has a tiny typo.',
@@ -1767,6 +1834,7 @@
             c_httpscdn: 'The attacker\'s control messages blend in with normal encrypted web traffic.',
             c_slackhook: 'Attacker abuses a Slack chat webhook to quietly send stolen data out.',
             c_icmp: 'The virus hides its messages inside ordinary "ping" packets.',
+            c_websocket: 'The virus hides its chat with the attacker inside traffic that looks like a normal chat-app connection your school trusts.',
             a_piiexfil: 'Attacker copies a customer database and sends it out over the internet.',
             a_ransom: 'Attacker encrypts files on many computers and demands money to unlock them.',
             a_wirefraud: 'Finance gets a fake email from "the boss" asking them to wire $380,000 to an attacker-controlled bank.',
@@ -1798,6 +1866,69 @@
             c2: 'If exploit landed, cut the beacon: block the IP, isolate the host, or hunt for the hidden channel.',
             actions: 'Time matters most. Escalate early \u2014 the CISO plus containment is the strongest late-game play.'
           };
+
+          // ── Quick Quiz: generate a flashcard (one red card + 3 defense options) ──
+          function generateQuizQuestion() {
+            // Only use red cards with at least one full-mitigation blue id (so there IS a correct answer)
+            var eligible = redTeamCards.filter(function(c) {
+              var mits = c.mitigations || {};
+              return Object.keys(mits).some(function(k) { return mits[k] >= 1.0; });
+            });
+            if (eligible.length === 0) return null;
+            var redCard = eligible[Math.floor(Math.random() * eligible.length)];
+            var idealIds = Object.keys(redCard.mitigations || {}).filter(function(k) { return redCard.mitigations[k] >= 1.0; });
+            var correctId = idealIds[Math.floor(Math.random() * idealIds.length)];
+            // Distractors: any 2 blue cards that are NOT ideal for this red card
+            var distractors = blueTeamCards.filter(function(b) {
+              return b.id !== correctId && (!redCard.mitigations || (redCard.mitigations[b.id] || 0) < 1.0);
+            });
+            // Shuffle distractors and take 2
+            for (var i = distractors.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var tmp = distractors[i]; distractors[i] = distractors[j]; distractors[j] = tmp;
+            }
+            var picks = [correctId, distractors[0] && distractors[0].id, distractors[1] && distractors[1].id].filter(Boolean);
+            // Shuffle final picks
+            for (var k = picks.length - 1; k > 0; k--) {
+              var kk = Math.floor(Math.random() * (k + 1));
+              var tt = picks[k]; picks[k] = picks[kk]; picks[kk] = tt;
+            }
+            return { redId: redCard.id, choices: picks, correctIdx: picks.indexOf(correctId), answered: -1 };
+          }
+          function openQuiz() {
+            upd({ warRoomQuizOpen: true, warRoomQuizCurrent: generateQuizQuestion() });
+            sfxCyberdClick();
+          }
+          function submitQuizAnswer(choiceIdx) {
+            if (!warRoomQuizCurrent || warRoomQuizCurrent.answered !== -1) return;
+            var isCorrect = choiceIdx === warRoomQuizCurrent.correctIdx;
+            var newCorrect = warRoomQuizCorrect + (isCorrect ? 1 : 0);
+            var newStreak = isCorrect ? warRoomQuizStreak + 1 : 0;
+            // Award quiz-milestone achievements
+            var mergedAch = Object.assign({}, warRoomAchievements);
+            var unlockedNow = [];
+            if (newStreak >= 5 && !mergedAch.quiz_novice) { mergedAch.quiz_novice = { earnedAt: Date.now() }; unlockedNow.push('quiz_novice'); }
+            if (newCorrect >= 25 && !mergedAch.quiz_master) { mergedAch.quiz_master = { earnedAt: Date.now() }; unlockedNow.push('quiz_master'); }
+            var bestStreak = Math.max(d.warRoomQuizBestStreak || 0, newStreak);
+            upd({
+              warRoomQuizCurrent: Object.assign({}, warRoomQuizCurrent, { answered: choiceIdx }),
+              warRoomQuizTotal: warRoomQuizTotal + 1,
+              warRoomQuizCorrect: newCorrect,
+              warRoomQuizStreak: newStreak,
+              warRoomQuizBestStreak: bestStreak,
+              warRoomAchievements: unlockedNow.length > 0 ? mergedAch : warRoomAchievements
+            });
+            if (isCorrect) { ctx.awardXP('cyberDefense', 1); sfxWarMitigated(); }
+            else sfxWarSucceeded();
+            if (unlockedNow.length > 0) {
+              var names = unlockedNow.map(function(aid) {
+                var a = warAchievements.filter(function(x) { return x.id === aid; })[0];
+                return a ? a.label : aid;
+              }).join(', ');
+              if (ctx.addToast) ctx.addToast('\uD83C\uDFC5 Achievement unlocked: ' + names, 'success');
+              if (ctx.announceToSR) ctx.announceToSR('New achievement unlocked: ' + names + '.');
+            } else if (ctx.announceToSR) ctx.announceToSR(isCorrect ? 'Correct!' : 'Not quite.');
+          }
 
           // ── Validate teacher-authored red card JSON ──
           function validateCustomCardsJson(rawText) {
@@ -2044,6 +2175,13 @@
               var completed = warRoomCampaignsCompleted + 1;
               var perfectHard = warRoomDifficulty === 'threatHunter' && warRoomAssetsLost.users === 0 && warRoomAssetsLost.servers === 0 && warRoomAssetsLost.data === 0;
               var wonAnalyst = (won && warRoomDifficulty === 'analyst') || d.warRoomWonAnalyst;
+              // Compute context fields needed by achievement evaluator (daily/weekly info referenced below)
+              var todayInfo = dailyChallenge();
+              var weekInfo = weeklyChallenge();
+              var campaignMode = 'normal';
+              if (warRoomIsBossMode) campaignMode = 'boss';
+              else if (warRoomCampaignId === todayInfo.id && warRoomCampaignTheme === todayInfo.theme && warRoomDifficulty === todayInfo.difficulty) campaignMode = 'daily';
+              else if (warRoomCampaignId === weekInfo.id && warRoomCampaignTheme === weekInfo.theme && warRoomDifficulty === weekInfo.difficulty) campaignMode = 'weekly';
               // Achievements
               var earnedIds = evaluateCampaignAchievements(warRoomKillChain, {
                 verdict: won ? 'won' : 'lost',
@@ -2052,7 +2190,8 @@
                 dataRemaining: warRoomAssets.data,
                 difficulty: warRoomDifficulty,
                 timedOut: warRoomTimedOutAny,
-                isBossMode: warRoomIsBossMode
+                isBossMode: warRoomIsBossMode,
+                isWeekly: campaignMode === 'weekly'
               });
               // Merge new achievements into persistent collection
               var mergedAchievements = Object.assign({}, warRoomAchievements);
@@ -2071,11 +2210,7 @@
               warRoomKillChain.forEach(function(r) {
                 (r.bluePlays || []).forEach(function(id) { bluePlaysCounts[id] = (bluePlaysCounts[id] || 0) + 1; });
               });
-              // Infer campaign mode from context
-              var campaignMode = 'normal';
-              if (warRoomIsBossMode) campaignMode = 'boss';
-              else if (todayInfo && warRoomCampaignId === todayInfo.id && warRoomCampaignTheme === todayInfo.theme && warRoomDifficulty === todayInfo.difficulty) campaignMode = 'daily';
-              else if (weekInfo && warRoomCampaignId === weekInfo.id && warRoomCampaignTheme === weekInfo.theme && warRoomDifficulty === weekInfo.difficulty) campaignMode = 'weekly';
+              // (campaignMode + todayInfo + weekInfo already computed above, before achievement eval)
               // Condensed chain for Replay (drops noise fields; keeps just what playback needs)
               var condensedChain = warRoomKillChain.map(function(r) {
                 return {
@@ -2111,7 +2246,7 @@
               };
               var newHistory = [historyEntry].concat(priorHistory).slice(0, 20);
               // Mark today's Daily Challenge as completed if this campaign's ID matches
-              var todayInfo = dailyChallenge();
+              // (todayInfo already computed above for campaignMode detection)
               var nextDailyCompletions = Object.assign({}, dailyCompletions);
               if (warRoomCampaignId === todayInfo.id &&
                   warRoomCampaignTheme === todayInfo.theme &&
@@ -2132,7 +2267,7 @@
                 }
               }
               // Mark this week's Weekly Challenge as completed if this campaign matches
-              var weekInfo = weeklyChallenge();
+              // (weekInfo already computed above for campaignMode detection)
               var nextWeeklyCompletions = Object.assign({}, weeklyCompletions);
               if (warRoomCampaignId === weekInfo.id &&
                   warRoomCampaignTheme === weekInfo.theme &&
@@ -2893,6 +3028,88 @@
                   }
                 }, 'Skip to defensive actions'),
 
+                // Quick Quiz overlay — flashcard drill, independent of active campaign
+                warRoomQuizOpen && (function() {
+                  var q = warRoomQuizCurrent;
+                  if (!q) return el('div', null);
+                  var redCard = redTeamCards.filter(function(c) { return c.id === q.redId; })[0];
+                  if (!redCard) return null;
+                  var stage = warStages.filter(function(s) { return s.id === redCard.stage; })[0] || { name: redCard.stage, icon: '\u2694\uFE0F', color: '#94a3b8' };
+                  var mitre = mitreTechniques[redCard.id];
+                  var answered = q.answered !== -1;
+                  var gotIt = answered && q.answered === q.correctIdx;
+                  var pct = warRoomQuizTotal > 0 ? Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) : 0;
+                  return el('div', { role: 'dialog', 'aria-label': 'Quick Quiz',
+                    style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(168,85,247,0.06))', border: '2px solid rgba(236,72,153,0.45)', marginBottom: 14 } },
+                    // Header
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+                      el('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, '\u2753'),
+                      el('div', { style: { flex: 1 } },
+                        el('div', { style: { fontSize: 11, color: '#f9a8d4', fontWeight: 800, letterSpacing: 0.5 } }, 'QUICK QUIZ \u2014 ' + warRoomQuizCorrect + ' / ' + warRoomQuizTotal + ' correct (' + pct + '%)' + (warRoomQuizStreak >= 2 ? ' \u2022 \uD83D\uDD25 ' + warRoomQuizStreak + '-streak' : '')),
+                        el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Stage: ' + stage.icon + ' ' + stage.name)
+                      ),
+                      el('button', {
+                        onClick: function() { upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
+                        'aria-label': 'Close quiz',
+                        style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
+                    ),
+                    // Red card question
+                    el('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 } },
+                        el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM MOVE'),
+                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id)
+                      ),
+                      el('div', { style: { fontSize: 14, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, redCard.title),
+                      el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+                        (warRoomPlainLanguage && plainRedDescriptions[redCard.id]) || redCard.description)
+                    ),
+                    // Question prompt
+                    el('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 700, marginBottom: 8 } }, 'Which defense would FULLY stop this attack?'),
+                    // Answer choices
+                    el('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
+                      q.choices.map(function(bid, i) {
+                        var card = blueTeamCards.filter(function(b) { return b.id === bid; })[0];
+                        if (!card) return null;
+                        var isCorrect = i === q.correctIdx;
+                        var isPicked = i === q.answered;
+                        var bg, bd, color;
+                        if (!answered) { bg = 'rgba(30,41,59,0.7)'; bd = 'rgba(148,163,184,0.2)'; color = '#cbd5e1'; }
+                        else if (isCorrect) { bg = warOutcomeColors.mitigated + '1f'; bd = warOutcomeColors.mitigated + '80'; color = warOutcomeColors.mitigatedSoft; }
+                        else if (isPicked) { bg = warOutcomeColors.succeeded + '1a'; bd = warOutcomeColors.succeeded + '59'; color = warOutcomeColors.succeededSoft; }
+                        else { bg = 'rgba(30,41,59,0.4)'; bd = 'rgba(148,163,184,0.15)'; color = '#64748b'; }
+                        return el('button', { key: i, onClick: function() { submitQuizAnswer(i); }, disabled: answered,
+                          'aria-label': (i + 1) + '. ' + card.label + (answered ? (isCorrect ? ' — correct answer' : (isPicked ? ' — your answer (wrong)' : '')) : ''),
+                          style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 6, border: '1px solid ' + bd, background: bg, color: color, cursor: answered ? 'default' : 'pointer', textAlign: 'left' } },
+                          el('span', { style: { fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 3, background: 'rgba(148,163,184,0.2)', color: '#94a3b8', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(i + 1)),
+                          el('span', { style: { fontSize: 14 } }, card.icon),
+                          el('span', { style: { flex: 1, fontSize: 12.5, fontWeight: 700 } }, card.label),
+                          answered && isCorrect && el('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\u2705'),
+                          answered && isPicked && !isCorrect && el('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\u274C')
+                        );
+                      })
+                    ),
+                    // Feedback + Next
+                    answered && el('div', { role: 'status', 'aria-live': 'polite',
+                      style: { padding: 10, borderRadius: 6, background: gotIt ? (warOutcomeColors.mitigated + '14') : 'rgba(234,179,8,0.08)', border: '1px solid ' + (gotIt ? (warOutcomeColors.mitigated + '4d') : 'rgba(234,179,8,0.3)'), fontSize: 12, color: gotIt ? warOutcomeColors.mitigatedSoft : '#fcd34d', lineHeight: 1.55, marginBottom: 10 } },
+                      el('strong', null, gotIt ? '\u2728 Correct! +1 XP. ' : '\uD83D\uDCA1 Close! '),
+                      (blueTeamCards.filter(function(b) { return b.id === q.choices[q.correctIdx]; })[0] || {}).label + ' fully mitigates this attack because it directly counters the attack\'s main technique.'
+                    ),
+                    // Controls
+                    el('div', { style: { display: 'flex', gap: 8 } },
+                      el('button', {
+                        onClick: function() { upd({ warRoomQuizCurrent: generateQuizQuestion() }); sfxCyberdClick(); },
+                        disabled: !answered,
+                        'aria-label': 'Next question',
+                        style: { flex: 1, padding: '10px 14px', borderRadius: 6, border: 'none', background: !answered ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, #ec4899, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: !answered ? 'not-allowed' : 'pointer' } },
+                        answered ? 'Next Question \u2192' : 'Pick an answer above'),
+                      el('button', {
+                        onClick: function() { upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
+                        style: { padding: '10px 14px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                        'Done')
+                    )
+                  );
+                })(),
+
                 // Replay overlay (step-by-step playback of a past campaign)
                 warRoomReplay && (function() {
                   var hist = (warRoomCampaignHistory || [])[warRoomReplay.historyIdx];
@@ -2959,6 +3176,22 @@
                   );
                 })(),
 
+                // Playbook discovery hint for users who've never opened it (shown between welcome overlay and start screen)
+                !warRoomActive && warRoomWelcomeSeen && !d.warRoomPlaybookSeen && warRoomCampaignsCompleted < 3 && el('div', { style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(236,72,153,0.08)', border: '1px dashed rgba(236,72,153,0.3)', marginBottom: 10, fontSize: 11, color: '#f9a8d4', display: 'flex', alignItems: 'center', gap: 6 } },
+                  el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCA1'),
+                  el('span', null, 'New tip: the '),
+                  el('button', {
+                    onClick: function() { upd({ warRoomPlaybookOpen: true, warRoomPlaybookSeen: true, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                    style: { padding: 0, background: 'none', border: 'none', color: '#f9a8d4', fontWeight: 800, textDecoration: 'underline', cursor: 'pointer', fontSize: 11 } },
+                    '\uD83D\uDCD2 Playbook'),
+                  el('span', null, ' button above shows which defenses stop which attacks at each kill-chain stage.'),
+                  el('button', {
+                    onClick: function() { upd('warRoomPlaybookSeen', true); sfxCyberdClick(); },
+                    'aria-label': 'Dismiss Playbook tip',
+                    style: { marginLeft: 'auto', padding: '2px 6px', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(148,163,184,0.2)', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer', borderRadius: 3 } },
+                    '\u2715')
+                ),
+
                 // First-run welcome overlay (dismissible, shown once)
                 !warRoomWelcomeSeen && !warRoomActive && el('div', { role: 'dialog', 'aria-labelledby': 'warroom-welcome-title',
                   style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(244,63,94,0.08))', border: '2px solid rgba(99,102,241,0.4)', marginBottom: 14 } },
@@ -2996,7 +3229,7 @@
                     'aria-expanded': warRoomTeacherDashOpen, 'aria-controls': 'warroom-teacher-dash',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(34,197,94,0.3)', background: warRoomTeacherDashOpen ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.12)', color: '#86efac', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomTeacherDashOpen ? '\u2715 Close' : '\uD83D\uDCCA Open') + ' Teacher Dashboard'),
-                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomStatsOpen: !warRoomStatsOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
+                  (warRoomCampaignHistory.length > 0 || warRoomQuizTotal > 0) && el('button', { onClick: function() { upd({ warRoomStatsOpen: !warRoomStatsOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomStatsOpen, 'aria-controls': 'warroom-stats-panel',
                     title: 'Your personal performance stats',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(59,130,246,0.3)', background: warRoomStatsOpen ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', color: '#93c5fd', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
@@ -3005,7 +3238,7 @@
                     'aria-expanded': warRoomGlossaryOpen, 'aria-controls': 'warroom-glossary-panel',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: warRoomGlossaryOpen ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary'),
-                  el('button', { onClick: function() { upd({ warRoomPlaybookOpen: !warRoomPlaybookOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                  el('button', { onClick: function() { upd({ warRoomPlaybookOpen: !warRoomPlaybookOpen, warRoomPlaybookSeen: true, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomPlaybookOpen, 'aria-controls': 'warroom-playbook-panel',
                     title: 'Strategy guide — which defenses work against which stages',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(236,72,153,0.3)', background: warRoomPlaybookOpen ? 'rgba(236,72,153,0.25)' : 'rgba(236,72,153,0.12)', color: '#f9a8d4', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
@@ -3086,7 +3319,30 @@
                   el('div', { style: { color: '#93c5fd', fontSize: 12, fontWeight: 800, marginBottom: 10, letterSpacing: 0.5 } }, '\uD83D\uDCC8 YOUR STATS'),
                   (function() {
                     var h = warRoomCampaignHistory;
-                    if (h.length === 0) return el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'Play a campaign to start tracking stats.');
+                    if (h.length === 0) {
+                      if (warRoomQuizTotal > 0) {
+                        // Show quiz-only stats
+                        return el('div', null,
+                          el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginBottom: 10 } }, 'No campaigns yet \u2014 here\'s your Quick Quiz progress:'),
+                          el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.04))', border: '1px solid rgba(236,72,153,0.25)' } },
+                            el('div', { style: { color: '#f9a8d4', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\u2753 Quick Quiz performance'),
+                            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
+                              [
+                                { label: 'Answered', val: String(warRoomQuizTotal), color: '#cbd5e1' },
+                                { label: 'Correct', val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
+                                { label: 'Best Streak', val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
+                              ].map(function(s, i) {
+                                return el('div', { key: i, style: { padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)' } },
+                                  el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
+                                  el('div', { style: { fontSize: 14, color: s.color, fontWeight: 900, marginTop: 1 } }, s.val)
+                                );
+                              })
+                            )
+                          )
+                        );
+                      }
+                      return el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'Play a campaign or take a Quick Quiz to start tracking stats.');
+                    }
                     var wins = h.filter(function(r) { return r.verdict === 'won'; }).length;
                     var winPct = Math.round(wins / h.length * 100);
                     var avgDet = (h.reduce(function(a, r){return a + (r.detections||0);}, 0) / h.length).toFixed(1);
@@ -3133,6 +3389,22 @@
                             el('div', { style: { fontSize: 15, color: s.color, fontWeight: 900, marginTop: 2 } }, s.val)
                           );
                         })
+                      ),
+                      // Quick Quiz stats block (only if student has taken any quiz)
+                      warRoomQuizTotal > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.04))', border: '1px solid rgba(236,72,153,0.25)', marginBottom: 12 } },
+                        el('div', { style: { color: '#f9a8d4', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\u2753 Quick Quiz performance'),
+                        el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
+                          [
+                            { label: 'Answered', val: String(warRoomQuizTotal), color: '#cbd5e1' },
+                            { label: 'Correct', val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
+                            { label: 'Best Streak', val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
+                          ].map(function(s, i) {
+                            return el('div', { key: i, style: { padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)' } },
+                              el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
+                              el('div', { style: { fontSize: 14, color: s.color, fontWeight: 900, marginTop: 1 } }, s.val)
+                            );
+                          })
+                        )
                       ),
                       // Data-preserved bar chart (last 10 campaigns)
                       sparkData.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)', marginBottom: 12 } },
@@ -3486,6 +3758,41 @@
                         },
                         'aria-label': 'Load currently-saved cards into the editor',
                         style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21BB Load Saved'),
+                      // Grade-level sample packs (pick one to load)
+                      (function() {
+                        var packs = {
+                          elementary: [
+                            { id: 'elem_stranger_chat', stage: 'recon', title: 'Stranger in an online game asks personal questions', description: 'A new player keeps asking your student which school they go to and where they live.', indicators: ['Quick shift from game talk to personal questions', 'Asks for a photo'], noiseIndicators: ['A classmate friending them'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.5 }, impact: { users: 1 } },
+                            { id: 'elem_popup_tablet', stage: 'delivery', title: 'Pop-up: "You won a free tablet! Tap here!"', description: 'A pop-up on a classroom computer promises a free tablet for a survey.', indicators: ['"Too good to be true" prize', 'Asks for address and phone'], noiseIndicators: ['A real school raffle poster'], mitigations: { block_ip: 1.0, awareness_blast: 0.9 }, impact: { users: 2 } },
+                            { id: 'elem_shared_pw', stage: 'exploit', title: 'Shared classroom computer left logged in', description: 'A student walks away from a classroom computer still signed into their school account.', indicators: ['Session active longer than expected', 'Another user acts on the open session'], noiseIndicators: ['Teacher using the same terminal'], mitigations: { reset_credential: 1.0, awareness_blast: 0.7 }, impact: { users: 1 } }
+                          ],
+                          middle: [
+                            { id: 'mid_insta_login', stage: 'delivery', title: 'Fake Instagram login page in a DM', description: 'A DM from a "friend" links to an Instagram login page that looks real but is on a weird domain.', indicators: ['URL is instagrarn-login.net not instagram.com', 'Login page asks to confirm email password too'], noiseIndicators: ['Real Instagram password reset'], mitigations: { block_ip: 1.0, awareness_blast: 0.8, reset_credential: 0.5 }, impact: { users: 3 } },
+                            { id: 'mid_quiz_app', stage: 'persist', title: 'Quiz app requests full contact and photo access', description: 'A viral "Which Marvel hero are you?" app wants permissions it does not need.', indicators: ['Over-broad permission scopes', 'Developer has only one product'], noiseIndicators: ['Legit educational app'], mitigations: { reset_credential: 1.0, awareness_blast: 0.8 }, impact: { users: 2, data: 10 } },
+                            { id: 'mid_friend_link', stage: 'delivery', title: 'Friend\'s account sends a suspicious link', description: 'Your friend\'s account DMs you "look at this funny video of you lol".', indicators: ['Message tone differs from friend\'s usual style', 'Shortened bit.ly link'], noiseIndicators: ['Actual meme your friend shares'], mitigations: { awareness_blast: 1.0, block_ip: 0.7 }, impact: { users: 2 } }
+                          ],
+                          high: [
+                            { id: 'hs_recruiter_zip', stage: 'delivery', title: 'LinkedIn recruiter with a "portfolio.zip" attachment', description: 'A recruiter messages on LinkedIn offering an internship and asks the student to download a portfolio template.', indicators: ['Zip attachment with macro-enabled doc inside', 'Recruiter profile created in the last week'], noiseIndicators: ['Actual recruiter outreach'], mitigations: { block_ip: 1.0, deploy_edr: 0.8, awareness_blast: 0.7 }, impact: { users: 2, servers: 1 } },
+                            { id: 'hs_mfa_fatigue', stage: 'exploit', title: 'MFA push notifications flooding during study hall', description: 'A student\'s phone gets dozens of MFA approve prompts. They tap Approve to make it stop.', indicators: ['Repeated push requests in short time', 'Logins from unusual geography'], noiseIndicators: ['Student forgot they\'re logging in on another device'], mitigations: { reset_credential: 1.0, awareness_blast: 0.9, block_ip: 0.6 }, impact: { users: 3 } },
+                            { id: 'hs_scholarship_scam', stage: 'actions', title: 'Scholarship email asks for SSN and bank info', description: 'An email claims a student won a $5,000 scholarship and asks for SSN and bank account to "deposit" it.', indicators: ['Asks for SSN before any legitimate verification', 'Reply-to on a free-email domain'], noiseIndicators: ['Real scholarship award notice'], mitigations: { escalate: 1.0, awareness_blast: 0.9, investigate: 0.7 }, impact: { data: 40, users: 1 } }
+                          ]
+                        };
+                        var mkPackButton = function(key, label, color) {
+                          return el('button', { key: key,
+                            onClick: function() {
+                              upd({ warRoomCustomCardsDraft: JSON.stringify(packs[key], null, 2), warRoomCustomCardsError: null });
+                              if (ctx.addToast) ctx.addToast(label + ' pack loaded \u2014 review and Save', 'info');
+                            },
+                            'aria-label': 'Load ' + label + ' scenario pack',
+                            title: 'Three ' + label + '-appropriate example cards you can save as-is or edit first.',
+                            style: { padding: '6px 12px', borderRadius: 5, border: '1px solid ' + color + '59', background: color + '1f', color: color, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCDA ' + label);
+                        };
+                        return el('span', { style: { display: 'inline-flex', gap: 4, flexWrap: 'wrap' } },
+                          mkPackButton('elementary', 'Elementary', '#22c55e'),
+                          mkPackButton('middle', 'Middle School', '#3b82f6'),
+                          mkPackButton('high', 'High School', '#a855f7')
+                        );
+                      })(),
                       warRoomCustomCards.length > 0 && el('button', {
                         onClick: function() {
                           if (!confirm('Remove all ' + warRoomCustomCards.length + ' custom card(s)?')) return;
@@ -3543,8 +3850,9 @@
                         { id: 'a_largeText',          label: '\uD83D\uDD0D Larger Text', desc: 'Increase font size across the tool.', val: warRoomA11y.largeText },
                         { id: 'a_highContrast',       label: '\u25D1 High Contrast', desc: 'Stronger color contrast for clarity.', val: warRoomA11y.highContrast },
                         { id: 'a_colorBlind',         label: '\uD83C\uDFA8 Color-Blind Friendly', desc: 'Orange / yellow / blue outcomes (no red-green).', val: warRoomA11y.colorBlind },
+                        warRoomTtsAvailable ? { id: 'a_ttsAuto', label: '\uD83D\uDD0A Auto Read-Aloud', desc: 'Text-to-speech reads each new attack.', val: warRoomA11y.ttsAuto } : null,
                         { id: 'warRoomSoundMuted',    label: '\uD83D\uDD07 Mute War Room Sounds', desc: 'Silence the click / outcome tones.', val: warRoomSoundMuted }
-                      ].map(function(opt) {
+                      ].filter(Boolean).map(function(opt) {
                         var isOn = !!opt.val;
                         return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
                           onClick: function() {
@@ -3567,13 +3875,14 @@
                       })
                     ),
                     // Reset settings — restores UDL/accessibility defaults without touching progress
-                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind) ? el('button', {
+                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind || warRoomA11y.ttsAuto) ? el('button', {
                       onClick: function() {
                         if (!confirm('Reset UDL / Access options to defaults? Achievements and history are kept.')) return;
+                        warTtsStop();
                         upd({
                           warRoomPlainLanguage: false,
                           warRoomSoundMuted: false,
-                          warRoomA11y: { dyslexiaFont: false, largeText: false, highContrast: false, colorBlind: false }
+                          warRoomA11y: { dyslexiaFont: false, largeText: false, highContrast: false, colorBlind: false, ttsAuto: false }
                         });
                         if (ctx.addToast) ctx.addToast('Access options reset to defaults', 'info');
                       },
@@ -3745,12 +4054,13 @@
                     })(),
                     el('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                       [
-                        { id: 'rookie',       label: 'Rookie',        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e' },
-                        { id: 'analyst',      label: 'Analyst',       sub: 'Some noise \u2022 14 budget', color: '#3b82f6' },
-                        { id: 'threatHunter', label: 'Threat Hunter', sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#f43f5e' }
+                        { id: 'rookie',       label: 'Rookie',        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e', help: 'Best for first-timers. Every alert is real \u2014 no noise. Generous 18-budget lets you play 2 defenses per round comfortably.' },
+                        { id: 'analyst',      label: 'Analyst',       sub: 'Some noise \u2022 14 budget', color: '#3b82f6', help: 'Mid-tier challenge. Alerts include one noise signal per round. Tighter 14-budget forces you to prioritize.' },
+                        { id: 'threatHunter', label: 'Threat Hunter', sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#f43f5e', help: 'Expert mode. 90-second clock per round auto-resolves when time expires. Red team adapts to your successes. Only 10 starting budget.' }
                       ].map(function(tier) {
                         return el('button', { key: tier.id, onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
-                          'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label,
+                          'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label + '. ' + tier.help,
+                          title: tier.help,
                           style: { flex: '1 1 200px', padding: '14px 16px', borderRadius: 10, border: '1px solid ' + tier.color + '55', background: 'linear-gradient(135deg, ' + tier.color + '1a, ' + tier.color + '05)', color: tier.color, cursor: 'pointer', textAlign: 'left' } },
                           el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 4 } }, tier.label),
                           el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, tier.sub)
@@ -3786,8 +4096,15 @@
                       })
                     )
                   ),
-                  // Boss Mode + Quick Match launchers
+                  // Boss Mode + Quick Match + Quick Quiz launchers
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
+                    el('button', {
+                      onClick: openQuiz,
+                      'aria-label': 'Open quick-quiz flashcard drill',
+                      style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(236,72,153,0.4)', background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.06))', color: '#f9a8d4', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
+                      el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\u2753 Quick Quiz'),
+                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', fontWeight: 600, lineHeight: 1.35 } }, 'Rapid-fire drill \u2014 pick the best defense for each attack. Earn +1 XP per correct answer.' + (warRoomQuizTotal > 0 ? ' (' + warRoomQuizCorrect + '/' + warRoomQuizTotal + ' lifetime)' : ''))
+                    ),
                     el('button', {
                       onClick: function() {
                         // Quick Match: random theme (unlocked), random difficulty, fresh seed
@@ -4384,7 +4701,23 @@
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
                       el('div', null,
-                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / ' + warRoomRoundsTotal + ' \u2022 ' + (warRoomIsBossMode ? '\uD83D\uDC79 BOSS ' : '') + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '') + (warRoomCampaignId ? ' \u2022 #' + warRoomCampaignId : '')),
+                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
+                          el('span', null, 'Round ' + warRoomRound + ' / ' + warRoomRoundsTotal + ' \u2022 ' + (warRoomIsBossMode ? '\uD83D\uDC79 BOSS ' : '') + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
+                          warRoomCampaignId && el('button', {
+                            onClick: function() {
+                              try {
+                                if (navigator.clipboard && navigator.clipboard.writeText) {
+                                  navigator.clipboard.writeText(warRoomCampaignId).then(function() {
+                                    if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Campaign #' + warRoomCampaignId + ' copied', 'success');
+                                  }, function() { if (ctx.addToast) ctx.addToast('Copy failed', 'info'); });
+                                } else if (ctx.addToast) { ctx.addToast('Clipboard unavailable', 'info'); }
+                              } catch(e) { /* silent */ }
+                            },
+                            'aria-label': 'Copy campaign ID ' + warRoomCampaignId + ' to clipboard',
+                            title: 'Copy this campaign ID so others can play the same seed',
+                            style: { padding: '1px 6px', borderRadius: 3, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(15,23,42,0.5)', color: '#fcd34d', fontSize: 10, fontWeight: 800, cursor: 'pointer', fontFamily: 'monospace' } },
+                            '#' + warRoomCampaignId + ' \uD83D\uDCCB')
+                        ),
                         el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name),
                         warRoomHotSeatEnabled && el('div', { style: { fontSize: 10, color: '#d8b4fe', fontWeight: 800, marginTop: 1 } }, '\uD83E\uDD1D ' + (warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))) + '\'s turn'),
                         warRoomHouseRulesActive && (function() {
@@ -4616,6 +4949,16 @@
                             style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
                             mitreTechniques[warRoomRedAction.id].id),
                           warRoomRedAction && warRoomRedAction._aiGenerated && el('span', { style: { fontSize: 9, fontWeight: 800, color: '#a5b4fc', background: 'rgba(99,102,241,0.2)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3 } }, '\uD83E\uDD16 AI'),
+                          warRoomTtsAvailable && el('button', {
+                            onClick: function() {
+                              var title = (warRoomRedAction && warRoomRedAction.title) || '';
+                              var desc = (warRoomPlainLanguage && warRoomRedAction && plainRedDescriptions[warRoomRedAction.id]) || (warRoomRedAction && warRoomRedAction.description) || '';
+                              warTtsSpeak('Red team: ' + title + '. ' + desc);
+                            },
+                            'aria-label': 'Read this attack scenario aloud',
+                            title: 'Read aloud (text-to-speech)',
+                            style: { padding: '3px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                            '\uD83D\uDD0A Read'),
                           ctx.callGemini && !warLiveIsObserving && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', {
                             onClick: generateAIRedCard, disabled: warRoomAICardLoading,
                             'aria-label': 'Generate a new AI red team scenario',
