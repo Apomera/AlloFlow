@@ -1372,6 +1372,93 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // Lazy-load Tesseract.js from CDN. Zero cost until first call (scanned-PDF path only).
+  // Tesseract gives deterministic client-side OCR — no hallucination, no server roundtrip —
+  // which pairs with Vision OCR for a reconciled "both" pass on scanned PDFs.
+  let _tesseractLoadPromise = null;
+  const ensureTesseractLoaded = async () => {
+    if (window.Tesseract) return window.Tesseract;
+    if (_tesseractLoadPromise) return _tesseractLoadPromise;
+    _tesseractLoadPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-docpipe-tesseract]');
+      if (existing) {
+        const wait = setInterval(() => { if (window.Tesseract) { clearInterval(wait); resolve(window.Tesseract); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('Tesseract load timeout')); }, 20000);
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      s.setAttribute('data-docpipe-tesseract', 'true');
+      s.onload = () => { if (window.Tesseract) resolve(window.Tesseract); else reject(new Error('Tesseract loaded but not on window')); };
+      s.onerror = () => { _tesseractLoadPromise = null; reject(new Error('Tesseract.js CDN load failed')); };
+      document.head.appendChild(s);
+    });
+    return _tesseractLoadPromise;
+  };
+
+  // OCR every page of a PDF with Tesseract. Renders each page at 2× to a canvas, recognises,
+  // concatenates. Returns { fullText, pages: [{pageNum, text}], sourceCharCount }. Progress
+  // callback fires per page (0..1) so the UI can show "OCR page 3 of 12" without blocking.
+  const extractPdfTextTesseract = async (base64, onProgress, lang) => {
+    try {
+      await ensurePdfJsLoaded();
+      await ensureTesseractLoaded();
+      if (!window.pdfjsLib || !window.Tesseract) throw new Error('pdf.js or Tesseract unavailable');
+      const raw = base64.includes(',') ? base64.split(',')[1] : base64;
+      const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const useLang = lang || 'eng';
+      const pages = [];
+      for (let p = 1; p <= pdf.numPages; p++) {
+        if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
+        const page = await pdf.getPage(p);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
+        const result = await window.Tesseract.recognize(canvas, useLang);
+        const pageText = ((result && result.data && result.data.text) || '').trim();
+        pages.push({ pageNum: p, text: pageText });
+        // Free the canvas so a 100-page scan doesn't balloon memory.
+        canvas.width = 0; canvas.height = 0;
+      }
+      const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
+      return { fullText, pages, pageCount: pdf.numPages, sourceCharCount: fullText.length };
+    } catch (e) {
+      warnLog('[Tesseract] extractPdfTextTesseract failed:', e && e.message);
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message };
+    }
+  };
+
+  // Word-level reconciliation between two OCR outputs. "Perfect accuracy" for scanned PDFs
+  // means losing no content, so the per-page rule is: take whichever output has more chars.
+  // Record disagreements (pages where length differs materially) so the fidelity panel can
+  // surface them for review. This is a union-of-best-per-page strategy, not a set-union on
+  // tokens (which would introduce ordering artifacts).
+  const reconcileOcrPages = (tessPages, visionPages) => {
+    const pageCount = Math.max(tessPages.length, visionPages.length);
+    const merged = [];
+    const disagreements = [];
+    for (let i = 0; i < pageCount; i++) {
+      const tText = (tessPages[i] && tessPages[i].text) || '';
+      const vText = (visionPages[i] && visionPages[i].text) || '';
+      const tLen = tText.length, vLen = vText.length;
+      const longest = Math.max(tLen, vLen);
+      // Pick the longer one — loses nothing vs picking shorter; Tesseract wins ties for
+      // determinism.
+      const chosen = tLen >= vLen ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
+      merged.push({ pageNum: i + 1, text: chosen.text, source: chosen.source });
+      // Flag disagreement if length gap > 10% or > 20 chars absolute.
+      if (longest > 0 && (Math.abs(tLen - vLen) > Math.max(20, longest * 0.1))) {
+        disagreements.push({ pageNum: i + 1, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
+      }
+    }
+    return { pages: merged, disagreements, fullText: merged.map(p => p.text).filter(Boolean).join('\n\n') };
+  };
+
   // Lazy-load mammoth.js for DOCX text extraction
   const ensureMammothLoaded = async () => {
     if (window.mammoth) return;
@@ -5465,10 +5552,93 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
 
-      // If deterministic extraction succeeded, skip the Vision OCR block entirely
+      // If deterministic extraction succeeded, skip OCR entirely
       if (extractedText && extractedText.length > 100) {
-        warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping Vision OCR`);
+        warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping OCR`);
         // Fall through to Step 1b (image extraction) with extractedText already populated
+      } else if (_base64 && _mimeType === 'application/pdf') {
+        // Scanned-PDF path: run Tesseract and Vision in parallel, then reconcile.
+        // "Perfect accuracy" per user spec — losing zero words matters more than speed here,
+        // so we do both engines and take the longer output per page. Disagreements are
+        // stashed on window globals so the fidelity panel can surface them for review.
+        updateProgress(1, 'Scanned PDF detected — running Tesseract + Vision OCR in parallel...');
+        if (typeof addToast === 'function') addToast('Running Tesseract + Vision OCR for maximum accuracy on this scanned PDF…', 'info');
+
+        const _visionChunkedExtract = async () => {
+          if (numChunks <= 1 && effectivePageCount <= 2) {
+            const single = await callGeminiVision(
+              `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+              _base64, _mimeType
+            );
+            return { fullText: single || '', pages: [{ pageNum: 1, text: single || '' }] };
+          }
+          const MAX_PARALLEL = 5;
+          const chunkPromises = [];
+          for (let i = 0; i < numChunks; i++) {
+            const startPage = i * PAGES_PER_CHUNK + 1;
+            const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
+            chunkPromises.push(
+              callGeminiVision(
+                `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+                _base64, _mimeType
+              ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} extraction failed:`, err); return null; })
+            );
+          }
+          let chunkResults = [];
+          for (let batch = 0; batch < chunkPromises.length; batch += MAX_PARALLEL) {
+            const batchSlice = chunkPromises.slice(batch, batch + MAX_PARALLEL);
+            const batchResults = await Promise.all(batchSlice);
+            chunkResults = chunkResults.concat(batchResults);
+            if (batch + MAX_PARALLEL < chunkPromises.length) await new Promise(r => setTimeout(r, 500));
+          }
+          const chunks = chunkResults.map((chunk, i) => {
+            if (!chunk || !chunk.trim()) return '';
+            return chunk.trim()
+              .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
+              .replace(/^\s*\{[\s\S]*?"(?:text|content)":\s*"/g, '').replace(/"\s*\}\s*$/g, '')
+              .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
+          });
+          const pagesOut = [];
+          chunks.forEach((chunkText, ci) => {
+            const startPage = ci * PAGES_PER_CHUNK;
+            const pageCount = Math.min(PAGES_PER_CHUNK, effectivePageCount - startPage);
+            const chunkLen = chunkText.length;
+            const per = pageCount > 0 ? Math.floor(chunkLen / pageCount) : chunkLen;
+            for (let q = 0; q < pageCount; q++) {
+              const from = q * per;
+              const to = q === pageCount - 1 ? chunkLen : (q + 1) * per;
+              pagesOut.push({ pageNum: startPage + q + 1, text: chunkText.slice(from, to).trim() });
+            }
+          });
+          return { fullText: chunks.join('\n\n---\n\n'), pages: pagesOut };
+        };
+
+        const _tesseractExtract = async () => extractPdfTextTesseract(_base64, (ev) => {
+          updateProgress(1, `Tesseract OCR page ${ev.page}/${ev.total} (${ev.phase})…`);
+        });
+
+        let tessResult = { fullText: '', pages: [] };
+        let visionResult = { fullText: '', pages: [] };
+        try {
+          const [t, v] = await Promise.all([
+            _tesseractExtract().catch(e => { warnLog('[OCR reconcile] Tesseract failed:', e && e.message); return { fullText: '', pages: [] }; }),
+            _visionChunkedExtract().catch(e => { warnLog('[OCR reconcile] Vision failed:', e && e.message); return { fullText: '', pages: [] }; }),
+          ]);
+          tessResult = t; visionResult = v;
+        } catch (reconErr) {
+          warnLog('[OCR reconcile] parallel OCR failed:', reconErr && reconErr.message);
+        }
+
+        const rec = reconcileOcrPages(tessResult.pages || [], visionResult.pages || []);
+        extractedText = rec.fullText || tessResult.fullText || visionResult.fullText || '';
+        window.__lastOcrTesseractText = tessResult.fullText || '';
+        window.__lastOcrVisionText = visionResult.fullText || '';
+        window.__lastOcrDisagreements = rec.disagreements || [];
+        window.__lastOcrMethod = (tessResult.fullText && visionResult.fullText) ? 'tesseract+vision' : (tessResult.fullText ? 'tesseract' : 'vision');
+        warnLog(`[OCR reconcile] Tesseract ${tessResult.fullText.length} chars · Vision ${visionResult.fullText.length} chars · merged ${extractedText.length} chars · ${rec.disagreements.length} page disagreements`);
+        if (typeof addToast === 'function' && rec.disagreements.length > 0) {
+          addToast(`OCR reconciled — ${rec.disagreements.length} page${rec.disagreements.length === 1 ? '' : 's'} where Tesseract & Vision disagree. Review in the fidelity panel.`, 'info');
+        }
       } else if (numChunks <= 1 && effectivePageCount <= 2) {
         // Very short PDF (1-2 pages): single extraction pass is safe
         updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})...`);
@@ -5727,6 +5897,17 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               images: extractedImages.map(function(img, i) {
                 return { index: i, description: img.description || '', src: img.generatedSrc || null, type: img.type || 'content', educationalPurpose: img.educationalPurpose || '', isRegenerated: !!img.isRegenerated, cropData: img.cropData || null };
               }),
+              // Full extracted text surfaces so the UI fidelity panel can compare it against the
+              // remediated output. For scanned PDFs this is the reconciled Tesseract+Vision text.
+              fullText: extractedText || '',
+              // OCR-specific context — only populated when the scanned path ran. Lets the panel
+              // show Tesseract vs Vision disagreements for manual review.
+              ocr: {
+                method: window.__lastOcrMethod || window.__lastGroundTruthMethod || 'pdfjs',
+                tesseractText: window.__lastOcrTesseractText || '',
+                visionText: window.__lastOcrVisionText || '',
+                disagreements: window.__lastOcrDisagreements || [],
+              },
               metadata: {
                 fileName: _fileName,
                 pageCount: pageCount,
@@ -5734,6 +5915,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 hasImages: extractedImages.length > 0,
                 hasTables: /\btable\b/i.test(extractedText),
                 language: /[\u0600-\u06FF]/.test(extractedText) ? 'ar' : /[\u4E00-\u9FFF]/.test(extractedText) ? 'zh' : /[\u0400-\u04FF]/.test(extractedText) ? 'ru' : 'en',
+                isScanned: (window.__lastOcrMethod === 'tesseract+vision' || window.__lastOcrMethod === 'tesseract' || window.__lastOcrMethod === 'vision'),
+                extractionMethod: window.__lastOcrMethod || window.__lastGroundTruthMethod || 'pdfjs',
               },
               timestamp: Date.now(),
             }

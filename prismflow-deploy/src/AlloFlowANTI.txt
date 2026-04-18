@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5461d3f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -13294,7 +13294,8 @@ Return only the corrected version of this exact text:`;
   const [boringPalettePrompt, setBoringPalettePrompt] = useState(false); // show theme suggestion when boring palette detected
   const [chunkSaveFlash, setChunkSaveFlash] = useState(false); // brief "auto-saved" indicator
   const [fixIssuesList, setFixIssuesList] = useState(null); // specific issues found for display during Step 4
-  const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {} } — shown during wait
+  const [extractionData, setExtractionData] = useState(null); // { images: [], metadata: {}, fullText: '', ocr: {} } — shown during wait
+  const [fidelityResult, setFidelityResult] = useState(null); // { missing, fidelity, totalSrc, totalMissing } — output of text fidelity check vs source OCR
 
   // ── Live chunk review: listen for events from doc_pipeline during remediation ──
   // MUST be in AlloFlowContent (not useTranslation) so setLiveChunkStream etc. are in scope
@@ -53935,6 +53936,133 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     </div>
                                   ))}
                                 </div>
+                              </div>
+                              );
+                            })()}
+
+                            {/* ── Fidelity verification panel ──
+                                Compares the source OCR text (pdf.js, or reconciled Tesseract+Vision
+                                for scanned PDFs) against the current remediated HTML. Since the PDF
+                                remediation pipeline is meant to preserve every word verbatim, any
+                                missing word indicates a pipeline issue worth investigating. Ignore
+                                if Simplify or Translate was explicitly toggled on. */}
+                            {extractionData.fullText && (() => {
+                              const _tokenize = (s) => {
+                                const out = {};
+                                const matches = (s || '').toLowerCase().match(/[a-z0-9][\w'-]*/g);
+                                if (matches) matches.forEach(w => { out[w] = (out[w] || 0) + 1; });
+                                return out;
+                              };
+                              const _runCheck = () => {
+                                const sourceText = extractionData.fullText || '';
+                                let remediatedText = '';
+                                try {
+                                  const html = (typeof getPdfPreviewHtml === 'function') ? getPdfPreviewHtml() : '';
+                                  const tmp = document.createElement('div');
+                                  tmp.innerHTML = html || '';
+                                  remediatedText = tmp.textContent || tmp.innerText || '';
+                                } catch (e) { remediatedText = ''; }
+                                const srcCounts = _tokenize(sourceText);
+                                const remCounts = _tokenize(remediatedText);
+                                const missing = [];
+                                Object.keys(srcCounts).forEach(w => {
+                                  const delta = srcCounts[w] - (remCounts[w] || 0);
+                                  if (delta > 0) missing.push({ word: w, missingCount: delta, sourceCount: srcCounts[w] });
+                                });
+                                missing.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
+                                const totalSrc = Object.values(srcCounts).reduce((s, n) => s + n, 0);
+                                const totalRem = Object.values(remCounts).reduce((s, n) => s + n, 0);
+                                const totalMissing = missing.reduce((s, m) => s + m.missingCount, 0);
+                                const fidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing / totalSrc) * 1000) / 10) : 100;
+                                setFidelityResult({ missing, totalSrc, totalRem, totalMissing, fidelity });
+                              };
+                              const disagreements = (extractionData.ocr && extractionData.ocr.disagreements) || [];
+                              const method = (extractionData.metadata && extractionData.metadata.extractionMethod) || 'pdfjs';
+                              return (
+                              <div className="mt-3">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <span className="text-lg">🔍</span>
+                                  <h4 className="text-sm font-bold text-slate-800">Verify Text Fidelity</h4>
+                                  <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase">
+                                    via {String(method).replace('+', ' + ')}
+                                  </span>
+                                  <button
+                                    onClick={_runCheck}
+                                    className="text-[10px] px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 font-bold inline-flex items-center gap-1"
+                                    title="Compare the remediated document against the source text — flags any words that appear in the source but not in the current remediated output."
+                                    aria-label="Run text fidelity check against source OCR"
+                                  >
+                                    🔍 Run fidelity check
+                                  </button>
+                                  {fidelityResult && (
+                                    <span className="text-[10px] text-slate-500 ml-auto">
+                                      {fidelityResult.fidelity}% · {fidelityResult.totalMissing === 0 ? 'no missing words ✓' : `${fidelityResult.totalMissing} potentially missing`}
+                                    </span>
+                                  )}
+                                </div>
+                                {fidelityResult && (
+                                  <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
+                                    <div className="flex items-baseline gap-3 text-xs flex-wrap">
+                                      <span className={`font-bold ${fidelityResult.fidelity >= 99 ? 'text-emerald-700' : fidelityResult.fidelity >= 95 ? 'text-amber-700' : 'text-red-700'}`}>
+                                        {fidelityResult.fidelity}% fidelity
+                                      </span>
+                                      <span className="text-slate-600">
+                                        {fidelityResult.totalMissing === 0 ? 'No words missing ✓' : `${fidelityResult.totalMissing} word${fidelityResult.totalMissing === 1 ? '' : 's'} potentially missing`}
+                                      </span>
+                                      <span className="text-[10px] text-slate-400 ml-auto">
+                                        source: {fidelityResult.totalSrc.toLocaleString()} tokens · remediated: {fidelityResult.totalRem.toLocaleString()} tokens
+                                      </span>
+                                    </div>
+                                    {fidelityResult.missing.length > 0 && (
+                                      <details className="text-[11px]">
+                                        <summary className="cursor-pointer font-bold text-slate-600 hover:text-slate-800 select-none">
+                                          Show missing words ({Math.min(50, fidelityResult.missing.length)} of {fidelityResult.missing.length})
+                                        </summary>
+                                        <ul className="mt-2 space-y-1 max-h-64 overflow-y-auto">
+                                          {fidelityResult.missing.slice(0, 50).map((m, i) => (
+                                            <li key={i} className="flex items-baseline gap-2">
+                                              <code className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded font-mono text-[10px]">{m.word}</code>
+                                              <span className="text-slate-500 text-[10px]">{m.missingCount === 1 ? 'missing once' : `${m.missingCount}× missing`}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </details>
+                                    )}
+                                    <p className="text-[10px] text-slate-500 italic">
+                                      The remediation pipeline should preserve every word. A non-zero missing count indicates a drop worth investigating — unless Simplify or Translate was toggled, in which case some word changes are expected.
+                                    </p>
+                                  </div>
+                                )}
+                                {disagreements.length > 0 && (
+                                  <details className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]">
+                                    <summary className="cursor-pointer font-bold text-amber-800 select-none">
+                                      ⚠️ Tesseract & Vision disagreed on {disagreements.length} page{disagreements.length === 1 ? '' : 's'} — click to review
+                                    </summary>
+                                    <div className="mt-2 space-y-2 max-h-96 overflow-y-auto">
+                                      {disagreements.map((d, i) => (
+                                        <div key={i} className="bg-white rounded-lg border border-amber-100 p-2">
+                                          <div className="font-bold text-[10px] text-amber-700 mb-1">
+                                            Page {d.pageNum} — Tesseract: {d.tesseractChars} chars · Vision: {d.visionChars} chars
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-2 text-[10px]">
+                                            <div>
+                                              <div className="font-bold text-slate-600">Tesseract</div>
+                                              <div className="bg-slate-50 p-1 rounded max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                                {d.tesseractText.substring(0, 500)}{d.tesseractText.length > 500 ? '…' : ''}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <div className="font-bold text-slate-600">Vision</div>
+                                              <div className="bg-slate-50 p-1 rounded max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                                {d.visionText.substring(0, 500)}{d.visionText.length > 500 ? '…' : ''}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                )}
                               </div>
                               );
                             })()}

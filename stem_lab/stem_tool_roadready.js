@@ -8343,6 +8343,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 hl.name = hi === 0 ? 'rr_fr' : 'rr_fl'; // front right, front left (z>0 is +Z side, but local frame)
                 cg.add(hl);
               });
+              // ── Headlight cone: additive-blended cone projected forward at night ──
+              // Invisible in daylight (opacity = 0), fades up under night/fog conditions.
+              // One merged cone per car (cheaper than two) — positioned centered low + front.
+              var coneGeo = new T.ConeGeometry(0.9, 4.5, 12, 1, true);
+              var coneMat = new T.MeshBasicMaterial({
+                color: 0xfff5c8, transparent: true, opacity: 0,
+                blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
+              });
+              var cone = new T.Mesh(coneGeo, coneMat);
+              // The cone's axis is local +Y by default. Rotate so it points along +X (car's forward).
+              cone.rotation.z = -Math.PI / 2;
+              // Tip of the cone is at its +Y top. After rotating, tip is at +X. Offset so the TIP
+              // sits at the car's headlights and the base extends forward.
+              cone.position.set(bLen / 2 + 2.25, bH / 2 + 0.2, 0);
+              cone.name = 'rr_hlCone';
+              cg.add(cone);
               // ── Brake lights (rear) — bigger + per-car material ──
               // Twin red lenses on each side of the trunk, plus a high-mount brake light (the CHMSL).
               [0.33, -0.33].forEach(function(z, bi) {
@@ -8393,6 +8409,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Headlights: always dim in day, bright at night. Stay white — never blink.
                 if (n === 'rr_fr' || n === 'rr_fl') {
                   child.material.opacity = nightLights ? 0.92 : 0.22;
+                  return;
+                }
+                // Headlight cone: additive light volume, visible only at night/fog.
+                if (n === 'rr_hlCone') {
+                  child.material.opacity = scn.time === 'night' ? 0.28 : (scn.weather === 'fog' ? 0.18 : 0);
                   return;
                 }
                 // Brake lights (twin + CHMSL): glow bright red when braking, faint otherwise.
@@ -10135,10 +10156,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   chunkGroup.add(st);
                 }
               };
-              // Always-on: centerline (yellow) + both edge lines (white)
-              alwaysStripe(0, true, 1.0, 2.2);
+              // Always-on centerline: SOLID double-yellow on no-pass chunks
+              // (rural, intersections); dashed single-yellow everywhere else.
+              // This matches real road convention: solid = don't cross, dashed = passing allowed.
+              var chunkNoPass = (chunk.biome === 'rural' || chunk.hasIntersection);
+              if (chunkNoPass) {
+                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.18m
+                var solidYellowMat = new T.MeshBasicMaterial({ color: alwaysYellowColor });
+                var dyStep = 2.0;
+                for (var dyZ = chunkWorldZ + 0.5; dyZ < chunkWorldZ + CHUNK_SIZE - 0.5; dyZ += dyStep) {
+                  if (dyZ > skipZ1 && dyZ < skipZ2) continue;
+                  var dyCtr = markCenterAtZ(dyZ);
+                  var dyHt = iw.spline ? iw.spline.heightAt(dyZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var dyLeft = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  dyLeft.rotation.x = -Math.PI / 2;
+                  dyLeft.position.set(dyCtr - 0.18, dyHt + 0.013, dyZ);
+                  chunkGroup.add(dyLeft);
+                  var dyRight = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  dyRight.rotation.x = -Math.PI / 2;
+                  dyRight.position.set(dyCtr + 0.18, dyHt + 0.013, dyZ);
+                  chunkGroup.add(dyRight);
+                }
+              } else {
+                // Dashed single-yellow (passing allowed)
+                alwaysStripe(0, true, 1.0, 2.2);
+              }
               alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 1.8);
               alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 1.8);
+              // ── Painted speed limit numbers on the road surface ──
+              // At the start of each chunk whose biome is different from the previous one,
+              // paint a big "XX" number on the road so the driver sees the new zone's limit.
+              // Also paint at every 3rd chunk regardless so the limit remains visible.
+              var prevChunk = iw.chunks && iw.chunks[ci - 1];
+              var biomeChanged = prevChunk && prevChunk.biome !== chunk.biome;
+              var periodicRepaint = (ci % 3 === 0);
+              if (scn.weather !== 'snow' && (biomeChanged || periodicRepaint)) {
+                try {
+                  var paintLimit = chunk.biome === 'residential' ? 25
+                    : chunk.biome === 'suburban' ? 35
+                    : chunk.biome === 'commercial' ? 30
+                    : chunk.biome === 'industrial' ? 35
+                    : chunk.biome === 'rural' ? 50 : 30;
+                  // Cache the texture per limit value (3–4 unique textures total per session)
+                  if (!iw._roadNumCache) iw._roadNumCache = {};
+                  var cacheKey = 'n_' + paintLimit;
+                  var numTex = iw._roadNumCache[cacheKey];
+                  if (!numTex) {
+                    var numCan = document.createElement('canvas');
+                    numCan.width = 128; numCan.height = 256;
+                    var numCtx = numCan.getContext('2d');
+                    // Transparent background — only the number paints
+                    numCtx.clearRect(0, 0, 128, 256);
+                    numCtx.fillStyle = '#f5f5f5';
+                    // "SPEED LIMIT" style stacked: "SPEED" / "LIMIT" / "XX"
+                    numCtx.font = 'bold 32px system-ui, Arial, sans-serif';
+                    numCtx.textAlign = 'center';
+                    numCtx.fillText('SPEED', 64, 40);
+                    numCtx.fillText('LIMIT', 64, 78);
+                    numCtx.font = 'bold 110px system-ui, Arial, sans-serif';
+                    numCtx.fillText(String(paintLimit), 64, 200);
+                    numTex = new T.CanvasTexture(numCan);
+                    iw._roadNumCache[cacheKey] = numTex;
+                  }
+                  var numMat = new T.MeshBasicMaterial({ map: numTex, transparent: true, depthWrite: false });
+                  // Place the painted number in each lane (both directions see it)
+                  var paintZ = chunkWorldZ + (biomeChanged ? 4 : CHUNK_SIZE / 2);
+                  if (paintZ > skipZ1 && paintZ < skipZ2) paintZ += 6;
+                  var paintCtr = markCenterAtZ(paintZ);
+                  var paintHt = iw.spline ? iw.spline.heightAt(paintZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // Lane 1 (driver's side)
+                  var paintPlane1 = new T.Mesh(new T.PlaneGeometry(1.4, 2.8), numMat);
+                  paintPlane1.rotation.x = -Math.PI / 2;
+                  paintPlane1.position.set(paintCtr - 1.3, paintHt + 0.012, paintZ);
+                  chunkGroup.add(paintPlane1);
+                  // Lane 2 (oncoming side) — mirror the Z rotation so it reads for that direction
+                  var paintPlane2 = new T.Mesh(new T.PlaneGeometry(1.4, 2.8), numMat);
+                  paintPlane2.rotation.x = -Math.PI / 2;
+                  paintPlane2.rotation.z = Math.PI; // rotate 180° for oncoming
+                  paintPlane2.position.set(paintCtr + 1.3, paintHt + 0.012, paintZ);
+                  chunkGroup.add(paintPlane2);
+                } catch (paintErr) { /* canvas not available — skip painting */ }
+              }
               // ── Shoulder rumble strips: short dark dashes just OUTSIDE each edge line ──
               // These are the scored grooves you hear/feel when drifting off the road.
               // Cheap visual: small dark dashes at 1.4m intervals, offset 0.25m outside the edge line.
@@ -10277,22 +10375,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var markingsVisible = isMediumLOD && (scn.weather !== 'snow' || isHighLOD);
               if (markingsVisible) {
                 var centerLineMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                // Centerline detail dashes: only render in pass-allowed zones — no-pass zones
+                // already have a solid double-yellow from the always-on block above, and
+                // adding dashed stripes on top would look cluttered.
                 var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection;
-                // skipZ1, skipZ2, markCenterAtZ are already declared in the always-on block above.
-                for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
-                  if (mlZ > skipZ1 && mlZ < skipZ2) continue;
-                  var ctrX = markCenterAtZ(mlZ);
-                  var mlHt = iw.spline ? iw.spline.heightAt(mlZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  if (isNoPass) {
-                    var dyL = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
-                    dyL.rotation.x = -Math.PI / 2;
-                    dyL.position.set(ctrX - 0.25, mlHt + 0.014, mlZ);
-                    chunkGroup.add(dyL);
-                    var dyR = new T.Mesh(new T.PlaneGeometry(0.12, 1.8), centerLineMat);
-                    dyR.rotation.x = -Math.PI / 2;
-                    dyR.position.set(ctrX + 0.25, mlHt + 0.014, mlZ);
-                    chunkGroup.add(dyR);
-                  } else {
+                if (!isNoPass) {
+                  for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
+                    if (mlZ > skipZ1 && mlZ < skipZ2) continue;
+                    var ctrX = markCenterAtZ(mlZ);
+                    var mlHt = iw.spline ? iw.spline.heightAt(mlZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                     var dyD = new T.Mesh(new T.PlaneGeometry(0.15, 1.2), centerLineMat);
                     dyD.rotation.x = -Math.PI / 2;
                     dyD.position.set(ctrX, mlHt + 0.014, mlZ);

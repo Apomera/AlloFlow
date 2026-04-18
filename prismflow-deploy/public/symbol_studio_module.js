@@ -2512,6 +2512,17 @@
     var _srchStats = useState(function () { return load(STORAGE_SEARCH_STATS, { sessions: 0, totalCorrect: 0, totalTrials: 0, bestStreak: 0 }); });
     var srchStats = _srchStats[0]; var setSrchStats = _srchStats[1];
     var srchTimerRef = useRef(null);
+    // Pedagogy-improvement refs (session-scoped, no render needed):
+    //   srchLastTargetRef — id of the most recently picked target. Blocks back-to-back repetition
+    //                       so the student doesn't drift into memory-matching instead of recognition.
+    //   srchRecentMissRef — FIFO queue of labels the student recently got wrong. These get a weight
+    //                       boost in srchPickRound so failed items come back sooner (real spaced
+    //                       repetition behavior, not just "low questCorrect = high weight").
+    var srchLastTargetRef = useRef(null);
+    var srchRecentMissRef = useRef([]);
+    // Keep the recent-miss queue short — 4 entries is enough to guarantee a failed item surfaces
+    // within a round or two without dominating the session.
+    var SRCH_RECENT_MISS_LIMIT = 4;
     // Session-level UX state added in the UX refinement pass:
     //   srchCategoryFilter — which symbol category to draw from on the menu (null = all)
     //   srchLastCelebratedStreak — last streak value we already celebrated, prevents re-firing
@@ -2565,17 +2576,34 @@
     function srchPickRound(mode, pool) {
       if (pool.length < 2) return;
       var famData = familiarity || {};
-      // Garden-aware: prefer words at sprout/growing level
+      var lastId = srchLastTargetRef.current;
+      var missSet = {};
+      (srchRecentMissRef.current || []).forEach(function (lbl) { missSet[String(lbl).toLowerCase()] = true; });
+
+      // Eligible pool for THIS round's target: exclude the previous round's target to stop
+      // back-to-back repetition from becoming a memory game. If the pool has only 2 items
+      // (can't avoid repetition), fall back to the full pool — better to repeat than to freeze.
+      var targetPool = pool.length > 2 ? pool.filter(function (it) { return it.id !== lastId; }) : pool;
+
+      // Weighted target selection. Same three-tier mastery weighting as before PLUS an explicit
+      // "recently missed" boost: if the student just got a word wrong, that word gets +2 so it
+      // surfaces again within a round or two. This is what real spaced-repetition does — the
+      // old formula only demoted mastered items, never promoted failed ones.
       var target;
-      if (pool.length >= 4) {
-        var weighted = pool.map(function (item) {
+      if (targetPool.length >= 4) {
+        var weighted = targetPool.map(function (item) {
           var k = item.label.trim().toLowerCase();
           var entry = famData[k];
-          if (!entry) return { item: item, weight: 3 };
-          var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
-          if (score < 0.15) return { item: item, weight: 3 };
-          if (score < 0.45) return { item: item, weight: 2 };
-          return { item: item, weight: 1 };
+          var w;
+          if (!entry) w = 3;
+          else {
+            var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
+            if (score < 0.15) w = 3;
+            else if (score < 0.45) w = 2;
+            else w = 1;
+          }
+          if (missSet[k]) w += 2; // urgency boost for recently-missed labels
+          return { item: item, weight: w };
         });
         var totalWeight = weighted.reduce(function (s, w) { return s + w.weight; }, 0);
         var roll = Math.random() * totalWeight;
@@ -2586,7 +2614,38 @@
           if (roll < cum) { target = weighted[wi].item; break; }
         }
       } else {
-        target = pool[Math.floor(Math.random() * pool.length)];
+        target = targetPool[Math.floor(Math.random() * targetPool.length)];
+      }
+
+      // Pick distractors for a target, preferring same-category items when enough are available.
+      // Same-category distractors (cup / bowl / plate) challenge real semantic discrimination;
+      // purely random distractors (cup / run / happy) are trivially easy. We fall back to random
+      // when the same-category pool is too thin.
+      function pickDistractors(forTarget, count) {
+        var cat = forTarget.category;
+        var sameCat = pool.filter(function (it) { return it.id !== forTarget.id && it.category === cat; });
+        var otherCat = pool.filter(function (it) { return it.id !== forTarget.id && it.category !== cat; });
+        // Shuffle helpers
+        function shuf(a) {
+          for (var si = a.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var st = a[si]; a[si] = a[sj]; a[sj] = st;
+          }
+          return a;
+        }
+        shuf(sameCat); shuf(otherCat);
+        // Aim for ~70% same-category when we have enough; the remaining slots are off-category
+        // so the round still includes some easy-to-eliminate options (keeps the round winnable
+        // for earlier learners who can't yet make fine semantic distinctions).
+        var same = sameCat.slice(0, Math.ceil(count * 0.7));
+        var rest = otherCat.slice(0, count - same.length);
+        var combined = same.concat(rest);
+        // If we still don't have enough (rare — tiny pool), pad from whatever's left.
+        if (combined.length < count) {
+          var leftover = sameCat.slice(same.length).concat(otherCat.slice(rest.length));
+          combined = combined.concat(leftover.slice(0, count - combined.length));
+        }
+        return shuf(combined);
       }
 
       if (mode === 'build') {
@@ -2597,12 +2656,18 @@
           var r = pool[Math.floor(Math.random() * pool.length)];
           if (!phraseWords.find(function (w) { return w.id === r.id; })) phraseWords.push(r);
         }
-        // Build a shuffled option pool (phrase words + distractors)
-        var buildPool = phraseWords.slice();
-        while (buildPool.length < Math.min(pool.length, phraseLen + 3)) {
-          var d = pool[Math.floor(Math.random() * pool.length)];
-          if (!buildPool.find(function (w) { return w.id === d.id; })) buildPool.push(d);
+        // Option pool = phrase words + category-aware distractors so "bowl" can appear alongside
+        // "cup" and "plate" instead of random unrelated items.
+        var extraDistractorCount = Math.max(0, Math.min(pool.length, phraseLen + 3) - phraseWords.length);
+        var buildExtras = [];
+        if (extraDistractorCount > 0) {
+          // Distractors should not already be in phraseWords
+          var excludeIds = {};
+          phraseWords.forEach(function (p) { excludeIds[p.id] = true; });
+          var candidates = pickDistractors(target, extraDistractorCount * 2).filter(function (c) { return !excludeIds[c.id]; });
+          buildExtras = candidates.slice(0, extraDistractorCount);
         }
+        var buildPool = phraseWords.concat(buildExtras);
         // Shuffle build pool
         for (var bi = buildPool.length - 1; bi > 0; bi--) {
           var bj = Math.floor(Math.random() * (bi + 1));
@@ -2615,6 +2680,7 @@
         setSrchOptions([]);
         setSrchFeedback(null);
         setSrchRevealed(false);
+        srchLastTargetRef.current = target.id;
         // Speak the phrase
         var phraseText = phraseWords.map(function (w) { return w.label; }).join(' ');
         setTimeout(function () { srchSpeakWord(phraseText); }, 300);
@@ -2623,11 +2689,7 @@
 
       // Listen & Find mode (single word)
       var numOpts = Math.max(2, Math.min(srchDifficulty, pool.length));
-      var opts = [target];
-      while (opts.length < numOpts) {
-        var r2 = pool[Math.floor(Math.random() * pool.length)];
-        if (!opts.find(function (o) { return o.id === r2.id; })) opts.push(r2);
-      }
+      var opts = [target].concat(pickDistractors(target, numOpts - 1));
       // Shuffle
       for (var si = opts.length - 1; si > 0; si--) {
         var sj = Math.floor(Math.random() * (si + 1));
@@ -2637,6 +2699,7 @@
       setSrchOptions(opts);
       setSrchFeedback(null);
       setSrchRevealed(false);
+      srchLastTargetRef.current = target.id;
       // Auto-speak the word after a short delay
       setTimeout(function () { srchSpeakWord(target.label); }, 300);
     }
@@ -2691,7 +2754,22 @@
         setSrchLastCelebratedStreak(0);
         setSrchRevealed(true);
         setSrchFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". Listen for "' + srchTarget.label + '".' });
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 2500);
+        // Push the missed label onto the recent-miss queue so it gets boosted weight next pick.
+        (function () {
+          var q = (srchRecentMissRef.current || []).slice();
+          var key = srchTarget.label;
+          // Remove duplicate if present, then push to back
+          q = q.filter(function (l) { return l !== key; });
+          q.push(key);
+          while (q.length > SRCH_RECENT_MISS_LIMIT) q.shift();
+          srchRecentMissRef.current = q;
+        })();
+        // Teaching moment: 900ms after the reveal, auto-speak the CORRECT label so the student
+        // hears the right audio paired with the right symbol. Previously they had to tap 🔊 —
+        // which most students didn't — and the audio-visual pairing was lost.
+        var speakTargetLabel = srchTarget.label;
+        setTimeout(function () { srchSpeakWord(speakTargetLabel); }, 900);
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 3000);
       }
     }
 
@@ -2726,14 +2804,28 @@
         setSrchLastCelebratedStreak(0);
         setSrchTotal(function (t) { return t + 1; });
         setSrchFeedback({ ok: false, msg: '❌ Next word should be "' + expected.label + '"' });
-        // Reset the sentence and retry
+        // Track the miss so future rounds surface this label sooner.
+        (function () {
+          var q = (srchRecentMissRef.current || []).slice();
+          q = q.filter(function (l) { return l !== expected.label; });
+          q.push(expected.label);
+          while (q.length > SRCH_RECENT_MISS_LIMIT) q.shift();
+          srchRecentMissRef.current = q;
+        })();
+        // Record IEP trial for Build-mode misses too — was previously only logged on full-phrase
+        // success, which masked struggling students in the goal data. Expressive goals need to
+        // see failures to pace progress correctly.
+        var buildExpressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
+        if (buildExpressiveGoal) recordIepTrial(buildExpressiveGoal.id, false, 'search:build:' + expected.label);
+        // Partial-retry pedagogy: keep the words the student already locked in correct, and let
+        // them re-attempt just the failed position. Speaking only the expected word (not the
+        // whole phrase) keeps the audio cue tight and relevant. Previously a wrong pick reset
+        // the entire sentence — punitive and unnecessary.
+        var expectedLabelForSpeak = expected.label;
         srchTimerRef.current = setTimeout(function () {
-          setSrchSentence([]);
           setSrchFeedback(null);
-          // Re-speak
-          var phraseText = srchSentenceTarget.map(function (w) { return w.label; }).join(' ');
-          srchSpeakWord(phraseText);
-        }, 2000);
+          srchSpeakWord(expectedLabelForSpeak);
+        }, 1800);
       }
     }
 
@@ -2743,6 +2835,10 @@
       setSrchLastCelebratedStreak(0);
       setSrchFeedback(null); setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
       setSrchShowSummary(false); setSrchSummaryData(null);
+      // Reset pedagogy refs for a fresh session — last-target and recent-miss queues shouldn't
+      // leak across sessions (that would surprise the student on round 1).
+      srchLastTargetRef.current = null;
+      srchRecentMissRef.current = [];
       srchPickRound(mode, srchPool());
       // Increment session count
       setSrchStats(function (prev) {
