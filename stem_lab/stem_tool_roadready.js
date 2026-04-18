@@ -109,7 +109,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     bicycleDistance: 'Must give cyclists at least 3 feet when passing (2015 law).',
   };
 
-  // (US federal baseline rules are covered inline in the permit bank + Maine rules.)
+  // ─────────────────────────────────────────────────────────
+  // SECTION 2b: UNIVERSAL RULES OF THE ROAD (apply in all 50 states)
+  // ─────────────────────────────────────────────────────────
+  // MAINE_RULES layers state-specific overrides on top of this baseline.
+  // These are the universal patterns every US driver is expected to know, grouped
+  // into pedagogical categories so a learner can study them one pillar at a time.
+  var UNIVERSAL_RULES = {
+    rightOfWay: {
+      title: 'Right-of-Way Priority Ladder',
+      icon: '🚦',
+      summary: 'Who goes first when paths conflict. Follow the ladder top to bottom.',
+      ladder: [
+        { rank: 1, who: 'Emergency vehicles with lights/siren', rule: 'Pull to the RIGHT and stop. Clear the lane completely. Do not follow within 500 ft.' },
+        { rank: 2, who: 'Funeral processions (lead vehicle has cleared intersection)', rule: 'Yield until the entire procession passes, even on green. Do not cut between cars in the procession.' },
+        { rank: 3, who: 'Pedestrians in crosswalks (marked or unmarked at intersections)', rule: 'Full stop. Never pass a vehicle already stopped at a crosswalk.' },
+        { rank: 4, who: 'Pedestrians using a white cane or guide dog', rule: 'Mandatory full stop in all 50 states, anywhere in the roadway.' },
+        { rank: 5, who: 'School buses with red flashers + stop-arm extended', rule: 'BOTH directions stop on undivided roads. Only following traffic stops on divided highways (physical median).' },
+        { rank: 6, who: 'Traffic already in the intersection / roundabout', rule: 'Those already committed have priority. New arrivals yield.' },
+        { rank: 7, who: 'Through traffic (vs. turning traffic)', rule: 'Left-turners yield to oncoming through traffic. Right-turners yield to through traffic and pedestrians.' },
+        { rank: 8, who: 'First to arrive at a stop/yield', rule: 'First-arrived, first-go. When simultaneous, the vehicle on the RIGHT goes first.' },
+        { rank: 9, who: 'Uphill traffic on a narrow mountain road', rule: 'Descending vehicle yields (easier to back downhill than up under load).' }
+      ]
+    },
+    laneDiscipline: {
+      title: 'Lane Discipline',
+      icon: '🛣️',
+      summary: 'Where to drive, when to change lanes, and why.',
+      rules: [
+        'Keep-right: stay in the rightmost lane except to pass, turn left, or avoid a hazard. "Left lane for passing" is law in most states.',
+        'Slower-traffic-keep-right: if 5+ vehicles are stacked behind you and a passing lane exists, move right.',
+        'HOV/Carpool lanes: minimum occupancy posted on the sign (usually 2+ or 3+). Motorcycles and buses always qualify. Crossing a double white line into/out of HOV = $$$$ fine.',
+        'Solid white line = lane change discouraged (not illegal in most states, but risky). Dashed white = change allowed when clear.',
+        'Check mirrors + blind spot before every lane change. The mirror alone misses a car in the adjacent lane at highway speed.',
+        'Signal BEFORE you move — at least 3 seconds or 100 ft. Signaling during the move is too late.',
+        'Never straddle a lane line. Commit to one lane at a time.'
+      ]
+    },
+    signaling: {
+      title: 'Signaling Distances',
+      icon: '🟡',
+      summary: 'Give other drivers enough time to react.',
+      rules: [
+        'Urban streets (25–35 mph): signal at least 100 ft (about 4 parked car-lengths) before the turn.',
+        'Highways (45+ mph): signal at least 200 ft (about 8 car-lengths). Many states require 300 ft on freeways.',
+        'Signal even when no car is behind you — cyclists, pedestrians, and crossing traffic all read your signal.',
+        'Cancel the signal after your turn. A forgotten blinker is a common cause of rear-end collisions.',
+        'Hand signals (required if signal lights fail): LEFT arm straight out = left turn; bent up = right turn; bent down = slowing/stopping.'
+      ]
+    },
+    passing: {
+      title: 'Passing & No-Pass Zones',
+      icon: '⬅️',
+      summary: 'Rules for getting around a slower vehicle safely.',
+      rules: [
+        'Pass on the LEFT only (the "fast lane"). Passing on the right is illegal except on multi-lane roads where the right lane is moving faster, or when the vehicle ahead is making a left turn.',
+        'Solid yellow on YOUR side of the centerline = NO passing. Broken yellow = passing allowed when safe.',
+        'Never pass on hills, curves, within 100 ft of an intersection, railroad crossing, bridge, or tunnel.',
+        'No passing in school zones when children are present or within 100 ft of a school crossing.',
+        'Never pass a school bus with red flashers flashing (see Right-of-Way ladder).',
+        'When being passed: stay in your lane, hold your speed (do NOT speed up), and give the passer room to return.',
+        'Total passing maneuver at highway speed takes ~10 seconds and covers ~1500 ft. You need that much clear road AHEAD before you start.'
+      ]
+    },
+    merging: {
+      title: 'Merge & Yield Hierarchy',
+      icon: '🔀',
+      summary: 'How to join traffic safely.',
+      rules: [
+        'Zipper merge: when a lane closure is ahead, use BOTH lanes fully until the merge point, then alternate one-for-one. This is faster and safer than merging early.',
+        'Highway on-ramps: match the speed of traffic in the rightmost lane BEFORE you merge. Do not stop on the ramp unless traffic is stopped.',
+        'Yield signs = slow down, look, stop only if needed. Different from stop signs.',
+        'Merging driver yields to through traffic. Through traffic should not be forced to brake.',
+        'Always signal before merging, even if the lane "ends" — the signal confirms your intent.',
+        'On-ramp priority: acceleration lane traffic yields to freeway traffic, but freeway drivers should cooperate by moving left when possible.'
+      ]
+    },
+    pedestrian: {
+      title: 'Pedestrian Protocol',
+      icon: '🚶',
+      summary: 'Pedestrians always have the legal and practical right-of-way.',
+      rules: [
+        'Marked crosswalk OR unmarked crosswalk at any intersection: vehicles must yield to pedestrians.',
+        'Pedestrian with a WHITE CANE or GUIDE DOG: mandatory full stop in all 50 states, anywhere on the roadway.',
+        'School zones: reduced speed when children are present or signs are flashing. Expect children to dart unpredictably.',
+        'Never pass a vehicle stopped at a crosswalk — there may be a pedestrian you can\'t see.',
+        'Turn-on-red: you may turn right on red only after a FULL stop and yielding to pedestrians and cross traffic.',
+        'Backing up: you are responsible for anyone behind you, including small children. Walk around the car first.'
+      ]
+    },
+    emergency: {
+      title: 'Emergency Vehicle Protocol',
+      icon: '🚑',
+      summary: 'What to do when you see lights, hear sirens, or encounter a scene.',
+      rules: [
+        'Lights + siren approaching from any direction: pull to the RIGHT curb and stop. Stay stopped until it passes (and any others behind it).',
+        'On a divided highway with a physical median: opposing traffic does NOT need to stop — only same-direction traffic yields.',
+        'Do NOT follow an emergency vehicle closer than 500 ft (or "one city block").',
+        '"Move Over" laws (all 50 states): when passing a stopped emergency, tow, utility, or roadside assistance vehicle with flashers, move one lane away OR slow down significantly. Maine adds $300 fine.',
+        'Funeral procession: yield to the entire procession, even through a green light. Never break up the line.',
+        'Disabled vehicle on the shoulder: move over one lane if possible; otherwise slow down substantially.'
+      ]
+    },
+    railroad: {
+      title: 'Railroad Crossings',
+      icon: '🚂',
+      summary: 'Trains can\'t stop. You always lose the weight contest.',
+      rules: [
+        'Active controls (gates + lights + bells): STOP when activated. Never drive around lowered gates.',
+        'Passive controls (crossbuck only, no gates): you must LOOK and LISTEN. Reduce speed and be prepared to stop.',
+        'Never stop ON the tracks. If traffic is backed up, wait BEFORE the crossing until you have room to clear it completely.',
+        'Stuck on tracks: GET OUT immediately. Walk toward the train at a 45° angle (debris flies forward). Call 911 and the emergency number on the nearby crossing post.',
+        'School buses and hazmat trucks MUST stop at all railroad crossings, even without active controls.',
+        'Multi-track warning signs ("2 TRACKS" or similar): wait for the first train to pass completely, then check for a second train coming the other way before proceeding.',
+        'A freight train at 55 mph takes over a mile to stop. It is PHYSICALLY impossible for the engineer to stop in time if you\'re on the tracks.'
+      ]
+    },
+    speedAndFollowing: {
+      title: 'Speed Management & Following Distance',
+      icon: '📏',
+      summary: 'Speed is never "fixed" — it\'s conditional on everything around you.',
+      rules: [
+        'Posted limit is a MAXIMUM under ideal conditions. Rain, fog, snow, night, traffic, and road damage all require reducing from that maximum.',
+        '"Basic speed law" (all 50 states): you must drive at a speed that is reasonable and prudent for current conditions, regardless of the posted limit.',
+        '3-second following rule: pick a fixed point ahead; after the car ahead passes it, you should reach it in 3+ seconds. 4+ in rain. 6+ in snow/ice.',
+        'Double your speed = quadruple your braking distance (v² physics). 60→120 mph = 4× the stopping distance, not 2×.',
+        'Reaction distance alone: ~1.5 seconds × speed. At 60 mph that\'s 132 ft before your brake even engages.',
+        'Uphill: gravity helps you slow. Downhill: gravity adds to your stopping distance. Use engine braking (lower gear) on long descents.',
+        'Speed limits in work zones, school zones, and residential areas are often ENFORCED with double fines. Always posted.'
+      ]
+    }
+  };
 
   // ─────────────────────────────────────────────────────────
   // SECTION 3: ROAD SIGNS — Shape/color semantics
@@ -12282,7 +12412,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '↔️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Right-of-Way'),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, '10 "who goes first?" scenarios')
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, '18 "who goes first?" scenarios')
+            ),
+            h('button', { onClick: function() { updMulti({ view: 'rulesFoundations', rulesPillar: 'rightOfWay' }); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '📚'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Rules Foundations'),
+              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, '9 universal pillars every driver must know')
             ),
             h('button', { onClick: function() { upd('view', 'stopDistCalc'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -16524,6 +16660,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('button', { onClick: function() { updMulti({ permitFlashIdx: fcIdx + 1, permitFlashFlipped: false }); },
               style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
             }, 'Skip →')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // RULES FOUNDATIONS — 9 universal pillars
+      // ══════════════════════════════════════════════════════════
+      if (view === 'rulesFoundations') {
+        var pillarKeys = ['rightOfWay', 'laneDiscipline', 'signaling', 'passing', 'merging', 'pedestrian', 'emergency', 'railroad', 'speedAndFollowing'];
+        var activePillarKey = d.rulesPillar && UNIVERSAL_RULES[d.rulesPillar] ? d.rulesPillar : 'rightOfWay';
+        var activePillar = UNIVERSAL_RULES[activePillarKey];
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #312e81, #0f172a)', borderRadius: '14px', padding: '22px', textAlign: 'center', marginBottom: '14px', border: '2px solid #818cf8' } },
+            h('div', { style: { fontSize: '40px' } }, '📚'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, 'Rules Foundations'),
+            h('div', { style: { fontSize: '12px', color: '#c7d2fe', lineHeight: '1.5' } },
+              'Nine universal pillars every US driver must know. State rules (like Maine\'s) layer specifics on top of these.')
+          ),
+          // Pillar tabs
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
+            pillarKeys.map(function(pk) {
+              var p = UNIVERSAL_RULES[pk];
+              var isActive = pk === activePillarKey;
+              return h('button', { key: pk,
+                onClick: function() { upd('rulesPillar', pk); },
+                style: {
+                  padding: '8px 12px', borderRadius: '8px',
+                  border: '1px solid ' + (isActive ? '#818cf8' : '#334155'),
+                  background: isActive ? 'rgba(129,140,248,0.25)' : '#1e293b',
+                  color: isActive ? '#fff' : '#cbd5e1',
+                  fontSize: '11px', fontWeight: isActive ? 800 : 600,
+                  cursor: 'pointer', whiteSpace: 'nowrap'
+                }
+              }, p.icon + ' ' + p.title);
+            })
+          ),
+          // Pillar detail card
+          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '20px', border: '1px solid #334155' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '36px' } }, activePillar.icon),
+              h('div', null,
+                h('div', { style: { fontSize: '17px', fontWeight: 900 } }, activePillar.title),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' } }, activePillar.summary)
+              )
+            ),
+            // If this pillar has a ranked ladder (right-of-way), render it numbered
+            activePillar.ladder ? h('div', { style: { marginTop: '14px' } },
+              activePillar.ladder.map(function(item, ix) {
+                return h('div', { key: ix,
+                  style: { display: 'flex', gap: '10px', padding: '10px', marginBottom: '6px',
+                    background: ix % 2 ? '#020617' : '#1e293b', borderRadius: '8px',
+                    borderLeft: '3px solid #818cf8' }
+                },
+                  h('div', { style: { minWidth: '28px', fontSize: '20px', fontWeight: 900, color: '#c7d2fe' } }, item.rank),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#e0e7ff', marginBottom: '4px' } }, item.who),
+                    h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.55' } }, item.rule)
+                  )
+                );
+              })
+            ) : null,
+            // If this pillar has a flat rules list, render it as bullets
+            activePillar.rules ? h('div', { style: { marginTop: '14px' } },
+              activePillar.rules.map(function(r, ix) {
+                return h('div', { key: ix,
+                  style: { display: 'flex', gap: '10px', padding: '10px', marginBottom: '6px',
+                    background: ix % 2 ? '#020617' : '#1e293b', borderRadius: '8px',
+                    borderLeft: '3px solid #818cf8' }
+                },
+                  h('div', { style: { minWidth: '20px', fontSize: '14px', color: '#818cf8' } }, '●'),
+                  h('div', { style: { flex: 1, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6' } }, r)
+                );
+              })
+            ) : null
+          ),
+          // Footer: cross-reference to Maine overrides + right-of-way quiz
+          h('div', { style: { marginTop: '14px', padding: '12px', background: '#1e293b', borderRadius: '10px', border: '1px dashed #475569' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } },
+              '↪ State rules layer on top. Maine has specific overrides for BAC, phone use, school buses, move-over fines, and winter driving.'),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+              h('button', { onClick: function() { updMulti({ view: 'rightOfWay', rowIdx: 0, rowAnswered: null, rowScore: 0 }); },
+                style: { padding: '8px 14px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }
+              }, 'Practice: Right-of-Way Quiz →'),
+              h('button', { onClick: function() { updMulti({ view: 'permitStart' }); },
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'transparent', color: '#60a5fa', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }
+              }, 'Take the Permit Test →')
+            )
           )
         );
       }

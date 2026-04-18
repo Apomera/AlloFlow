@@ -2207,7 +2207,9 @@ const d = labToolData.solarSystem;
       maxScale: 300,
       redrawKey: zoomMode,
       onClick: function(mx, my, st) {
-        // hit-test bodies
+        // hit-test bodies — on hit, select + kick off smooth camera interpolation to center
+        // the body at a scale that frames it nicely (bigger planets = less zoom, small bodies
+        // get more zoom so users can actually see detail).
         var t = timeRef.current;
         for (var i = OB.length - 1; i >= 0; i--) {
           var b = OB[i];
@@ -2219,12 +2221,40 @@ const d = labToolData.solarSystem;
           var dy = my - sy;
           if (dx * dx + dy * dy < 144) {
             upd("orr_sel", b.id);
+            // Compute target zoom: scale such that the body's semi-major axis fills
+            // ~40% of the canvas width. Clamped to the panel's min/max.
+            var targetScale = clamp((W * 0.40) / Math.max(b.a, 0.3), 8, 280);
+            // Target camera center: the body's current screen position should end up at canvas center.
+            // Screen X of body = st.targetCx + pos.x * targetScale  →  so targetCx = W/2 - pos.x * targetScale
+            st.targetCx = W / 2 - pos.x * targetScale;
+            st.targetCy = H / 2 + pos.y * targetScale;
+            st.targetScale = targetScale;
+            st._zoomAnim = true;
             return;
           }
         }
       },
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
+
+        // ── Smooth camera interpolation toward target (zoom-to-planet) ──
+        // Runs every frame when a zoom animation is active. Exponential smoothing (easing
+        // out) so the camera glides in and settles. Cancels itself when close enough to
+        // target so we don't waste CPU interpolating forever.
+        if (st._zoomAnim && st.targetScale != null) {
+          var lerp = 0.08; // higher = snappier; 0.08 ≈ ~1 second to settle
+          st.cx += (st.targetCx - st.cx) * lerp;
+          st.cy += (st.targetCy - st.cy) * lerp;
+          st.scale += (st.targetScale - st.scale) * lerp;
+          if (Math.abs(st.targetScale - st.scale) < 0.5 &&
+              Math.abs(st.targetCx - st.cx) < 1 &&
+              Math.abs(st.targetCy - st.cy) < 1) {
+            st.cx = st.targetCx;
+            st.cy = st.targetCy;
+            st.scale = st.targetScale;
+            st._zoomAnim = false;
+          }
+        }
 
         // ── Deep space background with subtle gradient ──
         if (isDark) {
@@ -2434,10 +2464,31 @@ const d = labToolData.solarSystem;
           // Draw ellipse orbit path with subtle gradient
           var c_dist = b.a * b.e;
           var bSemi = b.a * Math.sqrt(1 - b.e * b.e);
+          var isSelOrbit = selBody === b.id;
+
+          // Selected body gets a fat glow underlay along its orbit — pulses gently.
+          if (isSelOrbit) {
+            var orbitPulse = 0.45 + Math.sin((timestamp || 0) * 0.002) * 0.15;
+            ctx.beginPath();
+            ctx.strokeStyle = b.color + "55";
+            ctx.lineWidth = 6;
+            ctx.globalAlpha = orbitPulse;
+            ctx.ellipse(
+              st.cx - c_dist * st.scale,
+              st.cy,
+              b.a * st.scale,
+              bSemi * st.scale,
+              0, 0, TAU
+            );
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
 
           ctx.beginPath();
-          ctx.strokeStyle = isDark ? (b.color + "40") : (b.color + "55");
-          ctx.lineWidth = (b.type === "planet") ? 1.2 : 0.8;
+          ctx.strokeStyle = isSelOrbit
+            ? (isDark ? (b.color + "cc") : (b.color + "ee"))
+            : (isDark ? (b.color + "40") : (b.color + "55"));
+          ctx.lineWidth = isSelOrbit ? 1.8 : (b.type === "planet") ? 1.2 : 0.8;
           ctx.setLineDash(b.type === "comet" ? [4, 4] : []);
           ctx.ellipse(
             st.cx - c_dist * st.scale,
@@ -2536,6 +2587,33 @@ const d = labToolData.solarSystem;
           ctx.fillStyle = bodyGrad;
           ctx.fill();
 
+          // ── Jupiter atmospheric banding (only visible when zoomed in enough) ──
+          if (b.id === "jupiter" && dotR >= 5) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(sx, sy, dotR - 0.3, 0, TAU);
+            ctx.clip();
+            var bands = [
+              { y: -0.75, h: 0.18, color: "rgba(210,165,110,0.55)" },
+              { y: -0.45, h: 0.14, color: "rgba(200,155,100,0.4)" },
+              { y: -0.18, h: 0.20, color: "rgba(230,190,130,0.5)" },
+              { y: 0.08,  h: 0.16, color: "rgba(200,150,95,0.45)" },
+              { y: 0.35,  h: 0.20, color: "rgba(220,180,125,0.50)" },
+              { y: 0.62,  h: 0.15, color: "rgba(195,145,90,0.40)" }
+            ];
+            for (var bi = 0; bi < bands.length; bi++) {
+              var bd = bands[bi];
+              ctx.fillStyle = bd.color;
+              ctx.fillRect(sx - dotR, sy + bd.y * dotR, dotR * 2, bd.h * dotR);
+            }
+            // Great Red Spot — small oval in southern hemisphere
+            ctx.fillStyle = "rgba(180,80,55,0.75)";
+            ctx.beginPath();
+            ctx.ellipse(sx + dotR * 0.25, sy + dotR * 0.32, dotR * 0.20, dotR * 0.11, 0, 0, TAU);
+            ctx.fill();
+            ctx.restore();
+          }
+
           // ── Saturn rings (multi-band disk with Cassini division) ──
           if (b.id === "saturn") {
             var ringTilt = -0.35;
@@ -2573,6 +2651,48 @@ const d = labToolData.solarSystem;
             ctx.restore();
           }
 
+          // ── Moon icons for major planets (visible when zoomed in enough) ──
+          // Tiny dots orbiting each planet — simplified (not to scale) but captures the
+          // character of each system. Orbital radius + angular speed are cached per-body
+          // on the canvas so they feel like a real system, not random jitter.
+          var moonSpec = null;
+          if (b.id === "earth" && dotR >= 4.5) moonSpec = [{ r: 2.4, s: 1.0, c: "#e8e8e8", sz: 1.2 }];
+          else if (b.id === "mars" && dotR >= 5) moonSpec = [
+            { r: 1.8, s: 1.6, c: "#a08070", sz: 0.7 },
+            { r: 2.5, s: 0.9, c: "#9f8575", sz: 0.7 }
+          ];
+          else if (b.id === "jupiter" && dotR >= 5) moonSpec = [
+            { r: 2.5, s: 1.5, c: "#fde68a", sz: 1.2 }, // Io
+            { r: 3.2, s: 1.1, c: "#e2e8f0", sz: 1.2 }, // Europa
+            { r: 4.0, s: 0.8, c: "#cbd5e1", sz: 1.4 }, // Ganymede
+            { r: 4.8, s: 0.55, c: "#94a3b8", sz: 1.3 } // Callisto
+          ];
+          else if (b.id === "saturn" && dotR >= 5) moonSpec = [
+            { r: 2.9, s: 1.1, c: "#fef3c7", sz: 1.3 }, // Titan
+            { r: 3.6, s: 0.7, c: "#e5e7eb", sz: 0.9 }  // Rhea
+          ];
+          if (moonSpec) {
+            for (var mi = 0; mi < moonSpec.length; mi++) {
+              var moon = moonSpec[mi];
+              var mAng = (timestamp || 0) * 0.0008 * moon.s + mi * 1.3;
+              var mx = sx + Math.cos(mAng) * dotR * moon.r;
+              var my = sy + Math.sin(mAng) * dotR * moon.r * 0.8; // slight orbital tilt
+              // Moon body
+              ctx.beginPath();
+              ctx.arc(mx, my, moon.sz, 0, TAU);
+              ctx.fillStyle = moon.c;
+              ctx.fill();
+              // Tiny dim orbit trace (subtle)
+              if (isDark && dotR >= 6) {
+                ctx.beginPath();
+                ctx.ellipse(sx, sy, dotR * moon.r, dotR * moon.r * 0.8, 0, 0, TAU);
+                ctx.strokeStyle = "rgba(148,163,184,0.08)";
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+              }
+            }
+          }
+
           // Highlight ring for selected body
           if (selBody === b.id) {
             ctx.beginPath();
@@ -2593,16 +2713,49 @@ const d = labToolData.solarSystem;
 
           // Label (only if scale allows and labels enabled)
           if (showLabels && (st.scale > 2 || (b.type === "planet" && st.scale > 0.8))) {
-            ctx.font = (selBody === b.id) ? "bold 12px sans-serif" : "11px sans-serif";
-            ctx.fillStyle = isDark ? "#e2e8f0" : "#334155";
-            // Text shadow for readability
-            if (isDark) {
-              ctx.shadowColor = "rgba(0,0,0,0.7)";
-              ctx.shadowBlur = 3;
+            // Pill-style label: body-color accent bar on the left, rounded bg behind text.
+            // Readable over busy backgrounds without the "floating text" look of plain fillText.
+            var isSel = selBody === b.id;
+            ctx.font = isSel ? "bold 12px sans-serif" : "11px sans-serif";
+            var labelText = b.name;
+            var textW = ctx.measureText(labelText).width;
+            var padX = 7, padY = 3, accentW = 3;
+            var pillH = isSel ? 20 : 17;
+            var pillW = textW + padX * 2 + accentW + 4;
+            var pillX = sx + dotR + 6;
+            var pillY = sy - pillH / 2 + 1;
+            var pillR = pillH / 2;
+            // Pill background (rounded rect)
+            ctx.beginPath();
+            ctx.moveTo(pillX + pillR, pillY);
+            ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + pillH, pillR);
+            ctx.arcTo(pillX + pillW, pillY + pillH, pillX, pillY + pillH, pillR);
+            ctx.arcTo(pillX, pillY + pillH, pillX, pillY, pillR);
+            ctx.arcTo(pillX, pillY, pillX + pillW, pillY, pillR);
+            ctx.closePath();
+            ctx.fillStyle = isDark
+              ? (isSel ? "rgba(30,41,59,0.92)" : "rgba(15,23,42,0.78)")
+              : (isSel ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.88)");
+            ctx.fill();
+            if (isSel) {
+              ctx.strokeStyle = b.color + "cc"; ctx.lineWidth = 1.2; ctx.stroke();
             }
-            ctx.fillText(b.name, sx + dotR + 4, sy + 4);
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
+            // Body-color accent bar on the left edge
+            ctx.fillStyle = b.color;
+            ctx.beginPath();
+            ctx.moveTo(pillX + pillR, pillY);
+            ctx.lineTo(pillX + pillR + accentW, pillY);
+            ctx.lineTo(pillX + pillR + accentW, pillY + pillH);
+            ctx.lineTo(pillX + pillR, pillY + pillH);
+            ctx.arcTo(pillX, pillY + pillH, pillX, pillY, pillR);
+            ctx.arcTo(pillX, pillY, pillX + pillR + accentW, pillY, pillR);
+            ctx.closePath();
+            ctx.fill();
+            // Label text
+            ctx.fillStyle = isDark ? "#e2e8f0" : "#1e293b";
+            ctx.textBaseline = "middle";
+            ctx.fillText(labelText, pillX + padX + accentW, pillY + pillH / 2 + 0.5);
+            ctx.textBaseline = "alphabetic";
           }
         }
       }

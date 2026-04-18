@@ -2121,14 +2121,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var isJumping = false;
                     var speed3d = 0.06; // slower in spacesuit
 
+                    // ── Comfort mode (reduced motion / mouse-sensitivity / vignette) ──
+                    // Auto-enable if OS prefers-reduced-motion; persisted per-student in toolData.
+                    var prefersReducedMotion = false;
+                    try { prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(_e) {}
+                    var storedComfort = (toolData && toolData.moonMission && typeof toolData.moonMission.comfortMode === 'boolean') ? toolData.moonMission.comfortMode : null;
+                    var comfortMode = storedComfort !== null ? storedComfort : prefersReducedMotion;
+                    var lookSensitivity = 0.003;
+                    var applyComfortFactors = function() {
+                      lookSensitivity = comfortMode ? 0.0012 : 0.003; // ~2.5x slower in comfort mode
+                      speed3d = comfortMode ? 0.04 : 0.06;
+                    };
+                    applyComfortFactors();
+                    // Click-to-move toggle (motor-impaired students: point-and-click instead of WASD)
+                    var storedClick = (toolData && toolData.moonMission && typeof toolData.moonMission.clickToMove === 'boolean') ? toolData.moonMission.clickToMove : false;
+                    var clickToMove = storedClick;
+                    var clickTarget = null; // THREE.Vector3 or null
+                    // Vignette overlay (reduces peripheral motion-sickness triggers during fast movement)
+                    var vignetteEl = null;
+                    if (comfortMode) {
+                      vignetteEl = document.createElement('div');
+                      vignetteEl.setAttribute('aria-hidden', 'true');
+                      vignetteEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:9;background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 95%);opacity:0;transition:opacity 0.35s ease';
+                      canvasEl.parentElement.appendChild(vignetteEl);
+                    }
+
                     canvasEl.addEventListener('keydown', function(e) {
                       switch(e.key.toLowerCase()) {
-                        case 'w': case 'arrowup': moveState.forward = true; break;
-                        case 's': case 'arrowdown': moveState.back = true; break;
-                        case 'a': case 'arrowleft': moveState.left = true; break;
-                        case 'd': case 'arrowright': moveState.right = true; break;
+                        case 'w': case 'arrowup': moveState.forward = true; clickTarget = null; break;
+                        case 's': case 'arrowdown': moveState.back = true; clickTarget = null; break;
+                        case 'a': case 'arrowleft': moveState.left = true; clickTarget = null; break;
+                        case 'd': case 'arrowright': moveState.right = true; clickTarget = null; break;
                         case 'f': moveState.sample = true; break;
                         case ' ': if (!isJumping) { playerVelY = 0.12; isJumping = true; } break; // 1/6 gravity jump!
+                        case 'c':
+                          // Toggle comfort mode
+                          comfortMode = !comfortMode;
+                          applyComfortFactors();
+                          if (toolData && toolData.moonMission) toolData.moonMission.comfortMode = comfortMode;
+                          if (setToolData && toolData) { try { setToolData(Object.assign({}, toolData)); } catch(_){} }
+                          if (vignetteEl) { vignetteEl.parentElement && vignetteEl.parentElement.removeChild(vignetteEl); vignetteEl = null; }
+                          if (comfortMode) {
+                            vignetteEl = document.createElement('div');
+                            vignetteEl.setAttribute('aria-hidden', 'true');
+                            vignetteEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:9;background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 95%);opacity:0;transition:opacity 0.35s ease';
+                            canvasEl.parentElement.appendChild(vignetteEl);
+                          }
+                          if (addToast) addToast(comfortMode ? '🌿 Comfort mode ON — reduced motion & slower turn' : 'Comfort mode OFF', 'info');
+                          if (typeof announceToSR === 'function') announceToSR(comfortMode ? 'Comfort mode enabled. Mouse sensitivity and walk speed reduced.' : 'Comfort mode disabled.');
+                          break;
+                        case 'm':
+                          // Toggle click-to-move
+                          clickToMove = !clickToMove;
+                          clickTarget = null;
+                          if (toolData && toolData.moonMission) toolData.moonMission.clickToMove = clickToMove;
+                          if (setToolData && toolData) { try { setToolData(Object.assign({}, toolData)); } catch(_){} }
+                          if (addToast) addToast(clickToMove ? '🖱 Click-to-move ON — click terrain to walk there' : 'Click-to-move OFF', 'info');
+                          if (typeof announceToSR === 'function') announceToSR(clickToMove ? 'Click to move enabled. Click on the ground to walk there.' : 'Click to move disabled.');
+                          break;
                       }
                       e.preventDefault();
                     });
@@ -2142,12 +2192,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                     });
                     var isLooking = false;
-                    canvasEl.addEventListener('mousedown', function() { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
+                    // Mouse down: in click-to-move mode, raycast to terrain; otherwise enable look.
+                    canvasEl.addEventListener('mousedown', function(e) {
+                      if (clickToMove && e.button === 0) {
+                        // Raycast from camera through click point to the terrain plane.
+                        try {
+                          var rect = canvasEl.getBoundingClientRect();
+                          var ndc = new THREE.Vector2(
+                            ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                            -((e.clientY - rect.top) / rect.height) * 2 + 1
+                          );
+                          var raycaster = new THREE.Raycaster();
+                          raycaster.setFromCamera(ndc, camera);
+                          var hits = raycaster.intersectObjects(scene.children, false);
+                          for (var hi = 0; hi < hits.length; hi++) {
+                            // Prefer terrain hit — big plane rotated flat, positioned at y~0.
+                            var hit = hits[hi];
+                            if (hit && hit.point && hit.distance < 150) {
+                              clickTarget = new THREE.Vector3(hit.point.x, 0, hit.point.z);
+                              if (typeof announceToSR === 'function') announceToSR('Walking to selected point.');
+                              break;
+                            }
+                          }
+                        } catch (_rcErr) { /* raycast unavailable, fall through to look */ }
+                        return;
+                      }
+                      isLooking = true;
+                      canvasEl.requestPointerLock && canvasEl.requestPointerLock();
+                    });
                     canvasEl.addEventListener('mouseup', function() { isLooking = false; });
                     function onMM(e) {
                       if (!isLooking && !document.pointerLockElement) return;
-                      yaw -= e.movementX * 0.003;
-                      pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * 0.003));
+                      yaw -= e.movementX * lookSensitivity;
+                      pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * lookSensitivity));
                     }
                     document.addEventListener('mousemove', onMM);
                     canvasEl.focus();
@@ -2161,7 +2238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       '<span style="color:#64748b">\uD83E\uDEA8</span><span id="eva-samples">0 / ' + LUNAR_SAMPLES_DATA.length + ' samples</span>' +
                       '<span style="color:#64748b">\uD83D\uDC63</span><span id="eva-steps">0 steps</span>' +
                       '</div>' +
-                      '<div style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:8px">WASD move \u2022 SPACE jump (1/6g!) \u2022 F collect \u2022 Mouse look</div>';
+                      '<div style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:8px">WASD move \u2022 SPACE jump (1/6g!) \u2022 F collect \u2022 Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
                     canvasEl.parentElement.appendChild(evaHud);
 
                     // ── Animation ──
@@ -2177,13 +2254,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                       // Movement
                       var dir = new THREE.Vector3();
-                      if (moveState.forward) dir.z -= 1;
-                      if (moveState.back) dir.z += 1;
-                      if (moveState.left) dir.x -= 1;
-                      if (moveState.right) dir.x += 1;
-                      dir.normalize().multiplyScalar(speed3d);
-                      dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                      playerPos.add(dir);
+                      // Click-to-move: auto-walk toward clickTarget; cancels on arrival or manual key press.
+                      if (clickTarget && !moveState.forward && !moveState.back && !moveState.left && !moveState.right) {
+                        var dx = clickTarget.x - playerPos.x;
+                        var dz = clickTarget.z - playerPos.z;
+                        var dist2d = Math.sqrt(dx * dx + dz * dz);
+                        if (dist2d < 0.5) {
+                          clickTarget = null;
+                        } else {
+                          // Walk toward target at speed3d; yaw the camera to face direction.
+                          var walkAngle = Math.atan2(dx, -dz); // -dz because z forward is negative
+                          // Gently ease yaw toward walkAngle (avoid motion-sick snap).
+                          var yawDelta = walkAngle - yaw;
+                          while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
+                          while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
+                          yaw += yawDelta * (comfortMode ? 0.05 : 0.1);
+                          dir.set(Math.sin(walkAngle), 0, -Math.cos(walkAngle)).multiplyScalar(speed3d);
+                          playerPos.add(dir);
+                        }
+                      } else {
+                        if (moveState.forward) dir.z -= 1;
+                        if (moveState.back) dir.z += 1;
+                        if (moveState.left) dir.x -= 1;
+                        if (moveState.right) dir.x += 1;
+                        dir.normalize().multiplyScalar(speed3d);
+                        dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                        playerPos.add(dir);
+                      }
+
+                      // Vignette intensity: fade in when moving fast (comfort-mode peripheral blur).
+                      if (vignetteEl && comfortMode) {
+                        var movingFast = dir.length() > 0.01 || isJumping;
+                        vignetteEl.style.opacity = movingFast ? '1' : '0.25';
+                      }
 
                       // 1/6 gravity physics
                       playerVelY -= 0.0027; // Moon gravity (1/6 of Earth)
@@ -2342,6 +2445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                       renderer.dispose();
                       if (evaHud.parentElement) evaHud.parentElement.removeChild(evaHud);
+                      if (vignetteEl && vignetteEl.parentElement) vignetteEl.parentElement.removeChild(vignetteEl);
                     };
                   }
 
