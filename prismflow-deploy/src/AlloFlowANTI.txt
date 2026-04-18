@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@950a5c5/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d487e36/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -19558,6 +19558,41 @@ Return ONLY valid JSON:
   const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
   const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
 
+  // Tokenizer strips edge apostrophes/hyphens so "capacity-" ≡ "capacity" (OCR line-break
+  // artifact). Missing threshold flags only when remCount === 0 OR src ≥ 3 && ≥50% dropped —
+  // avoids running-header noise (e.g. "Part" appearing on every source page but deduped in
+  // remediation would otherwise false-flag as missing).
+  const _buildMissingList = (sourceText, remediatedText) => {
+    const tokenize = (s) => {
+      const out = {};
+      const matches = (s || '').toLowerCase().match(/[a-z0-9][\w'-]*/g);
+      if (matches) matches.forEach(w => {
+        const k = w.replace(/^['-]+|['-]+$/g, '');
+        if (k) out[k] = (out[k] || 0) + 1;
+      });
+      return out;
+    };
+    const srcCounts = tokenize(sourceText);
+    const remCounts = tokenize(remediatedText);
+    const missing = [];
+    Object.keys(srcCounts).forEach(w => {
+      const src = srcCounts[w], rem = remCounts[w] || 0;
+      const delta = src - rem;
+      if (delta <= 0) return;
+      const genuinelyAbsent = rem === 0;
+      const majorityLost = src >= 3 && (delta / src) >= 0.5;
+      if (genuinelyAbsent || majorityLost) {
+        missing.push({ word: w, missingCount: delta, sourceCount: src });
+      }
+    });
+    missing.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
+    const totalSrc = Object.values(srcCounts).reduce((s, n) => s + n, 0);
+    const totalRem = Object.values(remCounts).reduce((s, n) => s + n, 0);
+    const totalMissing = missing.reduce((s, m) => s + m.missingCount, 0);
+    const fidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing / totalSrc) * 1000) / 10) : 100;
+    return { missing, totalSrc, totalRem, totalMissing, fidelity };
+  };
+
   // ── Auto fidelity + auto-restore (fidelity v2) ──
   // When pdfFixLoading transitions true → false, the remediation pipeline has just finished.
   // Run fidelity against the source OCR; if any words are missing, auto-restore them in place
@@ -19584,12 +19619,6 @@ Return ONLY valid JSON:
             return;
           }
         }
-        const tokenize = (s) => {
-          const out = {};
-          const matches = (s || '').toLowerCase().match(/[a-z0-9][\w'-]*/g);
-          if (matches) matches.forEach(w => { out[w] = (out[w] || 0) + 1; });
-          return out;
-        };
         const extractText = () => {
           try {
             const html = (typeof getPdfPreviewHtml === 'function') ? getPdfPreviewHtml() : '';
@@ -19599,21 +19628,13 @@ Return ONLY valid JSON:
           } catch (e) { return ''; }
         };
         const sourceText = extractionData.fullText || '';
-        const srcCounts = tokenize(sourceText);
-        const totalSrc = Object.values(srcCounts).reduce((s, n) => s + n, 0);
         // Pass 1 — baseline fidelity.
         const remText1 = extractText();
-        const remCounts1 = tokenize(remText1);
-        const missing1 = [];
-        Object.keys(srcCounts).forEach(w => {
-          const delta = srcCounts[w] - (remCounts1[w] || 0);
-          if (delta > 0) missing1.push({ word: w, missingCount: delta, sourceCount: srcCounts[w] });
-        });
-        missing1.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
-        const totalMissing1 = missing1.reduce((s, m) => s + m.missingCount, 0);
-        const totalRem1 = Object.values(remCounts1).reduce((s, n) => s + n, 0);
-        const beforeFidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing1 / totalSrc) * 1000) / 10) : 100;
-        setFidelityResult({ missing: missing1, totalSrc, totalRem: totalRem1, totalMissing: totalMissing1, fidelity: beforeFidelity });
+        const pass1 = _buildMissingList(sourceText, remText1);
+        const missing1 = pass1.missing;
+        const totalSrc = pass1.totalSrc;
+        const beforeFidelity = pass1.fidelity;
+        setFidelityResult({ missing: missing1, totalSrc, totalRem: pass1.totalRem, totalMissing: pass1.totalMissing, fidelity: beforeFidelity });
         if (missing1.length === 0) {
           if (addToast) addToast('✓ Fidelity 100% — no words missing.', 'success');
           return;
@@ -19627,17 +19648,10 @@ Return ONLY valid JSON:
         setTimeout(() => {
           try {
             const remText2 = extractText();
-            const remCounts2 = tokenize(remText2);
-            const missing2 = [];
-            Object.keys(srcCounts).forEach(w => {
-              const delta = srcCounts[w] - (remCounts2[w] || 0);
-              if (delta > 0) missing2.push({ word: w, missingCount: delta, sourceCount: srcCounts[w] });
-            });
-            missing2.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
-            const totalMissing2 = missing2.reduce((s, m) => s + m.missingCount, 0);
-            const totalRem2 = Object.values(remCounts2).reduce((s, n) => s + n, 0);
-            const afterFidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing2 / totalSrc) * 1000) / 10) : 100;
-            setFidelityResult({ missing: missing2, totalSrc, totalRem: totalRem2, totalMissing: totalMissing2, fidelity: afterFidelity });
+            const pass2 = _buildMissingList(sourceText, remText2);
+            const missing2 = pass2.missing;
+            const afterFidelity = pass2.fidelity;
+            setFidelityResult({ missing: missing2, totalSrc: pass2.totalSrc, totalRem: pass2.totalRem, totalMissing: pass2.totalMissing, fidelity: afterFidelity });
             setAutoRestoreSummary({
               restored: (restoreResult && restoreResult.restored) || [],
               unplaceable: (restoreResult && restoreResult.unplaceable) || [],
@@ -54067,12 +54081,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 missing word indicates a pipeline issue worth investigating. Ignore
                                 if Simplify or Translate was explicitly toggled on. */}
                             {extractionData.fullText && (() => {
-                              const _tokenize = (s) => {
-                                const out = {};
-                                const matches = (s || '').toLowerCase().match(/[a-z0-9][\w'-]*/g);
-                                if (matches) matches.forEach(w => { out[w] = (out[w] || 0) + 1; });
-                                return out;
-                              };
                               const _runCheck = () => {
                                 const sourceText = extractionData.fullText || '';
                                 let remediatedText = '';
@@ -54082,19 +54090,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   tmp.innerHTML = html || '';
                                   remediatedText = tmp.textContent || tmp.innerText || '';
                                 } catch (e) { remediatedText = ''; }
-                                const srcCounts = _tokenize(sourceText);
-                                const remCounts = _tokenize(remediatedText);
-                                const missing = [];
-                                Object.keys(srcCounts).forEach(w => {
-                                  const delta = srcCounts[w] - (remCounts[w] || 0);
-                                  if (delta > 0) missing.push({ word: w, missingCount: delta, sourceCount: srcCounts[w] });
-                                });
-                                missing.sort((a, b) => b.word.length - a.word.length || b.missingCount - a.missingCount);
-                                const totalSrc = Object.values(srcCounts).reduce((s, n) => s + n, 0);
-                                const totalRem = Object.values(remCounts).reduce((s, n) => s + n, 0);
-                                const totalMissing = missing.reduce((s, m) => s + m.missingCount, 0);
-                                const fidelity = totalSrc > 0 ? Math.max(0, Math.round((1 - totalMissing / totalSrc) * 1000) / 10) : 100;
-                                setFidelityResult({ missing, totalSrc, totalRem, totalMissing, fidelity });
+                                setFidelityResult(_buildMissingList(sourceText, remediatedText));
                               };
                               const disagreements = (extractionData.ocr && extractionData.ocr.disagreements) || [];
                               const method = (extractionData.metadata && extractionData.metadata.extractionMethod) || 'pdfjs';

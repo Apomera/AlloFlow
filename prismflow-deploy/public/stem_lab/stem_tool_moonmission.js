@@ -1348,14 +1348,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var W = cvEl.offsetWidth || 500, HL = cvEl.offsetHeight || 260;
                   cvEl.width = W * 2; cvEl.height = HL * 2; ctx.scale(2, 2);
                   var tick = 0;
+                  // 1.5 orbits over ~22 seconds of viewing (60fps × 22 = 1320 frames → angSpeed ~0.0071)
                   var orbitAngSpeed = 0.0071;
+                  // Moon's "future position" sits ~48° ahead of current; TLI must fire when CSM is at the opposite side of its orbit
                   function drawEarthOrbit() {
                     tick++;
                     ctx.clearRect(0, 0, W, HL);
+                    // Space background + stars
                     ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, HL);
                     drawStarfield(ctx, W, HL, tick, 110);
+                    // Earth (left-of-center)
                     var eX = W * 0.34, eY = HL * 0.52, eR = Math.min(42, HL * 0.18);
                     drawDetailedEarth(ctx, eX, eY, eR, tick);
+                    // Orbital ellipse (slight tilt for depth)
                     var orbR = eR + 26;
                     var orbRy = orbR * 0.92;
                     ctx.save();
@@ -1364,10 +1369,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.beginPath(); ctx.ellipse(eX, eY, orbR, orbRy, -0.12, 0, Math.PI * 2); ctx.stroke();
                     ctx.setLineDash([]);
                     ctx.restore();
+                    // Moon's future position (far right) with a faint trajectory arc indicating TLI target
                     var moonX = W - 32, moonY = HL * 0.38, moonR = 10;
                     drawDetailedMoon(ctx, moonX, moonY, moonR, 42);
                     ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
                     ctx.fillText('Moon (in 3 days)', moonX, moonY + moonR + 12);
+                    // Dashed TLI trajectory arc from Earth toward Moon's future position
                     ctx.save();
                     ctx.strokeStyle = 'rgba(251,191,36,0.25)';
                     ctx.setLineDash([2, 5]); ctx.lineWidth = 1;
@@ -1377,12 +1384,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.stroke();
                     ctx.setLineDash([]);
                     ctx.restore();
+                    // Orbit angle (CCW, starts at 270° = top of orbit — a plausible LEO insertion point)
                     var orbAng = -Math.PI * 0.5 + tick * orbitAngSpeed;
                     var orbits = (tick * orbitAngSpeed) / (Math.PI * 2);
+                    // TLI burn window: must fire when CSM is on Earth-side-away-from-Moon
+                    // Correct burn point = orbital position where spacecraft velocity vector points toward Moon's future position (roughly 0 rad = right side of orbit)
                     var tliTargetAng = 0;
                     var angDiff = ((orbAng - tliTargetAng + Math.PI) % (Math.PI * 2)) - Math.PI;
-                    var windowHalfWidth = 0.35;
+                    var windowHalfWidth = 0.35; // radians ~20°
                     var inWindow = Math.abs(angDiff) < windowHalfWidth && orbits > 1.35;
+                    // Draw TLI burn window as highlighted arc on the orbit
                     ctx.save();
                     ctx.strokeStyle = inWindow ? 'rgba(34,197,94,0.85)' : 'rgba(251,191,36,0.55)';
                     ctx.lineWidth = 3;
@@ -1390,25 +1401,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.ellipse(eX, eY, orbR, orbRy, -0.12, tliTargetAng - windowHalfWidth, tliTargetAng + windowHalfWidth);
                     ctx.stroke();
                     ctx.restore();
+                    // Compute CSM position on tilted ellipse
                     var cosT = Math.cos(-0.12), sinT = Math.sin(-0.12);
                     var px = Math.cos(orbAng) * orbR, py = Math.sin(orbAng) * orbRy;
                     var scX = eX + px * cosT - py * sinT;
                     var scY = eY + px * sinT + py * cosT;
+                    // Orbit trail (last ~60° of arc)
                     ctx.save();
                     ctx.strokeStyle = 'rgba(56,189,248,0.45)'; ctx.lineWidth = 1.5;
                     ctx.beginPath();
                     ctx.ellipse(eX, eY, orbR, orbRy, -0.12, orbAng - 1.0, orbAng);
                     ctx.stroke();
                     ctx.restore();
+                    // CSM + LM stack
                     ctx.save();
                     ctx.translate(scX, scY);
+                    // Velocity vector indicator (tangent to orbit, points in direction of motion)
                     var tanAng = orbAng + Math.PI * 0.5;
                     ctx.rotate(tanAng - 0.12);
+                    // Service module
                     ctx.fillStyle = '#c0c8d0'; ctx.fillRect(-6, -2, 8, 4);
+                    // Command module nose
                     ctx.fillStyle = '#e8ecf0';
                     ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(-1, -2); ctx.lineTo(-4, -2); ctx.lineTo(-4, 2); ctx.lineTo(-1, 2); ctx.closePath(); ctx.fill();
+                    // LM adapter
                     ctx.fillStyle = '#a0a8b0'; ctx.fillRect(-10, -2.5, 4, 5);
+                    // Window glint
                     ctx.fillStyle = '#38bdf8'; ctx.fillRect(-2, -0.8, 1.5, 1.5);
+                    // Engine glow if in TLI window
                     if (inWindow) {
                       var glowR = 3 + Math.sin(tick * 0.25) * 1.5;
                       var glowGrad = ctx.createRadialGradient(-12, 0, 0, -12, 0, glowR + 2);
@@ -1418,6 +1438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.beginPath(); ctx.arc(-12, 0, glowR + 2, 0, Math.PI * 2); ctx.fill();
                     }
                     ctx.restore();
+                    // HUD — altitude, velocity, orbit count
                     ctx.fillStyle = 'rgba(0,0,0,0.55)';
                     ctx.fillRect(8, 8, 138, 64);
                     ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
@@ -1428,6 +1449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText('VELOCITY', 14, 50);
                     ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
                     ctx.fillText('7.8 km/s (28,000 km/h)', 14, 64);
+                    // Orbit counter (right side)
                     ctx.fillStyle = 'rgba(0,0,0,0.55)';
                     ctx.fillRect(W - 112, 8, 104, 64);
                     ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
@@ -1438,6 +1460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(inWindow ? 'TLI WINDOW \u25B6 GO' : 'TLI WINDOW', W - 14, 58);
                     ctx.font = '8px monospace';
                     ctx.fillText(orbits >= 1.35 ? (inWindow ? 'BURN NOW' : 'aligning...') : ('in ' + Math.max(0, (1.35 - orbits)).toFixed(2) + ' orbit'), W - 14, 68);
+                    // Footer explainer text (fades in after 3s, cycles)
                     var lessons = [
                       'At 7.8 km/s, one orbit takes ~90 minutes.',
                       'TLI must fire at the right point to hit the Moon\'s future position.',
