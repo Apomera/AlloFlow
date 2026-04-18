@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2dd6192/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -13199,6 +13199,21 @@ Return only the corrected version of this exact text:`;
   // PDF (or null if no record / not loaded yet).
   const [pdfPageRange, setPdfPageRange] = useState(null);
   const [pdfMultiSession, setPdfMultiSession] = useState(null);
+
+  // Resets all state the PDF audit/remediation modal depends on. Includes isExtracting +
+  // generationStep because the Source Material loader sets them true when a PDF is picked,
+  // then waits on the audit modal — cancelling without this reset left the Source Material
+  // card stuck on "Extracting text from source…" after the modal closed.
+  const _closePdfAuditModal = () => {
+    setPdfAuditResult(null);
+    setPdfFixResult(null);
+    setPdfFixLoading(false);
+    setPdfFixStep('');
+    setPendingPdfBase64(null);
+    setPendingPdfFile(null);
+    setIsExtracting(false);
+    setGenerationStep('');
+  };
   // Auto-save toggle: when on, every completed range triggers a project-file
   // download so the user always has a portable artifact. Critical in Canvas,
   // where IndexedDB is wiped per session — the JSON file is the only durable
@@ -52262,12 +52277,12 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
             // Backdrop click closes (only when the click lands on the backdrop itself, not bubbled from inside content).
             // Block close while a remediation is actively running so users don't accidentally abort.
             if (e.target === e.currentTarget && !pdfFixLoading && !pdfAutoContinueRunning) {
-              setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null);
+              _closePdfAuditModal();
             }
           }}
           onKeyDown={(e) => {
             if (e.key === 'Escape' && !pdfFixLoading && !pdfAutoContinueRunning) {
-              setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null);
+              _closePdfAuditModal();
             }
           }}
           ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
@@ -52278,7 +52293,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
             <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
               <button
                 type="button"
-                onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }}
+                onClick={() => { _closePdfAuditModal(); }}
                 disabled={pdfFixLoading || pdfAutoContinueRunning}
                 aria-label="Close audit modal"
                 title={(pdfFixLoading || pdfAutoContinueRunning) ? 'Wait for remediation to finish or click Stop first' : 'Close (Esc)'}
@@ -52961,7 +52976,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
+                  <button onClick={() => { _closePdfAuditModal(); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
                 </div>
               </div>
             ) : pdfAuditLoading ? (
@@ -53085,7 +53100,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <p className="text-xs text-slate-600 text-center">You can still proceed — Fix & Verify will transform the document and run a full audit afterward.</p>
                   <div className="flex gap-2 justify-center">
                     <button onClick={async () => { setPdfAuditResult(null); addToast('Retrying audit...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
-                    <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -55880,7 +55895,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button onClick={() => {
                           const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                           setInputText(temp.textContent || temp.innerText || '');
-                          setPdfAuditResult(null); setPdfFixResult(null); setPendingPdfBase64(null); setPendingPdfFile(null);
+                          _closePdfAuditModal();
                           addToast('Content loaded — generate leveled text, glossary, quiz, and more', 'success');
                         }} className="w-full px-3 py-2 bg-white border border-violet-200 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
                           ✨ Full Differentiation Pipeline

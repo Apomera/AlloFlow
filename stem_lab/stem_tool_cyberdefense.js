@@ -217,6 +217,8 @@
           var warRoomFocusMode = !!d.warRoomFocusMode;
           var warRoomScratchpad = d.warRoomScratchpad || '';
           var warRoomScratchOpen = !!d.warRoomScratchOpen;
+          // Replay state: { historyIdx: number, stepIdx: number, playing: bool }
+          var warRoomReplay = d.warRoomReplay || null;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -349,6 +351,21 @@
                 upd('warRoomTimeLeft', Math.max(0, nextTime));
               }
             }, 1000);
+          }
+
+          // ── Replay auto-advance timer ──
+          if (window._cyberWarReplayTimer) { clearTimeout(window._cyberWarReplayTimer); window._cyberWarReplayTimer = null; }
+          if (cyberTab === 'warroom' && warRoomReplay && warRoomReplay.playing) {
+            var replayHist = (warRoomCampaignHistory || [])[warRoomReplay.historyIdx];
+            var replayChain = (replayHist && replayHist.chain) || [];
+            if (warRoomReplay.stepIdx < replayChain.length - 1) {
+              window._cyberWarReplayTimer = setTimeout(function() {
+                upd('warRoomReplay', Object.assign({}, warRoomReplay, { stepIdx: warRoomReplay.stepIdx + 1 }));
+              }, 2600);
+            } else {
+              // Finished auto-advancing — pause at last step
+              upd('warRoomReplay', Object.assign({}, warRoomReplay, { playing: false }));
+            }
           }
 
           // ── War Room keyboard shortcuts (reattaches each render; latest closure wins) ──
@@ -1930,6 +1947,22 @@
               warRoomKillChain.forEach(function(r) {
                 (r.bluePlays || []).forEach(function(id) { bluePlaysCounts[id] = (bluePlaysCounts[id] || 0) + 1; });
               });
+              // Infer campaign mode from context
+              var campaignMode = 'normal';
+              if (warRoomIsBossMode) campaignMode = 'boss';
+              else if (todayInfo && warRoomCampaignId === todayInfo.id && warRoomCampaignTheme === todayInfo.theme && warRoomDifficulty === todayInfo.difficulty) campaignMode = 'daily';
+              else if (weekInfo && warRoomCampaignId === weekInfo.id && warRoomCampaignTheme === weekInfo.theme && warRoomDifficulty === weekInfo.difficulty) campaignMode = 'weekly';
+              // Condensed chain for Replay (drops noise fields; keeps just what playback needs)
+              var condensedChain = warRoomKillChain.map(function(r) {
+                return {
+                  stage: r.stage,
+                  round: r.round,
+                  red: { id: r.red && r.red.id, title: r.red && r.red.title, description: r.red && r.red.description },
+                  outcome: r.outcome,
+                  assetsLost: r.assetsLost,
+                  bluePlays: (r.bluePlays || []).slice()
+                };
+              });
               var historyEntry = {
                 id: warRoomCampaignId,
                 at: Date.now(),
@@ -1948,7 +1981,9 @@
                 rank: warRoomRank.label,
                 hotSeat: warRoomHotSeatEnabled,
                 players: warRoomHotSeatEnabled ? warRoomHotSeatPlayers.slice() : null,
-                bossMode: warRoomIsBossMode
+                bossMode: warRoomIsBossMode,
+                mode: campaignMode,
+                chain: condensedChain
               };
               var newHistory = [historyEntry].concat(priorHistory).slice(0, 20);
               // Mark today's Daily Challenge as completed if this campaign's ID matches

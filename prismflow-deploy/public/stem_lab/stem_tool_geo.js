@@ -528,23 +528,48 @@ var d = labToolData || {};
           // Badge state
           var geoBadges = d.geoBadges || {};
 
-          // Filter countries by region
+          // ── Region filter ──
+          // Supports: 'world', continent keys (africa/asia/europe/n_america/s_america/oceania),
+          // 'americas' (legacy combined), and 'r:<Sub-Region Name>' for finer-grained UN regions.
+          var _continentByRegionId = {
+            africa: 'Africa', asia: 'Asia', europe: 'Europe',
+            n_america: 'North America', s_america: 'South America', oceania: 'Oceania'
+          };
+          var filteredCountries = (function() {
+            if (geoRegion === 'world') return countries;
+            if (geoRegion && geoRegion.indexOf('r:') === 0) {
+              var regionName = geoRegion.slice(2);
+              return countries.filter(function(c) { return c.region === regionName; });
+            }
+            if (geoRegion === 'americas') {
+              return countries.filter(function(c) { return c.continent === 'North America' || c.continent === 'South America'; });
+            }
+            var cont = _continentByRegionId[geoRegion];
+            if (cont) return countries.filter(function(c) { return c.continent === cont; });
+            return countries;
+          })();
 
-          var filteredCountries = geoRegion === 'world' ? countries : countries.filter(function(c) {
-
-            if (geoRegion === 'africa') return c.continent === 'Africa';
-
-            if (geoRegion === 'asia') return c.continent === 'Asia';
-
-            if (geoRegion === 'europe') return c.continent === 'Europe';
-
-            if (geoRegion === 'americas') return c.continent === 'North America' || c.continent === 'South America';
-
-            if (geoRegion === 'oceania') return c.continent === 'Oceania';
-
-            return true;
-
-          });
+          // ── Graduated region options (grouped, counted, difficulty-ordered) ──
+          // Continents ordered ascending by country count (fewest = easier start).
+          // Within each continent, sub-regions listed by count (smallest first).
+          var _regionGroups = (function() {
+            var groups = [];
+            Object.keys(_continentByRegionId).forEach(function(id) {
+              var contName = _continentByRegionId[id];
+              var contCountries = countries.filter(function(c) { return c.continent === contName; });
+              if (contCountries.length === 0) return;
+              // Unique sub-regions + counts; skip any that equal the full continent (redundant)
+              var subCounts = {};
+              contCountries.forEach(function(c) { subCounts[c.region] = (subCounts[c.region] || 0) + 1; });
+              var subs = Object.keys(subCounts)
+                .filter(function(r) { return subCounts[r] > 0 && subCounts[r] < contCountries.length; })
+                .sort(function(a, b) { return subCounts[a] - subCounts[b]; })
+                .map(function(r) { return { id: 'r:' + r, label: r, count: subCounts[r] }; });
+              groups.push({ id: id, label: contName, count: contCountries.length, subs: subs });
+            });
+            groups.sort(function(a, b) { return a.count - b.count; });
+            return groups;
+          })();
 
 
 
@@ -809,16 +834,22 @@ var d = labToolData || {};
 
 
 
-          // Region zoom presets
-
-          var regionZooms = { world: [20, 0, 2], africa: [2, 20, 3], asia: [35, 85, 3], europe: [50, 15, 4], americas: [10, -80, 3], oceania: [-20, 140, 4] };
-
-          if (mapRef.current && geoRegion) {
-
-            var rz = regionZooms[geoRegion] || regionZooms.world;
-
-            mapRef.current.setView([rz[0], rz[1]], rz[2]);
-
+          // Zoom the map to the current filter's bounds — but only when the filter
+          // actually changes, so a re-render (triggered by state updates) doesn't
+          // fight the user's pan/zoom.
+          if (mapRef.current && geoRegion && window._geoLastZoomedRegion !== geoRegion) {
+            window._geoLastZoomedRegion = geoRegion;
+            if (geoRegion === 'world' || filteredCountries.length === 0) {
+              mapRef.current.setView([20, 0], 2);
+            } else if (filteredCountries.length === 1) {
+              mapRef.current.setView([filteredCountries[0].lat, filteredCountries[0].lng], 5);
+            } else {
+              var lats = filteredCountries.map(function(c) { return c.lat; });
+              var lngs = filteredCountries.map(function(c) { return c.lng; });
+              var minLat = Math.min.apply(null, lats), maxLat = Math.max.apply(null, lats);
+              var minLng = Math.min.apply(null, lngs), maxLng = Math.max.apply(null, lngs);
+              mapRef.current.fitBounds([[minLat - 5, minLng - 10], [maxLat + 5, maxLng + 10]], { padding: [20, 20], maxZoom: 5 });
+            }
           }
 
 
@@ -1121,30 +1152,23 @@ var d = labToolData || {};
 
                 geoStreak >= 3 && React.createElement('span', { className: 'text-xs bg-orange-400 text-orange-900 rounded-full px-2 py-0.5 font-bold animate-pulse' }, '\uD83D\uDD25 ' + geoStreak + 'x'),
 
-                // Region filter
-
+                // Region filter — graduated from easy (few countries) to hard (many).
+                // Each continent is an optgroup with the continent as "All" option plus
+                // sub-regions (Southern Europe, Southeast Asia, etc.) for finer control.
                 React.createElement('select', {
-
                   value: geoRegion,
-
                   onChange: function(e) { upd('geoRegionFilter', e.target.value); upd('geoTarget', null); upd('geoAnswered', []); },
-
-                  className: 'text-xs bg-white/20 border border-white/30 rounded px-1 py-0.5 text-white'
-
+                  className: 'text-xs bg-white/20 border border-white/30 rounded px-1 py-0.5 text-white',
+                  title: 'Smaller regions = easier quiz. Start small, expand as you improve.'
                 },
-
-                  React.createElement('option', { value: 'world' }, '\uD83C\uDF0D World'),
-
-                  React.createElement('option', { value: 'africa' }, '\uD83C\uDF0D Africa'),
-
-                  React.createElement('option', { value: 'asia' }, '\uD83C\uDF0F Asia'),
-
-                  React.createElement('option', { value: 'europe' }, '\uD83C\uDF0D Europe'),
-
-                  React.createElement('option', { value: 'americas' }, '\uD83C\uDF0E Americas'),
-
-                  React.createElement('option', { value: 'oceania' }, '\uD83C\uDF0F Oceania')
-
+                  [React.createElement('option', { key: 'world', value: 'world' }, '\uD83C\uDF0D World (' + countries.length + ')')]
+                    .concat(_regionGroups.map(function(grp) {
+                      var opts = [React.createElement('option', { key: grp.id, value: grp.id }, 'All of ' + grp.label + ' (' + grp.count + ')')];
+                      grp.subs.forEach(function(sub) {
+                        opts.push(React.createElement('option', { key: sub.id, value: sub.id }, '\u2002\u2014 ' + sub.label + ' (' + sub.count + ')'));
+                      });
+                      return React.createElement('optgroup', { key: grp.id + '_group', label: grp.label + ' (' + grp.count + ')' }, opts);
+                    }))
                 ),
 
                 // Difficulty
