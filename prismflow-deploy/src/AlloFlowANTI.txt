@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@43e9f35/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97271b6/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -19552,9 +19552,11 @@ Return ONLY valid JSON:
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
-  // Expert Workbench — Advanced remediation mode
-  const runAutonomousRemediation = _docPipeline ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
-  const processExpertCommand = _docPipeline ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
+  // Expert Workbench — Advanced remediation mode. Guards check the specific method (not just
+  // the pipeline object) so a future regression that drops either export degrades to the stub
+  // instead of throwing "not a function" — same class of bug that hit us in commit 1542fc8.
+  const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
+  const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
 
   // ── Auto fidelity + auto-restore (fidelity v2) ──
   // When pdfFixLoading transitions true → false, the remediation pipeline has just finished.
@@ -32984,7 +32986,7 @@ Return ONLY a JSON array like:
   }, [botAccessoryBase, isBlueprintMode]);
   const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingAudio, phonicsData]);
   return (
-    <main aria-label={t('common.main_content')} className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
       {kokoroLoadState && kokoroLoadState.loading && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -33645,8 +33647,8 @@ Return ONLY a JSON array like:
         .theme-dark .border-slate-300 { border-color: #334155 !important; }
         .theme-dark .text-indigo-900 { color: #c7d2fe !important; } /* Indigo-200 */
         .theme-dark .text-indigo-800 { color: #a5b4fc !important; } /* Indigo-300 */
-        .theme-dark .text-indigo-700 { color: #818cf8 !important; } /* Indigo-400 */
-        .theme-dark .text-indigo-600 { color: #6366f1 !important; } /* Indigo-500 */
+        .theme-dark .text-indigo-700 { color: #a5b4fc !important; } /* Indigo-300 — 9:1 on dark bg */
+        .theme-dark .text-indigo-600 { color: #a5b4fc !important; } /* Indigo-300 — 9:1 on dark bg, passes WCAG AA */
         .theme-dark .bg-indigo-700,
         .theme-dark .bg-indigo-800,
         .theme-dark .bg-indigo-900 { background-color: #312e81 !important; border-color: #4338ca !important; }
@@ -33728,7 +33730,9 @@ Return ONLY a JSON array like:
         .theme-dark .prose code { color: #f1f5f9 !important; background-color: #334155 !important; }
         .theme-dark .prose a { color: #60a5fa !important; }
         .theme-contrast { background-color: #000000 !important; color: #ffff00 !important; }
-        .theme-contrast .bg-white, .theme-contrast .bg-slate-50, .theme-contrast .bg-slate-100 { background-color: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }
+        .theme-contrast .bg-white, .theme-contrast .bg-slate-50, .theme-contrast .bg-slate-100,
+        .theme-contrast .bg-amber-50, .theme-contrast .bg-rose-50, .theme-contrast .bg-sky-50, .theme-contrast .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }
+        .theme-contrast .bg-amber-50 *, .theme-contrast .bg-rose-50 *, .theme-contrast .bg-sky-50 *, .theme-contrast .bg-emerald-50 * { color: #ffff00 !important; }
         .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li {
             color: #ffff00 !important;
         }
@@ -36304,7 +36308,6 @@ Return ONLY a JSON array like:
             />
         )}
         <aside
-            id="main-content"
             aria-label={t('sidebar.tools_header')}
             className={`flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 ${(isFullscreen || isZenMode) ? 'hidden' : 'block'} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
@@ -36314,11 +36317,11 @@ Return ONLY a JSON array like:
             <button
                 role="tab"
                 aria-selected={activeSidebarTab === 'create'}
-                aria-controls="panel-create"
+                aria-controls="tour-input-panel"
                 id="tab-create"
                 aria-label={t('common.create_new_content')}
               onClick={handleSetActiveSidebarTabToCreate}
-              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-700 hover:text-slate-900'}`}
               data-help-key="sidebar_tab_create"
             >
                <Sparkles size={16} aria-hidden="true" /> {t('sidebar.create_tab')}
@@ -36326,14 +36329,14 @@ Return ONLY a JSON array like:
             <button
                 role="tab"
                 aria-selected={activeSidebarTab === 'history'}
-                aria-controls="panel-history"
+                aria-controls="ui-roster-strip"
                 id="tab-history"
                 aria-label={t('common.history')}
               onClick={() => {
                   setActiveSidebarTab('history');
                   setIsHistoryPulsing(false);
               }}
-              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-700'} ${isHistoryPulsing ? 'pulse-history shadow-indigo-500/50' : ''}`}
+              className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-700 hover:text-slate-900'} ${isHistoryPulsing ? 'pulse-history shadow-indigo-500/50' : ''}`}
               data-help-key="sidebar_tab_history"
             >
                <History size={16} aria-hidden="true" /> {t('sidebar.history_tab')}
@@ -36901,7 +36904,7 @@ Return ONLY a JSON array like:
                       {isDraftSaving ? (
                           <span className="flex items-center gap-1"><RefreshCw size={8} className="animate-spin"/> {t('status.saving_draft')}</span>
                       ) : inputText && !isCanvas ? (
-                          <span className="flex items-center gap-1 text-green-600/70"><CheckCircle2 size={8}/> {t('status.saved_device')}</span>
+                          <span className="flex items-center gap-1 text-green-700"><CheckCircle2 size={8}/> {t('status.saved_device')}</span>
                       ) : null}
                   </div>
                   {(isGeneratingSource || isExtracting) && (
@@ -37698,23 +37701,27 @@ Return ONLY a JSON array like:
             <div style={{display: isGuidedToolVisible('sentence-frames') ? undefined : 'none'}} id="tour-tool-scaffolds" data-help-key="tool_scaffolds" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'sentence-frames' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
-                <button
+                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-rose-50 transition-colors">
+                  <button
                     data-help-key="tool_scaffolds"
                     onClick={() => toggleTool('sentence-frames')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
-                    <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
-                    <span role="button" tabIndex={0}
-                      onClick={(e) => { e.stopPropagation(); setShowStoryForge(true); }}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setShowStoryForge(true); }}}
-                      className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-rose-700 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer"
-                      aria-label="Open StoryForge">
-                      {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">StoryForge</span>
-                    </span>
-                  </div>
-                  {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
+                    aria-expanded={expandedTools.includes('sentence-frames')}
+                    className="flex-1 p-3 flex justify-between items-center text-left"
+                  >
+                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                      <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
+                    </div>
+                    {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowStoryForge(true)}
+                    className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
+                    aria-label="Open StoryForge"
+                  >
+                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">StoryForge</span>
+                  </button>
+                </div>
                 {expandedTools.includes('sentence-frames') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-rose-50/50 flex flex-col gap-3" data-help-key="tour-scaffolds-settings">
@@ -38355,18 +38362,25 @@ Return ONLY a JSON array like:
             <div style={{display: isGuidedToolVisible('math') ? undefined : 'none'}} id="tour-tool-math" data-help-key="tool_math" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'math' ? 'border-blue-600 shadow-xl shadow-blue-500/20' : 'border-slate-200 hover:border-blue-200 shadow-lg shadow-blue-500/10'}
               `}>
-                <button
+                <div className="w-full bg-slate-50 border-b border-slate-100 flex items-center hover:bg-blue-50 transition-colors">
+                  <button
                     data-help-key="tool_math"
-                    aria-expanded={expandedTools.includes('math')} onClick={() => toggleTool('math')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Calculator size={16}/> {t('math.title')}</div>
-                  <span role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setShowStemLab(true); setStemLabTab('explore'); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setShowStemLab(true); setStemLabTab('explore'); }}} className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer" aria-label="Open STEM Lab Explore">
-                      🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
-                   </span>
-
-                  {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
+                    aria-expanded={expandedTools.includes('math')}
+                    onClick={() => toggleTool('math')}
+                    className="flex-1 p-3 flex justify-between items-center text-left"
+                  >
+                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Calculator size={16}/> {t('math.title')}</div>
+                    {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
+                    className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
+                    aria-label="Open STEM Lab Explore"
+                  >
+                    🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
+                  </button>
+                </div>
                 {expandedTools.includes('math') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-blue-50/50 flex flex-col gap-3">
@@ -59538,7 +59552,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               </div>
           );
       })()}
-      </main>
+      </div>
   );
 }
 // #endregion
