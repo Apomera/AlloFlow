@@ -3180,7 +3180,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
         }
-        carRef.current = { x: startX, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
+        // Align player's spawn heading to the spline so they start FACING the road,
+        // not 30° off when the spline is bent at startY. Default −π/2 (NB) plus the
+        // spline's local tangent. Falls back to −π/2 if no infinite world spline.
+        var startHeading = -Math.PI / 2;
+        if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+          var startSplineTheta = infiniteWorldRef.current.spline.headingAt(startY);
+          startHeading = -Math.PI / 2 - startSplineTheta;
+        }
+        carRef.current = { x: startX, y: startY, heading: startHeading, speed: 0, throttle: 0, brake: 0, steering: 0 };
         // ── SAFE-START sanitization ──
         // Clear a 20-cell bubble around the player so you never spawn into an active crash.
         // Traffic in the danger zone gets teleported to a safe distance (preserving lane offset).
@@ -5117,9 +5125,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 slowFor = Math.max(slowFor, 2);
               }
             });
-            // React to PLAYER car — slow down, honk, or AEB (emergency brake)
+            // React to PLAYER car — slow down, honk, or AEB (emergency brake).
+            // Use spline-perpendicular lateral distance so we don't false-positive on bends.
             var playerCar = carRef.current;
-            if (Math.abs(playerCar.x - t.x) < 2) {
+            var playerSameLane = false;
+            if (!t.crossStreet) {
+              var aiSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              if (aiSpline) {
+                var aiThetaForP = aiSpline.headingAt(t.y);
+                var aiCenterForP = aiSpline.centerAt(t.y);
+                var pThetaForP = aiSpline.headingAt(playerCar.y);
+                var pCenterForP = aiSpline.centerAt(playerCar.y);
+                var aiPerpForP = (t.x - aiCenterForP) * Math.cos(aiThetaForP);
+                var pPerpForP = (playerCar.x - pCenterForP) * Math.cos(pThetaForP);
+                playerSameLane = Math.abs(aiPerpForP - pPerpForP) < 1.0;
+              } else {
+                playerSameLane = Math.abs(playerCar.x - t.x) < 2;
+              }
+            } else {
+              playerSameLane = Math.abs(playerCar.x - t.x) < 2;
+            }
+            if (playerSameLane) {
               var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);
               if (playerAhead > 0 && playerAhead < 3) {
                 // Very close behind player — EMERGENCY AUTOMATIC BRAKING (AEB-style).
