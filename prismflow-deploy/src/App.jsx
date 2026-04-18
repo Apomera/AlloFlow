@@ -19552,9 +19552,11 @@ Return ONLY valid JSON:
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
-  // Expert Workbench — Advanced remediation mode
-  const runAutonomousRemediation = _docPipeline ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
-  const processExpertCommand = _docPipeline ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
+  // Expert Workbench — Advanced remediation mode. Guards check the specific method (not just
+  // the pipeline object) so a future regression that drops either export degrades to the stub
+  // instead of throwing "not a function" — same class of bug that hit us in commit 1542fc8.
+  const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
+  const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
 
   // ── Auto fidelity + auto-restore (fidelity v2) ──
   // When pdfFixLoading transitions true → false, the remediation pipeline has just finished.

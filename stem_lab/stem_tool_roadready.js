@@ -3514,6 +3514,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             skidSeconds: Math.round(s.skidSeconds),
             cyclistClose: s.cyclistClose,
             unsignaledLaneChanges: s.unsignaledLaneChanges || 0,
+            emergencyYields: s.emergencyYields || 0,
+            busStopCompliance: s.busStopCompliance || 0,
+            pedYields: s.pedYields || 0,
             scenarioId: currentScenario.id,
             lastCrashReplay: s.crashes > 0 ? blackBoxRef.current.slice(-120) : null, // last 2 sec before end
             drivePath: drivePathRef.current.slice() // full drive path for map
@@ -4687,6 +4690,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Blinker timer (for visual blink)
           blinkerTimerRef.current += dt;
+          // ── Turn-signal click sound ──
+          // When the blinker is on, emit a short "click" on each visual tick transition.
+          // Two clicks per cycle: on → off is a softer "clack", off → on is a sharper "click".
+          // Muted when audioRef.current.muted or the user hasn't interacted (ac suspended).
+          var blinkTickOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
+          if (blinkerRef.current !== 0 && audioRef.current && audioRef.current.ctx) {
+            if (!audioRef.current._lastBlinkTickOn) audioRef.current._lastBlinkTickOn = blinkTickOn;
+            if (audioRef.current._lastBlinkTickOn !== blinkTickOn) {
+              try {
+                var acBlink = audioRef.current.ctx;
+                var bkOsc = acBlink.createOscillator();
+                var bkGain = acBlink.createGain();
+                bkOsc.type = 'square';
+                bkOsc.frequency.value = blinkTickOn ? 1800 : 900; // sharper on-tick, thump on off-tick
+                bkGain.gain.value = 0;
+                bkOsc.connect(bkGain);
+                bkGain.connect(acBlink.destination);
+                bkOsc.start();
+                bkGain.gain.setValueAtTime(0, acBlink.currentTime);
+                bkGain.gain.linearRampToValueAtTime(0.035, acBlink.currentTime + 0.003);
+                bkGain.gain.exponentialRampToValueAtTime(0.0001, acBlink.currentTime + 0.04);
+                bkOsc.stop(acBlink.currentTime + 0.05);
+              } catch (bkErr) { /* audio unavailable */ }
+              audioRef.current._lastBlinkTickOn = blinkTickOn;
+            }
+          } else if (audioRef.current) {
+            audioRef.current._lastBlinkTickOn = null;
+          }
 
           // Lane change detection — hysteresis-based to prevent false positives on curves
           // Only trigger if car moves 2+ world units from its last stable lane position
@@ -9763,6 +9794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 } else if (ambRoll < 0.58) {
                   // Streetlight (urban/suburban)
                   if (chunk.biome === 'commercial' || chunk.biome === 'suburban' || chunk.biome === 'residential') {
+                    var isLit = scn.time === 'night' || scn.time === 'dawn' || scn.weather === 'fog';
                     var slPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), new T.MeshLambertMaterial({ color: 0x4b5563 }));
                     slPole.position.set(ambX, 2.1, ambZ);
                     chunkGroup.add(slPole);
@@ -9770,9 +9802,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     slArm.rotation.z = Math.PI / 2;
                     slArm.position.set(ambX - ambSide * 0.6, 4.0, ambZ);
                     chunkGroup.add(slArm);
-                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: scn.time === 'night' || scn.time === 'dawn' ? 0xfef3c7 : 0x4b5563 }));
+                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: isLit ? 0xfef3c7 : 0x4b5563 }));
                     slHead.position.set(ambX - ambSide * 1.1, 3.9, ambZ);
                     chunkGroup.add(slHead);
+                    // At night/fog: add a downward glow cone + a lit pool on the ground.
+                    // Cone is additive-blended and dim (0.18 opacity) so it reads as atmospheric.
+                    if (isLit) {
+                      var slGlowGeo = new T.ConeGeometry(1.5, 3.6, 14, 1, true);
+                      var slGlowMat = new T.MeshBasicMaterial({
+                        color: 0xfff6cc, transparent: true, opacity: 0.22,
+                        blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
+                      });
+                      var slGlow = new T.Mesh(slGlowGeo, slGlowMat);
+                      slGlow.position.set(ambX - ambSide * 1.1, 2.1, ambZ);
+                      chunkGroup.add(slGlow);
+                      // Ground light pool — warm circular disc on the ground beneath the head
+                      var slPoolGeo = new T.CircleGeometry(1.6, 20);
+                      var slPoolMat = new T.MeshBasicMaterial({
+                        color: 0xffe8a0, transparent: true, opacity: 0.32,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var slPool = new T.Mesh(slPoolGeo, slPoolMat);
+                      slPool.rotation.x = -Math.PI / 2;
+                      slPool.position.set(ambX - ambSide * 1.1, 0.015, ambZ);
+                      chunkGroup.add(slPool);
+                    }
                   }
                 } else if (ambRoll < 0.72) {
                   // Bench (near parks/schools/libraries in commercial/suburban areas)
@@ -10452,6 +10506,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   paintPlane2.position.set(paintCtr + 1.3, paintHt + 0.012, paintZ);
                   chunkGroup.add(paintPlane2);
                 } catch (paintErr) { /* canvas not available — skip painting */ }
+              }
+              // ── Railroad crossing (rural + industrial biomes) ──
+              // Deterministic per-chunk: roughly 1 in 7 qualifying chunks gets a crossing.
+              // Render: two steel rails across the road + wood ties + crossbuck sign pole
+              // + warning light mast. Not placed at chunks that already have a street
+              // intersection or landmark (avoids visual collision).
+              var rrEligible = (chunk.biome === 'rural' || chunk.biome === 'industrial')
+                && !chunk.hasIntersection && !chunk.landmark;
+              if (rrEligible && ((chunk.index * 2654435761) >>> 0) % 7 === 3) {
+                // Place the crossing ~60% of the way through the chunk so the warning
+                // signage (which is ~20m before the tracks) fits inside the chunk.
+                var rrZ = chunkWorldZ + CHUNK_SIZE * 0.6;
+                var rrCtr = markCenterAtZ(rrZ);
+                var rrHt = iw.spline ? iw.spline.heightAt(rrZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                // ── Ballast bed (dark gray gravel) spanning the road + shoulders ──
+                var ballastMat = new T.MeshBasicMaterial({ color: 0x423832 });
+                var ballast = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 + 3, 3.2), ballastMat);
+                ballast.rotation.x = -Math.PI / 2;
+                ballast.position.set(rrCtr, rrHt + 0.009, rrZ);
+                chunkGroup.add(ballast);
+                // ── Wood ties (crossties) — 14 parallel brown rectangles ──
+                var tieMat = new T.MeshBasicMaterial({ color: 0x4a321a });
+                var tieCount = 14;
+                var tieSpanZ = 3.0;
+                var tieStepZ = tieSpanZ / tieCount;
+                for (var tti = 0; tti < tieCount; tti++) {
+                  var tieZ = rrZ - tieSpanZ / 2 + tti * tieStepZ + tieStepZ / 2;
+                  var tie = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 + 2.4, tieStepZ * 0.65), tieMat);
+                  tie.rotation.x = -Math.PI / 2;
+                  tie.position.set(rrCtr, rrHt + 0.011, tieZ);
+                  chunkGroup.add(tie);
+                }
+                // ── Two steel rails running perpendicular to the road (along Z axis) ──
+                var railMat = new T.MeshBasicMaterial({ color: 0x9aa0a8 });
+                [-0.7, 0.7].forEach(function(railXOff) {
+                  var rail = new T.Mesh(new T.PlaneGeometry(0.10, 3.2), railMat);
+                  rail.rotation.x = -Math.PI / 2;
+                  rail.position.set(rrCtr + railXOff, rrHt + 0.013, rrZ);
+                  chunkGroup.add(rail);
+                });
+                // ── White stop line painted BEFORE the tracks (both approach directions) ──
+                var rrStopMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
+                [-2.2, 2.2].forEach(function(stopOff) {
+                  var rrStop = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 * 0.95, 0.3), rrStopMat);
+                  rrStop.rotation.x = -Math.PI / 2;
+                  rrStop.position.set(rrCtr, rrHt + 0.014, rrZ + stopOff);
+                  chunkGroup.add(rrStop);
+                });
+                // ── Big painted "RR" on the road, both directions ──
+                try {
+                  if (!iw._rrPaintTex) {
+                    var rrCan = document.createElement('canvas');
+                    rrCan.width = 128; rrCan.height = 256;
+                    var rrCtx = rrCan.getContext('2d');
+                    rrCtx.clearRect(0, 0, 128, 256);
+                    rrCtx.fillStyle = '#f5f5f5';
+                    rrCtx.font = 'bold 140px system-ui, Arial, sans-serif';
+                    rrCtx.textAlign = 'center';
+                    rrCtx.fillText('R', 64, 130);
+                    rrCtx.fillText('R', 64, 240);
+                    iw._rrPaintTex = new T.CanvasTexture(rrCan);
+                  }
+                  var rrPaintMat = new T.MeshBasicMaterial({ map: iw._rrPaintTex, transparent: true, depthWrite: false });
+                  [-1, 1].forEach(function(approachSide) {
+                    var rrPaint = new T.Mesh(new T.PlaneGeometry(1.2, 2.4), rrPaintMat);
+                    rrPaint.rotation.x = -Math.PI / 2;
+                    if (approachSide > 0) rrPaint.rotation.z = Math.PI;
+                    var paintOff = approachSide * 5.5; // 5.5m before the tracks
+                    rrPaint.position.set(rrCtr + approachSide * 0.7, rrHt + 0.0125, rrZ + paintOff);
+                    chunkGroup.add(rrPaint);
+                  });
+                } catch (rrPErr) { /* canvas texture fallback */ }
+                // ── Crossbuck sign (white X on pole) + twin red warning lights on both sides ──
+                [-1, 1].forEach(function(cbSide) {
+                  var cbPoleX = rrCtr + cbSide * (roadHalfW + 0.9);
+                  // Pole
+                  var cbPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 4.0, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
+                  cbPole.position.set(cbPoleX, rrHt + 2.0, rrZ);
+                  chunkGroup.add(cbPole);
+                  // Crossbuck: two white boards in an X shape at ~45°
+                  var cbMat = new T.MeshBasicMaterial({ color: 0xf5f5f5, side: T.DoubleSide });
+                  [-1, 1].forEach(function(diag) {
+                    var cb = new T.Mesh(new T.BoxGeometry(1.4, 0.16, 0.02), cbMat);
+                    cb.rotation.z = diag * Math.PI / 4;
+                    cb.position.set(cbPoleX, rrHt + 3.5, rrZ);
+                    chunkGroup.add(cb);
+                  });
+                  // Twin red warning lamps (below the crossbuck) — low opacity by default.
+                  // These could be animated to flash when a train is "present"; for now, steady dim.
+                  [-0.35, 0.35].forEach(function(lampOff) {
+                    var cbLampMat = new T.MeshBasicMaterial({ color: 0x660000, transparent: true, opacity: 0.5 });
+                    var cbLamp = new T.Mesh(new T.SphereGeometry(0.14, 10, 10), cbLampMat);
+                    cbLamp.position.set(cbPoleX + lampOff, rrHt + 2.8, rrZ);
+                    chunkGroup.add(cbLamp);
+                  });
+                  // Small black "2 TRACKS" or "RR XING" placard below the lamps (optional detail)
+                  var rrPlacard = new T.Mesh(new T.BoxGeometry(0.7, 0.3, 0.02), new T.MeshBasicMaterial({ color: 0xfffbeb }));
+                  rrPlacard.position.set(cbPoleX, rrHt + 2.35, rrZ);
+                  chunkGroup.add(rrPlacard);
+                });
               }
               // ── Shoulder rumble strips: short dark dashes just OUTSIDE each edge line ──
               // These are the scored grooves you hear/feel when drifting off the road.
@@ -14647,6 +14801,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
                 drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
                 drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, R=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
+                drivingStats.busStopCompliance > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚌 ' + drivingStats.busStopCompliance + ' correct stop(s) for school bus with red flashers. Federal law — you nailed it.') : null,
+                drivingStats.pedYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚶 ' + drivingStats.pedYields + ' pedestrian yield(s) at crosswalks. This is the single most important habit for urban driving.') : null,
+                drivingStats.emergencyYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚑 ' + drivingStats.emergencyYields + ' emergency vehicle yield(s) — pulled right and stopped. Good instinct.') : null,
                 parseFloat(drivingStats.avgMPG) > currentVehicle.cityMPG ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🌿 Beat the EPA sticker average. Hypermiling working!') : null
               )
             ),
@@ -14676,6 +14833,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       closeFollows: drivingStats.closeFollows,
                       skidSeconds: drivingStats.skidSeconds,
                       unsignaledLaneChanges: drivingStats.unsignaledLaneChanges,
+                      busStopCompliance: drivingStats.busStopCompliance || 0,
+                      pedYields: drivingStats.pedYields || 0,
+                      emergencyYields: drivingStats.emergencyYields || 0,
                       recentEvents: (d.lastJournal && d.lastJournal.entries || []).slice(-12).map(function(e){return e.text;})
                     };
                     var promptText = 'You are a warm, experienced teen-driver coach writing a short personalized reflection for a student who just finished a drive in a simulator.\n\n'

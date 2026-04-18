@@ -1,3 +1,10 @@
+// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
+// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
+// Actually USED in teacher by the Escape-to-close handler (vs dead code in games/visual_panel/story_forge).
+var _alloFocusTrigger = null;
+function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
 const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode }) => {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState('#4F46E5');

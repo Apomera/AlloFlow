@@ -1,3 +1,21 @@
+// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
+// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
+var _alloFocusTrigger = null;
+function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
+// Fisher-Yates shuffle used by the unscramble game. Recurses if shuffle produces the same word.
+var scrambleWord = function(word) {
+  if (!word || word.length < 2) return word;
+  var arr = word.split('');
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  var result = arr.join('');
+  return result === word ? scrambleWord(word) : result;
+};
+
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
 // ── TTS utility for read-aloud accessibility ──

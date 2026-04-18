@@ -234,6 +234,102 @@ var createDocPipeline = function(deps) {
     }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
   };
 
+  // ── Multi-session PDF remediation persistence ──
+  // Lets users tackle a long PDF over multiple days on a free Gemini quota.
+  // Each session runs the remediation pipeline on a page range, persists the
+  // remediated HTML to IndexedDB keyed by a stable doc fingerprint (filename +
+  // size + page count), and merges across sessions on demand.
+  //
+  // Reuses the existing _CHUNK_DB infrastructure — different namespace prefix
+  // ('msdoc_' vs 'chunk_') so the keys don't collide. Expiry is 30 days
+  // (vs. chunk-progress's 24 hours) because multi-day workflows are the point.
+  // Originally added in d0af1f2; lost in 1ce8054 (Deploy: JSON schema fix regression); restored.
+  var _MULTI_SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+  var _MULTI_SESSION_SCHEMA = 1;
+
+  // Hash a filename + size + total page count into a stable session key that
+  // identifies the same PDF across uploads.
+  var _multiSessionId = function(filename, fileSize, pageCount) {
+    var raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
+    var hash = 0;
+    for (var i = 0; i < raw.length; i++) {
+      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+      hash |= 0;
+    }
+    return 'msdoc_' + Math.abs(hash).toString(36);
+  };
+
+  // Load the multi-session record for a given session ID. Returns null when there's
+  // no record, or when the record is older than the expiry window (in which case
+  // it's also cleared so it doesn't sit around).
+  var loadMultiSession = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readonly');
+        var req = tx.objectStore(_CHUNK_STORE).get(sessionId);
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror = function() { reject(req.error); };
+      });
+    }).then(function(record) {
+      if (!record) return null;
+      if (record.schemaVersion !== _MULTI_SESSION_SCHEMA) {
+        warnLog('[MultiSession] Record schema version mismatch — discarding.');
+        return clearMultiSession(sessionId).then(function() { return null; });
+      }
+      var age = Date.now() - (record.lastUpdatedAt || record.createdAt || 0);
+      if (age > _MULTI_SESSION_EXPIRY_MS) {
+        warnLog('[MultiSession] Record expired (' + Math.round(age / (24 * 60 * 60 * 1000)) + ' days old) — clearing.');
+        return clearMultiSession(sessionId).then(function() { return null; });
+      }
+      return record;
+    }).catch(function(e) { warnLog('[MultiSession] Load failed:', e && e.message); return null; });
+  };
+
+  // Append (or replace, if pages overlap) one remediated range to a session record.
+  // Creates the record on first call. Does not merge HTML — that's the caller's
+  // job via mergeRangesToFullHtml.
+  var saveMultiSessionRange = function(sessionId, meta, rangeData) {
+    return loadMultiSession(sessionId).then(function(existing) {
+      var record = existing || {
+        schemaVersion: _MULTI_SESSION_SCHEMA,
+        sessionId: sessionId,
+        fileName: meta.fileName,
+        fileSize: meta.fileSize,
+        pageCount: meta.pageCount,
+        createdAt: Date.now(),
+        ranges: [],
+      };
+      // Replace any existing range with the exact same [start, end]; re-running
+      // overwrites. Overlap beyond exact match is resolved at merge time.
+      var newPages = rangeData.pages;
+      record.ranges = (record.ranges || []).filter(function(r) {
+        return !(r.pages && r.pages[0] === newPages[0] && r.pages[1] === newPages[1]);
+      });
+      record.ranges.push(Object.assign({ completedAt: Date.now() }, rangeData));
+      record.lastUpdatedAt = Date.now();
+      return _openChunkDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+          tx.objectStore(_CHUNK_STORE).put(record, sessionId);
+          tx.oncomplete = function() { resolve(record); };
+          tx.onerror = function() { reject(tx.error); };
+        });
+      });
+    }).catch(function(e) { warnLog('[MultiSession] Save failed:', e && e.message); return null; });
+  };
+
+  // Erase a session record entirely (user clicked "Clear saved progress").
+  var clearMultiSession = function(sessionId) {
+    return _openChunkDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+        tx.objectStore(_CHUNK_STORE).delete(sessionId);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    }).catch(function(e) { warnLog('[MultiSession] Clear failed:', e && e.message); });
+  };
+
   // ── Deterministic integrity helpers ──
   // textCharCount: count visible text characters in HTML (strips tags/scripts/styles)
   const textCharCount = (html) => {
@@ -1292,6 +1388,611 @@ var createDocPipeline = function(deps) {
     warnLog('[SurgicalThenAI] Done: ' + surgicalFixCount + ' surgical fixes, ' + geminiPassCount + ' Gemini passes, ' + rejectedChunks + ' rejected chunks');
     return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
   };
+
+  const clusterAxeViolationsByAncestor = (htmlContent, axeResult) => {
+    if (!axeResult || typeof DOMParser === 'undefined') return [];
+    const all = []
+      .concat(axeResult.critical || [])
+      .concat(axeResult.serious || [])
+      .concat(axeResult.moderate || [])
+      .filter(v => TIER2_RULE_IDS.has(v.id));
+    if (all.length === 0) return [];
+    let doc;
+    try { doc = new DOMParser().parseFromString(htmlContent, 'text/html'); } catch { return []; }
+    if (!doc || !doc.body) return [];
+    // For each violation node, find its smallest ancestor whose outerHTML
+    // is ≤ 2 KB. That's the cluster anchor.
+    const MAX_SUBTREE_BYTES = 2048;
+    const clusters = new Map(); // anchorElement → { ruleIds: Set, selectors: [], targetedRules: Set }
+    for (const v of all) {
+      const nodes = Array.isArray(v.nodeDetails) ? v.nodeDetails : [];
+      for (const nd of nodes) {
+        const sel = Array.isArray(nd.target) ? nd.target[0] : null;
+        if (!sel) continue;
+        let el;
+        try { el = doc.querySelector(sel); } catch { continue; }
+        if (!el) continue;
+        // Walk up to the smallest ancestor whose outerHTML fits the budget.
+        let anchor = el;
+        let safety = 8; // never walk more than 8 levels up
+        while (anchor && anchor !== doc.body && safety-- > 0) {
+          if (anchor.outerHTML && anchor.outerHTML.length <= MAX_SUBTREE_BYTES) break;
+          anchor = anchor.parentElement;
+        }
+        if (!anchor || anchor === doc.body || !anchor.outerHTML || anchor.outerHTML.length > MAX_SUBTREE_BYTES) continue;
+        if (!clusters.has(anchor)) {
+          clusters.set(anchor, { ruleIds: new Set(), selectors: [], targetedRules: new Set() });
+        }
+        const c = clusters.get(anchor);
+        c.ruleIds.add(v.id);
+        c.targetedRules.add(v.id);
+        c.selectors.push(sel);
+      }
+    }
+    // Materialize. Cap clusters at 5 violations each — beyond that the prompt
+    // gets diluted and Tier 3 is more efficient anyway.
+    const result = [];
+    for (const [anchor, meta] of clusters.entries()) {
+      if (meta.selectors.length > 5) continue;
+      result.push({
+        anchorHtml: anchor.outerHTML,
+        ruleIds: Array.from(meta.ruleIds),
+        targetedRules: Array.from(meta.targetedRules),
+        violationCount: meta.selectors.length,
+        selectors: meta.selectors,
+      });
+    }
+    return result;
+  };
+
+  // Audit a small HTML subtree in isolation (no whole-document context).
+  // Returns an axe-style result scoped to the subtree's body.
+  const auditSubtreeIsolated = async (subtreeHtml) => {
+    if (!subtreeHtml || typeof window === 'undefined' || !window.document) return null;
+    if (!window.axe) {
+      // Cheap path: rely on the existing runAxeAudit lazy-loader by calling it
+      // once on a minimal doc to populate window.axe. After this it's cached.
+      try { await runAxeAudit('<!DOCTYPE html><html lang="en"><head><title>x</title></head><body></body></html>'); } catch { /* ignore */ }
+      if (!window.axe) return null;
+    }
+    const wrapped = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Subtree audit</title></head><body>' + subtreeHtml + '</body></html>';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:600px;height:400px;opacity:0;pointer-events:none';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.title = 'Subtree audit frame';
+    document.body.appendChild(iframe);
+    try {
+      const idoc = iframe.contentDocument || iframe.contentWindow.document;
+      idoc.open();
+      idoc.write(wrapped);
+      idoc.close();
+      await new Promise(r => setTimeout(r, 150));
+      // Inject axe into iframe
+      await new Promise((resolve, reject) => {
+        const s = idoc.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('axe inject failed'));
+        idoc.head.appendChild(s);
+      });
+      await new Promise(r => setTimeout(r, 100));
+      const iframeAxe = iframe.contentWindow.axe;
+      if (!iframeAxe) return null;
+      const results = await iframeAxe.run(idoc.body, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        resultTypes: ['violations']
+      });
+      const map = {};
+      for (const v of (results.violations || [])) {
+        map[v.id] = (map[v.id] || 0) + (v.nodes ? v.nodes.length : 1);
+      }
+      return { violations: map, totalViolations: Object.values(map).reduce((a, b) => a + b, 0) };
+    } catch (e) {
+      warnLog('[Tier2] subtree audit failed:', e && e.message);
+      return null;
+    } finally {
+      try { document.body.removeChild(iframe); } catch { /* */ }
+    }
+  };
+
+  // Ask Gemini to fix a small subtree given a tight, single-cluster prompt.
+  // Returns the rewritten subtree (or the original if AI declined / failed).
+  const surgicalFixCluster = async (cluster) => {
+    if (!callGemini) return cluster.anchorHtml;
+    const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
+    const prompt =
+      'Fix ONLY the listed accessibility violations in this HTML element. ' +
+      'Do NOT modify any other elements, text content, or attributes. ' +
+      'Do NOT add or remove text the user can read. Preserve all inline styles.\n\n' +
+      'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
+      'ELEMENT:\n' + cluster.anchorHtml + '\n\n' +
+      'Return ONLY the rewritten element. No explanation. No markdown fences. ' +
+      'The opening and closing tags must match the input.';
+    try {
+      let raw = await callGemini(prompt, true);
+      if (!raw) return cluster.anchorHtml;
+      // Strip code fences if the model added them anyway
+      raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      // Sanity: must start with '<' and contain the original tag name
+      if (!raw.startsWith('<')) return cluster.anchorHtml;
+      const origTagMatch = cluster.anchorHtml.match(/^<([a-z][a-z0-9]*)/i);
+      const newTagMatch = raw.match(/^<([a-z][a-z0-9]*)/i);
+      if (!origTagMatch || !newTagMatch || origTagMatch[1].toLowerCase() !== newTagMatch[1].toLowerCase()) {
+        warnLog('[Tier2] surgical fix tag mismatch — reject');
+        return cluster.anchorHtml;
+      }
+      return raw;
+    } catch (e) {
+      warnLog('[Tier2] surgical fix call failed:', e && e.message);
+      return cluster.anchorHtml;
+    }
+  };
+
+  // Decide whether to keep a surgical rewrite. Strict rule:
+  //   1. Targeted rule violations must STRICTLY decrease.
+  //   2. No NEW rule violations may appear (i.e. for every rule present in the
+  //      rewrite, its count must be ≤ the original's count for that rule).
+  // If either check fails, revert to the original.
+  const acceptOrRevertSubtreeFix = async (originalHtml, rewrittenHtml, targetedRules) => {
+    if (!rewrittenHtml || rewrittenHtml === originalHtml) {
+      return { accepted: false, reason: 'no-change' };
+    }
+    const [origAudit, newAudit] = await Promise.all([
+      auditSubtreeIsolated(originalHtml),
+      auditSubtreeIsolated(rewrittenHtml)
+    ]);
+    if (!origAudit || !newAudit) return { accepted: false, reason: 'audit-failed' };
+    // Targeted rules must strictly decrease in aggregate
+    let targetedBefore = 0, targetedAfter = 0;
+    for (const r of targetedRules) {
+      targetedBefore += origAudit.violations[r] || 0;
+      targetedAfter += newAudit.violations[r] || 0;
+    }
+    if (targetedAfter >= targetedBefore) {
+      return { accepted: false, reason: 'targeted-not-improved (' + targetedBefore + '→' + targetedAfter + ')' };
+    }
+    // No new violations of ANY rule (counts may not increase)
+    for (const ruleId of Object.keys(newAudit.violations)) {
+      const before = origAudit.violations[ruleId] || 0;
+      const after = newAudit.violations[ruleId] || 0;
+      if (after > before) {
+        return { accepted: false, reason: 'introduced-new-violation:' + ruleId + ' (' + before + '→' + after + ')' };
+      }
+    }
+    return { accepted: true, reason: 'targeted ' + targetedBefore + '→' + targetedAfter, targetedBefore, targetedAfter };
+  };
+
+  // Orchestrator: runs Tier 2 over an HTML document. Returns the modified HTML
+  // along with statistics. Safe to call when there are no eligible violations
+  // (returns the input unchanged).
+  const runTier2SurgicalFixes = async (htmlContent, axeResult, opts) => {
+    const _opts = opts || {};
+    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
+    if (!htmlContent || !axeResult) return { html: htmlContent, stats };
+    const clusters = clusterAxeViolationsByAncestor(htmlContent, axeResult);
+    if (clusters.length === 0) return { html: htmlContent, stats };
+    stats.clustersConsidered = clusters.length;
+    warnLog('[Tier2] considering ' + clusters.length + ' surgical cluster(s)');
+    // Process clusters in parallel — they're disjoint by construction (each
+    // anchor is a different DOM element).
+    const proposals = await Promise.all(clusters.map(async (cluster) => {
+      const rewritten = await surgicalFixCluster(cluster);
+      const verdict = await acceptOrRevertSubtreeFix(cluster.anchorHtml, rewritten, cluster.targetedRules);
+      return { cluster, rewritten, verdict };
+    }));
+    // Apply accepted rewrites by string replace. Replacements are anchor-disjoint
+    // so order shouldn't matter, but we still apply largest-first to avoid any
+    // edge case where one anchor's html is a substring of another.
+    let working = htmlContent;
+    proposals
+      .filter(p => p.verdict.accepted)
+      .sort((a, b) => b.cluster.anchorHtml.length - a.cluster.anchorHtml.length)
+      .forEach(p => {
+        const idx = working.indexOf(p.cluster.anchorHtml);
+        if (idx === -1) {
+          // The exact anchor HTML wasn't found — likely earlier replacements
+          // shifted byte ranges. Skip rather than risk a wrong-place insert.
+          stats.rejected++;
+          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'anchor-not-found-after-prior-replacement' });
+          warnLog('[Tier2] anchor lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
+          return;
+        }
+        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.anchorHtml.length);
+        stats.accepted++;
+        stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
+        warnLog('[Tier2] accepted cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+      });
+    proposals.filter(p => !p.verdict.accepted).forEach(p => {
+      stats.rejected++;
+      stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
+      warnLog('[Tier2] rejected cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+    });
+    warnLog('[Tier2] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
+    return { html: working, stats };
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tier 2.5: Section-scoped AI fixes
+  // ─────────────────────────────────────────────────────────────────────────
+  // The missing middle between Tier 2 (single-element, ≤2 KB ancestor) and
+  // Tier 3 (whole document, 16 KB chunks). For violations that *do* need
+  // structural context (heading hierarchy within a section, landmark wrapping,
+  // multi-element layout) but DON'T need the whole document, we send just the
+  // containing section to Gemini with a tight prompt and re-audit it in
+  // isolation. Same accept-or-revert discipline as Tier 2.
+  //
+  // What Tier 2.5 handles:
+  //   - axe rules that need section context: heading-order, region, bypass,
+  //     landmark-banner-is-top-level, landmark-no-duplicate-banner,
+  //     landmark-no-duplicate-contentinfo, page-has-heading-one
+  //     (when the violation lives inside a section)
+  //   - AI-flagged issues whose `location` string contains an exact substring
+  //     match against a heading inside one of the document's sections
+  //
+  // What Tier 2.5 does NOT handle:
+  //   - violations Tier 2 already addressed (image-alt, link-name, etc.) —
+  //     those are checked first and skipped here
+  //   - truly document-wide violations (html-has-lang, document-title,
+  //     landmark-one-main when there is no main anywhere) — those need Tier 3
+  const TIER2_5_SECTION_TAGS = ['section', 'article', 'aside', 'nav', 'header', 'footer', 'main'];
+  const TIER2_5_RULE_IDS = new Set([
+    'heading-order',
+    'region',
+    'bypass',
+    'landmark-banner-is-top-level',
+    'landmark-no-duplicate-banner',
+    'landmark-no-duplicate-contentinfo',
+    'landmark-complementary-is-top-level',
+    'page-has-heading-one',
+    'identical-links-same-purpose',
+    'duplicate-id',
+    'duplicate-id-aria',
+    'aria-required-children',
+    'aria-required-parent',
+  ]);
+
+  // Find the closest section-like ancestor of an element using the priority
+  // order. Returns null when no qualifying ancestor exists. Cap walk at 10
+  // levels so a deeply-nested element doesn't trigger O(N) walks repeatedly.
+  const _findSectionAncestor = (element) => {
+    let safety = 10;
+    let cur = element;
+    while (cur && cur.parentElement && safety-- > 0) {
+      const tag = (cur.tagName || '').toLowerCase();
+      if (TIER2_5_SECTION_TAGS.indexOf(tag) >= 0) return cur;
+      // Accept a div with id as a fallback — it's at least an addressable
+      // landmark, even if not semantically tagged.
+      if (tag === 'div' && cur.id) return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  };
+
+  // Cluster axe violations by section ancestor. Each cluster holds the
+  // section's outerHTML, the rule IDs targeted, and the count of violations.
+  // Skips violations Tier 2 already targets, sections too large to send
+  // (>8 KB), and clusters with too many violations (>8) — those are better
+  // handled by Tier 3.
+  const clusterAxeViolationsBySection = (htmlContent, axeResult) => {
+    if (!axeResult || typeof DOMParser === 'undefined') return [];
+    const all = []
+      .concat(axeResult.critical || [])
+      .concat(axeResult.serious || [])
+      .concat(axeResult.moderate || [])
+      .filter(v => TIER2_5_RULE_IDS.has(v.id));
+    if (all.length === 0) return [];
+    let doc;
+    try { doc = new DOMParser().parseFromString(htmlContent, 'text/html'); } catch { return []; }
+    if (!doc || !doc.body) return [];
+    const MAX_SECTION_BYTES = 8192;
+    const MAX_VIOLATIONS_PER_CLUSTER = 8;
+    const clusters = new Map(); // sectionElement → { ruleIds: Set, selectors: [], targetedRules: Set }
+    for (const v of all) {
+      const nodes = Array.isArray(v.nodeDetails) ? v.nodeDetails : [];
+      // For document-wide rules without nodeDetails (e.g. page-has-heading-one
+      // when there's literally no h1), there's no anchor — Tier 3 handles it.
+      if (nodes.length === 0) continue;
+      for (const nd of nodes) {
+        const sel = Array.isArray(nd.target) ? nd.target[0] : null;
+        if (!sel) continue;
+        let el;
+        try { el = doc.querySelector(sel); } catch { continue; }
+        if (!el) continue;
+        const section = _findSectionAncestor(el);
+        if (!section) continue;
+        if (!section.outerHTML || section.outerHTML.length > MAX_SECTION_BYTES) continue;
+        if (!clusters.has(section)) {
+          clusters.set(section, { ruleIds: new Set(), selectors: [], targetedRules: new Set() });
+        }
+        const c = clusters.get(section);
+        c.ruleIds.add(v.id);
+        c.targetedRules.add(v.id);
+        c.selectors.push(sel);
+      }
+    }
+    const result = [];
+    for (const [section, meta] of clusters.entries()) {
+      if (meta.selectors.length > MAX_VIOLATIONS_PER_CLUSTER) continue;
+      result.push({
+        sectionTag: (section.tagName || 'section').toLowerCase(),
+        sectionHtml: section.outerHTML,
+        ruleIds: Array.from(meta.ruleIds),
+        targetedRules: Array.from(meta.targetedRules),
+        violationCount: meta.selectors.length,
+        selectors: meta.selectors,
+      });
+    }
+    return result;
+  };
+
+  // Section-scoped Gemini prompt. Tighter than Tier 3's whole-document prompt;
+  // looser than Tier 2's single-element prompt. The model is told exactly what
+  // section it's seeing and exactly which violations to address.
+  const sectionScopedFixCluster = async (cluster) => {
+    if (!callGemini) return cluster.sectionHtml;
+    const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
+    const prompt =
+      'Fix ONLY the listed accessibility violations in this <' + cluster.sectionTag + '> element.\n' +
+      'Do NOT modify any text content (the words a human reads must remain identical).\n' +
+      'Do NOT modify alt attributes, aria-label values, or button/link text — those are\n' +
+      'handled by other tiers.\n' +
+      'You MAY modify: heading levels (h1-h6) within the section, landmark roles, the\n' +
+      'section\'s opening tag attributes (e.g. add aria-labelledby), nested element\n' +
+      'structure for landmark/region compliance.\n\n' +
+      'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
+      'SECTION:\n' + cluster.sectionHtml + '\n\n' +
+      'Return ONLY the rewritten <' + cluster.sectionTag + '> element. No explanation.\n' +
+      'No markdown fences. The opening and closing tag names must match the input.';
+    try {
+      let raw = await callGemini(prompt, true);
+      if (!raw) return cluster.sectionHtml;
+      raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      if (!raw.startsWith('<')) return cluster.sectionHtml;
+      const newTagMatch = raw.match(/^<([a-z][a-z0-9]*)/i);
+      if (!newTagMatch || newTagMatch[1].toLowerCase() !== cluster.sectionTag) {
+        warnLog('[Tier2.5] section tag mismatch (expected ' + cluster.sectionTag + ', got ' + (newTagMatch ? newTagMatch[1] : '?') + ') — reject');
+        return cluster.sectionHtml;
+      }
+      return raw;
+    } catch (e) {
+      warnLog('[Tier2.5] section fix call failed:', e && e.message);
+      return cluster.sectionHtml;
+    }
+  };
+
+  // Orchestrator. Same shape as runTier2SurgicalFixes — returns the modified
+  // HTML and a stats object. Reuses acceptOrRevertSubtreeFix for the verdict
+  // (the math is identical: targeted violations must strictly decrease, no new
+  // violations allowed).
+  const runTier2_5SectionScopedFixes = async (htmlContent, axeResult) => {
+    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
+    if (!htmlContent || !axeResult) return { html: htmlContent, stats };
+    const clusters = clusterAxeViolationsBySection(htmlContent, axeResult);
+    if (clusters.length === 0) return { html: htmlContent, stats };
+    stats.clustersConsidered = clusters.length;
+    warnLog('[Tier2.5] considering ' + clusters.length + ' section-scoped cluster(s)');
+    const proposals = await Promise.all(clusters.map(async (cluster) => {
+      const rewritten = await sectionScopedFixCluster(cluster);
+      const verdict = await acceptOrRevertSubtreeFix(cluster.sectionHtml, rewritten, cluster.targetedRules);
+      return { cluster, rewritten, verdict };
+    }));
+    let working = htmlContent;
+    proposals
+      .filter(p => p.verdict.accepted)
+      .sort((a, b) => b.cluster.sectionHtml.length - a.cluster.sectionHtml.length)
+      .forEach(p => {
+        const idx = working.indexOf(p.cluster.sectionHtml);
+        if (idx === -1) {
+          stats.rejected++;
+          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'section-not-found-after-prior-replacement' });
+          warnLog('[Tier2.5] section lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
+          return;
+        }
+        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.sectionHtml.length);
+        stats.accepted++;
+        stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
+        warnLog('[Tier2.5] accepted <' + p.cluster.sectionTag + '> cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+      });
+    proposals.filter(p => !p.verdict.accepted).forEach(p => {
+      stats.rejected++;
+      stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
+      warnLog('[Tier2.5] rejected <' + p.cluster.sectionTag + '> cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
+    });
+    warnLog('[Tier2.5] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
+    return { html: working, stats };
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tier 3: Structural AI fixes (chunked, document-wide)
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tier 3 wraps the existing aiFixChunked but does three things differently:
+  //
+  //   1. FILTERS its input. Violations Tier 2 already targeted (image-alt,
+  //      link-name, etc.) are stripped from the prompt — if Tier 2 couldn't
+  //      fix them, Tier 3's bigger hammer probably can't either, and including
+  //      them just bloats the prompt and tempts the model to touch unrelated
+  //      content.
+  //   2. SCOPES the prompt. The instructions explicitly say "focus on document-
+  //      wide structure (heading hierarchy, landmarks, lang attribute) — DO NOT
+  //      modify individual elements (alt text, button labels, link text) which
+  //      have already been handled."
+  //   3. SKIPS itself when the filtered violation list is empty or the only
+  //      remaining violations are below a meaningful-work threshold. Saves an
+  //      API call (and avoids regression risk) when there's nothing left to do.
+  //
+  // Tier 3 keeps the same regression guard as before — if a pass makes things
+  // worse, it reverts. It also keeps the per-chunk integrity validators in
+  // aiFixChunked. This is purely a smarter front-end to existing infrastructure.
+
+  // Build the structural-only prompt instructions, filtering out rules that
+  // Tier 2 already handled. Returns null if there's nothing meaningful to fix.
+  const buildTier3StructuralPromptText = (axeResult, aiVerification) => {
+    if (!axeResult && !aiVerification) return null;
+    const tier3RemainingAxe = ['critical', 'serious', 'moderate']
+      .flatMap(impact => (axeResult && axeResult[impact]) ? axeResult[impact] : [])
+      .filter(v => !TIER2_RULE_IDS.has(v.id));
+    const tier3AiIssues = (aiVerification && Array.isArray(aiVerification.issues))
+      ? aiVerification.issues
+      : [];
+    if (tier3RemainingAxe.length === 0 && tier3AiIssues.length === 0) return null;
+    const axeLines = tier3RemainingAxe.map(v => {
+      const impactLabel = (v.impact || 'moderate').toUpperCase();
+      const wcag = v.wcag ? ' — ' + v.wcag : '';
+      return impactLabel + ' (axe-core): ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)' + wcag;
+    });
+    const aiLines = tier3AiIssues.map(i => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i))));
+    return axeLines.concat(aiLines).join('\n');
+  };
+
+  // Decide whether Tier 3 has meaningful work to do. We skip the full AI pass
+  // when only minor or low-confidence issues remain — the API call cost +
+  // regression risk outweigh any expected improvement.
+  const tier3HasMeaningfulWork = (axeResult, aiVerification, options) => {
+    const _opts = options || {};
+    const minViolations = _opts.minViolations || 1;
+    if (!axeResult && !aiVerification) return false;
+    const remainingAxe = ['critical', 'serious', 'moderate']
+      .flatMap(impact => (axeResult && axeResult[impact]) ? axeResult[impact] : [])
+      .filter(v => !TIER2_RULE_IDS.has(v.id));
+    const aiIssueCount = (aiVerification && Array.isArray(aiVerification.issues)) ? aiVerification.issues.length : 0;
+    return (remainingAxe.length + aiIssueCount) >= minViolations;
+  };
+
+  // Wrap the AI fix call with the structural prompt scoping. Returns the same
+  // shape as the inner call. Caller is responsible for applying its own
+  // regression guard around our return value.
+  const runTier3StructuralFix = async (htmlContent, axeResult, aiVerification, label) => {
+    if (!callGemini) return { html: htmlContent, skipped: true, reason: 'no-callGemini' };
+    const violationInstructions = buildTier3StructuralPromptText(axeResult, aiVerification);
+    if (!violationInstructions) {
+      return { html: htmlContent, skipped: true, reason: 'no-structural-violations-remaining' };
+    }
+    if (!tier3HasMeaningfulWork(axeResult, aiVerification)) {
+      return { html: htmlContent, skipped: true, reason: 'below-meaningful-work-threshold' };
+    }
+    // Prepend a structural-scope preamble so Gemini knows what tier this is.
+    const scopedInstructions =
+      'TIER 3 STRUCTURAL FIX PASS. Earlier tiers (deterministic regex + surgical per-element AI) ' +
+      'have already addressed individual-element violations like missing alt text, button names, ' +
+      'link names, iframe titles, and form labels. Focus EXCLUSIVELY on document-wide structural ' +
+      'issues from this list:\n\n' + violationInstructions + '\n\n' +
+      'STRICT RULES:\n' +
+      '- Do NOT modify alt attributes, aria-label values, button content, or link text.\n' +
+      '- Do NOT modify any individual <img>, <button>, <a>, <input>, or <iframe> attributes\n' +
+      '  unless the violation list above explicitly names that element type.\n' +
+      '- DO modify: heading levels (h1-h6), landmark wrappers (main/nav/header/footer/aside),\n' +
+      '  the <html lang> attribute, the <title> tag, document outline structure.\n' +
+      '- Preserve ALL text content. Preserve ALL inline styles. Preserve ALL data-* attributes.';
+    try {
+      const fixed = await aiFixChunked(htmlContent, scopedInstructions, label || 'tier3-structural');
+      return { html: fixed || htmlContent, skipped: false, reason: 'applied' };
+    } catch (e) {
+      warnLog('[Tier3] structural fix call failed:', e && e.message);
+      return { html: htmlContent, skipped: true, reason: 'call-failed' };
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Multi-session merge: assemble a cohesive HTML doc from N remediated ranges
+  // ─────────────────────────────────────────────────────────────────────────
+  // Pure function — no I/O, no DOM. Takes the ranges[] array stored on a
+  // multi-session record and produces a single accessible HTML document
+  // covering all completed pages, with explicit boundary markers between
+  // ranges and gap markers where the user hasn't remediated yet.
+  //
+  // Strategy:
+  //   1. Sort ranges by starting page.
+  //   2. Lift the preamble (DOCTYPE through first <main>/<body> open) from the
+  //      first range. Lift the postamble (closing </main>/</body>/</html>)
+  //      from the last range.
+  //   3. From each range, extract just the body/main inner content.
+  //   4. Stitch together with <hr data-multi-session-boundary> between ranges,
+  //      and <p data-gap> markers where pages are missing.
+  //
+  // Defensive: if any range is missing structural tags, fall back to using
+  // its raw HTML as a body fragment. We always produce *some* output, even
+  // for partial/malformed records — the user can still download what's there.
+  const mergeRangesToFullHtml = (ranges, totalPages) => {
+    if (!Array.isArray(ranges) || ranges.length === 0) return '';
+    const sorted = ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
+    // Helper: extract body inner content from a single remediated range's HTML.
+    // Tries <main>...</main> first (the preferred landmark), falls back to
+    // <body>...</body>, then to the raw string if neither is present.
+    const _extractBodyContent = (html) => {
+      if (!html) return '';
+      const mainMatch = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
+      if (mainMatch) return mainMatch[1];
+      const bodyMatch = html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
+      if (bodyMatch) return bodyMatch[1];
+      return html; // raw fragment — better than dropping it
+    };
+    // Helper: pull the document opening (DOCTYPE + html + head + opening body
+    // and main if present) from a complete HTML doc. Returns empty string when
+    // the input doesn't look like a full document.
+    const _extractPreamble = (html) => {
+      if (!html) return '';
+      const m = html.match(/^([\s\S]*?<main\b[^>]*>)/i);
+      if (m) return m[1];
+      const b = html.match(/^([\s\S]*?<body\b[^>]*>)/i);
+      if (b) return b[1];
+      return '';
+    };
+    const _extractPostamble = (html) => {
+      if (!html) return '';
+      const m = html.match(/(<\/main>[\s\S]*?<\/html>\s*)$/i);
+      if (m) return m[1];
+      const b = html.match(/(<\/body>[\s\S]*?<\/html>\s*)$/i);
+      if (b) return b[1];
+      return '';
+    };
+    const firstRange = sorted[0];
+    const lastRange = sorted[sorted.length - 1];
+    const preamble = _extractPreamble(firstRange.remediatedHtml) ||
+      '<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8"><title>Multi-session remediated document</title></head>\n<body>\n<main id="main-content" role="main">\n';
+    const postamble = _extractPostamble(lastRange.remediatedHtml) || '\n</main>\n</body>\n</html>\n';
+    const _boundary = (prevEnd, nextStart) => {
+      const gapStart = prevEnd + 1;
+      const gapEnd = nextStart - 1;
+      if (gapEnd >= gapStart) {
+        return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
+          '" data-gap="pages ' + gapStart + '-' + gapEnd + ' not yet remediated" ' +
+          'aria-label="Section break — pages ' + gapStart + ' to ' + gapEnd + ' not yet remediated">\n' +
+          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+          'Pages ' + gapStart + '\u2013' + gapEnd + ' have not yet been remediated in this session. ' +
+          'Re-upload this PDF and select that range to add them.' +
+          '</p>\n';
+      }
+      return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
+        '" aria-label="Section break — resumed remediation session">\n';
+    };
+    const bodies = [];
+    for (let i = 0; i < sorted.length; i++) {
+      const r = sorted[i];
+      bodies.push(
+        '<section data-page-range="' + r.pages[0] + '-' + r.pages[1] + '"' +
+        (r.completedAt ? ' data-completed-at="' + new Date(r.completedAt).toISOString() + '"' : '') +
+        '>\n' +
+        _extractBodyContent(r.remediatedHtml) +
+        '\n</section>'
+      );
+      if (i < sorted.length - 1) {
+        bodies.push(_boundary(r.pages[1], sorted[i + 1].pages[0]));
+      }
+    }
+    // Optional final gap notice if the last range doesn't reach totalPages.
+    let trailingNotice = '';
+    if (totalPages && lastRange.pages[1] < totalPages) {
+      const remStart = lastRange.pages[1] + 1;
+      trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
+        'aria-label="End of completed pages">\n' +
+        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+        'Pages ' + remStart + '\u2013' + totalPages + ' remain to be remediated. ' +
+        'Re-upload this PDF in a future session to continue.' +
+        '</p>\n';
+    }
+    return preamble + bodies.join('\n') + trailingNotice + postamble;
+  };
+
 
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
@@ -5435,6 +6136,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _mimeType = _fileName.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : _fileName.endsWith('.pptx') ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
     const _auditResult = batchOverrides?.auditResult || pdfAuditResult;
     const _onProgress = batchOverrides?.onProgress || null;
+    // Multi-session: when the UI passes pageRange [start, end], we limit extraction to those
+    // pages and auto-save the remediated HTML to the multi-session store keyed by doc fingerprint.
+    // Lets teachers tackle long PDFs across days without re-remediating earlier pages each session.
+    const _pageRange = batchOverrides?.pageRange || null;
     const _startTime = Date.now();
 
     // Reset pipeline telemetry for this run
@@ -5532,13 +6237,30 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           updateProgress(1, 'Extracting PDF text layer deterministically...');
           const det = await extractPdfTextDeterministic(_base64);
           if (det && !det.isScanned && det.sourceCharCount > 100) {
-            extractedText = det.fullText;
-            window.__lastGroundTruthCharCount = det.sourceCharCount;
-            window.__lastGroundTruthPageMap = det.pages;
-            window.__lastGroundTruthMethod = 'pdfjs';
-            if (det.pageCount > 0) effectivePageCount = det.pageCount;
-            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
-            warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
+            // Multi-session: if a pageRange was specified, narrow the extracted pages to
+            // [start, end]. Keeps the full per-page map for later reference but only feeds
+            // the selected pages to the downstream remediation pipeline.
+            if (_pageRange && Array.isArray(det.pages) && det.pages.length > 0) {
+              const rs = Math.max(1, _pageRange[0] || 1);
+              const re = Math.min(det.pageCount, _pageRange[1] || det.pageCount);
+              const slice = det.pages.filter(p => p.pageNum >= rs && p.pageNum <= re);
+              const rangeText = slice.map(p => p.text).filter(Boolean).join('\n\n');
+              extractedText = rangeText;
+              window.__lastGroundTruthCharCount = rangeText.length;
+              window.__lastGroundTruthPageMap = slice;
+              window.__lastGroundTruthMethod = 'pdfjs';
+              effectivePageCount = re - rs + 1;
+              updateProgress(1, `Extracted pages ${rs}-${re} (${rangeText.length.toLocaleString()} chars)`);
+              warnLog(`[Det] PDF text layer range pages ${rs}-${re} → ${rangeText.length} chars / ${effectivePageCount} pages`);
+            } else {
+              extractedText = det.fullText;
+              window.__lastGroundTruthCharCount = det.sourceCharCount;
+              window.__lastGroundTruthPageMap = det.pages;
+              window.__lastGroundTruthMethod = 'pdfjs';
+              if (det.pageCount > 0) effectivePageCount = det.pageCount;
+              updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
+              warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
+            }
           } else if (det) {
             warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
           }
@@ -7755,6 +8477,28 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       setPdfFixLoading(false);
       setPdfFixStep('');
 
+      // Multi-session auto-save — if this run was for a specific pageRange, persist the
+      // remediated HTML keyed by doc fingerprint so the UI's multi-session panel can show
+      // "pages 1-30 done" and the Merge button can stitch completed ranges later.
+      if (_pageRange && _result && _result.accessibleHtml) {
+        try {
+          const _msMeta = {
+            fileName: _fileName,
+            fileSize: (_base64 && _base64.length) ? Math.round(_base64.length * 0.75) : 0,
+            pageCount: pageCount,
+          };
+          const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount);
+          saveMultiSessionRange(_msSessionId, _msMeta, {
+            pages: [_pageRange[0], _pageRange[1]],
+            html: _result.accessibleHtml,
+            beforeScore: beforeScore,
+            afterScore: finalAfterScore,
+          }).then(function(saved) {
+            if (saved) warnLog('[MultiSession] Saved range ' + _pageRange[0] + '-' + _pageRange[1] + ' to ' + _msSessionId);
+          });
+        } catch (e) { warnLog('[MultiSession] Auto-save failed:', e && e.message); }
+      }
+
       // Dual-engine guarantee broken: surface clearly so users don't think an AI-only score is blended.
       if (axeCoreFailed) {
         addToast('⚠ axe-core verification failed — final score is AI-only. Re-run Fix & Verify for the 50/50 blended score.', 'warning');
@@ -8188,6 +8932,266 @@ tr { page-break-inside: avoid; }
         doc.head.appendChild(inspectCSS);
       }
     }, 100);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // EXPERT WORKBENCH — AUTONOMOUS REMEDIATION AGENT
+  // Self-prompting AI loop: audit → analyze → plan tools → fix → re-audit.
+  // The AI generates its own fix plan using the surgical micro-tools in
+  // SHARED_SURGICAL_TOOLS, executes them, and loops until score plateaus
+  // or target is reached. Originally added in ba3c50d; lost in 1542fc8
+  // (WriteCraft commit regression); restored here.
+  // ═══════════════════════════════════════════════════════════════
+  const runAutonomousRemediation = async (htmlContent, options) => {
+    options = options || {};
+    const surgicalTools = SHARED_SURGICAL_TOOLS;
+    const maxPasses = options.maxPasses || 5;
+    const targetScore = options.targetScore || 90;
+    const onProgress = options.onProgress || function() {};
+    const onActivity = options.onActivity || function() {};
+
+    let currentHtml = htmlContent;
+    let passCount = 0;
+    let prevScore = 0;
+    let plateauCount = 0;
+    const activityLog = [];
+
+    function logActivity(msg, type) {
+      var entry = { text: msg, type: type || 'info', time: new Date().toLocaleTimeString() };
+      activityLog.push(entry);
+      try { onActivity(entry, activityLog); } catch(_) {}
+      warnLog('[Agent] ' + msg);
+    }
+
+    // Build tool descriptions for the AI prompt from the live registry so any registry-level
+    // additions (Phase 2 tools, future additions) show up automatically.
+    var toolDescriptions = Object.keys(surgicalTools).map(function(name) {
+      return '- ' + name + '(html, params)';
+    }).join('\n');
+
+    logActivity('\uD83E\uDD16 Autonomous remediation agent started. Target: ' + targetScore + '/100, max ' + maxPasses + ' passes.', 'start');
+
+    while (passCount < maxPasses) {
+      passCount++;
+      onProgress('Agent pass ' + passCount + '/' + maxPasses + ': auditing...');
+      logActivity('\uD83D\uDD0D Pass ' + passCount + ': Running WCAG audit...', 'audit');
+
+      // AUDIT
+      var axeResult;
+      try { axeResult = await runAxeAudit(currentHtml); }
+      catch (e) { logActivity('\u274C Audit failed: ' + (e.message || e), 'error'); break; }
+      if (!axeResult) { logActivity('\u274C Audit returned no results.', 'error'); break; }
+
+      var currentScore = 100 - ((axeResult.critical || []).length * 15 + (axeResult.serious || []).length * 10 + (axeResult.moderate || []).length * 5 + (axeResult.minor || []).length * 2);
+      currentScore = Math.max(0, Math.min(100, currentScore));
+      logActivity('\uD83D\uDCCA Score: ' + currentScore + '/100 (' + axeResult.totalViolations + ' violations)', 'score');
+
+      if (currentScore >= targetScore) {
+        logActivity('\u2705 Target score ' + targetScore + ' reached! Final: ' + currentScore + '/100', 'success');
+        break;
+      }
+
+      // Plateau detection (no improvement over 2 consecutive passes)
+      if (currentScore <= prevScore) {
+        plateauCount++;
+        if (plateauCount >= 2) {
+          logActivity('\uD83D\uDFE1 Plateau detected — score not improving after ' + plateauCount + ' passes. Stopping.', 'plateau');
+          break;
+        }
+      } else { plateauCount = 0; }
+      prevScore = currentScore;
+
+      // ANALYZE — ask AI to plan tool calls based on the audit.
+      onProgress('Agent pass ' + passCount + '/' + maxPasses + ': analyzing violations...');
+      logActivity('\uD83E\uDDE0 Analyzing ' + axeResult.totalViolations + ' violations and planning fixes...', 'analyze');
+
+      var violationSummary = [];
+      (axeResult.critical || []).forEach(function(v) { violationSummary.push('CRITICAL: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
+      (axeResult.serious || []).forEach(function(v) { violationSummary.push('SERIOUS: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
+      (axeResult.moderate || []).forEach(function(v) { violationSummary.push('MODERATE: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
+
+      var analyzePrompt = 'You are a WCAG 2.1 AA remediation agent with surgical micro-tools.\n\n' +
+        'AVAILABLE TOOLS:\n' + toolDescriptions + '\n\n' +
+        'CURRENT SCORE: ' + currentScore + '/100\nTARGET: ' + targetScore + '/100\n\n' +
+        'AXE-CORE VIOLATIONS (' + axeResult.totalViolations + ' total):\n' +
+        violationSummary.slice(0, 15).join('\n') + '\n\n' +
+        'HTML PREVIEW (first 3000 chars):\n' + currentHtml.substring(0, 3000) + '\n\n' +
+        'Plan exactly which tools to call and with what parameters to fix the top violations.\n' +
+        'Focus on the highest-impact fixes first (CRITICAL > SERIOUS > MODERATE).\n' +
+        'Be specific: provide exact index numbers, alt text strings, heading levels, etc.\n\n' +
+        'Return ONLY JSON:\n' +
+        '{\n' +
+        '  "analysis": "Brief summary of remaining issues",\n' +
+        '  "actions": [\n' +
+        '    {"tool": "fix_alt_text", "params": {"index": 0, "alt": "descriptive text"}, "reason": "why"},\n' +
+        '    {"tool": "fix_heading", "params": {"index": 2, "newLevel": "h3"}, "reason": "why"}\n' +
+        '  ],\n' +
+        '  "shouldContinue": true\n' +
+        '}';
+
+      var plan;
+      try {
+        var planResult = await callGemini(analyzePrompt, true);
+        var planStr = (typeof planResult === 'string' ? planResult : (planResult && planResult.text ? planResult.text : String(planResult || '{}')));
+        planStr = planStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var jsonS = planStr.indexOf('{'), jsonE = planStr.lastIndexOf('}');
+        if (jsonS >= 0 && jsonE > jsonS) planStr = planStr.substring(jsonS, jsonE + 1);
+        plan = JSON.parse(planStr);
+      } catch (e) {
+        logActivity('\u26A0\uFE0F AI analysis failed to parse: ' + (e.message || e), 'error');
+        break;
+      }
+
+      if (!plan || !plan.actions || plan.actions.length === 0) {
+        logActivity('\uD83D\uDFE2 AI found no actionable fixes remaining.', 'complete');
+        break;
+      }
+
+      logActivity('\uD83D\uDCCB Plan: ' + plan.analysis, 'plan');
+      logActivity('\uD83D\uDD27 Executing ' + plan.actions.length + ' tool calls...', 'fix');
+
+      // FIX — execute planned tool calls against the live registry.
+      var fixedCount = 0;
+      for (var ai = 0; ai < plan.actions.length; ai++) {
+        var action = plan.actions[ai];
+        var toolFn = surgicalTools[action.tool];
+        if (toolFn && action.params) {
+          try {
+            var newHtml = toolFn(currentHtml, action.params);
+            if (newHtml && newHtml !== currentHtml) {
+              currentHtml = newHtml;
+              fixedCount++;
+              logActivity('  \u2705 ' + action.tool + ': ' + (action.reason || 'applied'), 'tool');
+            } else {
+              logActivity('  \u23E9 ' + action.tool + ': no change (already fixed or invalid params)', 'skip');
+            }
+          } catch (e) {
+            logActivity('  \u274C ' + action.tool + ' failed: ' + (e.message || e), 'error');
+          }
+        } else {
+          logActivity('  \u26A0\uFE0F Unknown tool: ' + action.tool, 'error');
+        }
+      }
+
+      logActivity('\uD83D\uDD27 Applied ' + fixedCount + '/' + plan.actions.length + ' fixes.', 'result');
+
+      if (fixedCount === 0) {
+        logActivity('\uD83D\uDFE1 No fixes were effective this pass. Stopping.', 'plateau');
+        break;
+      }
+      if (plan.shouldContinue === false) {
+        logActivity('\uD83D\uDFE2 Agent determined no further improvement possible.', 'complete');
+        break;
+      }
+    }
+
+    // Final audit summary.
+    var finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });
+    var finalScore = finalAxe ? Math.max(0, 100 - ((finalAxe.critical || []).length * 15 + (finalAxe.serious || []).length * 10 + (finalAxe.moderate || []).length * 5 + (finalAxe.minor || []).length * 2)) : prevScore;
+    logActivity('\uD83C\uDFC1 Agent complete. Final score: ' + finalScore + '/100 after ' + passCount + ' passes.', 'complete');
+
+    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe };
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // EXPERT COMMAND PROCESSOR
+  // Parses natural language commands into surgical tool calls. Built-in
+  // commands (audit/auto/score/contrast) bypass AI; everything else goes
+  // through Gemini for interpretation → tool call planning → execution.
+  // ═══════════════════════════════════════════════════════════════
+  const processExpertCommand = async (command, currentHtml, options) => {
+    options = options || {};
+    const surgicalTools = SHARED_SURGICAL_TOOLS;
+    var cmd = (command || '').trim().toLowerCase();
+    var onActivity = options.onActivity || function() {};
+    var ts = function() { return new Date().toLocaleTimeString(); };
+
+    // Built-in commands — zero-AI fast paths.
+    if (cmd === 'audit' || cmd === 'check') {
+      onActivity({ text: '\uD83D\uDD0D Running WCAG audit...', type: 'audit', time: ts() });
+      var axe = await runAxeAudit(currentHtml);
+      var sc = axe ? Math.max(0, 100 - ((axe.critical || []).length * 15 + (axe.serious || []).length * 10 + (axe.moderate || []).length * 5 + (axe.minor || []).length * 2)) : 0;
+      onActivity({ text: '\uD83D\uDCCA Score: ' + sc + '/100 — ' + (axe ? axe.totalViolations : '?') + ' violations', type: 'score', time: ts() });
+      return { type: 'audit', html: currentHtml, score: sc, axe: axe };
+    }
+    if (cmd === 'auto' || cmd === 'auto-fix' || cmd === 'agent') {
+      var result = await runAutonomousRemediation(currentHtml, {
+        onProgress: options.onProgress || function() {},
+        onActivity: function(entry) { onActivity(entry); },
+      });
+      return { type: 'agent', html: result.html, score: result.score, log: result.log };
+    }
+    if (cmd === 'score') {
+      var ax = await runAxeAudit(currentHtml);
+      var s = ax ? Math.max(0, 100 - ((ax.critical || []).length * 15 + (ax.serious || []).length * 10 + (ax.moderate || []).length * 5 + (ax.minor || []).length * 2)) : 0;
+      onActivity({ text: '\uD83D\uDCCA Current score: ' + s + '/100', type: 'score', time: ts() });
+      return { type: 'score', html: currentHtml, score: s };
+    }
+    if (cmd === 'contrast' || cmd === 'fix contrast') {
+      onActivity({ text: '\uD83C\uDFA8 Fixing color contrast violations...', type: 'fix', time: ts() });
+      var fixed = typeof fixContrastViolations === 'function' ? fixContrastViolations(currentHtml) : currentHtml;
+      return { type: 'fix', html: fixed };
+    }
+
+    // AI-interpreted commands — free-form expert instructions.
+    onActivity({ text: '\uD83E\uDD16 Interpreting: "' + command + '"', type: 'thinking', time: ts() });
+
+    var toolList = Object.keys(surgicalTools).join(', ');
+    var interpretPrompt = 'You are a remediation command interpreter. Parse this accessibility expert\'s instruction into surgical tool calls.\n\n' +
+      'AVAILABLE TOOLS: ' + toolList + '\n\n' +
+      'Each tool takes (html, params). Common params:\n' +
+      '- fix_alt_text: {index: N, alt: "text"}\n' +
+      '- fix_heading: {index: N, newLevel: "h2"}\n' +
+      '- fix_link_text: {index: N, newText: "descriptive text"}\n' +
+      '- fix_table_caption: {index: N, caption: "text"}\n' +
+      '- fix_aria_label: {tag: "nav", index: N, label: "text"}\n' +
+      '- fix_contrast: {oldColor: "#aaa", newColor: "#333"}\n' +
+      '- fix_skip_nav: {} (no params)\n' +
+      '- fix_lang: {lang: "en"}\n' +
+      '- fix_input_label: {index: N, label: "text"}\n' +
+      '- fix_math: {index: N}\n' +
+      '- fix_reflow: {}\n\n' +
+      'EXPERT COMMAND: "' + command + '"\n\n' +
+      'HTML PREVIEW (first 1500 chars):\n' + currentHtml.substring(0, 1500) + '\n\n' +
+      'Return ONLY JSON:\n' +
+      '{"interpretation":"what the expert wants","actions":[{"tool":"fix_alt_text","params":{"index":0,"alt":"text"},"reason":"why"}],"confirmation":"I will..."}';
+
+    try {
+      var aiResult = await callGemini(interpretPrompt, true);
+      var aiStr = (typeof aiResult === 'string' ? aiResult : (aiResult && aiResult.text ? aiResult.text : '{}'));
+      aiStr = aiStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var jS = aiStr.indexOf('{'), jE = aiStr.lastIndexOf('}');
+      if (jS >= 0 && jE > jS) aiStr = aiStr.substring(jS, jE + 1);
+      var parsed = JSON.parse(aiStr);
+
+      if (parsed.confirmation) {
+        onActivity({ text: '\uD83D\uDCAC ' + parsed.confirmation, type: 'confirm', time: ts() });
+      }
+
+      var resultHtml = currentHtml;
+      if (parsed.actions && parsed.actions.length > 0) {
+        for (var ci = 0; ci < parsed.actions.length; ci++) {
+          var act = parsed.actions[ci];
+          var fn = surgicalTools[act.tool];
+          if (fn && act.params) {
+            try {
+              var newH = fn(resultHtml, act.params);
+              if (newH && newH !== resultHtml) {
+                resultHtml = newH;
+                onActivity({ text: '  \u2705 ' + act.tool + ': ' + (act.reason || 'applied'), type: 'tool', time: ts() });
+              }
+            } catch (e) {
+              onActivity({ text: '  \u274C ' + act.tool + ' failed: ' + (e.message || e), type: 'error', time: ts() });
+            }
+          }
+        }
+      }
+
+      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation };
+    } catch (e) {
+      onActivity({ text: '\u274C Could not interpret command: ' + (e.message || e), type: 'error', time: ts() });
+      return { type: 'error', html: currentHtml, error: e.message };
+    }
   };
 
   // ── Word restoration (fidelity v2) ──
@@ -9661,6 +10665,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     updatePdfPreview: _wrap(updatePdfPreview),
     applyWordRestoration: applyWordRestoration, // pure helper (no state binding needed)
     applyWordRestorationInPlace: _wrap(applyWordRestorationInPlace),
+    runAutonomousRemediation: _wrapAsync(runAutonomousRemediation), // Expert Workbench — autonomous agent loop
+    processExpertCommand: _wrapAsync(processExpertCommand),        // Expert Workbench — command bar interpreter
+    // Multi-session + Tier 2/2.5/3 — restored after 1ce8054 regression (see comment on
+    // _MULTI_SESSION_EXPIRY_MS). UI at AlloFlowANTI.txt references all of these.
+    multiSessionId: _multiSessionId,
+    loadMultiSession: function(sid) { return loadMultiSession(sid); },
+    clearMultiSession: function(sid) { return clearMultiSession(sid); },
+    mergeRangesToFullHtml: _wrap(mergeRangesToFullHtml),
+    runTier2SurgicalFixes: _wrapAsync(runTier2SurgicalFixes),
+    runTier2_5SectionScopedFixes: _wrapAsync(runTier2_5SectionScopedFixes),
+    runTier3StructuralFix: _wrapAsync(runTier3StructuralFix),
     generateCustomExportStyle: _wrapAsync(generateCustomExportStyle),
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
     generateResourceHTML: _wrap(generateResourceHTML),

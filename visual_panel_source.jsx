@@ -1,3 +1,29 @@
+// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
+// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
+// Note: currently unused in visual_panel — defensive declaration mirroring module.js.
+// eslint-disable-next-line no-unused-vars
+var _alloFocusTrigger = null;
+// eslint-disable-next-line no-unused-vars
+function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+// eslint-disable-next-line no-unused-vars
+function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
+// HTML sanitizer — strips <script>, inline handlers, dangerous tags, and javascript: URLs.
+// Delegates to window.sanitizeHtml if AlloFlowANTI.txt's version is loaded; falls back to
+// inline regex-based stripping when this module runs standalone.
+function sanitizeHtml(html) {
+  var fn = (typeof window !== 'undefined' && window.sanitizeHtml);
+  if (typeof fn === 'function' && fn !== sanitizeHtml) return fn(html);
+  if (!html || typeof html !== 'string') return '';
+  var clean = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+  clean = clean.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+  clean = clean.replace(/\s+on\w+\s*=\s*\S+/gi, '');
+  clean = clean.replace(/<\/?(iframe|object|embed|form|link|meta|base)[^>]*>/gi, '');
+  clean = clean.replace(/href\s*=\s*["']?javascript:/gi, 'href="');
+  clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
+  return clean;
+}
+
 const LABEL_POSITIONS = {
     'top-left': { position: 'absolute', top: '6%', left: '6%', zIndex: 4 },
     'top-center': { position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
