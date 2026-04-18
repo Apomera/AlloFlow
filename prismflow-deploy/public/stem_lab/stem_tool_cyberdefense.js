@@ -184,6 +184,8 @@
           var warRoomLiveMode = d.warRoomLiveMode || 'off'; // 'off' | 'hosting' | 'observing'
           var warRoomLiveHostName = d.warRoomLiveHostName || null;
           var warRoomLiveLastSync = d.warRoomLiveLastSync || 0;
+          var warRoomHelpOpen = d.warRoomHelpOpen || false;
+          var warRoomWelcomeSeen = d.warRoomWelcomeSeen || false;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -316,6 +318,52 @@
                 upd('warRoomTimeLeft', Math.max(0, nextTime));
               }
             }, 1000);
+          }
+
+          // ── War Room keyboard shortcuts (reattaches each render; latest closure wins) ──
+          if (window._cyberWarRoomKeydown) {
+            try { window.removeEventListener('keydown', window._cyberWarRoomKeydown); } catch(e) {}
+            window._cyberWarRoomKeydown = null;
+          }
+          if (cyberTab === 'warroom') {
+            window._cyberWarRoomKeydown = function(e) {
+              // Ignore if user is typing in a form field or modifier keys are held
+              var tag = (e.target && e.target.tagName) || '';
+              if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;
+              var key = e.key;
+              // Help toggle — always available
+              if (key === '?' || (key === '/' && e.shiftKey)) { e.preventDefault(); upd('warRoomHelpOpen', !warRoomHelpOpen); return; }
+              if (key === 'Escape') {
+                if (warRoomHelpOpen) { e.preventDefault(); upd('warRoomHelpOpen', false); return; }
+                if (warRoomGlossaryOpen) { e.preventDefault(); upd('warRoomGlossaryOpen', false); return; }
+                if (warRoomTeacherDashOpen) { e.preventDefault(); upd('warRoomTeacherDashOpen', false); return; }
+                return;
+              }
+              // Game shortcuts — only when campaign is active, not observing, not on pass screen
+              if (!warRoomActive || warLiveIsObserving) return;
+              if (warRoomHotSeatEnabled && warRoomHotSeatPassScreen) return;
+              if (warRoomVerdict) return;
+              if (warRoomRoundResolved) {
+                // Advance shortcut on debrief
+                if (key === 'Enter' || key === 'a' || key === 'A') { e.preventDefault(); advanceFromDebrief(); }
+                return;
+              }
+              // Numeric shortcuts: 1..9 play the corresponding blue card
+              var num = parseInt(key, 10);
+              if (num >= 1 && num <= blueTeamCards.length) {
+                e.preventDefault();
+                playBlueCard(blueTeamCards[num - 1].id);
+                return;
+              }
+              // Letter shortcuts (case-insensitive)
+              var k = key.toLowerCase();
+              if (k === 'r' || key === 'Enter') {
+                if (warRoomBluePlays.length > 0) { e.preventDefault(); resolveCurrentRound(); }
+              } else if (k === 'h') {
+                e.preventDefault(); requestHint();
+              }
+            };
+            try { window.addEventListener('keydown', window._cyberWarRoomKeydown); } catch(e) {}
           }
 
           // â”€â”€ Clue discovery helper â”€â”€
@@ -1030,6 +1078,33 @@
           var warLiveIsObserving = warRoomLiveMode === 'observing';
           var warLiveIsHosting   = warRoomLiveMode === 'hosting';
 
+          // ── Daily Challenge: deterministic seed + difficulty + theme rotation by UTC date ──
+          function dailyChallenge() {
+            var today = new Date();
+            var pad2 = function(n) { return (n < 10 ? '0' : '') + n; };
+            var dateStr = today.getUTCFullYear() + '-' + pad2(today.getUTCMonth() + 1) + '-' + pad2(today.getUTCDate());
+            // Hash the date string into a 4-char campaign ID
+            var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            var h = 2166136261;
+            for (var i = 0; i < dateStr.length; i++) { h ^= dateStr.charCodeAt(i); h = Math.imul(h, 16777619); }
+            var x = h >>> 0;
+            var id = '';
+            for (var k = 0; k < 4; k++) { id += chars[x % chars.length]; x = Math.floor(x / chars.length); }
+            // Rotate theme + difficulty based on day-of-year so it varies
+            var themeRotation = ['mixed', 'ransomware', 'bec', 'insider'];
+            var diffRotation = ['rookie', 'analyst', 'analyst', 'analyst', 'threatHunter']; // weighted toward analyst
+            var dayNum = Math.floor((today - new Date(Date.UTC(today.getUTCFullYear(), 0, 0))) / 86400000);
+            return {
+              id: id,
+              dateStr: dateStr,
+              theme: themeRotation[dayNum % themeRotation.length],
+              difficulty: diffRotation[dayNum % diffRotation.length]
+            };
+          }
+          var todaysChallenge = dailyChallenge();
+          var dailyCompletions = d.warRoomDailyCompletions || {};
+          var todayCompletion = dailyCompletions[todaysChallenge.dateStr] || null;
+
           // ── Seeded PRNG: xorshift32 variant. Reproducible campaigns from a 4-char ID. ──
           function seedFromId(id) {
             if (!id) return (Math.random() * 0xffffffff) >>> 0;
@@ -1563,6 +1638,27 @@
                 players: warRoomHotSeatEnabled ? warRoomHotSeatPlayers.slice() : null
               };
               var newHistory = [historyEntry].concat(priorHistory).slice(0, 20);
+              // Mark today's Daily Challenge as completed if this campaign's ID matches
+              var todayInfo = dailyChallenge();
+              var nextDailyCompletions = Object.assign({}, dailyCompletions);
+              if (warRoomCampaignId === todayInfo.id &&
+                  warRoomCampaignTheme === todayInfo.theme &&
+                  warRoomDifficulty === todayInfo.difficulty) {
+                var existing = nextDailyCompletions[todayInfo.dateStr];
+                // Keep the best result if replayed (won > lost, higher detections break ties)
+                var shouldReplace = !existing ||
+                  (won && existing.verdict !== 'won') ||
+                  (won === (existing.verdict === 'won') && warRoomDetections > (existing.detections || 0));
+                if (shouldReplace) {
+                  nextDailyCompletions[todayInfo.dateStr] = {
+                    id: todayInfo.id,
+                    verdict: won ? 'won' : 'lost',
+                    detections: warRoomDetections,
+                    mitigations: warRoomMitigations,
+                    at: Date.now()
+                  };
+                }
+              }
               upd({
                 warRoomLog: warRoomLog.concat([won ? '\uD83C\uDFC6 Campaign won. Environment held.' : '\u26A0\uFE0F Campaign ended. Review the after-action report.']),
                 warRoomVerdict: won ? 'won' : 'lost',
@@ -1572,7 +1668,8 @@
                 warRoomLastResolution: null,
                 warRoomAchievements: mergedAchievements,
                 warRoomCampaignAchievements: earnedIds,
-                warRoomCampaignHistory: newHistory
+                warRoomCampaignHistory: newHistory,
+                warRoomDailyCompletions: nextDailyCompletions
               });
               if (newlyEarned.length > 0 && ctx.addToast) {
                 ctx.addToast('\uD83C\uDFC5 ' + newlyEarned.length + ' new achievement' + (newlyEarned.length > 1 ? 's' : '') + ' unlocked!', 'success');
@@ -2259,16 +2356,74 @@
                 filter: warRoomA11y.highContrast ? 'contrast(1.2) saturate(1.15)' : undefined
               }, warRoomA11y.highContrast ? { background: 'rgba(0,0,0,0.35)', borderRadius: 8, padding: 8 } : {}) },
 
-                // Floating toolbar (glossary + teacher dashboard)
+                // First-run welcome overlay (dismissible, shown once)
+                !warRoomWelcomeSeen && !warRoomActive && el('div', { role: 'dialog', 'aria-labelledby': 'warroom-welcome-title',
+                  style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(244,63,94,0.08))', border: '2px solid rgba(99,102,241,0.4)', marginBottom: 14 } },
+                  el('div', { style: { fontSize: 44, textAlign: 'center', marginBottom: 8 } }, '\u2694\uFE0F'),
+                  el('h3', { id: 'warroom-welcome-title', style: { margin: 0, textAlign: 'center', color: '#c7d2fe', fontSize: 20, fontWeight: 900 } }, 'Welcome to the SOC War Room'),
+                  el('p', { style: { margin: '10px auto 14px', textAlign: 'center', color: '#cbd5e1', fontSize: 13, lineHeight: 1.55, maxWidth: 580 } },
+                    'You\'re the on-call ',
+                    el('strong', { style: { color: '#93c5fd' } }, 'Security Operations Center (SOC) analyst'),
+                    '. A cyber adversary is running a six-stage attack campaign against your network. Each round, they make a move. You read the alerts, spend your defensive budget wisely, and try to detect or stop the attack before assets are lost.'
+                  ),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14, fontSize: 12, color: '#cbd5e1' } },
+                    [
+                      { icon: '\uD83C\uDFAC', title: 'New here?', body: 'Turn on Story Mode below for per-round coaching tips.' },
+                      { icon: '\u267F', title: 'Need support?', body: 'Use the UDL options for plain language, larger text, or a dyslexia-friendly font.' },
+                      { icon: '\uD83E\uDD1D', title: 'With classmates?', body: 'Hot Seat rotates 2\u20136 players on one device each round.' },
+                      { icon: '\uD83C\uDFAF', title: 'Daily Challenge', body: 'Play the same scenario as every other student today and compare scores.' }
+                    ].map(function(tip, i) {
+                      return el('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.2)' } },
+                        el('div', { style: { fontSize: 18, marginBottom: 3 } }, tip.icon),
+                        el('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0', marginBottom: 2 } }, tip.title),
+                        el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, tip.body)
+                      );
+                    })
+                  ),
+                  el('div', { style: { textAlign: 'center' } },
+                    el('button', { onClick: function() { upd('warRoomWelcomeSeen', true); sfxCyberdClick(); },
+                      'aria-label': 'Dismiss welcome and continue',
+                      style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                      'Let\'s Begin \u2192')
+                  )
+                ),
+                // Floating toolbar (glossary + teacher dashboard + help)
                 el('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 8 } },
-                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomTeacherDashOpen: !warRoomTeacherDashOpen, warRoomGlossaryOpen: false }); sfxCyberdClick(); },
+                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomTeacherDashOpen: !warRoomTeacherDashOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomTeacherDashOpen, 'aria-controls': 'warroom-teacher-dash',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(34,197,94,0.3)', background: warRoomTeacherDashOpen ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.12)', color: '#86efac', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomTeacherDashOpen ? '\u2715 Close' : '\uD83D\uDCCA Open') + ' Teacher Dashboard'),
-                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
+                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomTeacherDashOpen: false, warRoomHelpOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomGlossaryOpen, 'aria-controls': 'warroom-glossary-panel',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: warRoomGlossaryOpen ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
-                    (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary')
+                    (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary'),
+                  el('button', { onClick: function() { upd({ warRoomHelpOpen: !warRoomHelpOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
+                    'aria-expanded': warRoomHelpOpen, 'aria-controls': 'warroom-help-panel',
+                    title: 'Keyboard shortcuts (shortcut: ?)',
+                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)', background: warRoomHelpOpen ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.12)', color: '#fcd34d', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                    warRoomHelpOpen ? '\u2715' : '? Help')
+                ),
+                // Help / shortcuts overlay
+                warRoomHelpOpen && el('div', { id: 'warroom-help-panel', role: 'region', 'aria-label': 'Keyboard shortcuts and help',
+                  style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(245,158,11,0.3)', marginBottom: 14 } },
+                  el('div', { style: { color: '#fcd34d', fontSize: 12, fontWeight: 800, marginBottom: 10, letterSpacing: 0.5 } }, '\u2328\uFE0F KEYBOARD SHORTCUTS'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, fontSize: 12, color: '#cbd5e1' } },
+                    [
+                      { k: '1 \u2013 9',       t: 'Play the 1st through 9th blue card' },
+                      { k: 'R',                t: 'Resolve round (once at least one card is played)' },
+                      { k: 'H',                t: 'Request a hint (costs 1 budget)' },
+                      { k: 'Enter',            t: 'Resolve round \u2022 Advance from debrief' },
+                      { k: 'A',                t: 'Advance from debrief to next round' },
+                      { k: 'Esc',              t: 'Close glossary / dashboard / help overlay' },
+                      { k: '?',                t: 'Toggle this help panel' }
+                    ].map(function(row, i) {
+                      return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                        el('kbd', { style: { padding: '3px 8px', borderRadius: 4, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', color: '#fde68a', fontFamily: 'monospace', fontSize: 11, fontWeight: 800, minWidth: 48, textAlign: 'center' } }, row.k),
+                        el('span', { style: { flex: 1 } }, row.t)
+                      );
+                    })
+                  ),
+                  el('div', { style: { marginTop: 10, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Shortcuts are disabled while typing in text fields or in Observer mode.')
                 ),
                 // Teacher Dashboard panel
                 warRoomTeacherDashOpen && el('div', { id: 'warroom-teacher-dash', role: 'region', 'aria-label': 'Teacher dashboard',
@@ -2347,7 +2502,7 @@
                     el('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#cbd5e1' } },
                       el('thead', null,
                         el('tr', { style: { borderBottom: '1px solid rgba(148,163,184,0.2)' } },
-                          ['When','ID','Theme','Diff','Verdict','Det','Mit','Data','Players'].map(function(h, i) {
+                          ['When','ID','Theme','Diff','Verdict','Det','Mit','Data','Players','Replay'].map(function(h, i) {
                             return el('th', { key: i, style: { padding: '4px 6px', textAlign: 'left', fontSize: 9, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, h);
                           })
                         )
@@ -2356,6 +2511,7 @@
                         warRoomCampaignHistory.map(function(h, i) {
                           var when = new Date(h.at);
                           var dateStr = (when.getMonth() + 1) + '/' + when.getDate() + ' ' + (when.getHours() < 10 ? '0' : '') + when.getHours() + ':' + (when.getMinutes() < 10 ? '0' : '') + when.getMinutes();
+                          var canReplay = !!(h.id && h.theme && h.difficulty && campaignThemes[h.theme]);
                           return el('tr', { key: i, style: { borderBottom: '1px solid rgba(148,163,184,0.08)' } },
                             el('td', { style: { padding: '4px 6px' } }, dateStr),
                             el('td', { style: { padding: '4px 6px', fontFamily: 'monospace', color: '#fcd34d' } }, '#' + (h.id || '????')),
@@ -2365,7 +2521,18 @@
                             el('td', { style: { padding: '4px 6px', color: '#93c5fd' } }, (h.detections != null ? h.detections : '?') + '/6'),
                             el('td', { style: { padding: '4px 6px', color: '#86efac' } }, (h.mitigations != null ? h.mitigations : '?') + '/6'),
                             el('td', { style: { padding: '4px 6px' } }, (h.dataRemaining != null ? h.dataRemaining : '?') + '/100'),
-                            el('td', { style: { padding: '4px 6px', color: '#d8b4fe' } }, h.hotSeat && h.players ? h.players.join(', ') : '\u2014')
+                            el('td', { style: { padding: '4px 6px', color: '#d8b4fe' } }, h.hotSeat && h.players ? h.players.join(', ') : '\u2014'),
+                            el('td', { style: { padding: '4px 6px' } },
+                              canReplay && el('button', {
+                                onClick: function() {
+                                  if (warRoomActive && !warRoomVerdict && !confirm('Start this campaign? Your current in-progress campaign will be reset.')) return;
+                                  upd({ warRoomTeacherDashOpen: false });
+                                  startCampaign(h.difficulty, h.theme, h.id);
+                                },
+                                'aria-label': 'Replay campaign #' + h.id,
+                                title: 'Replay this exact campaign',
+                                style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, '\u25B6')
+                            )
                           );
                         })
                       )
@@ -2518,6 +2685,21 @@
                         )
                       );
                     })
+                  ),
+                  // Daily Challenge banner (one seeded campaign per day, shared globally)
+                  el('div', { style: { padding: 12, borderRadius: 10, background: todayCompletion ? 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.05))' : 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(244,63,94,0.06))', border: '1px solid ' + (todayCompletion ? 'rgba(34,197,94,0.35)' : 'rgba(245,158,11,0.4)'), marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+                    el('div', { style: { fontSize: 28 } }, '\uD83C\uDFAF'),
+                    el('div', { style: { flex: '1 1 200px' } },
+                      el('div', { style: { fontSize: 11, color: todayCompletion ? '#86efac' : '#fbbf24', fontWeight: 800, letterSpacing: 0.5, marginBottom: 2 } }, todayCompletion ? 'TODAY\'S CHALLENGE \u2022 COMPLETED \u2713' : 'TODAY\'S CHALLENGE'),
+                      el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Campaign #' + todaysChallenge.id + ' \u2022 ' + (campaignThemes[todaysChallenge.theme] ? campaignThemes[todaysChallenge.theme].label : todaysChallenge.theme) + ' \u2022 ' + todaysChallenge.difficulty),
+                      todayCompletion
+                        ? el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'Result: ' + (todayCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + todayCompletion.detections + '/6 detections \u2022 Every student who plays today gets the SAME scenario. Play again to improve your score.')
+                        : el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'A new challenge drops every day (UTC). Every student gets the exact same scenario \u2014 compare scores with classmates!')
+                    ),
+                    el('button', { onClick: function() { startCampaign(todaysChallenge.difficulty, todaysChallenge.theme, todaysChallenge.id); },
+                      'aria-label': 'Start today\'s challenge',
+                      style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: todayCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #f59e0b, #f43f5e)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                      todayCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
                   ),
                   // Theme picker
                   el('div', { style: { marginBottom: 14 } },
@@ -3120,16 +3302,18 @@
                         el('div', { style: { fontSize: 11, fontWeight: 900, color: '#93c5fd', letterSpacing: 0.5, marginBottom: 6 } }, '\uD83D\uDEE1\uFE0F BLUE TEAM \u2014 CHOOSE YOUR MOVES'),
                         el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, 'Spend budget on defensive actions. The right play can fully mitigate, partial plays reduce damage, wrong plays let the attack through.')
                       ),
-                      blueTeamCards.map(function(card) {
+                      blueTeamCards.map(function(card, cardIdx) {
                         var played = warRoomBluePlays.indexOf(card.id) !== -1;
                         var isFreeAvail = warCrossBonuses.freeFirstUse.indexOf(card.id) !== -1 && warRoomFreeUsed.indexOf(card.id) === -1;
                         var effectiveCost = isFreeAvail ? 0 : card.cost;
                         var disabled = warLiveIsObserving || warRoomRoundResolved || played || effectiveCost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
                         var hint = card.id === 'escalate' && warRoomEscalateUsed ? '(already used)' : (played ? '(played)' : '');
                         return el('button', { key: card.id, onClick: function() { if (!disabled) playBlueCard(card.id); },
-                          disabled: disabled, 'aria-pressed': played, 'aria-label': card.label + ', cost ' + effectiveCost + ' budget' + (isFreeAvail ? ' (free first use)' : '') + '. ' + card.description,
+                          disabled: disabled, 'aria-pressed': played, 'aria-keyshortcuts': String(cardIdx + 1),
+                          'aria-label': card.label + ', shortcut ' + (cardIdx + 1) + ', cost ' + effectiveCost + ' budget' + (isFreeAvail ? ' (free first use)' : '') + '. ' + card.description,
                           style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + (played ? 'rgba(34,197,94,0.4)' : (isFreeAvail ? 'rgba(34,197,94,0.4)' : 'rgba(148,163,184,0.2)')), background: played ? 'rgba(34,197,94,0.1)' : (disabled ? 'rgba(30,41,59,0.4)' : 'rgba(30,41,59,0.7)'), color: played ? '#86efac' : (disabled ? '#475569' : '#cbd5e1'), cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left', marginBottom: 6, opacity: disabled && !played ? 0.55 : 1 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                            el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 3, background: 'rgba(148,163,184,0.18)', color: '#94a3b8', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(cardIdx + 1)),
                             el('span', { style: { fontSize: 14 } }, card.icon),
                             el('span', { style: { fontSize: 12.5, fontWeight: 800, flex: 1 } }, card.label),
                             isFreeAvail && !played && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.25)', color: '#86efac', letterSpacing: 0.3 } }, 'FREE'),

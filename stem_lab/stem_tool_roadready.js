@@ -5171,10 +5171,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (oDirSign2 !== tDirSign2) return;
                 var otherLaneDelta = (other.laneOffset || 0) - (t.laneOffset || 0);
                 if (Math.abs(otherLaneDelta) > 1.0) return;
-                // Forward distance along travel axis (positive = other is ahead of me)
                 var otherAhead = (other.y - t.y) * tDirSign2;
                 if (otherAhead > 0 && otherAhead < followNear) slowFor = Math.max(slowFor, 2);
                 else if (otherAhead > 0 && otherAhead < followFar) slowFor = Math.max(slowFor, 1);
+                // ── AI-vs-AI emergency brake ──
+                // When VERY close behind another car in the same lane (< 3m, closing speed
+                // > 2 m/s), apply a hard decel burst — the soft 0.5s speed lerp alone
+                // wasn't enough to prevent rear-ends in heavy traffic. Mirrors the player-
+                // vs-AI AEB logic so AI cars don't stack into each other.
+                if (otherAhead > 0 && otherAhead < 3 && t.speed - other.speed > 2) {
+                  t.speed = Math.max(0, t.speed - 8 * dt); // ~0.8g hard decel
+                  t._aeb = true;
+                }
                 return;
               }
               // Cross-street or mixed: fall back to aheadOf (axis-aware).
@@ -6743,7 +6751,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
             // tap still records as a minor bump — previously you could nose into a stopped
             // car at 3 mph with no crash flag, which hid unsafe habits in the stats.
-            var relativeSpeed = Math.abs(car.speed - t.speed);
+            // Closing speed must factor in DIRECTION. Both car.speed and t.speed are
+            // signed scalars along their own heading direction — so two cars going
+            // OPPOSITE directions (head-on) at 10 m/s each have closing speed 20 m/s,
+            // not |10−10| = 0. Convert each to a velocity vector and take the
+            // relative-velocity magnitude along the line connecting the two cars.
+            var carVx = Math.cos(car.heading) * car.speed;
+            var carVy = Math.sin(car.heading) * car.speed;
+            var tVx = Math.cos(t.heading) * t.speed;
+            var tVy = Math.sin(t.heading) * t.speed;
+            var relVx = carVx - tVx;
+            var relVy = carVy - tVy;
+            // Closing along the impact line (normalize displacement vector first)
+            var distSafe = Math.max(dist, 0.001);
+            var dirX = dx / distSafe;
+            var dirY = dy / distSafe;
+            // Closing speed = component of (-relV) along (other → self) direction
+            // ≈ Math.hypot(relVx, relVy) is the upper bound; use it as worst-case impact.
+            var relativeSpeed = Math.hypot(relVx, relVy);
             if (dist < 1.2 && relativeSpeed > 0.5 && absSpeed > 0.5) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;

@@ -741,6 +741,28 @@
             { id: 'speedrun', icon: '\u26A1', label: 'Lightning Reflexes', desc: 'Win a Threat Hunter campaign without the clock running out on any round.' }
           ];
 
+          // ── Best-progress helpers for unearned achievements (read from history) ──
+          function achievementProgress(achId) {
+            var h = d.warRoomCampaignHistory || [];
+            var maxOf = function(field) {
+              return h.reduce(function(best, row) {
+                var v = row[field]; return (v != null && v > best) ? v : best;
+              }, 0);
+            };
+            switch (achId) {
+              case 'patchwork':     return { cur: maxOf('patchesPlayed'), goal: 3, label: 'Best patch count' };
+              case 'combo_artist':  return { cur: maxOf('combos'), goal: 3, label: 'Best combo count' };
+              case 'hunter':        return { cur: maxOf('huntsPlayed'), goal: 4, label: 'Best hunt count' };
+              case 'perfect_run':   return { cur: maxOf('mitigations'), goal: 6, label: 'Best mitigations' };
+              case 'data_guardian': return { cur: maxOf('dataRemaining'), goal: 100, label: 'Best data remaining' };
+              case 'budget_master': {
+                var best = h.reduce(function(b, row) { return (row.verdict === 'won' && row.budgetRemaining != null && row.budgetRemaining > b) ? row.budgetRemaining : b; }, 0);
+                return { cur: best, goal: 3, label: 'Best leftover budget on a win' };
+              }
+              default: return null;
+            }
+          }
+
           // ── Evaluate which achievements were earned this campaign ──
           function evaluateCampaignAchievements(chain, finalState) {
             var earned = [];
@@ -1622,6 +1644,8 @@
               });
               // Append to campaign history (cap at 20 most recent)
               var priorHistory = d.warRoomCampaignHistory || [];
+              var patchesPlayed = warRoomKillChain.filter(function(r) { return r.bluePlays.indexOf('patch') !== -1; }).length;
+              var huntsPlayed = warRoomKillChain.filter(function(r) { return r.bluePlays.indexOf('hunt_iocs') !== -1; }).length;
               var historyEntry = {
                 id: warRoomCampaignId,
                 at: Date.now(),
@@ -1632,6 +1656,9 @@
                 mitigations: warRoomMitigations,
                 dataRemaining: warRoomAssets.data,
                 combos: warRoomTotalCombos,
+                patchesPlayed: patchesPlayed,
+                huntsPlayed: huntsPlayed,
+                budgetRemaining: warRoomBudget,
                 achievementsEarned: earnedIds.length,
                 rank: warRoomRank.label,
                 hotSeat: warRoomHotSeatEnabled,
