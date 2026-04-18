@@ -8429,6 +8429,14 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       setTimeout(() => mathFluencyInputRef.current?.focus(), 50);
   };
   const [timelineRevisionInput, setTimelineRevisionInput] = useState('');
+  const [timelineImageSize, setTimelineImageSize] = useState(() => {
+    try { const v = localStorage.getItem('alloflow_timeline_image_size'); const n = v ? parseInt(v, 10) : 128; return Number.isFinite(n) && n >= 64 && n <= 300 ? n : 128; } catch (e) { return 128; }
+  });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_timeline_image_size', String(timelineImageSize)); } catch (e) {} }, [timelineImageSize]);
+  const [timelineImageStyle, setTimelineImageStyle] = useState(() => {
+    try { return localStorage.getItem('alloflow_timeline_image_style') || ''; } catch (e) { return ''; }
+  });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_timeline_image_style', timelineImageStyle); } catch (e) {} }, [timelineImageStyle]);
   const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
   const handleTimelineRevision = async () => {
       if (!timelineRevisionInput?.trim() || !generatedContent?.data) return;
@@ -8516,7 +8524,8 @@ Return ONLY a valid JSON object:
               const progression = revisedData.progressionLabel || 'sequential order';
               let failCount = 0;
               const generateOne = async (item) => {
-                  const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
+                  const styleInstruction = timelineImageStyle.trim() ? `Style: ${timelineImageStyle}.` : 'Educational style.';
+                  const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. ${styleInstruction} No text. Visual only.`;
                   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
                       try {
                           if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
@@ -13142,6 +13151,10 @@ Return only the corrected version of this exact text:`;
   const [selectedConcepts, setSelectedConcepts] = useState([]);
   const [conceptItemCount, setConceptItemCount] = useState(10);
   const [conceptImageMode, setConceptImageMode] = useState('auto'); // 'auto' | 'always' | 'never'
+  const [conceptSortImageStyle, setConceptSortImageStyle] = useState(() => {
+    try { return localStorage.getItem('alloflow_concept_sort_image_style') || ''; } catch (e) { return ''; }
+  });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_concept_sort_image_style', conceptSortImageStyle); } catch (e) {} }, [conceptSortImageStyle]);
   const [languageInput, setLanguageInput] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
@@ -27687,13 +27700,17 @@ Return ONLY JSON.`;
               2. The Tier category ("Academic" or "Domain-Specific").
               3. Translations into: ${langsReq.join(', ')}.
               ${includeEtymology ? `
-              4. Etymology / Word Roots ${etymologyScope === 'both' ? 'for every term' : 'for Tier 3 (Domain-Specific) terms only'}:
-                 Provide 1-3 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
-                 - K-5 audiences: simple wording like "Comes from the Greek word photo meaning light."
-                 - 6-12 audiences: break into prefix/root/suffix where relevant and name the source language.
-                 - Skip terms with no meaningful etymology (proper nouns, recent coinages). If so, OMIT the etymology field.
-                 ${effectiveLanguage !== 'English' ? `Write the etymology in ${effectiveLanguage}.` : ''}
-                 Add to each qualifying term an "etymology" string field.
+              4. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
+                 Provide 2-4 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 MANDATORY requirements — do NOT skip any:
+                 (a) The ACTUAL root morpheme(s) must appear verbatim as named strings in the "roots" array below.
+                 (b) Include brief word history when known (when/how it entered English, meaning-shift, who coined it). Skip if unknown — do not invent.
+                 (c) Name 1-3 related modern English words that share the same root (word family).
+                 ${effectiveLanguage !== 'English' ? `Write the etymology prose in ${effectiveLanguage} (keep morphemes in source-language script).` : ''}
+                 Output — add to each qualifying term:
+                   "etymology": "prose",
+                   "roots": [{ "root": "photo", "lang": "Greek", "meaning": "light", "related": ["photograph", "photon"] }]
+                 Skip entirely (omit etymology + roots) for proper nouns, brand names, very recent coinages.
               ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
@@ -27715,12 +27732,16 @@ Return ONLY JSON.`;
               1. An English definition. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
               ${includeEtymology ? `
-              3. Etymology / Word Roots ${etymologyScope === 'both' ? 'for every term' : 'for Tier 3 (Domain-Specific) terms only'}:
-                 Provide 1-3 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
-                 - K-5 audiences: simple wording like "Comes from the Greek word photo meaning light."
-                 - 6-12 audiences: break into prefix/root/suffix where relevant and name the source language.
-                 - Skip terms with no meaningful etymology (proper nouns, recent coinages). If so, OMIT the etymology field.
-                 Add to each qualifying term an "etymology" string field.
+              3. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
+                 Provide 2-4 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 MANDATORY requirements — do NOT skip any:
+                 (a) The ACTUAL root morpheme(s) must appear verbatim as named strings in the "roots" array below.
+                 (b) Include brief word history when known (when/how it entered English, meaning-shift, who coined it). Skip if unknown — do not invent.
+                 (c) Name 1-3 related modern English words that share the same root (word family).
+                 Output — add to each qualifying term:
+                   "etymology": "prose",
+                   "roots": [{ "root": "photo", "lang": "Greek", "meaning": "light", "related": ["photograph", "photon"] }]
+                 Skip entirely (omit etymology + roots) for proper nouns, brand names, very recent coinages.
               ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
@@ -29141,7 +29162,8 @@ ${modeListForAuto}
              const MAX_RETRIES = 3;
              const progression = content.progressionLabel || 'sequential order';
              const generateOne = async (item) => {
-                 const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
+                 const styleInstruction = timelineImageStyle.trim() ? `Style: ${timelineImageStyle}.` : 'Educational style.';
+                 const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. ${styleInstruction} No text. Visual only.`;
                  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
                      try {
                          if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
@@ -29355,7 +29377,8 @@ ${modeListForAuto}
                  const POOL_SIZE = 5;
                  const generateOne = async (item) => {
                      try {
-                         const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. Educational style. No text.`;
+                         const styleInstruction = conceptSortImageStyle.trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
+                         const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
                          const imageUrl = await callImagen(imgPrompt);
                          return { ...item, image: imageUrl };
                      } catch (e) {
@@ -30363,8 +30386,18 @@ Return ONLY a JSON array like:
         const data = generatedContent.data;
         const isArrayShape = Array.isArray(data);
         const progression = (!isArrayShape && data?.progressionLabel) || 'sequential order';
-        const imgPrompt = `Simple vector icon/illustration of: "${event}" (sequence position: "${date || ''}"). Context: part of a sequence ordered by ${progression}. White background. Educational style. No text. Visual only.`;
-        const imageUrl = await callImagen(imgPrompt);
+        const styleInstruction = timelineImageStyle.trim() ? `Style: ${timelineImageStyle}.` : 'Educational style.';
+        const imgPrompt = `Simple vector icon/illustration of: "${event}" (sequence position: "${date || ''}"). Context: part of a sequence ordered by ${progression}. White background. ${styleInstruction} No text. Visual only.`;
+        let imageUrl = await callImagen(imgPrompt);
+        if (autoRemoveWords) {
+            try {
+                const rawBase64 = imageUrl.split(',')[1];
+                const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
+                imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+            } catch (editErr) {
+                warnLog("Auto-remove text failed for timeline item:", event, editErr);
+            }
+        }
         // Race-safe: find the item by event string at write-time.
         setGeneratedContent(prev => {
             if (!prev || prev.type !== 'timeline') return prev;
@@ -31609,7 +31642,8 @@ Return ONLY a JSON array like:
           let imageUrl = null;
           if (shouldGenerateImage) {
               try {
-                  const imgPrompt = `Simple, clear vector icon or illustration of: "${classification.content}". White background. Educational style. No text.`;
+                  const styleInstruction = conceptSortImageStyle.trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
+                  const imgPrompt = `Simple, clear vector icon or illustration of: "${classification.content}". White background. ${styleInstruction} No text.`;
                   imageUrl = await callImagen(imgPrompt);
               } catch (imgErr) {
                   warnLog("Added-item image gen failed", imgErr);
@@ -31626,7 +31660,7 @@ Return ONLY a JSON array like:
           addToast(t('toasts.categorize_failed'), "error");
           return null;
       }
-  }, [gradeLevel, callGemini, callImagen, conceptImageMode]);
+  }, [gradeLevel, callGemini, callImagen, conceptImageMode, conceptSortImageStyle]);
   const handleExplainTimelineItem = useCallback(async (item, correctPosition, currentPosition, progressionLabel, allItems) => {
       try {
           const cleanLabel = progressionLabel || 'Sequential order';
@@ -36841,15 +36875,9 @@ Return ONLY a JSON array like:
                             📜 {t('glossary.settings.include_etymology') || 'Include word roots / etymology'}
                         </label>
                         {includeEtymology && (
-                            <label className="flex items-center gap-2 text-[11px] font-medium text-slate-600 cursor-pointer select-none mt-1 ml-6">
-                                <input
-                                    type="checkbox"
-                                    checked={etymologyScope === 'both'}
-                                    onChange={(e) => setEtymologyScope(e.target.checked ? 'both' : 'tier3')}
-                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                                />
-                                {t('glossary.settings.etymology_scope_both') || 'Also include for academic (Tier 2) terms'}
-                            </label>
+                            <p className="mt-1 ml-6 text-[11px] text-slate-600 leading-snug">
+                                {t('glossary.settings.etymology_always_all') || 'Applied to every term — shows the actual root morphemes, word history, and related English words that share the root.'}
+                            </p>
                         )}
                     </div>
                     <div className="mb-3" data-help-key="glossary_custom_instructions">
@@ -37811,6 +37839,22 @@ Return ONLY a JSON array like:
                                 {t('timeline.settings.visuals_hint') || 'Generates an AI icon for each item. Adds ~30-50 seconds.'}
                             </p>
                         </div>
+                        {includeTimelineVisuals && (
+                        <div data-help-key="timeline_image_style">
+                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                                <Palette size={12} className="inline mr-1 text-purple-500"/> {t('timeline.settings.image_style_label') || 'Image style'} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
+                            </label>
+                            <input
+                                aria-label={t('timeline.settings.image_style_label') || 'Image style'}
+                                type="text"
+                                value={timelineImageStyle}
+                                onChange={(e) => setTimelineImageStyle(e.target.value)}
+                                placeholder={t('timeline.settings.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5 outline-none"
+                            />
+                            <p className="text-[11px] text-slate-500 italic mt-1">{t('timeline.settings.image_style_hint') || 'Applied to all AI-generated sequence visuals.'}</p>
+                        </div>
+                        )}
                     </div>
                     <button
                         aria-label={t('common.generate')}
@@ -37898,6 +37942,22 @@ Return ONLY a JSON array like:
                                 <option value="never">Never (text-only cards)</option>
                             </select>
                         </div>
+                        {conceptImageMode !== 'never' && (
+                        <div data-help-key="concept_sort_image_style">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">
+                                <Palette size={12} className="inline mr-1 text-purple-500"/> {t('concept_sort.image_style_label') || 'Image style'} <span className="text-amber-600 font-normal">{t('common.optional')}</span>
+                            </label>
+                            <input
+                                aria-label={t('concept_sort.image_style_label') || 'Image style'}
+                                type="text"
+                                value={conceptSortImageStyle}
+                                onChange={(e) => setConceptSortImageStyle(e.target.value)}
+                                placeholder={t('concept_sort.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+                            />
+                            <p className="text-[11px] text-slate-600 mt-1">{t('concept_sort.image_style_hint') || 'Applied to all AI-generated card visuals.'}</p>
+                        </div>
+                        )}
                     </div>
                     <button
                         aria-label={t('common.generate')}
@@ -46510,6 +46570,18 @@ Return only the corrected version of this exact text:`;
                                         {isEditingTimeline ? t('timeline.done_editing') : t('timeline.edit_sequence')}
                                     </button>
                                 )}
+                                <div data-help-key="timeline_image_size" className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm" title={t('timeline.image_size_tooltip') || 'Resize sequence images'}>
+                                    <ImageIcon size={14} className="text-indigo-400"/>
+                                    <input aria-label={t('common.range_slider') || 'Image size'}
+                                        type="range"
+                                        min="64"
+                                        max="300"
+                                        step="16"
+                                        value={timelineImageSize}
+                                        onChange={(e) => setTimelineImageSize(Number(e.target.value))}
+                                        className="w-20 h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                    />
+                                </div>
                         </div>
                         </div>
                         {isTeacherMode && generatedContent?.data && (
@@ -46717,7 +46789,8 @@ Return only the corrected version of this exact text:`;
                                                     loading="lazy"
                                                     src={item.image}
                                                     alt={`${item.date || ''}: ${item.event || ''}`}
-                                                    className="w-[72px] h-[72px] object-contain rounded-lg bg-white border border-slate-100 shrink-0"
+                                                    className="object-contain rounded-lg bg-white border border-slate-100 shrink-0"
+                                                    style={{ width: `${timelineImageSize}px`, height: `${timelineImageSize}px` }}
                                                 />
                                             )}
                                             <div className="flex-1 min-w-0">
@@ -51919,8 +51992,35 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       )}
       {/* ── PDF Accessibility Audit Modal ── */}
       {(pdfAuditResult || pdfAuditLoading) && (
-        <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="PDF Accessibility Audit">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
+        <div
+          className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          role="dialog" aria-modal="true" aria-label="PDF Accessibility Audit"
+          tabIndex={-1}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !pdfFixLoading && !pdfAutoContinueRunning) {
+              setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && !pdfFixLoading && !pdfAutoContinueRunning) {
+              setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null);
+            }
+          }}
+          ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
+        >
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
+            <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
+              <button
+                type="button"
+                onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }}
+                disabled={pdfFixLoading || pdfAutoContinueRunning}
+                aria-label="Close audit modal"
+                title={(pdfFixLoading || pdfAutoContinueRunning) ? 'Wait for remediation to finish or click Stop first' : 'Close (Esc)'}
+                className="pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-200 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
+              >
+                <X size={18} aria-hidden="true"/>
+              </button>
+            </div>
             {pdfAuditResult?._choosing ? (
               <div className="p-8 text-center">
                 {/* ── Batch Mode Toggle ── */}

@@ -5047,7 +5047,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 kind: spawn.kind, icon: spawn.icon, mass: spawn.mass,
                 x: sx, y: sy,
                 vx: -1.2, vy: 0,
-                hit: false, life: 8
+                hit: false, life: 8,
+                // Capture player's heading + speed at spawn so we can score their reaction:
+                // brake straight = low maxSwerve + big speed drop. Swerve = high maxSwerve.
+                initialHeading: car.heading,
+                initialSpeed: Math.abs(car.speed),
+                maxSwerve: 0,
+                scored: false
               };
               eventToastRef.current = { msg: '⚠️ ' + spawn.warn + ' Brake straight — DO NOT swerve!', until: timeRef.current + 5 };
               addToast('⚠️ ' + spawn.warn);
@@ -5089,7 +5095,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             w.x += w.vx * dt;
             w.y += w.vy * dt;
             w.life -= dt;
-            if (w.life <= 0) { wildlifeRef.current = null; return; }
+            // Track player's reaction while the animal is present. maxSwerve = the largest
+            // deviation from the heading they had when the animal appeared. Low value = they
+            // stayed in their lane (the correct response). Higher = they tried to swerve.
+            if (w.initialHeading !== undefined) {
+              var headingDelta = Math.abs(car.heading - w.initialHeading);
+              // Normalize across the wrap point (heading is on a circle)
+              while (headingDelta > Math.PI) headingDelta = Math.abs(headingDelta - 2 * Math.PI);
+              if (headingDelta > w.maxSwerve) w.maxSwerve = headingDelta;
+            }
+            if (w.life <= 0) {
+              // Animal has passed / despawned. If not hit and not yet scored, evaluate the player's response
+              // and credit them for brake-straight behavior — specifically for MASSIVE (moose) encounters,
+              // which is what the Moose Encounter Drill teaches.
+              if (!w.hit && !w.scored && w.mass === 'massive' && w.initialSpeed !== undefined) {
+                w.scored = true;
+                var speedDrop = w.initialSpeed > 0 ? 1 - (Math.abs(car.speed) / w.initialSpeed) : 0;
+                var swerveRad = w.maxSwerve || 0;
+                // Thresholds: swerve < ~11° AND speed dropped by ≥ 30% = textbook brake-straight.
+                if (swerveRad < 0.2 && speedDrop > 0.3) {
+                  statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 10);
+                  if (!statsRef.current.mooseSafeAvoids) statsRef.current.mooseSafeAvoids = 0;
+                  statsRef.current.mooseSafeAvoids++;
+                  addToast('✓ Brake straight, no swerve — textbook Maine moose response. +10 safety');
+                  eventToastRef.current = { msg: '✓ Exactly what the Moose Encounter Drill teaches: brake in a straight line, do not swerve.', until: timeRef.current + 5 };
+                  var mBadges = Object.assign({}, (d.badges || {}));
+                  if (!mBadges.moose_avoided) {
+                    mBadges.moose_avoided = true;
+                    upd('badges', mBadges);
+                    addToast('🏅 Achievement: Moose-Safe in the Field 🫎');
+                  }
+                } else if (swerveRad >= 0.25) {
+                  // Player swerved — didn't hit it (maybe luck), but not what the drill teaches.
+                  addToast('⚠️ You swerved to avoid the moose. Drill reminder: brake STRAIGHT next time.');
+                  eventToastRef.current = { msg: '⚠️ Swerving at speed risks rollover and head-on. Review the Moose Drill.', until: timeRef.current + 5 };
+                }
+              }
+              wildlifeRef.current = null; return;
+            }
             // Hit detection
             var dx = w.x - car.x;
             var dy = w.y - car.y;
@@ -5218,7 +5261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!statsRef.current.emergencyYields) statsRef.current.emergencyYields = 0;
               statsRef.current.emergencyYields++;
               addToast('✓ Good — pulled right and stopped for emergency vehicle. +5');
-              eventToastRef.current = { msg: '✓ Correct response: pull RIGHT, STOP until it passes.', until: timeRef.current + 4 };
+              eventToastRef.current = { msg: '✓ Right + stop — exactly what the Emergency Vehicle Drill teaches (Maine §2054).', until: timeRef.current + 4 };
               // Emergency Responder landmark achievement
               if (em.fromLandmark) {
                 var erBadges = Object.assign({}, (d.badges || {}));
@@ -14349,6 +14392,262 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       // DEFENSIVE DRIVING SCENARIOS LIBRARY
       // ══════════════════════════════════════════════════════════
+      // ══════════════════════════════════════════════════════════
+      // Shared drill renderer — reduces boilerplate for new MC drills.
+      // Used by new drills (roundabout, DUI, ...). Existing drills keep their
+      // inline implementations for zero-risk; this helper is additive.
+      // ══════════════════════════════════════════════════════════
+      var renderDrill = function(cfg) {
+        // cfg: { icon, title, subtitle, factsTitle, facts, scenarios,
+        //        stateKey, badgeId, badgeName, winMessage,
+        //        gradientFrom, gradientTo, borderColor, subtitleColor, accentBorder }
+        var state = d[cfg.stateKey] || {};
+        var passed = Object.keys(state).filter(function(k){ return state[k] && state[k].correct; }).length;
+        var allDone = Object.keys(state).length === cfg.scenarios.length;
+        var commit = function(sc, ci) {
+          var ns = Object.assign({}, d[cfg.stateKey] || {});
+          ns[sc.id] = { answered: ci, correct: ci === sc.correct };
+          upd(cfg.stateKey, ns);
+          if (ci === sc.correct) {
+            addToast('✓ Correct!');
+            var pn = Object.keys(ns).filter(function(k){ return ns[k] && ns[k].correct; }).length;
+            if (pn === cfg.scenarios.length) {
+              var dBadges = Object.assign({}, d.badges || {});
+              if (cfg.badgeId && !dBadges[cfg.badgeId]) {
+                dBadges[cfg.badgeId] = true;
+                upd('badges', dBadges);
+                addToast('🏅 Achievement: ' + cfg.badgeName);
+              }
+            }
+          } else {
+            addToast('Not quite — see explanation');
+          }
+        };
+        var retryOne = function(sc) {
+          var ns = Object.assign({}, d[cfg.stateKey] || {});
+          delete ns[sc.id];
+          upd(cfg.stateKey, ns);
+        };
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, ' + cfg.gradientFrom + ', ' + cfg.gradientTo + ')', borderRadius: '14px', padding: '22px', border: '1px solid ' + cfg.borderColor, marginBottom: '14px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '48px' } }, cfg.icon),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, cfg.title),
+            h('div', { style: { fontSize: '12px', color: cfg.subtitleColor || '#cbd5e1' } }, cfg.subtitle + ' · ' + passed + ' / ' + cfg.scenarios.length + ' passed'),
+            allDone && passed === cfg.scenarios.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ ' + (cfg.winMessage || 'All correct.')) : null
+          ),
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, cfg.factsTitle || 'Key rules'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px' } },
+              cfg.facts.map(function(f, i) {
+                return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, f.icon + ' ' + f.title),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } }, f.body)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Scenarios'),
+          cfg.scenarios.map(function(sc) {
+            var scState = state[sc.id] || {};
+            var answered = scState.answered !== undefined;
+            return h('div', { key: sc.id, style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid ' + (scState.correct ? '#4ade80' : answered ? '#ef4444' : '#334155'), marginBottom: '10px' } },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
+                h('span', { style: { fontSize: '24px' } }, sc.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
+                scState.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, '✓ PASSED') : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, '✗ RETRY') : null
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                sc.choices.map(function(ch, ci) {
+                  var picked = scState.answered === ci;
+                  var isCorr = ci === sc.correct;
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
+                  return h('button', {
+                    key: ci,
+                    disabled: answered,
+                    onClick: function() { if (!answered) commit(sc, ci); },
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                  }, String.fromCharCode(65 + ci) + '. ' + ch);
+                })
+              ),
+              answered ? h('div', { style: { marginTop: '10px', padding: '10px', background: '#020617', borderRadius: '6px', fontSize: '11px', color: '#cbd5e1', borderLeft: '3px solid ' + (cfg.accentBorder || '#60a5fa'), lineHeight: '1.5' } },
+                h('b', null, 'Why: '), sc.exp
+              ) : null,
+              answered ? h('button', {
+                onClick: function() { retryOne(sc); },
+                style: { marginTop: '8px', padding: '4px 10px', borderRadius: '4px', border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              }, '↺ Retry') : null
+            );
+          })
+        );
+      };
+
+      // ══════════════════════════════════════════════════════════
+      // ROUNDABOUT DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'roundaboutDrill') {
+        return renderDrill({
+          icon: '🔄', title: 'Roundabout Drill', subtitle: 'Maine is adding these fast',
+          factsTitle: 'Before the drill: key rules',
+          gradientFrom: '#0c4a6e', gradientTo: '#0f172a',
+          borderColor: '#38bdf8', subtitleColor: '#bae6fd', accentBorder: '#38bdf8',
+          stateKey: 'roundaboutState', badgeId: 'roundabout_pro', badgeName: 'Roundabout Pro',
+          winMessage: 'You know roundabouts. Good — Maine keeps adding them.',
+          facts: [
+            { icon: '🔄', title: 'Traffic flows counterclockwise', body: 'In the U.S., all roundabouts circulate counterclockwise. You enter to the right and exit to the right. Signal right as you approach your exit.' },
+            { icon: '🛑', title: 'Yield, don\'t stop', body: 'At entry, you yield to traffic already IN the circle — but don\'t come to a hard stop if you can see a gap. Flow through. Inside the circle, never stop (except if forced by a crash ahead).' },
+            { icon: '🚶', title: 'Pedestrians at every exit', body: 'Marked crosswalks sit just outside each entry and exit. Yield to pedestrians ALWAYS — whether you\'re entering or leaving the circle.' },
+            { icon: '🚚', title: 'Trucks may use both lanes', body: 'Large trucks, school buses, and emergency vehicles often need to track both lanes of a multi-lane roundabout to clear the curb. Don\'t crowd them or try to pass inside.' }
+          ],
+          scenarios: [
+            { id: 'entry_yield', icon: '↘️', title: 'Entering with traffic in the circle',
+              q: 'You approach a roundabout. One car is already circulating, about to pass in front of your entry. What do you do?',
+              choices: [
+                'Enter quickly — you have the right-of-way',
+                'Yield. Traffic in the circle always has priority over entering traffic',
+                'Honk to signal your intent',
+                'Stop completely no matter what'
+              ],
+              correct: 1,
+              exp: 'Circulating traffic has right-of-way. Yield triangles at the entry confirm this. You don\'t need to come to a full stop if the circle is clear, but you MUST yield to anyone already in it. Entering in front of a circulating car causes the most common roundabout crashes.' },
+            { id: 'emergency_in_circle', icon: '🚨', title: 'Ambulance behind while you\'re circulating',
+              q: 'You\'re halfway around a roundabout and an ambulance with lights and siren comes up behind you. What do you do?',
+              choices: [
+                'Stop immediately in the circle to let them pass',
+                'Continue to your exit, then pull right and stop just past the circle',
+                'Swerve into the inner lane',
+                'Exit at the next available exit regardless of where it goes'
+              ],
+              correct: 1,
+              exp: 'Never stop inside a roundabout — you create a dangerous blockage for everyone else. Complete your exit, pull to the right just past the roundabout, and stop there. The ambulance will also continue through and pull where needed. If you MUST, take the next exit to clear the circle, even if it\'s not yours.' },
+            { id: 'truck_both_lanes', icon: '🚚', title: 'Truck using both lanes',
+              q: 'A tractor-trailer in a two-lane roundabout is tracking across both lanes to clear the curb. You\'re behind in the inner lane.',
+              choices: [
+                'Honk so they pick a lane',
+                'Stay back — large trucks often need both lanes; trying to pass puts you in their blind spot mid-turn',
+                'Pass them on the inside',
+                'Pass them on the outside'
+              ],
+              correct: 1,
+              exp: 'A truck straddling two lanes is doing it correctly — they physically can\'t stay in one lane and clear the curb. Passing puts you in their blind spot while they\'re still turning, and the trailer can swing into your lane. Wait 10 seconds until they\'re out.' },
+            { id: 'lane_choice', icon: '➡️', title: 'Which lane for which exit?',
+              q: 'Two-lane roundabout. You want to take the 3rd exit (roughly 3/4 around). Which lane do you start in?',
+              choices: [
+                'Right (outer) lane throughout',
+                'Left (inner) lane to enter and travel, move right and signal before your exit',
+                'Either lane — lane choice doesn\'t matter in roundabouts',
+                'Middle of the road'
+              ],
+              correct: 1,
+              exp: 'Standard rule: right lane = first exit (right turn) or straight. Left lane = later exits (left turn / U-turn / 3rd-exit-equivalent). Follow the ground arrows if painted. Signal LEFT entering (telling others you\'re going around), then signal RIGHT before your exit. Changing lanes is the move before you exit, not after.' },
+            { id: 'pedestrian_exit', icon: '🚶', title: 'Pedestrian at your exit',
+              q: 'You\'re exiting a roundabout. A pedestrian steps onto the crosswalk at your exit — right as you\'re about to leave.',
+              choices: [
+                'Keep going — they started late',
+                'Yield. Pedestrians at roundabout crosswalks always have right-of-way',
+                'Honk to warn them',
+                'Swerve around them'
+              ],
+              correct: 1,
+              exp: 'Pedestrians always have right-of-way at roundabout crosswalks. "They started late" is never an excuse. Slow enough to yield AT the crosswalk, even if the circle is pressuring you from behind. Hitting a pedestrian in a roundabout is 100% on you.' },
+            { id: 'signal_correctly', icon: '🚦', title: 'How do you signal?',
+              q: 'Which is correct for signaling in a roundabout?',
+              choices: [
+                'Signal right on approach, no other signal needed',
+                'Signal left on approach if going more than halfway around; signal right before your exit always',
+                'No signaling required in roundabouts',
+                'Signal left on approach, right on exit — always both'
+              ],
+              correct: 1,
+              exp: 'Best practice: signal LEFT on approach if you\'re going PAST the 12 o\'clock position (more than halfway around — tells drivers behind you you\'re not exiting early). Signal RIGHT before EVERY exit (tells circulating and entering drivers you\'re leaving so they can move). Signaling right for a first-exit right turn is also correct.' }
+          ]
+        });
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // DUI / IMPAIRED-DRIVING DRILL
+      // ══════════════════════════════════════════════════════════
+      if (view === 'duiDrill') {
+        return renderDrill({
+          icon: '⚖️', title: 'DUI / Impaired-Driving Drill', subtitle: 'Maine limits, zero-tolerance, implied consent',
+          factsTitle: 'Key rules',
+          gradientFrom: '#7f1d1d', gradientTo: '#0f172a',
+          borderColor: '#f87171', subtitleColor: '#fecaca', accentBorder: '#ef4444',
+          stateKey: 'duiState', badgeId: 'sober_smart', badgeName: 'Sober-Smart',
+          winMessage: 'You know the law. More important — never drive impaired.',
+          facts: [
+            { icon: '⚖️', title: 'Legal limits', body: 'Maine: 0.08 BAC for 21+. Zero tolerance — 0.02 BAC — for under 21. For commercial drivers, 0.04. Any measurable alcohol under 21 can trigger a charge.' },
+            { icon: '🧪', title: 'Implied consent', body: 'Driving on a Maine road is legal consent to breath/blood testing when an officer has probable cause. Refusing the test = automatic 275-day license suspension — often LONGER than a first-offense conviction penalty.' },
+            { icon: '💊', title: 'Drugs count too', body: 'Prescription, medical marijuana, OTC cold medicine, even "legal" recreational cannabis — if it impairs you, driving on it is OUI (Operating Under the Influence). "The doctor prescribed it" is not a defense.' },
+            { icon: '🍺', title: 'One-drink math', body: 'A 130-lb teenager drops below Maine\'s 0.02 limit about 90 minutes after ONE 12-oz beer. Food, fatigue, and body composition shift that — you can\'t reliably "feel" your BAC.' }
+          ],
+          scenarios: [
+            { id: 'just_one_mile', icon: '🚗', title: '"Just one mile" pressure',
+              q: 'You\'re 17 and sober at a friend\'s house. Your friend (21) has had a few beers but insists he\'s "fine to drive the last mile home." What do you do?',
+              choices: [
+                'Let him drive — it\'s just a mile',
+                'Take the keys and drive him yourself — you\'re sober',
+                'Call an Uber / Lyft / Maine Ride Service or a parent',
+                'B or C — never let an impaired driver drive, full stop'
+              ],
+              correct: 3,
+              exp: 'There is no "just a mile." Most fatal DUIs happen within a few miles of home because drivers feel safe and let their guard down. Taking the keys and driving him yourself is the right call if you\'re sober and licensed — if your GDL restrictions prevent it, call a rideshare or parent. Never, ever let an impaired person drive.' },
+            { id: 'implied_consent', icon: '🧪', title: 'Breath test refusal',
+              q: 'An officer has probable cause and asks you to take a breath test. You\'re 19 and worried because you had one drink. If you refuse:',
+              choices: [
+                'No penalty unless they have other evidence of impairment',
+                'Automatic 275-day license suspension — often worse than the first-offense penalty',
+                '$100 civil fine only',
+                'They can\'t require a test without a warrant'
+              ],
+              correct: 1,
+              exp: 'Maine has implied-consent laws. Driving on a Maine road is legal consent to breath or blood testing when an officer establishes probable cause. Refusing = automatic 275-day suspension, separate from any conviction penalty. First-offense OUI conviction is only a 150-day suspension — so refusal is actually WORSE. Also, refusal can be used against you in court.' },
+            { id: 'rx_drug', icon: '💊', title: 'Prescribed painkiller',
+              q: 'Your dentist prescribes oxycodone after a wisdom-tooth extraction. The warning label says "may cause drowsiness. Do not drive or operate heavy machinery." You feel a little foggy but functional. Legal to drive?',
+              choices: [
+                'Yes — it\'s prescribed, so it\'s legal',
+                'Only if you don\'t feel drowsy',
+                'No — prescription drugs that impair driving are treated as OUI in Maine regardless of legality',
+                'Only to/from the pharmacy'
+              ],
+              correct: 2,
+              exp: 'Maine OUI law covers ALL impairing substances — prescription, OTC, recreational, medical marijuana. The warning label is the clue: the prescriber is telling you not to drive. An officer who suspects impairment can demand a drug test the same way they can demand a breath test. "It was prescribed" is not a legal defense.' },
+            { id: 'zero_tolerance', icon: '🚫', title: 'Zero tolerance at 20',
+              q: 'You\'re 20, had a single light beer ~2 hours ago at a family dinner. BAC tests at 0.03. Legal to drive in Maine?',
+              choices: [
+                'Yes — under 0.08',
+                'No — Maine zero-tolerance is 0.02 BAC for drivers under 21',
+                'Yes if the beer was consumed during a family meal',
+                'Only until midnight'
+              ],
+              correct: 1,
+              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to full DUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
+            { id: 'weed_legal', icon: '🍃', title: 'Recreational marijuana + driving',
+              q: 'Maine legalized recreational marijuana for adults 21+. You\'re 22, used it 90 minutes ago, still feel relaxed. Can you drive?',
+              choices: [
+                'Yes — it\'s legal to use',
+                'Only if you stay under 5 ng/mL THC',
+                'No — driving under the influence of ANY impairing substance is illegal regardless of the substance\'s legality',
+                'Only on private roads'
+              ],
+              correct: 2,
+              exp: 'Legal to use ≠ legal to drive on. Maine\'s OUI law applies to any substance that impairs your ability to drive safely. Officers are trained in Drug Recognition Expert (DRE) protocols. THC affects reaction time, lane tracking, and judgment for hours. If you\'re high, call a ride.' },
+            { id: 'first_offense', icon: '📋', title: 'First-offense consequences',
+              q: 'A first-time adult Maine OUI conviction (no accident, no minors in car) typically includes which of these?',
+              choices: [
+                'Only a fine and a warning',
+                'License suspension (typically 150 days), fine (starts at $500), mandatory DEEP program, possible jail, SR-22 insurance',
+                'Automatic felony charge',
+                'Nothing — first offenses are sealed'
+              ],
+              correct: 1,
+              exp: 'First-offense Maine OUI is a misdemeanor but carries: ~150-day license suspension, $500+ fine, mandatory Driver Education Evaluation Program (DEEP) (~$500 more), possible 48 hours to 1-year jail, SR-22 high-risk insurance filing for 3 years (often triples rates). Second offense is mandatory jail time. Third is a felony.' }
+          ]
+        });
+      }
+
       if (view === 'defensiveList') {
         var defScenarios = [
           { id: 'red_runner', icon: '🚦', title: 'Runaway Red', q: 'You enter an intersection on green. A car to your left blows the red light at 40 mph. What do you do?',
@@ -17179,6 +17478,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: 'Railroad Crossing Drill', desc: 'Federal + Maine crossing rules — and the 45° escape if you stall.' },
           { view: 'winterDriving', goal: 'safety', icon: '❄️', name: 'Winter Driving Drill', desc: 'Black ice, skid recovery, plow etiquette, and the 4WD myth.' },
           { view: 'constructionZone', goal: 'safety', icon: '🚧', name: 'Construction Zone Drill', desc: 'Flaggers, zipper merges, barrels, pilot cars — fines doubled.' },
+          { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: 'Roundabout Drill', desc: 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.' },
+          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: 'DUI / Impaired-Driving Drill', desc: 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },

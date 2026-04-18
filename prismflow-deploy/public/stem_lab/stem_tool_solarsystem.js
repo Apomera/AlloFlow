@@ -1641,11 +1641,18 @@ const d = labToolData.solarSystem;
               requestAnimationFrame(tick);
             }
             requestAnimationFrame(tick);
-            // Persist time to state infrequently (every 2s) for Reset and tab-switch recovery
-            var persist = setInterval(function() {
-              upd("orr_time", _orrTimeRef.current);
-            }, 2000);
-            return function() { running = false; clearInterval(persist); };
+            // IMPORTANT: no periodic state persistence — writing orr_time to React state every
+            // 2s triggers a parent re-render, which unmounts/remounts CanvasPanel (defined
+            // inside this IIFE → new identity on every parent render). The canvas buffer
+            // clears to transparent on remount, revealing the canvas element's fallback
+            // background for one frame = visible white flash every 2 seconds.
+            // Animation continues smoothly via ref-only updates. On unmount (user switches
+            // tabs or pauses), persist the current time so Reset and tab-switch recovery
+            // still work — but only once per unmount, not continuously.
+            return function() {
+              running = false;
+              try { upd("orr_time", _orrTimeRef.current); } catch (e) { /* non-fatal */ }
+            };
           }, [_orrPaused, _orrSpeed]);
 
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
@@ -1657,7 +1664,39 @@ const d = labToolData.solarSystem;
               React.createElement("h3", { className: "text-lg font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, "\uD83C\uDF0D Solar System Explorer"),
 
               React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D"),
-              React.createElement("button", { onClick: function() { upd("orreryMode", !d.orreryMode); }, "aria-label": d.orreryMode ? "Switch to 3D" : "Switch to Orrery", className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orreryMode ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md" : (isDark ? "bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600" : "bg-slate-100 text-slate-600 hover:bg-purple-50 border border-slate-200")) }, d.orreryMode ? "\uD83C\uDF0D 3D Explorer" : "\uD83C\uDF0C Orrery Lab")
+              // Orrery-mode toggle button — prominently sized and styled to signal this is a
+              // major feature, not a minor option. When the user has NOT yet discovered it
+              // (d.orreryMode is false AND they've never toggled it before), wrap in a ping
+              // animation layer so the button draws the eye. The unvisited check uses the
+              // existing milestones data: if the `orrery_explore` milestone is unfinished,
+              // the user hasn't opened the lab yet.
+              (function() {
+                var hasDiscovered = !!(d.orreryMode || d.orrery_explored_once);
+                var baseBtn = React.createElement("button", {
+                  onClick: function() { upd("orreryMode", !d.orreryMode); if (!d.orrery_explored_once && !d.orreryMode) upd("orrery_explored_once", true); },
+                  "aria-label": d.orreryMode ? "Switch to 3D view" : "Open Orrery Lab — Kepler's laws, orbital mechanics, and interactive challenges",
+                  className: "relative px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap " + (d.orreryMode
+                    ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/30 ring-1 ring-indigo-300/40 hover:shadow-xl hover:scale-[1.02]"
+                    : (isDark
+                        ? "bg-gradient-to-r from-purple-700/80 to-indigo-700/80 text-white shadow-md shadow-purple-900/40 hover:from-purple-600 hover:to-indigo-600 border border-purple-500/40"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md shadow-indigo-200 hover:from-purple-600 hover:to-indigo-700 ring-1 ring-white/40"))
+                },
+                  d.orreryMode ? "\uD83C\uDF0D 3D Explorer" : "\uD83C\uDF0C Open Orrery Lab",
+                  // Small "NEW" badge for never-opened users, helps discoverability.
+                  !hasDiscovered ? React.createElement("span", {
+                    className: "absolute -top-1 -right-1 bg-amber-400 text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-md border border-amber-600/30",
+                    "aria-hidden": "true"
+                  }, "NEW") : null
+                );
+                return React.createElement("div", { className: "ml-auto relative" },
+                  // Pulsing halo for the undiscovered state — draws the eye without being noisy.
+                  !hasDiscovered ? React.createElement("span", {
+                    className: "absolute inset-0 rounded-xl bg-purple-400/40 animate-ping pointer-events-none",
+                    "aria-hidden": "true"
+                  }) : null,
+                  baseBtn
+                );
+              })()
 
             ),
 
@@ -2067,7 +2106,10 @@ const d = labToolData.solarSystem;
       style: Object.assign({
         border: isDark ? "1px solid rgba(74,144,217,0.2)" : "1px solid " + border,
         borderRadius: "12px",
-        background: isDark ? "#0a0e1a" : "#f8f8ff",
+        // Fallback background color matches the deepest stop of the radial gradient the draw
+        // loop paints. If the canvas buffer is ever momentarily transparent (e.g. during a
+        // remount), this color shows through instead of stark white — no perceptible flash.
+        background: isDark ? "#050709" : "#dde0f0",
         cursor: props.panZoom ? "grab" : "default",
         maxWidth: "100%",
         display: "block",
@@ -2199,28 +2241,85 @@ const d = labToolData.solarSystem;
         }
         ctx.fillRect(0, 0, W, H);
 
-        // ── Starfield (cached on canvas) ──
+        // ── Nebula clouds (dark mode only, cached to offscreen canvas once) ──
+        // Drawing big blurred blobs every frame would tank performance, so we bake them
+        // into an offscreen canvas and blit. Gives the background real depth instead of
+        // a flat gradient.
+        if (isDark && !cv._nebulaCache) {
+          var neb = document.createElement("canvas");
+          neb.width = W; neb.height = H;
+          var nctx = neb.getContext("2d");
+          var nebulas = [
+            { x: W * 0.22, y: H * 0.28, r: W * 0.35, hue: "99,102,241", alpha: 0.055 },  // indigo cloud
+            { x: W * 0.78, y: H * 0.72, r: W * 0.28, hue: "168,85,247", alpha: 0.045 },  // violet cloud
+            { x: W * 0.85, y: H * 0.22, r: W * 0.22, hue: "236,72,153", alpha: 0.030 },  // pink wisp
+            { x: W * 0.15, y: H * 0.85, r: W * 0.30, hue: "34,211,238", alpha: 0.025 }   // cyan wisp
+          ];
+          for (var ni = 0; ni < nebulas.length; ni++) {
+            var nb = nebulas[ni];
+            var ng = nctx.createRadialGradient(nb.x, nb.y, 0, nb.x, nb.y, nb.r);
+            ng.addColorStop(0, "rgba(" + nb.hue + "," + nb.alpha + ")");
+            ng.addColorStop(0.5, "rgba(" + nb.hue + "," + (nb.alpha * 0.4) + ")");
+            ng.addColorStop(1, "rgba(" + nb.hue + ",0)");
+            nctx.fillStyle = ng;
+            nctx.fillRect(0, 0, W, H);
+          }
+          cv._nebulaCache = neb;
+        }
+        if (isDark && cv._nebulaCache) {
+          ctx.drawImage(cv._nebulaCache, 0, 0);
+        }
+
+        // ── Starfield: two layers for depth — distant tiny stars + brighter near stars ──
         if (!cv._stars) {
           cv._stars = [];
-          for (var si = 0; si < 200; si++) {
+          // Far layer (tiny, dim, numerous)
+          for (var sfi = 0; sfi < 280; sfi++) {
             cv._stars.push({
               x: Math.random() * W,
               y: Math.random() * H,
-              r: Math.random() * 1.2 + 0.3,
-              b: Math.random() * 0.5 + 0.3,
-              twinkleSpeed: Math.random() * 0.003 + 0.001
+              r: Math.random() * 0.7 + 0.15,
+              b: Math.random() * 0.35 + 0.15,
+              twinkleSpeed: Math.random() * 0.002 + 0.0005,
+              layer: "far"
+            });
+          }
+          // Near layer (bigger, brighter, fewer — occasional color tint)
+          for (var sni = 0; sni < 90; sni++) {
+            var tintedRoll = Math.random();
+            var tint = tintedRoll < 0.12 ? "#bfdbfe" : tintedRoll < 0.20 ? "#fde68a" : tintedRoll < 0.26 ? "#fca5a5" : "#ffffff";
+            cv._stars.push({
+              x: Math.random() * W,
+              y: Math.random() * H,
+              r: Math.random() * 1.4 + 0.8,
+              b: Math.random() * 0.4 + 0.5,
+              twinkleSpeed: Math.random() * 0.004 + 0.002,
+              color: tint,
+              layer: "near"
             });
           }
         }
         if (isDark) {
           for (var si2 = 0; si2 < cv._stars.length; si2++) {
             var star = cv._stars[si2];
-            var twinkle = star.b + Math.sin((timestamp || 0) * star.twinkleSpeed + si2) * 0.15;
-            ctx.globalAlpha = clamp(twinkle, 0.1, 0.8);
+            var twinkle = star.b + Math.sin((timestamp || 0) * star.twinkleSpeed + si2) * 0.18;
+            ctx.globalAlpha = clamp(twinkle, 0.08, 0.9);
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.r, 0, TAU);
-            ctx.fillStyle = "#ffffff";
+            ctx.fillStyle = star.color || "#ffffff";
             ctx.fill();
+            // Subtle cross-shine on near-layer bright stars — adds sparkle without cost
+            if (star.layer === "near" && star.r > 1.6 && twinkle > 0.72) {
+              ctx.globalAlpha = clamp((twinkle - 0.72) * 1.8, 0, 0.5);
+              ctx.strokeStyle = star.color || "#ffffff";
+              ctx.lineWidth = 0.4;
+              ctx.beginPath();
+              ctx.moveTo(star.x - star.r * 3, star.y);
+              ctx.lineTo(star.x + star.r * 3, star.y);
+              ctx.moveTo(star.x, star.y - star.r * 3);
+              ctx.lineTo(star.x, star.y + star.r * 3);
+              ctx.stroke();
+            }
           }
           ctx.globalAlpha = 1;
         }
@@ -2230,17 +2329,50 @@ const d = labToolData.solarSystem;
         // Export live state for challenges
         cv._liveState = { time: t, bodies: {} };
 
-        // ── Sun with radial glow ──
+        // ── Sun with pulsing corona + radial glow + subtle flare rays ──
         var sunR = Math.max(4, st.scale * 0.025);
-        // Outer corona glow
-        var coronaGrad = ctx.createRadialGradient(st.cx, st.cy, sunR * 0.5, st.cx, st.cy, sunR * 8);
-        coronaGrad.addColorStop(0, "rgba(255, 220, 50, 0.25)");
-        coronaGrad.addColorStop(0.3, "rgba(255, 180, 20, 0.08)");
+        // Gentle corona breath — 5.5% amplitude, slow period, looks alive without flicker
+        var sunPulse = 1 + Math.sin((timestamp || 0) * 0.00065) * 0.055;
+        // Outermost soft halo (far reach, very diffuse)
+        var haloGrad = ctx.createRadialGradient(st.cx, st.cy, sunR * 2, st.cx, st.cy, sunR * 14 * sunPulse);
+        haloGrad.addColorStop(0, "rgba(255, 200, 80, 0.08)");
+        haloGrad.addColorStop(0.5, "rgba(255, 150, 40, 0.025)");
+        haloGrad.addColorStop(1, "rgba(255, 120, 0, 0)");
+        ctx.beginPath();
+        ctx.arc(st.cx, st.cy, sunR * 14 * sunPulse, 0, TAU);
+        ctx.fillStyle = haloGrad;
+        ctx.fill();
+        // Outer corona glow (pulses)
+        var coronaGrad = ctx.createRadialGradient(st.cx, st.cy, sunR * 0.5, st.cx, st.cy, sunR * 8 * sunPulse);
+        coronaGrad.addColorStop(0, "rgba(255, 220, 50, 0.28)");
+        coronaGrad.addColorStop(0.3, "rgba(255, 180, 20, 0.09)");
         coronaGrad.addColorStop(1, "rgba(255, 150, 0, 0)");
         ctx.beginPath();
-        ctx.arc(st.cx, st.cy, sunR * 8, 0, TAU);
+        ctx.arc(st.cx, st.cy, sunR * 8 * sunPulse, 0, TAU);
         ctx.fillStyle = coronaGrad;
         ctx.fill();
+        // Subtle flare rays — 8 cardinal rays that rotate slowly, adds "star-shine" feel
+        if (isDark) {
+          var rayAngle = (timestamp || 0) * 0.00015;
+          ctx.save();
+          ctx.translate(st.cx, st.cy);
+          ctx.rotate(rayAngle);
+          for (var ray = 0; ray < 8; ray++) {
+            ctx.rotate(TAU / 8);
+            var rayLen = sunR * (6 + Math.sin(timestamp * 0.0008 + ray) * 1.2);
+            var rayGrad = ctx.createLinearGradient(0, 0, rayLen, 0);
+            rayGrad.addColorStop(0, "rgba(255, 220, 100, 0.18)");
+            rayGrad.addColorStop(1, "rgba(255, 200, 80, 0)");
+            ctx.fillStyle = rayGrad;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(rayLen, -sunR * 0.25);
+            ctx.lineTo(rayLen, sunR * 0.25);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.restore();
+        }
         // Inner glow
         var sunGrad = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, sunR * 2.5);
         sunGrad.addColorStop(0, "#ffffff");
@@ -2251,11 +2383,46 @@ const d = labToolData.solarSystem;
         ctx.arc(st.cx, st.cy, sunR * 2.5, 0, TAU);
         ctx.fillStyle = sunGrad;
         ctx.fill();
-        // Solid core
+        // Solid core with subtle surface shimmer
+        var coreGrad = ctx.createRadialGradient(st.cx - sunR * 0.25, st.cy - sunR * 0.25, 0, st.cx, st.cy, sunR);
+        coreGrad.addColorStop(0, "#fff7c4");
+        coreGrad.addColorStop(0.6, "#ffee88");
+        coreGrad.addColorStop(1, "#ffd44a");
         ctx.beginPath();
         ctx.arc(st.cx, st.cy, sunR, 0, TAU);
-        ctx.fillStyle = "#ffee88";
+        ctx.fillStyle = coreGrad;
         ctx.fill();
+
+        // ── Asteroid belt (between Mars and Jupiter, ~2.2–3.2 AU) ──
+        // Small rotating dots for ambient detail. Cached angular positions so they drift
+        // slowly rather than all jitter — looks like a proper orbiting belt.
+        if (!cv._asteroids) {
+          cv._asteroids = [];
+          for (var ai = 0; ai < 160; ai++) {
+            cv._asteroids.push({
+              a: 2.2 + Math.random() * 1.0,    // semi-major axis ~2.2–3.2 AU
+              angle: Math.random() * TAU,
+              speed: 0.04 + Math.random() * 0.08,  // slow drift
+              size: 0.4 + Math.random() * 0.8,
+              dim: 0.25 + Math.random() * 0.35
+            });
+          }
+        }
+        if (st.scale > 5) {
+          var beltAlphaBase = clamp((st.scale - 5) / 30, 0, 1);
+          for (var aj = 0; aj < cv._asteroids.length; aj++) {
+            var ast = cv._asteroids[aj];
+            var aAng = ast.angle + (timestamp || 0) * 0.0001 * ast.speed;
+            var ax = st.cx + Math.cos(aAng) * ast.a * st.scale;
+            var ay = st.cy - Math.sin(aAng) * ast.a * st.scale;
+            ctx.globalAlpha = ast.dim * beltAlphaBase;
+            ctx.beginPath();
+            ctx.arc(ax, ay, ast.size, 0, TAU);
+            ctx.fillStyle = isDark ? "#c4b5a0" : "#94825f";
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
 
         // Draw orbits and bodies
         for (var i = 0; i < OB.length; i++) {
@@ -2352,31 +2519,58 @@ const d = labToolData.solarSystem;
           ctx.fillStyle = glowGrad;
           ctx.fill();
 
-          // Solid planet body with subtle gradient
-          var bodyGrad = ctx.createRadialGradient(sx - dotR * 0.3, sy - dotR * 0.3, 0, sx, sy, dotR);
+          // Solid planet body with sun-direction lighting
+          // Terminator (day/night boundary) is computed from the actual body→Sun vector,
+          // so the lit side always faces the Sun — subtle but makes orbits feel physical.
+          var sunDx = st.cx - sx, sunDy = st.cy - sy;
+          var sunDist = Math.sqrt(sunDx * sunDx + sunDy * sunDy) || 1;
+          var litX = sx + (sunDx / sunDist) * dotR * 0.35;
+          var litY = sy + (sunDy / sunDist) * dotR * 0.35;
+          var bodyGrad = ctx.createRadialGradient(litX, litY, 0, sx, sy, dotR * 1.05);
           bodyGrad.addColorStop(0, "#ffffff");
-          bodyGrad.addColorStop(0.3, b.color);
-          bodyGrad.addColorStop(1, b.color);
+          bodyGrad.addColorStop(0.25, b.color);
+          bodyGrad.addColorStop(0.95, b.color);
+          bodyGrad.addColorStop(1, isDark ? "#00000080" : "#33333355"); // night-side darkening
           ctx.beginPath();
           ctx.arc(sx, sy, dotR, 0, TAU);
           ctx.fillStyle = bodyGrad;
           ctx.fill();
 
-          // ── Saturn rings ──
+          // ── Saturn rings (multi-band disk with Cassini division) ──
           if (b.id === "saturn") {
+            var ringTilt = -0.35;
+            // Back half of rings (behind the planet) — draw first
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(ringTilt);
+            // Outer A ring
             ctx.beginPath();
-            ctx.ellipse(sx, sy, dotR * 2.2, dotR * 0.6, -0.3, 0, TAU);
-            ctx.strokeStyle = "#e0c068aa"; ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.ellipse(0, 0, dotR * 2.4, dotR * 0.68, 0, Math.PI, 0);
+            ctx.strokeStyle = "rgba(224,192,104,0.82)"; ctx.lineWidth = 2.6; ctx.stroke();
+            // Cassini division gap (darker thin line)
             ctx.beginPath();
-            ctx.ellipse(sx, sy, dotR * 1.7, dotR * 0.45, -0.3, 0, TAU);
-            ctx.strokeStyle = "#d4aa5088"; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.ellipse(0, 0, dotR * 2.05, dotR * 0.58, 0, Math.PI, 0);
+            ctx.strokeStyle = "rgba(60,40,20,0.55)"; ctx.lineWidth = 0.9; ctx.stroke();
+            // Inner B ring (brighter, thicker)
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 1.75, dotR * 0.50, 0, Math.PI, 0);
+            ctx.strokeStyle = "rgba(240,212,140,0.88)"; ctx.lineWidth = 2.8; ctx.stroke();
+            ctx.restore();
+            // Planet is drawn above — redraw the body shadow line as a subtle highlight on the ring edge behind it
           }
 
-          // ── Uranus ring (faint) ──
+          // ── Uranus ring (vertical, faint blue-cyan — axis is tilted 98°) ──
           if (b.id === "uranus") {
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(1.45);
             ctx.beginPath();
-            ctx.ellipse(sx, sy, dotR * 1.6, dotR * 1.4, 1.2, 0, TAU);
-            ctx.strokeStyle = "#73c2d044"; ctx.lineWidth = 1; ctx.stroke();
+            ctx.ellipse(0, 0, dotR * 1.8, dotR * 0.35, 0, 0, TAU);
+            ctx.strokeStyle = "rgba(115,194,208,0.45)"; ctx.lineWidth = 1.2; ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 1.5, dotR * 0.28, 0, 0, TAU);
+            ctx.strokeStyle = "rgba(115,194,208,0.28)"; ctx.lineWidth = 0.8; ctx.stroke();
+            ctx.restore();
           }
 
           // Highlight ring for selected body

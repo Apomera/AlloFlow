@@ -1289,6 +1289,20 @@
         }
         return _rawAwardXP(toolId, amount, reason);
       } : null;
+
+      // Screen-reader announcement helper. Writes to the shared live region so announcements
+      // are read by assistive tech even when the visual game UI changes. Previously the tool
+      // referenced `announceToSR` without defining it — the `typeof === 'function'` guards
+      // silently skipped announcements, which meant no SR support.
+      function announceToSR(message) {
+        try {
+          var lr = document.getElementById('allo-live-geometryworld');
+          if (!lr) return;
+          // Swapping text in two ticks ensures the SR re-announces even if the message repeats
+          lr.textContent = '';
+          setTimeout(function() { lr.textContent = String(message || ''); }, 30);
+        } catch (e) {}
+      }
       var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
       // ── State from toolData ──
@@ -1386,6 +1400,7 @@
           var latest = result.newBadges[result.newBadges.length - 1];
           upd({ earnedBadges: result.badges, lastBadgeNotification: latest });
           if (addToast) addToast(latest.icon + ' Achievement: ' + latest.name + ' \u2014 ' + latest.desc, 'success');
+          announceToSR('Achievement unlocked! ' + latest.name + '. ' + latest.desc);
           if (typeof awardXP === 'function') awardXP('geometryWorld', 10, 'Badge: ' + latest.name);
           // Auto-dismiss after 4 seconds
           setTimeout(function() { upd('lastBadgeNotification', null); }, 4000);
@@ -2506,6 +2521,7 @@
                   var mh = (d.measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.hasFractions ? m.formattedVolume : m.boundingVolume, blocks: m.count, t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
                   upd({ measureResult: m, measureHistory: mh, actionFeedback: '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) });
+                  announceToSR('Measured: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) + ' cubic units');
                   setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                   // Show 3D dimension lines + selection glow around the measured structure
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
@@ -2878,6 +2894,13 @@
         function isBlockAt(bx, by, bz) {
           return !!engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
         }
+        // Fly-mode collision ignores water/lava so you can swim/dive through them like Minecraft creative.
+        function isSolidBlockAt(bx, by, bz) {
+          var b = engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
+          if (!b) return false;
+          var bt = b.userData && b.userData.blockType;
+          return bt !== 'water' && bt !== 'lava';
+        }
 
         // Player physics constants
         var MOVE_SPEED = 5.0;
@@ -2972,14 +2995,48 @@
             var cam = engine.camera.position;
 
             if (engine.flyMode) {
-              // ── Fly mode: no gravity, no collision, Space=up, Shift=down ──
+              // ── Fly mode: no gravity, collides with solid blocks but passes through water/lava ──
               var flySpeed = isSprinting ? 12 : 7;
-              cam.x += engine.velocity.x * dt;
-              cam.z += engine.velocity.z * dt;
+              var feetY = cam.y - EYE_HEIGHT;
+
+              // X axis collision — body-column check, no auto-step while flying
+              var newX = cam.x + engine.velocity.x * dt;
+              var blockedFX = false;
+              for (var fcy = 0; fcy < Math.ceil(PLAYER_HEIGHT); fcy++) {
+                if (isSolidBlockAt(newX + PLAYER_RADIUS, feetY + fcy, cam.z) || isSolidBlockAt(newX - PLAYER_RADIUS, feetY + fcy, cam.z)) { blockedFX = true; break; }
+              }
+              if (!blockedFX) cam.x = newX; else engine.velocity.x = 0;
+
+              // Z axis collision
+              var newZ = cam.z + engine.velocity.z * dt;
+              var blockedFZ = false;
+              for (var fcy2 = 0; fcy2 < Math.ceil(PLAYER_HEIGHT); fcy2++) {
+                if (isSolidBlockAt(cam.x, feetY + fcy2, newZ + PLAYER_RADIUS) || isSolidBlockAt(cam.x, feetY + fcy2, newZ - PLAYER_RADIUS)) { blockedFZ = true; break; }
+              }
+              if (!blockedFZ) cam.z = newZ; else engine.velocity.z = 0;
+
+              // Y axis collision — block on ceiling when ascending, on floor when descending
               var flyVertical = 0;
               if (engine.moveState.flyUp) flyVertical = flySpeed;
               if (engine.moveState.sprint && !engine.moveState.forward) flyVertical = -flySpeed;
-              cam.y += flyVertical * dt;
+              var newY = cam.y + flyVertical * dt;
+              if (flyVertical > 0) {
+                var headY = newY + (PLAYER_HEIGHT - EYE_HEIGHT);
+                if (!isSolidBlockAt(cam.x, headY, cam.z)
+                    && !isSolidBlockAt(cam.x + PLAYER_RADIUS, headY, cam.z)
+                    && !isSolidBlockAt(cam.x - PLAYER_RADIUS, headY, cam.z)
+                    && !isSolidBlockAt(cam.x, headY, cam.z + PLAYER_RADIUS)
+                    && !isSolidBlockAt(cam.x, headY, cam.z - PLAYER_RADIUS)) cam.y = newY;
+              } else if (flyVertical < 0) {
+                var newFeetY = newY - EYE_HEIGHT;
+                if (!isSolidBlockAt(cam.x, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x + PLAYER_RADIUS, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x - PLAYER_RADIUS, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x, newFeetY, cam.z + PLAYER_RADIUS)
+                    && !isSolidBlockAt(cam.x, newFeetY, cam.z - PLAYER_RADIUS)) cam.y = newY;
+              } else {
+                cam.y = newY;
+              }
               engine.onGround = false;
             } else {
               // ── Walk mode: full gravity + collision ──
@@ -3468,6 +3525,13 @@
           if (engine._cloudPlane && engine.camera) {
             engine._cloudPlane.position.x = engine.camera.position.x;
             engine._cloudPlane.position.z = engine.camera.position.z;
+          }
+          // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
+          // "run off" into a strange corner when the player explores a large world.
+          if (engine._sunSprite && engine.camera) {
+            engine._sunSprite.position.x = engine.camera.position.x + 40;
+            engine._sunSprite.position.y = 45;
+            engine._sunSprite.position.z = engine.camera.position.z + 40;
           }
 
           engine.renderer.render(engine.scene, engine.camera);
@@ -4075,7 +4139,7 @@
         if (Object.keys(patch).length > 0) {
           upd(patch);
           if (addToast) addToast('🎮 Returned to game — ' + Object.keys(patch).length + ' overlay(s) closed', 'info');
-          playSfx(sfxJump);
+          try { sfxJump(); } catch(e) {}
         }
       }
 
@@ -4340,17 +4404,26 @@
           engine && el('button', {
             onClick: function() {
               var eng = window[engineKey];
-              if (!eng || !eng.renderer) return;
-              eng.renderer.render(eng.scene, eng.camera); // force render
-              var dataUrl = eng.renderer.domElement.toDataURL('image/png');
-              var a = document.createElement('a');
-              a.href = dataUrl;
-              a.download = 'geometry_world_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.png';
-              document.body.appendChild(a); a.click(); document.body.removeChild(a);
-              if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
-              if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now() });
+              if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
+              try {
+                // Force fresh render since WebGLRenderer wasn't created with preserveDrawingBuffer
+                eng.renderer.render(eng.scene, eng.camera);
+                var dataUrl = eng.renderer.domElement.toDataURL('image/png');
+                // Filename includes the lesson title so students can recognize their work later
+                var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                var safeTitle = (currentLesson.title || 'geometry-world').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40).replace(/^-|-$/g, '');
+                var a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = 'geometry-world_' + safeTitle + '_' + stamp + '.png';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
+                if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now(), lesson: currentLesson.title });
+              } catch(err) {
+                console.error('Screenshot failed:', err);
+                if (addToast) addToast('Screenshot failed — try again.', 'info');
+              }
             },
-            title: 'Capture a screenshot of your world',
+            title: 'Capture a screenshot of your world (saves to downloads)',
             style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCF8 Photo'),
           // Print companion worksheet
@@ -4514,11 +4587,20 @@
             },
               el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
             ),
-            // Generate button (shows pass progress)
-            el('button', {
-              onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
-              style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '80px' }
-            }, aiGenerating ? '\u23F3 Pass ' + aiCurrentPass + '/' + aiPassCount : '\u2728 Generate'),
+            // Generate button (shows pass progress with descriptive labels)
+            (function() {
+              var passLabels = ['', 'Drafting', 'Refining', 'Adding hints'];
+              var buttonLabel = aiGenerating
+                ? '\u23F3 ' + (passLabels[aiCurrentPass] || 'Working') + '... ' + aiCurrentPass + '/' + aiPassCount
+                : '\u2728 Generate';
+              return el('button', {
+                onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
+                title: aiGenerating
+                  ? 'Pass ' + aiCurrentPass + ' of ' + aiPassCount + ': ' + (aiCurrentPass === 1 ? 'generating initial lesson JSON' : aiCurrentPass === 2 ? 'improving structures + dialogue' : 'adding scaffolded follow-up questions')
+                  : 'Generate an AI lesson from your prompt',
+                style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '120px' }
+              }, buttonLabel);
+            })(),
             // Surprise Me (grade-aware topics)
             el('button', {
               onClick: function() {
@@ -5218,31 +5300,7 @@
             onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
             title: 'Return to spawn point (H)'
           }, '\uD83C\uDFE0 Home'),
-          // Screenshot / Save Build
-          worldActive && el('div', {
-            style: { background: 'rgba(34,211,238,0.12)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 700, cursor: 'pointer' },
-            onClick: function() {
-              if (!engine || !engine.renderer || !engine.scene || !engine.camera) return;
-              try {
-                // Force a fresh render before toDataURL (renderer isn't preserveDrawingBuffer)
-                engine.renderer.render(engine.scene, engine.camera);
-                var dataURL = engine.renderer.domElement.toDataURL('image/png');
-                var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                var safeTitle = (currentLesson.title || 'geometry-world').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40);
-                var a = document.createElement('a');
-                a.href = dataURL;
-                a.download = 'geometry-world_' + safeTitle + '_' + stamp + '.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                if (addToast) addToast('\uD83D\uDCF8 Screenshot saved to your downloads!', 'success');
-              } catch (err) {
-                console.error('Screenshot failed:', err);
-                if (addToast) addToast('Screenshot failed \u2014 try again.', 'info');
-              }
-            },
-            title: 'Save a PNG screenshot of your build'
-          }, '\uD83D\uDCF8 Save'),
+          // (Screenshot button already exists in top toolbar as "📸 Photo" — line ~4347)
           // Clear my blocks
           worldActive && el('div', {
             style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer' },
@@ -5770,7 +5828,7 @@
                           try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
                           if (addToast) addToast('\u2705 Correct! +1', 'success');
                           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
-                          if (typeof announceToSR === 'function') announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
+                          announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
                       if (window._alloHaptic) window._alloHaptic('correct');
                           // 3D confetti from NPC + celebration bounce
                           if (eng && npc.body) {
@@ -5781,6 +5839,7 @@
                           if (newScore >= totalQ && totalQ > 0) {
                             sfxComplete();
                             if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+                            announceToSR('Lesson complete! You answered all ' + totalQ + ' questions correctly. The sun is setting \u2014 look up to see the celebration.');
                               // Trigger reflection prompt after a delay
                               setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
                             if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
@@ -5833,6 +5892,7 @@
                           hintText += 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H');
                         }
                         if (addToast) addToast(hintText, 'error');
+                        announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
                       }
                     },
                     style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', color: '#e2e8f0', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }

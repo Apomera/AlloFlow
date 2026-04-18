@@ -5915,7 +5915,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
                 + `<span style="font-size:13px;color:#334155;font-weight:600">Image placeholder</span>`
                 + `<span style="font-size:12px;color:#475569;max-width:90%">${_imgDesc.substring(0, 140)}${_imgDesc.length > 140 ? '…' : ''}</span>`
-                + `<label style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#1d4ed8;color:#ffffff;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;margin-top:0.5rem">`
+                + `<label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1d4ed8;color:#ffffff;border:1px solid #1e3a8a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-top:0.5rem;text-shadow:0 1px 2px rgba(0,0,0,0.25)">`
                 + `📷 Upload image`
                 + `<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${_imgId}-container');var ex=c.querySelector('img');if(ex){ex.src=e.target.result;}else{c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';var ni=document.createElement('img');ni.src=e.target.result;ni.alt='${_imgAltSafe}';ni.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.insertBefore(ni,c.firstChild);}};r.readAsDataURL(f);})(this)">`
                 + `</label>`
@@ -6520,11 +6520,11 @@ ${hasSrc
 <span style="font-size:13px;color:#334155;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
 <span style="font-size:12px;color:#475569">${desc.substring(0, 100)}${desc.length > 100 ? '...' : ''}</span>`}
 <div style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
-<label style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:${hasSrc ? '#64748b' : '#2563eb'};color:white;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer">
+<label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:${hasSrc ? '#475569' : '#1d4ed8'};color:#ffffff;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,0.25);border:1px solid ${hasSrc ? '#334155' : '#1e3a8a'}">
 ${hasSrc ? (isRegenerated ? '🔄 Replace (AI generated)' : '🔄 Replace') : '📷 Upload image'}
 <input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');var img=c.querySelector('img');if(img){img.src=e.target.result;}else{c.style.background='none';c.style.border='none';var ni=document.createElement('img');ni.src=e.target.result;ni.alt='${desc.replace(/"/g, '').replace(/'/g, '')}';ni.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.insertBefore(ni,c.firstChild);}};r.readAsDataURL(f);})(this)">
 </label>
-${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:#8b5cf6;color:white;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer" aria-label="Adjust crop for this image">✂ Adjust Crop</button>` : ''}
+${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#6d28d9;color:#ffffff;border:1px solid #4c1d95;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,0.25)" aria-label="Adjust crop for this image">✂ Adjust Crop</button>` : ''}
 </div>
 </div>
 <figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em">${desc}${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose + '</em>' : ''}</figcaption>
