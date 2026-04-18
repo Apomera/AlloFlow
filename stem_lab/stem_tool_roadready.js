@@ -2628,7 +2628,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }, [Object.keys(d.badges || {}).length]);
 
       var currentVehicle = VEHICLES.find(function(v) { return v.id === selectedVehicle; }) || VEHICLES[0];
-      var currentScenario = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
+      // Shallow-copy the scenario so runtime mutations (Day/Night toggle, traffic level,
+      // biome-driven speedLimit, Free Explore overrides) don't leak into the SCENARIOS
+      // master array. Without this copy, ending a Free Explore drive in night mode left
+      // the underlying scenario entry stuck at time='night' for every subsequent drive.
+      var _scenarioBase = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
+      var currentScenario = Object.assign({}, _scenarioBase);
 
       // ── Refs for the active driving sim ──
       var canvasRef = useRef(null);  // 2D HUD overlay canvas
@@ -4812,19 +4817,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // SB driver (heading > 0) belongs at perp < 0. If the player drifts more than
           // 0.4m onto the OTHER side of the spline AND stays there for 1.5s while moving,
           // they're driving in the oncoming lane — major safety violation.
+          //
+          // Coordinated with the more sophisticated wrongSideRef detector (further down
+          // in HUD/render code, line ~13000+) via wrongSideRef.current.lastPenaltyAt so
+          // a single wrong-side incursion doesn't double-penalize through both checks.
           if (Math.abs(car.speed) > 3 && timeRef.current > 5) {
             var pRightSign = car.heading > 0 ? -1 : 1; // NB: +1, SB: -1
-            // playerPerpOffset > 0 = +X side. Driver belongs on `pRightSign` side.
-            // wrongSide = perp on OPPOSITE side of pRightSign by > 0.4m
             var inOncoming = (playerPerpOffset * pRightSign) < -0.4;
             var ws = laneChangeRef.current;
             if (inOncoming) {
               if (!ws._wrongSideStart) ws._wrongSideStart = timeRef.current;
               var wrongDuration = timeRef.current - ws._wrongSideStart;
-              // After 1.5s in oncoming, log a violation. Re-arm every 5s so a long stretch
-              // in oncoming doesn't farm bonuses but DOES keep getting flagged.
-              if (wrongDuration > 1.5 && (!ws._wrongSideLogged || timeRef.current - ws._wrongSideLogged > 5)) {
+              // Suppress if the other detector recently penalized (within 4s)
+              var recentlyPenalized = wrongSideRef.current
+                && wrongSideRef.current.lastPenaltyAt
+                && (timeRef.current - wrongSideRef.current.lastPenaltyAt < 4);
+              if (wrongDuration > 1.5 && !recentlyPenalized
+                  && (!ws._wrongSideLogged || timeRef.current - ws._wrongSideLogged > 5)) {
                 ws._wrongSideLogged = timeRef.current;
+                if (wrongSideRef.current) wrongSideRef.current.lastPenaltyAt = timeRef.current;
                 statsRef.current.safetyScore -= 15;
                 if (!statsRef.current.wrongSideViolations) statsRef.current.wrongSideViolations = 0;
                 statsRef.current.wrongSideViolations++;
@@ -8144,16 +8155,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerCarGroup.add(headlightR.target);
           // Visible headlight beam cones — a stretched cone per headlight with
           // additive blending. Shows up best at night + fog; hidden by day.
-          if (isNight || isFog || isRain) {
-            var beamColor = isFog ? 0xf0e0a0 : 0xfff5cc;
-            var beamOpacity = isFog ? 0.18 : isRain ? 0.10 : 0.14;
-            var beamMat = new T.MeshBasicMaterial({ color: beamColor, transparent: true, opacity: beamOpacity, blending: T.AdditiveBlending, depthWrite: false, fog: false });
-            // Cone geometry opens along +Y by default; we'll aim it along +X.
+          // Headlight beam cones — ALWAYS created so a Day→Night toggle mid-drive
+          // actually shows the beams. Opacity defaults to 0 in clear day, ramped up
+          // by the per-frame update when night/fog/rain conditions apply.
+          {
+            var beamMat = new T.MeshBasicMaterial({ color: 0xfff5cc, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false });
             var beamGeo = new T.ConeGeometry(1.8, 9, 12, 1, true);
             [-0.3, 0.3].forEach(function(zOff) {
               var beam = new T.Mesh(beamGeo, beamMat);
-              beam.rotation.z = -Math.PI / 2; // point along +X
+              beam.rotation.z = -Math.PI / 2;
               beam.position.set(0.95 + 4.5, 0.5, zOff);
+              beam.name = 'rr_playerBeam';
               playerCarGroup.add(beam);
             });
           }
@@ -8749,6 +8761,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.playerCarGroup.children.forEach(function(child) {
               if (child.material && child.material.color && child.material.color.getHex() === 0xffffee) {
                 child.material.opacity = scn.time === 'night' ? 0.9 : 0.3;
+              }
+            });
+          }
+          // Player headlight beam-cone opacity — match the spotlight active state. The
+          // beams were always-created (intensity 0 baseline) so a Day↔Night toggle now
+          // turns them on/off cleanly instead of needing the original isNight at scene init.
+          if (s3.playerCarGroup) {
+            var beamActive = isNightNow || scn.weather === 'fog' || scn.weather === 'rain';
+            var beamTargetOp = beamActive ? (scn.weather === 'fog' ? 0.18 : scn.weather === 'rain' ? 0.10 : 0.14) : 0;
+            var beamColorHex = scn.weather === 'fog' ? 0xf0e0a0 : 0xfff5cc;
+            s3.playerCarGroup.children.forEach(function(child) {
+              if (child.name === 'rr_playerBeam') {
+                child.material.opacity = beamTargetOp;
+                child.material.color.setHex(beamColorHex);
               }
             });
           }
@@ -9478,21 +9504,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
             m.position.set(cy.x - MAP_SIZE / 2, cyRoadH + 0.03, cy.y - MAP_SIZE / 2);
             m.rotation.y = -cy.heading;
-            // Spin both bike wheels at speed * dt / wheelR (TorusGeometry, layout same as car wheels).
-            // Use the cyclist's own _lastWheelT so each bike accumulates correctly.
-            if (cy._wheelSpinAngle === undefined) cy._wheelSpinAngle = 0;
-            if (cy._lastWheelT === undefined) cy._lastWheelT = timeRef.current;
-            var cyWheelDt = Math.max(0, Math.min(0.1, timeRef.current - cy._lastWheelT));
-            cy._lastWheelT = timeRef.current;
-            cy._wheelSpinAngle += Math.abs(cy.speed) * cyWheelDt / 0.30;
-            m.children.forEach(function(child) {
-              // Bike wheels are TorusGeometry with rotation.y = π/2 (laid flat to roll).
-              // Spinning a torus around its own ring axis (post-rotation: world X) needs
-              // rotation.x. Using rotation.x adds to the existing rotations cleanly.
-              if (child.geometry && child.geometry.type === 'TorusGeometry') {
-                child.rotation.x = cy._wheelSpinAngle;
-              }
-            });
           });
 
           // Wildlife
@@ -10013,6 +10024,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lt = lm.type;
                 var lmCenterWX = lm.centerX - MAP_SIZE / 2;
                 var lmCenterWZ = chunkWorldZ + lm.centerY;
+                // Wrap all landmark meshes in a road-elevation parent so the structure
+                // sits at the actual road height instead of world Y=0. Without this,
+                // landmarks on hills floated below the road surface (the local landmark
+                // Y values like 0.05, 0.6, 1.7 were treated as absolute world heights).
+                // Temporarily shadow chunkGroup with a positioned subgroup, then restore
+                // at the end of the landmark block.
+                var lmRoadH = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + lm.centerY) : 0;
+                var lmGroup = new T.Group();
+                lmGroup.position.y = lmRoadH;
+                chunkGroup.add(lmGroup);
+                var _origChunkGroup_lm = chunkGroup;
+                chunkGroup = lmGroup;
                 var lmMainMat = new T.MeshLambertMaterial({ color: lt.color });
                 var lmRoofMat = new T.MeshLambertMaterial({ color: lt.roofColor });
 
@@ -10241,7 +10264,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // ─── CONTEXT-AWARE ROAD SIGNS near each landmark ───
                 // Draw an appropriate warning/regulatory sign on the shoulder as the driver approaches.
                 var landmarkSignZ = chunkWorldZ + lm.centerY - 6; // 6 cells before the landmark center
-                var roadShoulderX = lm.side * (MAX_ROAD_WIDTH + 1); // just off the road on the landmark side
+                // Spline-aware shoulder X: previously this was just `lm.side * (...)` which
+                // pinned signs to world X=0 ± shoulder offset. On curving roads the shoulder
+                // moves with the spline, so signs ended up far off-road. Now anchored to
+                // splineCenter at the sign's Z.
+                var lmSignSplineCx = iw.spline ? (iw.spline.centerAt(landmarkSignZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+                var roadShoulderX = lmSignSplineCx + lm.side * (MAX_ROAD_WIDTH + 1);
                 var signBackMat = new T.MeshLambertMaterial({ color: 0xffffff });
                 var signPost2Mat = new T.MeshLambertMaterial({ color: 0xd1d5db });
                 function addRoadSign(shape, faceColor, label, labelColor, zOff) {
@@ -10330,16 +10358,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
 
                 // ─── CROSSWALK near pedestrian-heavy landmarks ───
+                // Centered on the SPLINE at this Z (not world X=0) so crosswalks land on
+                // the actual road on bent stretches, not floating in the grass.
                 if (lt.id === 'school' || lt.id === 'park' || lt.id === 'market' || lt.id === 'library' || lt.id === 'pharmacy') {
                   var crosswalkZ = chunkWorldZ + lm.centerY;
+                  var cwSplineCx = iw.spline ? (iw.spline.centerAt(ci * CHUNK_SIZE + lm.centerY) - MAP_SIZE / 2) : 0;
                   var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
                   for (var cwi = -3; cwi <= 3; cwi++) {
                     var cwStripe = new T.Mesh(new T.PlaneGeometry(0.7, 0.3), cwMat);
                     cwStripe.rotation.x = -Math.PI / 2;
-                    cwStripe.position.set(cwi * 0.9, 0.016, crosswalkZ);
+                    cwStripe.position.set(cwSplineCx + cwi * 0.9, 0.016, crosswalkZ);
                     chunkGroup.add(cwStripe);
                   }
                 }
+                // Restore chunkGroup after the landmark block (we'd shadowed it with a
+                // road-elevated subgroup at the start of `if (chunk.landmark)`).
+                chunkGroup = _origChunkGroup_lm;
               }
 
               // Determine LOD: chunks > 1 away get simplified rendering for performance.

@@ -507,8 +507,15 @@ var createDocPipeline = function(deps) {
       // Short doc: single call with full document (use stripped html without base64 images)
       try {
         const _singleHtml = _hasImages ? strippedHtml : html;
-        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${_singleHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${_singleHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
         const fixed = stripFence(await callGemini(prompt, true));
+        // FINAL-token preservation: reject this pass if any image placeholder was dropped.
+        const _finalBefore = (_singleHtml.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []);
+        const _finalAfter = fixed ? (fixed.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []) : [];
+        if (_finalBefore.length > 0 && _finalAfter.length < _finalBefore.length) {
+          warnLog(`[aiFixChunked:${label}] single-chunk dropped ${_finalBefore.length - _finalAfter.length} image FINAL token(s) — keeping original to preserve images`);
+          return html;
+        }
         if (acceptFixedHtml(fixed, _singleHtml)) return _restoreImages(fixed);
         warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
         return html;
@@ -526,7 +533,7 @@ var createDocPipeline = function(deps) {
         : isLast
           ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
-      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
       try {
         let out = stripFence(await callGemini(prompt, true));
         if (_isJsonWrapped(out)) {
@@ -538,6 +545,34 @@ var createDocPipeline = function(deps) {
             return part;
           }
         }
+        // FINAL-token preservation check: if Gemini dropped any __ALLOFLOW_DATAURL_FINAL_N__
+        // placeholders that were in the input, reject this chunk's output and keep the original.
+        // Critical: dropping a FINAL token means the corresponding extracted image is lost.
+        const _finalBefore = (part.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []);
+        const _finalAfter = out ? (out.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []) : [];
+        if (_finalBefore.length > 0 && _finalAfter.length < _finalBefore.length) {
+          const _lost = _finalBefore.length - _finalAfter.length;
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} dropped ${_lost} image FINAL token(s) — retrying with explicit preservation instructions`);
+          try {
+            const retryPrompt = `Re-fix this HTML fragment. Your previous response REMOVED image placeholder tokens matching __ALLOFLOW_DATAURL_FINAL_N__ — these are extracted images that MUST be preserved. Every <img src="__ALLOFLOW_DATAURL_FINAL_*__"> and <figure> containing such a token must appear in your output verbatim.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with ALL __ALLOFLOW_DATAURL_FINAL_*__ tokens intact.`;
+            let retried = stripFence(await callGemini(retryPrompt, true));
+            if (_isJsonWrapped(retried)) {
+              const unwrappedRetry = _tryUnwrapJsonHtml(retried);
+              if (unwrappedRetry) retried = unwrappedRetry;
+            }
+            const _finalRetry = retried ? (retried.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []) : [];
+            if (retried && retried.length >= part.length * 0.9 && _finalRetry.length >= _finalBefore.length) {
+              warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} retry recovered all ${_finalBefore.length} image token(s)`);
+              return retried;
+            }
+          } catch (retryErr) {
+            warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} image-token retry failed: ${retryErr && retryErr.message}`);
+          }
+          // Retry didn't recover — keep the original chunk so images survive (at the cost of
+          // not applying this pass's WCAG fixes to this specific chunk).
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} keeping original to preserve ${_finalBefore.length} image token(s)`);
+          return part;
+        }
         if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
           return out;
         } else if (part.length > 5000) {
@@ -545,7 +580,7 @@ var createDocPipeline = function(deps) {
           const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
           const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
             try {
-              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment.`;
+              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nIMAGE PLACEHOLDERS: Any token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) or __IMG_DATA_N__ is an image placeholder — keep it exactly and do NOT remove its containing element.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment.`;
               let halfOut = stripFence(await callGemini(halfPrompt, true));
               if (_isJsonWrapped(halfOut)) {
                 const unwrappedHalf = _tryUnwrapJsonHtml(halfOut);
@@ -1441,7 +1476,7 @@ var createDocPipeline = function(deps) {
             'Fix any REMAINING WCAG violations in this HTML fragment. Surgical fixes have already been applied — focus on what\'s left.\n\n' +
             fragNote + '\n\n' +
             'VIOLATIONS CONTEXT:\n' + violationText + '\n\n' +
-            'RULES: Preserve ALL text content, ALL attributes (especially src= even if they look like placeholder tokens), ALL inline styles. Do NOT shorten, summarize, or drop content. Tokens matching __ALLOFLOW_DATAURL_N__ represent embedded images — preserve them verbatim.\n\n' +
+            'RULES: Preserve ALL text content, ALL attributes (especially src= even if they look like placeholder tokens), ALL inline styles. Do NOT shorten, summarize, or drop content. IMAGE PLACEHOLDERS: Any src value or bare token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n' +
             'HTML:\n"""\n' + chunk + '\n"""\n\n' +
             'Return ONLY the fixed fragment.';
           let rewritten = stripFence(await callGemini(rewritePrompt, true));
@@ -8508,21 +8543,54 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const _parseTokenIdx = (tok) => { const m = tok.match(/__ALLOFLOW_DATAURL_FINAL_(\d+)__/); return m ? parseInt(m[1], 10) : null; };
         const _placedIdx = [];
         const _droppedIdx = [];
+        // Tolerant match: case-insensitive, whitespace allowed inside the token. Catches Gemini
+        // responses that wrapped a token across a line or lowercased attribute values.
         Object.keys(_deferredImageMap).forEach((token) => {
-          const occurrences = accessibleHtml.split(token).length - 1;
-          const idx = _parseTokenIdx(token);
-          if (occurrences > 0) {
-            if (idx != null) _placedIdx.push(idx);
-            accessibleHtml = accessibleHtml.split(token).join(_deferredImageMap[token]);
-          } else {
-            if (idx != null) _droppedIdx.push(idx);
-          }
+          const idxMatch = token.match(/__ALLOFLOW_DATAURL_FINAL_(\d+)__/);
+          const idx = idxMatch ? parseInt(idxMatch[1], 10) : null;
+          if (idx == null) return;
+          const tolerantRe = new RegExp('_\\s*_\\s*ALLOFLOW\\s*_\\s*DATAURL\\s*_\\s*FINAL\\s*_\\s*' + idx + '\\s*_\\s*_', 'gi');
+          const before = accessibleHtml;
+          accessibleHtml = accessibleHtml.replace(tolerantRe, _deferredImageMap[token]);
+          if (before !== accessibleHtml) _placedIdx.push(idx);
+          else _droppedIdx.push(idx);
         });
         const _tokenCountBefore = _placedIdx.length;
         const _expectedTokens = Object.keys(_deferredImageMap).length;
         _pipeLog('Images', 'Restored ' + _tokenCountBefore + '/' + _expectedTokens + ' image data URL(s) from placeholder tokens');
-        if (_tokenCountBefore < _expectedTokens) {
-          warnLog('[Images] WARNING: ' + (_expectedTokens - _tokenCountBefore) + ' image placeholder token(s) were missing before restoration — an AI pass dropped figures at indexes: ' + _droppedIdx.join(', '));
+        if (_droppedIdx.length > 0) {
+          warnLog('[Images] WARNING: ' + _droppedIdx.length + ' image placeholder token(s) were missing before restoration — an AI pass dropped figures at indexes: ' + _droppedIdx.join(', '));
+          // Fallback re-injection: the actual image bytes still live in _deferredImageMap; append
+          // them to a recovery section at the end of <main> so no visual content is silently lost.
+          // Placement may be imperfect (end-of-doc rather than original inline position), but the
+          // image is guaranteed present in the output.
+          const _recovered = [];
+          const _recoveredFigures = _droppedIdx.map((i) => {
+            const tok = '__ALLOFLOW_DATAURL_FINAL_' + i + '__';
+            const dataUrl = _deferredImageMap[tok];
+            if (!dataUrl) return '';
+            _recovered.push(i);
+            return '<figure style="margin:1.5em 0;text-align:center"><img src="' + dataUrl + '" alt="Extracted image ' + (i + 1) + ' from source document" style="max-width:100%;height:auto"/><figcaption style="color:#78350f;font-size:0.85em;margin-top:0.5em">Image ' + (i + 1) + ' (reinserted after remediation)</figcaption></figure>';
+          }).filter(Boolean).join('\n');
+          if (_recoveredFigures) {
+            const recoverySection = '<section aria-label="Extracted images recovered after remediation" data-image-recovery="true" style="margin-top:2em;padding:1em;border-top:2px solid #f59e0b;background:#fffbeb;border-radius:8px">\n' +
+              '<h2 style="color:#b45309;font-size:1.1em;margin-top:0">Extracted images</h2>\n' +
+              '<p style="color:#78350f;font-size:0.9em">These images were extracted from the source document but were dropped during remediation. They appear here so no visual content is lost — you can move them back inline if needed.</p>\n' +
+              _recoveredFigures +
+              '\n</section>';
+            if (accessibleHtml.includes('</main>')) {
+              accessibleHtml = accessibleHtml.replace('</main>', recoverySection + '\n</main>');
+            } else if (accessibleHtml.includes('</body>')) {
+              accessibleHtml = accessibleHtml.replace('</body>', recoverySection + '\n</body>');
+            } else {
+              accessibleHtml = accessibleHtml + '\n' + recoverySection;
+            }
+            _pipeLog('Images', 'Fallback re-injected ' + _recovered.length + ' dropped image(s) into a recovery section at end of <main>');
+            // After recovery, these images are technically placed (just at end-of-doc). Keep
+            // __lastImageDroppedByAi populated so the fidelity panel can still flag the placement
+            // quality, but the images themselves are no longer silently lost.
+            _placedIdx.push.apply(_placedIdx, _recovered);
+          }
           window.__lastImageDroppedByAi = _droppedIdx.slice();
         }
       }

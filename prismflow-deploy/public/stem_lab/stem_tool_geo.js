@@ -528,6 +528,34 @@ var d = labToolData || {};
           // Badge state
           var geoBadges = d.geoBadges || {};
 
+          // Spaced-repetition state: countries the student got wrong and should re-see.
+          // In normal mode, these are weighted 40% more likely to appear in pickTarget.
+          // In review mode (toggled via header pill), they appear EXCLUSIVELY.
+          var geoMissed = d.geoMissed || [];
+          var geoReviewMode = !!d.geoReviewMode;
+
+          // Landmark quiz state ('browse' = passive viewer, 'quiz' = 4-choice country quiz)
+          var geoLandmarkMode = d.geoLandmarkMode || 'browse';
+          var geoLandmarkChoices = d.geoLandmarkChoices || null;
+          var geoLandmarkQuizFb = d.geoLandmarkQuizFb || null;
+
+          // Capitals easy-mode choices (stable per target so the 4 buttons don't
+          // re-shuffle on every render — previously a misclick hazard).
+          var geoCapitalsChoices = d.geoCapitalsChoices || null;
+
+          // Per-continent accuracy stats for the session.
+          var geoSessionStats = d.geoSessionStats || {};
+          var geoStatsOpen = !!d.geoStatsOpen;
+
+          function recordContinentStat(continent, correct) {
+            if (!continent) return;
+            var next = Object.assign({}, geoSessionStats);
+            var cur = next[continent] ? { c: next[continent].c, w: next[continent].w } : { c: 0, w: 0 };
+            if (correct) cur.c++; else cur.w++;
+            next[continent] = cur;
+            upd('geoSessionStats', next);
+          }
+
           // ── Region filter ──
           // Supports: 'world', continent keys (africa/asia/europe/n_america/s_america/oceania),
           // 'americas' (legacy combined), and 'r:<Sub-Region Name>' for finer-grained UN regions.
@@ -573,11 +601,22 @@ var d = labToolData || {};
 
 
 
-          // Pick a new target
+          // Pick a new target. Respects the current region filter and applies
+          // spaced-repetition weighting for countries the student has missed.
 
           function pickTarget(mode) {
 
-            var pool = filteredCountries.filter(function(c) { return geoAnswered.indexOf(c.iso) === -1; });
+            var missedPool = filteredCountries.filter(function(c) { return geoMissed.indexOf(c.iso) !== -1; });
+            var freshPool = filteredCountries.filter(function(c) { return geoAnswered.indexOf(c.iso) === -1; });
+            var pool;
+
+            if (geoReviewMode && missedPool.length > 0) {
+              pool = missedPool;
+            } else if (missedPool.length > 0 && Math.random() < 0.4) {
+              pool = missedPool;
+            } else {
+              pool = freshPool;
+            }
 
             if (pool.length === 0) { upd('geoAnswered', []); pool = filteredCountries; }
 
@@ -637,6 +676,14 @@ var d = labToolData || {};
               // Celebrate the correct polygon with a green pulse
               highlightCountry(geoTarget.iso, '#22c55e', 1400);
 
+              // Spaced repetition: if this country was on the review list, they've
+              // now learned it — remove it.
+              if (geoMissed.indexOf(geoTarget.iso) !== -1) {
+                upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+              }
+
+              recordContinentStat(geoTarget.continent, true);
+
               setTimeout(function() { pickTarget(geoTab); }, 1500);
 
             } else {
@@ -657,6 +704,13 @@ var d = labToolData || {};
               if (clickedIso) highlightCountry(clickedIso, '#ef4444', 2400);
               highlightCountry(geoTarget.iso, '#22c55e', 2400);
               flyToCountry(geoTarget);
+
+              // Spaced repetition: add the missed target to the review pool (dedup)
+              if (geoMissed.indexOf(geoTarget.iso) === -1) {
+                upd('geoMissed', geoMissed.concat([geoTarget.iso]));
+              }
+
+              recordContinentStat(geoTarget.continent, false);
 
               setTimeout(function() { pickTarget(geoTab); }, 2500);
 
@@ -688,7 +742,17 @@ var d = labToolData || {};
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Knew capital of ' + geoTarget.name);
 
-              setTimeout(function() { pickTarget('capitals'); }, 1500);
+              // Spaced repetition: remove from review pool if they nailed it
+              if (geoMissed.indexOf(geoTarget.iso) !== -1) {
+                upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+              }
+
+              recordContinentStat(geoTarget.continent, true);
+
+              setTimeout(function() {
+                upd('geoCapitalsChoices', null);
+                pickTarget('capitals');
+              }, 1500);
 
             } else {
 
@@ -696,9 +760,19 @@ var d = labToolData || {};
 
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
-              upd('geoFeedback', { correct: false, msg: '\u274C The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + ', not "' + input.trim() + '".' });
+              upd('geoFeedback', { correct: false, picked: input.trim(), msg: '\u274C The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + ', not "' + input.trim() + '".' });
 
-              setTimeout(function() { pickTarget('capitals'); }, 2500);
+              // Spaced repetition: add to review pool (dedup)
+              if (geoMissed.indexOf(geoTarget.iso) === -1) {
+                upd('geoMissed', geoMissed.concat([geoTarget.iso]));
+              }
+
+              recordContinentStat(geoTarget.continent, false);
+
+              setTimeout(function() {
+                upd('geoCapitalsChoices', null);
+                pickTarget('capitals');
+              }, 2500);
 
             }
 
@@ -1008,20 +1082,24 @@ var d = labToolData || {};
 
               upd('geoStreak', geoStreak + 1);
 
-              upd('geoFeedback', { correct: true, msg: '\u2705 Correct! ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is bigger!' });
+              upd('geoFeedback', { correct: true, picked: pickedIso, msg: '\u2705 Correct! ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is bigger.' });
 
               if (typeof stemBeep === 'function') stemBeep('correct');
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Size compare');
 
-              setTimeout(pickSizePair, 1500);
+              setTimeout(pickSizePair, 2200);
 
             } else {
 
               upd('geoStreak', 0);
 
-              upd('geoFeedback', { correct: false, msg: '\u274C ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is actually bigger than ' + (pickedIso === sizeTarget1.iso ? sizeTarget2 : sizeTarget1).name + ' (' + (pickedIso === sizeTarget1.iso ? sizeTarget2 : sizeTarget1).area.toLocaleString() + ' km\u00b2)' });
+              var smaller = pickedIso === sizeTarget1.iso ? sizeTarget2 : sizeTarget1;
 
-              setTimeout(pickSizePair, 2500);
+              if (typeof stemBeep === 'function') stemBeep('wrong');
+
+              upd('geoFeedback', { correct: false, picked: pickedIso, msg: '\u274C ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is actually bigger than ' + smaller.name + ' (' + smaller.area.toLocaleString() + ' km\u00b2).' });
+
+              setTimeout(pickSizePair, 3200);
 
             }
 
@@ -1037,6 +1115,29 @@ var d = labToolData || {};
                     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                     Math.sin(dLon / 2) * Math.sin(dLon / 2);
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          }
+
+          // ── Great-circle interpolation via spherical slerp ──
+          function greatCircleLatLngs(lat1, lon1, lat2, lon2, numPoints) {
+            var toRad = Math.PI / 180, toDeg = 180 / Math.PI;
+            var f1 = lat1 * toRad, l1 = lon1 * toRad;
+            var f2 = lat2 * toRad, l2 = lon2 * toRad;
+            var dLat = f2 - f1, dLon = l2 - l1;
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(f1) * Math.cos(f2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var d = 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+            if (d === 0) return [[lat1, lon1]];
+            var pts = [];
+            var n = numPoints || 64;
+            for (var i = 0; i <= n; i++) {
+              var t = i / n;
+              var A = Math.sin((1 - t) * d) / Math.sin(d);
+              var B = Math.sin(t * d) / Math.sin(d);
+              var x = A * Math.cos(f1) * Math.cos(l1) + B * Math.cos(f2) * Math.cos(l2);
+              var y = A * Math.cos(f1) * Math.sin(l1) + B * Math.cos(f2) * Math.sin(l2);
+              var z = A * Math.sin(f1) + B * Math.sin(f2);
+              pts.push([Math.atan2(z, Math.sqrt(x * x + y * y)) * toDeg, Math.atan2(y, x) * toDeg]);
+            }
+            return pts;
           }
 
           // ── Distance Challenge helpers ──
@@ -1065,13 +1166,13 @@ var d = labToolData || {};
               upd('geoScore', geoScore + pts);
               upd('geoStreak', geoStreak + 1);
               upd('geoDistCorrect', geoDistCorrect + 1);
-              upd('geoDistFeedback', { correct: true, msg: '✅ Great! Actual: ' + actual.toLocaleString() + ' km (you were ' + Math.round(pctOff * 100) + '% off) +' + pts + ' pts' });
+              upd('geoDistFeedback', { correct: true, actual: actual, guess: guess, pctOff: pctOff, msg: '✅ Great! Actual: ' + actual.toLocaleString() + ' km (you were ' + Math.round(pctOff * 100) + '% off) +' + pts + ' pts' });
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Distance estimate');
-              setTimeout(pickDistancePair, 2000);
+              setTimeout(pickDistancePair, 3500);
             } else {
               upd('geoStreak', 0);
-              upd('geoDistFeedback', { correct: false, msg: '❌ Actual distance: ' + actual.toLocaleString() + ' km. You guessed ' + guess.toLocaleString() + ' km (' + Math.round(pctOff * 100) + '% off). Within 15% to score!' });
-              setTimeout(pickDistancePair, 3000);
+              upd('geoDistFeedback', { correct: false, actual: actual, guess: guess, pctOff: pctOff, msg: '❌ Actual distance: ' + actual.toLocaleString() + ' km. You guessed ' + guess.toLocaleString() + ' km (' + Math.round(pctOff * 100) + '% off). Within 15% to score!' });
+              setTimeout(pickDistancePair, 4500);
             }
           }
 
@@ -1160,6 +1261,22 @@ var d = labToolData || {};
                 React.createElement('span', { className: 'text-xs bg-yellow-400 text-yellow-900 rounded-full px-2 py-0.5 font-bold' }, '\u2B50 ' + geoScore),
 
                 geoStreak >= 3 && React.createElement('span', { className: 'text-xs bg-orange-400 text-orange-900 rounded-full px-2 py-0.5 font-bold animate-pulse' }, '\uD83D\uDD25 ' + geoStreak + 'x'),
+
+                // Review badge — spaced-repetition pill. Clickable to toggle review-only mode.
+                geoMissed.length > 0 && React.createElement('button', {
+                  onClick: function() {
+                    var entering = !geoReviewMode;
+                    upd('geoReviewMode', entering);
+                    upd('geoTarget', null);
+                    upd('geoFeedback', null);
+                    if (addToast) addToast(entering ? '\uD83D\uDD01 Review mode: drilling ' + geoMissed.length + ' missed' : '\u2705 Back to full rotation', 'info');
+                  },
+                  className: 'text-xs rounded-full px-2 py-0.5 font-bold transition-colors ' +
+                             (geoReviewMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200' : 'bg-white/20 text-white hover:bg-white/30'),
+                  title: geoReviewMode
+                    ? 'Review mode ON — only missed countries. Click to resume normal rotation.'
+                    : 'Click to drill only the ' + geoMissed.length + ' ' + (geoMissed.length === 1 ? 'country' : 'countries') + ' you missed.'
+                }, '\uD83D\uDD01 ' + geoMissed.length),
 
                 // Region filter — graduated from easy (few countries) to hard (many).
                 // Each continent is an optgroup with the continent as "All" option plus
@@ -1310,15 +1427,46 @@ var d = labToolData || {};
 
             geoTab === 'capitals' && React.createElement('div', { className: 'p-4' },
 
-              geoTarget && React.createElement('div', { className: 'text-center mb-4' },
+              geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
 
-                React.createElement('p', { className: 'text-xs text-slate-600 mb-1' }, 'What is the capital of:'),
+                React.createElement('div', { className: 'text-center mb-3' },
 
-                React.createElement('p', { className: 'text-2xl font-bold text-slate-800 mb-1' }, '\uD83C\uDFDB\uFE0F ' + geoTarget.name),
+                  React.createElement('p', { className: 'text-xs text-slate-600 mb-1' }, 'What is the capital of:'),
 
-                React.createElement('p', { className: 'text-xs text-slate-600' }, geoTarget.continent),
+                  React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, '\uD83C\uDFDB\uFE0F ' + geoTarget.name),
 
-                React.createElement('div', { className: 'flex gap-2 max-w-md mx-auto mt-3' },
+                  React.createElement('p', { className: 'text-xs text-slate-600' }, geoTarget.continent)
+
+                ),
+
+                window.L && React.createElement('div', {
+                  ref: function(el) {
+                    if (!el || !window.L) return;
+                    if (!window._geoCapitalMapRef) window._geoCapitalMapRef = { current: null, iso: '', answered: false };
+                    var cmRef = window._geoCapitalMapRef;
+                    var answered = !!geoFeedback;
+                    if (cmRef.current && cmRef.iso === geoTarget.iso && cmRef.answered === answered) return;
+                    if (cmRef.current) { try { cmRef.current.remove(); } catch(e) {} cmRef.current = null; }
+                    el.innerHTML = '';
+                    setTimeout(function() {
+                      try {
+                        var zoom = geoTarget.area > 5000000 ? 3 : geoTarget.area > 1500000 ? 4 : geoTarget.area > 300000 ? 5 : 6;
+                        var m = window.L.map(el, { zoomControl: true, scrollWheelZoom: false, dragging: true, attributionControl: false, maxBounds: [[-85, -180], [85, 180]], minZoom: 2 }).setView([geoTarget.lat, geoTarget.lng], zoom);
+                        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
+                        var markerColor = answered ? (geoFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
+                        window.L.circle([geoTarget.lat, geoTarget.lng], { radius: 80000, color: markerColor, weight: 1.5, fillColor: markerColor, fillOpacity: 0.12 }).addTo(m);
+                        var cap = window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 10, color: markerColor, weight: 3, fillColor: markerColor, fillOpacity: 0.5 }).addTo(m);
+                        if (answered) cap.bindPopup('<b>\uD83D\uDCCD ' + geoTarget.capital + '</b>').openPopup();
+                        cmRef.current = m;
+                        cmRef.iso = geoTarget.iso;
+                        cmRef.answered = answered;
+                      } catch(e) { console.warn('Capital map error:', e); }
+                    }, 50);
+                  },
+                  style: { height: 180, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #e2e8f0' }
+                }),
+
+                React.createElement('div', { className: 'flex gap-2 mx-auto' },
 
                   React.createElement('input', {
 
@@ -1330,59 +1478,65 @@ var d = labToolData || {};
 
                     value: d.geoCapitalInput || '',
 
+                    disabled: !!geoFeedback,
+
                     onChange: function(e) { upd('geoCapitalInput', e.target.value); },
 
-                    onKeyDown: function(e) { if (e.key === 'Enter') { checkCapitalAnswer(d.geoCapitalInput || ''); upd('geoCapitalInput', ''); } },
+                    onKeyDown: function(e) { if (e.key === 'Enter' && !geoFeedback) { checkCapitalAnswer(d.geoCapitalInput || ''); upd('geoCapitalInput', ''); } },
 
-                    className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400'
+                    className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-500'
 
                   }),
 
                   React.createElement('button', {
 
-                    onClick: function() { checkCapitalAnswer(d.geoCapitalInput || ''); upd('geoCapitalInput', ''); },
+                    onClick: function() { if (!geoFeedback) { checkCapitalAnswer(d.geoCapitalInput || ''); upd('geoCapitalInput', ''); } },
 
-                    className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-600'
+                    disabled: !!geoFeedback,
+
+                    className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed'
 
                   }, 'Check')
 
                 ),
 
-                // Multiple choice hints for easy mode
+                geoDifficulty === 'easy' && (function() {
 
-                geoDifficulty === 'easy' && React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
-
-                  (function() {
-
+                  if (!geoCapitalsChoices) {
                     var opts = [geoTarget.capital];
-
-                    while (opts.length < 4) {
-
+                    var guard = 0;
+                    while (opts.length < 4 && guard < 100) {
                       var r = countries[Math.floor(Math.random() * countries.length)];
-
                       if (opts.indexOf(r.capital) === -1) opts.push(r.capital);
-
+                      guard++;
                     }
+                    for (var si = opts.length - 1; si > 0; si--) {
+                      var sj = Math.floor(Math.random() * (si + 1));
+                      var tmp = opts[si]; opts[si] = opts[sj]; opts[sj] = tmp;
+                    }
+                    upd('geoCapitalsChoices', opts);
+                    return null;
+                  }
 
-                    opts.sort(function() { return Math.random() - 0.5; });
-
-                    return opts.map(function(cap) {
-
+                  return React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
+                    geoCapitalsChoices.map(function(cap) {
+                      var answered = !!geoFeedback;
+                      var isCorrect = answered && cap === geoTarget.capital;
+                      var isWrongClicked = answered && !geoFeedback.correct && geoFeedback.picked === cap;
                       return React.createElement('button', {
-
                         key: cap,
-
-                        onClick: function() { checkCapitalAnswer(cap); },
-
-                        className: 'px-3 py-1.5 bg-slate-100 hover:bg-teal-100 rounded-lg text-xs font-medium text-slate-700 border border-slate-200 hover:border-teal-300 transition-all'
-
+                        disabled: answered,
+                        onClick: function() { if (!answered) checkCapitalAnswer(cap); },
+                        className: 'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ' +
+                                   (isCorrect ? 'bg-green-100 border-green-400 text-green-800' :
+                                    isWrongClicked ? 'bg-red-100 border-red-400 text-red-800' :
+                                    answered ? 'bg-slate-50 border-slate-200 text-slate-400' :
+                                    'bg-slate-100 hover:bg-teal-100 text-slate-700 border-slate-200 hover:border-teal-300')
                       }, cap);
+                    })
+                  );
 
-                    });
-
-                  })()
-
-                )
+                })()
 
               )
 
@@ -1396,19 +1550,59 @@ var d = labToolData || {};
 
               React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDF0D Sort Countries by Continent'),
 
-              geoTarget && React.createElement('div', { className: 'text-center mb-4' },
+              geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
 
-                React.createElement('p', { className: 'text-xl font-bold text-slate-800 mb-3' }, geoTarget.name),
+                React.createElement('div', { className: 'text-center mb-3' },
+                  React.createElement('p', { className: 'text-xs text-slate-500 uppercase tracking-wide' }, 'Which continent is'),
+                  React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, geoTarget.name + '?')
+                ),
 
-                React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center' },
+                window.L && React.createElement('div', {
+                  ref: function(el) {
+                    if (!el || !window.L) return;
+                    if (!window._geoContinentMapRef) window._geoContinentMapRef = { current: null, iso: '', answered: false };
+                    var cmRef = window._geoContinentMapRef;
+                    var answered = !!geoFeedback;
+                    if (cmRef.current && cmRef.iso === geoTarget.iso && cmRef.answered === answered) return;
+                    if (cmRef.current) { try { cmRef.current.remove(); } catch(e) {} cmRef.current = null; }
+                    el.innerHTML = '';
+                    setTimeout(function() {
+                      try {
+                        var zoom = geoTarget.area > 5000000 ? 2 : geoTarget.area > 1500000 ? 3 : geoTarget.area > 300000 ? 4 : 5;
+                        var m = window.L.map(el, { zoomControl: true, scrollWheelZoom: false, dragging: true, attributionControl: false, maxBounds: [[-85, -180], [85, 180]], minZoom: 2 }).setView([geoTarget.lat, geoTarget.lng], zoom);
+                        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
+                        var markerColor = answered ? (geoFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
+                        window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 14, color: markerColor, weight: 3, fillColor: markerColor, fillOpacity: 0.35 }).addTo(m);
+                        cmRef.current = m;
+                        cmRef.iso = geoTarget.iso;
+                        cmRef.answered = answered;
+                      } catch(e) { console.warn('Continent map error:', e); }
+                    }, 50);
+                  },
+                  style: { height: 200, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #e2e8f0' }
+                }),
+
+                geoFeedback && React.createElement('div', {
+                  className: 'text-center text-sm font-bold mb-2 ' + (geoFeedback.correct ? 'text-green-600' : 'text-red-600')
+                }, geoFeedback.msg),
+
+                React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
 
                   ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
+
+                    var answered = !!geoFeedback;
+                    var isCorrect = answered && geoTarget.continent === cont;
+                    var isPickedWrong = answered && !geoFeedback.correct && geoFeedback.picked === cont;
 
                     return React.createElement('button', {
 
                       key: cont,
 
+                      disabled: answered,
+
                       onClick: function() {
+
+                        if (answered) return;
 
                         var correct = geoTarget.continent === cont;
 
@@ -1420,25 +1614,45 @@ var d = labToolData || {};
 
                           upd('geoAnswered', geoAnswered.concat([geoTarget.iso]));
 
-                          upd('geoFeedback', { correct: true, msg: '\u2705 ' + geoTarget.name + ' is in ' + cont + '!' });
+                          upd('geoFeedback', { correct: true, picked: cont, msg: '\u2705 ' + geoTarget.name + ' is in ' + cont + '!' });
+
+                          if (typeof stemBeep === 'function') stemBeep('correct');
 
                           if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Continent sort');
 
-                          setTimeout(function() { pickTarget('continents'); }, 1200);
+                          if (geoMissed.indexOf(geoTarget.iso) !== -1) {
+                            upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+                          }
+
+                          recordContinentStat(geoTarget.continent, true);
+
+                          setTimeout(function() { pickTarget('continents'); }, 1500);
 
                         } else {
 
                           upd('geoStreak', 0);
 
-                          upd('geoFeedback', { correct: false, msg: '\u274C ' + geoTarget.name + ' is in ' + geoTarget.continent + ', not ' + cont });
+                          upd('geoFeedback', { correct: false, picked: cont, msg: '\u274C ' + geoTarget.name + ' is in ' + geoTarget.continent + ', not ' + cont });
 
-                          setTimeout(function() { pickTarget('continents'); }, 2000);
+                          if (typeof stemBeep === 'function') stemBeep('wrong');
+
+                          if (geoMissed.indexOf(geoTarget.iso) === -1) {
+                            upd('geoMissed', geoMissed.concat([geoTarget.iso]));
+                          }
+
+                          recordContinentStat(geoTarget.continent, false);
+
+                          setTimeout(function() { pickTarget('continents'); }, 2500);
 
                         }
 
                       },
 
-                      className: 'px-4 py-3 rounded-xl text-sm font-bold text-white shadow-md hover:shadow-lg transition-all transform hover:scale-105',
+                      className: 'px-4 py-3 rounded-xl text-sm font-bold text-white shadow-md transition-all ' +
+                                 (isCorrect ? 'ring-4 ring-green-300 scale-105' :
+                                  isPickedWrong ? 'ring-4 ring-red-300 opacity-70' :
+                                  answered ? 'opacity-40' :
+                                  'hover:shadow-lg transform hover:scale-105'),
 
                       style: { background: continentColors[cont] || '#a0aec0' }
 
@@ -1460,15 +1674,78 @@ var d = labToolData || {};
 
               React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDFD4\uFE0F Famous Landmarks'),
 
+              React.createElement('div', { className: 'flex justify-center gap-2 mb-3' },
+                ['browse', 'quiz'].map(function(m) {
+                  var isActive = geoLandmarkMode === m;
+                  return React.createElement('button', {
+                    key: m,
+                    onClick: function() {
+                      if (geoLandmarkMode === m) return;
+                      upd('geoLandmarkMode', m);
+                      upd('geoLandmarkChoices', null);
+                      upd('geoLandmarkQuizFb', null);
+                    },
+                    className: 'px-3 py-1 rounded-full text-xs font-bold transition-colors ' +
+                               (isActive ? 'bg-teal-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                  }, m === 'browse' ? '\uD83D\uDCD6 Browse' : '\uD83C\uDFAF Quiz Me');
+                })
+              ),
+
               (function() {
 
                 var lm = GEO_LANDMARKS[geoLandmarkIdx % GEO_LANDMARKS.length];
 
-                // Landmark mini-map ref
+                if (geoLandmarkMode === 'quiz' && !geoLandmarkChoices) {
+                  var used = {}; used[lm.country] = true;
+                  var distractors = [];
+                  var guard = 0;
+                  while (distractors.length < 3 && guard < 120) {
+                    var pick = countries[Math.floor(Math.random() * countries.length)];
+                    if (!used[pick.name]) { used[pick.name] = true; distractors.push(pick.name); }
+                    guard++;
+                  }
+                  var options = distractors.concat([lm.country]);
+                  for (var si = options.length - 1; si > 0; si--) {
+                    var sj = Math.floor(Math.random() * (si + 1));
+                    var tmp = options[si]; options[si] = options[sj]; options[sj] = tmp;
+                  }
+                  upd('geoLandmarkChoices', options);
+                }
 
-                if (!window._geoLandmarkMapRef) window._geoLandmarkMapRef = { current: null, idx: -1 };
+                function advanceLandmark() {
+                  upd('geoLandmarkIdx', geoLandmarkIdx + 1);
+                  upd('geoLandmarkChoices', null);
+                  upd('geoLandmarkQuizFb', null);
+                }
 
+                function answerLandmark(pickedName) {
+                  if (geoLandmarkQuizFb) return;
+                  var correct = pickedName === lm.country;
+                  var lmCountry = countries.find(function(c) { return c.name === lm.country; });
+                  var lmContinent = lmCountry ? lmCountry.continent : null;
+                  if (correct) {
+                    upd('geoScore', geoScore + 10);
+                    upd('geoStreak', geoStreak + 1);
+                    upd('geoLandmarkQuizFb', { correct: true, msg: '\u2705 Yes! ' + lm.name + ' is in ' + lm.country + '.' });
+                    if (typeof stemBeep === 'function') stemBeep('correct');
+                    if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'ID\'d ' + lm.name);
+                    recordContinentStat(lmContinent, true);
+                    setTimeout(advanceLandmark, 1600);
+                  } else {
+                    upd('geoStreak', 0);
+                    upd('geoLandmarkQuizFb', { correct: false, picked: pickedName, msg: '\u274C That\'s ' + pickedName + '. ' + lm.name + ' is in ' + lm.country + '.' });
+                    if (typeof stemBeep === 'function') stemBeep('wrong');
+                    recordContinentStat(lmContinent, false);
+                    setTimeout(advanceLandmark, 2600);
+                  }
+                }
+
+                if (!window._geoLandmarkMapRef) window._geoLandmarkMapRef = { current: null, idx: -1, mode: '' };
                 var lmMapRef = window._geoLandmarkMapRef;
+
+                var isQuiz = geoLandmarkMode === 'quiz';
+                var fb = geoLandmarkQuizFb;
+                var revealed = !!fb;
 
                 return React.createElement('div', { className: 'max-w-lg mx-auto' },
 
@@ -1480,11 +1757,11 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, lm.fact),
 
-                    React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0')
+                    (!isQuiz || revealed) && React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0'),
+
+                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-500 italic mt-2' }, 'Which country is this in?')
 
                   ),
-
-                  // Leaflet map showing landmark location
 
                   window.L && React.createElement('div', {
 
@@ -1492,9 +1769,8 @@ var d = labToolData || {};
 
                       if (!el || !window.L) return;
 
-                      if (lmMapRef.current && lmMapRef.idx === geoLandmarkIdx) return;
-
-                      // Destroy previous map
+                      var shouldRebuild = !lmMapRef.current || lmMapRef.idx !== geoLandmarkIdx || lmMapRef.mode !== geoLandmarkMode || lmMapRef.revealed !== revealed;
+                      if (!shouldRebuild) return;
 
                       if (lmMapRef.current) { try { lmMapRef.current.remove(); } catch(e) {} lmMapRef.current = null; }
 
@@ -1508,13 +1784,18 @@ var d = labToolData || {};
 
                           window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
 
-                          window.L.marker([lm.lat, lm.lng]).addTo(m).bindPopup('<b>' + lm.name + '</b><br>' + lm.country).openPopup();
+                          var popupHtml = (isQuiz && !revealed) ? ('<b>' + lm.name + '</b><br><i>country hidden — take a guess</i>') : ('<b>' + lm.name + '</b><br>' + lm.country);
+                          window.L.marker([lm.lat, lm.lng]).addTo(m).bindPopup(popupHtml).openPopup();
 
                           window.L.circle([lm.lat, lm.lng], { radius: 50000, color: '#f6ad55', fillColor: '#f6ad55', fillOpacity: 0.2 }).addTo(m);
 
                           lmMapRef.current = m;
 
                           lmMapRef.idx = geoLandmarkIdx;
+
+                          lmMapRef.mode = geoLandmarkMode;
+
+                          lmMapRef.revealed = revealed;
 
                         } catch(e) { console.warn('Landmark map error:', e); }
 
@@ -1526,34 +1807,43 @@ var d = labToolData || {};
 
                   }),
 
-                  React.createElement('div', { className: 'flex justify-between' },
+                  isQuiz && fb && React.createElement('div', {
+                    className: 'text-center text-sm font-bold mb-2 ' + (fb.correct ? 'text-green-600' : 'text-red-600')
+                  }, fb.msg),
 
+                  isQuiz ? (geoLandmarkChoices && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    geoLandmarkChoices.map(function(name) {
+                      var isCorrect = revealed && name === lm.country;
+                      var isPicked = revealed && fb && fb.picked === name;
+                      var base = 'px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all ';
+                      var style = isCorrect
+                        ? 'bg-green-100 border-green-500 text-green-800'
+                        : isPicked
+                          ? 'bg-red-100 border-red-500 text-red-800'
+                          : revealed
+                            ? 'bg-slate-50 border-slate-200 text-slate-500'
+                            : 'bg-white border-slate-300 text-slate-700 hover:bg-teal-50 hover:border-teal-400';
+                      return React.createElement('button', {
+                        key: name,
+                        disabled: revealed,
+                        onClick: function() { answerLandmark(name); },
+                        className: base + style
+                      }, name);
+                    })
+                  )) : React.createElement('div', { className: 'flex justify-between' },
                     React.createElement('button', {
-
                       onClick: function() { upd('geoLandmarkIdx', Math.max(0, geoLandmarkIdx - 1)); },
-
                       className: 'px-3 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200',
-
                       disabled: geoLandmarkIdx === 0
-
                     }, '\u25C0 Previous'),
-
                     React.createElement('span', { className: 'text-[11px] text-slate-600 self-center' }, (geoLandmarkIdx + 1) + '/' + GEO_LANDMARKS.length),
-
                     React.createElement('button', {
-
                       onClick: function() {
-
                         upd('geoLandmarkIdx', geoLandmarkIdx + 1);
-
                         if (typeof awardStemXP === 'function' && geoLandmarkIdx % 5 === 4) awardStemXP('geoQuiz', 5, 'Explored 5 landmarks');
-
                       },
-
                       className: 'px-3 py-1 bg-teal-700 rounded text-xs font-bold text-white hover:bg-teal-600'
-
                     }, 'Next \u25B6')
-
                   )
 
                 );
@@ -1570,33 +1860,81 @@ var d = labToolData || {};
 
               React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83D\uDCCF Which Country is Bigger?'),
 
-              sizeTarget1 && sizeTarget2 && React.createElement('div', { className: 'flex gap-4 justify-center items-stretch max-w-lg mx-auto' },
+              sizeTarget1 && sizeTarget2 && (function() {
 
-                [sizeTarget1, sizeTarget2].map(function(c) {
+                var answered = !!geoFeedback;
+                var bigger = sizeTarget1.area >= sizeTarget2.area ? sizeTarget1 : sizeTarget2;
+                var biggerArea = Math.max(sizeTarget1.area, sizeTarget2.area);
+                var ratio = biggerArea / Math.min(sizeTarget1.area, sizeTarget2.area);
 
-                  return React.createElement('button', {
+                return React.createElement('div', { className: 'max-w-lg mx-auto' },
 
-                    key: c.iso,
+                  React.createElement('div', { className: 'flex gap-4 justify-center items-stretch' },
 
-                    onClick: function() { checkSizeAnswer(c.iso); },
+                    [sizeTarget1, sizeTarget2].map(function(c) {
 
-                    className: 'flex-1 p-4 rounded-xl border-2 border-slate-200 hover:border-teal-400 hover:shadow-lg transition-all bg-gradient-to-br from-white to-slate-50 text-center transform hover:scale-105'
+                      var isBigger = c.iso === bigger.iso;
+                      var isPicked = answered && geoFeedback.picked === c.iso;
+                      var isCorrect = answered && isBigger;
+                      var isWrongPick = answered && isPicked && !geoFeedback.correct;
+                      var fillPct = Math.max(4, Math.round((c.area / biggerArea) * 100));
 
-                  },
+                      return React.createElement('button', {
 
-                    React.createElement('p', { className: 'text-3xl mb-2' }, '\uD83C\uDF0D'),
+                        key: c.iso,
 
-                    React.createElement('h4', { className: 'text-lg font-bold text-slate-800' }, c.name),
+                        disabled: answered,
 
-                    React.createElement('p', { className: 'text-xs text-slate-600' }, c.continent),
+                        onClick: function() { if (!answered) checkSizeAnswer(c.iso); },
 
-                    React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Click if bigger')
+                        className: 'flex-1 p-4 rounded-xl border-2 relative overflow-hidden transition-all text-center bg-gradient-to-br from-white to-slate-50 ' +
+                                   (isCorrect ? 'border-green-500 ring-2 ring-green-200' :
+                                    isWrongPick ? 'border-red-500 ring-2 ring-red-200 opacity-80' :
+                                    answered ? 'border-slate-200 opacity-50' :
+                                    'border-slate-200 hover:border-teal-400 hover:shadow-lg transform hover:scale-105')
 
-                  );
+                      },
 
-                })
+                        answered && React.createElement('div', {
+                          style: {
+                            position: 'absolute', left: 0, bottom: 0, height: '6px', width: fillPct + '%',
+                            background: isBigger ? '#22c55e' : '#64748b',
+                            transition: 'width 0.8s ease-out'
+                          },
+                          'aria-hidden': 'true'
+                        }),
 
-              ),
+                        React.createElement('p', { className: 'text-3xl mb-2' }, isCorrect ? '\uD83C\uDFC6' : isWrongPick ? '\u274C' : '\uD83C\uDF0D'),
+
+                        React.createElement('h4', { className: 'text-lg font-bold text-slate-800' }, c.name),
+
+                        React.createElement('p', { className: 'text-xs text-slate-600' }, c.continent),
+
+                        answered
+                          ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-500') },
+                              c.area.toLocaleString() + ' km\u00b2')
+                          : React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Click if bigger')
+
+                      );
+
+                    })
+
+                  ),
+
+                  answered && React.createElement('div', { className: 'mt-3 text-center' },
+
+                    React.createElement('div', {
+                      className: 'text-sm font-bold ' + (geoFeedback.correct ? 'text-green-600' : 'text-red-600')
+                    }, geoFeedback.msg),
+
+                    ratio >= 1.3 && React.createElement('p', { className: 'text-xs text-slate-600 mt-1' },
+                      '\uD83D\uDCCA ' + bigger.name + ' is about ' + (ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)) + '\u00d7 the size of ' + (bigger.iso === sizeTarget1.iso ? sizeTarget2.name : sizeTarget1.name) + '.')
+
+                  )
+
+                );
+
+              })(),
 
               React.createElement('p', { className: 'text-center text-[11px] text-slate-600 mt-3' }, '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!')
 
@@ -1817,6 +2155,50 @@ var d = labToolData || {};
                   )
                 ),
 
+                // Mini-map with both countries and the great-circle arc between them.
+                window.L && React.createElement('div', {
+                  ref: function(el) {
+                    if (!el || !window.L) return;
+                    if (!window._geoDistMapRef) window._geoDistMapRef = { current: null, pairKey: '', answered: false };
+                    var dmRef = window._geoDistMapRef;
+                    var answered = !!(geoDistFeedback && typeof geoDistFeedback.actual === 'number');
+                    var pairKey = geoDistA.iso + '-' + geoDistB.iso;
+                    if (dmRef.current && dmRef.pairKey === pairKey && dmRef.answered === answered) return;
+                    if (dmRef.current) { try { dmRef.current.remove(); } catch(e) {} dmRef.current = null; }
+                    el.innerHTML = '';
+                    setTimeout(function() {
+                      try {
+                        var m = window.L.map(el, { zoomControl: true, scrollWheelZoom: false, dragging: true, attributionControl: false, maxBounds: [[-85, -180], [85, 180]], minZoom: 1 });
+                        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, noWrap: true }).addTo(m);
+                        window.L.circleMarker([geoDistA.lat, geoDistA.lng], { radius: 10, color: '#14b8a6', weight: 3, fillColor: '#14b8a6', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistA.name, { permanent: true, direction: 'top', className: 'geo-dist-label' });
+                        window.L.circleMarker([geoDistB.lat, geoDistB.lng], { radius: 10, color: '#06b6d4', weight: 3, fillColor: '#06b6d4', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistB.name, { permanent: true, direction: 'top', className: 'geo-dist-label' });
+                        var arc = greatCircleLatLngs(geoDistA.lat, geoDistA.lng, geoDistB.lat, geoDistB.lng, 64);
+                        var lineColor = answered ? (geoDistFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
+                        var line = window.L.polyline(arc, {
+                          color: lineColor, weight: 3,
+                          dashArray: answered ? null : '6,6',
+                          opacity: 0.85
+                        }).addTo(m);
+                        if (answered && arc.length > 0) {
+                          var mid = arc[Math.floor(arc.length / 2)];
+                          window.L.marker(mid, {
+                            icon: window.L.divIcon({
+                              className: 'geo-dist-midpoint',
+                              html: '<div style="background:' + lineColor + ';color:#fff;padding:3px 8px;border-radius:10px;font-weight:bold;font-size:11px;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,0.3)">' + geoDistFeedback.actual.toLocaleString() + ' km</div>',
+                              iconSize: [80, 20], iconAnchor: [40, 10]
+                            })
+                          }).addTo(m);
+                        }
+                        m.fitBounds(line.getBounds(), { padding: [35, 35], maxZoom: 5 });
+                        dmRef.current = m;
+                        dmRef.pairKey = pairKey;
+                        dmRef.answered = answered;
+                      } catch(e) { console.warn('Distance map error:', e); }
+                    }, 50);
+                  },
+                  style: { height: 240, width: '100%', borderRadius: 12, overflow: 'hidden', border: '2px solid #e2e8f0' }
+                }),
+
                 // Input row
                 React.createElement('div', { className: 'flex items-center gap-2 justify-center' },
                   React.createElement('input', {
@@ -1863,6 +2245,56 @@ var d = labToolData || {};
               })
             ),
 
+            // ── Per-continent progress panel (collapsible) ──
+            (function() {
+              var hasStats = Object.keys(geoSessionStats).length > 0;
+              var totalCorrect = 0, totalAttempted = 0;
+              Object.keys(geoSessionStats).forEach(function(k) {
+                totalCorrect += geoSessionStats[k].c;
+                totalAttempted += geoSessionStats[k].c + geoSessionStats[k].w;
+              });
+              var overallPct = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
+
+              return React.createElement('div', { className: 'px-4 py-2 border-t border-slate-100 bg-slate-50' },
+
+                React.createElement('button', {
+                  onClick: function() { upd('geoStatsOpen', !geoStatsOpen); },
+                  className: 'w-full flex items-center justify-between text-[11px] text-slate-700 font-bold hover:text-teal-700 transition-colors',
+                  'aria-expanded': geoStatsOpen
+                },
+                  React.createElement('span', null, '\uD83D\uDCCA My Progress' + (hasStats ? ' \u2014 ' + overallPct + '% overall (' + totalCorrect + '/' + totalAttempted + ')' : '')),
+                  React.createElement('span', { className: 'text-slate-400' }, geoStatsOpen ? '\u25B2' : '\u25BC')
+                ),
+
+                geoStatsOpen && React.createElement('div', { className: 'mt-2 space-y-1.5' },
+                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-500 italic text-center py-2' }, 'Answer some questions to see your progress per continent.'),
+                  hasStats && ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
+                    var s = geoSessionStats[cont];
+                    var hasData = !!s;
+                    var total = hasData ? s.c + s.w : 0;
+                    var pct = total > 0 ? Math.round((s.c / total) * 100) : 0;
+                    var barColor = !hasData ? '#cbd5e1' : pct >= 80 ? '#22c55e' : pct >= 50 ? '#fbbf24' : '#ef4444';
+                    return React.createElement('div', { key: cont, className: 'flex items-center gap-2 text-[11px]' },
+                      React.createElement('span', { className: 'inline-block w-2 h-2 rounded-full', style: { background: continentColors[cont] || '#a0aec0' } }),
+                      React.createElement('span', { className: 'w-28 text-slate-700 font-medium' }, cont),
+                      React.createElement('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
+                        React.createElement('div', {
+                          style: { width: (hasData ? pct : 0) + '%', height: '100%', background: barColor, transition: 'width 0.4s ease-out' }
+                        })
+                      ),
+                      React.createElement('span', { className: 'w-20 text-right text-slate-600 tabular-nums' },
+                        hasData ? (s.c + '/' + total + ' \u2014 ' + pct + '%') : 'not yet')
+                    );
+                  }),
+                  hasStats && React.createElement('div', { className: 'flex justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200 mt-2' },
+                    React.createElement('span', null, '\uD83C\uDFC6 ' + geoAnswered.length + ' mastered'),
+                    React.createElement('span', null, '\uD83D\uDD01 ' + geoMissed.length + ' in review')
+                  )
+                )
+
+              );
+            })(),
+
             // ── Bottom stats ──
 
             React.createElement('div', { className: 'px-4 py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-t flex justify-between items-center text-[11px] text-slate-600' },
@@ -1873,7 +2305,7 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); upd('geoDistCorrect', 0); upd('geoBadges', {}); if (addToast) addToast('\u267B Score reset!', 'info'); },
+                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); upd('geoDistCorrect', 0); upd('geoBadges', {}); upd('geoMissed', []); upd('geoReviewMode', false); upd('geoSessionStats', {}); if (addToast) addToast('\u267B Score reset!', 'info'); },
 
                 className: 'text-teal-600 hover:text-teal-800 font-bold'
 
