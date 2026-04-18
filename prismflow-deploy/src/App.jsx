@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e9c6d5e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@786583d/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -53848,19 +53848,63 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             )}
 
                             {/* Image Review */}
-                            {extractionData.images.length > 0 && (
+                            {extractionData.images.length > 0 && (() => {
+                              // Derive a safe filename extension from the data-URL mime, defaulting to png.
+                              // Download buttons give teachers a fallback path when AI reinsertion of an
+                              // image into the preview/PDF misplaces or skips it — they can grab the raw
+                              // extracted asset here and reinsert it manually.
+                              const _extFromSrc = (src) => {
+                                const m = /^data:image\/([a-zA-Z0-9+.-]+)/.exec(src || '');
+                                return m ? m[1].replace('jpeg', 'jpg').toLowerCase() : 'png';
+                              };
+                              const _downloadOne = (src, idx) => {
+                                if (!src) return;
+                                const a = document.createElement('a');
+                                a.href = src;
+                                a.download = 'image-' + (idx + 1) + '.' + _extFromSrc(src);
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                              };
+                              const _downloadAll = () => {
+                                extractionData.images.forEach((im, i) => {
+                                  if (!im.src) return;
+                                  // Stagger so the browser doesn't block the multi-download.
+                                  setTimeout(() => _downloadOne(im.src, i), i * 300);
+                                });
+                              };
+                              const _downloadableCount = extractionData.images.filter(im => im.src).length;
+                              return (
                               <div>
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🖼️</span>
                                   <h4 className="text-sm font-bold text-slate-800">Review Image Descriptions</h4>
+                                  <button
+                                    onClick={_downloadAll}
+                                    disabled={_downloadableCount === 0}
+                                    className="text-[10px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 font-bold inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Download every extracted image — useful as a manual fallback if AI reinsertion misplaces or skips one."
+                                    aria-label={`Download all ${_downloadableCount} extracted images`}
+                                  >
+                                    ⬇ Download all
+                                  </button>
                                   <span className="text-[10px] text-slate-500 ml-auto">Edit alt text below — changes apply to the final document</span>
                                 </div>
                                 <div className="space-y-3">
                                   {extractionData.images.map((img, imgIdx) => (
                                     <div key={imgIdx} className="flex gap-3 bg-white rounded-xl border border-slate-200 p-3">
                                       {img.src && (
-                                        <div className="shrink-0">
+                                        <div className="shrink-0 flex flex-col items-center gap-1">
                                           <img src={img.src} alt={img.description || 'Extracted image'} className="w-24 h-20 object-cover rounded-lg border border-slate-200" />
+                                          <a
+                                            href={img.src}
+                                            download={'image-' + (imgIdx + 1) + '.' + _extFromSrc(img.src)}
+                                            className="text-[10px] text-indigo-600 hover:text-indigo-800 hover:underline font-medium inline-flex items-center gap-0.5"
+                                            title="Download this image"
+                                            aria-label={`Download image ${imgIdx + 1}`}
+                                          >
+                                            ⬇ Download
+                                          </a>
                                         </div>
                                       )}
                                       <div className="flex-1 space-y-1.5">
@@ -53892,7 +53936,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   ))}
                                 </div>
                               </div>
-                            )}
+                              );
+                            })()}
                           </div>
                         )}
 
