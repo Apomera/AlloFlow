@@ -2969,6 +2969,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Render ──
         var dk = isDark; // shorthand
+        // DEBUG: Log render-time values that gate the canvas
+        if (!window.__beehiveRenderLogged) window.__beehiveRenderLogged = 0;
+        if (window.__beehiveRenderLogged < 5) {
+          window.__beehiveRenderLogged++;
+          console.log('[Beehive DEBUG RENDER #' + window.__beehiveRenderLogged + '] viewMode=' + viewMode + ' colonySurvived=' + colonySurvived + ' day=' + day + ' showInspect=' + showInspect + ' d.viewMode=' + JSON.stringify(d.viewMode) + ' canvas-will-render=' + (viewMode === 'beekeeper'));
+        }
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
           // Header
           h('div', { className: 'flex items-center justify-between' },
