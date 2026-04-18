@@ -4831,7 +4831,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // in HUD/render code, line ~13000+) via wrongSideRef.current.lastPenaltyAt so
           // a single wrong-side incursion doesn't double-penalize through both checks.
           if (Math.abs(car.speed) > 3 && timeRef.current > 5) {
-            var pRightSign = car.heading > 0 ? -1 : 1; // NB: +1, SB: -1
+            // Use sin(heading) for direction inference — sign-stable across heading wrap
+            // (raw `> 0` would misfire if the player makes more than half a U-turn).
+            var pRightSign = Math.sin(car.heading) > 0 ? -1 : 1; // SB (sin>0): -1, NB (sin<0): +1
             var inOncoming = (playerPerpOffset * pRightSign) < -0.4;
             var ws = laneChangeRef.current;
             if (inOncoming) {
@@ -5912,8 +5914,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var emSplineCx = emSpline ? emSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
             var emSplineTheta = emSpline ? emSpline.headingAt(car.y) : 0;
             var carPerpOff = (car.x - emSplineCx) * Math.cos(emSplineTheta);
-            // Driver's right side in perp-offset space: NB (heading<0) → positive, SB → negative
-            var rightSign = car.heading > 0 ? -1 : 1;
+            // Driver's right side via sin(heading) — sign-stable across heading wrap.
+            // SB (sin>0): right = −X = negative perp. NB (sin<0): right = +X = positive perp.
+            var rightSign = Math.sin(car.heading) > 0 ? -1 : 1;
             var pulledRight = (carPerpOff * rightSign) > 1.5;
             // Use absolute speed — a player creeping backward at 5 mph isn't "stopped".
             var stopped = Math.abs(car.speed) < 2;

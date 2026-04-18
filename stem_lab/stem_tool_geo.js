@@ -828,11 +828,15 @@ var d = labToolData || {};
 
 
 
-            // Load GeoJSON
+            // Load GeoJSON — cached on window so tab-switch rebuilds reuse the
+            // parsed ~20MB dataset instead of re-parsing it each time.
+            var geojsonPromise = window._geoCountriesGeoJSON
+              ? Promise.resolve(window._geoCountriesGeoJSON)
+              : fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+                  .then(function(r) { return r.json(); })
+                  .then(function(data) { window._geoCountriesGeoJSON = data; return data; });
 
-            fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-
-              .then(function(r) { return r.json(); })
+            geojsonPromise
 
               .then(function(geojson) {
 

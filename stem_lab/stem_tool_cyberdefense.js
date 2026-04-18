@@ -1027,7 +1027,8 @@
             { id: 'perimeter_hunt', ids: ['block_ip', 'hunt_iocs'], label: 'Perimeter + Hunt', effect: 'bonusXP', value: 2, description: 'Block known-bad AND hunt for unknown-bad. Full surface coverage.' },
             { id: 'deep_analysis', ids: ['investigate', 'hunt_iocs'], label: 'Deep Analysis', effect: 'bonusXP', value: 2, description: 'Surface-level and deep-level investigation \u2014 nothing slips through.' },
             { id: 'defense_in_depth', ids: ['patch', 'deploy_edr'], label: 'Defense in Depth', effect: 'minEffect', value: 0.6, description: 'Patch the known hole AND watch for zero-days \u2014 layered defense.' },
-            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: 'Crisis Response', effect: 'effectBoost', value: 0.4, description: 'Emergency containment + executive authorization. Overwhelming late-stage response.' }
+            { id: 'crisis_response', ids: ['escalate', 'isolate_host'], label: 'Crisis Response', effect: 'effectBoost', value: 0.4, description: 'Emergency containment + executive authorization. Overwhelming late-stage response.' },
+            { id: 'rapid_response', ids: ['investigate', 'isolate_host'], label: 'Rapid Response', effect: 'effectBoost', value: 0.2, description: 'See it, stop it. Investigation confirms the threat; isolation cuts it off before damage spreads.' }
           ];
 
           // ── Detect which combos are active in the current blue plays ──
@@ -3108,11 +3109,29 @@
                       })
                     ),
                     // Feedback + Next
-                    answered && el('div', { role: 'status', 'aria-live': 'polite',
-                      style: { padding: 10, borderRadius: 6, background: gotIt ? (warOutcomeColors.mitigated + '14') : 'rgba(234,179,8,0.08)', border: '1px solid ' + (gotIt ? (warOutcomeColors.mitigated + '4d') : 'rgba(234,179,8,0.3)'), fontSize: 12, color: gotIt ? warOutcomeColors.mitigatedSoft : '#fcd34d', lineHeight: 1.55, marginBottom: 10 } },
-                      el('strong', null, gotIt ? '\u2728 Correct! +1 XP. ' : '\uD83D\uDCA1 Close! '),
-                      (blueTeamCards.filter(function(b) { return b.id === q.choices[q.correctIdx]; })[0] || {}).label + ' fully mitigates this attack because it directly counters the attack\'s main technique.'
-                    ),
+                    answered && (function() {
+                      var correctCard = blueTeamCards.filter(function(b) { return b.id === q.choices[q.correctIdx]; })[0];
+                      var pickedCard = q.answered >= 0 ? blueTeamCards.filter(function(b) { return b.id === q.choices[q.answered]; })[0] : null;
+                      var pickedEffect = pickedCard && redCard.mitigations && (redCard.mitigations[pickedCard.id] || 0);
+                      var lesson = (warRoomPlainLanguage && plainStageLessons[stage.id]) || stageLessons[stage.id] || '';
+                      return el('div', { role: 'status', 'aria-live': 'polite',
+                        style: { padding: 10, borderRadius: 6, background: gotIt ? (warOutcomeColors.mitigated + '14') : 'rgba(234,179,8,0.08)', border: '1px solid ' + (gotIt ? (warOutcomeColors.mitigated + '4d') : 'rgba(234,179,8,0.3)'), fontSize: 12, color: gotIt ? warOutcomeColors.mitigatedSoft : '#fcd34d', lineHeight: 1.55, marginBottom: 10 } },
+                        el('div', { style: { marginBottom: 6 } },
+                          el('strong', null, gotIt ? '\u2728 Correct! +1 XP. ' : '\uD83D\uDCA1 Close! '),
+                          (correctCard ? correctCard.label : '?') + ' fully mitigates this attack because it directly counters its main technique.'),
+                        // Why the wrong pick isn't as good (only on incorrect)
+                        !gotIt && pickedCard && el('div', { style: { marginBottom: 6, color: '#cbd5e1', fontSize: 11.5 } },
+                          'Your pick (',
+                          el('strong', null, pickedCard.label),
+                          ') ',
+                          pickedEffect >= 0.5 ? 'partially blunts this but can\'t stop it fully.' : 'doesn\'t match the attack\'s primary technique, so it lets the attack through.'
+                        ),
+                        // Stage lesson context
+                        lesson && el('div', { style: { paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.15)', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                          el('strong', { style: { color: '#cbd5e1', fontStyle: 'normal' } }, stage.name + ' lesson: '),
+                          lesson)
+                      );
+                    })(),
                     // Controls
                     el('div', { style: { display: 'flex', gap: 8 } },
                       el('button', {
