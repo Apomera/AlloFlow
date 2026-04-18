@@ -9473,9 +9473,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cGroup.add(cg);
               m = cg;
             }
+            // Lift the entire cyclist by 0.03 to prevent the torus-wheel bottom from
+            // Z-fighting with the road mesh (same fix pattern as the car wheels).
             var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
-            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH, cy.y - MAP_SIZE / 2);
+            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH + 0.03, cy.y - MAP_SIZE / 2);
             m.rotation.y = -cy.heading;
+            // Spin both bike wheels at speed * dt / wheelR (TorusGeometry, layout same as car wheels).
+            // Use the cyclist's own _lastWheelT so each bike accumulates correctly.
+            if (cy._wheelSpinAngle === undefined) cy._wheelSpinAngle = 0;
+            if (cy._lastWheelT === undefined) cy._lastWheelT = timeRef.current;
+            var cyWheelDt = Math.max(0, Math.min(0.1, timeRef.current - cy._lastWheelT));
+            cy._lastWheelT = timeRef.current;
+            cy._wheelSpinAngle += Math.abs(cy.speed) * cyWheelDt / 0.30;
+            m.children.forEach(function(child) {
+              // Bike wheels are TorusGeometry with rotation.y = π/2 (laid flat to roll).
+              // Spinning a torus around its own ring axis (post-rotation: world X) needs
+              // rotation.x. Using rotation.x adds to the existing rotations cleanly.
+              if (child.geometry && child.geometry.type === 'TorusGeometry') {
+                child.rotation.x = cy._wheelSpinAngle;
+              }
+            });
           });
 
           // Wildlife

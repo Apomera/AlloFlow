@@ -652,8 +652,8 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: false, msg: '\u274C You picked ' + pickedLabel + '. The answer is ' + geoTarget.name + '.' });
 
-              // Spatial learning: flash the wrong pick in red, reveal the correct
-              // country in green, and fly to it so the student SEES where it is.
+              // Spatial learning: flash the wrong pick in red, then reveal the
+              // correct country in green and fly to it so the student SEES where it is.
               if (clickedIso) highlightCountry(clickedIso, '#ef4444', 2400);
               highlightCountry(geoTarget.iso, '#22c55e', 2400);
               flyToCountry(geoTarget);

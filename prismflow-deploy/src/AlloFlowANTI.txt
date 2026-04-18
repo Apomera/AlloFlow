@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89754db/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@679a80f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -19560,6 +19560,8 @@ Return ONLY valid JSON:
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
+  const retargetMissingWordsViaGemini = _docPipeline ? _docPipeline.retargetMissingWordsViaGemini : async (h) => ({ html: h, stillMissing: [], restoredViaRetry: [] });
+  const restoreSentencesDeterministic = _docPipeline ? _docPipeline.restoreSentencesDeterministic : (h) => ({ html: h, stillMissing: [], restoredViaSentence: [] });
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
@@ -19654,33 +19656,77 @@ Return ONLY valid JSON:
           if (addToast) addToast('✓ Fidelity 100% — no words missing.', 'success');
           return;
         }
-        // Auto-restore — pipeline's surgical helper.
-        let restoreResult = { restored: [], unplaceable: missing1 };
-        try { restoreResult = applyWordRestorationInPlace(missing1, sourceText) || restoreResult; }
-        catch (restoreErr) { /* warn already in pipeline */ }
-        // Pass 2 — fidelity after restoration. Small delay so the iframe re-renders via
-        // updatePdfPreview before we re-read.
-        setTimeout(() => {
+        // Fidelity recovery ladder (run async because Stage A awaits a Gemini call):
+        //   Stage A — targeted Gemini re-insertion on chunks that dropped source sentences
+        //   Stage B — deterministic sentence-level restoration for Stage A residuals
+        //   Stage C — original ±5-word fuzzy splice + orange appendix for final residuals
+        (async () => {
+          const stageCounts = { retry: 0, sentence: 0 };
+          let currentMissing = missing1;
+          // Stage A
           try {
-            const remText2 = extractText();
-            const pass2 = _buildMissingList(sourceText, remText2);
-            const missing2 = pass2.missing;
-            const afterFidelity = pass2.fidelity;
-            setFidelityResult({ missing: missing2, totalSrc: pass2.totalSrc, totalRem: pass2.totalRem, totalMissing: pass2.totalMissing, fidelity: afterFidelity });
-            setAutoRestoreSummary({
-              restored: (restoreResult && restoreResult.restored) || [],
-              unplaceable: (restoreResult && restoreResult.unplaceable) || [],
-              beforeFidelity,
-              afterFidelity,
-            });
-            if (addToast) {
-              const rCount = ((restoreResult && restoreResult.restored) || []).length;
-              const uCount = ((restoreResult && restoreResult.unplaceable) || []).length;
-              const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '% · ' + rCount + ' restored' + (uCount > 0 ? ' · ' + uCount + ' in recovery appendix' : '');
-              addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
+            const currentHtml = getPdfPreviewHtml ? getPdfPreviewHtml() : ((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+            const stageA = await retargetMissingWordsViaGemini(currentHtml, currentMissing, sourceText);
+            if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
+              stageCounts.retry = stageA.restoredViaRetry.length;
+              if (typeof setPdfFixResult === 'function' && pdfFixResult) {
+                setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageA.html });
+              }
+              currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
-          } catch (e) { /* non-blocking */ }
-        }, 500);
+          } catch (eA) { /* non-blocking */ }
+          // Stage B
+          if (currentMissing.length > 0) {
+            try {
+              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const stageB = restoreSentencesDeterministic(currentHtml, currentMissing, sourceText);
+              if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
+                stageCounts.sentence = stageB.restoredViaSentence.length;
+                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
+                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageB.html });
+                }
+                currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
+              }
+            } catch (eB) { /* non-blocking */ }
+          }
+          // Give React a tick to commit the updated accessibleHtml into the iframe before
+          // Stage C reads it back via the preview-iframe-authoritative path in applyWordRestorationInPlace.
+          setTimeout(() => {
+            let restoreResult = { restored: [], unplaceable: currentMissing };
+            if (currentMissing.length > 0) {
+              try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
+              catch (restoreErr) { /* warn already in pipeline */ }
+            }
+            // Final fidelity measurement after all three stages applied + iframe re-rendered.
+            setTimeout(() => {
+              try {
+                const remText2 = extractText();
+                const pass2 = _buildMissingList(sourceText, remText2);
+                const missing2 = pass2.missing;
+                const afterFidelity = pass2.fidelity;
+                setFidelityResult({ missing: missing2, totalSrc: pass2.totalSrc, totalRem: pass2.totalRem, totalMissing: pass2.totalMissing, fidelity: afterFidelity });
+                setAutoRestoreSummary({
+                  restored: (restoreResult && restoreResult.restored) || [],
+                  unplaceable: (restoreResult && restoreResult.unplaceable) || [],
+                  beforeFidelity,
+                  afterFidelity,
+                });
+                if (addToast) {
+                  const fuzzyCount = ((restoreResult && restoreResult.restored) || []).length;
+                  const uCount = ((restoreResult && restoreResult.unplaceable) || []).length;
+                  const parts = [];
+                  if (stageCounts.retry > 0) parts.push(stageCounts.retry + ' reinserted (AI)');
+                  if (stageCounts.sentence > 0) parts.push(stageCounts.sentence + ' reinserted (sentence)');
+                  if (fuzzyCount > 0) parts.push(fuzzyCount + ' reinserted (fuzzy)');
+                  if (uCount > 0) parts.push(uCount + ' in recovery appendix');
+                  const detail = parts.length > 0 ? ' · ' + parts.join(' · ') : '';
+                  const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail;
+                  addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
+                }
+              } catch (e) { /* non-blocking */ }
+            }, 500);
+          }, 200);
+        })();
       } catch (outerErr) { /* non-blocking */ }
     }, 200);
     return () => clearTimeout(tid);

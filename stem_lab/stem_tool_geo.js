@@ -528,6 +528,12 @@ var d = labToolData || {};
           // Badge state
           var geoBadges = d.geoBadges || {};
 
+          // Spaced-repetition state: countries the student got wrong and should re-see.
+          // In normal mode, these are weighted 40% more likely to appear in pickTarget.
+          // In review mode (toggled via header pill), they appear EXCLUSIVELY.
+          var geoMissed = d.geoMissed || [];
+          var geoReviewMode = !!d.geoReviewMode;
+
           // ── Region filter ──
           // Supports: 'world', continent keys (africa/asia/europe/n_america/s_america/oceania),
           // 'americas' (legacy combined), and 'r:<Sub-Region Name>' for finer-grained UN regions.
@@ -573,12 +579,26 @@ var d = labToolData || {};
 
 
 
-          // Pick a new target
+          // Pick a new target. Respects the current region filter and applies
+          // spaced-repetition weighting for countries the student has missed.
 
           function pickTarget(mode) {
 
-            var pool = filteredCountries.filter(function(c) { return geoAnswered.indexOf(c.iso) === -1; });
+            var missedPool = filteredCountries.filter(function(c) { return geoMissed.indexOf(c.iso) !== -1; });
+            var freshPool = filteredCountries.filter(function(c) { return geoAnswered.indexOf(c.iso) === -1; });
+            var pool;
 
+            if (geoReviewMode && missedPool.length > 0) {
+              // Review-only: drill the countries they actually got wrong
+              pool = missedPool;
+            } else if (missedPool.length > 0 && Math.random() < 0.4) {
+              // Adaptive: 40% of the time, surface a missed country to reinforce learning
+              pool = missedPool;
+            } else {
+              pool = freshPool;
+            }
+
+            // Exhausted the fresh pool — recycle the answered list
             if (pool.length === 0) { upd('geoAnswered', []); pool = filteredCountries; }
 
             var t = pool[Math.floor(Math.random() * pool.length)];
@@ -637,6 +657,12 @@ var d = labToolData || {};
               // Celebrate the correct polygon with a green pulse
               highlightCountry(geoTarget.iso, '#22c55e', 1400);
 
+              // Spaced repetition: if this country was on the review list, they've
+              // now learned it — remove it.
+              if (geoMissed.indexOf(geoTarget.iso) !== -1) {
+                upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+              }
+
               setTimeout(function() { pickTarget(geoTab); }, 1500);
 
             } else {
@@ -657,6 +683,11 @@ var d = labToolData || {};
               if (clickedIso) highlightCountry(clickedIso, '#ef4444', 2400);
               highlightCountry(geoTarget.iso, '#22c55e', 2400);
               flyToCountry(geoTarget);
+
+              // Spaced repetition: add the missed target to the review pool (dedup)
+              if (geoMissed.indexOf(geoTarget.iso) === -1) {
+                upd('geoMissed', geoMissed.concat([geoTarget.iso]));
+              }
 
               setTimeout(function() { pickTarget(geoTab); }, 2500);
 
@@ -688,6 +719,11 @@ var d = labToolData || {};
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Knew capital of ' + geoTarget.name);
 
+              // Spaced repetition: remove from review pool if they nailed it
+              if (geoMissed.indexOf(geoTarget.iso) !== -1) {
+                upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+              }
+
               setTimeout(function() { pickTarget('capitals'); }, 1500);
 
             } else {
@@ -697,6 +733,11 @@ var d = labToolData || {};
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, msg: '\u274C The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + ', not "' + input.trim() + '".' });
+
+              // Spaced repetition: add to review pool (dedup)
+              if (geoMissed.indexOf(geoTarget.iso) === -1) {
+                upd('geoMissed', geoMissed.concat([geoTarget.iso]));
+              }
 
               setTimeout(function() { pickTarget('capitals'); }, 2500);
 

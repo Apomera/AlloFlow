@@ -838,7 +838,10 @@
             { id: 'perfect_run', icon: '\uD83C\uDFC6', label: 'Flawless Defense', desc: 'Achieve 6/6 full mitigations in one campaign.' },
             { id: 'data_guardian', icon: '\uD83D\uDDC4\uFE0F', label: 'Data Guardian', desc: 'Finish a campaign with 100/100 data intact.' },
             { id: 'speedrun', icon: '\u26A1', label: 'Lightning Reflexes', desc: 'Win a Threat Hunter campaign without the clock running out on any round.' },
-            { id: 'boss_slayer', icon: '\uD83D\uDC79', label: 'Boss Slayer', desc: 'Win a Boss Mode campaign.' }
+            { id: 'boss_slayer', icon: '\uD83D\uDC79', label: 'Boss Slayer', desc: 'Win a Boss Mode campaign.' },
+            { id: 'weekly_champion', icon: '\uD83D\uDDD3\uFE0F', label: 'Weekly Champion', desc: 'Win a Challenge of the Week campaign.' },
+            { id: 'diverse_strategy', icon: '\uD83C\uDF08', label: 'Diverse Strategy', desc: 'Use at least 6 different blue cards in one campaign.' },
+            { id: 'rookie_perfect', icon: '\uD83C\uDF31', label: 'First Steps', desc: 'Mitigate every round of a Rookie campaign.' }
           ];
 
           // ── Best-progress helpers for unearned achievements (read from history) ──
@@ -898,6 +901,14 @@
             if (won && finalState.difficulty === 'threatHunter' && !finalState.timedOut) earned.push('speedrun');
             // Boss Slayer
             if (boss && won) earned.push('boss_slayer');
+            // Weekly Champion
+            if (won && finalState.isWeekly) earned.push('weekly_champion');
+            // Diverse Strategy — 6+ unique blue cards across the campaign
+            var uniqueCards = {};
+            chain.forEach(function(r) { (r.bluePlays || []).forEach(function(id) { uniqueCards[id] = true; }); });
+            if (Object.keys(uniqueCards).length >= 6) earned.push('diverse_strategy');
+            // Rookie Perfectionist — all rounds mitigated on Rookie difficulty
+            if (finalState.difficulty === 'rookie' && chain.length > 0 && chain.every(function(r) { return r.outcome === 'mitigated'; })) earned.push('rookie_perfect');
             return earned;
           }
 
@@ -2052,7 +2063,8 @@
                 dataRemaining: warRoomAssets.data,
                 difficulty: warRoomDifficulty,
                 timedOut: warRoomTimedOutAny,
-                isBossMode: warRoomIsBossMode
+                isBossMode: warRoomIsBossMode,
+                isWeekly: campaignMode === 'weekly'
               });
               // Merge new achievements into persistent collection
               var mergedAchievements = Object.assign({}, warRoomAchievements);
@@ -3486,6 +3498,44 @@
                         },
                         'aria-label': 'Load currently-saved cards into the editor',
                         style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21BB Load Saved'),
+                      // Load a sample pack to get teachers started without needing to write JSON
+                      el('button', {
+                        onClick: function() {
+                          var samplePack = [
+                            {
+                              id: 'school_homework_phish', stage: 'delivery',
+                              title: 'Fake homework portal login email',
+                              description: 'Students get an email "from the homework portal" asking them to re-enter their login. The link goes to a look-alike domain.',
+                              indicators: ['Sender uses homeworkportal-login.net instead of the real portal domain', 'Login page asks for parent password too'],
+                              noiseIndicators: ['Legit reminder from the real homework portal'],
+                              mitigations: { block_ip: 1.0, awareness_blast: 0.8, investigate: 0.5 },
+                              impact: { users: 3 }
+                            },
+                            {
+                              id: 'school_usb_drop', stage: 'exploit',
+                              title: 'USB drive labeled "EXAM ANSWERS" plugged into library PC',
+                              description: 'A curious student plugs in a USB they found. A malicious autorun payload attempts to install a keylogger.',
+                              indicators: ['USB device class mismatch flagged by EDR', 'Process spawns from \\Device\\HarddiskVolumeX right after insert'],
+                              noiseIndicators: ['Teacher\'s presentation USB'],
+                              mitigations: { deploy_edr: 1.0, isolate_host: 0.9, awareness_blast: 0.6 },
+                              impact: { users: 1, servers: 1 }
+                            },
+                            {
+                              id: 'school_wire_fraud', stage: 'actions',
+                              title: 'Fake principal email requests urgent vendor payment',
+                              description: 'The business office gets an email "from the principal" requesting a $7,000 urgent wire for a new contractor. Reply-to domain is not the school\'s.',
+                              indicators: ['Reply-to address differs from display name', 'Urgency + bypass-procedure language', 'Off-hours send timing'],
+                              noiseIndicators: ['Real invoice from a vendor'],
+                              mitigations: { escalate: 1.0, awareness_blast: 0.9, investigate: 0.7 },
+                              impact: { data: 30 }
+                            }
+                          ];
+                          upd({ warRoomCustomCardsDraft: JSON.stringify(samplePack, null, 2), warRoomCustomCardsError: null });
+                          if (ctx.addToast) ctx.addToast('Sample pack loaded in the editor \u2014 review and Save', 'info');
+                        },
+                        'aria-label': 'Load a sample scenario pack into the editor',
+                        title: 'Three school-themed example cards you can save as-is or edit first.',
+                        style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(234,179,8,0.35)', background: 'rgba(234,179,8,0.12)', color: '#fcd34d', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCDA Sample Pack'),
                       warRoomCustomCards.length > 0 && el('button', {
                         onClick: function() {
                           if (!confirm('Remove all ' + warRoomCustomCards.length + ' custom card(s)?')) return;
