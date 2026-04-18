@@ -3633,6 +3633,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             updateAudio();
             checkSignalCompliance();
             checkCyclistPassing();
+            checkBusCompliance();
+            checkPedestrianYield();
             checkCollisions();
             // ── Quest / destination system (Free Explore) ──
             // Now anchored to REAL landmarks in the procedural world. The quest engine
@@ -5530,6 +5532,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Small wobble for cyclists
             if (cy.type === 'cyclist') cy.x += Math.sin(timeRef.current * 3 + cy.y) * 0.002;
           });
+        };
+
+        // ── Bus stop-arm compliance ──
+        // When a school bus in traffic has _stopArmActive, the player must stop within
+        // ~8 cells OR if they pass it at speed. Reward correct stops, penalize pass-through.
+        // One event per bus-cycle — tracked via bus._busCompLogged timestamp.
+        var checkBusCompliance = function() {
+          var car = carRef.current;
+          var traffic = trafficRef.current;
+          if (!traffic || !traffic.length) return;
+          for (var bi = 0; bi < traffic.length; bi++) {
+            var bus = traffic[bi];
+            if (bus.type !== 'schoolbus') continue;
+            if (!bus._stopArmActive) continue;
+            // How close is the player to this bus? Euclidean distance is fine here since
+            // the bus is stationary during stop-arm.
+            var dx = bus.x - car.x;
+            var dy = bus.y - car.y;
+            var dist = Math.hypot(dx, dy);
+            // Only engage the compliance check when player is within 12 cells of the bus
+            // AND the bus is approximately ahead of the player (within ~60° cone).
+            if (dist > 12) { bus._busCompArmed = false; continue; }
+            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
+            if (forwardDot < -2) continue; // bus is behind us
+            if (!bus._busCompArmed && !bus._busCompLogged) {
+              bus._busCompArmed = true;
+              eventToastRef.current = { msg: '🚌 SCHOOL BUS with red flashers — STOP. Both directions must stop on an undivided road.', until: timeRef.current + 5 };
+            }
+            // Success: player at near-stop within 8 cells of the bus
+            if (bus._busCompArmed && !bus._busCompLogged && dist < 8 && Math.abs(car.speed) < 1.2) {
+              bus._busCompLogged = timeRef.current;
+              statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 6);
+              if (!statsRef.current.busStopCompliance) statsRef.current.busStopCompliance = 0;
+              statsRef.current.busStopCompliance++;
+              addToast('✓ Stopped for school bus with red flashers. +6');
+              eventToastRef.current = { msg: '✓ Federal + Maine law: stop for ANY school bus with stop-arm extended on an undivided road.', until: timeRef.current + 4 };
+            }
+            // Failure: player passed within 4 cells at > 5 mph
+            else if (bus._busCompArmed && !bus._busCompLogged && dist < 4 && Math.abs(car.speed) > 2.3) {
+              bus._busCompLogged = timeRef.current;
+              statsRef.current.safetyScore -= 25;
+              addToast('🚨 ILLEGAL PASS of school bus with red flashers! -25');
+              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers is a FEDERAL violation. $250+ fine in Maine.', until: timeRef.current + 6 };
+              speak('You passed a stopped school bus. That is a federal violation.');
+            }
+          }
+        };
+
+        // ── Pedestrian yield compliance ──
+        // When a pedestrian is actively crossing within the player's forward cone and near
+        // the car's path, reward a complete stop before reaching them. Penalize driving
+        // through a crosswalk with a pedestrian present.
+        var checkPedestrianYield = function() {
+          var car = carRef.current;
+          var peds = pedsRef.current || [];
+          if (!peds.length) return;
+          for (var pyi = 0; pyi < peds.length; pyi++) {
+            var py = peds[pyi];
+            if (!py.crossing) { py._yieldArmed = false; continue; }
+            var dx = py.x - car.x;
+            var dy = py.y - car.y;
+            var dist = Math.hypot(dx, dy);
+            if (dist > 9) continue;
+            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
+            if (forwardDot < -1) continue; // behind us
+            var carDirX = Math.cos(car.heading), carDirY = Math.sin(car.heading);
+            var latUnits = Math.abs(dx * carDirY - dy * carDirX);
+            if (latUnits > 3) continue; // not in our path
+            if (!py._yieldArmed && !py._yieldLogged) {
+              py._yieldArmed = true;
+              eventToastRef.current = { msg: '🚶 Pedestrian in the crosswalk — full stop until they clear.', until: timeRef.current + 4 };
+            }
+            // Success: came to a near-stop while the ped is still in/near the crosswalk
+            if (py._yieldArmed && !py._yieldLogged && Math.abs(car.speed) < 0.8 && dist < 6) {
+              py._yieldLogged = timeRef.current;
+              statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 4);
+              if (!statsRef.current.pedYields) statsRef.current.pedYields = 0;
+              statsRef.current.pedYields++;
+              addToast('✓ Yielded to pedestrian in crosswalk. +4');
+            }
+            // Failure: drove through within 2.5 cells at > 4 mph
+            else if (py._yieldArmed && !py._yieldLogged && dist < 2.5 && Math.abs(car.speed) > 1.8) {
+              py._yieldLogged = timeRef.current;
+              statsRef.current.safetyScore -= 20;
+              addToast('🚨 Failed to yield to pedestrian! -20');
+              eventToastRef.current = { msg: '🚨 Pedestrians always have right-of-way in crosswalks. This is negligent driving.', until: timeRef.current + 5 };
+              speak('You failed to yield to a pedestrian in a crosswalk.');
+            }
+          }
         };
 
         var checkCyclistPassing = function() {

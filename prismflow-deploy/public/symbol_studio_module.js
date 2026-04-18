@@ -465,6 +465,10 @@
     var importFileRef = useRef(null);
     var importBoardRef = useRef(null);
     var qbUploadRef = useRef(null);
+    // Holds FCT metadata (function + phase + optional goal text) between the moment the
+    // Communication Builder builds a new board and the moment the save pipeline persists
+    // it. Consumed by the board-save effect below and cleared after use.
+    var pendingFctMetaRef = useRef(null);
 
     // Symbols tab state
     var _gallery = useState(function () { return load(STORAGE_GALLERY, []); });
@@ -501,6 +505,7 @@
     // Board drag-to-reorder
     var _dragBoardId = useState(null); var dragBoardId = _dragBoardId[0]; var setDragBoardId = _dragBoardId[1];
     var _dragOverBoardId = useState(null); var dragOverBoardId = _dragOverBoardId[0]; var setDragOverBoardId = _dragOverBoardId[1];
+    var touchDragRef = useRef(null);
     // Board display options
     var _boardTextPos = useState('below'); var boardTextPos = _boardTextPos[0]; var setBoardTextPos = _boardTextPos[1];
     var _boardTextSize = useState(11); var boardTextSize = _boardTextSize[0]; var setBoardTextSize = _boardTextSize[1];
@@ -581,6 +586,17 @@
 
     // Quick Boards state
     var _qbMode = useState('firstthen'); var qbMode = _qbMode[0]; var setQbMode = _qbMode[1];
+    // Communication Builder wizard state — lives on the Quick Boards tab as a top card.
+    //   cbPath        'fct' | 'goal' — which sub-wizard is active
+    //   cbFunction    FCT function id (Attention/Escape/Tangible/Sensory)
+    //   cbPhase       phase number 1-4 corresponding to FCT_PHASE_TEMPLATES rows
+    //   cbGoalText    free-text input for the goal-driven path
+    //   cbGoalBusy    true while Gemini is generating from the goal text
+    var _cbPath = useState('fct'); var cbPath = _cbPath[0]; var setCbPath = _cbPath[1];
+    var _cbFunction = useState('Escape'); var cbFunction = _cbFunction[0]; var setCbFunction = _cbFunction[1];
+    var _cbPhase = useState(2); var cbPhase = _cbPhase[0]; var setCbPhase = _cbPhase[1];
+    var _cbGoalText = useState(''); var cbGoalText = _cbGoalText[0]; var setCbGoalText = _cbGoalText[1];
+    var _cbGoalBusy = useState(false); var cbGoalBusy = _cbGoalBusy[0]; var setCbGoalBusy = _cbGoalBusy[1];
     // First-Then
     var _ftFirstLabel = useState(''); var ftFirstLabel = _ftFirstLabel[0]; var setFtFirstLabel = _ftFirstLabel[1];
     var _ftFirstImage = useState(null); var ftFirstImage = _ftFirstImage[0]; var setFtFirstImage = _ftFirstImage[1];
@@ -1448,11 +1464,20 @@
     var saveBoard = useCallback(function () {
       if (!boardWords.length && (!boardPages || boardPages.every(function (p) { return !p.words.length; }))) return;
       var finalPages = boardPages ? commitCurrentPage(boardPages, activePageIdx, boardWords, boardCols, null) : null;
+      // If the Communication Builder populated this board, attach its metadata so the
+      // saved record can be filtered or analytically grouped by FCT function / phase.
+      var fctMeta = pendingFctMetaRef.current || null;
       var saved = {
         id: uid(), title: boardTitle || boardTopic, profileId: activeProfileId || null, createdAt: Date.now(),
         words: boardWords, cols: boardCols,
-        pages: finalPages || null
+        pages: finalPages || null,
+        fctFunction: fctMeta && fctMeta.fctFunction || null,
+        fctPhase: fctMeta && fctMeta.fctPhase != null ? fctMeta.fctPhase : null,
+        fctGoal: fctMeta && fctMeta.fctGoal || null
       };
+      // Consume the pending metadata after saving so the next save (manual or template-only)
+      // doesn't accidentally inherit it.
+      pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
@@ -1473,6 +1498,102 @@
       setBoardTopic(template.label);
       addToast && addToast(template.label + ' template loaded — click ✨ Generate Images to start!', 'success');
     }, [addToast]);
+
+    // ── FCT template loader — Communication Builder entry point ──────────────
+    // Loads one of the FCT_PHASE_TEMPLATES entries into the Board Builder, auto-switches
+    // to the Board tab, and kicks off Imagen generation for any cells not already cached
+    // in the gallery. Tags the new board with fctFunction + fctPhase metadata so later
+    // analytics / filtering can group FCT boards by function.
+    var applyFctTemplate = useCallback(function (functionId, phase) {
+      var fmap = FCT_MAP[functionId];
+      var labels = (FCT_PHASE_TEMPLATES[functionId] && FCT_PHASE_TEMPLATES[functionId][phase]) || [];
+      if (!labels.length || !fmap) {
+        addToast && addToast('Invalid FCT template', 'error');
+        return;
+      }
+      var words = labels.map(function (lbl) {
+        return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: fmap.tip || '', image: null };
+      });
+      setBoardWords(words);
+      var phaseMeta = FCT_PHASE_META[phase] || { label: 'Phase ' + phase };
+      var title = fmap.label + ' — ' + phaseMeta.label;
+      setBoardTitle(title);
+      setBoardTopic(fmap.label);
+      // Set cell count to match phase (keeps the grid tight).
+      // 1 cell → 1 col; 3 → 3 cols; 6 → 3 cols (2 rows); 12 → 4 cols (3 rows).
+      var cols = phase === 1 ? 1 : phase === 2 ? 3 : phase === 3 ? 3 : 4;
+      setBoardCols(cols);
+      // Jump to Board Builder so the teacher can see the board populating.
+      setTab('board');
+      addToast && addToast('🗣 ' + title + ' — images generating…', 'success');
+      // Kick off image generation on the next tick so setBoardWords has committed.
+      // We temporarily store the fct metadata on a ref so the save pipeline picks it up.
+      pendingFctMetaRef.current = { fctFunction: functionId, fctPhase: phase };
+      setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+    }, [addToast, generateBoardImages]);
+
+    // ── Free-text goal → board builder (uses Gemini to interpret the goal) ─
+    // Asks Gemini for 3–6 symbol labels + an inferred FCT function. Falls back to an
+    // empty 6-cell scaffold + a toast when the model returns malformed JSON or when
+    // onCallGemini isn't available (offline or School Box mode).
+    var buildBoardFromGoal = useCallback(async function (goalText) {
+      var goal = String(goalText || '').trim();
+      if (!goal) { addToast && addToast('Enter a communication goal first', 'error'); return; }
+      // Offline / no-Gemini fallback: empty 6-cell scaffold with the goal as title.
+      if (!onCallGemini) {
+        var scaffold = [];
+        for (var si = 0; si < 6; si++) scaffold.push({ id: uid(), label: '', category: 'other', description: '', image: null });
+        setBoardWords(scaffold);
+        setBoardTitle('Goal: ' + goal);
+        setBoardTopic(goal);
+        setBoardCols(3);
+        setTab('board');
+        addToast && addToast('AI goal parser unavailable — blank 6-cell board ready to edit', 'info');
+        return;
+      }
+      addToast && addToast('🧠 Planning symbols for "' + goal + '"…', 'info');
+      try {
+        var prompt = [
+          'You are helping build a communication board for a non-verbal or emerging-communicator student.',
+          'The communication goal is: "' + goal + '".',
+          'Return ONLY a compact JSON object (no markdown fences, no prose) with this shape:',
+          '{ "words": ["label1", "label2", ...], "function": "attention"|"escape"|"tangible"|"sensory", "rationale": "one sentence" }',
+          'Rules:',
+          '- "words" must have 3 to 6 short symbol labels (1-2 words each).',
+          '- Choose concrete, imageable labels — they will be rendered as picture symbols.',
+          '- Include small function words like "I", "want", "please" where they help form a phrase.',
+          '- "function" is the ABA behavioral function this goal serves.',
+          '- Keep "rationale" under 20 words.'
+        ].join('\n');
+        var raw = await onCallGemini(prompt);
+        // Gemini usually returns text; strip any code fences it slipped in.
+        var stripped = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        var parsed; try { parsed = JSON.parse(stripped); } catch (pe) { parsed = null; }
+        if (!parsed || !Array.isArray(parsed.words) || parsed.words.length === 0) {
+          addToast && addToast('Goal parser returned unexpected output — try rewording', 'error');
+          return;
+        }
+        var labels = parsed.words.map(function (w) { return String(w).trim(); }).filter(function (w) { return w; }).slice(0, 6);
+        if (!labels.length) { addToast && addToast('No usable labels from goal — try rewording', 'error'); return; }
+        var words = labels.map(function (lbl) {
+          return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: '', image: null };
+        });
+        setBoardWords(words);
+        setBoardTitle('Goal: ' + goal);
+        setBoardTopic(goal);
+        setBoardCols(labels.length <= 3 ? labels.length : 3);
+        setTab('board');
+        // Capitalise the function tag to match FCT_MAP keys if recognized.
+        var fnRaw = String(parsed.function || '').trim().toLowerCase();
+        var fnMap = { attention: 'Attention', escape: 'Escape', tangible: 'Tangible', sensory: 'Sensory' };
+        var fnNormalized = fnMap[fnRaw] || null;
+        pendingFctMetaRef.current = fnNormalized ? { fctFunction: fnNormalized, fctPhase: null, fctGoal: goal } : { fctGoal: goal };
+        addToast && addToast('🗣 Board ready' + (fnNormalized ? ' (' + fnNormalized + ')' : '') + ' — images generating…', 'success');
+        setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+      } catch (err) {
+        addToast && addToast('Could not reach AI goal parser — try again', 'error');
+      }
+    }, [addToast, onCallGemini, generateBoardImages]);
 
     var loadBoard = useCallback(function (board) {
       var pages = board.pages && board.pages.length > 0 ? board.pages : null;
@@ -3335,6 +3456,74 @@
       }
     };
     var FCT_FUNCTIONS = ['Attention', 'Escape', 'Tangible', 'Sensory'];
+
+    // ── FCT Phase Templates ────────────────────────────────────────────────
+    // Four functions × four pedagogical phases. Each entry is a short word list that
+    // the Communication Builder wizard uses to auto-populate a board.
+    // Phase 1 = single FCR (Functional Communication Response) — isolated
+    // Phase 2 = 3-cell carrier phrase (e.g. "I + WANT + BREAK")
+    // Phase 3 = 6-cell mixed (FCR + common frames)
+    // Phase 4 = 12-cell with integrated core vocabulary
+    // Word lists are derived from FCT_MAP.priorityWords — same data, shaped into phases.
+    var FCT_PHASE_TEMPLATES = {
+      Attention: {
+        1: ['look'],
+        2: ['look', 'at', 'me'],
+        3: ['look', 'hi', 'come here', 'help', 'play', 'friend'],
+        4: ['look', 'hi', 'come here', 'help', 'play', 'friend', 'my turn', 'watch me', 'excuse me', 'please', 'yes', 'no']
+      },
+      Escape: {
+        1: ['break'],
+        2: ['I', 'want', 'break'],
+        3: ['break', 'stop', 'all done', 'help', 'too hard', 'wait'],
+        4: ['break', 'stop', 'all done', 'help', 'too hard', 'wait', 'need help', 'not now', 'finished', 'no', 'yes', 'please']
+      },
+      Tangible: {
+        1: ['want'],
+        2: ['I', 'want', 'it'],
+        3: ['want', 'more', 'please', 'give', 'my turn', 'eat'],
+        4: ['want', 'more', 'please', 'give', 'my turn', 'eat', 'drink', 'play', 'open', 'can I', 'yes', 'no']
+      },
+      Sensory: {
+        1: ['break'],
+        2: ['need', 'quiet', 'please'],
+        3: ['need break', 'too loud', 'too bright', 'need quiet', 'help', 'deep breath'],
+        4: ['need break', 'too loud', 'too bright', 'need quiet', 'need to move', 'need fidget', 'need headphones', 'feel overwhelmed', 'deep breath', 'help', 'yes', 'no']
+      }
+    };
+    // Metadata for each phase, used by the wizard to explain the choice to the teacher.
+    var FCT_PHASE_META = {
+      1: { label: 'Phase 1 · Single FCR', desc: '1 symbol — teach the replacement in isolation.' },
+      2: { label: 'Phase 2 · Carrier phrase', desc: '3 symbols — combine into a short sentence.' },
+      3: { label: 'Phase 3 · Mixed', desc: '6 symbols — FCR plus common frames.' },
+      4: { label: 'Phase 4 · Integrated', desc: '12 symbols — full board with core vocabulary.' }
+    };
+    // Word → category mapping for the few FCT-specific words that aren't in any existing
+    // template. Prevents every word from defaulting to "other" when applied to a board.
+    var FCT_WORD_CATEGORY = {
+      'I': 'other', 'me': 'other', 'it': 'other', 'at': 'other',
+      'yes': 'other', 'no': 'other', 'please': 'other', 'hi': 'other',
+      'more': 'other', 'all done': 'other',
+      'look': 'verb', 'want': 'verb', 'need': 'verb', 'give': 'verb',
+      'help': 'verb', 'stop': 'verb', 'wait': 'verb', 'come here': 'verb',
+      'play': 'verb', 'eat': 'verb', 'drink': 'verb', 'open': 'verb',
+      'watch me': 'verb', 'excuse me': 'verb', 'need help': 'verb',
+      'need break': 'verb', 'need quiet': 'verb', 'need headphones': 'verb',
+      'need to move': 'verb', 'need fidget': 'verb', 'deep breath': 'verb',
+      'break': 'noun', 'friend': 'noun', 'my turn': 'noun',
+      'too loud': 'adjective', 'too bright': 'adjective', 'too hard': 'adjective',
+      'quiet': 'adjective', 'finished': 'adjective', 'feel overwhelmed': 'adjective',
+      'not now': 'adjective', 'can I': 'other'
+    };
+    function fctWordCategory(label) {
+      var key = String(label || '').trim().toLowerCase();
+      // Scan the map case-insensitively so "I" and "i" both resolve
+      var keys = Object.keys(FCT_WORD_CATEGORY);
+      for (var i = 0; i < keys.length; i++) {
+        if (keys[i].toLowerCase() === key) return FCT_WORD_CATEGORY[keys[i]];
+      }
+      return 'other';
+    }
 
     function computeWordBank() {
       var bank = {};
@@ -5217,7 +5406,136 @@
         );
       }
 
+      // ── Communication Builder card ─────────────────────────────────────────
+      // Two-path wizard that auto-populates a Board Builder board:
+      //   (a) Guided FCT: pick function + phase → `applyFctTemplate(...)`
+      //   (b) Free-text:  type a goal → `buildBoardFromGoal(...)`
+      // The card is always at the top of the Quick Boards tab; existing sub-modes
+      // (First-Then, Choice, etc.) are unchanged underneath it.
+      var fctPhasePreview = (FCT_PHASE_TEMPLATES[cbFunction] && FCT_PHASE_TEMPLATES[cbFunction][cbPhase]) || [];
+      var activeFctMeta = FCT_MAP[cbFunction] || {};
+      // Confirm before replacing an in-progress board. Only prompts when the user
+      // actually has work at risk — a blank builder skips the dialog entirely.
+      var confirmReplaceBoard = function () {
+        if (!boardWords || boardWords.length === 0) return true;
+        try { return window.confirm('Replace the current board? Unsaved cells will be lost.'); }
+        catch (_) { return true; }
+      };
+      var fctChipStyle = function (selected, color) {
+        return {
+          padding: '6px 12px', borderRadius: '999px',
+          border: '2px solid ' + (selected ? (color || PURPLE) : '#d1d5db'),
+          background: selected ? (color ? color + '18' : LIGHT_PURPLE) : '#fff',
+          color: selected ? (color || PURPLE) : '#374151',
+          fontWeight: selected ? 700 : 500, fontSize: '12px', cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: '5px'
+        };
+      };
+      var commBuilderCard = e('div', { className: 'ss-no-print', style: { margin: '10px 12px 0', padding: '14px', background: 'linear-gradient(135deg, #faf5ff, #f0fdf4)', border: '1px solid #c4b5fd', borderRadius: '14px' } },
+        // Header
+        e('div', { style: { display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' } },
+          e('span', { style: { fontSize: '18px' } }, '🗣'),
+          e('span', { style: { fontWeight: 800, fontSize: '14px', color: '#374151' } }, 'Communication Builder'),
+          e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'Auto-populated boards, ready to drag-and-drop. FCT-ready.')
+        ),
+        // Path toggle
+        e('div', { style: { display: 'flex', gap: '6px', marginTop: '10px', marginBottom: '10px' } },
+          e('button', { onClick: function () { setCbPath('fct'); }, 'aria-label': 'Guided FCT mode', 'aria-pressed': cbPath === 'fct', style: fctChipStyle(cbPath === 'fct') }, '🎯 Guided (FCT)'),
+          e('button', { onClick: function () { setCbPath('goal'); }, 'aria-label': 'Free-text goal mode', 'aria-pressed': cbPath === 'goal', style: fctChipStyle(cbPath === 'goal') }, '✍️ Free-text goal')
+        ),
+        // Guided (FCT) path
+        cbPath === 'fct' && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          // Function chips
+          e('div', null,
+            e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: '5px' } }, 'Function'),
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              FCT_FUNCTIONS.map(function (fn) {
+                var meta = FCT_MAP[fn];
+                var sel = cbFunction === fn;
+                return e('button', { key: fn, onClick: function () { setCbFunction(fn); }, 'aria-label': meta.label + ' function', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel, meta.color) },
+                  e('span', null, meta.icon), e('span', null, meta.label));
+              })
+            )
+          ),
+          // Phase chips
+          e('div', null,
+            e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: '5px' } }, 'Phase'),
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              [1, 2, 3, 4].map(function (ph) {
+                var sel = cbPhase === ph;
+                var meta = FCT_PHASE_META[ph];
+                var count = (FCT_PHASE_TEMPLATES[cbFunction] && FCT_PHASE_TEMPLATES[cbFunction][ph] || []).length;
+                return e('button', { key: ph, onClick: function () { setCbPhase(ph); }, 'aria-label': meta.label + ' (' + count + ' symbols)', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel) },
+                  e('span', null, meta.label),
+                  e('span', { style: { fontSize: '10px', background: sel ? '#fff' : '#f3f4f6', color: sel ? PURPLE : '#6b7280', padding: '1px 6px', borderRadius: '999px', fontWeight: 700, marginLeft: '2px', border: sel ? '1px solid ' + PURPLE : '1px solid transparent' } }, count));
+              })
+            ),
+            FCT_PHASE_META[cbPhase] && e('div', { style: { fontSize: '10px', color: '#6b7280', marginTop: '5px', fontStyle: 'italic' } }, FCT_PHASE_META[cbPhase].desc)
+          ),
+          // Preview + build button
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: 'space-between' } },
+            e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', flex: 1, minWidth: '200px' } },
+              e('span', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Preview (' + fctPhasePreview.length + (fctPhasePreview.length === 1 ? ' symbol' : ' symbols') + '):'),
+              fctPhasePreview.map(function (lbl, li) {
+                return e('span', { key: li, style: { background: '#fff', border: '1px solid ' + (activeFctMeta.color || '#d1d5db'), color: activeFctMeta.color || '#374151', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 } }, lbl);
+              })
+            ),
+            e('button', {
+              onClick: function () { if (confirmReplaceBoard()) applyFctTemplate(cbFunction, cbPhase); },
+              disabled: !fctPhasePreview.length,
+              'aria-label': 'Build board from FCT template',
+              style: Object.assign({}, S.btn(activeFctMeta.color || PURPLE, '#fff', !fctPhasePreview.length), { whiteSpace: 'nowrap' })
+            }, 'Build board →')
+          ),
+          // Tip from FCT_MAP
+          activeFctMeta.tip && e('div', { style: { fontSize: '11px', color: '#4b5563', background: 'rgba(255,255,255,0.7)', border: '1px dashed ' + (activeFctMeta.color || '#d1d5db'), borderRadius: '8px', padding: '8px 10px', lineHeight: 1.4 } },
+            e('strong', null, 'Tip: '), activeFctMeta.tip)
+        ),
+        // Free-text goal path
+        cbPath === 'goal' && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          e('label', { htmlFor: 'comm-builder-goal', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Communication goal'),
+          e('input', {
+            id: 'comm-builder-goal', type: 'text',
+            value: cbGoalText,
+            onChange: function (ev) { setCbGoalText(ev.target.value); },
+            onKeyDown: function (ev) { if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!confirmReplaceBoard()) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
+            placeholder: 'e.g. request a break at recess, ask a peer to play, tell me you need help',
+            style: Object.assign({}, S.input, { margin: 0, fontSize: '13px' }),
+            'aria-label': 'Communication goal'
+          }),
+          // Example starters — one-tap populate the goal input
+          e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' } },
+            e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, 'Try:'),
+            [
+              'Request a break at work',
+              'Ask a peer to play',
+              'Tell me you need help',
+              'Request a snack at lunch',
+              'Say hello to a friend'
+            ].map(function (ex) {
+              return e('button', {
+                key: ex, onClick: function () { setCbGoalText(ex); },
+                'aria-label': 'Use example goal: ' + ex,
+                style: { fontSize: '10px', padding: '3px 9px', borderRadius: '999px', border: '1px dashed #a7f3d0', background: '#f0fdf4', color: '#15803d', cursor: 'pointer', fontWeight: 500 }
+              }, ex);
+            })
+          ),
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+            e('button', {
+              onClick: function () { if (!confirmReplaceBoard()) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); },
+              disabled: !cbGoalText.trim() || cbGoalBusy,
+              'aria-label': 'Build board from goal',
+              style: S.btn(PURPLE, '#fff', !cbGoalText.trim() || cbGoalBusy)
+            }, cbGoalBusy ? '⏳ Thinking…' : 'Build board →'),
+            !onCallGemini && e('span', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #fde68a' } }, 'AI offline — will create a blank scaffold.'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280', fontStyle: 'italic' } }, 'AI picks 3-6 symbols + detects function.')
+          )
+        )
+      );
+
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' } },
+        // Communication Builder wizard — always visible at top of Quick Boards tab.
+        commBuilderCard,
         // Sub-mode switcher
         e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', padding: '10px 12px 0', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' } },
           subModes.map(function (sm) {
@@ -6284,6 +6602,7 @@
                   return e('div', {
                     key: word.id,
                     className: 'ss-board-cell',
+                    'data-board-cell-id': word.id,
                     draggable: true,
                     onDragStart: function (ev) { ev.dataTransfer.effectAllowed = 'move'; setDragBoardId(word.id); },
                     onDragOver: function (ev) { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; setDragOverBoardId(word.id); },
@@ -6298,6 +6617,43 @@
                       setDragBoardId(null); setDragOverBoardId(null);
                     },
                     onDragEnd: function () { setDragBoardId(null); setDragOverBoardId(null); },
+                    onTouchStart: function (ev) {
+                      if (ev.touches && ev.touches.length > 1) return;
+                      touchDragRef.current = { fromId: word.id, startX: ev.touches[0].clientX, startY: ev.touches[0].clientY, active: false };
+                    },
+                    onTouchMove: function (ev) {
+                      var td = touchDragRef.current;
+                      if (!td) return;
+                      var t = ev.touches[0];
+                      if (!td.active) {
+                        var dx = t.clientX - td.startX, dy = t.clientY - td.startY;
+                        if ((dx * dx + dy * dy) < 64) return;
+                        td.active = true;
+                        setDragBoardId(td.fromId);
+                      }
+                      if (ev.cancelable) ev.preventDefault();
+                      var el = document.elementFromPoint(t.clientX, t.clientY);
+                      while (el && el !== document.body && !(el.getAttribute && el.getAttribute('data-board-cell-id'))) el = el.parentElement;
+                      var overId = el && el.getAttribute ? el.getAttribute('data-board-cell-id') : null;
+                      if (overId && overId !== td.fromId) setDragOverBoardId(overId); else setDragOverBoardId(null);
+                    },
+                    onTouchEnd: function () {
+                      var td = touchDragRef.current;
+                      touchDragRef.current = null;
+                      if (!td || !td.active) { setDragBoardId(null); setDragOverBoardId(null); return; }
+                      var fromId = td.fromId;
+                      var toId = dragOverBoardId;
+                      if (toId && toId !== fromId) {
+                        setBoardWords(function (prev) {
+                          var from = prev.findIndex(function (w) { return w.id === fromId; });
+                          var to = prev.findIndex(function (w) { return w.id === toId; });
+                          if (from < 0 || to < 0) return prev;
+                          var next = prev.slice(); next.splice(to, 0, next.splice(from, 1)[0]); return next;
+                        });
+                      }
+                      setDragBoardId(null); setDragOverBoardId(null);
+                    },
+                    onTouchCancel: function () { touchDragRef.current = null; setDragBoardId(null); setDragOverBoardId(null); },
                     onClick: function () { speakCell(word.label); },
                     style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '100px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
                   },
