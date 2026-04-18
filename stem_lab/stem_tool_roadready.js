@@ -1314,9 +1314,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (ci >= (scenario.traffic === 'light' ? 1 : 2)) return;
         var dir = ci % 2 === 0 ? 1 : -1;
         var crossVType = vehicleTypes[0]; // cars on cross streets
+        // Lane offset perpendicular to direction of travel (US right-side driving).
+        // dir=+1 (heading=0, moving +X): driver's right is +Y → y = crossY + 1.5.
+        // dir=-1 (heading=π, moving -X): driver's right is -Y → y = crossY - 1.5.
+        // (Previously flipped — cars were driving on the left side of the cross street.)
         traffic.push({
           x: dir === 1 ? 5 : MAP_SIZE - 5,
-          y: crossY + (dir === 1 ? -1.5 : 1.5),
+          y: crossY + (dir === 1 ? 1.5 : -1.5),
           heading: dir === 1 ? 0 : Math.PI,
           speed: 20 * MPH_TO_MS,
           color: crossVType.colors[ci % crossVType.colors.length],
@@ -4617,10 +4621,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: '#1e40af' };
                     }
                     if (evt) {
-                      // Spawn the event as a wildlife-like entity that crosses the road
+                      // Spawn the event from the landmark's side of the road. Position
+                      // perpendicular to the spline so it appears IN the actual shoulder
+                      // (not offset by raw world X, which on curves would put it in trees).
                       var spawnAhead = 6;
-                      var spawnX = car.x + Math.cos(car.heading) * spawnAhead + (eChunk.landmark.side * 4);
                       var spawnY = car.y + Math.sin(car.heading) * spawnAhead;
+                      var evtSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                      var evtSplineCx = evtSpline ? evtSpline.centerAt(spawnY) : car.x + Math.cos(car.heading) * spawnAhead;
+                      var evtSplineTheta = evtSpline ? evtSpline.headingAt(spawnY) : 0;
+                      var evtPerpX = Math.cos(evtSplineTheta);
+                      var evtPerpY = -Math.sin(evtSplineTheta);
+                      var landmarkSide = eChunk.landmark.side; // +1 or -1
+                      var spawnX = evtSplineCx + landmarkSide * 4 * evtPerpX;
+                      spawnY = spawnY + landmarkSide * 4 * evtPerpY;
                       if (!wildlifeRef.current) {
                         wildlifeRef.current = {
                           kind: evt.kind,
@@ -4628,8 +4641,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           mass: evt.kind === 'ambulance' || evt.kind === 'firetruck' || evt.kind === 'tractor' || evt.kind === 'cruiser' ? 'medium' : 'small',
                           x: spawnX,
                           y: spawnY,
-                          vx: -eChunk.landmark.side * 1.5, // moves across the road
-                          vy: 0,
+                          // Move toward the road (perpendicular toward spline center)
+                          vx: -landmarkSide * 1.5 * evtPerpX,
+                          vy: -landmarkSide * 1.5 * evtPerpY,
                           hit: false,
                           life: 8,
                           fromLandmark: true,
@@ -4719,15 +4733,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             audioRef.current._lastBlinkTickOn = null;
           }
 
-          // Lane change detection — hysteresis-based to prevent false positives on curves
-          // Only trigger if car moves 2+ world units from its last stable lane position
-          if (!laneChangeRef.current.stableX) laneChangeRef.current.stableX = car.x;
-          var laneShift = car.x - laneChangeRef.current.stableX;
+          // ── Lane change detection (curve-safe) ──
+          // Measure the player's PERPENDICULAR offset from the spline at their current Y.
+          // On a curving road the raw X drifts naturally; perpendicular offset stays stable
+          // when the player follows the lane, so any > 2m delta is a genuine lane change.
+          var splineForPlayer = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var splineCxAtPlayer = splineForPlayer ? splineForPlayer.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+          var splineThetaAtPlayer = splineForPlayer ? splineForPlayer.headingAt(car.y) : 0;
+          // Project (car − splineCenter) onto perp-right (cos θ, −sin θ). Pure-X component
+          // of player's relative position projected onto perpendicular = (car.x − splineCx) * cos θ.
+          var playerPerpOffset = (car.x - splineCxAtPlayer) * Math.cos(splineThetaAtPlayer);
+          if (laneChangeRef.current.stableLane === undefined || laneChangeRef.current.stableLane === null) {
+            laneChangeRef.current.stableLane = playerPerpOffset;
+          }
+          var laneShift = playerPerpOffset - laneChangeRef.current.stableLane;
           if (Math.abs(laneShift) > 2.0 && Math.abs(car.speed) > 5 && timeRef.current > 5) {
-            // Genuine lane change detected
             if (!laneChangeRef.current._cooldown || timeRef.current - laneChangeRef.current._cooldown > 5) {
-              var dir = laneShift > 0 ? 1 : -1;
-              if (blinkerRef.current !== dir) {
+              // Direction in driver-relative terms (right vs left)
+              var dirShift = laneShift > 0 ? 1 : -1;
+              // For the player heading −π/2 (default Free Explore), sin(heading) < 0 so
+              // they're northbound. Their RIGHT is +X (positive perp-offset). For southbound
+              // (sin > 0), their right is −X. Driver-relative "right" = sign matching myDirSign.
+              // Player heading sign maps to dirSign just like AI.
+              var pDirSign = car.heading > 0 ? 1 : -1;
+              // "right shift" in perp-offset space: positive perp = world +X = right for NB (-1).
+              // For SB (+1) right = negative perp. So driver-right-shift = -dirShift * pDirSign? Equivalent to perp shift sign for NB and inverted for SB.
+              var driverRelDir = -dirShift * pDirSign; // +1 = signaled left, -1 = signaled right
+              // Map blinkerRef.current (-1=left, +1=right) to driverRelDir convention (+1=left, -1=right)
+              var expectedBlinker = driverRelDir === 1 ? -1 : 1;
+              if (blinkerRef.current !== expectedBlinker) {
                 statsRef.current.safetyScore -= 5;
                 if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
                 statsRef.current.unsignaledLaneChanges++;
@@ -4741,10 +4775,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               laneChangeRef.current._cooldown = timeRef.current;
             }
-            laneChangeRef.current.stableX = car.x;
+            laneChangeRef.current.stableLane = playerPerpOffset;
           }
-          // Slowly drift the stable position toward current (tolerates gradual curves)
-          laneChangeRef.current.stableX += (car.x - laneChangeRef.current.stableX) * dt * 0.3;
+          // Slowly drift stable toward current to tolerate gentle drift inside a lane.
+          laneChangeRef.current.stableLane += (playerPerpOffset - laneChangeRef.current.stableLane) * dt * 0.3;
 
           // MPG history for sparkline (sample every 0.5s)
           if (car.speed > 1 && mpg < 999) {
@@ -4786,7 +4820,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ── Direction-aware forward-vector helper ──
             // Cars travel along either Y (heading = ±π/2) or X (heading = 0 or π).
             // "ahead" of a car depends on which axis it travels along.
-            var travelsY = Math.abs(Math.abs(t.heading) - Math.PI / 2) < 0.3;
+            // travelsY: flagged directly by crossStreet. On curved roads the heading can
+            // swing up to ~0.55 rad off pure ±π/2, so heading-based inference would
+            // incorrectly flip the car to "cross-street" on sharp curves.
+            var travelsY = !t.crossStreet;
             var forwardSign = travelsY ? (t.heading > 0 ? 1 : -1) : (Math.abs(t.heading) < 1 ? 1 : -1);
             var axis = travelsY ? 'y' : 'x';
             var crossAxis = travelsY ? 'x' : 'y';
@@ -4799,15 +4836,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // main-road cars detect directly; cross-street cars treat the same signal as
             // controlling their perpendicular approach: main-road green = cross-street red.
             var slowFor = 0; // 0=clear, 1=slow, 2=stop
-            var signalDetectRange = 14; // brake earlier — was 8
+            // Detection range scales with speed: a fast car needs more distance to brake
+            // smoothly to a stop. Stopping distance grows with v² so adding a v-proportional
+            // term keeps fast traffic from overshooting the stop line.
+            var signalDetectRange = 14 + Math.abs(t.speed || 0) * 0.45;
             // Track the signal currently controlling us (used below for stop-sign resume).
             var activeStopSign = null;
             var activeStopDist = Infinity;
             signals.forEach(function(s) {
               if (!t.crossStreet) {
-                // Main-road car: straight-ahead signal on the path.
+                // Main-road car: signal is on the main road ahead. On curves, raw `rel.lat`
+                // (world X diff) can exceed 3 even for an in-path signal because the spline
+                // bends. Use forward-distance gate only, but verify the signal is for our
+                // road by checking spline center alignment at the signal's Y.
                 var rel = aheadOf(s.x, s.y);
-                if (rel.ahead > 0 && rel.ahead < signalDetectRange && Math.abs(rel.lat) < 3) {
+                var splineAtSignal = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
+                  ? infiniteWorldRef.current.spline.centerAt(s.y) : s.x;
+                var signalLatFromSpline = Math.abs(s.x - splineAtSignal);
+                if (rel.ahead > 0 && rel.ahead < signalDetectRange && signalLatFromSpline < 3) {
                   if (s.type === 'stop' || s.state === 'red') {
                     if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
                       slowFor = Math.max(slowFor, 1);
@@ -5010,7 +5056,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var followFar  = 7 * pers.followMult * erraticMult + t.speed * 0.35 * pers.followMult;
             traffic.forEach(function(other, j) {
               if (j === idx) return;
-              // Must be in the same lane (similar cross-axis position).
+              // Same-lane detection must be curve-safe: use laneOffset proximity, not world X.
+              // Also require same-direction (otherwise oncoming traffic would trigger braking).
+              if (!t.crossStreet && !other.crossStreet) {
+                var tDirSign2 = t.heading > 0 ? 1 : -1;
+                var oDirSign2 = other.heading > 0 ? 1 : -1;
+                if (oDirSign2 !== tDirSign2) return;
+                var otherLaneDelta = (other.laneOffset || 0) - (t.laneOffset || 0);
+                if (Math.abs(otherLaneDelta) > 1.0) return;
+                // Forward distance along travel axis (positive = other is ahead of me)
+                var otherAhead = (other.y - t.y) * tDirSign2;
+                if (otherAhead > 0 && otherAhead < followNear) slowFor = Math.max(slowFor, 2);
+                else if (otherAhead > 0 && otherAhead < followFar) slowFor = Math.max(slowFor, 1);
+                return;
+              }
+              // Cross-street or mixed: fall back to aheadOf (axis-aware).
               var otherRel = aheadOf(other.x, other.y);
               if (Math.abs(otherRel.lat) > 2) return;
               if (otherRel.ahead > 0 && otherRel.ahead < followNear) slowFor = Math.max(slowFor, 2);
@@ -5181,41 +5241,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             if (noPassZone) { t._laneChangeCooldown = Math.max(t._laneChangeCooldown || 0, 2); }
             if (!t.crossStreet && t._laneChangeCooldown <= 0) {
+              // Driver-relative geometry.
+              //   myDirSign: +1 southbound (heading ~+π/2), -1 northbound (~−π/2).
+              //   innerSign: +laneOffset delta that means "toward centerline" for THIS driver.
+              //     SB default = -1.5, moving toward centerline (+laneOffset) is +delta → +1.
+              //     NB default = +1.5, moving toward centerline (-laneOffset) is -delta → -1.
+              //   "Inner" = toward centerline = driver's LEFT. "Outer" = toward shoulder = driver's RIGHT.
+              var myDirSign = t.heading > 0 ? 1 : -1;
+              var innerSign = myDirSign; // SB: +1 means "going more-positive-offset = toward centerline"; NB: -1
               var wantOvertake = false;
-              var blockedLeft = false, blockedRight = false;
+              var blockedInner = false, blockedOuter = false;
               traffic.forEach(function(other2, j2) {
                 if (j2 === idx) return;
-                if (Math.abs(other2.x - t.x) > 2) return;
-                var ah = (t.heading > 0 ? other2.y - t.y : t.y - other2.y);
-                // Someone directly ahead in my lane, slower than me → reason to overtake
-                if (Math.abs(other2.x - t.x) < 1 && ah > 3 && ah < 10 && other2.speed < t.speed * 0.85) wantOvertake = true;
-                // Check if adjacent lane is blocked (safety check before lane change)
+                if (other2.crossStreet) return;
+                var otherDirSign = other2.heading > 0 ? 1 : -1;
+                if (otherDirSign !== myDirSign) return; // ignore oncoming
+                var laneDelta = (other2.laneOffset || 0) - (t.laneOffset || 0);
+                if (Math.abs(laneDelta) > 2.0) return;
+                // Forward distance along direction of travel: positive = other is ahead of me.
+                var ah = (other2.y - t.y) * myDirSign;
+                // Same lane, slower, 3–10m ahead → reason to overtake
+                if (Math.abs(laneDelta) < 0.7 && ah > 3 && ah < 10 && other2.speed < t.speed * 0.85) wantOvertake = true;
+                // Adjacent lane blocked? laneDelta * innerSign > 0 means "other is inner (to my left)".
                 if (Math.abs(ah) < 5) {
-                  if (other2.x > t.x && other2.x - t.x < 2.2) blockedRight = true;
-                  if (other2.x < t.x && t.x - other2.x < 2.2) blockedLeft = true;
+                  var sideSignedDelta = laneDelta * innerSign;
+                  if (sideSignedDelta > 0.5) blockedInner = true;   // to my left
+                  if (sideSignedDelta < -0.5) blockedOuter = true;  // to my right
                 }
               });
-              // Aggressive drivers overtake — but only if safe and only WITHIN their direction's side.
-              // For heading > 0 (+Y): our side is x < centerXt, safe lanes: [-2.5, -0.5] from center.
-              // For heading < 0 (-Y): our side is x > centerXt, safe lanes: [+0.5, +2.5] from center.
-              // ── Realistic signaling: set blinker FIRST, wait ~1.2s, THEN move. ──
-              // t._pendingLaneOffset + t._pendingLaneTimer track the pre-signal phase.
+              // Overtake direction = INNER (toward centerline) on US right-side roads.
+              // Inner lane offset: SB starts -1.5, moves toward 0 → inner offset = -0.5. NB mirrors to +0.5.
+              var innerOffset = myDirSign === 1 ? -0.5 : 0.5;
               if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.015 && !t._pendingLaneOffset) {
-                var newOffset = t.heading > 0 ? -0.5 : 0.5;
-                var blocked = (newOffset > t.laneOffset) ? blockedRight : blockedLeft;
-                if (!blocked && Math.abs(t.laneOffset - newOffset) > 0.5) {
-                  // Start the pre-signal phase — blinker on, lane hasn't moved yet.
-                  t._pendingLaneOffset = newOffset;
-                  t._pendingLaneTimer = 1.2; // legally required 1s+ signal before move
-                  t.blinker = newOffset > t.laneOffset ? 1 : -1;
+                // Going inner — checked blockedInner.
+                if (!blockedInner && Math.abs(t.laneOffset - innerOffset) > 0.5) {
+                  t._pendingLaneOffset = innerOffset;
+                  t._pendingLaneTimer = 1.2;
+                  // Blinker: inner = left (for right-side traffic)
+                  t.blinker = -1;
                 }
               } else if (!wantOvertake && t._laneChangeCooldown <= 0 && !t._pendingLaneOffset && Math.random() < 0.0008) {
-                // Return to default lane (right side for direction) — also pre-signaled.
-                var defaultOffset = t.heading > 0 ? -1.5 : 1.5;
-                if (Math.abs(t.laneOffset - defaultOffset) > 0.3) {
+                // Return to default lane (outer, toward shoulder).
+                var defaultOffset = myDirSign === 1 ? -1.5 : 1.5;
+                if (Math.abs(t.laneOffset - defaultOffset) > 0.3 && !blockedOuter) {
                   t._pendingLaneOffset = defaultOffset;
                   t._pendingLaneTimer = 1.0;
-                  t.blinker = defaultOffset > t.laneOffset ? 1 : -1;
+                  t.blinker = 1; // right signal — returning outer
                 }
               }
             }
@@ -5223,17 +5294,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // blocked during the signal phase, cancel cleanly and cancel the blinker.
             if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
               t._pendingLaneTimer -= dt;
-              // Re-check blockage each frame
+              // Re-check blockage using LANE-OFFSET comparison (curve-safe).
               var stillBlocked = false;
               var pOff = t._pendingLaneOffset;
+              var pendingDirSign = t.heading > 0 ? 1 : -1;
               traffic.forEach(function(other3, j3) {
                 if (j3 === idx) return;
-                if (Math.abs(other3.x - t.x) > 3) return;
-                var ahp = (t.heading > 0 ? other3.y - t.y : t.y - other3.y);
-                if (Math.abs(ahp) < 5) {
-                  if (pOff > t.laneOffset && other3.x > t.x && other3.x - t.x < 2.2) stillBlocked = true;
-                  if (pOff < t.laneOffset && other3.x < t.x && t.x - other3.x < 2.2) stillBlocked = true;
-                }
+                if (other3.crossStreet) return;
+                var otherSign3 = other3.heading > 0 ? 1 : -1;
+                if (otherSign3 !== pendingDirSign) return;
+                // Is other in the target lane? (within 1m of pending laneOffset)
+                if (Math.abs((other3.laneOffset || 0) - pOff) > 1.0) return;
+                // Within ±5m ahead/behind along travel axis?
+                var ahp = (other3.y - t.y) * pendingDirSign;
+                if (Math.abs(ahp) < 5) stillBlocked = true;
               });
               if (stillBlocked) {
                 t._pendingLaneOffset = null;
@@ -5255,20 +5329,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (t._blinkerCancelTimer <= 0) t.blinker = 0;
             }
             if (t._laneChangeCooldown > 0) t._laneChangeCooldown -= dt;
-            // Move forward along direction of travel
-            t.y += Math.sin(t.heading) * t.speed * dt / 5;
-            t.x += Math.cos(t.heading) * t.speed * dt / 5;
-            // ── Pull toward target lane position (spline-aware) ──
-            // On curved roads the spline center moves; traffic must follow it or drive off-road.
+            // ── Spline-aware heading + lane tracking ──
+            // Previously the car's heading was fixed at ±π/2 and only t.x got corrected to
+            // track the spline center. On curved roads that caused the car to drift across
+            // the centerline into oncoming (the X-only lerp couldn't catch up with the curve).
+            // Fix: align heading to the spline tangent + lateral offset, and apply the lane
+            // offset PERPENDICULAR to the spline direction (not purely along world X).
             if (!t.crossStreet) {
-              var roadCenterAtT = centerXt;
-              if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
-                roadCenterAtT = infiniteWorldRef.current.spline.centerAt(t.y);
+              var iwTraf = infiniteWorldRef.current;
+              var splineHeading = 0;
+              var splineCenter = centerXt;
+              if (iwTraf && iwTraf.spline) {
+                splineHeading = iwTraf.spline.headingAt(t.y);
+                splineCenter = iwTraf.spline.centerAt(t.y);
               }
-              var targetX = roadCenterAtT + t.laneOffset;
-              // Low-pass: move ~15% of the way per frame at 60fps, scaled by dt.
-              var lerpT = Math.min(1, dt * 4);
-              t.x = t.x * (1 - lerpT) + targetX * lerpT;
+              // Target heading: direction of travel relative to spline.
+              // Spline convention (line ~693): heading=0 ⇒ road goes +Y; positive heading bends +X.
+              // Spline direction vector = (sin θ, cos θ). Southbound (moving +Y) travels along +direction.
+              // Game heading convention: (cos h, sin h) = direction of motion.
+              //   Southbound: (cos h, sin h) = (sin θ, cos θ) ⇒ h = π/2 − θ
+              //   Northbound: (cos h, sin h) = (−sin θ, −cos θ) ⇒ h = −π/2 − θ
+              // direction flag preserved by initial heading sign.
+              var isSouthbound = Math.sin(t.heading) > 0; // sin(heading) > 0 ⇔ heading in (0, π)
+              var targetHeading = isSouthbound ? (Math.PI / 2 - splineHeading) : (-Math.PI / 2 - splineHeading);
+              // Lerp heading smoothly — frame-rate independent, ~0.3s time constant.
+              // Handle angle wrap: shortest-angle delta in [−π, π].
+              var dh = targetHeading - t.heading;
+              while (dh > Math.PI) dh -= 2 * Math.PI;
+              while (dh < -Math.PI) dh += 2 * Math.PI;
+              t.heading += dh * (1 - Math.exp(-dt / 0.3));
+              // Forward motion in the car's current direction
+              t.y += Math.sin(t.heading) * t.speed * dt / 5;
+              t.x += Math.cos(t.heading) * t.speed * dt / 5;
+              // ── Pull toward target lane position PERPENDICULAR to the spline ──
+              // Spline direction is (sin θ, cos θ); perpendicular-right is (cos θ, −sin θ).
+              // Lane offset is signed (positive = right-of-spline in straight-road convention).
+              //
+              // Measure the car's current perpendicular offset from the spline point at t.y:
+              //   perpOffset = (t.x − splineCenter) · perp-right
+              //              = (t.x − splineCenter) * cos θ
+              // Desired perp offset = t.laneOffset. Correct by shifting along perp-right.
+              var perpX = Math.cos(splineHeading);
+              var perpY = -Math.sin(splineHeading);
+              var curPerpOffset = (t.x - splineCenter) * perpX;
+              var perpErr = curPerpOffset - t.laneOffset;
+              // Strong lerp — reach ~99% in ~0.2s time constant so cars stay in lane on sharp curves
+              var latCorrect = perpErr * (1 - Math.exp(-dt / 0.2));
+              t.x -= latCorrect * perpX;
+              t.y -= latCorrect * perpY;
+            } else {
+              // Cross-street: straight motion is fine (no spline curvature on cross streets).
+              t.y += Math.sin(t.heading) * t.speed * dt / 5;
+              t.x += Math.cos(t.heading) * t.speed * dt / 5;
             }
             // Wrap / respawn traffic relative to player position
             var playerY = carRef.current.y;
@@ -5278,13 +5390,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else if (infiniteWorldRef.current) {
               // Infinite world: respawn traffic that gets too far from player
               if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
-                // Respawn ahead or behind the player
                 var newDir = Math.random() < 0.5 ? 1 : -1;
                 t.y = playerY + newDir * (10 + Math.random() * MAP_SIZE * 0.4);
-                // Position in the correct lane on the spline at the new Y
+                // Position in the correct lane ON the spline perpendicular at the new Y.
+                // Use heading-sign to infer direction (sign-stable even with spline bend).
                 t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
-                var respawnCenter = infiniteWorldRef.current.spline ? infiniteWorldRef.current.spline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
-                t.x = respawnCenter + t.laneOffset;
+                var respawnSpline = infiniteWorldRef.current.spline;
+                var respawnCenter = respawnSpline ? respawnSpline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
+                var respawnHeadingSp = respawnSpline ? respawnSpline.headingAt(t.y) : 0;
+                // Perpendicular-right to spline direction is (cos θ, −sin θ).
+                t.x = respawnCenter + t.laneOffset * Math.cos(respawnHeadingSp);
+                t.y = t.y - t.laneOffset * Math.sin(respawnHeadingSp);
+                // Reset heading to match the new direction + local spline bend
+                var respIsSouth = t.heading > 0;
+                t.heading = respIsSouth ? (Math.PI / 2 - respawnHeadingSp) : (-Math.PI / 2 - respawnHeadingSp);
+                // Clear any in-flight lane-change state so the fresh spawn isn't
+                // committing to a lane it already left.
+                t._pendingLaneOffset = null;
+                t._pendingLaneTimer = 0;
+                t._blinkerCancelTimer = 0;
+                t.blinker = 0;
                 var respSpeedLimit = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
                 t.speed = (respSpeedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
               }
@@ -5302,14 +5427,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!w) {
             var spawn = maybeSpawnWildlife(currentScenario, timeRef.current);
             if (spawn) {
-              // Spawn ahead of the player on the road, crossing across
+              // Spawn ahead of the player and OFF the spline (in the shoulder/woods),
+              // then move it toward the road. On curves the prior code spawned at
+              // car.x + 6 in raw world X — putting wildlife either deep in trees or
+              // already in the road, depending on which way the spline curved.
               var ahead = 12;
-              var sx = car.x + Math.cos(car.heading) * ahead + 6;
               var sy = car.y + Math.sin(car.heading) * ahead;
+              var wlSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              var wlSplineCenter = wlSpline ? wlSpline.centerAt(sy) : car.x + Math.cos(car.heading) * ahead;
+              var wlSplineTheta = wlSpline ? wlSpline.headingAt(sy) : 0;
+              // Perpendicular-right to spline direction (sin θ, cos θ): (cos θ, −sin θ).
+              // Spawn 6m to the +perp side; vx will move wildlife back toward the road.
+              var wlPerpX = Math.cos(wlSplineTheta);
+              var wlPerpY = -Math.sin(wlSplineTheta);
+              var sx = wlSplineCenter + 6 * wlPerpX;
+              sy = sy + 6 * wlPerpY;
               wildlifeRef.current = {
                 kind: spawn.kind, icon: spawn.icon, mass: spawn.mass,
                 x: sx, y: sy,
-                vx: -1.2, vy: 0,
+                // Move toward the road (negative perpendicular)
+                vx: -1.2 * wlPerpX, vy: -1.2 * wlPerpY,
                 hit: false, life: 8,
                 // Capture player's heading + speed at spawn so we can score their reaction:
                 // brake straight = low maxSwerve + big speed drop. Swerve = high maxSwerve.
@@ -5515,9 +5652,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Wider detection window (6 units = ~60 feet) and timeout if it passes completely
           if (!em.checked && em.y < car.y + 6) {
             em.checked = true;
-            var centerX = Math.floor(MAP_SIZE / 2);
-            var pulledRight = car.x > centerX + 1.5;
-            var stopped = car.speed < 2;
+            // "Pulled right" = perpendicular offset from spline ≥ 1.5 in the driver's RIGHT direction.
+            // For NB (heading negative, default in Free Explore) RIGHT = +X = positive perp offset.
+            // For SB RIGHT = −X = negative perp offset. Use spline at car's Y for curve-safety.
+            var emSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var emSplineCx = emSpline ? emSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+            var emSplineTheta = emSpline ? emSpline.headingAt(car.y) : 0;
+            var carPerpOff = (car.x - emSplineCx) * Math.cos(emSplineTheta);
+            // Driver's right side in perp-offset space: NB (heading<0) → positive, SB → negative
+            var rightSign = car.heading > 0 ? -1 : 1;
+            var pulledRight = (carPerpOff * rightSign) > 1.5;
+            // Use absolute speed — a player creeping backward at 5 mph isn't "stopped".
+            var stopped = Math.abs(car.speed) < 2;
             if (pulledRight && stopped) {
               em.responded = true;
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
@@ -5555,12 +5701,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
 
         var updateCyclists = function(dt) {
+          var cySpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           cyclistsRef.current.forEach(function(cy) {
-            cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
-            cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+            // Spline-aware heading + lateral hold so cyclists stay on the bike lane
+            // edge through curves instead of drifting into trees / oncoming traffic.
+            if (cySpline && !cy.crossStreet) {
+              var cyTheta = cySpline.headingAt(cy.y);
+              var cyCenter = cySpline.centerAt(cy.y);
+              // Determine cyclist's bike-lane offset from spline center based on direction.
+              // Cyclists travel ON THE RIGHT (US convention). Default offsets:
+              //   heading=+π/2 (south, sin>0): right side of spline = perpendicular -direction → lane offset ≈ -2.3
+              //   heading=-π/2 (north, sin<0): right side of spline = +direction → lane offset ≈ +2.3
+              var cyDirSign = cy.heading > 0 ? 1 : -1;
+              var bikeLaneOff = cyDirSign === 1 ? -2.3 : 2.3;
+              if (cy._bikeLane === undefined) cy._bikeLane = bikeLaneOff;
+              // Target heading aligned with spline tangent ± π/2
+              var cyTargetHeading = (cyDirSign === 1) ? (Math.PI / 2 - cyTheta) : (-Math.PI / 2 - cyTheta);
+              var cyDh = cyTargetHeading - cy.heading;
+              while (cyDh > Math.PI) cyDh -= 2 * Math.PI;
+              while (cyDh < -Math.PI) cyDh += 2 * Math.PI;
+              cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
+              cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
+              cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+              // Lateral correction: pull perpendicular offset toward bike-lane offset
+              var cyPerpX = Math.cos(cyTheta);
+              var cyPerpY = -Math.sin(cyTheta);
+              var cyCurrentPerp = (cy.x - cyCenter) * cyPerpX;
+              var cyPerpErr = cyCurrentPerp - cy._bikeLane;
+              var cyLatCorrect = cyPerpErr * (1 - Math.exp(-dt / 0.25));
+              cy.x -= cyLatCorrect * cyPerpX;
+              cy.y -= cyLatCorrect * cyPerpY;
+            } else {
+              cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
+              cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+            }
             if (cy.y < -2) cy.y = MAP_SIZE + 2;
             if (cy.y > MAP_SIZE + 2) cy.y = -2;
-            // Small wobble for cyclists
+            // Small wobble for cyclists (keep — adds life)
             if (cy.type === 'cyclist') cy.x += Math.sin(timeRef.current * 3 + cy.y) * 0.002;
           });
         };
@@ -9749,12 +9926,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // LOD gate: skip ambient entirely on distant chunks (cut ~40 meshes per chunk)
               if (isMediumLOD) {
               // These add life without adding obstacles — all placed in the shoulder grass area.
+              // Ambient X is now SPLINE-RELATIVE: previously placed at fixed world X, which
+              // floated parked cars / mailboxes / streetlights away from the road on curves.
               var ambientRng = seededRandom(chunk.index * 31337 + 7);
               for (var ambI = 2; ambI < CHUNK_SIZE - 2; ambI += 4) {
                 var ambSide = ambientRng() < 0.5 ? 1 : -1;
                 var ambRoll = ambientRng();
-                var ambX = ambSide * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 0.3);
                 var ambZ = chunkWorldZ + ambI + Math.floor(ambientRng() * 2);
+                // Look up the spline center at this ambZ so the shoulder follows the curve.
+                var ambSplineCenter = iw.spline ? (iw.spline.centerAt(ambZ + MAP_SIZE / 2) - MAP_SIZE / 2) : 0;
+                var ambX = ambSplineCenter + ambSide * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 0.3);
                 // Don't place ambient details at intersections
                 if (chunk.hasIntersection && Math.abs(ambI - chunk.intersectionY) < 4) continue;
                 // Don't place ambient details too close to landmark footprint
@@ -9843,7 +10024,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Teaches students to watch for doors opening, people exiting, cars pulling out
                   if (chunk.biome === 'commercial' || chunk.biome === 'residential' || chunk.biome === 'suburban') {
                     var carColors = [0xdc2626, 0x1e40af, 0x059669, 0x78350f, 0xf59e0b, 0x4b5563, 0xfef3c7, 0x1a1a2e];
-                    var parkedCarX = ambSide * (MAX_ROAD_WIDTH + 0.9); // just off the road, closer than other ambient
+                    // Spline-relative X so parked cars line the actual road on curves.
+                    var parkedCarX = ambSplineCenter + ambSide * (MAX_ROAD_WIDTH + 0.9);
                     var parkedColor = carColors[Math.floor(ambientRng() * carColors.length)];
                     // Car body
                     var pcBody = new T.Mesh(new T.BoxGeometry(1.6, 0.8, 0.7), new T.MeshLambertMaterial({ color: parkedColor }));
@@ -10687,34 +10869,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // crosswalks). cwOffset < 0 means the crosswalk is at lower Z than the
                   // intersection, so driver approaches from -Z and the arrow must point +Z.
                   // cwOffset > 0: driver approaches from +Z, arrow must point -Z.
+                  //
+                  // On commercial/suburban chunks, the INNER lane (near centerline) gets a
+                  // LEFT-TURN arrow (straight shaft + bent arrow head that turns toward
+                  // oncoming). The OUTER lane keeps a straight arrow. This matches real
+                  // multi-lane approaches where the inside lane is a turn lane.
                   var arrowPointsTowardIntersection = cwOffset < 0 ? +1 : -1;
                   var arrowZ = stopLineZ + (cwOffset < 0 ? -3.0 : 3.0);
                   var arrowCtr = markCenterAtZ(arrowZ);
                   var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  // Build a single reusable arrow geometry (3-plane approach for perf).
-                  // Shaft: 0.12 wide × 1.4 long. Head: two 0.38-long chevron arms at ~30°.
+                  // Lane selection rules per biome
+                  var hasLeftTurnLane = (chunk.biome === 'commercial' || chunk.biome === 'suburban');
                   var laneOffset = roadHalfW * 0.5; // middle of each lane
-                  [-laneOffset, +laneOffset].forEach(function(arrowX) {
-                    // Shaft
+                  // The arrow sits in the approach lanes on the near side of the road.
+                  // Driver's approach lanes are on the negative side of the spline center
+                  // for cwOffset < 0, and positive side for cwOffset > 0.
+                  var driverSide = cwOffset < 0 ? -1 : 1;
+                  // Inner (turn) lane x and outer (straight) lane x for this approach
+                  var innerLaneX = driverSide * (laneOffset * 0.35); // closer to centerline
+                  var outerLaneX = driverSide * (laneOffset * 1.05); // closer to edge
+
+                  var paintArrow = function(laneX, type) {
+                    // type: 'straight' or 'left'
+                    // Shaft (all arrows have a shaft aligned with direction of travel)
                     var shaft = new T.Mesh(new T.PlaneGeometry(0.18, 1.4), zebraMat);
                     shaft.rotation.x = -Math.PI / 2;
-                    shaft.position.set(arrowCtr + arrowX, arrowHt + 0.016, arrowZ);
+                    shaft.position.set(arrowCtr + laneX, arrowHt + 0.016, arrowZ);
                     chunkGroup.add(shaft);
-                    // Arrowhead tip position (toward intersection)
                     var tipZ = arrowZ + arrowPointsTowardIntersection * 0.7;
-                    // Two chevron arms: 0.55 long each, angled 30° off the axis
-                    [-1, 1].forEach(function(side) {
-                      var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.55), zebraMat);
-                      arm.rotation.x = -Math.PI / 2;
-                      // rotate around Y to form the chevron — 30° off axis, mirrored by side
-                      arm.rotation.z = side * arrowPointsTowardIntersection * (Math.PI / 6);
-                      // position so arm meets at the tip
-                      var armZ = tipZ - arrowPointsTowardIntersection * 0.22;
-                      var armX = arrowCtr + arrowX + side * 0.19;
-                      arm.position.set(armX, arrowHt + 0.016, armZ);
-                      chunkGroup.add(arm);
-                    });
-                  });
+                    if (type === 'straight') {
+                      // Chevron arms pointing forward
+                      [-1, 1].forEach(function(side) {
+                        var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.55), zebraMat);
+                        arm.rotation.x = -Math.PI / 2;
+                        arm.rotation.z = side * arrowPointsTowardIntersection * (Math.PI / 6);
+                        var armZ = tipZ - arrowPointsTowardIntersection * 0.22;
+                        var armX = arrowCtr + laneX + side * 0.19;
+                        arm.position.set(armX, arrowHt + 0.016, armZ);
+                        chunkGroup.add(arm);
+                      });
+                    } else if (type === 'left') {
+                      // LEFT-turn arrow: shaft + 90° bend toward oncoming side + chevron
+                      // pointing across the centerline. "Left" relative to the driver's
+                      // direction of travel means toward the centerline, i.e. opposite of
+                      // driverSide.
+                      var turnX = -driverSide; // toward centerline (left of driver)
+                      // Bend: horizontal segment crossing lane toward centerline, at the TIP
+                      var bend = new T.Mesh(new T.PlaneGeometry(0.9, 0.18), zebraMat);
+                      bend.rotation.x = -Math.PI / 2;
+                      bend.position.set(arrowCtr + laneX + turnX * 0.45, arrowHt + 0.016, tipZ);
+                      chunkGroup.add(bend);
+                      // Chevron at the end of the bend — arrowhead pointing to the left side
+                      [-1, 1].forEach(function(side) {
+                        var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.45), zebraMat);
+                        arm.rotation.x = -Math.PI / 2;
+                        // arm rotates around world Y so it points laterally (not forward)
+                        arm.rotation.z = Math.PI / 2 + side * (Math.PI / 6) * turnX;
+                        arm.position.set(arrowCtr + laneX + turnX * 0.75, arrowHt + 0.016, tipZ + side * 0.12);
+                        chunkGroup.add(arm);
+                      });
+                    }
+                  };
+
+                  if (hasLeftTurnLane) {
+                    paintArrow(innerLaneX, 'left');
+                    paintArrow(outerLaneX, 'straight');
+                  } else {
+                    // Original: straight arrow in each of two symmetric lane positions
+                    paintArrow(-laneOffset, 'straight');
+                    paintArrow(+laneOffset, 'straight');
+                  }
                 });
               }
               // ── Wet road sheen: glossy puddle patches + reflective streaks in rain ──

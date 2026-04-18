@@ -39,7 +39,10 @@
       { id: 'phish_score_3', label: 'Identify 3 phishing emails correctly', icon: '\uD83C\uDFA3', check: function(d) { return (d.phishScore || 0) >= 3; }, progress: function(d) { return (d.phishScore || 0) + '/3'; } },
       { id: 'phish_score_5', label: 'Identify 5 phishing emails correctly', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return (d.phishScore || 0) >= 5; }, progress: function(d) { return (d.phishScore || 0) + '/5'; } },
       { id: 'phish_streak_3', label: 'Get a 3-answer phishing streak', icon: '\uD83D\uDD25', check: function(d) { return (d.phishStreak || 0) >= 3; }, progress: function(d) { return (d.phishStreak || 0) + '/3 streak'; } },
-      { id: 'test_password', label: 'Test a password in the strength checker', icon: '\uD83D\uDD10', check: function(d) { return !!(d.pwInput && d.pwInput.length > 0); }, progress: function(d) { return d.pwInput ? 'Tested!' : 'Enter a password'; } }
+      { id: 'test_password', label: 'Test a password in the strength checker', icon: '\uD83D\uDD10', check: function(d) { return !!(d.pwInput && d.pwInput.length > 0); }, progress: function(d) { return d.pwInput ? 'Tested!' : 'Enter a password'; } },
+      { id: 'warroom_complete_campaign', label: 'Complete a SOC War Room campaign', icon: '\u2694\uFE0F', check: function(d) { return (d.warRoomCampaignsCompleted || 0) >= 1; }, progress: function(d) { return (d.warRoomCampaignsCompleted || 0) + '/1'; } },
+      { id: 'warroom_win_analyst', label: 'Win a campaign on Analyst difficulty', icon: '\uD83C\uDF96\uFE0F', check: function(d) { return !!d.warRoomWonAnalyst; }, progress: function(d) { return d.warRoomWonAnalyst ? 'Achieved!' : 'In progress'; } },
+      { id: 'warroom_perfect_defense', label: 'Zero assets lost on Threat Hunter difficulty', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return !!d.warRoomPerfectDefense; }, progress: function(d) { return d.warRoomPerfectDefense ? 'Achieved!' : 'In progress'; } }
     ],
     render: function (ctx) {
     var React = ctx.React;
@@ -101,6 +104,32 @@
           // AI threat briefing
           var threatBriefing  = d.threatBriefing || null;
           var threatLoading   = d.threatLoading || false;
+          // SOC War Room (red team / blue team simulation)
+          var warRoomActive       = d.warRoomActive || false;
+          var warRoomRound        = d.warRoomRound || 1;           // 1..6
+          var warRoomDifficulty   = d.warRoomDifficulty || 'rookie'; // rookie | analyst | threatHunter
+          var warRoomKillChain    = d.warRoomKillChain || [];       // [{stage, red, outcome, assetsLost}]
+          var warRoomRedAction    = d.warRoomRedAction || null;     // current round red card
+          var warRoomAlerts       = d.warRoomAlerts || [];          // [{id, text, real}]
+          var warRoomAlertsSeen   = d.warRoomAlertsSeen || [];      // ids investigated this round
+          var warRoomBudget       = d.warRoomBudget != null ? d.warRoomBudget : 12;
+          var warRoomAssets       = d.warRoomAssets || { users: 10, servers: 5, data: 100 };
+          var warRoomAssetsLost   = d.warRoomAssetsLost || { users: 0, servers: 0, data: 0 };
+          var warRoomLog          = d.warRoomLog || [];             // strings
+          var warRoomBluePlays    = d.warRoomBluePlays || [];       // blue card ids played this round
+          var warRoomVerdict      = d.warRoomVerdict || null;       // 'won' | 'lost' | null
+          var warRoomAARLoading   = d.warRoomAARLoading || false;
+          var warRoomAAR          = d.warRoomAAR || null;
+          var warRoomEscalateUsed = d.warRoomEscalateUsed || false;
+          var warRoomCampaignsCompleted = d.warRoomCampaignsCompleted || 0;
+          var warRoomDetections   = d.warRoomDetections || 0;       // count of detected attacks
+          var warRoomMitigations  = d.warRoomMitigations || 0;      // count of fully mitigated attacks
+          var warRoomRoundResolved = d.warRoomRoundResolved || false; // blocks further plays after resolution
+          var warRoomLastResolution = d.warRoomLastResolution || null; // {outcome, assetsLost, xpDelta, matchedPlays, idealPlays, lesson}
+          var warRoomCampaignTheme = d.warRoomCampaignTheme || 'mixed'; // mixed | ransomware | bec | insider
+          var warRoomHintsUsed = d.warRoomHintsUsed || 0;
+          var warRoomHintRevealed = d.warRoomHintRevealed || false;
+          var warRoomGlossaryOpen = d.warRoomGlossaryOpen || false;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -544,13 +573,422 @@
           ];
           var activeSeScenario = seScenarios[seQuizIdx % seScenarios.length];
 
-          // â”€â”€ Cipher output â”€â”€
+          // ── Cipher output ──
           var cipherOutput = '';
           if (cipherInput) {
             if (cipherMode === 'caesar') cipherOutput = caesarCipher(cipherInput, caesarShift, cipherEncode);
             else if (cipherMode === 'atbash') cipherOutput = atbashCipher(cipherInput);
             else cipherOutput = cipherEncode ? btoa(xorCipher(cipherInput, 42)) : (function() { try { return xorCipher(atob(cipherInput), 42); } catch(e) { return '[Invalid XOR input]'; } })();
           }
+
+          // ══════════════════════════════════════════════════════════════
+          // SOC WAR ROOM — Red Team / Blue Team Simulation
+          // ══════════════════════════════════════════════════════════════
+
+          var warStages = [
+            { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: '#64748b' },
+            { num: 2, id: 'delivery',    name: 'Weaponization/Delivery', icon: '\uD83D\uDCE8', color: '#f59e0b' },
+            { num: 3, id: 'exploit',     name: 'Exploitation',            icon: '\uD83D\uDCA5', color: '#ef4444' },
+            { num: 4, id: 'persist',     name: 'Installation/Persistence', icon: '\uD83D\uDD27', color: '#a855f7' },
+            { num: 5, id: 'c2',          name: 'Command & Control',       icon: '\uD83D\uDCE1', color: '#ec4899' },
+            { num: 6, id: 'actions',     name: 'Actions on Objectives',   icon: '\uD83C\uDFAF', color: '#dc2626' }
+          ];
+
+          // ── Red Team card library (abstracted — no payload details) ──
+          var redTeamCards = [
+            // Stage 1: Reconnaissance
+            { id: 'r_linkedin', stage: 'recon', title: 'LinkedIn scrape of Finance dept', description: 'Adversary harvests names, roles, and reporting structure of Finance staff from public profiles.', indicators: ['Unusual LinkedIn profile views from a single IP', 'Pattern of views clustered around Finance team'], noiseIndicators: ['Routine recruiter activity'], mitigations: { hunt_iocs: 1.0, awareness_blast: 0.6, investigate: 0.3 }, impact: { users: 1 } },
+            { id: 'r_dnsenum', stage: 'recon', title: 'DNS enumeration of public assets', description: 'Attacker fingerprints subdomains and exposed services.', indicators: ['Burst of DNS TXT/AXFR queries from one ASN', 'Scans of staging.* subdomains'], noiseIndicators: ['Search engine crawler traffic'], mitigations: { hunt_iocs: 1.0, block_ip: 0.8, investigate: 0.4 }, impact: { servers: 1 } },
+            { id: 'r_s3scan', stage: 'recon', title: 'Public S3 bucket scan', description: 'Automated scanner searches for misconfigured cloud storage.', indicators: ['S3 list-bucket attempts on unfamiliar names', '403 spike on staging buckets'], noiseIndicators: ['Legitimate vendor health check'], mitigations: { patch: 1.0, hunt_iocs: 0.7, block_ip: 0.5 }, impact: { data: 5 } },
+            { id: 'r_osint', stage: 'recon', title: 'OSINT on IT admins', description: 'Attacker maps IT staff schedules and toolchain via social media.', indicators: ['Screenshots of helpdesk tickets appearing on paste sites'], noiseIndicators: ['Conference talk references'], mitigations: { awareness_blast: 1.0, hunt_iocs: 0.6 }, impact: { users: 1 } },
+
+            // Stage 2: Delivery
+            { id: 'd_spearcfo', stage: 'delivery', title: 'Spear phish CFO with invoice.docx', description: 'Targeted email with a look-alike domain and a macro-laden attachment arrives in the CFO\'s inbox.', indicators: ['Look-alike sender domain (single-char swap)', 'Attachment with embedded macros', 'Urgent wire-transfer language'], noiseIndicators: ['Legitimate AP invoice from a known vendor'], mitigations: { block_ip: 0.9, awareness_blast: 1.0, reset_credential: 0.4, investigate: 0.5 }, impact: { users: 2 } },
+            { id: 'd_usb', stage: 'delivery', title: 'USB drops in parking lot', description: 'Adversary scatters branded USB drives near employee entrance.', indicators: ['Unknown USB device inserts reported by EDR', 'Auto-run attempts on Finance workstations'], noiseIndicators: ['Vendor-provided conference USBs'], mitigations: { deploy_edr: 1.0, awareness_blast: 0.8, isolate_host: 0.6 }, impact: { users: 1, servers: 1 } },
+            { id: 'd_typosquat', stage: 'delivery', title: 'Typo-squatted vendor domain', description: 'Fake vendor portal collects employee credentials.', indicators: ['Outbound DNS to newly-registered look-alike domain', 'Credential-form POST to unusual host'], noiseIndicators: ['New SaaS pilot the team just approved'], mitigations: { block_ip: 1.0, awareness_blast: 0.7, hunt_iocs: 0.5 }, impact: { users: 2 } },
+            { id: 'd_sms', stage: 'delivery', title: 'Smishing wave to staff', description: 'Bulk SMS claiming to be IT asks users to re-verify SSO from a personal device.', indicators: ['Cluster of help-desk calls about an "IT text"'], noiseIndicators: ['Legitimate SMS MFA prompts'], mitigations: { awareness_blast: 1.0, reset_credential: 0.5 }, impact: { users: 2 } },
+
+            // Stage 3: Exploitation
+            { id: 'e_macro', stage: 'exploit', title: 'Macro executes loader in-memory', description: 'User enabled macros; a living-off-the-land loader runs.', indicators: ['powershell.exe spawned by WINWORD.EXE', 'Encoded command-line parameters'], noiseIndicators: ['IT automation script'], mitigations: { deploy_edr: 1.0, isolate_host: 0.9, investigate: 0.6 }, impact: { servers: 1, users: 1 } },
+            { id: 'e_cve', stage: 'exploit', title: 'Unpatched VPN CVE exploited', description: 'A known, patched-since-January CVE is still open on the edge device.', indicators: ['Exploit signatures on perimeter IDS', 'Anomalous VPN auth success from new geography'], noiseIndicators: ['Scheduled vulnerability scan'], mitigations: { patch: 1.0, isolate_host: 0.7, block_ip: 0.6 }, impact: { servers: 2, data: 10 } },
+            { id: 'e_credstuff', stage: 'exploit', title: 'Credential stuffing vs SSO', description: 'Breached-password list replayed against the login portal.', indicators: ['High-volume login failures from rotating IPs', 'MFA fatigue pushes to same user'], noiseIndicators: ['QA automation account'], mitigations: { reset_credential: 1.0, block_ip: 0.7, awareness_blast: 0.4 }, impact: { users: 3 } },
+            { id: 'e_watering', stage: 'exploit', title: 'Watering-hole on industry forum', description: 'Trusted industry site compromised to deliver a drive-by to visitors.', indicators: ['JS redirects to an uncategorized CDN', 'Browser exploit signatures'], noiseIndicators: ['Standard ad-network noise'], mitigations: { patch: 1.0, block_ip: 0.6, deploy_edr: 0.7 }, impact: { users: 1, servers: 1 } },
+
+            // Stage 4: Persistence
+            { id: 'p_schedtask', stage: 'persist', title: 'Scheduled task persistence', description: 'Adversary creates a hidden scheduled task that re-launches the implant nightly.', indicators: ['schtasks.exe with /create from a user context', 'Unsigned binary path in task action'], noiseIndicators: ['New backup job scheduled'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7 }, impact: { servers: 1 } },
+            { id: 'p_runkey', stage: 'persist', title: 'Registry Run key implant', description: 'HKCU Run key added to relaunch on login.', indicators: ['New HKCU\\Run value pointing to user temp dir'], noiseIndicators: ['Legitimate app auto-update registered'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.9, reset_credential: 0.4 }, impact: { users: 1, servers: 1 } },
+            { id: 'p_service', stage: 'persist', title: 'Malicious Windows service installed', description: 'Attacker installs a service that survives reboots.', indicators: ['New auto-start service with random display name', 'Service runs as SYSTEM from %ProgramData%'], noiseIndicators: ['Vendor management agent install'], mitigations: { isolate_host: 1.0, deploy_edr: 0.9, patch: 0.5 }, impact: { servers: 2 } },
+            { id: 'p_oauthapp', stage: 'persist', title: 'Rogue OAuth app granted consent', description: 'User consented to a third-party OAuth app requesting mailbox access.', indicators: ['New enterprise app with mail.read and offline_access scopes'], noiseIndicators: ['Legitimate productivity integration'], mitigations: { reset_credential: 1.0, awareness_blast: 0.7, investigate: 0.6 }, impact: { users: 2, data: 10 } },
+
+            // Stage 5: Command & Control
+            { id: 'c_dnstun', stage: 'c2', title: 'DNS tunneling beacon', description: 'Implant beacons via encoded DNS TXT queries.', indicators: ['Long-subdomain DNS queries to a single parent domain', 'Periodic timing pattern (60s jitter)'], noiseIndicators: ['Cloud-based email security scan'], mitigations: { block_ip: 1.0, hunt_iocs: 0.9, isolate_host: 0.7 }, impact: { data: 15 } },
+            { id: 'c_httpscdn', stage: 'c2', title: 'HTTPS C2 hidden behind CDN', description: 'Beacon blends into legitimate CDN traffic.', indicators: ['JA3 fingerprint mismatch for a known CDN tenant', 'User-agent inconsistent with browser'], noiseIndicators: ['Normal video-streaming traffic'], mitigations: { deploy_edr: 1.0, hunt_iocs: 0.8, isolate_host: 0.7, block_ip: 0.5 }, impact: { data: 10, servers: 1 } },
+            { id: 'c_slackhook', stage: 'c2', title: 'Slack webhook exfil channel', description: 'Adversary abuses an incoming webhook as a low-noise C2.', indicators: ['Outbound POSTs to hooks.slack.com from a server that never used Slack'], noiseIndicators: ['Monitoring integration alerts'], mitigations: { block_ip: 1.0, hunt_iocs: 0.8, investigate: 0.5 }, impact: { data: 10 } },
+            { id: 'c_icmp', stage: 'c2', title: 'ICMP covert channel', description: 'Implant tunnels commands inside ICMP echo payloads.', indicators: ['Unusually large ICMP packets', 'Sustained ICMP to a single external host'], noiseIndicators: ['Network monitoring pings'], mitigations: { block_ip: 1.0, isolate_host: 0.8, deploy_edr: 0.6 }, impact: { servers: 1, data: 5 } },
+
+            // Stage 6: Actions on Objectives
+            { id: 'a_piiexfil', stage: 'actions', title: 'Customer PII exfiltration', description: 'Adversary packages a customer database for exfiltration.', indicators: ['Large archive creation on DB server', 'Sudden egress spike at 3am'], noiseIndicators: ['Scheduled nightly backup job'], mitigations: { isolate_host: 1.0, block_ip: 0.8, escalate: 1.0, hunt_iocs: 0.5 }, impact: { data: 60 } },
+            { id: 'a_ransom', stage: 'actions', title: 'Ransomware detonation', description: 'Attacker pushes a ransomware payload across domain-joined hosts.', indicators: ['Mass file renames with unusual extension', 'Shadow-copy deletion commands'], noiseIndicators: ['Large file-migration project'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.8, patch: 0.3 }, impact: { servers: 5, data: 40 } },
+            { id: 'a_wirefraud', stage: 'actions', title: 'Wire-transfer fraud (BEC)', description: 'Finance receives a forwarded email chain authorizing a $380k wire.', indicators: ['Mailbox forwarding rule created in last 48h', 'Reply-to domain differs from display'], noiseIndicators: ['Routine vendor onboarding'], mitigations: { escalate: 1.0, reset_credential: 0.9, awareness_blast: 0.8, investigate: 0.7 }, impact: { data: 50 } },
+            { id: 'a_sabotage', stage: 'actions', title: 'Destructive wiper on build server', description: 'Attacker wipes CI/CD infrastructure to disrupt operations.', indicators: ['Disk write patterns consistent with wiping', 'Admin tool invoked outside change window'], noiseIndicators: ['Planned infrastructure decommission'], mitigations: { isolate_host: 1.0, escalate: 1.0, deploy_edr: 0.7 }, impact: { servers: 4, data: 20 } }
+          ];
+
+          // ── Blue Team card library ──
+          var blueTeamCards = [
+            { id: 'investigate',      label: 'Investigate Alert',   icon: '\uD83D\uDD0E', cost: 1, description: 'Read deeper into an alert. Reveals whether a signal is real or noise, and highlights the active attack step.' },
+            { id: 'block_ip',         label: 'Block Sender/IP',     icon: '\uD83D\uDEAB', cost: 1, description: 'Block a sender domain or IP at the perimeter. Strong vs delivery and C2 traffic.' },
+            { id: 'reset_credential', label: 'Reset Credential',    icon: '\uD83D\uDD10', cost: 1, description: 'Force password reset and kill active sessions. Neutralizes credential theft and rogue app tokens.' },
+            { id: 'patch',            label: 'Emergency Patch',     icon: '\uD83E\uDDF0', cost: 2, description: 'Apply a known security update. Prevents exploitation of unpatched systems.' },
+            { id: 'isolate_host',     label: 'Isolate Endpoint',    icon: '\uD83E\uDDF1', cost: 2, description: 'Network-quarantine a suspicious host. Strong vs lateral movement, persistence, and C2.' },
+            { id: 'awareness_blast',  label: 'User Awareness Blast',icon: '\uD83D\uDCE3', cost: 1, description: 'Urgent notice to staff about an active campaign. Reduces human-factor attack success.' },
+            { id: 'deploy_edr',       label: 'Deploy EDR Rule',     icon: '\uD83D\uDEE1\uFE0F', cost: 2, description: 'Push a detection rule to endpoints. Excellent against execution and persistence.' },
+            { id: 'hunt_iocs',        label: 'Hunt for IOCs',       icon: '\uD83E\uDDEC', cost: 2, description: 'Proactive threat hunt across logs. Surfaces indicators early — especially strong in recon and C2.' },
+            { id: 'escalate',         label: 'Escalate to CISO',    icon: '\uD83D\uDEA8', cost: 3, description: 'Pull the emergency brake. Once per campaign. Major impact on late-stage attacks.' }
+          ];
+
+          // ── Campaign themes — bias the red team's card pool ──
+          var campaignThemes = {
+            mixed: {
+              id: 'mixed', label: 'Mixed Threat Landscape', icon: '\uD83C\uDFAF',
+              desc: 'A random adversary drawing from the full playbook. Best for your first run.',
+              preferred: null
+            },
+            ransomware: {
+              id: 'ransomware', label: 'Ransomware Crew', icon: '\uD83D\uDD12',
+              desc: 'A financially-motivated crew aiming to encrypt your environment for ransom. Expect loud, destructive finales.',
+              preferred: {
+                recon: ['r_dnsenum', 'r_s3scan'],
+                delivery: ['d_spearcfo', 'd_typosquat'],
+                exploit: ['e_cve', 'e_credstuff'],
+                persist: ['p_service', 'p_schedtask'],
+                c2: ['c_httpscdn', 'c_dnstun'],
+                actions: ['a_ransom', 'a_sabotage']
+              }
+            },
+            bec: {
+              id: 'bec', label: 'BEC Fraud Ring', icon: '\uD83D\uDCB0',
+              desc: 'Business Email Compromise specialists after wire-transfer fraud. Patient, social-engineering-heavy, low-noise.',
+              preferred: {
+                recon: ['r_linkedin', 'r_osint'],
+                delivery: ['d_spearcfo', 'd_sms'],
+                exploit: ['e_credstuff'],
+                persist: ['p_oauthapp', 'p_runkey'],
+                c2: ['c_slackhook', 'c_httpscdn'],
+                actions: ['a_wirefraud', 'a_piiexfil']
+              }
+            },
+            insider: {
+              id: 'insider', label: 'Insider Threat', icon: '\uD83C\uDFAD',
+              desc: 'A trusted employee abusing legitimate access. Few external IOCs \u2014 hunt behaviorally, not by signature.',
+              preferred: {
+                recon: ['r_osint'],
+                delivery: ['d_usb'],
+                exploit: ['e_credstuff'],
+                persist: ['p_oauthapp', 'p_runkey'],
+                c2: ['c_slackhook'],
+                actions: ['a_piiexfil', 'a_sabotage']
+              }
+            }
+          };
+
+          // ── War Room seeded RNG (for reproducible campaigns within a round) ──
+          function warRng() { return Math.random(); }
+
+          // ── Pick a red card for a given stage & difficulty, avoiding repeats ──
+          function rollRedAction(stage, diff, history, themeId) {
+            var pool = redTeamCards.filter(function(c) { return c.stage === stage; });
+            var usedIds = (history || []).map(function(h) { return h.red && h.red.id; });
+            var fresh = pool.filter(function(c) { return usedIds.indexOf(c.id) === -1; });
+            if (fresh.length === 0) fresh = pool;
+
+            // Theme bias: prefer cards the campaign theme targets
+            var theme = campaignThemes[themeId || 'mixed'];
+            if (theme && theme.preferred && theme.preferred[stage]) {
+              var themed = fresh.filter(function(c) { return theme.preferred[stage].indexOf(c.id) !== -1; });
+              if (themed.length > 0) fresh = themed;
+            }
+
+            // Threat Hunter difficulty: prefer a card that escalates prior success
+            if (diff === 'threatHunter' && history && history.length > 0) {
+              var lastSuccess = null;
+              for (var h = history.length - 1; h >= 0; h--) {
+                if (history[h].outcome === 'succeeded') { lastSuccess = history[h]; break; }
+              }
+              if (lastSuccess) {
+                return fresh[fresh.length - 1];
+              }
+            }
+            return fresh[Math.floor(warRng() * fresh.length)];
+          }
+
+          // ── Generate alerts (mix of real IOCs and noise; harder = more noise) ──
+          function generateAlerts(redCard, diff) {
+            var real = (redCard.indicators || []).slice();
+            var noise = (redCard.noiseIndicators || []).slice();
+            var out = [];
+            var realCount = diff === 'rookie' ? real.length : (diff === 'analyst' ? Math.max(1, real.length - 1) : Math.max(1, real.length - 1));
+            var noiseCount = diff === 'rookie' ? 0 : (diff === 'analyst' ? 1 : 2);
+            for (var i = 0; i < realCount && real.length > 0; i++) {
+              out.push({ id: 'a_real_' + i, text: real.shift(), real: true });
+            }
+            for (var j = 0; j < noiseCount && noise.length > 0; j++) {
+              out.push({ id: 'a_noise_' + j, text: noise.shift(), real: false });
+            }
+            // shuffle
+            for (var s = out.length - 1; s > 0; s--) {
+              var r = Math.floor(warRng() * (s + 1));
+              var t = out[s]; out[s] = out[r]; out[r] = t;
+            }
+            return out;
+          }
+
+          // ── Resolve current round based on defensive cards played ──
+          function resolveRound(redCard, bluePlayIds) {
+            var bestEffect = 0;
+            var matchedPlays = [];
+            bluePlayIds.forEach(function(cid) {
+              var eff = (redCard.mitigations && redCard.mitigations[cid]) || 0;
+              if (eff > 0) matchedPlays.push({ id: cid, eff: eff });
+              if (eff > bestEffect) bestEffect = eff;
+            });
+            var outcome, xpDelta, assetsLost = { users: 0, servers: 0, data: 0 };
+            if (bestEffect >= 1.0) {
+              outcome = 'mitigated';
+              xpDelta = 6;
+            } else if (bestEffect >= 0.5) {
+              outcome = 'detected';
+              xpDelta = 4;
+              // partial impact
+              ['users', 'servers', 'data'].forEach(function(k) {
+                if (redCard.impact && redCard.impact[k]) assetsLost[k] = Math.ceil(redCard.impact[k] * (1 - bestEffect));
+              });
+            } else {
+              outcome = 'succeeded';
+              xpDelta = 1;
+              ['users', 'servers', 'data'].forEach(function(k) {
+                if (redCard.impact && redCard.impact[k]) assetsLost[k] = redCard.impact[k];
+              });
+            }
+            return { outcome: outcome, xpDelta: xpDelta, assetsLost: assetsLost, matchedPlays: matchedPlays };
+          }
+
+          // ── Start a new campaign ──
+          function startCampaign(diff, themeId) {
+            var theme = campaignThemes[themeId] ? themeId : 'mixed';
+            var budget = diff === 'rookie' ? 18 : (diff === 'analyst' ? 14 : 10);
+            var firstRed = rollRedAction('recon', diff, [], theme);
+            var firstAlerts = generateAlerts(firstRed, diff);
+            var openingLine = campaignThemes[theme].label !== 'Mixed Threat Landscape'
+              ? 'Campaign begins. Threat intel flags this as a ' + campaignThemes[theme].label + ' operation. Stay sharp.'
+              : 'Campaign begins. Threat intel team is tracking adversary activity. Stay sharp.';
+            upd({
+              warRoomActive: true,
+              warRoomRound: 1,
+              warRoomDifficulty: diff,
+              warRoomCampaignTheme: theme,
+              warRoomKillChain: [],
+              warRoomRedAction: firstRed,
+              warRoomAlerts: firstAlerts,
+              warRoomAlertsSeen: [],
+              warRoomBudget: budget,
+              warRoomAssets: { users: 10, servers: 5, data: 100 },
+              warRoomAssetsLost: { users: 0, servers: 0, data: 0 },
+              warRoomLog: [openingLine],
+              warRoomBluePlays: [],
+              warRoomVerdict: null,
+              warRoomAAR: null,
+              warRoomEscalateUsed: false,
+              warRoomDetections: 0,
+              warRoomMitigations: 0,
+              warRoomRoundResolved: false,
+              warRoomLastResolution: null,
+              warRoomHintsUsed: 0,
+              warRoomHintRevealed: false
+            });
+            if (ctx.announceToSR) ctx.announceToSR('War Room campaign started on ' + diff + ' difficulty, ' + campaignThemes[theme].label + '. Round 1, Reconnaissance. ' + firstRed.title);
+            sfxCyberdClick();
+          }
+
+          // ── Play a blue card this round ──
+          function playBlueCard(cardId) {
+            if (warRoomRoundResolved) return;
+            var card = blueTeamCards.filter(function(c) { return c.id === cardId; })[0];
+            if (!card) return;
+            if (warRoomBluePlays.indexOf(cardId) !== -1) return; // no double-play
+            if (card.id === 'escalate' && warRoomEscalateUsed) return;
+            if (card.cost > warRoomBudget) {
+              if (ctx.addToast) ctx.addToast('Not enough budget for ' + card.label, 'info');
+              return;
+            }
+            var newPlays = warRoomBluePlays.concat([cardId]);
+            var updates = {
+              warRoomBluePlays: newPlays,
+              warRoomBudget: warRoomBudget - card.cost
+            };
+            if (card.id === 'escalate') updates.warRoomEscalateUsed = true;
+            upd(updates);
+            sfxCyberdClick();
+            if (ctx.announceToSR) ctx.announceToSR('Played ' + card.label + '. Budget: ' + (warRoomBudget - card.cost) + '.');
+          }
+
+          // ── Find the "ideal plays" for a red card (cards with mitigation >= 1.0) ──
+          function idealPlaysFor(redCard) {
+            if (!redCard || !redCard.mitigations) return [];
+            var out = [];
+            Object.keys(redCard.mitigations).forEach(function(cid) {
+              if (redCard.mitigations[cid] >= 1.0) {
+                var c = blueTeamCards.filter(function(b) { return b.id === cid; })[0];
+                if (c) out.push(c);
+              }
+            });
+            return out;
+          }
+
+          // ── Stage-level lesson templates (the "why" of each stage) ──
+          var stageLessons = {
+            recon: 'Reconnaissance is silent but foundational — every piece of info the adversary collects makes later stages cheaper and more convincing. Early detection here (hunt, awareness) pays compounding dividends.',
+            delivery: 'Delivery is the moment attack becomes contact: a phishing email, a malicious USB, a look-alike domain. Block the channel and the entire kill chain stalls before exploitation.',
+            exploit: 'Exploitation converts access into code execution. Patching and EDR are the heavyweight defenses here — once code runs, the attacker gets a foothold.',
+            persist: 'Persistence is how attackers survive reboots and IR cleanups. If you only remove the payload without finding the persistence, they come back — often within minutes.',
+            c2: 'Command & Control is the attacker\'s lifeline. Cut the beacon (block the domain, isolate the host) and the implant goes dark even if it\'s still installed.',
+            actions: 'Actions on Objectives is what they came for: data exfil, ransomware, fraud. By this stage escalation and containment matter more than detection — the attack is already happening.'
+          };
+
+          // ── Resolve the current round (does NOT advance — shows debrief screen) ──
+          function resolveCurrentRound() {
+            if (warRoomRoundResolved) return;
+            var result = resolveRound(warRoomRedAction, warRoomBluePlays);
+            var newAssets = {
+              users: Math.max(0, warRoomAssets.users - result.assetsLost.users),
+              servers: Math.max(0, warRoomAssets.servers - result.assetsLost.servers),
+              data: Math.max(0, warRoomAssets.data - result.assetsLost.data)
+            };
+            var newLost = {
+              users: warRoomAssetsLost.users + result.assetsLost.users,
+              servers: warRoomAssetsLost.servers + result.assetsLost.servers,
+              data: warRoomAssetsLost.data + result.assetsLost.data
+            };
+            var outcomeLabel = result.outcome === 'mitigated' ? 'MITIGATED' : (result.outcome === 'detected' ? 'DETECTED' : 'SUCCEEDED');
+            var stageObj = warStages[warRoomRound - 1];
+            var logLine = 'Round ' + warRoomRound + ' (' + stageObj.name + '): ' + warRoomRedAction.title + ' — ' + outcomeLabel +
+              (result.assetsLost.users || result.assetsLost.servers || result.assetsLost.data ?
+                ' (lost: ' + result.assetsLost.users + 'u/' + result.assetsLost.servers + 's/' + result.assetsLost.data + 'd)' : '');
+            var newChain = warRoomKillChain.concat([{
+              stage: stageObj.id, round: warRoomRound, red: warRoomRedAction,
+              outcome: result.outcome, assetsLost: result.assetsLost, bluePlays: warRoomBluePlays.slice()
+            }]);
+            var detections = warRoomDetections + (result.outcome !== 'succeeded' ? 1 : 0);
+            var mitigations = warRoomMitigations + (result.outcome === 'mitigated' ? 1 : 0);
+            var ideals = idealPlaysFor(warRoomRedAction);
+            var lesson = stageLessons[stageObj.id] || '';
+
+            ctx.awardXP('cyberDefense', result.xpDelta);
+            upd({
+              warRoomKillChain: newChain,
+              warRoomAssets: newAssets,
+              warRoomAssetsLost: newLost,
+              warRoomLog: warRoomLog.concat([logLine]),
+              warRoomDetections: detections,
+              warRoomMitigations: mitigations,
+              warRoomRoundResolved: true,
+              warRoomLastResolution: {
+                outcome: result.outcome,
+                outcomeLabel: outcomeLabel,
+                assetsLost: result.assetsLost,
+                xpDelta: result.xpDelta,
+                matchedPlays: result.matchedPlays,
+                idealPlayIds: ideals.map(function(c) { return c.id; }),
+                stageLesson: lesson,
+                redTitle: warRoomRedAction.title,
+                redDescription: warRoomRedAction.description
+              }
+            });
+            if (ctx.announceToSR) ctx.announceToSR('Round ' + warRoomRound + ' resolved: ' + outcomeLabel + '. Review the debrief and advance when ready.');
+            sfxCyberdClick();
+          }
+
+          // ── Advance from debrief to next round or final verdict ──
+          function advanceFromDebrief() {
+            if (!warRoomRoundResolved) return;
+            // End-of-campaign check
+            if (warRoomRound >= 6) {
+              var won = warRoomDetections >= 4 && warRoomAssets.data >= 50;
+              var completed = warRoomCampaignsCompleted + 1;
+              var perfectHard = warRoomDifficulty === 'threatHunter' && warRoomAssetsLost.users === 0 && warRoomAssetsLost.servers === 0 && warRoomAssetsLost.data === 0;
+              var wonAnalyst = (won && warRoomDifficulty === 'analyst') || d.warRoomWonAnalyst;
+              upd({
+                warRoomLog: warRoomLog.concat([won ? '\uD83C\uDFC6 Campaign won. Environment held.' : '\u26A0\uFE0F Campaign ended. Review the after-action report.']),
+                warRoomVerdict: won ? 'won' : 'lost',
+                warRoomCampaignsCompleted: completed,
+                warRoomPerfectDefense: perfectHard || d.warRoomPerfectDefense,
+                warRoomWonAnalyst: wonAnalyst,
+                warRoomLastResolution: null
+              });
+              if (ctx.announceToSR) ctx.announceToSR('Campaign complete. Verdict: ' + (won ? 'victory' : 'defeat') + '. ' + warRoomDetections + ' of 6 attacks detected.');
+              if (ctx.addToast) ctx.addToast(won ? 'Campaign won!' : 'Campaign lost \u2014 review the debrief', won ? 'success' : 'info');
+            } else {
+              var nextStage = warStages[warRoomRound].id;
+              var nextRed = rollRedAction(nextStage, warRoomDifficulty, warRoomKillChain, warRoomCampaignTheme);
+              var nextAlerts = generateAlerts(nextRed, warRoomDifficulty);
+              upd({
+                warRoomRound: warRoomRound + 1,
+                warRoomRedAction: nextRed,
+                warRoomAlerts: nextAlerts,
+                warRoomAlertsSeen: [],
+                warRoomBluePlays: [],
+                warRoomRoundResolved: false,
+                warRoomLastResolution: null,
+                warRoomHintRevealed: false
+              });
+              if (ctx.announceToSR) ctx.announceToSR('Advancing to round ' + (warRoomRound + 1) + ': ' + warStages[warRoomRound].name + '. Red team: ' + nextRed.title);
+            }
+            sfxCyberdClick();
+          }
+
+          // ── Request AI after-action report (falls back to templated summary) ──
+          function requestAAR() {
+            if (warRoomAARLoading || warRoomAAR) return;
+            var summary = warRoomKillChain.map(function(r, i) {
+              return 'Round ' + (i + 1) + ' (' + r.stage + '): ' + r.red.title + ' — ' + r.outcome + '. Defenses: ' + (r.bluePlays.join(', ') || 'none');
+            }).join('\n');
+            var stats = 'Detections: ' + warRoomDetections + '/6. Mitigations: ' + warRoomMitigations + '/6. Assets lost: ' +
+              warRoomAssetsLost.users + ' users, ' + warRoomAssetsLost.servers + ' servers, ' + warRoomAssetsLost.data + ' data units.';
+
+            if (!ctx.aiChat) {
+              var fallback = 'AFTER-ACTION REPORT\n\n' + stats + '\n\n' +
+                (warRoomVerdict === 'won' ? 'The environment held. Detection coverage was strong across the kill chain.' :
+                  'The adversary advanced. Focus next campaign on the stages where defenses missed.') +
+                '\n\nTip: Early-stage detection (recon and delivery) compounds — stop the attack there and later stages cost less budget.';
+              upd('warRoomAAR', fallback);
+              if (ctx.addToast) ctx.addToast('AI unavailable \u2014 using debrief template', 'info');
+              return;
+            }
+            upd('warRoomAARLoading', true);
+            var prompt = 'You are a senior SOC instructor writing a concise after-action report for a student who just completed a cyber defense simulation. ' +
+              'Tone: serious but encouraging, educational. Length: 120-180 words. Use short paragraphs.\n\n' +
+              'CAMPAIGN DATA:\n' + summary + '\n\nSTATS:\n' + stats + '\n\nVERDICT: ' + (warRoomVerdict === 'won' ? 'Victory' : 'Defeat') + '.\n\n' +
+              'STRUCTURE:\n1) One-sentence overall assessment.\n2) What worked well (1-2 specific decisions).\n3) Biggest miss or lesson (1-2 specific decisions).\n4) One actionable tip for the next campaign.\n\n' +
+              'Avoid jargon the student would not know. Reference stages by name (Reconnaissance, Delivery, etc.).';
+            ctx.aiChat(prompt, function(resp) {
+              upd({ warRoomAAR: resp, warRoomAARLoading: false });
+            });
+          }
+
+          // ── War Room derived values ──
+          var warRoomCurrentStage = warStages[Math.min(warRoomRound - 1, 5)];
+          var warRoomPlayedCost = warRoomBluePlays.reduce(function(sum, id) {
+            var c = blueTeamCards.filter(function(b) { return b.id === id; })[0];
+            return sum + (c ? c.cost : 0);
+          }, 0);
+          var warRoomRank = (function() {
+            var det = warRoomDetections;
+            if (warRoomVerdict !== 'won') return { label: 'SOC Trainee', icon: '\uD83D\uDD30', color: '#64748b' };
+            if (det >= 6) return { label: 'CISO', icon: '\uD83C\uDFC6', color: '#f59e0b' };
+            if (det >= 5) return { label: 'Incident Commander', icon: '\u2B50', color: '#a855f7' };
+            if (det >= 4) return { label: 'Incident Responder', icon: '\uD83D\uDEE1\uFE0F', color: '#3b82f6' };
+            return { label: 'Junior Analyst', icon: '\uD83D\uDD0D', color: '#22c55e' };
+          })();
+
           return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
             // Header
             el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
@@ -572,7 +1010,7 @@
 
             // Tab Bar
             el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
-              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }].map(function(tab) {
+              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }, { id: 'warroom', icon: '\u2694\uFE0F', label: 'SOC War Room' }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
                 return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
                   style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
@@ -1149,6 +1587,286 @@
                   ),
                   threatBriefing ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, threatBriefing)
                     : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Click "Get Briefing" for an AI-generated cybersecurity threat report')
+                )
+              ),
+
+              // ======= SOC WAR ROOM (red team / blue team simulation) =======
+              cyberTab === 'warroom' && el('div', { style: { maxWidth: 960, margin: '0 auto' } },
+
+                // Start screen — no active campaign
+                !warRoomActive && el('div', { style: { padding: '20px 8px' } },
+                  el('div', { style: { textAlign: 'center', marginBottom: 20 } },
+                    el('div', { style: { fontSize: 44, marginBottom: 8 } }, '\u2694\uFE0F'),
+                    el('h3', { style: { margin: 0, color: '#fca5a5', fontSize: 22, fontWeight: 900, letterSpacing: 0.3 } }, 'SOC War Room'),
+                    el('p', { style: { margin: '6px 0 0', color: '#94a3b8', fontSize: 13 } }, 'Red team. Blue team. Six rounds. One network to defend.')
+                  ),
+                  el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(244,63,94,0.2)', marginBottom: 16 } },
+                    el('div', { style: { color: '#fda4af', fontSize: 12, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, 'MISSION BRIEFING'),
+                    el('div', { style: { color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.6 } },
+                      'You are the on-call SOC analyst. An adversary is running a multi-stage intrusion campaign through the ',
+                      el('strong', null, 'Cyber Kill Chain'),
+                      ': reconnaissance, delivery, exploitation, persistence, command-and-control, and actions on objectives. Each round, the Red Team plays a move; you read the alerts, spend defensive budget wisely, and try to detect or mitigate before assets are lost.'
+                    )
+                  ),
+                  // Theme picker
+                  el('div', { style: { marginBottom: 14 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '1. PICK YOUR ADVERSARY'),
+                    el('div', { role: 'radiogroup', 'aria-label': 'Adversary theme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8 } },
+                      Object.keys(campaignThemes).map(function(tid) {
+                        var t = campaignThemes[tid];
+                        var selected = warRoomCampaignTheme === tid;
+                        return el('button', { key: tid, role: 'radio', 'aria-checked': selected,
+                          onClick: function() { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); },
+                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : '#cbd5e1', cursor: 'pointer', textAlign: 'left' } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                            el('span', { style: { fontSize: 16 } }, t.icon),
+                            el('span', { style: { fontSize: 13, fontWeight: 800 } }, t.label)
+                          ),
+                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, t.desc)
+                        );
+                      })
+                    )
+                  ),
+                  // Difficulty picker
+                  el('div', { style: { marginBottom: 18 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '2. CHOOSE DIFFICULTY & BEGIN'),
+                    el('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+                      [
+                        { id: 'rookie',       label: 'Rookie',        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e' },
+                        { id: 'analyst',      label: 'Analyst',       sub: 'Some noise \u2022 14 budget', color: '#3b82f6' },
+                        { id: 'threatHunter', label: 'Threat Hunter', sub: 'Adaptive red team \u2022 10 budget', color: '#f43f5e' }
+                      ].map(function(tier) {
+                        return el('button', { key: tier.id, onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
+                          'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label,
+                          style: { flex: '1 1 200px', padding: '14px 16px', borderRadius: 10, border: '1px solid ' + tier.color + '55', background: 'linear-gradient(135deg, ' + tier.color + '1a, ' + tier.color + '05)', color: tier.color, cursor: 'pointer', textAlign: 'left' } },
+                          el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 4 } }, tier.label),
+                          el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, tier.sub)
+                        );
+                      })
+                    )
+                  ),
+                  el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
+                    warRoomCampaignsCompleted > 0 ? ('Campaigns completed: ' + warRoomCampaignsCompleted + (d.warRoomWonAnalyst ? ' \u2022 Analyst victory \uD83C\uDF96\uFE0F' : '') + (d.warRoomPerfectDefense ? ' \u2022 Perfect defense \uD83D\uDEE1\uFE0F' : '')) : 'Your first campaign awaits.'
+                  )
+                ),
+
+                // End-of-campaign scorecard
+                warRoomActive && warRoomVerdict && el('div', { style: { padding: '8px 8px' } },
+                  el('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                    el('div', { style: { fontSize: 44, marginBottom: 4 } }, warRoomVerdict === 'won' ? '\uD83C\uDFC6' : '\u26A0\uFE0F'),
+                    el('div', { style: { fontSize: 20, fontWeight: 900, color: warRoomVerdict === 'won' ? '#86efac' : '#fca5a5' } }, warRoomVerdict === 'won' ? 'Environment Held' : 'Adversary Advanced'),
+                    el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label)
+                  ),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
+                    [
+                      { label: 'Attacks Detected', val: warRoomDetections + '/6', color: '#3b82f6' },
+                      { label: 'Fully Mitigated', val: warRoomMitigations + '/6', color: '#22c55e' },
+                      { label: 'Users Lost', val: warRoomAssetsLost.users, color: '#f59e0b' },
+                      { label: 'Servers Lost', val: warRoomAssetsLost.servers, color: '#ef4444' },
+                      { label: 'Data Lost', val: warRoomAssetsLost.data, color: '#a855f7' }
+                    ].map(function(stat, i) {
+                      return el('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + stat.color + '44', textAlign: 'center' } },
+                        el('div', { style: { fontSize: 18, fontWeight: 900, color: stat.color } }, stat.val),
+                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, stat.label)
+                      );
+                    })
+                  ),
+                  // Kill chain recap
+                  el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, 'KILL CHAIN RECAP'),
+                    warRoomKillChain.map(function(r, i) {
+                      var oc = r.outcome === 'mitigated' ? { c: '#22c55e', label: 'MITIGATED' } : (r.outcome === 'detected' ? { c: '#3b82f6', label: 'DETECTED' } : { c: '#ef4444', label: 'SUCCEEDED' });
+                      return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < warRoomKillChain.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' } },
+                        el('span', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, minWidth: 30 } }, 'R' + (i + 1)),
+                        el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
+                        el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
+                      );
+                    })
+                  ),
+                  // After-action report
+                  el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
+                    el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+                      el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800 } }, '\uD83D\uDCCB After-Action Report'),
+                      !warRoomAAR && el('button', { onClick: requestAAR, disabled: warRoomAARLoading,
+                        style: { padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: warRoomAARLoading ? 'wait' : 'pointer' } },
+                        warRoomAARLoading ? '\u23F3 Generating...' : '\uD83E\uDD16 Generate Debrief')
+                    ),
+                    warRoomAAR ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, warRoomAAR)
+                      : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
+                  ),
+                  el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null }); sfxCyberdClick(); },
+                    style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                    '\u2694\uFE0F New Campaign')
+                ),
+
+                // Active campaign (not ended)
+                warRoomActive && !warRoomVerdict && el('div', null,
+
+                  // Header strip
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(244,63,94,0.2)', marginBottom: 12, flexWrap: 'wrap' } },
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                      el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
+                      el('div', null,
+                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Round ' + warRoomRound + ' / 6 \u2022 ' + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
+                        el('div', { style: { fontSize: 13, color: warRoomCurrentStage.color, fontWeight: 900 } }, warRoomCurrentStage.name)
+                      )
+                    ),
+                    // Kill chain progress bar
+                    el('div', { role: 'progressbar', 'aria-valuenow': warRoomRound, 'aria-valuemin': 1, 'aria-valuemax': 6, 'aria-label': 'Kill chain progress',
+                      style: { flex: 1, display: 'flex', gap: 4, minWidth: 240 } },
+                      warStages.map(function(st, i) {
+                        var done = warRoomKillChain[i];
+                        var bg = '#1e293b';
+                        if (done) bg = done.outcome === 'mitigated' ? '#22c55e' : (done.outcome === 'detected' ? '#3b82f6' : '#ef4444');
+                        else if (i === warRoomRound - 1) bg = st.color;
+                        return el('div', { key: st.id, title: st.name + (done ? ' — ' + done.outcome : ''),
+                          style: { flex: 1, height: 8, borderRadius: 4, background: bg, opacity: done || i === warRoomRound - 1 ? 1 : 0.35 } });
+                      })
+                    ),
+                    // Budget
+                    el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' } },
+                      el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Budget'),
+                      el('div', { style: { fontSize: 14, color: '#a5b4fc', fontWeight: 900 } }, warRoomBudget)
+                    ),
+                    // Assets
+                    el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)' } },
+                      el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Assets'),
+                      el('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } },
+                        warRoomAssets.users + 'u \u2022 ' + warRoomAssets.servers + 's \u2022 ' + warRoomAssets.data + 'd')
+                    )
+                  ),
+
+                  // Round debrief (shown after Resolve, before advancing to next round)
+                  warRoomRoundResolved && warRoomLastResolution && (function() {
+                    var res = warRoomLastResolution;
+                    var oc = res.outcome === 'mitigated' ? { c: '#22c55e', bg: 'rgba(34,197,94,0.08)', bd: 'rgba(34,197,94,0.35)', title: 'Attack Mitigated', icon: '\u2705' }
+                           : res.outcome === 'detected' ? { c: '#3b82f6', bg: 'rgba(59,130,246,0.08)', bd: 'rgba(59,130,246,0.35)', title: 'Attack Detected \u2014 Partial', icon: '\uD83D\uDD35' }
+                           : { c: '#ef4444', bg: 'rgba(239,68,68,0.08)', bd: 'rgba(239,68,68,0.35)', title: 'Attack Succeeded', icon: '\u26A0\uFE0F' };
+                    var playedIds = warRoomBluePlays;
+                    var idealIds = res.idealPlayIds || [];
+                    var ideals = idealIds.map(function(id) { return blueTeamCards.filter(function(b) { return b.id === id; })[0]; }).filter(Boolean);
+                    var missedIdeals = ideals.filter(function(c) { return playedIds.indexOf(c.id) === -1; });
+                    return el('div', { style: { padding: 16, borderRadius: 12, background: oc.bg, border: '2px solid ' + oc.bd } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                        el('div', { style: { fontSize: 28 } }, oc.icon),
+                        el('div', { style: { flex: 1 } },
+                          el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Round ' + warRoomRound + ' \u2022 Debrief'),
+                          el('div', { style: { fontSize: 17, fontWeight: 900, color: oc.c } }, oc.title)
+                        ),
+                        el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.35)', fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, '+' + res.xpDelta + ' XP')
+                      ),
+                      // What happened
+                      el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.45)', marginBottom: 10 } },
+                        el('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 800, marginBottom: 4 } }, 'WHAT HAPPENED'),
+                        el('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } },
+                          el('strong', { style: { color: '#fecaca' } }, 'Red Team: '), res.redTitle, '. ',
+                          res.outcome === 'mitigated' ? 'Your defensive play fully shut this down before impact.' :
+                          res.outcome === 'detected' ? 'You partially blunted the attack \u2014 some impact got through.' :
+                          'The attack landed. Assets were compromised.')
+                      ),
+                      // Ideal plays
+                      ideals.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.45)', marginBottom: 10 } },
+                        el('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 800, marginBottom: 6 } }, 'IDEAL DEFENSIVE PLAYS'),
+                        ideals.map(function(c, i) {
+                          var used = playedIds.indexOf(c.id) !== -1;
+                          return el('div', { key: c.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12, color: used ? '#86efac' : '#94a3b8' } },
+                            el('span', { style: { fontSize: 14 } }, c.icon),
+                            el('span', { style: { flex: 1, fontWeight: 700 } }, c.label),
+                            el('span', { style: { fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: used ? 'rgba(34,197,94,0.2)' : 'rgba(100,116,139,0.2)', color: used ? '#86efac' : '#94a3b8' } }, used ? 'YOU PLAYED THIS' : 'NOT PLAYED')
+                          );
+                        }),
+                        missedIdeals.length > 0 && el('div', { style: { marginTop: 6, fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Next time, try one of the plays above for a full mitigation.')
+                      ),
+                      // Stage lesson
+                      res.stageLesson && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 10 } },
+                        el('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCDA STAGE LESSON \u2014 ' + warRoomCurrentStage.name),
+                        el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, res.stageLesson)
+                      ),
+                      // Advance button
+                      el('button', { onClick: advanceFromDebrief, 'aria-label': warRoomRound >= 6 ? 'View final report' : 'Advance to next round',
+                        style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, ' + oc.c + ', #6366f1)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                        warRoomRound >= 6 ? '\uD83C\uDFC1 View Final Report \u2192' : '\u25B6 Advance to Round ' + (warRoomRound + 1) + ' (' + warStages[warRoomRound].name + ')')
+                    );
+                  })(),
+
+                  // Main two-column layout (hidden when round is resolved)
+                  !warRoomRoundResolved && el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', gap: 12 } },
+
+                    // LEFT: red team action + alerts
+                    el('div', null,
+                      // Red team action card
+                      el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(220,38,38,0.04))', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
+                        el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                          el('span', { style: { fontSize: 11, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 8px', borderRadius: 4, letterSpacing: 0.5 } }, 'RED TEAM'),
+                          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, warRoomCurrentStage.name)
+                        ),
+                        el('div', { style: { fontSize: 15, fontWeight: 800, color: '#fecaca', marginBottom: 6 } }, warRoomRedAction && warRoomRedAction.title),
+                        el('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } }, warRoomRedAction && warRoomRedAction.description)
+                      ),
+                      // Alerts panel
+                      el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 10 } },
+                        el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83D\uDEA8 ALERT INTEL (' + warRoomAlerts.length + ')'),
+                        warRoomAlerts.length === 0 && el('div', { style: { color: '#64748b', fontSize: 12, fontStyle: 'italic' } }, 'No alerts received this round.'),
+                        warRoomAlerts.map(function(a, i) {
+                          var seen = warRoomAlertsSeen.indexOf(a.id) !== -1;
+                          var investigated = seen && warRoomBluePlays.indexOf('investigate') !== -1;
+                          return el('div', { key: a.id, style: { padding: '8px 10px', borderRadius: 6, background: seen ? (a.real ? 'rgba(239,68,68,0.08)' : 'rgba(100,116,139,0.08)') : 'rgba(30,41,59,0.6)', border: '1px solid ' + (seen ? (a.real ? 'rgba(239,68,68,0.3)' : 'rgba(100,116,139,0.3)') : 'rgba(148,163,184,0.15)'), marginBottom: 6, fontSize: 12, color: '#cbd5e1' } },
+                            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                              el('span', null, seen ? (a.real ? '\uD83D\uDD34' : '\u26AA') : '\u2754'),
+                              el('span', { style: { flex: 1 } }, seen ? a.text : 'Unreviewed signal #' + (i + 1)),
+                              !seen && el('button', { onClick: function() {
+                                  if (!investigated && warRoomBluePlays.indexOf('investigate') === -1) {
+                                    if (ctx.addToast) ctx.addToast('Play Investigate Alert to review signals', 'info');
+                                    return;
+                                  }
+                                  upd('warRoomAlertsSeen', warRoomAlertsSeen.concat([a.id]));
+                                  sfxCyberdClick();
+                                },
+                                style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                                'Review')
+                            ),
+                            seen && el('div', { style: { fontSize: 10, color: a.real ? '#fca5a5' : '#94a3b8', fontWeight: 700, marginTop: 3 } }, a.real ? 'REAL INDICATOR' : 'NOISE')
+                          );
+                        })
+                      ),
+                      // Campaign log
+                      el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px solid rgba(148,163,184,0.15)', maxHeight: 140, overflowY: 'auto' } },
+                        el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.5 } }, 'Campaign Log'),
+                        warRoomLog.map(function(line, i) {
+                          return el('div', { key: i, style: { fontSize: 11, color: '#94a3b8', padding: '2px 0', lineHeight: 1.5 } }, '\u203A ' + line);
+                        })
+                      )
+                    ),
+
+                    // RIGHT: blue team action menu
+                    el('div', null,
+                      el('div', { style: { padding: 10, borderRadius: 10, background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.04))', border: '1px solid rgba(59,130,246,0.3)', marginBottom: 10 } },
+                        el('div', { style: { fontSize: 11, fontWeight: 900, color: '#93c5fd', letterSpacing: 0.5, marginBottom: 6 } }, '\uD83D\uDEE1\uFE0F BLUE TEAM \u2014 CHOOSE YOUR MOVES'),
+                        el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, 'Spend budget on defensive actions. The right play can fully mitigate, partial plays reduce damage, wrong plays let the attack through.')
+                      ),
+                      blueTeamCards.map(function(card) {
+                        var played = warRoomBluePlays.indexOf(card.id) !== -1;
+                        var disabled = warRoomRoundResolved || played || card.cost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
+                        var hint = card.id === 'escalate' && warRoomEscalateUsed ? '(already used)' : (played ? '(played)' : '');
+                        return el('button', { key: card.id, onClick: function() { if (!disabled) playBlueCard(card.id); },
+                          disabled: disabled, 'aria-pressed': played, 'aria-label': card.label + ', cost ' + card.cost + ' budget. ' + card.description,
+                          style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + (played ? 'rgba(34,197,94,0.4)' : 'rgba(148,163,184,0.2)'), background: played ? 'rgba(34,197,94,0.1)' : (disabled ? 'rgba(30,41,59,0.4)' : 'rgba(30,41,59,0.7)'), color: played ? '#86efac' : (disabled ? '#475569' : '#cbd5e1'), cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left', marginBottom: 6, opacity: disabled && !played ? 0.55 : 1 } },
+                          el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                            el('span', { style: { fontSize: 14 } }, card.icon),
+                            el('span', { style: { fontSize: 12.5, fontWeight: 800, flex: 1 } }, card.label),
+                            el('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc' } }, card.cost + ' \u26A1'),
+                            hint && el('span', { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic' } }, hint)
+                          ),
+                          el('div', { style: { fontSize: 10.5, color: played ? '#86efac' : '#94a3b8', lineHeight: 1.4 } }, card.description)
+                        );
+                      }),
+                      // Resolve button
+                      el('button', { onClick: resolveCurrentRound, disabled: warRoomRoundResolved || warRoomBluePlays.length === 0,
+                        'aria-label': 'Resolve round ' + warRoomRound,
+                        style: { width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', background: (warRoomBluePlays.length === 0 || warRoomRoundResolved) ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, #f43f5e, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: (warRoomBluePlays.length === 0 || warRoomRoundResolved) ? 'not-allowed' : 'pointer', marginTop: 8 } },
+                        warRoomBluePlays.length === 0 ? '\u2026 Play at least one defense' : '\u25B6 Resolve Round ' + warRoomRound)
+                    )
+                  )
                 )
               )
             )

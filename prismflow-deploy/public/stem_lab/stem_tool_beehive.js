@@ -1427,22 +1427,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         React.useEffect(function() {
           if (viewMode !== 'beekeeper') return;
-          var cv = _cvRef.current;
-          if (!cv) {
-            // Ref not attached on first useEffect tick — rare but possible if canvas mounted
-            // AFTER the effect fired. Try once more; if still null, give up (no infinite loops).
-            if (!_cvRef._retryCount) _cvRef._retryCount = 0;
-            if (_cvRef._retryCount < 3) {
-              _cvRef._retryCount++;
-              setTimeout(function() { upd('_cvRetry', Date.now()); }, 50);
-            } else {
-              console.warn('[Beehive] canvas ref never attached after retries; animation disabled');
+          // ── Ref-ready retry ──
+          // React *usually* commits refs before running effects, but in some cases (StrictMode
+          // double-invoke, conditional render transitions, tab switches) the canvas element
+          // hasn't mounted yet when this effect fires. Previously the effect would bail
+          // silently with no animation — leaving a BLANK CANVAS. Now we retry via setTimeout
+          // up to 12 times (600ms total). RAF-like pacing guarantees the canvas element is in
+          // the DOM by the time we try again.
+          var tries = 0;
+          var retryTimer = null;
+          var teardownFn = null;
+          function tryInit() {
+            var cv = _cvRef.current;
+            if (!cv) {
+              if (tries++ < 12) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else {
+                console.warn('[Beehive] beekeeper canvas ref never attached after retries');
+              }
+              return;
             }
-            return;
+            var c = cv.getContext('2d');
+            if (!c) {
+              // getContext can fail transiently (context lost, hardware issue). Retry.
+              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              return;
+            }
+            teardownFn = doSetup(cv, c);
           }
-          _cvRef._retryCount = 0; // reset on successful attach
-          var c = cv.getContext('2d');
-          if (!c) return;
+          // Wrap the rest of the original setup in a function so the retry can invoke it.
+          function doSetup(cv, c) {
 
           // Size canvas from parent container (with resize observer).
           // Outer W/H are mutable and read fresh by frame() closure each tick.
@@ -1827,6 +1841,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (_animId.current) cancelAnimationFrame(_animId.current);
             if (resizeObs) resizeObs.disconnect();
           };
+          } // end doSetup
+          tryInit();
+          return function() {
+            if (retryTimer) clearTimeout(retryTimer);
+            if (teardownFn) teardownFn();
+          };
         }, [viewMode]);
 
         // ── Keyboard shortcuts (ref-based to read latest state) ──
@@ -1940,10 +1960,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // Drone flight canvas
         React.useEffect(function() {
           if (viewMode !== 'drone' || !droneFlightActive) return;
-          var cv = _droneCvRef.current;
-          if (!cv) return;
-          var c = cv.getContext('2d');
-          if (!c) return;
+          // Ref-ready retry — prevents blank canvas when ref attaches late.
+          var tries = 0;
+          var retryTimer = null;
+          var teardownFn = null;
+          function tryInit() {
+            var cv = _droneCvRef.current;
+            if (!cv) {
+              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              else console.warn('[Beehive] drone canvas ref never attached');
+              return;
+            }
+            var c = cv.getContext('2d');
+            if (!c) {
+              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              return;
+            }
+            teardownFn = doSetup(cv, c);
+          }
+          function doSetup(cv, c) {
           var par = cv.parentElement;
           var W = (par ? par.clientWidth : 500) || 500;
           var H = (par ? par.clientHeight : 400) || 400;
@@ -2374,9 +2409,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText(rating, halfW, halfH + 15);
               c.fillStyle = '#94a3b8'; c.font = '10px system-ui';
               c.fillText('Click "Start Flight" to try again · Try a harder difficulty!', halfW, halfH + 42);
-              // Save high score
-              if (ds.score > droneHighScore) {
-                setTimeout(function() { updAll({ drone: Object.assign({}, droneData, { highScore: ds.score, active: false }) }); }, 100);
+              // Save high score — write directly (no 100ms setTimeout delay that caused a
+              // brief flash of stale state on the end screen). ds._hsSaved guards against
+              // writing the same high score every frame while the end screen is shown.
+              if (ds.score > droneHighScore && !ds._hsSaved) {
+                ds._hsSaved = true;
+                updAll({ drone: Object.assign({}, droneData, { highScore: ds.score, active: false }) });
               }
             }
 
@@ -2396,6 +2434,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (_droneAnimId.current) cancelAnimationFrame(_droneAnimId.current);
             document.removeEventListener('keydown', dkDown);
             document.removeEventListener('keyup', dkUp);
+          };
+          } // end doSetup
+          tryInit();
+          return function() {
+            if (retryTimer) clearTimeout(retryTimer);
+            if (teardownFn) teardownFn();
           };
         }, [viewMode, droneFlightActive]);
 
@@ -2666,10 +2710,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // Queen RTS canvas rendering
         React.useEffect(function() {
           if (viewMode !== 'queen' || !queenGameActive) return;
-          var cv = _queenCvRef.current;
-          if (!cv) return;
-          var c = cv.getContext('2d');
-          if (!c) return;
+          // Ref-ready retry — prevents blank canvas when ref attaches late.
+          var tries = 0;
+          var retryTimer = null;
+          var teardownFn = null;
+          function tryInit() {
+            var cv = _queenCvRef.current;
+            if (!cv) {
+              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              else console.warn('[Beehive] queen canvas ref never attached');
+              return;
+            }
+            var c = cv.getContext('2d');
+            if (!c) {
+              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              return;
+            }
+            teardownFn = doSetup(cv, c);
+          }
+          function doSetup(cv, c) {
           var par = cv.parentElement;
           var W = (par ? par.clientWidth : 500) || 500;
           var H = (par ? par.clientHeight : 400) || 400;
@@ -2884,6 +2943,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           return function() {
             if (_queenAnimId.current) cancelAnimationFrame(_queenAnimId.current);
+          };
+          } // end doSetup
+          tryInit();
+          return function() {
+            if (retryTimer) clearTimeout(retryTimer);
+            if (teardownFn) teardownFn();
           };
         }, [viewMode, queenGameActive]);
 
