@@ -1426,34 +1426,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones };
 
         React.useEffect(function() {
-          if (viewMode !== 'beekeeper') return;
-          // ── Ref-ready retry ──
-          // React *usually* commits refs before running effects, but in some cases (StrictMode
-          // double-invoke, conditional render transitions, tab switches) the canvas element
-          // hasn't mounted yet when this effect fires. Previously the effect would bail
-          // silently with no animation — leaving a BLANK CANVAS. Now we retry via setTimeout
-          // up to 12 times (600ms total). RAF-like pacing guarantees the canvas element is in
-          // the DOM by the time we try again.
+          console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
+          if (viewMode !== 'beekeeper') { console.log('[Beehive DEBUG] early return: viewMode not beekeeper'); return; }
           var tries = 0;
           var retryTimer = null;
           var teardownFn = null;
           function tryInit() {
             var cv = _cvRef.current;
+            console.log('[Beehive DEBUG] tryInit #' + tries + ', cv=' + (cv ? 'ATTACHED (' + cv.tagName + ')' : 'NULL'));
             if (!cv) {
               if (tries++ < 12) {
                 retryTimer = setTimeout(tryInit, 50);
               } else {
-                console.warn('[Beehive] beekeeper canvas ref never attached after retries');
+                console.warn('[Beehive DEBUG] beekeeper canvas ref NEVER attached after 12 retries');
               }
               return;
             }
             var c = cv.getContext('2d');
+            console.log('[Beehive DEBUG] getContext result=' + (c ? 'OK' : 'NULL') + ', parent=' + (cv.parentElement ? cv.parentElement.tagName + ' ' + cv.parentElement.clientWidth + 'x' + cv.parentElement.clientHeight : 'NO PARENT'));
             if (!c) {
-              // getContext can fail transiently (context lost, hardware issue). Retry.
               if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
               return;
             }
+            console.log('[Beehive DEBUG] calling doSetup...');
             teardownFn = doSetup(cv, c);
+            console.log('[Beehive DEBUG] doSetup returned. Frame loop should be running now.');
           }
           // Wrap the rest of the original setup in a function so the retry can invoke it.
           function doSetup(cv, c) {
@@ -1834,7 +1831,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Start animation loop (only if not already running)
           _loopRunning.current = true;
           if (_animId.current) cancelAnimationFrame(_animId.current);
+          console.log('[Beehive DEBUG] Starting frame loop. canvas size=' + cv.width + 'x' + cv.height + ', W=' + W + ' H=' + H);
           frame();
+          // Log first frame completion after a short delay
+          setTimeout(function() {
+            console.log('[Beehive DEBUG] After 200ms: _tick=' + _tick.current + ', bees=' + (_bees.current ? _bees.current.length : 'NULL') + ', _animId=' + _animId.current);
+          }, 200);
 
           return function() {
             _loopRunning.current = false;

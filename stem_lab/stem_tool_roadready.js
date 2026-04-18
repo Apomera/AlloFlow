@@ -3638,6 +3638,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           pollGamepad();
           if (!pausedRef.current) {
             timeRef.current += dt;
+            // Clamp safety/efficiency scores to [0, 100] each frame. Without this they
+            // can go arbitrarily negative — a player who racked up many violations would
+            // need to "earn back" from -150 before any visible improvement, hiding the
+            // benefit of subsequent good driving.
+            if (statsRef.current.safetyScore < 0) statsRef.current.safetyScore = 0;
+            if (statsRef.current.safetyScore > 100) statsRef.current.safetyScore = 100;
+            if (statsRef.current.efficiencyScore < 0) statsRef.current.efficiencyScore = 0;
+            if (statsRef.current.efficiencyScore > 100) statsRef.current.efficiencyScore = 100;
             updateSignals(signalsRef.current, dt);
             updatePhysics(dt);
             updateTraffic(dt);
@@ -4394,18 +4402,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           car._suspY = Math.sin(timeRef.current * suspFreq) * suspAmp + roadBump;
 
           // ─── RUMBLE STRIPS: detect off-road edge drift and provide audio + visual feedback ───
-          // Check if car is on the shoulder area (just off the painted edge line)
-          if (absSpeed > 5) { // only meaningful when moving
-            var currentCell = 2; // default grass
-            var shoulderX = Math.abs(car.x - Math.floor(MAP_SIZE / 2));
+          // Check if car is on the shoulder area (just off the painted edge line). Uses
+          // SPLINE-PERPENDICULAR distance from the road center — previously used distance
+          // from world center, which on bent roads was always >> shoulder threshold so the
+          // warning never fired. Now checks |perpOffset| against shoulder range (~3 cells).
+          if (absSpeed > 5) {
+            var currentCell = 2;
+            var splineForRumble = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var rumbleSplineCx = splineForRumble ? splineForRumble.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+            var rumbleSplineTheta = splineForRumble ? splineForRumble.headingAt(car.y) : 0;
+            var shoulderPerp = Math.abs((car.x - rumbleSplineCx) * Math.cos(rumbleSplineTheta));
             if (infiniteWorldRef.current) {
               currentCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
             } else if (mapRef.current && Math.floor(car.y) >= 0 && Math.floor(car.y) < MAP_SIZE && Math.floor(car.x) >= 0 && Math.floor(car.x) < MAP_SIZE) {
               currentCell = mapRef.current[Math.floor(car.y)][Math.floor(car.x)];
             }
-            // Detect edge drift: car is NEAR shoulder (within 1 cell of road edge on grass) or on grass moving fast
             var onGrass = currentCell === 2 || currentCell === 4;
-            var nearShoulder = currentCell === 0 && shoulderX >= 3.0 && shoulderX <= 3.5;
+            // "Near shoulder" = on the road BUT close to the painted edge line.
+            // Lane half-width is ~3.0; shoulder rumble band lives between 2.7 and 3.3.
+            var nearShoulder = currentCell === 0 && shoulderPerp >= 2.7 && shoulderPerp <= 3.3;
             if ((onGrass && absSpeed > 8) || nearShoulder) {
               // Rumble strip audio: low-frequency buzz that only plays while off-line
               try {
@@ -5084,14 +5099,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // and shifts its lane offset toward the right shoulder (outer edge).
             if (emergency && !emergency.responded) {
               var erel = aheadOf(emergency.x, emergency.y);
-              // Within 20 cells in any direction — react.
-              if (Math.abs(erel.ahead) < 20 && Math.abs(erel.lat) < 8) {
+              // Curve-safe "on the same road" check: both AI and emergency project onto
+              // the spline; their perpendicular offsets should be within ~road width.
+              var emRoadCheck = true;
+              if (!t.crossStreet) {
+                var emiwSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                if (emiwSp) {
+                  var emCenterAtAi = emiwSp.centerAt(t.y);
+                  var emThetaAtAi = emiwSp.headingAt(t.y);
+                  var emCenterAtEm = emiwSp.centerAt(emergency.y);
+                  var emThetaAtEm = emiwSp.headingAt(emergency.y);
+                  var aiPerpEm = (t.x - emCenterAtAi) * Math.cos(emThetaAtAi);
+                  var emPerpEm = (emergency.x - emCenterAtEm) * Math.cos(emThetaAtEm);
+                  emRoadCheck = Math.abs(aiPerpEm - emPerpEm) < 6; // within road width
+                } else {
+                  emRoadCheck = Math.abs(erel.lat) < 8;
+                }
+              } else {
+                emRoadCheck = Math.abs(erel.lat) < 8;
+              }
+              // Within 20 cells in any direction AND on the same road — react.
+              if (Math.abs(erel.ahead) < 20 && emRoadCheck) {
                 slowFor = Math.max(slowFor, 1);
                 // Shift toward the outer edge — direction-dependent.
                 if (!t.crossStreet && t.laneOffset !== undefined) {
-                  var pullOver = t.heading > 0 ? -2.4 : 2.4; // farther right than the default lane
-                  // Only shift if we have room and aren't blocked.
+                  var pullOver = t.heading > 0 ? -2.4 : 2.4;
                   t._emergencyPullOver = true;
+                  // Cancel any in-flight lane change so it doesn't overwrite the pullover.
+                  if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
+                    t._pendingLaneOffset = null;
+                    t._pendingLaneTimer = 0;
+                    t._blinkerCancelTimer = 0;
+                    t.blinker = 1; // right signal — pulling right
+                  }
                   // Gradual pull-over (not instant snap)
                   t.laneOffset += (pullOver - t.laneOffset) * Math.min(1, dt * 1.5);
                 }
@@ -5101,6 +5141,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t.laneOffset += (defaultOff - t.laneOffset) * Math.min(1, dt * 1.5);
                 if (Math.abs(t.laneOffset - defaultOff) < 0.1) t._emergencyPullOver = false;
               }
+            } else if (t._emergencyPullOver) {
+              // Emergency is null OR responded — still need to return AI cars to their
+              // default lane. Without this branch, AI stayed at pullOver-2.4 forever
+              // because the outer `if (emergency && !emergency.responded)` gate is false.
+              var defaultOffPost = t.heading > 0 ? -1.5 : 1.5;
+              t.laneOffset += (defaultOffPost - t.laneOffset) * Math.min(1, dt * 1.5);
+              if (Math.abs(t.laneOffset - defaultOffPost) < 0.1) t._emergencyPullOver = false;
             }
             // ── Defensive-driver awareness: erratic player expansion ──
             // If the player's safety score is dropping or their recent actions are chaotic,
@@ -5432,12 +5479,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // direction flag preserved by initial heading sign.
               var isSouthbound = Math.sin(t.heading) > 0; // sin(heading) > 0 ⇔ heading in (0, π)
               var targetHeading = isSouthbound ? (Math.PI / 2 - splineHeading) : (-Math.PI / 2 - splineHeading);
-              // Lerp heading smoothly — frame-rate independent, ~0.3s time constant.
-              // Handle angle wrap: shortest-angle delta in [−π, π].
+              // Lerp heading smoothly — tight 0.15s time constant so the car turns to
+              // match the spline tangent quickly. With slower lerp (0.3s) the heading
+              // lagged the spline by ~30° at peak curvature; forward motion then had a
+              // big perpendicular component that outran the lateral correction, drifting
+              // the car across the centerline. Tighter heading lerp keeps motion aligned
+              // with the spline so the lateral correction has less to fight.
               var dh = targetHeading - t.heading;
               while (dh > Math.PI) dh -= 2 * Math.PI;
               while (dh < -Math.PI) dh += 2 * Math.PI;
-              t.heading += dh * (1 - Math.exp(-dt / 0.3));
+              t.heading += dh * (1 - Math.exp(-dt / 0.15));
               // Forward motion in the car's current direction
               t.y += Math.sin(t.heading) * t.speed * dt / 5;
               t.x += Math.cos(t.heading) * t.speed * dt / 5;
@@ -5449,14 +5500,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               //   perpOffset = (t.x − splineCenter) · perp-right
               //              = (t.x − splineCenter) * cos θ
               // Desired perp offset = t.laneOffset. Correct by shifting along perp-right.
-              var perpX = Math.cos(splineHeading);
-              var perpY = -Math.sin(splineHeading);
-              var curPerpOffset = (t.x - splineCenter) * perpX;
-              var perpErr = curPerpOffset - t.laneOffset;
-              // Strong lerp — reach ~99% in ~0.2s time constant so cars stay in lane on sharp curves
-              var latCorrect = perpErr * (1 - Math.exp(-dt / 0.2));
-              t.x -= latCorrect * perpX;
-              t.y -= latCorrect * perpY;
+              // Lane positioning: laneOffset is interpreted as RAW X-offset from the spline
+              // center, matching how road geometry + lane paint are constructed (ribbon
+              // verts at worldCx ± roadHalfW, paint at worldCx + offset). With perpendicular
+              // offset the AI sat OUTSIDE the painted lane on curves; raw-X keeps them
+              // exactly on the painted lane. Heading still follows the spline tangent so
+              // the car FACES the correct direction; only the position uses raw-X.
+              var targetX = splineCenter + t.laneOffset;
+              var xErr = t.x - targetX;
+              // Aggressive lerp (0.12s time constant) so the X correction outruns the
+              // perpendicular drift introduced by spline-aligned forward motion on bends.
+              var xLerp = 1 - Math.exp(-dt / 0.12);
+              t.x -= xErr * xLerp;
             } else {
               // Cross-street: straight motion is fine (no spline curvature on cross streets).
               t.y += Math.sin(t.heading) * t.speed * dt / 5;
@@ -5478,9 +5533,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var respawnSpline = infiniteWorldRef.current.spline;
                 var respawnCenter = respawnSpline ? respawnSpline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
                 var respawnHeadingSp = respawnSpline ? respawnSpline.headingAt(t.y) : 0;
-                // Perpendicular-right to spline direction is (cos θ, −sin θ).
-                t.x = respawnCenter + t.laneOffset * Math.cos(respawnHeadingSp);
-                t.y = t.y - t.laneOffset * Math.sin(respawnHeadingSp);
+                // Raw X offset (matches lane paint geometry).
+                t.x = respawnCenter + t.laneOffset;
                 // Reset heading to match the new direction + local spline bend
                 var respIsSouth = t.heading > 0;
                 t.heading = respIsSouth ? (Math.PI / 2 - respawnHeadingSp) : (-Math.PI / 2 - respawnHeadingSp);
@@ -5490,6 +5544,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t._pendingLaneTimer = 0;
                 t._blinkerCancelTimer = 0;
                 t.blinker = 0;
+                // Reset bus stop-arm cycle on respawn so a stopped bus doesn't teleport
+                // with its arm still extended somewhere unexpected.
+                if (t.type === 'schoolbus') {
+                  t._busCycleTimer = 25 + Math.random() * 20;
+                  t._stopArmActive = false;
+                  t._busCompArmed = false;
+                  t._busCompLogged = null;
+                  t._childSpawned = false;
+                  t._childSpawnTimer = null;
+                }
                 var respSpeedLimit = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
                 t.speed = (respSpeedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
               }
@@ -5742,19 +5806,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Forward motion in current heading
             em.y += Math.sin(em.heading) * em.speed * dt / 5;
             em.x += Math.cos(em.heading) * em.speed * dt / 5;
-            // Lateral correction toward player's lane (use car's lane perp-offset)
+            // Lateral correction toward player's lane — raw-X (matches lane paint).
             if (em._laneOff === undefined) {
               var pCenterAtCar = emiSpline.centerAt(carRef.current.y);
-              var pThetaAtCar = emiSpline.headingAt(carRef.current.y);
-              em._laneOff = (carRef.current.x - pCenterAtCar) * Math.cos(pThetaAtCar);
+              em._laneOff = carRef.current.x - pCenterAtCar;
             }
-            var emiPerpX = Math.cos(emiTheta);
-            var emiPerpY = -Math.sin(emiTheta);
-            var emiCurPerp = (em.x - emiCenter) * emiPerpX;
-            var emiPerpErr = emiCurPerp - em._laneOff;
-            var emiCorr = emiPerpErr * (1 - Math.exp(-dt / 0.25));
-            em.x -= emiCorr * emiPerpX;
-            em.y -= emiCorr * emiPerpY;
+            var emiTargetX = emiCenter + em._laneOff;
+            var emiXErr = em.x - emiTargetX;
+            em.x -= emiXErr * (1 - Math.exp(-dt / 0.18));
           } else {
             em.y -= em.speed * dt / 5;
           }
@@ -5864,14 +5923,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
               cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
               cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
-              // Lateral correction: pull perpendicular offset toward bike-lane offset
-              var cyPerpX = Math.cos(cyTheta);
-              var cyPerpY = -Math.sin(cyTheta);
-              var cyCurrentPerp = (cy.x - cyCenter) * cyPerpX;
-              var cyPerpErr = cyCurrentPerp - cy._bikeLane;
-              var cyLatCorrect = cyPerpErr * (1 - Math.exp(-dt / 0.25));
-              cy.x -= cyLatCorrect * cyPerpX;
-              cy.y -= cyLatCorrect * cyPerpY;
+              // Lateral correction: track raw X offset (matches painted bike-lane position).
+              var cyTargetX = cyCenter + cy._bikeLane;
+              var cyXErr = cy.x - cyTargetX;
+              cy.x -= cyXErr * (1 - Math.exp(-dt / 0.18));
             } else {
               cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
               cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
@@ -6512,13 +6567,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var checkSignalCompliance = function() {
           var car = carRef.current;
+          // Helper: is the car on the same road as this signal? Curve-safe — instead of
+          // raw |car.x − s.x|, project onto the spline at the signal's Y. If the signal
+          // sits on the spline (within 3 cells of spline center) AND the car is within
+          // ±3.5 cells perpendicular, treat as "on this road."
+          var sigSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var carSplineCxAtCar = sigSpline ? sigSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+          var carSplineThetaAtCar = sigSpline ? sigSpline.headingAt(car.y) : 0;
+          var carPerpAtCar = (car.x - carSplineCxAtCar) * Math.cos(carSplineThetaAtCar);
+          var onSameRoadAsSignal = function(s) {
+            if (!sigSpline) return Math.abs(car.x - s.x) < 4;
+            var splineCxAtSig = sigSpline.centerAt(s.y);
+            var sigOffSpline = Math.abs(s.x - splineCxAtSig);
+            return sigOffSpline < 3 && Math.abs(carPerpAtCar) < 3.5;
+          };
           signalsRef.current.forEach(function(s) {
             if (s.type === 'light') {
               // ALWAYS track position relative to each signal (regardless of state)
               if (!s._lastY) s._lastY = car.y;
               var crossed = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-              // Only penalize if crossed while signal is RED
-              if (crossed && s.state === 'red' && Math.abs(car.x - s.x) < 4 && Math.abs(car.speed) > 2) {
+              // Only penalize if crossed while signal is RED. Curve-safe road check.
+              if (crossed && s.state === 'red' && onSameRoadAsSignal(s) && Math.abs(car.speed) > 2) {
                 statsRef.current.safetyScore -= 25;
                 statsRef.current.crashes++;
                 addToast('🚨 RED LIGHT VIOLATION! -25 safety');
@@ -6534,12 +6603,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 eventToastRef.current = { msg: '✓ Good stop at the stop sign.', until: timeRef.current + 2 };
               }
               if (Math.hypot(car.x - s.x, car.y - s.y) > 6) s._stopped = false;
-              // Rolling stop detection: only if approaching the sign from ahead (within 2.5 units X) and moving
+              // Rolling stop detection — curve-safe. Use perpendicular distance like the
+              // red-light check, but tighter (±2.5 cells perp) and require approach speed.
               if (!s._lastY) s._lastY = car.y;
               if (!s._violated) {
                 var crossedStop = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-                // Narrower X check (2.5 units = ~25 feet) + speed check + approach direction
-                if (crossedStop && Math.abs(car.x - s.x) < 2.5 && Math.abs(car.speed) > 3 && !s._stopped) {
+                if (crossedStop && onSameRoadAsSignal(s) && Math.abs(car.speed) > 3 && !s._stopped) {
                   s._violated = true;
                   statsRef.current.safetyScore -= 20;
                   addToast('🚨 ROLLING STOP! -20 safety');
@@ -6642,13 +6711,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Physical collision with traffic vehicles ──
           var nearest = null;
           var nearestDist = Infinity;
+          // Spline lookup once per check (used to filter same-lane candidates)
+          var fnSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var fnCarCx = fnSpline ? fnSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+          var fnCarTheta = fnSpline ? fnSpline.headingAt(car.y) : 0;
+          var fnCarPerp = (car.x - fnCarCx) * Math.cos(fnCarTheta);
           trafficRef.current.forEach(function(t) {
             var dx = t.x - car.x;
             var dy = t.y - car.y;
             var dist = Math.hypot(dx, dy);
-            // Track nearest ahead for following distance
+            // Track nearest SAME-LANE SAME-DIRECTION car ahead for following distance.
+            // Previous version picked the closest ahead regardless of lane — an oncoming
+            // car at 5m would mask a same-lane car at 10m, suppressing the warning.
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
-            if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
+            if (dot > 0 && dist < nearestDist) {
+              var sameDirAhead = (t.heading > 0) === (car.heading > 0);
+              if (!sameDirAhead) return;
+              if (fnSpline) {
+                var fnTheta = fnSpline.headingAt(t.y);
+                var fnCenter = fnSpline.centerAt(t.y);
+                var fnTPerp = (t.x - fnCenter) * Math.cos(fnTheta);
+                if (Math.abs(fnTPerp - fnCarPerp) > 1.0) return;
+              } else if (Math.abs(t.x - car.x) > 1.5) {
+                return;
+              }
+              nearestDist = dist;
+              nearest = t;
+            }
             // Physical collision: hit radius ~1.2 world units
             // Collision: require meaningful relative speed difference (not just being near a car going the same speed).
             // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
@@ -6683,19 +6772,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
           });
-          // Following distance check (for scoring, not collision)
+          // Following distance check (for scoring, not collision). Same-lane check is
+          // curve-safe: compare spline-perpendicular offsets, not raw X.
           if (nearest && absSpeed > 5) {
             var safeFeet = safeFollowingFeet(absSpeed * MS_TO_MPH, currentScenario.weather);
             var actualFeet = nearestDist * 10;
-            // Only count cars in the same lane (within 1.5 units of car.x) and debounce
-            if (actualFeet < safeFeet * 0.5 && Math.abs(nearest.x - car.x) < 1.5) {
+            var fSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var sameLaneAsNearest;
+            if (fSpline) {
+              var fThetaNear = fSpline.headingAt(nearest.y);
+              var fCenterNear = fSpline.centerAt(nearest.y);
+              var fThetaCar = fSpline.headingAt(car.y);
+              var fCenterCar = fSpline.centerAt(car.y);
+              var nearestPerp = (nearest.x - fCenterNear) * Math.cos(fThetaNear);
+              var carPerpFollow = (car.x - fCenterCar) * Math.cos(fThetaCar);
+              sameLaneAsNearest = Math.abs(nearestPerp - carPerpFollow) < 1.0
+                && (nearest.heading > 0) === (car.heading > 0); // same direction only
+            } else {
+              sameLaneAsNearest = Math.abs(nearest.x - car.x) < 1.5;
+            }
+            if (actualFeet < safeFeet * 0.5 && sameLaneAsNearest) {
               if (!nearest._closeFollowFlagged) {
                 nearest._closeFollowFlagged = true;
                 statsRef.current.closeFollows++;
               }
               statsRef.current.safetyScore -= 0.1;
             } else if (nearest._closeFollowFlagged && actualFeet > safeFeet * 0.7) {
-              nearest._closeFollowFlagged = false; // reset when distance is restored
+              nearest._closeFollowFlagged = false;
             }
           }
           // ── Physical collision with pedestrians ──
@@ -7971,9 +8074,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var mirR = new T.Mesh(mirGeo, mirMat);
           mirR.position.set(0.25, 0.85, -0.52);
           playerCarGroup.add(mirR);
-          // Wheels
+          // Wheels — lifted by 0.04 to prevent Z-fighting with the road surface mesh
+          // (player car group is positioned AT road height, so wheel bottom would otherwise
+          // sit exactly on the road and flicker as "sinking in").
           var wheelMat = new T.MeshLambertMaterial({ color: 0x111111 });
-          [[-0.55, 0.2, 0.5], [-0.55, 0.2, -0.5], [0.55, 0.2, 0.5], [0.55, 0.2, -0.5]].forEach(function(pos) {
+          [[-0.55, 0.24, 0.5], [-0.55, 0.24, -0.5], [0.55, 0.24, 0.5], [0.55, 0.24, -0.5]].forEach(function(pos) {
             var wGeo = new T.CylinderGeometry(0.2, 0.2, 0.15, 12);
             var wMesh = new T.Mesh(wGeo, wheelMat);
             wMesh.rotation.x = Math.PI / 2;
@@ -8604,6 +8709,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             });
           }
+          // Player wheel rotation — accumulate Δangle = speed * dt / radius. Player wheels
+          // are CylinderGeometry rotated x = π/2; their position.y matches local 0.24 (lifted).
+          // Without this, the player's wheels stayed perfectly still even at 70 mph.
+          if (s3.playerCarGroup) {
+            if (s3._playerWheelAngle === undefined) s3._playerWheelAngle = 0;
+            s3._playerWheelAngle += Math.abs(car.speed) * dt / 0.20; // 0.20 = player wheel radius
+            s3.playerCarGroup.children.forEach(function(child) {
+              if (child.geometry && child.geometry.type === 'CylinderGeometry'
+                  && Math.abs(child.rotation.x - Math.PI / 2) < 0.1
+                  && child.position.y < 0.5) { // wheels are low; skip other cylinders
+                child.rotation.y = s3._playerWheelAngle;
+              }
+            });
+          }
 
           // High beam toggle + headlight direction tracking
           if (s3.headlightL && s3.headlightR) {
@@ -8863,30 +8982,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var wMat = new T.MeshLambertMaterial({ color: 0x0c0c0c });
               var wR = isBus ? 0.32 : isTruck ? 0.27 : isVan ? 0.25 : isSUV ? 0.23 : 0.20;
               var wWidth = isBus ? 0.18 : isTruck ? 0.17 : isVan ? 0.15 : isSUV ? 0.14 : 0.13;
-              // Position wheel center just inside the body edge so the outer half pokes
-              // out clearly (body is 0.85 wide → halfwidth 0.425, wheel center at 0.40).
               var wZOff = 0.40;
-              // X positions: front + rear axle, pushed in from each end by a tire-width margin
               var wXAxle = bLen * 0.30;
-              // Silver hub cap — makes the tire read as a wheel, not a solid cylinder
+              // ── Wheel Y lift to prevent Z-fighting with road surface ──
+              // The car group is positioned at y = tRoadH (road height under car). With
+              // wheel center at local y = wR, the wheel BOTTOM lands at world y = tRoadH
+              // exactly, identical to the road mesh. Z-fighting causes the wheel to flicker
+              // and look like it's "sinking into the road." Lift wheel center by 0.04m so
+              // wheel-bottom sits ~4cm above road surface — visually grounded but no fight.
+              var wLift = 0.04;
               var hubMat = new T.MeshLambertMaterial({ color: 0x909096 });
-              [[-wXAxle, wR, wZOff], [-wXAxle, wR, -wZOff], [wXAxle, wR, wZOff], [wXAxle, wR, -wZOff]].forEach(function(wp) {
+              [[-wXAxle, wR + wLift, wZOff], [-wXAxle, wR + wLift, -wZOff], [wXAxle, wR + wLift, wZOff], [wXAxle, wR + wLift, -wZOff]].forEach(function(wp) {
                 var wGeo = new T.CylinderGeometry(wR, wR, wWidth, 14);
                 var wheel = new T.Mesh(wGeo, wMat);
                 wheel.rotation.x = Math.PI / 2;
                 wheel.position.set(wp[0], wp[1], wp[2]);
                 cg.add(wheel);
-                // Hub cap — smaller disc with slightly wider Z so it reads outboard
                 var hubGeo = new T.CylinderGeometry(wR * 0.55, wR * 0.55, wWidth + 0.004, 12);
                 var hub = new T.Mesh(hubGeo, hubMat);
                 hub.rotation.x = Math.PI / 2;
                 hub.position.set(wp[0], wp[1], wp[2]);
                 cg.add(hub);
               });
-              // Black wheel-well shading — a dark rectangle beneath each wheel so the wheel
-              // always contrasts against the body even in bright sun / fog.
-              var wellMat = new T.MeshBasicMaterial({ color: 0x050505 });
-              [[-wXAxle, 0.01, 0.40], [wXAxle, 0.01, 0.40], [-wXAxle, 0.01, -0.40], [wXAxle, 0.01, -0.40]].forEach(function(shp) {
+              // Tire shadow patch — also lifted off the road slightly to avoid Z-fighting
+              // with painted road markings (which sit at +0.012–0.016 above the asphalt).
+              var wellMat = new T.MeshBasicMaterial({ color: 0x050505, transparent: true, opacity: 0.55, depthWrite: false });
+              [[-wXAxle, 0.025, 0.40], [wXAxle, 0.025, 0.40], [-wXAxle, 0.025, -0.40], [wXAxle, 0.025, -0.40]].forEach(function(shp) {
                 var well = new T.Mesh(new T.PlaneGeometry(wR * 2.2, wWidth * 1.6), wellMat);
                 well.rotation.x = -Math.PI / 2;
                 well.position.set(shp[0], shp[1], shp[2]);
@@ -8962,7 +9083,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             m.rotation.y = -t.heading;
             // ── Wheel spin + proper brake + turn signal animation ──
             if (m.children) {
-              var tWheelAngle = timeRef.current * Math.abs(t.speed) * 2;
+              // Wheel rotation: accumulate Δangle each frame (speed * dt / radius). Previous
+              // formula was `timeRef * speed * 2` which (a) snapped the rotation each time
+              // speed changed and (b) used too-low an angular rate. Now physically correct
+              // — wheel circumference 2πr at speed v traverses ω = v/r rad/s.
+              if (t._wheelSpinAngle === undefined) t._wheelSpinAngle = 0;
+              // Use 0.22 as a representative wheel radius (matches the per-type wR range).
+              t._wheelSpinAngle += Math.abs(t.speed) * dt / 0.22;
+              var tWheelAngle = t._wheelSpinAngle;
               var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
               // Braking: bright red if actively slowing or told to slow/stop. The _slowFor
               // field is set by updateTraffic based on signals, cars ahead, and player state.
@@ -9307,9 +9435,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cab.position.set(-bodyLen * 0.1, bodyH + 0.35, 0);
               eGrp.add(cab);
             }
-            // Wheels (4)
+            // Wheels (4) — lifted by 0.04 to prevent Z-fighting with road surface
             var ewMat = new T.MeshLambertMaterial({ color: 0x111111 });
-            [[-bodyLen * 0.3, 0.2, 0.52], [-bodyLen * 0.3, 0.2, -0.52], [bodyLen * 0.3, 0.2, 0.52], [bodyLen * 0.3, 0.2, -0.52]].forEach(function(wp) {
+            [[-bodyLen * 0.3, 0.24, 0.52], [-bodyLen * 0.3, 0.24, -0.52], [bodyLen * 0.3, 0.24, 0.52], [bodyLen * 0.3, 0.24, -0.52]].forEach(function(wp) {
               var ewGeo = new T.CylinderGeometry(0.2, 0.2, 0.12, 10);
               var ew = new T.Mesh(ewGeo, ewMat);
               ew.rotation.x = Math.PI / 2;
@@ -10253,12 +10381,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var pcWinBack = new T.Mesh(new T.BoxGeometry(0.1, 0.35, 0.5), pcWinMat);
                     pcWinBack.position.set(parkedCarX - 0.35, 1.05, ambZ);
                     chunkGroup.add(pcWinBack);
-                    // Wheels (4 small black cylinders)
+                    // Wheels (4 small black cylinders) — lifted to avoid Z-fighting with road
                     var wheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
                     [[-0.55, -0.35], [0.55, -0.35], [-0.55, 0.35], [0.55, 0.35]].forEach(function(wp) {
                       var wheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), wheelMat);
                       wheel.rotation.x = Math.PI / 2;
-                      wheel.position.set(parkedCarX + wp[0], 0.18, ambZ + wp[1]);
+                      wheel.position.set(parkedCarX + wp[0], 0.22, ambZ + wp[1]);
                       chunkGroup.add(wheel);
                     });
                     // Headlights (facing outward so visible at night/dawn)
