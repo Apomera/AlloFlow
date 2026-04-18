@@ -264,10 +264,125 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_upstander.js'
 ];
 
+// ── Source → Module compilation ─────────────────────────────────
+// Each pair below describes a *_source.jsx ↔ *_module.js mapping. The compiler
+// reads source, wraps it in the module's specific IIFE + registration, writes
+// the module file (+ copies to prismflow-deploy/public), and syntax-checks it.
+//
+// Currently implemented for doc_pipeline only (source has no JSX — a simple
+// cat+wrap). JSX-bearing modules (games, teacher, etc.) need Babel and will
+// be added in a follow-up pass.
+//
+// Runs automatically at the start of `--mode=prod` so the dirty-tree guard
+// below will catch any compilation-produced changes that weren't committed.
+// Run `node build.js --compile` standalone to just do the compile step.
+const COMPILE_PAIRS = [
+    {
+        name: 'DocPipeline',
+        srcPath: path.join(ROOT, 'doc_pipeline_source.jsx'),
+        modPath: path.join(ROOT, 'doc_pipeline_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'doc_pipeline_module.js'),
+        wrap(src) {
+            // Idempotency guard + IIFE. Source.jsx already contains its own
+            // window.AlloModules registration, so the footer only needs to close
+            // the IIFE. Matches the hand-compiled output users have been producing.
+            // Match the bash one-liner output byte-for-byte so recompiling an
+            // already-compiled module produces no diff. Source.jsx typically
+            // ends with its own trailing newline; we just append the footer.
+            const trailingNewline = src.endsWith('\n') ? '' : '\n';
+            return (
+                '(function(){"use strict";\n'
+                + 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}\n'
+                + src + trailingNewline
+                + '\n'
+                + 'window.AlloModules = window.AlloModules || {};\n'
+                + 'window.AlloModules.createDocPipeline = createDocPipeline;\n'
+                + 'window.AlloModules.DocPipelineModule = true;\n'
+                + "console.log('[DocPipelineModule] Pipeline factory registered');\n"
+                + '})();\n'
+            );
+        },
+    },
+];
+
+function compileSources() {
+    const results = [];
+    for (const pair of COMPILE_PAIRS) {
+        if (!fs.existsSync(pair.srcPath)) {
+            results.push({ name: pair.name, status: 'skipped', reason: 'source not found' });
+            continue;
+        }
+        const src = fs.readFileSync(pair.srcPath, 'utf-8');
+        let compiled;
+        try {
+            compiled = pair.wrap(src);
+        } catch (e) {
+            results.push({ name: pair.name, status: 'error', reason: 'wrap failed: ' + e.message });
+            continue;
+        }
+        const existing = fs.existsSync(pair.modPath) ? fs.readFileSync(pair.modPath, 'utf-8') : null;
+        // Match existing file's line endings so recompiling an unchanged source
+        // produces no diff (on Windows, committed files typically use CRLF).
+        const useCRLF = existing && existing.includes('\r\n');
+        const finalOutput = useCRLF ? compiled.replace(/(?<!\r)\n/g, '\r\n') : compiled;
+        const changed = existing !== finalOutput;
+        if (changed) {
+            fs.writeFileSync(pair.modPath, finalOutput, 'utf-8');
+            if (pair.publicPath) {
+                try {
+                    if (!fs.existsSync(path.dirname(pair.publicPath))) {
+                        fs.mkdirSync(path.dirname(pair.publicPath), { recursive: true });
+                    }
+                    fs.writeFileSync(pair.publicPath, finalOutput, 'utf-8');
+                } catch (e) { /* public copy is best-effort */ }
+            }
+        }
+        // Syntax-check the output so we fail loudly on any regression.
+        try {
+            execSync('node -c "' + pair.modPath + '"', { stdio: 'pipe' });
+        } catch (e) {
+            results.push({ name: pair.name, status: 'syntax-error', reason: (e.stderr && e.stderr.toString()) || e.message });
+            continue;
+        }
+        results.push({ name: pair.name, status: changed ? 'compiled' : 'unchanged', bytes: compiled.length });
+    }
+    return results;
+}
+
+// Standalone compile mode — run just the compilation step and exit.
+if (args.includes('--compile')) {
+    console.log('── Compiling source modules ──');
+    const results = compileSources();
+    let hadError = false;
+    for (const r of results) {
+        const icon = r.status === 'compiled' ? '🔧' : r.status === 'unchanged' ? '✓' : r.status === 'skipped' ? '↩️' : '❌';
+        console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}${r.bytes ? ' (' + r.bytes + ' bytes)' : ''}`);
+        if (r.status === 'error' || r.status === 'syntax-error') hadError = true;
+    }
+    process.exit(hadError ? 1 : 0);
+}
+
 // ── Read source ─────────────────────────────────────────────────
 if (!fs.existsSync(SOURCE)) {
     console.error(`❌ Source file not found: ${SOURCE}`);
     process.exit(1);
+}
+
+// Run compilation automatically in prod mode. Any compilation-produced changes
+// will be caught by the dirty-tree guard further down, forcing the user to
+// commit them before the CDN can pick them up.
+if (mode === 'prod') {
+    console.log('── Compiling source modules ──');
+    const compileResults = compileSources();
+    for (const r of compileResults) {
+        const icon = r.status === 'compiled' ? '🔧' : r.status === 'unchanged' ? '✓' : r.status === 'skipped' ? '↩️' : '❌';
+        console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}`);
+    }
+    if (compileResults.some(r => r.status === 'error' || r.status === 'syntax-error')) {
+        console.error('❌ Compilation failed. Aborting build.');
+        process.exit(1);
+    }
+    console.log('');
 }
 
 let content = fs.readFileSync(SOURCE, 'utf-8');
