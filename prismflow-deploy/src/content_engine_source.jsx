@@ -543,9 +543,52 @@ var createContentEngine = function(deps) {
                if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
            }
            if (effIncludeCitations && allGroundingChunks.length > 0) {
-                const masterMetadata = { groundingChunks: allGroundingChunks };
+                // Strip hallucinated citations whose index is outside the collected chunks.
+                // These happen when a later section's Gemini emits a higher N than that
+                // section's chunk count — the offset then pushes it past the end of
+                // allGroundingChunks. Three passes to avoid a greedy over-match:
+                //   1. well-formed links  [⁽N⁾](url)  with a closing ).
+                //   2. truncated links    [⁽N⁾](url-cut-off  at end of line (no closing ).
+                //   3. bare citations     ⁽N⁾  that aren't part of a link.
+                var _maxIdx = allGroundingChunks.length;
+                var _superMap = {'\u2070':0,'\u00b9':1,'\u00b2':2,'\u00b3':3,'\u2074':4,'\u2075':5,'\u2076':6,'\u2077':7,'\u2078':8,'\u2079':9};
+                var _decodeSup = function(s) { var n = 0; for (var i = 0; i < s.length; i++) { n = n * 10 + (_superMap[s[i]] || 0); } return n; };
+                var _keepInRange = function(match, digits) {
+                    var n = _decodeSup(digits);
+                    return (n >= 1 && n <= _maxIdx) ? match : '';
+                };
+                // Pass 1: well-formed [⁽N⁾](url)
+                fullDocument = fullDocument.replace(
+                    /\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*\)/g,
+                    _keepInRange
+                );
+                // Pass 2: truncated [⁽N⁾](url-without-close) at end of line
+                fullDocument = fullDocument.replace(
+                    /\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*$/gm,
+                    _keepInRange
+                );
+                // Pass 3: bare ⁽N⁾ not followed by ]( (i.e., not inside a surviving link)
+                fullDocument = fullDocument.replace(
+                    /\u207d([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e(?!\])/g,
+                    _keepInRange
+                );
+
+                // Renumber body citations 1..N in order of first appearance and get
+                // chunks reordered to match that sequence. This aligns body numbers
+                // with bibliography numbers — they'll both run 1..N in the same order.
+                var _renum = renumberCitations(fullDocument, allGroundingChunks);
+                fullDocument = _renum.renumberedText;
+
+                // Restore any URLs Gemini corrupted (truncation at end of section,
+                // space injection at dots like "webmd. com", dropped https://) using
+                // the canonical URIs from the reordered chunks. Deterministic because
+                // after renumber, citation N is exactly reorderedChunks[N-1].
+                fullDocument = restoreCanonicalCitationUrls(fullDocument, _renum.reorderedChunks);
+
+                // Generate bibliography from reordered chunks so its numbers match body.
+                var masterMetadata = { groundingChunks: _renum.reorderedChunks };
                 fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
-                fullDocument = validateAndRepairCitations(fullDocument, allGroundingChunks);
+                fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
            }
            if (effIncludeCitations) {
                 const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
