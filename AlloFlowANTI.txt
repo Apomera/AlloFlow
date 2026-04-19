@@ -32818,8 +32818,24 @@ Return ONLY a JSON array like:
         textToAnalyze = textToAnalyze.replace(/\[\d+\]/g, '');
         textToAnalyze = textToAnalyze.replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, '');
         textToAnalyze = textToAnalyze.replace(/https?:\/\/[^\s]+/g, '');
-        const chunks = chunkText(textToAnalyze, 1500);
+        // Guard: empty / whitespace-only input would make every Gemini call error
+        // out, which the old code surfaced as "Failed to analyze grammar." with
+        // no actionable info. Bail early with a clearer toast instead.
+        if (!textToAnalyze.trim()) {
+            warnLog('handleAnalyzePOS: empty text after stripping links/URLs/citations.');
+            addToast(t('process.grammar_failed') || 'Nothing to analyze — simplified text was empty after stripping links/citations.', 'error');
+            setIsAnalyzingPos(false);
+            return;
+        }
+        const chunks = chunkText(textToAnalyze, 1500).filter(c => c && c.trim().length > 0);
+        if (chunks.length === 0) {
+            warnLog('handleAnalyzePOS: chunkText returned no non-empty chunks.');
+            addToast(t('process.grammar_failed') || 'Nothing to analyze.', 'error');
+            setIsAnalyzingPos(false);
+            return;
+        }
         const taggedChunks = [];
+        let failedChunks = 0;
         for (const chunk of chunks) {
              const prompt = `
                 Analyze the grammatical parts of speech in the following text.
@@ -32842,7 +32858,37 @@ Return ONLY a JSON array like:
                 Text:
                 "${chunk}"
             `;
-            taggedChunks.push(await callGemini(prompt));
+            // Per-chunk try/catch — a single failed chunk (SAFETY block,
+            // RECITATION, transient 429 after the fallback, etc.) used to
+            // abort the entire analysis and strand the user with a generic
+            // "Failed to analyze grammar." error. Now we fall back to the
+            // untagged raw chunk so the immersive reader can still open with
+            // partial tagging instead of nothing.
+            try {
+                const tagged = await callGemini(prompt);
+                // Empty response → fall back to raw chunk too.
+                if (tagged && typeof tagged === 'string' && tagged.trim().length > 0) {
+                    taggedChunks.push(tagged);
+                } else {
+                    warnLog('handleAnalyzePOS: Gemini returned empty for chunk; using raw fallback.');
+                    taggedChunks.push(chunk);
+                    failedChunks++;
+                }
+            } catch (chunkErr) {
+                warnLog('handleAnalyzePOS: chunk failed — using raw fallback. ', chunkErr && chunkErr.message);
+                taggedChunks.push(chunk);
+                failedChunks++;
+            }
+        }
+        // If EVERY chunk failed, there's nothing useful to show — tell the
+        // user instead of opening an untagged reader. Partial failure still
+        // opens the reader but we warn via toast.
+        if (failedChunks === chunks.length) {
+            warnLog('handleAnalyzePOS: every chunk failed.');
+            setError(t('process.grammar_error'));
+            addToast(t('process.grammar_failed'), 'error');
+            setIsAnalyzingPos(false);
+            return;
         }
         const fullTaggedText = taggedChunks.join('');
         const parsedData = parseTaggedContent(fullTaggedText);
@@ -32850,11 +32896,15 @@ Return ONLY a JSON array like:
         setGeneratedContent(updatedContent);
         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
         setIsImmersiveReaderActive(true);
-        addToast(t('process.grammar_complete'), "success");
+        if (failedChunks > 0) {
+            addToast('Immersive reader opened — ' + failedChunks + ' of ' + chunks.length + ' sections could not be tagged (using raw text).', 'info');
+        } else {
+            addToast(t('process.grammar_complete'), 'success');
+        }
     } catch (e) {
-        warnLog("Unhandled error:", e);
+        warnLog('Unhandled error:', e);
         setError(t('process.grammar_error'));
-        addToast(t('process.grammar_failed'), "error");
+        addToast(t('process.grammar_failed'), 'error');
     } finally {
         setIsAnalyzingPos(false);
     }
