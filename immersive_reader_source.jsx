@@ -652,10 +652,216 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
+// ============================================================================
+// KaraokeReaderOverlay — word-by-word sing-along reader
+// Text is laid out in normal paragraphs at a comfortable reading size. One
+// word at a time is highlighted, view auto-scrolls to keep it centered. With
+// "Speak" on, a speech-synthesis utterance drives the highlight via onboundary
+// events so the visual and audio stay perfectly in sync.
+// ============================================================================
+const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+    const { t } = useContext(LanguageContext);
+    const [words, setWords] = useState([]); // [{text, start, end, paraIdx}]
+    const [paragraphs, setParagraphs] = useState([]); // [[wordIdx...], ...]
+    const [currentIdx, setCurrentIdx] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [wpm, setWpm] = useState(220);
+    const [useTts, setUseTts] = useState(true);
+    const [theme, setTheme] = useState('warm');
+    const themes = {
+        warm: { bg: '#fdfbf7', ink: '#111827', dim: '#94a3b8', accent: '#fde68a', accentInk: '#78350f' },
+        dark: { bg: '#0f172a', ink: '#f1f5f9', dim: '#64748b', accent: '#a855f7', accentInk: '#fff' },
+        sepia: { bg: '#f4ecd8', ink: '#3b2a1a', dim: '#a08968', accent: '#f97316', accentInk: '#fff' }
+    };
+    const c = themes[theme] || themes.warm;
+    const wordRefs = useRef([]);
+    const viewportRef = useRef(null);
+    const intervalRef = useRef(null);
+    const ttsAvailable = typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+
+    // Parse text once (on mount / text change)
+    useEffect(() => {
+        if (!text) { setWords([]); setParagraphs([]); return; }
+        const cleaned = String(text || '').replace(/<[^>]*>/g, '');
+        const paras = cleaned.split(/\n{2,}/).map(p => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
+        const flat = [];
+        const paraMap = [];
+        let charCursor = 0;
+        paras.forEach((para, pIdx) => {
+            const wordsInPara = para.split(' ').filter(Boolean);
+            const indicesInPara = [];
+            wordsInPara.forEach(w => {
+                flat.push({ text: w, paraIdx: pIdx, start: charCursor, end: charCursor + w.length });
+                indicesInPara.push(flat.length - 1);
+                charCursor += w.length + 1; // +1 for space
+            });
+            paraMap.push(indicesInPara);
+            charCursor += 1; // paragraph break
+        });
+        setWords(flat);
+        setParagraphs(paraMap);
+        setCurrentIdx(0);
+        wordRefs.current = new Array(flat.length).fill(null);
+    }, [text]);
+
+    // Auto-scroll current word into view
+    useEffect(() => {
+        const node = wordRefs.current[currentIdx];
+        if (node && viewportRef.current) {
+            try {
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { /* older browsers */ }
+        }
+    }, [currentIdx]);
+
+    // Pure timer-based advancement (non-TTS mode)
+    useEffect(() => {
+        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+        if (!isPlaying || useTts) return;
+        const delay = 60000 / Math.max(30, wpm);
+        intervalRef.current = setInterval(() => {
+            setCurrentIdx(prev => {
+                if (prev >= words.length - 1) { setIsPlaying(false); return prev; }
+                return prev + 1;
+            });
+        }, delay);
+        return () => { if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; } };
+    }, [isPlaying, useTts, wpm, words.length]);
+
+    // TTS-driven advancement (speech onboundary event maps char offset → word index)
+    useEffect(() => {
+        if (!isPlaying || !useTts || !ttsAvailable || words.length === 0) return;
+        try {
+            window.speechSynthesis.cancel();
+            // Start speaking from the current word onward
+            const startingWord = words[currentIdx];
+            if (!startingWord) return;
+            const offsetShift = startingWord.start;
+            const plain = words.map(w => w.text).join(' ');
+            const remaining = plain.slice(offsetShift);
+            const u = new SpeechSynthesisUtterance(remaining);
+            u.rate = Math.max(0.5, Math.min(2.0, wpm / 200));
+            u.pitch = 1.0; u.volume = 0.95;
+            u.onboundary = (ev) => {
+                if (ev.name !== 'word') return;
+                const absCharIdx = offsetShift + ev.charIndex;
+                // Find the word whose [start, end] bracket absCharIdx
+                for (let i = 0; i < words.length; i++) {
+                    if (absCharIdx >= words[i].start && absCharIdx < words[i].end + 1) {
+                        setCurrentIdx(i);
+                        return;
+                    }
+                }
+            };
+            u.onend = () => { setIsPlaying(false); };
+            u.onerror = () => { setIsPlaying(false); };
+            window.speechSynthesis.speak(u);
+        } catch (e) { setIsPlaying(false); }
+        return () => { try { window.speechSynthesis.cancel(); } catch (e) {} };
+    }, [isPlaying, useTts, ttsAvailable, words, wpm]);
+
+    // Keyboard
+    useEffect(() => {
+        if (!isOpen) return;
+        const handler = (e) => {
+            if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
+            else if (e.code === 'ArrowLeft') setCurrentIdx(p => Math.max(0, p - 1));
+            else if (e.code === 'ArrowRight') setCurrentIdx(p => Math.min(words.length - 1, p + 1));
+            else if (e.code === 'Home') setCurrentIdx(0);
+            else if (e.code === 'End') setCurrentIdx(Math.max(0, words.length - 1));
+            else if (e.key === 'Escape') { try { window.speechSynthesis.cancel(); } catch (ee) {} onClose(); }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [isOpen, onClose, words.length]);
+
+    if (!isOpen) return null;
+    const progressPct = words.length > 0 ? ((currentIdx + 1) / words.length) * 100 : 0;
+
+    return (
+        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
+            <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => { try { window.speechSynthesis.cancel(); } catch (e) {} onClose(); }} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                        <ArrowLeft size={22} />
+                    </button>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-base">{t('immersive.karaoke_reader') || 'Karaoke Reader'}</span>
+                        <span className="text-xs" style={{ color: c.dim }}>Word {currentIdx + 1} / {words.length} · {useTts ? 'audio-synced' : 'timed'}</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
+                    {ttsAvailable && (
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={useTts} onChange={e => { setIsPlaying(false); setUseTts(e.target.checked); }} aria-label="Use speech synthesis" />
+                            <span>🔊 Speak along</span>
+                        </label>
+                    )}
+                    <label className="flex items-center gap-2">
+                        <span style={{ color: c.dim }}>PACE</span>
+                        <input aria-label="Reading pace" type="range" min="90" max="400" step="10" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-24" />
+                        <span className="font-mono w-16 text-right">{wpm} wpm</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                        <span style={{ color: c.dim }}>THEME</span>
+                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.dim + '88', background: 'transparent', color: c.ink }}>
+                            <option value="warm">☀️ Warm</option>
+                            <option value="dark">🌙 Dark</option>
+                            <option value="sepia">📜 Sepia</option>
+                        </select>
+                    </label>
+                    <button onClick={() => setIsPlaying(p => !p)} className="px-3 py-1.5 rounded-full" style={{ background: c.accent, color: c.accentInk }} aria-label={isPlaying ? 'Pause' : 'Play'}>
+                        {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
+                    <button onClick={() => { try { window.speechSynthesis.cancel(); } catch (e) {} setCurrentIdx(0); setIsPlaying(false); }} className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label="Restart from first word">↺ Restart</button>
+                </div>
+            </div>
+            <div ref={viewportRef} className="flex-1 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: 'smooth' }}>
+                <div className="max-w-3xl mx-auto" style={{ fontSize: 'clamp(1.25rem, 2vw, 1.75rem)', lineHeight: 1.75, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
+                    {paragraphs.map((wordIndices, pIdx) => (
+                        <p key={pIdx} style={{ marginBottom: '1.5em' }}>
+                            {wordIndices.map((wi, i) => {
+                                const w = words[wi];
+                                if (!w) return null;
+                                const isCurrent = wi === currentIdx;
+                                const isPast = wi < currentIdx;
+                                return (
+                                    <React.Fragment key={wi}>
+                                        <span
+                                            ref={el => { wordRefs.current[wi] = el; }}
+                                            onClick={() => { setCurrentIdx(wi); if (isPlaying && useTts) { setIsPlaying(false); setTimeout(() => setIsPlaying(true), 30); } }}
+                                            style={{
+                                                backgroundColor: isCurrent ? c.accent : 'transparent',
+                                                color: isCurrent ? c.accentInk : (isPast ? c.dim : c.ink),
+                                                padding: isCurrent ? '0.05em 0.2em' : 0,
+                                                borderRadius: 4,
+                                                transition: 'background-color 0.15s, color 0.15s',
+                                                cursor: 'pointer'
+                                            }}
+                                        >{w.text}</span>
+                                        {i < wordIndices.length - 1 ? ' ' : ''}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </p>
+                    ))}
+                </div>
+            </div>
+            <div className="h-2 w-full" style={{ background: c.dim + '33' }}>
+                <div className="h-full transition-all duration-200" style={{ width: `${progressPct}%`, backgroundColor: c.accent }} />
+            </div>
+            <div className="px-4 py-2 text-center text-xs" style={{ color: c.dim }}>
+                Space play/pause · ← → step word · Home/End jump · click any word to set position · Esc closes
+            </div>
+        </div>
+    );
+});
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.SpeedReaderOverlay = SpeedReaderOverlay;
 window.AlloModules.BionicChunkReader = BionicChunkReader;
 window.AlloModules.PerspectiveCrawlOverlay = PerspectiveCrawlOverlay;
+window.AlloModules.KaraokeReaderOverlay = KaraokeReaderOverlay;
 window.AlloModules.ImmersiveToolbar = ImmersiveToolbar;
 window.AlloModules.ImmersiveReaderModule = true;
-console.log('[ImmersiveReaderModule] 4 components registered');
+console.log('[ImmersiveReaderModule] 5 components registered');

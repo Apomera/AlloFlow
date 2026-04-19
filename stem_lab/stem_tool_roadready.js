@@ -2985,6 +2985,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Seatbelt state: must be fastened to start driving. Chime plays until buckled.
       // User presses B (or any movement key will also auto-buckle after first prompt).
       var seatbeltRef = useRef({ fastened: false, chimeOsc: null, chimeGain: null });
+      // Parallel React state — the ref above is read every physics frame (cheap),
+      // but the *prompt UI* needs a re-render when the belt gets fastened. Without
+      // this mirror the prompt never disappears (the ref change is invisible to React).
+      var beltFastenedTuple = useState(false);
+      var beltFastened = beltFastenedTuple[0];
+      var setBeltFastened = beltFastenedTuple[1];
       // Blind spot detector: populated every render based on adjacent-lane traffic.
       var blindSpotRef = useRef({ left: false, right: false });
       // Lane departure detector: flags when we drift across a lane line without signaling.
@@ -3113,6 +3119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Scenarios that auto-bypass this: parking (top-down, no real car), 3-point, backingDrill.
         var autoBelt = ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
         seatbeltRef.current = { fastened: autoBelt, chimeOsc: null, chimeGain: null, startedAt: Date.now() };
+        setBeltFastened(!!autoBelt); // reset the UI mirror whenever driving starts
         if (!autoBelt) {
           safeTimeout(function() {
             if (!seatbeltRef.current.fastened) {
@@ -4215,6 +4222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!seatbeltRef.current.fastened) {
             if (throttleInput > 0 || brakeInput > 0 || k['b']) {
               seatbeltRef.current.fastened = true;
+              setBeltFastened(true); // sync React state so the prompt disappears
               addToast('🔔 Seatbelt fastened. Drive safe.');
               speak('Seatbelt fastened.');
             } else {
@@ -14771,7 +14779,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ) : null,
           // ── Seatbelt prompt — shows until the driver buckles up ──
-          !seatbeltRef.current.fastened ? h('div', {
+          // Read the React-state mirror, NOT the ref — a ref update alone won't
+          // cause a re-render and the prompt would hang on screen forever.
+          !beltFastened ? h('div', {
             style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', maxWidth: '440px', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'rr-pulse-soft 1.5s ease-in-out infinite' }
           },
             h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),

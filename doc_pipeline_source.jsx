@@ -9992,46 +9992,14 @@ tr { page-break-inside: avoid; }
 
     // Apply Tier 1+2 removals
     blocksToRemove.forEach(el => { if (el.parentNode) el.parentNode.removeChild(el); });
-    const remaining = blocks.filter(el => !blocksToRemove.has(el));
-
-    // ── Tier 3: ≥ 85% word overlap between distinct blocks — highlight only ──
-    const remainingWithWords = remaining.map(el => ({ el, words: new Set(wordArr(el.textContent || '')) }));
-    for (let i = 0; i < remainingWithWords.length; i++) {
-      for (let j = i + 1; j < remainingWithWords.length; j++) {
-        const a = remainingWithWords[i], b = remainingWithWords[j];
-        if (a.words.size < 6 || b.words.size < 6) continue;
-        let common = 0;
-        a.words.forEach(w => { if (b.words.has(w)) common++; });
-        const overlap = common / Math.min(a.words.size, b.words.size);
-        if (overlap >= 0.85) {
-          // Highlight only the SECOND occurrence — leaves the first as the canonical copy
-          if (!b.el.classList.contains('allo-duplicate-suspect')) {
-            highlighted.push({ el: b.el, reason: 'near-duplicate', text: (b.el.textContent || '').trim().slice(0, 80) + '…' });
-          }
-        }
-      }
-    }
-
-    // ── Tier 4: 8-word N-gram repeats across blocks — highlight only ──
-    const ngramMap = new Map();
-    remaining.forEach(el => {
-      const words = wordArr(el.textContent || '');
-      for (let i = 0; i + 8 <= words.length; i++) {
-        const key = words.slice(i, i + 8).join(' ');
-        if (!ngramMap.has(key)) ngramMap.set(key, new Set());
-        ngramMap.get(key).add(el);
-      }
-    });
-    ngramMap.forEach((elSet) => {
-      if (elSet.size < 2) return;
-      const arr = Array.from(elSet);
-      // Skip the first occurrence; flag the rest
-      arr.slice(1).forEach(el => {
-        if (!highlighted.some(h => h.el === el)) {
-          highlighted.push({ el, reason: 'ngram-repeat', text: (el.textContent || '').trim().slice(0, 80) + '…' });
-        }
-      });
-    });
+    // Tiers 3 (≥85% word overlap) and 4 (8-word N-gram repeats) were removed 2026-04-18.
+    // Both triggered false positives on dense academic prose where adjacent paragraphs on
+    // the same topic legitimately share much of their vocabulary and occasionally collide
+    // on 8-word sequences. Tier 1 (byte-identical auto-remove) and Tier 2 (truncation
+    // auto-remove) cover the original chunk-boundary stutter case cleanly and safely. If
+    // the "highlight for review" feature comes back, it needs a Jaccard-based metric, a
+    // much higher threshold, a minimum-shared-tokens absolute floor, and probably a
+    // cosine-similarity style weighted by TF-IDF rather than raw set overlap.
 
     // Apply highlight class + one-time CSS rule if any flags
     if (highlighted.length > 0) {
