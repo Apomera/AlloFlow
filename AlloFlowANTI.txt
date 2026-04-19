@@ -20029,6 +20029,7 @@ Return ONLY valid JSON:
   const [expertCommandInput, setExpertCommandInput] = useState('');
   const [agentActivityLog, setAgentActivityLog] = useState([]);
   const [isAgentRunning, setIsAgentRunning] = useState(false);
+  const [agentLogFullView, setAgentLogFullView] = useState(false);
   const handleExportQTI = async () => {
       if (!window.JSZip) {
           addToast(t('export_status.lib_loading'), "error");

@@ -8767,7 +8767,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
             m.position.set(cy.x - MAP_SIZE / 2, cyRoadH, cy.y - MAP_SIZE / 2);
-            m.rotation.y = -cy.heading;
+            // Bike local frame is +Z-forward; cars use +X-forward. Offset by π/2 so
+            // cyclists face their motion direction instead of rendering sideways.
+            m.rotation.y = Math.PI / 2 - cy.heading;
           });
 
           // Wildlife

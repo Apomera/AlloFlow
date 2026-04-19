@@ -9650,7 +9650,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Z-fighting with the road mesh (same fix pattern as the car wheels).
             var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
             m.position.set(cy.x - MAP_SIZE / 2, cyRoadH + 0.03, cy.y - MAP_SIZE / 2);
-            m.rotation.y = -cy.heading;
+            // Bike was built with local +Z = forward, but motion uses (cos h, sin h)
+            // in world (X, Z) and every other vehicle was built with +X = forward.
+            // Offset by π/2 so the bike faces its actual travel direction (otherwise
+            // cyclists render sideways across the lane — a.k.a. "horizontal").
+            m.rotation.y = Math.PI / 2 - cy.heading;
           });
 
           // Wildlife

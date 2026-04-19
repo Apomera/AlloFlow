@@ -72,6 +72,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var announceToSR = ctx.announceToSR;
       var isDark = ctx.isDark;
 
+      // Inject fullscreen CSS rules once per session (idempotent).
+      // Without this, inline `height: 500px` sticks even in fullscreen.
+      if (typeof document !== 'undefined' && !document.getElementById('beehive-fs-style')) {
+        var _bhsStyle = document.createElement('style');
+        _bhsStyle.id = 'beehive-fs-style';
+        _bhsStyle.textContent =
+          '#beehive-canvas-wrap:fullscreen,#beehive-canvas-wrap:-webkit-full-screen,#beehive-canvas-wrap:-moz-full-screen{' +
+            'width:100vw !important;height:100vh !important;' +
+            'border-radius:0 !important;border:none !important;' +
+            'box-shadow:none !important;' +
+          '}';
+        document.head.appendChild(_bhsStyle);
+      }
+
       return (function() {
         var d = (labToolData.beehive) || {};
         var upd = function(key, val) { var _k = {}; _k[key] = val; setLabToolData(function(prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive || {}, _k) }); }); };
@@ -1598,27 +1612,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               sg.addColorStop(0, sk[0]); sg.addColorStop(0.55, sk[1]); sg.addColorStop(1, sk[2]);
               c.fillStyle = sg; c.fillRect(0, 0, W, H);
 
-              // Sun / Moon
+              // Sun / Moon — moves in an arc across the sky following the _tod cycle
               var sunR = season === 1 ? 24 : season === 3 ? 14 : 18;
-              var sunY = H * 0.10 + Math.sin(t2 * 0.002) * 3;
+              // Arc position: sun rises east (left), peaks at noon (center-high), sets west (right)
+              var _sunCycle = ((t2 * 0.0004) % 2); // 0..2 (one full day each 2 units)
+              var _sunT_arc = _sunCycle < 1 ? _sunCycle : (2 - _sunCycle); // 0..1..0 ping-pong
+              var sunX = W * (0.12 + _sunT_arc * 0.76);
+              // Y follows an arc: highest at noon (_sunT_arc = 0.5)
+              var sunArcY = H * 0.30 - Math.sin(_sunT_arc * Math.PI) * (H * 0.20);
+              var sunY = sunArcY + Math.sin(t2 * 0.002) * 3;
               c.save();
               c.shadowColor = season === 3 ? 'rgba(180,200,220,0.3)' : 'rgba(255,200,80,0.5)';
               c.shadowBlur = season === 3 ? 10 : 20;
               c.fillStyle = season === 3 ? '#d0dae8' : '#ffe066';
-              c.beginPath(); c.arc(W * 0.85, sunY, sunR, 0, 6.28); c.fill();
+              c.beginPath(); c.arc(sunX, sunY, sunR, 0, 6.28); c.fill();
               c.restore();
               // Sun rays (not winter) — short radiating spikes
               if (season !== 3) {
                 c.strokeStyle = 'rgba(255,220,100,0.15)'; c.lineWidth = 1;
                 for (var ri = 0; ri < 8; ri++) {
                   var ra = ri * 0.785 + t2 * 0.003;
-                  c.beginPath(); c.moveTo(W * 0.85 + Math.cos(ra) * (sunR + 4), sunY + Math.sin(ra) * (sunR + 4));
-                  c.lineTo(W * 0.85 + Math.cos(ra) * (sunR + 14), sunY + Math.sin(ra) * (sunR + 14));
+                  c.beginPath(); c.moveTo(sunX + Math.cos(ra) * (sunR + 4), sunY + Math.sin(ra) * (sunR + 4));
+                  c.lineTo(sunX + Math.cos(ra) * (sunR + 14), sunY + Math.sin(ra) * (sunR + 14));
                   c.stroke();
                 }
                 // ── Volumetric god rays: wide slanted beams from sun toward ground ──
                 c.save();
-                var raySrcX = W * 0.85, raySrcY = sunY;
+                var raySrcX = sunX, raySrcY = sunY;
                 for (var gr = 0; gr < 5; gr++) {
                   var rayAng = 1.3 + gr * 0.12 + Math.sin(t2 * 0.0015 + gr) * 0.04; // angle radiating downward-ish
                   var rayLen = H * 1.1;
@@ -1646,7 +1666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (season !== 3) {
                 c.fillStyle = 'rgba(255,240,180,0.55)';
                 for (var dm = 0; dm < 18; dm++) {
-                  var dmSrcX = W * 0.85, dmSrcY = sunY;
+                  var dmSrcX = sunX, dmSrcY = sunY;
                   var dmAng = 1.4 + (dm * 0.037);
                   var dmT = ((t2 * 0.2 + dm * 77) % 500) / 500; // 0..1 progress along ray
                   var dmDist = 40 + dmT * 420;
@@ -2445,6 +2465,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
 
+              // ── Stepping stones path leading from meadow to the hive ──
+              var stepCount = 7;
+              for (var sp = 0; sp < stepCount; sp++) {
+                var spT = sp / (stepCount - 1); // 0..1
+                var spX = W * 0.45 - spT * (W * 0.45 - (hiveX + hiveW * 0.5));
+                var spY = H * 0.82 + Math.sin(sp * 1.1) * 2;
+                // Stone shadow
+                c.fillStyle = 'rgba(0,0,0,0.15)';
+                c.beginPath(); c.ellipse(spX + 1, spY + 1, 8, 3, 0, 0, 6.28); c.fill();
+                // Stone (varied gray shades)
+                var stoneColor = sp % 3 === 0 ? '#78716c' : sp % 3 === 1 ? '#a8a29e' : '#68635e';
+                c.fillStyle = stoneColor;
+                c.beginPath(); c.ellipse(spX, spY, 7.5 + (sp % 2) * 0.5, 2.8, (sp * 0.3), 0, 6.28); c.fill();
+                // Stone highlight
+                c.fillStyle = 'rgba(255,255,255,0.2)';
+                c.beginPath(); c.ellipse(spX - 1, spY - 0.8, 3, 1, (sp * 0.3), 0, 6.28); c.fill();
+                // Tiny moss patches
+                if (sp % 2 === 0 && season !== 3) {
+                  c.fillStyle = '#65a30d';
+                  c.beginPath(); c.arc(spX + 2, spY + 1, 0.9, 0, 6.28); c.fill();
+                }
+              }
+
               // ── Wooden hive stand (elevates hive off ground — protects from ants + damp) ──
               var standY = hiveY + hiveH + 4;
               var standW = hiveW * 1.08;
@@ -2790,11 +2833,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(b.x - Math.sin(angle) * 2, b.y - b.sz * 0.4 + wy, b.sz * 0.55, b.sz * 0.25, angle - 0.4, 0, 6.28); c.fill();
                 c.beginPath(); c.ellipse(b.x + Math.sin(angle) * 1, b.y - b.sz * 0.5 - wy * 0.5, b.sz * 0.4, b.sz * 0.2, angle + 0.3, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
-                // Pollen sacs (larger when garden bonus active)
+                // Pollen sacs — varied colors by bee (simulates different flower sources)
                 if (b.carry) {
                   var pollenSz = gardenBonus > 10 ? 2.4 : 1.8;
-                  c.fillStyle = '#f59e0b'; c.beginPath();
+                  // Color varies by bee's phase hash — yellow, orange, white, purple, red-orange
+                  var pollenCols = ['#f59e0b', '#fb923c', '#fef3c7', '#c084fc', '#ef4444', '#84cc16'];
+                  var pollenCol = pollenCols[Math.floor(b.ph * 2.3) % pollenCols.length];
+                  c.fillStyle = pollenCol;
+                  c.beginPath();
                   c.arc(b.x + Math.cos(angle + 1.5) * b.sz * 0.5, b.y + Math.sin(angle + 1.5) * b.sz * 0.5, pollenSz, 0, 6.28); c.fill();
+                  // Pollen on the other leg too for bumbles
+                  if (b.bumble) {
+                    c.beginPath();
+                    c.arc(b.x + Math.cos(angle - 1.5) * b.sz * 0.5, b.y + Math.sin(angle - 1.5) * b.sz * 0.5, pollenSz * 0.8, 0, 6.28); c.fill();
+                  }
                 }
               });
 
@@ -3034,6 +3086,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
               ds.yaw += turn * dt;
               ds.pitch = Math.max(-0.6, Math.min(0.6, ds.pitch + pitchD * dt));
+              // Roll: gentle lean into turns (smoothed toward target, self-leveling when no turn)
+              var rollTarget = -turn * 0.15;
+              ds.roll = (ds.roll || 0) + (rollTarget - (ds.roll || 0)) * Math.min(1, 3 * dt);
 
               // Thrust along facing direction
               var fwdX = Math.sin(ds.yaw), fwdZ = -Math.cos(ds.yaw);
@@ -3160,22 +3215,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return { x: sx, y: sy, s: scale, d: -rz2 };
             }
 
-            // Sky gradient (altitude-responsive)
+            // Compute horizon Y position based on pitch.
+            // When pitch > 0 (looking up), horizon moves DOWN in view; < 0 (looking down), it moves UP.
+            // Use tangent projection so extreme pitches behave correctly with FOV=300.
+            var _dFov = 300;
+            var horizonY = halfH + Math.tan(ds.pitch) * _dFov;
+            var roll = ds.roll || 0;
+
+            // Rotate world around the screen center by -roll so the horizon tilts correctly.
+            c.save();
+            c.translate(halfW, halfH);
+            c.rotate(-roll);
+            c.translate(-halfW, -halfH);
+
+            // Sky gradient (altitude-responsive). Overdraw beyond screen to hide rotation corners.
             var skyTop = ds.y > 150 ? '#1a237e' : ds.y > 80 ? '#4a9fd6' : '#7ec8e3';
             var skyBot = ds.y > 150 ? '#4a5de6' : '#b8e2f2';
-            var skyG = c.createLinearGradient(0, 0, 0, halfH + 40);
+            var skyG = c.createLinearGradient(0, -H, 0, horizonY);
             skyG.addColorStop(0, skyTop); skyG.addColorStop(1, skyBot);
-            c.fillStyle = skyG; c.fillRect(0, 0, W, halfH + 40);
+            c.fillStyle = skyG; c.fillRect(-W, -H, W * 3, horizonY + H);
 
-            // Ground plane
+            // Ground plane. Also overdraws for rotation safety.
             var groundCol = ds.y > 200 ? '#2d7a3a' : '#4ade80';
-            var grdG = c.createLinearGradient(0, halfH + 20, 0, H);
+            var grdG = c.createLinearGradient(0, horizonY, 0, horizonY + H);
             grdG.addColorStop(0, '#8fbc8f'); grdG.addColorStop(1, groundCol);
-            c.fillStyle = grdG; c.fillRect(0, halfH + 20, W, H);
+            c.fillStyle = grdG; c.fillRect(-W, horizonY, W * 3, H * 3);
 
             // Horizon line
-            c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1;
-            c.beginPath(); c.moveTo(0, halfH + 20); c.lineTo(W, halfH + 20); c.stroke();
+            c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 1.2;
+            c.beginPath(); c.moveTo(-W, horizonY); c.lineTo(W * 2, horizonY); c.stroke();
+
+            // Distant hills along horizon (adds depth when rolling/pitching)
+            c.fillStyle = 'rgba(90,120,90,0.55)';
+            c.beginPath(); c.moveTo(-W, horizonY);
+            for (var hh = -10; hh < 30; hh++) {
+              var hhx = hh * 60;
+              var hhy = horizonY - Math.abs(Math.sin(hh * 0.7)) * 14 - 4;
+              c.lineTo(hhx, hhy);
+            }
+            c.lineTo(W * 2, horizonY); c.closePath(); c.fill();
+
+            c.restore();
 
             // Render clouds
             ds.clouds.forEach(function(cl) {
@@ -3384,6 +3464,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(W - 130, 12, 70, 6);
             c.fillStyle = ds.energy > 30 ? '#22c55e' : ds.energy > 10 ? '#eab308' : '#ef4444';
             c.fillRect(W - 130, 12, 70 * (ds.energy / maxEnergy), 6);
+
+            // ═══ FLIGHT HUD: artificial horizon + altimeter + airspeed + compass ═══
+            // Attitude indicator (bottom-left, round gauge showing pitch + roll)
+            var aiX = 48, aiY = H - 60, aiR = 26;
+            c.save();
+            // Background circle
+            c.fillStyle = 'rgba(15,23,42,0.75)';
+            c.beginPath(); c.arc(aiX, aiY, aiR + 3, 0, 6.28); c.fill();
+            // Clip to circle
+            c.beginPath(); c.arc(aiX, aiY, aiR, 0, 6.28); c.clip();
+            // Rotate by roll
+            c.translate(aiX, aiY);
+            c.rotate(-roll);
+            // Pitch ladder: sky above, ground below, offset by pitch
+            var aiPitch = Math.tan(ds.pitch) * aiR * 1.5;
+            c.fillStyle = '#4a9fd6'; // sky
+            c.fillRect(-aiR * 3, -aiR * 3, aiR * 6, aiR * 3 + aiPitch);
+            c.fillStyle = '#8b6f3a'; // ground
+            c.fillRect(-aiR * 3, aiPitch, aiR * 6, aiR * 3);
+            // Horizon line in the gauge
+            c.strokeStyle = '#fff'; c.lineWidth = 1.4;
+            c.beginPath(); c.moveTo(-aiR, aiPitch); c.lineTo(aiR, aiPitch); c.stroke();
+            // Pitch tick marks (every 10 deg)
+            c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 0.8;
+            for (var pt = -3; pt <= 3; pt++) {
+              if (pt === 0) continue;
+              var ptY = aiPitch + pt * aiR * 0.35;
+              var ptW = (pt % 2 === 0) ? aiR * 0.4 : aiR * 0.22;
+              c.beginPath(); c.moveTo(-ptW, ptY); c.lineTo(ptW, ptY); c.stroke();
+            }
+            c.restore();
+            // Aircraft reference mark (center cross, doesn't rotate)
+            c.save();
+            c.strokeStyle = '#fbbf24'; c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(aiX - 12, aiY); c.lineTo(aiX - 4, aiY);
+            c.moveTo(aiX + 4, aiY); c.lineTo(aiX + 12, aiY);
+            c.moveTo(aiX, aiY - 3); c.lineTo(aiX, aiY + 3);
+            c.stroke();
+            // Gauge ring
+            c.strokeStyle = '#64748b'; c.lineWidth = 2;
+            c.beginPath(); c.arc(aiX, aiY, aiR, 0, 6.28); c.stroke();
+            // Label
+            c.font = 'bold 7px system-ui'; c.textAlign = 'center'; c.fillStyle = '#94a3b8';
+            c.fillText('ATTITUDE', aiX, aiY + aiR + 12);
+            c.restore();
+
+            // Altimeter (vertical bar, right side of HUD)
+            var altX = W - 38, altY = halfH - 50, altH = 120;
+            c.save();
+            c.fillStyle = 'rgba(15,23,42,0.75)';
+            c.beginPath(); if (c.roundRect) c.roundRect(altX - 12, altY, 24, altH, 4); else c.rect(altX - 12, altY, 24, altH); c.fill();
+            // Altitude fill (0..300ft mapped to bar height)
+            var altFrac = Math.min(1, ds.y / 300);
+            var altBarH = altH * altFrac;
+            var altG = c.createLinearGradient(altX, altY + altH, altX, altY);
+            altG.addColorStop(0, '#22c55e'); altG.addColorStop(0.6, '#eab308'); altG.addColorStop(1, '#a78bfa');
+            c.fillStyle = altG;
+            c.fillRect(altX - 10, altY + altH - altBarH, 20, altBarH);
+            // Tick marks every 50ft
+            c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 0.6;
+            for (var alt = 50; alt < 300; alt += 50) {
+              var altTickY = altY + altH - (alt / 300) * altH;
+              c.beginPath(); c.moveTo(altX - 12, altTickY); c.lineTo(altX - 8, altTickY); c.stroke();
+            }
+            // DCA altitude marker (200ft)
+            c.strokeStyle = '#fbbf24'; c.lineWidth = 1.5;
+            var dcaY = altY + altH - (200 / 300) * altH;
+            c.beginPath(); c.moveTo(altX - 14, dcaY); c.lineTo(altX + 14, dcaY); c.stroke();
+            c.font = 'bold 6px system-ui'; c.textAlign = 'left'; c.fillStyle = '#fbbf24';
+            c.fillText('DCA', altX + 16, dcaY + 2);
+            // Label
+            c.fillStyle = '#94a3b8'; c.textAlign = 'center'; c.font = 'bold 7px system-ui';
+            c.fillText('ALT', altX, altY - 4);
+            c.fillStyle = '#fef3c7'; c.font = 'bold 9px monospace';
+            c.fillText(Math.round(ds.y) + 'ft', altX, altY + altH + 10);
+            c.restore();
+
+            // Airspeed gauge (small, bottom-right)
+            var asX = W - 90, asY = H - 60, asR = 22;
+            c.save();
+            c.fillStyle = 'rgba(15,23,42,0.75)';
+            c.beginPath(); c.arc(asX, asY, asR + 2, 0, 6.28); c.fill();
+            c.strokeStyle = '#64748b'; c.lineWidth = 2;
+            c.beginPath(); c.arc(asX, asY, asR, 0, 6.28); c.stroke();
+            // Speed needle (0-10 speed maps to 3/4 arc)
+            var asAng = -Math.PI * 0.75 + Math.min(1, ds.speed / 10) * Math.PI * 1.5;
+            c.strokeStyle = '#fbbf24'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(asX, asY);
+            c.lineTo(asX + Math.cos(asAng) * asR * 0.8, asY + Math.sin(asAng) * asR * 0.8);
+            c.stroke();
+            c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(asX, asY, 2, 0, 6.28); c.fill();
+            c.font = 'bold 7px system-ui'; c.textAlign = 'center'; c.fillStyle = '#94a3b8';
+            c.fillText('SPD', asX, asY + asR + 10);
+            c.fillStyle = '#fef3c7'; c.font = 'bold 8px monospace';
+            c.fillText(ds.speed.toFixed(1), asX, asY + 3);
+            c.restore();
+
+            // Heading compass (top-center, shows yaw)
+            var hdX = halfW, hdY = 72, hdW2 = 80;
+            c.save();
+            c.fillStyle = 'rgba(15,23,42,0.7)';
+            c.beginPath(); if (c.roundRect) c.roundRect(hdX - hdW2, hdY - 8, hdW2 * 2, 16, 4); else c.rect(hdX - hdW2, hdY - 8, hdW2 * 2, 16); c.fill();
+            // Center indicator
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.moveTo(hdX, hdY - 8); c.lineTo(hdX - 3, hdY - 3); c.lineTo(hdX + 3, hdY - 3); c.closePath(); c.fill();
+            // Cardinal directions scroll with yaw
+            var yawDeg = ((ds.yaw * 180 / Math.PI) % 360 + 360) % 360;
+            var cardinals = [{ a: 0, l: 'N' }, { a: 45, l: 'NE' }, { a: 90, l: 'E' }, { a: 135, l: 'SE' }, { a: 180, l: 'S' }, { a: 225, l: 'SW' }, { a: 270, l: 'W' }, { a: 315, l: 'NW' }];
+            c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillStyle = '#e2e8f0';
+            cardinals.forEach(function(card) {
+              var diff = ((card.a - yawDeg + 540) % 360) - 180;
+              if (Math.abs(diff) > 80) return;
+              var cx2 = hdX + (diff / 90) * hdW2;
+              c.fillStyle = Math.abs(diff) < 10 ? '#fbbf24' : '#e2e8f0';
+              c.fillText(card.l, cx2, hdY + 2);
+            });
+            c.fillStyle = '#94a3b8'; c.font = '6px system-ui';
+            c.fillText('HDG ' + Math.round(yawDeg) + '°', hdX, hdY + 12);
+            c.restore();
 
             // Phase indicator
             var phaseLabel = { launch: '🚀 LAUNCHING...', flight: '✈️ FLYING TO DCA', congregation: '🎯 DRONE CONGREGATION AREA — FIND THE QUEEN!', mating: '❤️ MATING SUCCESS!', end: '🏁 FLIGHT OVER' }[ds.phase] || '';
@@ -4021,14 +4221,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
                   h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
               })),
-            // Beekeeper canvas — height bumped 300→500 for a richer view
-            viewMode === 'beekeeper' && h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '500px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
+            // Beekeeper canvas — height 500px; container is the fullscreen target
+            viewMode === 'beekeeper' && h('div', {
+                id: 'beehive-canvas-wrap',
+                className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'),
+                style: { height: '500px', background: '#000', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' }
+              },
               h('canvas', {
                 ref: _cvRef,
                 role: 'img',
                 'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
                 style: { width: '100%', height: '100%', display: 'block' }
-              })
+              }),
+              // Fullscreen toggle button (top-right overlay)
+              h('button', {
+                onClick: function() {
+                  var el = document.getElementById('beehive-canvas-wrap');
+                  if (!el) return;
+                  var inFull = document.fullscreenElement === el ||
+                               document.webkitFullscreenElement === el ||
+                               document.mozFullScreenElement === el;
+                  if (inFull) {
+                    (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
+                  } else {
+                    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                    if (req) req.call(el);
+                  }
+                },
+                'aria-label': 'Toggle fullscreen canvas',
+                title: 'Toggle fullscreen',
+                className: 'absolute top-2 right-2 z-10 px-2 py-1 rounded-md text-xs font-bold transition-all backdrop-blur-sm bg-black/45 hover:bg-black/65 text-amber-100 border border-amber-600/30',
+                style: { fontSize: '16px', lineHeight: 1, cursor: 'pointer' }
+              }, '⛶')
             ),
             // ═══ QUEEN RTS UI ═══
             viewMode === 'queen' && h('div', { className: 'space-y-3' },
