@@ -8061,27 +8061,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8097,7 +8097,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0f2347/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e573d4e/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -54104,16 +54104,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
+                                const totalFixes = (chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0);
+                                const scoreColor = chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700';
                                 return (
-                                  <div key={ci} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${isWorking ? 'bg-indigo-50 border-indigo-200 animate-pulse' : chunk.score >= 80 ? 'bg-green-50 border-green-200' : chunk.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                                  <div key={ci} className={`flex items-center gap-x-2 gap-y-1 px-3 py-2 rounded-lg border text-xs flex-wrap ${isWorking ? 'bg-indigo-50 border-indigo-200 animate-pulse' : chunk.score >= 80 ? 'bg-green-50 border-green-200' : chunk.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
                                     <span>{isWorking ? '⏳' : chunk.score >= 80 ? '✅' : chunk.score >= 60 ? '🟡' : '🔴'}</span>
                                     <span className="font-bold text-slate-800">§{(chunk.index || ci) + 1}</span>
                                     {!isWorking && <>
-                                      {chunk.deterministicFixCount > 0 && <span className="text-slate-600">🔧{chunk.deterministicFixCount}</span>}
-                                      {chunk.surgicalFixCount > 0 && <span className="text-slate-600">🎯{chunk.surgicalFixCount}</span>}
-                                      {chunk.aiVerified && <span className="text-green-600">✓</span>}
-                                      {chunk.usedOriginal && <span className="text-red-600 font-bold" title="AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.">AI skipped · rule-based only</span>}
-                                      <span className={`ml-auto font-black ${chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{chunk.score}/100</span>
+                                      <span className="text-slate-400" aria-hidden="true">·</span>
+                                      <span className="text-slate-700">WCAG</span>
+                                      <span className={`font-black ${scoreColor}`}>{chunk.score}/100</span>
+                                      {totalFixes > 0 && <>
+                                        <span className="text-slate-400" aria-hidden="true">·</span>
+                                        <span
+                                          className="text-slate-700"
+                                          title={`🔧 ${chunk.deterministicFixCount || 0} rule-based (deterministic) · 🎯 ${chunk.surgicalFixCount || 0} AI-targeted`}
+                                        >
+                                          {totalFixes} fix{totalFixes !== 1 ? 'es' : ''} applied
+                                        </span>
+                                      </>}
+                                      {totalFixes === 0 && !chunk.usedOriginal && <>
+                                        <span className="text-slate-400" aria-hidden="true">·</span>
+                                        <span className="text-slate-500 italic" title="This section had no WCAG violations the pipeline could fix automatically, so no changes were applied.">no fixes needed</span>
+                                      </>}
+                                      {chunk.wasRetried && <span className="text-amber-700 font-bold" title="AI had to retry this section once after the first attempt failed integrity or token-preservation checks.">↻ retried</span>}
+                                      {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title="AI content-preservation check passed — the section's text content was preserved through the rewrite.">✓ content verified</span>}
+                                      {chunk.usedOriginal && <span className="text-red-700 font-bold" title="AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.">AI skipped · rule-based only</span>}
                                     </>}
                                     {isWorking && <span className="ml-auto text-indigo-600 font-bold">Fixing...</span>}
                                   </div>

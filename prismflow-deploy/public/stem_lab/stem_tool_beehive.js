@@ -2998,7 +2998,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        // ═══ ITERATIVE BISECT — runtime child-by-child error logger ═══
+        // ═══ TRY ORIGINAL TREE IN TRY/CATCH ═══
+        // If the original JSX construction throws, log detailed error + stack trace
+        // and fall back to minimal canvas-only tree.
+        try {
+          var _origRetval = h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+            // Header
+            h('div', { className: 'flex items-center justify-between' },
+              h('div', { className: 'flex items-center gap-3' },
+                h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
+                h('div', null,
+                  h('h3', { className: 'text-lg font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, '🐝 Beehive Colony Simulator'),
+                  h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose'))),
+              h('div', { className: 'flex items-center gap-1' },
+                h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', className: 'p-1.5 rounded-lg text-sm ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100') }, soundOn ? '🔊' : '🔇'))),
+            // Mode tabs
+            h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist' },
+              [
+                { id: 'beekeeper', icon: '🧑‍🌾', label: 'Beekeeper' },
+                { id: 'queen', icon: '👑', label: 'Queen RTS' },
+                { id: 'drone', icon: '🚀', label: 'Drone Flight' }
+              ].map(function(tab) {
+                var active = viewMode === tab.id;
+                return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                  onClick: function() { upd('viewMode', tab.id); },
+                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
+                  h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
+              })),
+            // Beekeeper canvas
+            viewMode === 'beekeeper' && h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px' } },
+              h('canvas', {
+                ref: _cvRef,
+                role: 'img',
+                'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
+                style: { width: '100%', height: '100%', display: 'block' }
+              })
+            ),
+            // SUBSPECIES PICKER (day 0) — IMPORTED FROM ORIGINAL (line 3295 in old file)
+            viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
+              h('div', null,
+                h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
+                h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates.'),
+                h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name)),
+              h('div', { className: 'grid grid-cols-1 gap-2' },
+                SUBSPECIES.map(function(s) {
+                  var active = activeSubspecies.id === s.id;
+                  return h('button', { key: s.id, onClick: function() { updAll({ subspecies: s.id }); },
+                    className: 'text-left p-3 rounded-xl border ' + (active ? (dk ? 'bg-amber-900/50 border-amber-400' : 'bg-amber-100 border-amber-500') : (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
+                    h('div', { className: 'flex items-start gap-2' },
+                      h('span', { className: 'text-2xl' }, s.emoji),
+                      h('div', { className: 'flex-1' },
+                        h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
+                        h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
+                }))),
+            // Next Day + actions
+            viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
+              h('div', { className: 'flex gap-2' },
+                h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
+                h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
+                h('button', { onClick: function() { advanceDays(30); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
+              h('div', { className: 'grid grid-cols-6 gap-1.5' },
+                h('button', { onClick: treatVarroa, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') }, '🧪 Treat'),
+                h('button', { onClick: addSuper, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') }, '📦 Super'),
+                h('button', { onClick: harvestHoney, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🍯 Harvest'),
+                h('button', { onClick: feedBees, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, '🥣 Feed'),
+                h('button', { onClick: function() { upd('showInspect', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
+                h('button', { onClick: function() { upd('showBadges', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges')))
+          );
+          console.log('[Beehive ORIGINAL] return succeeded, committing full tree');
+          return _origRetval;
+        } catch(origErr) {
+          console.error('[Beehive ORIGINAL THROW]', origErr && origErr.message, '\nStack:', origErr && origErr.stack);
+          // Fall through to the bisect tree which is known to work
+        }
+
+        // ═══ ITERATIVE BISECT — fallback tree ═══
         // Rebuild each top-level child of the ORIGINAL tree inside a try/catch.
         // Any child that throws or returns an invalid value is logged with its label.
         // The canvas container is always present so it renders regardless of failures.

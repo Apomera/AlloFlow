@@ -1116,6 +1116,184 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
             }
 
+            // Moving train on tracks (straight line with headlight)
+            if (depth > 0.4 && alt < 5000 && elev < 3500 &&
+                terrainHash(Math.floor(scanLat * 7) + 19, Math.floor(scanLon * 7) + 23) > 0.88) {
+              var trSeed = Math.floor(scanLat * 7) + Math.floor(scanLon * 7);
+              var trStartX = terrainHash(trSeed, 41) * W * 0.3;
+              var trEndX = W * 0.7 + terrainHash(trSeed, 42) * W * 0.3;
+              var trY = y - elevBump + (terrainHash(trSeed, 43) - 0.5) * 4;
+              // Track (two thin parallel lines)
+              gfx.strokeStyle = 'rgba(70,60,50,' + (0.7 * depth) + ')';
+              gfx.lineWidth = 0.4;
+              gfx.beginPath();
+              gfx.moveTo(trStartX, trY - 0.4); gfx.lineTo(trEndX, trY - 0.4);
+              gfx.moveTo(trStartX, trY + 0.4); gfx.lineTo(trEndX, trY + 0.4);
+              gfx.stroke();
+              // Cross ties
+              gfx.strokeStyle = 'rgba(90,70,50,' + (0.5 * depth) + ')';
+              gfx.lineWidth = 0.3;
+              var tieCount = 15;
+              for (var ti = 0; ti < tieCount; ti++) {
+                var tiX = trStartX + (trEndX - trStartX) * (ti / tieCount);
+                gfx.beginPath();
+                gfx.moveTo(tiX, trY - 1); gfx.lineTo(tiX, trY + 1); gfx.stroke();
+              }
+              // Train (moves along track)
+              var trProg = (time * 0.15) % 1;
+              var trX = trStartX + (trEndX - trStartX) * trProg;
+              // Locomotive (engine)
+              gfx.fillStyle = '#cc3030';
+              gfx.fillRect(trX - 4, trY - 1.5, 4, 2);
+              // Cars (3-5)
+              gfx.fillStyle = '#505060';
+              for (var tc = 0; tc < 4; tc++) {
+                gfx.fillRect(trX - 4 - (tc + 1) * 3.2, trY - 1.2, 3, 1.6);
+              }
+              // Headlight beam (forward)
+              gfx.fillStyle = 'rgba(255,255,200,0.9)';
+              gfx.fillRect(trX - 0.5, trY - 0.4, 0.8, 0.8);
+              gfx.fillStyle = 'rgba(255,255,200,0.2)';
+              gfx.beginPath();
+              gfx.moveTo(trX, trY);
+              gfx.lineTo(trX + 10, trY - 1.5);
+              gfx.lineTo(trX + 10, trY + 1.5);
+              gfx.closePath();
+              gfx.fill();
+              // Smoke puff from stack
+              gfx.fillStyle = 'rgba(200,200,200,0.6)';
+              gfx.beginPath();
+              gfx.arc(trX - 2, trY - 3 - Math.sin(time * 4) * 0.5, 1.5, 0, Math.PI * 2);
+              gfx.fill();
+            }
+
+            // Sports stadium (near cities — oval with green field)
+            if (depth > 0.35 && alt < 6000 && elev < 2500 &&
+                terrainHash(Math.floor(scanLat * 9) + 3, Math.floor(scanLon * 9) + 5) > 0.92) {
+              var stdX = terrainHash(scanLat * 21, scanLon * 21) * W * 0.7 + W * 0.15;
+              var stdW = 12 + depth * 14;
+              var stdH = stdW * 0.55;
+              // Outer ring (seats — dark)
+              gfx.fillStyle = 'rgba(70,65,80,' + (0.85 * depth) + ')';
+              gfx.beginPath();
+              gfx.ellipse(stdX, y - elevBump, stdW, stdH, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Field (bright green)
+              gfx.fillStyle = 'rgba(70,140,60,' + (0.9 * depth) + ')';
+              gfx.beginPath();
+              gfx.ellipse(stdX, y - elevBump, stdW * 0.65, stdH * 0.55, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Field lines (faint)
+              gfx.strokeStyle = 'rgba(255,255,255,' + (0.5 * depth) + ')';
+              gfx.lineWidth = 0.3;
+              gfx.beginPath();
+              gfx.moveTo(stdX - stdW * 0.6, y - elevBump);
+              gfx.lineTo(stdX + stdW * 0.6, y - elevBump);
+              gfx.stroke();
+              gfx.beginPath();
+              gfx.arc(stdX, y - elevBump, stdW * 0.12, 0, Math.PI * 2);
+              gfx.stroke();
+              // Stadium lights at night
+              if (typeof dayNight2 !== 'undefined' && dayNight2 && dayNight2.isNight) {
+                gfx.fillStyle = 'rgba(255,255,240,0.85)';
+                for (var sl = 0; sl < 4; sl++) {
+                  var slAng = sl * Math.PI / 2 + Math.PI / 4;
+                  gfx.beginPath();
+                  gfx.arc(stdX + Math.cos(slAng) * stdW * 0.95, y - elevBump + Math.sin(slAng) * stdH * 0.95, 0.8, 0, Math.PI * 2);
+                  gfx.fill();
+                }
+                // Field glow
+                var stdGrad = gfx.createRadialGradient(stdX, y - elevBump, 0, stdX, y - elevBump, stdW * 1.3);
+                stdGrad.addColorStop(0, 'rgba(255,255,200,0.2)');
+                stdGrad.addColorStop(1, 'rgba(255,255,200,0)');
+                gfx.fillStyle = stdGrad;
+                gfx.fillRect(stdX - stdW * 1.4, y - elevBump - stdH * 1.4, stdW * 2.8, stdH * 2.8);
+              }
+            }
+
+            // Regional airports (not just home airport) — visible runway marker from above
+            if (depth > 0.4 && alt < 8000 && elev < 3000 &&
+                terrainHash(Math.floor(scanLat * 6), Math.floor(scanLon * 6) + 17) > 0.91) {
+              var rwSeed = Math.floor(scanLat * 6) + Math.floor(scanLon * 6);
+              var rwX = terrainHash(rwSeed, 31) * W * 0.7 + W * 0.15;
+              var rwLen = 30 + depth * 40;
+              var rwAng = (terrainHash(rwSeed, 32) - 0.5) * 1.2;
+              gfx.save();
+              gfx.translate(rwX, y - elevBump);
+              gfx.rotate(rwAng);
+              // Runway surface
+              gfx.fillStyle = 'rgba(45,45,55,' + (0.9 * depth) + ')';
+              gfx.fillRect(-rwLen / 2, -2, rwLen, 4);
+              // Centerline dashes
+              gfx.fillStyle = 'rgba(230,230,180,' + (0.7 * depth) + ')';
+              for (var dr = 0; dr < 8; dr++) {
+                gfx.fillRect(-rwLen / 2 + dr * rwLen / 8, -0.3, rwLen / 16, 0.6);
+              }
+              // Threshold piano keys
+              gfx.fillStyle = 'rgba(255,255,255,' + (0.8 * depth) + ')';
+              for (var pk = 0; pk < 4; pk++) {
+                gfx.fillRect(-rwLen / 2 + 1 + pk * 1.2, -1.8, 0.8, 1.2);
+                gfx.fillRect(rwLen / 2 - 5 + pk * 1.2, -1.8, 0.8, 1.2);
+              }
+              gfx.restore();
+              // Terminal building (small)
+              gfx.fillStyle = 'rgba(200,200,210,' + (0.7 * depth) + ')';
+              gfx.fillRect(rwX - 4, y - elevBump + 6, 8, 2);
+              // Airport beacon (rotating — green/white alternating)
+              var beaconFlash = Math.sin(time * 4) > 0 ? 'rgba(255,255,255,0.9)' : 'rgba(60,255,100,0.9)';
+              gfx.fillStyle = beaconFlash;
+              gfx.beginPath();
+              gfx.arc(rwX + 6, y - elevBump + 5, 0.8, 0, Math.PI * 2);
+              gfx.fill();
+            }
+
+            // Dams/reservoirs (blocky barrier across a river valley)
+            if (elev > 800 && elev < 5000 && depth > 0.35 && alt < 7000 && !isDesert &&
+                terrainHash(Math.floor(scanLat * 8) + 11, Math.floor(scanLon * 8) + 13) > 0.93) {
+              var dmX = terrainHash(scanLat * 19, scanLon * 19) * W * 0.6 + W * 0.2;
+              var dmW = 18 + depth * 14;
+              // Reservoir (blue water behind)
+              gfx.fillStyle = 'rgba(70,130,180,' + (0.7 * depth) + ')';
+              gfx.beginPath();
+              gfx.ellipse(dmX, y - elevBump - 4, dmW * 0.7, 3 + depth * 3, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Dam wall (curved arch)
+              gfx.fillStyle = 'rgba(200,200,205,' + (0.85 * depth) + ')';
+              gfx.beginPath();
+              gfx.moveTo(dmX - dmW / 2, y - elevBump - 1);
+              gfx.quadraticCurveTo(dmX, y - elevBump - 5, dmX + dmW / 2, y - elevBump - 1);
+              gfx.lineTo(dmX + dmW / 2, y - elevBump + 1);
+              gfx.quadraticCurveTo(dmX, y - elevBump - 3, dmX - dmW / 2, y - elevBump + 1);
+              gfx.closePath();
+              gfx.fill();
+              // Spillway (white cascade)
+              gfx.fillStyle = 'rgba(230,240,250,' + (0.65 * depth) + ')';
+              gfx.fillRect(dmX - 2, y - elevBump, 4, 5);
+            }
+
+            // Rice terraces (Asia — curved contour terraces on hillsides)
+            if (scanLat > 5 && scanLat < 35 && scanLon > 95 && scanLon < 135 &&
+                elev > 500 && elev < 6000 && depth > 0.35 && alt < 6000 &&
+                terrainHash(Math.floor(scanLat * 10), Math.floor(scanLon * 10) + 7) > 0.72) {
+              var rtX = terrainHash(scanLat * 33, scanLon * 33) * W * 0.6 + W * 0.2;
+              var rtW = 30 + depth * 30;
+              // Stacked curved terrace bands (blue-green stepped)
+              for (var rti = 0; rti < 6; rti++) {
+                var rtBW = rtW * (1 - rti * 0.12);
+                var rtY = y - elevBump - rti * 1.5;
+                var rtShade = rti % 2 === 0 ? 'rgba(110,170,110,' + (0.6 * depth) + ')' : 'rgba(140,180,150,' + (0.55 * depth) + ')';
+                gfx.fillStyle = rtShade;
+                gfx.beginPath();
+                gfx.ellipse(rtX, rtY, rtBW / 2, 1.2, 0, 0, Math.PI);
+                gfx.fill();
+                // Water reflection in flooded paddies (blue sheen)
+                gfx.fillStyle = 'rgba(150,200,230,' + (0.25 * depth) + ')';
+                gfx.beginPath();
+                gfx.ellipse(rtX, rtY, rtBW / 2.2, 0.5, 0, 0, Math.PI);
+                gfx.fill();
+              }
+            }
+
             // Small rural villages/hamlets (away from cities, sparse cluster of ~5-8 buildings + church)
             var villageSeed = Math.floor(scanLat * 7) * 23 + Math.floor(scanLon * 7);
             var isVillage = !isDesert && !isTundra && elev < 3500 && depth > 0.3 && alt < 7000 &&
@@ -1849,6 +2027,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         { name: 'Salar de Uyuni', lat: -20.133, lon: -67.489, type: 'saltflat', fact: 'World\'s largest salt flat — 4,086 sq mi. Becomes a mirror during the rainy season.' },
         { name: 'Mt. Saint Helens', lat: 46.191, lon: -122.195, type: 'volcano_active', fact: '1980 eruption was the deadliest in US history. Lost 1,300 ft of summit in 9 hours.' },
         { name: 'Atomium (Brussels)', lat: 50.895, lon: 4.341, type: 'atomium', fact: 'Built for 1958 World Expo. 9 steel spheres represent an iron crystal magnified 165 billion times.' },
+        { name: 'Palm Jumeirah', lat: 25.116, lon: 55.138, type: 'palm_island', fact: 'Artificial palm-shaped island in Dubai. Adds 40 miles of coastline; visible from space.' },
+        { name: 'The Pentagon', lat: 38.871, lon: -77.056, type: 'pentagon', fact: '5-sided DoD HQ (1943). 17.5 miles of corridors — designed so any 2 points are ≤7 min walk.' },
+        { name: 'Kaaba (Mecca)', lat: 21.423, lon: 39.826, type: 'kaaba', fact: 'Sacred cube at the center of the Masjid al-Haram. Holiest site in Islam — faced during prayer.' },
+        { name: 'Ha Long Bay', lat: 20.910, lon: 107.183, type: 'karst_bay', fact: 'UNESCO site with 1,600+ limestone karst islands rising from emerald waters.' },
+        { name: 'Giant\'s Causeway', lat: 55.241, lon: -6.512, type: 'hex_columns', fact: '40,000 hexagonal basalt columns from a 60M-year-old volcanic eruption.' },
       ];
 
       var iconicDiscoveredRef = useRef({});
