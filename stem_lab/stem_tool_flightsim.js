@@ -3828,9 +3828,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Only show ground-perspective runway when low + close
         if (aglAlt > 200 || nearDist > 0.6) return;
 
-        // ── Asphalt apron underfoot — covers the whole lower half ──
-        gfx.fillStyle = '#3a3f48';
-        gfx.fillRect(0, horizonY, W, H - horizonY);
+        // Compute locally — main render loop has its own `dayNight`, but we're
+        // called before it's in scope (we draw UNDER the HUD). Falls back to
+        // daytime defaults if getDayNight is missing.
+        var dayNight = (typeof getDayNight === 'function')
+          ? getDayNight(state.lon || 0, timeRef.current || 0)
+          : { brightness: 0.8, isNight: false, isDusk: false };
+        // Groundedness factor — declared up top so ramp/trees can reference it.
+        var groundFactor = Math.max(0, 1 - aglAlt / 200); // 1 on ground, 0 at 200ft AGL
+
+        // ── Ground surround — grass field the runway sits in, not raw asphalt ──
+        // Two-stop vertical gradient (brighter near the viewer, darker at the horizon)
+        // + deterministic grass tufts so the field doesn't read as a flat slab.
+        var groundTop = horizonY;
+        var groundGrad = gfx.createLinearGradient(0, groundTop, 0, H);
+        var grassTint = dayNight.isNight ? ['#1f3024', '#16241a'] : ['#3f6e3a', '#4a8a45'];
+        groundGrad.addColorStop(0, grassTint[0]);
+        groundGrad.addColorStop(1, grassTint[1]);
+        gfx.fillStyle = groundGrad;
+        gfx.fillRect(0, groundTop, W, H - groundTop);
+        // Grass tufts — seeded so they don't crawl every frame.
+        var tufts = 120;
+        var tuftSeed = Math.floor(state.lat * 50) * 17 + Math.floor(state.lon * 50);
+        gfx.fillStyle = dayNight.isNight ? 'rgba(140,160,140,0.12)' : 'rgba(180,220,160,0.22)';
+        for (var tf = 0; tf < tufts; tf++) {
+          var tSeed = (tuftSeed + tf * 91) % 1000;
+          var tFrac = tf / tufts; // 0 near horizon, 1 near player
+          var ty = groundTop + (H - groundTop) * (0.05 + 0.95 * (tFrac * tFrac));
+          var tx = (tSeed * 7.13) % W;
+          var tSize = 0.5 + tFrac * 2;
+          gfx.fillRect(tx, ty, tSize, tSize);
+        }
+
+        // ── Distant tree line along the horizon — green strip of conifers.
+        // Fills the gap between horizon hills and airport buildings, gives
+        // peripheral vision something to register against.
+        var treeY = horizonY + 2;
+        var treeBaseH = 10;
+        gfx.fillStyle = dayNight.isNight ? 'rgba(18,36,28,0.9)' : 'rgba(34,74,48,0.85)';
+        gfx.beginPath();
+        gfx.moveTo(0, treeY + treeBaseH);
+        for (var tX = 0; tX < W; tX += 4) {
+          // Lumpy seeded silhouette. Skip the region directly behind the runway
+          // so the runway still visually vanishes to the horizon cleanly.
+          var gapDist = Math.abs(tX - W / 2);
+          var pinch = gapDist < W * 0.08 ? 0 : 1;
+          var tHt = (Math.sin(tX * 0.31 + tuftSeed * 0.1) * 0.5 + Math.sin(tX * 0.17) * 0.3 + 0.5) * treeBaseH * pinch;
+          gfx.lineTo(tX, treeY + treeBaseH - tHt);
+        }
+        gfx.lineTo(W, treeY + treeBaseH);
+        gfx.closePath();
+        gfx.fill();
+
+        // ── Asphalt ramp — only where buildings/vehicles actually sit, not the
+        // whole lower screen. Keeps grass visible beside the runway.
+        if (groundFactor > 0.4) {
+          gfx.fillStyle = dayNight.isNight ? 'rgba(35,40,48,0.85)' : 'rgba(58,63,72,0.9)';
+          // Left apron (hangars + fuel truck live here)
+          gfx.fillRect(0, horizonY + (H - horizonY) * 0.4, W * 0.42, (H - horizonY) * 0.6);
+          // Right apron (terminal)
+          gfx.fillRect(W * 0.72, horizonY + (H - horizonY) * 0.33, W * 0.28, (H - horizonY) * 0.67);
+        }
 
         // ── Perspective runway: wide trapezoid narrowing to vanishing point at horizon ──
         // Based on heading vs runway alignment. We assume the player is aligned with the runway
@@ -3839,8 +3897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var rwyHalfWFar = 6;          // narrows to a point near horizon
         var rwyTopY = horizonY + 4;
         var rwyBotY = H;
-        // Lift fades as the player gains altitude — runway shrinks back to standard view
-        var groundFactor = Math.max(0, 1 - aglAlt / 200); // 1 on ground, 0 at 200ft AGL
+        // groundFactor was declared up top (used by the grass/apron passes).
 
         gfx.fillStyle = '#1f2329';
         gfx.beginPath();
@@ -3852,13 +3909,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.fill();
 
         // ── Centerline dashes (perspective: short near horizon, long near cockpit) ──
+        // Scroll offset tied to ground speed so the dashes flow toward the
+        // player during takeoff roll — this is the single most powerful visual
+        // cue that the plane is actually moving. Without it, even at 60 kt the
+        // runway looks frozen. Reset scroll phase each dash-cycle.
         gfx.fillStyle = '#fdf3a6';
         var dashCount = 14;
+        var scrollPh = ((timeRef.current * (state.speed * 0.015 + 0.02)) % 1);
         for (var di = 0; di < dashCount; di++) {
-          var t = di / dashCount;
-          var dashY = rwyTopY + (rwyBotY - rwyTopY) * (t * t); // squared for perspective
-          var dashLen = 2 + t * 18;
-          var dashW = 1 + t * 4;
+          var tRaw = ((di + scrollPh) % dashCount) / dashCount;
+          var dashY = rwyTopY + (rwyBotY - rwyTopY) * (tRaw * tRaw); // squared for perspective
+          var dashLen = 2 + tRaw * 18;
+          var dashW = 1 + tRaw * 4;
           gfx.fillRect(W / 2 - dashW / 2, dashY, dashW, dashLen);
         }
 
@@ -3918,13 +3980,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
 
         // ── Edge lights (small dim white dots running along both edges) ──
-        gfx.fillStyle = 'rgba(255,255,180,0.7)';
+        // Scroll with the centerline so motion is visible peripherally too.
+        // At night they glow; daytime they're just painted reflectors.
+        var edgeGlow = dayNight.isNight;
+        gfx.fillStyle = edgeGlow ? 'rgba(255,255,200,0.95)' : 'rgba(255,255,180,0.7)';
         var edgeLightCount = 18;
         for (var ei = 0; ei < edgeLightCount; ei++) {
-          var et = ei / edgeLightCount;
+          var et = (((ei + scrollPh) % edgeLightCount)) / edgeLightCount;
           var lY = rwyTopY + (rwyBotY - rwyTopY) * (et * et);
           var lXLeft = W / 2 - (rwyHalfWNear * groundFactor + rwyHalfWFar * (1 - groundFactor)) * (et) - rwyHalfWFar * (1 - et) - 2;
           var lXRight = W / 2 + (rwyHalfWNear * groundFactor + rwyHalfWFar * (1 - groundFactor)) * (et) + rwyHalfWFar * (1 - et) + 2;
+          // At night, add a soft glow disc
+          if (edgeGlow) {
+            gfx.fillStyle = 'rgba(255,255,200,0.18)';
+            gfx.fillRect(lXLeft - 1, lY - 1, 4, 4);
+            gfx.fillRect(lXRight - 1, lY - 1, 4, 4);
+            gfx.fillStyle = 'rgba(255,255,200,0.95)';
+          }
           gfx.fillRect(lXLeft, lY, 2, 2);
           gfx.fillRect(lXRight, lY, 2, 2);
         }
@@ -4076,6 +4148,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.textAlign = 'center';
           gfx.textBaseline = 'middle';
           gfx.fillText(nearWp.code || '???', signX + 40, signY + 11);
+        }
+
+        // ── Windsock — classic orange cone on a striped pole beside the runway.
+        // Angle and stretch scale with wind speed so the student can read the
+        // wind at a glance (into-the-wind takeoff is cheaper). Weather is read
+        // from the outer closure's weatherRef; fall back to calm if unavailable.
+        if (groundFactor > 0.3) {
+          var wSpd = (weatherRef.current && weatherRef.current.wind) || 5;
+          var wDir = (weatherRef.current && weatherRef.current.windDir) || 270;
+          var relWind = ((wDir - state.heading + 540) % 360) - 180; // -180..180
+          // Crosswind component (sin) decides how much the sock swings left/right
+          var crossComp = Math.sin(relWind * Math.PI / 180);
+          var headComp = Math.cos(relWind * Math.PI / 180);
+          // Sock fullness 0..1: calm droops, 15kt+ is fully extended horizontal
+          var fullness = Math.min(1, wSpd / 15);
+          var wsX = W * 0.66;
+          var wsY = horizonY + (H - horizonY) * 0.48;
+          var wsPoleH = 26;
+          // Pole (red/white bands)
+          for (var bp = 0; bp < 4; bp++) {
+            gfx.fillStyle = bp % 2 === 0 ? '#ef4444' : '#f3f4f6';
+            gfx.fillRect(wsX, wsY + bp * (wsPoleH / 4), 1.5, wsPoleH / 4);
+          }
+          // Sock — orange chevron cone, stretched by wind
+          var sockLen = 10 + fullness * 22;
+          var sockBaseY = wsY;
+          var sockDx = crossComp * sockLen * 0.9;
+          var sockDy = (1 - fullness) * sockLen * 0.6 - Math.abs(headComp) * 1.5;
+          // Cone body
+          gfx.fillStyle = 'rgba(249,115,22,0.92)';
+          gfx.beginPath();
+          gfx.moveTo(wsX + 1, sockBaseY - 1);
+          gfx.lineTo(wsX + 1, sockBaseY + 5);
+          gfx.lineTo(wsX + sockDx * 0.5 + 1, sockBaseY + sockDy + 3);
+          gfx.lineTo(wsX + sockDx, sockBaseY + sockDy);
+          gfx.closePath();
+          gfx.fill();
+          // White stripe band
+          gfx.fillStyle = 'rgba(255,255,255,0.5)';
+          gfx.beginPath();
+          gfx.moveTo(wsX + sockDx * 0.35, sockBaseY + sockDy * 0.35);
+          gfx.lineTo(wsX + sockDx * 0.5, sockBaseY + sockDy * 0.5);
+          gfx.lineTo(wsX + sockDx * 0.5, sockBaseY + sockDy * 0.5 + 1.5);
+          gfx.lineTo(wsX + sockDx * 0.35, sockBaseY + sockDy * 0.35 + 1.5);
+          gfx.closePath();
+          gfx.fill();
+          // Tiny "WIND" label
+          if (groundFactor > 0.6) {
+            gfx.fillStyle = 'rgba(203,213,225,0.7)';
+            gfx.font = 'bold 7px monospace';
+            gfx.textAlign = 'center';
+            gfx.textBaseline = 'top';
+            gfx.fillText(Math.round(wSpd) + 'kt', wsX + 1, wsY + wsPoleH + 1);
+          }
+        }
+
+        // ── Runway hold-short line — paired yellow solids + dashes across the
+        // taxiway entrance (just before the player's wheels on the threshold).
+        // Every real airport has this; it reads instantly as "you are at a runway".
+        if (groundFactor > 0.6 && aglAlt < 40) {
+          var hsY = rwyBotY - 60;
+          var hsLeft = W / 2 - rwyHalfWNear * 0.82;
+          var hsRight = W / 2 + rwyHalfWNear * 0.82;
+          // Two solid yellow lines (on the holding side)
+          gfx.fillStyle = '#fcd34d';
+          gfx.fillRect(hsLeft - 14, hsY, hsRight - hsLeft + 28, 2);
+          gfx.fillRect(hsLeft - 14, hsY + 4, hsRight - hsLeft + 28, 2);
+          // Two dashed yellow lines (on the runway side)
+          for (var hd = 0; hd < 14; hd++) {
+            var hdX = hsLeft - 14 + hd * ((hsRight - hsLeft + 28) / 14);
+            gfx.fillRect(hdX, hsY + 8, 5, 2);
+            gfx.fillRect(hdX, hsY + 12, 5, 2);
+          }
+        }
+
+        // ── Yellow taxi line curving from the left ramp to the runway ──
+        if (groundFactor > 0.5 && aglAlt < 50) {
+          gfx.strokeStyle = 'rgba(252,211,77,0.9)';
+          gfx.lineWidth = 2;
+          gfx.beginPath();
+          var txStart = { x: W * 0.18, y: horizonY + (H - horizonY) * 0.72 };
+          var txMid =   { x: W * 0.34, y: horizonY + (H - horizonY) * 0.82 };
+          var txEnd =   { x: W / 2 - rwyHalfWNear * 0.7, y: rwyBotY - 58 };
+          gfx.moveTo(txStart.x, txStart.y);
+          gfx.quadraticCurveTo(txMid.x, txMid.y, txEnd.x, txEnd.y);
+          gfx.stroke();
         }
       };
 
@@ -5247,6 +5405,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             });
           }
 
+          // ── Bird flocks — silhouetted V formations at low-to-mid altitude.
+          // Birds live in the biosphere (surface..~6000 ft), so we hide them
+          // above 8000 ft. The flock drifts with wind-ish motion and each bird
+          // flaps independently. Purely ambient — gives the empty sky life.
+          if (state.altitude > 200 && state.altitude < 8000 && !dayNight.isNight) {
+            var flockCount = 2;
+            for (var flk = 0; flk < flockCount; flk++) {
+              var flkSeed = flk * 53 + Math.floor(timeRef.current / 40);
+              // Wrap the flock across the screen so it reappears after drifting off.
+              var flkLead = {
+                x: ((flk * 330 + timeRef.current * (18 + flk * 6)) % (W + 200)) - 100,
+                y: horizonY + 30 + flk * 40 + Math.sin(timeRef.current * 0.2 + flk) * 12
+              };
+              if (flkLead.y > H - 20) continue;
+              gfx.strokeStyle = dayNight.isDusk ? 'rgba(40,30,50,0.7)' : 'rgba(30,35,45,0.75)';
+              gfx.lineWidth = 1;
+              var birdN = 5 + (flkSeed % 3);
+              for (var bd = 0; bd < birdN; bd++) {
+                // V formation: row 0 is lead, subsequent rows fan out diagonally.
+                var bdRow = Math.ceil(bd / 2);
+                var bdSide = bd % 2 === 0 ? -1 : 1;
+                var bx = flkLead.x + bdSide * bdRow * 12;
+                var by = flkLead.y + bdRow * 5;
+                // Flap phase offset per-bird so they don't all sync
+                var flap = Math.sin(timeRef.current * 8 + bd * 0.6) * 0.5 + 0.5; // 0..1
+                var wingUp = 3 + flap * 3;
+                var wingOut = 5;
+                gfx.beginPath();
+                gfx.moveTo(bx - wingOut, by + wingUp);
+                gfx.lineTo(bx, by);
+                gfx.lineTo(bx + wingOut, by + wingUp);
+                gfx.stroke();
+              }
+            }
+          }
+
           // High-altitude jet contrails (visible when above 10k ft, more at cruise altitudes)
           if (state.altitude > 10000 && horizonY > 30) {
             var contrailCount = state.altitude > 25000 ? 4 : 2;
@@ -5347,6 +5541,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // Vertical stabilizer
             gfx.fillStyle = '#6366f1';
             gfx.beginPath(); gfx.moveTo(25, -2); gfx.lineTo(30, -14); gfx.lineTo(28, -2); gfx.fill();
+            // ── Propeller disc — at idle the individual blades are visible,
+            // at higher RPM they blur into a translucent disc with a faint
+            // motion streak. Lets the student read engine RPM from the view.
+            var propX = 30;
+            var propRpmFactor = 0.15 + ctrl.throttle * 0.85;
+            var propBlur = propRpmFactor > 0.55; // blur once "at power"
+            if (propBlur) {
+              // Disc
+              gfx.fillStyle = 'rgba(210,220,230,' + (0.18 + ctrl.throttle * 0.15) + ')';
+              gfx.beginPath(); gfx.ellipse(propX, 0, 2, 8, 0, 0, Math.PI * 2); gfx.fill();
+              // Outer rim
+              gfx.strokeStyle = 'rgba(180,190,200,' + (0.25 + ctrl.throttle * 0.15) + ')';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath(); gfx.ellipse(propX, 0, 2, 8, 0, 0, Math.PI * 2); gfx.stroke();
+              // Streak hint
+              gfx.fillStyle = 'rgba(255,255,255,' + (0.06 + ctrl.throttle * 0.1) + ')';
+              gfx.fillRect(propX - 2, -7, 4, 14);
+            } else {
+              // Slow blades visible individually — two lines rotating together
+              var propAngle = timeRef.current * (3 + propRpmFactor * 40);
+              gfx.strokeStyle = 'rgba(30,32,38,0.85)';
+              gfx.lineWidth = 1.2;
+              var pr = 7;
+              gfx.beginPath();
+              gfx.moveTo(propX + Math.cos(propAngle) * pr, Math.sin(propAngle) * pr);
+              gfx.lineTo(propX - Math.cos(propAngle) * pr, -Math.sin(propAngle) * pr);
+              gfx.stroke();
+              gfx.beginPath();
+              gfx.moveTo(propX + Math.cos(propAngle + Math.PI / 2) * pr, Math.sin(propAngle + Math.PI / 2) * pr);
+              gfx.lineTo(propX - Math.cos(propAngle + Math.PI / 2) * pr, -Math.sin(propAngle + Math.PI / 2) * pr);
+              gfx.stroke();
+            }
+            // Spinner (prop hub)
+            gfx.fillStyle = '#334155';
+            gfx.beginPath(); gfx.arc(propX, 0, 1.5, 0, Math.PI * 2); gfx.fill();
+
             // Engine glow (when throttle > 0)
             if (ctrl.throttle > 0.1) {
               var engGlow = gfx.createRadialGradient(28, 0, 0, 28, 0, 8 + ctrl.throttle * 10);
@@ -5360,20 +5590,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillStyle = '#ef4444'; gfx.beginPath(); gfx.arc(-48, -5, 2, 0, Math.PI * 2); gfx.fill(); // Left wing red
               gfx.fillStyle = '#22c55e'; gfx.beginPath(); gfx.arc(-48, 5, 2, 0, Math.PI * 2); gfx.fill();  // Right wing green
             }
+            // Strobe on the belly (1 Hz white flash)
+            if (timeRef.current % 1 > 0.92) {
+              gfx.fillStyle = 'rgba(255,255,255,0.9)';
+              gfx.beginPath(); gfx.arc(0, 4, 2.5, 0, Math.PI * 2); gfx.fill();
+            }
             gfx.restore();
           }
 
           // Day/night cycle (computed early so sun/lens flare/haze can use it)
           var dayNight = getDayNight(state.lon || 0, timeRef.current || 0) || { brightness: 0.8, isNight: false, isDusk: false, solarHour: 12 };
 
-          // Sun/moon glow
-          var sunX = W * 0.8; var sunY = Math.max(20, horizonY * 0.2);
-          var sunGrad = gfx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 80);
-          sunGrad.addColorStop(0, 'rgba(255,250,220,0.9)');
-          sunGrad.addColorStop(0.3, 'rgba(255,200,50,0.3)');
-          sunGrad.addColorStop(1, 'rgba(255,200,50,0)');
-          gfx.fillStyle = sunGrad; gfx.fillRect(sunX - 80, sunY - 80, 160, 160);
-          gfx.fillStyle = '#fffde0'; gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
+          // Sun/moon glow. Position moves with solar hour (sunrise at 06:00 in
+          // the east → noon high overhead → sunset in the west at 18:00). This
+          // replaces a fixed sunX = W*0.8 which meant every airport on every
+          // flight had the same static lighting regardless of time of day.
+          var solarHrN = (dayNight.solarHour != null ? dayNight.solarHour : 12);
+          // Map 6→left (0.12 W), 12→center (0.5 W), 18→right (0.88 W); clamp otherwise.
+          var sunT = Math.max(0, Math.min(1, (solarHrN - 6) / 12));
+          var sunX = W * (0.12 + sunT * 0.76);
+          // Arc height: peaks at noon, dips at sunrise/sunset, below horizon at night.
+          var sunArc = Math.sin(sunT * Math.PI); // 0..1..0 over 06→18
+          var sunY = horizonY - sunArc * (horizonY * 0.75) - 10;
+          if (dayNight.isNight) {
+            // Moon: cool white glow, slower arc (rough 20:00 → 06:00 visible).
+            var moonHr = ((solarHrN + 12) % 24);
+            var moonT = Math.max(0, Math.min(1, (moonHr - 20) / 10 + (moonHr < 6 ? 1 : 0)));
+            sunX = W * (0.12 + moonT * 0.76);
+            sunArc = Math.sin(moonT * Math.PI);
+            sunY = horizonY - sunArc * (horizonY * 0.7) - 10;
+            var moonGrad = gfx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 60);
+            moonGrad.addColorStop(0, 'rgba(240,245,255,0.9)');
+            moonGrad.addColorStop(0.4, 'rgba(200,220,255,0.25)');
+            moonGrad.addColorStop(1, 'rgba(150,180,220,0)');
+            gfx.fillStyle = moonGrad; gfx.fillRect(sunX - 60, sunY - 60, 120, 120);
+            gfx.fillStyle = '#f1f5f9';
+            gfx.beginPath(); gfx.arc(sunX, sunY, 7, 0, Math.PI * 2); gfx.fill();
+            // Crater shadow
+            gfx.fillStyle = 'rgba(160,170,190,0.35)';
+            gfx.beginPath(); gfx.arc(sunX - 2, sunY - 1, 2, 0, Math.PI * 2); gfx.fill();
+            gfx.beginPath(); gfx.arc(sunX + 2, sunY + 2, 1.5, 0, Math.PI * 2); gfx.fill();
+          } else {
+            // Sun: warm yellow with a slightly redder tint near horizon (golden hour)
+            var horizonProxim = 1 - sunArc; // 0 overhead, 1 at horizon
+            var sunR = 255;
+            var sunG = Math.round(230 - horizonProxim * 80);
+            var sunB = Math.round(180 - horizonProxim * 150);
+            var sunGrad = gfx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 80);
+            sunGrad.addColorStop(0, 'rgba(' + sunR + ',' + sunG + ',' + Math.max(100, sunB) + ',0.9)');
+            sunGrad.addColorStop(0.3, 'rgba(' + sunR + ',' + (sunG - 30) + ',50,0.3)');
+            sunGrad.addColorStop(1, 'rgba(255,200,50,0)');
+            gfx.fillStyle = sunGrad; gfx.fillRect(sunX - 80, sunY - 80, 160, 160);
+            gfx.fillStyle = 'rgb(' + sunR + ',' + sunG + ',' + Math.max(120, sunB) + ')';
+            gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
+          }
 
           // Lens flare (when looking toward sun)
           if (dayNight && !dayNight.isNight) {
@@ -5809,6 +6079,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = '#64748b'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('Press ? or ESC to close', W / 2, H - 8);
             animRef.current = requestAnimationFrame(loop); return;
+          }
+
+          // ── Takeoff V-speed callouts ──
+          // Big transient banners that flash when the player hits real Cessna
+          // reference speeds during the takeoff roll. One-shot each: once a
+          // callout has fired, the flag on flightRef.current stays true until
+          // we're airborne + above 500 ft AGL, at which point we reset for the
+          // next takeoff. The same pattern is used by _stallAnnounced.
+          if (!pausedRef.current) {
+            var vKts = state.speed * 0.5924838;
+            var vAgl = state.altitude - (state.fieldElev || 0);
+            var fl = flightRef.current;
+            if (!fl._callouts) fl._callouts = { v1: 0, vr: 0, climb: 0 };
+            // Reset when solidly airborne
+            if (vAgl > 500 && !state.onGround) fl._callouts = { v1: 0, vr: 0, climb: 0 };
+            var calloutMsg = null, calloutColor = '#38bdf8';
+            if (state.onGround && vKts >= 45 && vKts < 54 && !fl._callouts.v1) {
+              calloutMsg = 'V1 — committed to takeoff';
+              fl._callouts.v1 = timeRef.current;
+              if (typeof skyAnnounce === 'function') skyAnnounce('V one');
+            } else if (state.onGround && vKts >= 55 && !fl._callouts.vr) {
+              calloutMsg = 'ROTATE — pitch up (W)';
+              calloutColor = '#fbbf24';
+              fl._callouts.vr = timeRef.current;
+              if (typeof skyAnnounce === 'function') skyAnnounce('Rotate');
+            } else if (!state.onGround && state.vsi > 3 && vAgl > 20 && vAgl < 200 && !fl._callouts.climb) {
+              calloutMsg = 'POSITIVE RATE';
+              calloutColor = '#22c55e';
+              fl._callouts.climb = timeRef.current;
+              if (typeof skyAnnounce === 'function') skyAnnounce('Positive rate of climb');
+            }
+            // Keep the last-triggered callout on screen for 2.2s with fade.
+            var lastCall = Math.max(fl._callouts.v1, fl._callouts.vr, fl._callouts.climb);
+            if (lastCall > 0 && timeRef.current - lastCall < 2.2) {
+              var cFade = Math.max(0, 1 - (timeRef.current - lastCall) / 2.2);
+              // Re-derive the callout text from which flag most recently fired
+              var curMsg, curColor;
+              if (fl._callouts.climb === lastCall) { curMsg = 'POSITIVE RATE'; curColor = '#22c55e'; }
+              else if (fl._callouts.vr === lastCall) { curMsg = 'ROTATE — pitch up (W)'; curColor = '#fbbf24'; }
+              else { curMsg = 'V1 — committed to takeoff'; curColor = '#38bdf8'; }
+              gfx.save();
+              gfx.globalAlpha = cFade;
+              gfx.font = 'bold 32px system-ui';
+              var cw = gfx.measureText(curMsg).width + 40;
+              gfx.fillStyle = 'rgba(2,6,23,0.75)';
+              gfx.beginPath(); gfx.roundRect((W - cw) / 2, H * 0.25 - 28, cw, 54, 8); gfx.fill();
+              gfx.strokeStyle = curColor; gfx.lineWidth = 2;
+              gfx.beginPath(); gfx.roundRect((W - cw) / 2, H * 0.25 - 28, cw, 54, 8); gfx.stroke();
+              gfx.fillStyle = curColor;
+              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(curMsg, W / 2, H * 0.25);
+              gfx.restore();
+              // Suppress calloutMsg local so it doesn't double-render this frame
+              calloutMsg = null;
+            }
           }
 
           // ── Adaptive Flight Hints ──

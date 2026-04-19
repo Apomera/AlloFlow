@@ -15359,6 +15359,15 @@ Return only the corrected version of this exact text:`;
                               cascade that would otherwise pull the term title toward the
                               container's theme color (brown, green, etc.) instead of gold. */}
                           <strong className="block mb-1" style={{ color: '#fde047' }}>{item.term}</strong>
+                          {item.image && (
+                              <img
+                                  src={item.image}
+                                  alt={item.term}
+                                  className="block mb-2 w-full rounded border border-slate-600 bg-white"
+                                  style={{ maxHeight: '100px', objectFit: 'contain' }}
+                                  loading="lazy"
+                              />
+                          )}
                           <span style={{ color: '#ffffff' }}>{item.def}</span>
                           {leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage] && (
                               <span className="block mt-2 pt-2 border-t border-slate-600 italic" style={{ color: '#c7d2fe' }}>
@@ -32078,6 +32087,11 @@ Return ONLY a JSON array like:
     try {
         const def = generatedContent?.data[index]?.def || "";
         const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
+        // Collect every language the teacher has configured for this glossary, plus English
+        // as the always-included primary. Duplicates stripped so "English" in selectedLanguages
+        // doesn't produce two identical prose entries. Roots stay shared across languages —
+        // the morphemes themselves don't translate.
+        const targetLanguages = Array.from(new Set(['English'].concat(Array.isArray(selectedLanguages) ? selectedLanguages : [])));
         // Ask for STRUCTURED output so we can render root words as distinct chips,
         // not just buried prose. The UI will fall back gracefully if the model
         // returns prose-only (older responses / parse failures).
@@ -32090,12 +32104,16 @@ Return ONLY a JSON array like:
           ${isElementary
               ? 'Use simple wording: "Comes from the Greek/Latin/Old English word X meaning Y — the same root appears in [related word]."'
               : 'Break into prefix / root / suffix where useful; name source languages; note entry-into-English date if known.'}
-          ${effectiveLanguage && effectiveLanguage !== 'English' ? `Write the "prose" field in ${effectiveLanguage} (keep root morphemes in source-language script).` : ''}
-          If the word has no meaningful etymology (proper noun, recent coinage), return exactly: {"prose":"NONE","roots":[]}
+          ${targetLanguages.length > 1
+              ? `Produce the prose in ALL of these languages: ${targetLanguages.join(', ')}. Keep root morphemes in their source-language script regardless of prose language.`
+              : ''}
+          If the word has no meaningful etymology (proper noun, recent coinage), return exactly: {"prosePerLanguage":{"English":"NONE"},"roots":[]}
 
           Return ONLY a JSON object, no markdown fences, no extra text, with exactly this shape:
           {
-            "prose": "Two to four plain sentences explaining origin + optional history + related-word family (max 400 chars).",
+            "prosePerLanguage": {
+              ${targetLanguages.map(L => `"${L}": "Two to four plain sentences in ${L} explaining origin + optional history + related-word family (max 400 chars)."`).join(',\n              ')}
+            },
             "roots": [
               { "root": "photo",     "lang": "Greek", "meaning": "light",            "related": ["photograph", "photon", "photogenic"] },
               { "root": "synthesis", "lang": "Greek", "meaning": "putting together", "related": ["synthetic", "synthesize"] }
@@ -32110,11 +32128,22 @@ Return ONLY a JSON array like:
         const raw = await callGemini(prompt, true);
         // Strip possible code fences the model may slip in
         const stripped = (raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-        let prose = '';
+        let etymologyByLang = {};
         let roots = [];
         try {
             const parsed = JSON.parse(stripped);
-            if (parsed && typeof parsed.prose === 'string') prose = parsed.prose.trim();
+            if (parsed && parsed.prosePerLanguage && typeof parsed.prosePerLanguage === 'object') {
+                Object.keys(parsed.prosePerLanguage).forEach(lang => {
+                    const val = parsed.prosePerLanguage[lang];
+                    if (typeof val === 'string' && val.trim()) {
+                        const cleaned = val.trim().length > 600 ? val.trim().substring(0, 597) + '…' : val.trim();
+                        etymologyByLang[lang] = cleaned;
+                    }
+                });
+            } else if (parsed && typeof parsed.prose === 'string') {
+                // Backwards-compat: older shape with a single "prose" field.
+                etymologyByLang['English'] = parsed.prose.trim();
+            }
             if (parsed && Array.isArray(parsed.roots)) {
                 roots = parsed.roots
                     .filter(r => r && typeof r.root === 'string' && r.root.trim())
@@ -32135,11 +32164,14 @@ Return ONLY a JSON array like:
                     });
             }
         } catch (parseErr) {
-            // Fallback — treat the whole raw response as prose (legacy behavior).
-            prose = stripped;
+            // Fallback — treat the whole raw response as English prose (legacy behavior).
+            etymologyByLang['English'] = stripped;
         }
-        if (prose.length > 600) prose = prose.substring(0, 597) + '…';
-        if (!prose || prose === 'NONE') {
+        // Pick the primary prose for the legacy `item.etymology` field (back-compat for any
+        // code that still reads it): prefer display language, then English, then first available.
+        const primaryProse = etymologyByLang[effectiveLanguage] || etymologyByLang['English']
+            || etymologyByLang[Object.keys(etymologyByLang)[0]] || '';
+        if (!primaryProse || primaryProse === 'NONE') {
             addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
             return;
         }
@@ -32152,7 +32184,12 @@ Return ONLY a JSON array like:
                 return prev;
             }
             const newData = [...prev.data];
-            newData[liveIdx] = { ...newData[liveIdx], etymology: prose, roots: roots.length ? roots : undefined };
+            newData[liveIdx] = {
+                ...newData[liveIdx],
+                etymology: primaryProse,               // legacy single-string field
+                etymologyByLang,                        // new per-language map
+                roots: roots.length ? roots : undefined,
+            };
             const updated = { ...prev, data: newData };
             setHistory(h => h.map(item => item.id === prev.id ? updated : item));
             return updated;
@@ -42644,16 +42681,34 @@ Return only the corrected version of this exact text:`;
                                                 <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}</button>
                                             </div>
                                             {(
+                                                // Gate: only show the "Show word roots" generator button when the teacher
+                                                // opted into etymology at glossary-generation time (includeEtymology toggle).
+                                                // If etymology data already exists on the item (e.g. from a prior opt-in run
+                                                // or a legacy glossary), always show the <details>; only the GENERATE button
+                                                // is gated, so existing content never hides.
                                                 item.etymology ? (
                                                     <details className="mt-2 text-xs w-full" data-help-key="glossary_etymology_info">
                                                         <summary className="cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none">
                                                             📜 {t('glossary.etymology_label') || 'Word roots'}
                                                         </summary>
+                                                        {(() => {
+                                                          // Prefer per-language etymology prose when available. Falls back to the
+                                                          // legacy single-string item.etymology for backwards compatibility with
+                                                          // glossaries generated before etymologyByLang was introduced.
+                                                          const etyMap = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang : null;
+                                                          const displayLang = leveledTextLanguage || 'English';
+                                                          const etymologyProse = (etyMap && (etyMap[displayLang] || etyMap['English'] || etyMap[Object.keys(etyMap)[0]])) || item.etymology || '';
+                                                          return (
                                                         <div className="mt-1 pl-4 border-l-2 border-indigo-200 space-y-2">
+                                                            {etyMap && Object.keys(etyMap).length > 1 && (
+                                                                <div className="text-[10px] uppercase tracking-wide text-indigo-500 font-bold">
+                                                                    {displayLang}
+                                                                </div>
+                                                            )}
                                                             <div className="flex items-start gap-1">
-                                                                <p className="text-slate-700 leading-relaxed italic flex-1">{item.etymology}</p>
+                                                                <p className="text-slate-700 leading-relaxed italic flex-1">{etymologyProse}</p>
                                                                 <button
-                                                                    onClick={() => handleSpeak(item.etymology, `etym-${idx}`)}
+                                                                    onClick={() => handleSpeak(etymologyProse, `etym-${idx}`)}
                                                                     disabled={isGeneratingAudio && playingContentId !== `etym-${idx}`}
                                                                     className={`p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                                                     aria-label={t('glossary.etymology_label') || 'Word roots'}
@@ -42717,8 +42772,10 @@ Return only the corrected version of this exact text:`;
                                                                 );
                                                             })()}
                                                         </div>
+                                                          );
+                                                        })()}
                                                     </details>
-                                                ) : (
+                                                ) : includeEtymology ? (
                                                     <button
                                                         onClick={() => handleGenerateTermEtymology(idx, item.term)}
                                                         disabled={isGeneratingEtymology[idx]}
@@ -42732,7 +42789,7 @@ Return only the corrected version of this exact text:`;
                                                             ? <><RefreshCw size={12} className="animate-spin"/> {t('glossary.actions.generating_etymology') || 'Finding roots…'}</>
                                                             : <>📜 {t('glossary.actions.show_etymology') || 'Show word roots'}</>}
                                                     </button>
-                                                )
+                                                ) : null
                                             )}
                                         </div>
                                     </td>
