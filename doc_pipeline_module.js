@@ -619,6 +619,10 @@ var createDocPipeline = function(deps) {
     return html
       .replace(/<p[^>]*>\s*\[\s*"?\s*<\/p>/gi, '')
       .replace(/<p[^>]*>\s*"\s*\]\s*<\/p>/gi, '')
+      // Chunk-boundary collision `" ][ "` — chunk N ended with `"]` and chunk N+1 started
+      // with `["`; when joined they render as a visible paragraph between real content.
+      .replace(/<p[^>]*>\s*"\s*\]\s*\[\s*"\s*<\/p>/gi, '')
+      .replace(/"\s*\]\s*\[\s*"/g, '')
       .replace(/>\s*\[\s*"?\s*(<\/[^>]+>)/g, '>$1')
       .replace(/\[\s*"\s*<\//g, '</')
       .replace(/^\s*\[\s*"\s*$/gm, '')
@@ -3147,7 +3151,10 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         }
         // Strip a stray trailing `[ "` or `[ "}` left by truncated JSON — common cause of the
         // `[ "` fragment that occasionally appears at the bottom of a rendered page.
+        // Also strip leading `["` so that when chunk N+1 is joined to chunk N, the two
+        // wrappers can't collide into a `" ][ "` artifact between real content.
         c = c.replace(/\[\s*"?\s*$/, '').replace(/"\s*\]\s*$/, '').trim();
+        c = c.replace(/^\s*\[\s*"\s*/, '').replace(/^\s*"\s*\]\s*/, '').trim();
         // If a chunk is ENTIRELY partial JSON (no visible HTML tags), drop it with a recovery placeholder.
         if (c && !/<[a-z][\s\S]*?>/i.test(c) && /^\s*[\[\{]/.test(c)) {
           warnLog(`[Transform] Chunk ${i + 1} returned non-HTML JSON fragment — replacing with placeholder`);
