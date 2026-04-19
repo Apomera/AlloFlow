@@ -1464,6 +1464,602 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
       };
 
+      // ── Iconic Landmarks: hand-drawn visual structures for famous places ──
+      // Each entry has lat/lon, a draw type, and educational fact.
+      var ICONIC_LANDMARKS = [
+        // North America
+        { name: 'Statue of Liberty', lat: 40.689, lon: -74.045, type: 'liberty', height: 305, fact: 'Gift from France in 1886. Copper turned green from oxidation.' },
+        { name: 'Empire State Building', lat: 40.748, lon: -73.986, type: 'megatower', height: 1454, color: '#a8a8b0', fact: 'Built in just 410 days during the Great Depression (1930-1931).' },
+        { name: 'Hollywood Sign', lat: 34.134, lon: -118.322, type: 'sign', text: 'HOLLYWOOD', fact: 'Originally read "HOLLYWOODLAND" — a 1923 real estate ad.' },
+        { name: 'Golden Gate Bridge', lat: 37.819, lon: -122.479, type: 'bridge', color: '#c0392b', fact: 'Painted "International Orange" for visibility in fog. Opened 1937.' },
+        { name: 'Space Needle', lat: 47.620, lon: -122.349, type: 'spire', height: 605, color: '#d5d5d8', fact: 'Built for the 1962 World\'s Fair. Survives 200mph winds & 9.1 quakes.' },
+        { name: 'Mount Rushmore', lat: 43.879, lon: -103.459, type: 'rockface', fact: 'Four 60-ft presidential heads carved 1927-1941 by 400 workers.' },
+        { name: 'CN Tower', lat: 43.642, lon: -79.387, type: 'spire', height: 1815, color: '#e0d8c8', fact: 'Tallest free-standing structure 1976-2007. 147-story glass elevator.' },
+        { name: 'White House', lat: 38.898, lon: -77.037, type: 'capitol', fact: 'Built 1792-1800. Burned by British in 1814, rebuilt by 1817.' },
+        // Europe
+        { name: 'Eiffel Tower', lat: 48.858, lon: 2.294, type: 'tower', height: 1063, color: '#8b7355', fact: 'Iron lattice. Grows 6 inches in summer due to thermal expansion.' },
+        { name: 'Big Ben', lat: 51.500, lon: -0.124, type: 'clocktower', height: 316, color: '#c4a777', fact: '"Big Ben" is actually the bell, not the tower (Elizabeth Tower).' },
+        { name: 'Colosseum', lat: 41.890, lon: 12.492, type: 'colosseum', fact: 'Built 70-80 AD. Held 50,000-80,000 spectators for gladiator games.' },
+        { name: 'Leaning Tower of Pisa', lat: 43.723, lon: 10.396, type: 'leaning_tower', height: 183, fact: 'Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.' },
+        { name: 'Stonehenge', lat: 51.179, lon: -1.826, type: 'stones', fact: 'Built ~3000-2000 BC. Stones weigh up to 50 tons, moved 150 miles.' },
+        { name: 'Sagrada Familia', lat: 41.404, lon: 2.174, type: 'cathedral', fact: 'Under construction since 1882. Expected completion: 2026.' },
+        { name: 'Acropolis', lat: 37.971, lon: 23.726, type: 'temple', fact: 'The Parthenon (438 BC) sits on a 490-ft limestone hill above Athens.' },
+        // Middle East / Asia
+        { name: 'Great Pyramids of Giza', lat: 29.979, lon: 31.134, type: 'pyramids', fact: 'Built ~2560 BC. Great Pyramid was tallest structure on Earth for 3,800 years.' },
+        { name: 'Burj Khalifa', lat: 25.197, lon: 55.274, type: 'megatower', height: 2717, color: '#cfd2d6', fact: 'World\'s tallest building (2010). Has 163 floors, sways 5 ft at top.' },
+        { name: 'Taj Mahal', lat: 27.175, lon: 78.042, type: 'taj', fact: 'White marble mausoleum built 1632-1653 by Shah Jahan for his wife.' },
+        { name: 'Mount Fuji', lat: 35.361, lon: 138.727, type: 'volcano', height: 12388, fact: 'Sacred dormant volcano. Last erupted 1707. Climbed by 200,000+ yearly.' },
+        { name: 'Great Wall (Badaling)', lat: 40.432, lon: 116.570, type: 'wall', fact: '13,000+ miles total. Construction spanned 2,000 years (7th c. BC - 1644).' },
+        { name: 'Forbidden City', lat: 39.916, lon: 116.397, type: 'palace_complex', fact: '180-acre imperial palace (1406-1420). Contains 9,999 rooms.' },
+        { name: 'Angkor Wat', lat: 13.412, lon: 103.867, type: 'temple_complex', fact: 'Largest religious monument on Earth. 12th-century Hindu-Buddhist temple.' },
+        { name: 'Petra', lat: 30.329, lon: 35.443, type: 'rockcity', fact: 'Carved into rose-red cliffs by Nabataeans 2,000+ years ago.' },
+        // South America / Other
+        { name: 'Christ the Redeemer', lat: -22.952, lon: -43.211, type: 'statue_hill', height: 98, fact: '98-ft Art Deco statue atop 2,300-ft Corcovado mountain (1931).' },
+        { name: 'Machu Picchu', lat: -13.163, lon: -72.545, type: 'ruins', fact: 'Inca citadel built ~1450 AD at 7,970 ft. Hidden until 1911.' },
+        { name: 'Sydney Opera House', lat: -33.857, lon: 151.215, type: 'opera_house', fact: '1+ million ceramic roof tiles. Opened 1973. UNESCO site.' },
+        { name: 'Uluru', lat: -25.345, lon: 131.036, type: 'monolith', fact: 'Sacred sandstone monolith. 1,142 ft tall, 5.8 mi around, 600M years old.' },
+        { name: 'Easter Island Moai', lat: -27.122, lon: -109.367, type: 'moai', fact: '887 stone heads carved by Rapa Nui people 1100-1500 AD.' },
+      ];
+
+      var iconicDiscoveredRef = useRef({});
+
+      var drawIconicLandmarks = function(gfx, W, H, horizonY, state, time) {
+        var alt = Math.max(100, state.altitude);
+        var visRange = Math.max(30, alt / 80);
+
+        ICONIC_LANDMARKS.forEach(function(lm) {
+          var dist = haversineNm(state.lat, state.lon, lm.lat, lm.lon);
+          if (dist > visRange || dist > 80) return; // Only show within 80nm and visible range
+
+          var brg = bearing(state.lat, state.lon, lm.lat, lm.lon);
+          var relBrg = ((brg - state.heading + 180 + 360) % 360) - 180;
+          if (Math.abs(relBrg) > 60) return; // Outside FOV
+
+          // Project to screen
+          var screenX = W / 2 + (relBrg / 60) * (W * 0.45);
+          // Closer landmarks appear lower (closer to bottom of screen)
+          var distFactor = Math.min(1, dist / visRange);
+          var screenY = horizonY + (H - horizonY) * (0.15 + (1 - distFactor) * 0.55);
+
+          // Size scaling: closer = larger, also scales with landmark height if present
+          var baseSize = (40 * (1 - distFactor)) + 8;
+          if (lm.height) baseSize *= Math.min(2.5, 1 + lm.height / 1500);
+
+          // Atmospheric haze fade
+          var alpha = 0.55 + (1 - distFactor) * 0.45;
+
+          gfx.save();
+          gfx.globalAlpha = alpha;
+          drawLandmarkSprite(gfx, screenX, screenY, baseSize, lm, time);
+          gfx.restore();
+
+          // Label below landmark
+          if (dist < visRange * 0.8) {
+            gfx.globalAlpha = alpha * 0.95;
+            gfx.font = 'bold ' + Math.round(8 + (1 - distFactor) * 4) + 'px system-ui';
+            gfx.textAlign = 'center';
+            var labelY = screenY + 6;
+            var lblText = lm.name;
+            var lblW = gfx.measureText(lblText).width;
+            gfx.fillStyle = 'rgba(0,0,0,0.65)';
+            gfx.fillRect(screenX - lblW / 2 - 4, labelY - 2, lblW + 8, 13);
+            gfx.fillStyle = '#fde68a';
+            gfx.fillText(lblText, screenX, labelY + 8);
+            gfx.globalAlpha = 1;
+          }
+
+          // Discovery
+          if (dist < 8 && !iconicDiscoveredRef.current[lm.name]) {
+            iconicDiscoveredRef.current[lm.name] = { time: time, lm: lm };
+            if (typeof skyAnnounce === 'function') skyAnnounce('LANDMARK: ' + lm.name + ' — ' + lm.fact);
+          }
+        });
+      };
+
+      // Sprite renderer for each landmark type
+      var drawLandmarkSprite = function(gfx, x, y, sz, lm, time) {
+        var t = lm.type;
+        if (t === 'tower') {
+          // Eiffel-style lattice tower
+          var h = sz * 2.8, w = sz * 0.9;
+          gfx.strokeStyle = lm.color || '#8b7355';
+          gfx.fillStyle = lm.color || '#8b7355';
+          gfx.lineWidth = Math.max(0.8, sz / 12);
+          // Four legs converging
+          gfx.beginPath();
+          gfx.moveTo(x - w / 2, y); gfx.lineTo(x - w / 8, y - h);
+          gfx.moveTo(x + w / 2, y); gfx.lineTo(x + w / 8, y - h);
+          gfx.stroke();
+          // Cross-bracing (3 levels)
+          for (var lv = 0; lv < 3; lv++) {
+            var ly = y - h * (0.25 + lv * 0.25);
+            var lw = w * (0.5 - lv * 0.13);
+            gfx.beginPath();
+            gfx.moveTo(x - lw / 2, ly); gfx.lineTo(x + lw / 2, ly);
+            gfx.stroke();
+          }
+          // Spire
+          gfx.beginPath();
+          gfx.moveTo(x - w / 8, y - h); gfx.lineTo(x, y - h * 1.15); gfx.lineTo(x + w / 8, y - h);
+          gfx.fill();
+        } else if (t === 'megatower' || t === 'spire') {
+          // Tall slender skyscraper
+          var mh = sz * (t === 'spire' ? 3.5 : 3);
+          var mw = sz * (t === 'spire' ? 0.35 : 0.55);
+          gfx.fillStyle = lm.color || '#cfd2d6';
+          gfx.fillRect(x - mw / 2, y - mh, mw, mh);
+          // Window grid
+          gfx.fillStyle = 'rgba(60,80,110,0.7)';
+          var rows = Math.floor(mh / 3);
+          for (var wr = 1; wr < rows; wr++) {
+            gfx.fillRect(x - mw / 2 + 0.5, y - mh + wr * 3, mw - 1, 0.6);
+          }
+          // Antenna spire
+          if (t === 'spire' || lm.name.indexOf('Burj') >= 0) {
+            gfx.strokeStyle = '#999'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(x, y - mh); gfx.lineTo(x, y - mh - sz * 0.6); gfx.stroke();
+          }
+          // Observation deck disk (Space Needle, CN Tower)
+          if (t === 'spire') {
+            gfx.fillStyle = '#bcc';
+            gfx.beginPath();
+            gfx.ellipse(x, y - mh * 0.78, sz * 0.7, sz * 0.18, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // Rooftop
+          gfx.fillStyle = '#888';
+          gfx.fillRect(x - mw / 2, y - mh - 1, mw, 1.5);
+        } else if (t === 'pyramids') {
+          // Three pyramids in a row
+          gfx.fillStyle = '#d4b483';
+          for (var pi = 0; pi < 3; pi++) {
+            var pSize = sz * (pi === 1 ? 1.2 : 0.85);
+            var pX = x + (pi - 1) * sz * 1.0;
+            gfx.beginPath();
+            gfx.moveTo(pX - pSize, y);
+            gfx.lineTo(pX, y - pSize * 1.4);
+            gfx.lineTo(pX + pSize, y);
+            gfx.closePath();
+            gfx.fill();
+            // Shaded right face
+            gfx.fillStyle = '#a08a5e';
+            gfx.beginPath();
+            gfx.moveTo(pX, y - pSize * 1.4);
+            gfx.lineTo(pX + pSize, y);
+            gfx.lineTo(pX + pSize * 0.05, y);
+            gfx.closePath();
+            gfx.fill();
+            gfx.fillStyle = '#d4b483';
+          }
+        } else if (t === 'liberty') {
+          // Statue of Liberty: pedestal + figure + torch
+          var pedH = sz * 0.8;
+          gfx.fillStyle = '#7a8580';
+          gfx.fillRect(x - sz * 0.6, y - pedH, sz * 1.2, pedH);
+          // Figure (greenish)
+          gfx.fillStyle = '#7fa896';
+          gfx.fillRect(x - sz * 0.25, y - pedH - sz * 1.1, sz * 0.5, sz * 1.1);
+          // Head
+          gfx.beginPath();
+          gfx.arc(x, y - pedH - sz * 1.15, sz * 0.18, 0, Math.PI * 2);
+          gfx.fill();
+          // Crown spikes
+          gfx.beginPath();
+          for (var sp = 0; sp < 5; sp++) {
+            gfx.moveTo(x - sz * 0.18 + sp * sz * 0.09, y - pedH - sz * 1.3);
+            gfx.lineTo(x - sz * 0.15 + sp * sz * 0.09, y - pedH - sz * 1.45);
+          }
+          gfx.strokeStyle = '#7fa896'; gfx.lineWidth = 1;
+          gfx.stroke();
+          // Torch arm
+          gfx.strokeStyle = '#7fa896'; gfx.lineWidth = sz * 0.12;
+          gfx.beginPath();
+          gfx.moveTo(x + sz * 0.1, y - pedH - sz * 0.7);
+          gfx.lineTo(x + sz * 0.5, y - pedH - sz * 1.5);
+          gfx.stroke();
+          // Flame
+          gfx.fillStyle = '#ffd54f';
+          gfx.beginPath();
+          gfx.arc(x + sz * 0.55, y - pedH - sz * 1.55, sz * 0.18, 0, Math.PI * 2);
+          gfx.fill();
+        } else if (t === 'volcano') {
+          // Mount Fuji: snow-capped cone
+          gfx.fillStyle = '#5d6878';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 1.6, y);
+          gfx.lineTo(x, y - sz * 1.4);
+          gfx.lineTo(x + sz * 1.6, y);
+          gfx.closePath();
+          gfx.fill();
+          // Snow cap
+          gfx.fillStyle = '#f5f5f5';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.6, y - sz * 0.85);
+          gfx.lineTo(x - sz * 0.4, y - sz * 1.1);
+          gfx.lineTo(x - sz * 0.2, y - sz * 0.9);
+          gfx.lineTo(x, y - sz * 1.4);
+          gfx.lineTo(x + sz * 0.2, y - sz * 0.95);
+          gfx.lineTo(x + sz * 0.5, y - sz * 1.05);
+          gfx.lineTo(x + sz * 0.6, y - sz * 0.85);
+          gfx.closePath();
+          gfx.fill();
+        } else if (t === 'bridge') {
+          // Golden Gate: two towers connected by suspension cables
+          gfx.fillStyle = lm.color || '#c0392b';
+          // Tower 1
+          gfx.fillRect(x - sz * 1.2, y - sz * 1.8, sz * 0.18, sz * 1.8);
+          // Tower 2
+          gfx.fillRect(x + sz * 1.0, y - sz * 1.8, sz * 0.18, sz * 1.8);
+          // Deck
+          gfx.fillRect(x - sz * 1.6, y - sz * 0.3, sz * 3.2, sz * 0.15);
+          // Suspension cables
+          gfx.strokeStyle = lm.color || '#c0392b';
+          gfx.lineWidth = 0.8;
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 1.6, y - sz * 0.3);
+          gfx.quadraticCurveTo(x - sz * 0.1, y - sz * 1.3, x - sz * 1.1, y - sz * 1.8);
+          gfx.moveTo(x + sz * 1.6, y - sz * 0.3);
+          gfx.quadraticCurveTo(x + sz * 0.1, y - sz * 1.3, x + sz * 1.18, y - sz * 1.8);
+          gfx.moveTo(x - sz * 1.1, y - sz * 1.8);
+          gfx.quadraticCurveTo(x, y - sz * 0.7, x + sz * 1.18, y - sz * 1.8);
+          gfx.stroke();
+          // Vertical supports
+          for (var bv = -3; bv <= 3; bv++) {
+            var bx = x + bv * sz * 0.3;
+            gfx.beginPath();
+            gfx.moveTo(bx, y - sz * 0.3);
+            gfx.lineTo(bx, y - sz * (1.0 - Math.abs(bv) * 0.1));
+            gfx.stroke();
+          }
+        } else if (t === 'sign') {
+          // Hollywood sign
+          gfx.fillStyle = '#ffffff';
+          gfx.font = 'bold ' + Math.round(sz * 0.7) + 'px Arial Black, sans-serif';
+          gfx.textAlign = 'center';
+          gfx.fillText(lm.text || 'HOLLYWOOD', x, y - sz * 0.3);
+          // Hill outline below
+          gfx.strokeStyle = 'rgba(120,90,60,0.7)';
+          gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2, y);
+          gfx.quadraticCurveTo(x, y - sz * 0.4, x + sz * 2, y);
+          gfx.stroke();
+        } else if (t === 'rockface') {
+          // Mt Rushmore: 4 carved heads on rock face
+          gfx.fillStyle = '#8b7d6b';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2, y);
+          gfx.lineTo(x - sz * 1.7, y - sz * 1.2);
+          gfx.lineTo(x + sz * 1.7, y - sz * 1.2);
+          gfx.lineTo(x + sz * 2, y);
+          gfx.closePath();
+          gfx.fill();
+          // 4 heads
+          for (var hd = 0; hd < 4; hd++) {
+            var hx = x + (hd - 1.5) * sz * 0.8;
+            gfx.fillStyle = '#a89986';
+            gfx.beginPath();
+            gfx.arc(hx, y - sz * 0.7, sz * 0.32, 0, Math.PI * 2);
+            gfx.fill();
+            gfx.fillStyle = '#5e564a';
+            gfx.beginPath();
+            gfx.arc(hx - sz * 0.1, y - sz * 0.75, sz * 0.04, 0, Math.PI * 2);
+            gfx.arc(hx + sz * 0.1, y - sz * 0.75, sz * 0.04, 0, Math.PI * 2);
+            gfx.fill();
+          }
+        } else if (t === 'clocktower') {
+          // Big Ben
+          gfx.fillStyle = lm.color || '#c4a777';
+          var bH = sz * 2.6, bW = sz * 0.7;
+          gfx.fillRect(x - bW / 2, y - bH, bW, bH);
+          // Clock face
+          gfx.fillStyle = '#fff';
+          gfx.beginPath();
+          gfx.arc(x, y - bH * 0.75, sz * 0.28, 0, Math.PI * 2);
+          gfx.fill();
+          gfx.strokeStyle = '#000'; gfx.lineWidth = 0.8;
+          gfx.beginPath();
+          gfx.moveTo(x, y - bH * 0.75); gfx.lineTo(x, y - bH * 0.75 - sz * 0.2);
+          gfx.moveTo(x, y - bH * 0.75); gfx.lineTo(x + sz * 0.18, y - bH * 0.75);
+          gfx.stroke();
+          // Spire roof
+          gfx.fillStyle = '#5a7d5a';
+          gfx.beginPath();
+          gfx.moveTo(x - bW / 2, y - bH);
+          gfx.lineTo(x, y - bH - sz * 0.6);
+          gfx.lineTo(x + bW / 2, y - bH);
+          gfx.closePath();
+          gfx.fill();
+        } else if (t === 'colosseum') {
+          // Roman Colosseum: oval with arched windows
+          gfx.fillStyle = '#c4a886';
+          gfx.beginPath();
+          gfx.ellipse(x, y - sz * 0.6, sz * 1.5, sz * 0.7, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Inner shadow oval
+          gfx.fillStyle = '#8b7355';
+          gfx.beginPath();
+          gfx.ellipse(x, y - sz * 0.55, sz * 1.2, sz * 0.55, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Top arch row
+          gfx.fillStyle = '#c4a886';
+          for (var co = 0; co < 7; co++) {
+            var coX = x + (co - 3) * sz * 0.4;
+            gfx.beginPath();
+            gfx.arc(coX, y - sz * 1.05, sz * 0.12, Math.PI, 0);
+            gfx.fill();
+          }
+        } else if (t === 'leaning_tower') {
+          // Pisa: tilted cylindrical tower
+          gfx.save();
+          gfx.translate(x, y);
+          gfx.rotate(0.12); // ~7° tilt
+          gfx.fillStyle = '#e8dcc4';
+          gfx.fillRect(-sz * 0.35, -sz * 2.2, sz * 0.7, sz * 2.2);
+          // Floor lines (8 levels)
+          gfx.strokeStyle = '#a08a5e'; gfx.lineWidth = 0.5;
+          for (var pf = 1; pf < 8; pf++) {
+            gfx.beginPath();
+            gfx.moveTo(-sz * 0.35, -sz * 2.2 + pf * sz * 0.27);
+            gfx.lineTo(sz * 0.35, -sz * 2.2 + pf * sz * 0.27);
+            gfx.stroke();
+          }
+          gfx.restore();
+        } else if (t === 'stones') {
+          // Stonehenge: trilithon arches
+          gfx.fillStyle = '#8a8580';
+          for (var st = 0; st < 3; st++) {
+            var stX = x + (st - 1) * sz * 1.1;
+            gfx.fillRect(stX - sz * 0.3, y - sz * 1.0, sz * 0.25, sz * 1.0);
+            gfx.fillRect(stX + sz * 0.05, y - sz * 1.0, sz * 0.25, sz * 1.0);
+            gfx.fillRect(stX - sz * 0.35, y - sz * 1.1, sz * 0.7, sz * 0.15);
+          }
+        } else if (t === 'cathedral') {
+          // Sagrada Familia: spires
+          gfx.fillStyle = '#b8a878';
+          gfx.fillRect(x - sz * 0.9, y - sz * 0.8, sz * 1.8, sz * 0.8);
+          // Spires
+          for (var cs = 0; cs < 5; cs++) {
+            var csX = x + (cs - 2) * sz * 0.5;
+            var csH = sz * (1.6 + (cs === 2 ? 0.6 : 0));
+            gfx.beginPath();
+            gfx.moveTo(csX - sz * 0.15, y - sz * 0.8);
+            gfx.lineTo(csX, y - sz * 0.8 - csH);
+            gfx.lineTo(csX + sz * 0.15, y - sz * 0.8);
+            gfx.closePath();
+            gfx.fill();
+          }
+        } else if (t === 'temple' || t === 'capitol') {
+          // Greek/Roman/Capitol: columned facade with triangular pediment
+          var tW = sz * 2, tH = sz * 1.2;
+          gfx.fillStyle = '#e8e4dc';
+          gfx.fillRect(x - tW / 2, y - tH, tW, tH);
+          // Columns
+          gfx.fillStyle = '#c8c4bc';
+          for (var col = 0; col < 6; col++) {
+            gfx.fillRect(x - tW / 2 + col * (tW / 6) + 2, y - tH * 0.95, tW / 6 - 4, tH * 0.95);
+          }
+          // Pediment (triangular roof)
+          gfx.fillStyle = '#d8d4cc';
+          gfx.beginPath();
+          gfx.moveTo(x - tW / 2 - 2, y - tH);
+          gfx.lineTo(x, y - tH - sz * 0.5);
+          gfx.lineTo(x + tW / 2 + 2, y - tH);
+          gfx.closePath();
+          gfx.fill();
+          // Dome on top (capitol)
+          if (t === 'capitol') {
+            gfx.fillStyle = '#e8e4dc';
+            gfx.beginPath();
+            gfx.arc(x, y - tH - sz * 0.3, sz * 0.45, Math.PI, 0);
+            gfx.fill();
+          }
+        } else if (t === 'taj') {
+          // Taj Mahal: central dome + 4 minarets
+          gfx.fillStyle = '#f5f1e8';
+          // Base
+          gfx.fillRect(x - sz * 1.5, y - sz * 0.8, sz * 3, sz * 0.8);
+          // Main building
+          gfx.fillRect(x - sz * 0.9, y - sz * 1.4, sz * 1.8, sz * 0.6);
+          // Central dome
+          gfx.beginPath();
+          gfx.arc(x, y - sz * 1.4, sz * 0.6, Math.PI, 0);
+          gfx.fill();
+          // Dome spire
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.05, y - sz * 2.0); gfx.lineTo(x, y - sz * 2.3); gfx.lineTo(x + sz * 0.05, y - sz * 2.0);
+          gfx.fill();
+          // Minarets
+          for (var mn = -1; mn <= 1; mn += 2) {
+            gfx.fillRect(x + mn * sz * 1.3 - sz * 0.07, y - sz * 1.8, sz * 0.14, sz * 1.0);
+            gfx.beginPath();
+            gfx.arc(x + mn * sz * 1.3, y - sz * 1.8, sz * 0.14, Math.PI, 0);
+            gfx.fill();
+          }
+        } else if (t === 'wall') {
+          // Great Wall: zig-zag wall on hills
+          gfx.strokeStyle = '#8a7a6a';
+          gfx.lineWidth = sz * 0.18;
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2, y);
+          gfx.lineTo(x - sz * 1.2, y - sz * 0.6);
+          gfx.lineTo(x - sz * 0.5, y - sz * 0.3);
+          gfx.lineTo(x + sz * 0.3, y - sz * 0.8);
+          gfx.lineTo(x + sz * 1.0, y - sz * 0.4);
+          gfx.lineTo(x + sz * 2, y - sz * 0.7);
+          gfx.stroke();
+          // Watchtowers
+          gfx.fillStyle = '#8a7a6a';
+          var wtPts = [[-1.2, -0.6], [0.3, -0.8], [2, -0.7]];
+          wtPts.forEach(function(pt) {
+            gfx.fillRect(x + pt[0] * sz - sz * 0.12, y + pt[1] * sz - sz * 0.4, sz * 0.24, sz * 0.4);
+          });
+        } else if (t === 'palace_complex') {
+          // Forbidden City: red walls + golden roofs
+          gfx.fillStyle = '#a83232';
+          gfx.fillRect(x - sz * 1.8, y - sz * 0.6, sz * 3.6, sz * 0.6);
+          // Multiple pavilions with curved gold roofs
+          for (var pv = 0; pv < 3; pv++) {
+            var pvX = x + (pv - 1) * sz * 1.2;
+            var pvH = sz * (pv === 1 ? 1.2 : 0.9);
+            gfx.fillStyle = '#a83232';
+            gfx.fillRect(pvX - sz * 0.5, y - pvH, sz * 1.0, pvH - sz * 0.6);
+            // Gold curved roof
+            gfx.fillStyle = '#d4a017';
+            gfx.beginPath();
+            gfx.moveTo(pvX - sz * 0.65, y - pvH);
+            gfx.quadraticCurveTo(pvX - sz * 0.7, y - pvH - sz * 0.35, pvX, y - pvH - sz * 0.4);
+            gfx.quadraticCurveTo(pvX + sz * 0.7, y - pvH - sz * 0.35, pvX + sz * 0.65, y - pvH);
+            gfx.closePath();
+            gfx.fill();
+          }
+        } else if (t === 'temple_complex') {
+          // Angkor Wat: 5 lotus-bud towers
+          gfx.fillStyle = '#7a6a5a';
+          gfx.fillRect(x - sz * 1.6, y - sz * 0.5, sz * 3.2, sz * 0.5);
+          for (var aw = 0; aw < 5; aw++) {
+            var awX = x + (aw - 2) * sz * 0.7;
+            var awH = sz * (aw === 2 ? 1.8 : (aw === 1 || aw === 3 ? 1.4 : 1.2));
+            gfx.beginPath();
+            gfx.moveTo(awX - sz * 0.25, y - sz * 0.5);
+            gfx.lineTo(awX - sz * 0.15, y - sz * 0.5 - awH * 0.7);
+            gfx.quadraticCurveTo(awX, y - sz * 0.5 - awH * 1.1, awX + sz * 0.15, y - sz * 0.5 - awH * 0.7);
+            gfx.lineTo(awX + sz * 0.25, y - sz * 0.5);
+            gfx.closePath();
+            gfx.fill();
+          }
+        } else if (t === 'rockcity') {
+          // Petra Treasury: facade carved into pink rock
+          gfx.fillStyle = '#c97a5a';
+          gfx.fillRect(x - sz * 1.8, y - sz * 1.8, sz * 3.6, sz * 1.8);
+          // Facade
+          gfx.fillStyle = '#e8a880';
+          gfx.fillRect(x - sz * 0.9, y - sz * 1.6, sz * 1.8, sz * 1.6);
+          // Columns
+          gfx.fillStyle = '#c97a5a';
+          for (var pc = 0; pc < 6; pc++) {
+            gfx.fillRect(x - sz * 0.85 + pc * sz * 0.3, y - sz * 1.5, sz * 0.06, sz * 1.2);
+          }
+          // Pediment
+          gfx.fillStyle = '#e8a880';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 1.0, y - sz * 1.6);
+          gfx.lineTo(x, y - sz * 2.0);
+          gfx.lineTo(x + sz * 1.0, y - sz * 1.6);
+          gfx.closePath();
+          gfx.fill();
+        } else if (t === 'statue_hill') {
+          // Christ the Redeemer: figure with arms outstretched on hill
+          // Hill
+          gfx.fillStyle = '#5a7048';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2, y);
+          gfx.quadraticCurveTo(x, y - sz * 1.2, x + sz * 2, y);
+          gfx.closePath();
+          gfx.fill();
+          // Pedestal
+          gfx.fillStyle = '#888';
+          gfx.fillRect(x - sz * 0.2, y - sz * 1.5, sz * 0.4, sz * 0.3);
+          // Body
+          gfx.fillStyle = '#d8d4cc';
+          gfx.fillRect(x - sz * 0.12, y - sz * 2.1, sz * 0.24, sz * 0.6);
+          // Arms outstretched (cross shape)
+          gfx.fillRect(x - sz * 0.7, y - sz * 1.95, sz * 1.4, sz * 0.12);
+          // Head
+          gfx.beginPath();
+          gfx.arc(x, y - sz * 2.18, sz * 0.1, 0, Math.PI * 2);
+          gfx.fill();
+        } else if (t === 'ruins') {
+          // Machu Picchu: terraced stone ruins
+          gfx.fillStyle = '#7a8870';
+          // Terraces
+          for (var rt = 0; rt < 5; rt++) {
+            gfx.fillStyle = rt % 2 === 0 ? '#8a9880' : '#6a7a60';
+            gfx.fillRect(x - sz * (1.6 - rt * 0.15), y - rt * sz * 0.2 - sz * 0.2, sz * (3.2 - rt * 0.3), sz * 0.2);
+          }
+          // Stone buildings on top
+          gfx.fillStyle = '#5a6a55';
+          for (var rb = 0; rb < 4; rb++) {
+            gfx.fillRect(x - sz * 0.9 + rb * sz * 0.5, y - sz * 1.4, sz * 0.35, sz * 0.4);
+            // Triangular thatch roof
+            gfx.fillStyle = '#8a6a4a';
+            gfx.beginPath();
+            gfx.moveTo(x - sz * 0.95 + rb * sz * 0.5, y - sz * 1.4);
+            gfx.lineTo(x - sz * 0.7 + rb * sz * 0.5, y - sz * 1.6);
+            gfx.lineTo(x - sz * 0.5 + rb * sz * 0.5, y - sz * 1.4);
+            gfx.closePath();
+            gfx.fill();
+            gfx.fillStyle = '#5a6a55';
+          }
+        } else if (t === 'opera_house') {
+          // Sydney Opera House: white shell sails
+          gfx.fillStyle = '#f5f5f0';
+          // Multiple curved shells
+          var shells = [[-1.0, 0.8, 0.7], [-0.3, 1.2, 0.9], [0.4, 1.0, 0.8], [1.0, 0.6, 0.55]];
+          shells.forEach(function(sh) {
+            gfx.beginPath();
+            gfx.moveTo(x + sh[0] * sz - sz * sh[2], y);
+            gfx.quadraticCurveTo(x + sh[0] * sz - sz * sh[2] * 0.3, y - sz * sh[1], x + sh[0] * sz + sz * sh[2] * 0.5, y - sz * sh[1] * 0.3);
+            gfx.quadraticCurveTo(x + sh[0] * sz + sz * sh[2], y, x + sh[0] * sz - sz * sh[2], y);
+            gfx.closePath();
+            gfx.fill();
+          });
+          // Shell shadow lines
+          gfx.strokeStyle = 'rgba(180,180,200,0.6)'; gfx.lineWidth = 0.5;
+          shells.forEach(function(sh) {
+            gfx.beginPath();
+            gfx.moveTo(x + sh[0] * sz - sz * sh[2], y);
+            gfx.quadraticCurveTo(x + sh[0] * sz - sz * sh[2] * 0.3, y - sz * sh[1], x + sh[0] * sz + sz * sh[2] * 0.5, y - sz * sh[1] * 0.3);
+            gfx.stroke();
+          });
+        } else if (t === 'monolith') {
+          // Uluru: massive red sandstone rock
+          gfx.fillStyle = '#c4502a';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2.2, y);
+          gfx.quadraticCurveTo(x - sz * 2, y - sz * 1.0, x - sz * 1.5, y - sz * 1.05);
+          gfx.lineTo(x + sz * 1.5, y - sz * 1.05);
+          gfx.quadraticCurveTo(x + sz * 2, y - sz * 1.0, x + sz * 2.2, y);
+          gfx.closePath();
+          gfx.fill();
+          // Erosion lines
+          gfx.strokeStyle = '#a04018'; gfx.lineWidth = 0.5;
+          for (var er = 0; er < 4; er++) {
+            gfx.beginPath();
+            gfx.moveTo(x - sz * 1.8 + er * sz * 0.9, y - sz * 0.3);
+            gfx.lineTo(x - sz * 1.8 + er * sz * 0.9 + sz * 0.1, y);
+            gfx.stroke();
+          }
+        } else if (t === 'moai') {
+          // Easter Island: row of stone heads
+          gfx.fillStyle = '#7a7568';
+          for (var mi = 0; mi < 4; mi++) {
+            var miX = x + (mi - 1.5) * sz * 0.8;
+            var miH = sz * (1.4 + (mi % 2) * 0.2);
+            // Head/body
+            gfx.fillRect(miX - sz * 0.2, y - miH, sz * 0.4, miH);
+            // Tall forehead/hat
+            gfx.fillRect(miX - sz * 0.22, y - miH - sz * 0.1, sz * 0.44, sz * 0.15);
+            // Nose shadow
+            gfx.fillStyle = '#5a5548';
+            gfx.fillRect(miX - sz * 0.04, y - miH + sz * 0.3, sz * 0.08, sz * 0.25);
+            // Eye sockets
+            gfx.fillRect(miX - sz * 0.14, y - miH + sz * 0.2, sz * 0.07, sz * 0.05);
+            gfx.fillRect(miX + sz * 0.07, y - miH + sz * 0.2, sz * 0.07, sz * 0.05);
+            gfx.fillStyle = '#7a7568';
+          }
+        } else {
+          // Fallback: generic landmark marker
+          gfx.fillStyle = '#fde68a';
+          gfx.beginPath();
+          gfx.moveTo(x, y - sz);
+          gfx.lineTo(x + sz * 0.5, y);
+          gfx.lineTo(x - sz * 0.5, y);
+          gfx.closePath();
+          gfx.fill();
+        }
+      };
+
       // ── Geography quiz (triggered by pressing Q while flying) ──
       var triggerGeoQuiz = function(state) {
         var quiz = geoQuizRef.current;
@@ -3343,6 +3939,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Weather effects (rain, haze, lightning)
           drawWeatherEffects(gfx, W, H, horizonY, timeRef.current, state);
+
+          // Iconic landmark sprites (Eiffel Tower, Pyramids, etc.) — render before labels
+          drawIconicLandmarks(gfx, W, H, horizonY, state, timeRef.current);
 
           // Geography labels on terrain
           drawGeography(gfx, W, H, horizonY, state, timeRef.current);
