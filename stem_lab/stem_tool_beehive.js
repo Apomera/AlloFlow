@@ -2874,6 +2874,210 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('💡 ' + bvFacts[bvIdx], W / 2, bvStripY + 10);
           }
 
+          // ═══ PROPOLIS · the "bee glue" — nature's antibiotic resin ═══
+          function drawPropolis() {
+            // Warm resinous gradient background
+            var prGrad = c.createLinearGradient(0, 0, 0, H);
+            prGrad.addColorStop(0, '#44403c'); prGrad.addColorStop(0.5, '#78350f'); prGrad.addColorStop(1, '#292524');
+            c.fillStyle = prGrad; c.fillRect(0, 0, W, H);
+
+            // Subtle resin shimmer
+            for (var sh = 0; sh < 30; sh++) {
+              var shx = (Math.sin(t2 / 50 + sh * 0.6) * 0.5 + 0.5) * W;
+              var shy = (Math.cos(t2 / 70 + sh * 0.9) * 0.5 + 0.5) * H;
+              c.fillStyle = 'rgba(251,191,36,' + (0.05 + Math.sin(t2 / 20 + sh) * 0.04) + ')';
+              c.beginPath(); c.arc(shx, shy, 1.5, 0, Math.PI * 2); c.fill();
+            }
+
+            // Title
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('💧 Propolis · nature\'s antibiotic', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#fbbf24';
+            c.fillText('Bees collect tree resin, mix it with enzymes + wax — result: an antimicrobial superglue', W / 2, 44);
+
+            // ═══ LEFT: forager collecting resin from a tree ═══
+            var treeX = W * 0.18;
+            var treeY = H * 0.55;
+            // Tree trunk
+            var trunkGrad = c.createLinearGradient(treeX - 30, 0, treeX + 30, 0);
+            trunkGrad.addColorStop(0, '#57534e'); trunkGrad.addColorStop(0.5, '#78350f'); trunkGrad.addColorStop(1, '#3f3f46');
+            c.fillStyle = trunkGrad;
+            c.fillRect(treeX - 25, 80, 50, H - 140);
+            // Bark texture
+            c.strokeStyle = 'rgba(30,20,10,0.6)'; c.lineWidth = 1;
+            for (var bk = 0; bk < 12; bk++) {
+              var bky = 90 + bk * 28;
+              c.beginPath();
+              c.moveTo(treeX - 20 + Math.sin(bk) * 3, bky);
+              c.lineTo(treeX + 20 + Math.cos(bk) * 3, bky + 8);
+              c.stroke();
+            }
+            // Resin droplets oozing from bark
+            var resinPoints = [
+              { rx: treeX - 12, ry: 180 },
+              { rx: treeX + 14, ry: 230 },
+              { rx: treeX - 8, ry: 280 },
+              { rx: treeX + 18, ry: 330 }
+            ];
+            resinPoints.forEach(function(rp, ri) {
+              var wiggle = Math.sin(t2 / 30 + ri) * 2;
+              var rGrad = c.createRadialGradient(rp.rx + wiggle, rp.ry, 0, rp.rx + wiggle, rp.ry, 12);
+              rGrad.addColorStop(0, '#fde047'); rGrad.addColorStop(0.6, '#d97706'); rGrad.addColorStop(1, '#78350f');
+              c.fillStyle = rGrad;
+              c.beginPath();
+              c.ellipse(rp.rx + wiggle, rp.ry, 6, 9, 0, 0, Math.PI * 2);
+              c.fill();
+              // Glint
+              c.fillStyle = 'rgba(255,255,255,0.6)';
+              c.beginPath(); c.arc(rp.rx + wiggle - 2, rp.ry - 3, 1.5, 0, Math.PI * 2); c.fill();
+            });
+            // Forager bee with a resin ball on her corbicula (pollen basket)
+            var beeY = treeY + Math.sin(t2 / 10) * 4;
+            var beeX = treeX + 35 + Math.cos(t2 / 10) * 3;
+            c.save(); c.translate(beeX, beeY);
+            // Wings
+            c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.beginPath(); c.ellipse(-2, -6, 10, 4, -0.3, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.ellipse(2, -6, 10, 4, 0.3, 0, Math.PI * 2); c.fill();
+            // Body
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(0, 0, 9, 6, 0, 0, Math.PI * 2); c.fill();
+            // Stripes
+            c.fillStyle = '#1f2937';
+            c.fillRect(-5, -4, 1.5, 8); c.fillRect(-1.5, -4, 1.5, 8); c.fillRect(2, -4, 1.5, 8);
+            // Head + eye
+            c.fillStyle = '#111827';
+            c.beginPath(); c.arc(-9, 0, 3, 0, Math.PI * 2); c.fill();
+            // Hind leg with amber corbicula ball
+            var corbX = 5, corbY = 5;
+            c.fillStyle = '#111827';
+            c.beginPath(); c.moveTo(3, 3); c.lineTo(corbX, corbY + 1); c.stroke();
+            var propGrad = c.createRadialGradient(corbX, corbY, 0, corbX, corbY, 4);
+            propGrad.addColorStop(0, '#fbbf24'); propGrad.addColorStop(1, '#78350f');
+            c.fillStyle = propGrad;
+            c.beginPath(); c.arc(corbX, corbY, 4, 0, Math.PI * 2); c.fill();
+            c.restore();
+            // Label for forager
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 9.5px "Inter", sans-serif';
+            c.fillText('Forager + resin ball', treeX + 30, treeY + 28);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#fbbf24';
+            c.fillText('~100 mg per trip', treeX + 30, treeY + 40);
+
+            // Tree label
+            c.fillStyle = '#86efac'; c.textAlign = 'center';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('Poplar · Birch · Pine', treeX, 72);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#bef264';
+            c.fillText('preferred resin sources', treeX, 86);
+
+            // ═══ MIDDLE: chemistry breakdown pie/bar ═══
+            var chX = W * 0.48, chY = H * 0.4;
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 12px "Inter", sans-serif';
+            c.fillText('Composition', chX, chY - 72);
+            // Doughnut chart
+            var composition = [
+              { label: 'Resin', pct: 0.50, col: '#b45309' },
+              { label: 'Wax', pct: 0.30, col: '#fde047' },
+              { label: 'Essential oils', pct: 0.10, col: '#a3e635' },
+              { label: 'Pollen', pct: 0.05, col: '#fbbf24' },
+              { label: 'Other', pct: 0.05, col: '#57534e' }
+            ];
+            var acc = -Math.PI / 2;
+            var donutR = 42;
+            composition.forEach(function(seg) {
+              c.fillStyle = seg.col;
+              c.beginPath();
+              c.moveTo(chX, chY);
+              c.arc(chX, chY, donutR, acc, acc + seg.pct * Math.PI * 2);
+              c.closePath();
+              c.fill();
+              acc += seg.pct * Math.PI * 2;
+            });
+            // Center hole
+            c.fillStyle = '#292524';
+            c.beginPath(); c.arc(chX, chY, donutR * 0.55, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Propolis', chX, chY - 3);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#fbbf24';
+            c.fillText('by mass', chX, chY + 10);
+            // Legend
+            composition.forEach(function(seg, si) {
+              var ly = chY + donutR + 12 + si * 12;
+              c.fillStyle = seg.col;
+              c.fillRect(chX - 50, ly - 6, 8, 8);
+              c.fillStyle = '#fde68a'; c.textAlign = 'left';
+              c.font = '9px "Inter", sans-serif';
+              c.fillText(seg.label, chX - 38, ly);
+              c.textAlign = 'right'; c.fillStyle = '#fbbf24';
+              c.fillText(Math.round(seg.pct * 100) + '%', chX + 50, ly);
+            });
+
+            // ═══ RIGHT: functional uses inside the hive ═══
+            var useX = W - 180, useY = 72;
+            c.fillStyle = 'rgba(68,64,60,0.8)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, useY, 170, 170, 8); c.fill(); }
+            else c.fillRect(useX, useY, 170, 170);
+            c.strokeStyle = 'rgba(251,191,36,0.6)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, useY, 170, 170, 8); c.stroke(); }
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('How bees use it', useX + 85, useY + 16);
+            var uses = [
+              { icon: '🧱', t: 'Seals cracks', d: 'Gaps < 6 mm get filled' },
+              { icon: '🛡️', t: 'Sterilizes hive', d: 'Coats interior walls' },
+              { icon: '⚰️', t: 'Mummifies intruders', d: 'Wraps mice too large to remove' },
+              { icon: '🚪', t: 'Narrows entrance', d: 'Winter heat + pest defense' },
+              { icon: '🥚', t: 'Polishes brood cells', d: 'Antiseptic coat before laying' }
+            ];
+            uses.forEach(function(u, ui) {
+              var uy = useY + 34 + ui * 26;
+              c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+              c.font = '14px "Inter", sans-serif';
+              c.fillText(u.icon, useX + 10, uy + 5);
+              c.fillStyle = '#fde68a'; c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(u.t, useX + 34, uy);
+              c.fillStyle = '#fbbf24'; c.font = '8.5px "Inter", sans-serif';
+              c.fillText(u.d, useX + 34, uy + 12);
+            });
+
+            // ═══ BOTTOM RIGHT: medical/pharmaceutical callout ═══
+            var medY = useY + 180;
+            c.fillStyle = 'rgba(22,101,52,0.75)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, medY, 170, 90, 8); c.fill(); }
+            else c.fillRect(useX, medY, 170, 90);
+            c.strokeStyle = 'rgba(134,239,172,0.6)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, medY, 170, 90, 8); c.stroke(); }
+            c.fillStyle = '#bbf7d0'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('⚕️  Human uses', useX + 85, medY + 16);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#d9f99d';
+            c.textAlign = 'left';
+            c.fillText('• Cough drops + throat sprays', useX + 10, medY + 32);
+            c.fillText('• Wound-healing ointments', useX + 10, medY + 46);
+            c.fillText('• Antiviral dental rinses', useX + 10, medY + 60);
+            c.fillText('• Cancer-adjuvant research (CAPE)', useX + 10, medY + 74);
+
+            // ═══ Bottom fact strip ═══
+            var prStripY = H - 28;
+            c.fillStyle = 'rgba(28,25,23,0.95)'; c.fillRect(0, prStripY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var prFacts = [
+              'Propolis has been used medicinally since at least 300 BCE — Egyptians used it for embalming.',
+              'The active ingredient CAPE (caffeic acid phenethyl ester) inhibits tumor cell growth in lab studies.',
+              'A bee colony uses ~150 g of propolis per year — about the weight of a baseball.',
+              'Bees can\'t remove dead intruders larger than themselves — so they mummify them in propolis instead.',
+              'Stingless bees (Meliponini) use even MORE propolis than honeybees — their entire nest is often resin.',
+              'Propolis composition varies by region — Brazilian green propolis is chemically distinct from European brown.'
+            ];
+            var prIdx = Math.floor(t2 / 420) % prFacts.length;
+            c.fillText('💡 ' + prFacts[prIdx], W / 2, prStripY + 10);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -4864,6 +5068,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'vision') {
                 drawBeeVision();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'propolis') {
+                drawPropolis();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -7731,7 +7940,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' },
                 { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' },
                 { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' },
-                { id: 'vision', icon: '🌸', label: 'Vision', desc: 'UV flower patterns + 200 Hz flicker fusion — what bees see' }
+                { id: 'vision', icon: '🌸', label: 'Vision', desc: 'UV flower patterns + 200 Hz flicker fusion — what bees see' },
+                { id: 'propolis', icon: '💧', label: 'Propolis', desc: 'Bee glue resin — nature\'s antibiotic, used medicinally since 300 BCE' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
