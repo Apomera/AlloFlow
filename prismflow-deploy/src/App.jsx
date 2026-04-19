@@ -8061,27 +8061,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8097,7 +8097,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9c54930/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a4782f9/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8929,6 +8929,12 @@ Return ONLY a valid JSON object:
   const [chunkReaderAutoPlay, setChunkReaderAutoPlay] = useState(false);
   const [chunkReaderSpeed, setChunkReaderSpeed] = useState(3000);
   const chunkReaderTimerRef = useRef(null);
+  // Read-along state must be declared BEFORE the chunk-reader useEffect hooks below —
+  // the dep arrays reference these names at render time, so a later `const` triggers TDZ.
+  const [chunkReaderReadAlong, setChunkReaderReadAlong] = useState(false);
+  const [chunkReaderSweepPct, setChunkReaderSweepPct] = useState(0);
+  const chunkReaderSweepAudioRef = useRef(null);
+  const chunkReaderSweepRafRef = useRef(null);
   const handleCloseSpeedReader = useCallback(() => setIsSpeedReaderActive(false), []);
   const handleCloseChunkReader = useCallback(() => {
       setIsChunkReaderActive(false);
@@ -8937,7 +8943,8 @@ Return ONLY a valid JSON object:
       if (chunkReaderTimerRef.current) clearTimeout(chunkReaderTimerRef.current);
   }, []);
   useEffect(() => {
-      if (!isChunkReaderActive || !chunkReaderAutoPlay) {
+      // Timer-based advance is disabled when Read Along is on — audio drives advancement there
+      if (!isChunkReaderActive || !chunkReaderAutoPlay || chunkReaderReadAlong) {
           if (chunkReaderTimerRef.current) clearTimeout(chunkReaderTimerRef.current);
           return;
       }
@@ -8948,7 +8955,82 @@ Return ONLY a valid JSON object:
           });
       }, chunkReaderSpeed);
       return () => { if (chunkReaderTimerRef.current) clearTimeout(chunkReaderTimerRef.current); };
-  }, [isChunkReaderActive, chunkReaderAutoPlay, chunkReaderIdx, chunkReaderSpeed]);
+  }, [isChunkReaderActive, chunkReaderAutoPlay, chunkReaderIdx, chunkReaderSpeed, chunkReaderReadAlong]);
+  // Read-along effect: when enabled, play the current sentence via Gemini (callTTS) and
+  // animate chunkReaderSweepPct based on audio.currentTime / audio.duration. On ended,
+  // advance to next sentence when autoplay is on.
+  useEffect(() => {
+      if (!isChunkReaderActive || !chunkReaderReadAlong) {
+          if (chunkReaderSweepAudioRef.current) { try { chunkReaderSweepAudioRef.current.pause(); } catch (e) {} chunkReaderSweepAudioRef.current = null; }
+          if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+          setChunkReaderSweepPct(0);
+          return;
+      }
+      // Compute the current sentence text from generatedContent
+      const sbs = getSideBySideContent(generatedContent?.data);
+      const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : (generatedContent?.data || '').split(new RegExp('\\n{2,}'));
+      const sentences = ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p));
+      const sentenceText = sentences[chunkReaderIdx] || '';
+      if (!sentenceText) return;
+      let cancelled = false;
+      setChunkReaderSweepPct(0);
+      // Stop any prior audio
+      if (chunkReaderSweepAudioRef.current) { try { chunkReaderSweepAudioRef.current.pause(); } catch (e) {} chunkReaderSweepAudioRef.current = null; }
+      if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+      (async () => {
+          let url = null;
+          try { url = await callTTS(sentenceText); } catch (e) { url = null; }
+          if (cancelled) { if (url) { try { URL.revokeObjectURL(url); } catch (e) {} } return; }
+          if (url) {
+              const audio = new Audio(url);
+              chunkReaderSweepAudioRef.current = audio;
+              audio.addEventListener('timeupdate', () => {
+                  if (chunkReaderSweepAudioRef.current !== audio) return;
+                  const dur = audio.duration;
+                  let pct;
+                  if (isFinite(dur) && dur > 0) pct = Math.min(100, (audio.currentTime / dur) * 100);
+                  else pct = Math.min(100, (audio.currentTime / Math.max(1.5, sentenceText.length / 15)) * 100);
+                  setChunkReaderSweepPct(pct);
+              });
+              audio.addEventListener('ended', () => {
+                  setChunkReaderSweepPct(100);
+                  if (chunkReaderAutoPlay) {
+                      setChunkReaderIdx(prev => prev + 1);
+                  }
+              });
+              audio.addEventListener('error', () => { setChunkReaderSweepPct(0); });
+              try { await audio.play(); } catch (e) { /* autoplay blocked — user can hit play again */ }
+          } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+              // Fallback: browser TTS with estimated duration
+              try {
+                  const u = new SpeechSynthesisUtterance(sentenceText);
+                  u.rate = 0.95; u.volume = 0.95;
+                  const estMs = Math.max(1500, sentenceText.length * 60);
+                  const startTs = performance.now();
+                  const tick = () => {
+                      if (cancelled) return;
+                      const elapsed = performance.now() - startTs;
+                      const pct = Math.min(100, (elapsed / estMs) * 100);
+                      setChunkReaderSweepPct(pct);
+                      if (pct < 100) chunkReaderSweepRafRef.current = requestAnimationFrame(tick);
+                  };
+                  u.onend = () => {
+                      if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+                      setChunkReaderSweepPct(100);
+                      if (chunkReaderAutoPlay) setChunkReaderIdx(prev => prev + 1);
+                  };
+                  window.speechSynthesis.speak(u);
+                  chunkReaderSweepRafRef.current = requestAnimationFrame(tick);
+              } catch (e) { /* silent */ }
+          }
+      })();
+      return () => {
+          cancelled = true;
+          if (chunkReaderSweepAudioRef.current) { try { chunkReaderSweepAudioRef.current.pause(); } catch (e) {} chunkReaderSweepAudioRef.current = null; }
+          if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+          try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+      };
+  }, [isChunkReaderActive, chunkReaderReadAlong, chunkReaderIdx, chunkReaderAutoPlay, callTTS, generatedContent?.data]);
   useEffect(() => {
       if (isChunkReaderActive && chunkReaderIdx >= 0) {
           const el = document.querySelector('[data-sentence-idx="' + chunkReaderIdx + '"]');
@@ -9723,6 +9805,10 @@ Return ONLY a valid JSON object:
   const [isSpeedReaderActive, setIsSpeedReaderActive] = useState(false);
   const [isBionicReaderActive, setIsBionicReaderActive] = useState(false);
   const [isCrawlReaderActive, setIsCrawlReaderActive] = useState(false);
+  const [isKaraokeOverlayActive, setIsKaraokeOverlayActive] = useState(false);
+  // Note: chunkReaderReadAlong, chunkReaderSweepPct, chunkReaderSweepAudioRef, and
+  // chunkReaderSweepRafRef were hoisted to the chunk-reader state block near line 8931
+  // to avoid a TDZ error — useEffect dep arrays earlier in the component reference them.
   const [isEditingOptions, setIsEditingOptions] = useState(false);
   const [editingOptionsBuffer, setEditingOptionsBuffer] = useState([]);
   useEffect(() => {
@@ -42555,6 +42641,20 @@ Return only the corrected version of this exact text:`;
                                 onToggleBionicReader={() => setIsBionicReaderActive(!isBionicReaderActive)}
                                 isCrawlReaderActive={isCrawlReaderActive}
                                 onToggleCrawlReader={() => setIsCrawlReaderActive(!isCrawlReaderActive)}
+                                isKaraokeOverlayActive={isKaraokeOverlayActive}
+                                onToggleKaraokeOverlay={() => setIsKaraokeOverlayActive(!isKaraokeOverlayActive)}
+                                chunkReaderReadAlong={chunkReaderReadAlong}
+                                onToggleChunkReaderReadAlong={() => {
+                                    const next = !chunkReaderReadAlong;
+                                    setChunkReaderReadAlong(next);
+                                    setChunkReaderSweepPct(0);
+                                    if (!next) {
+                                        // Turning OFF — stop audio + any in-flight sweep, keep sentence idx
+                                        try { if (chunkReaderSweepAudioRef.current) { chunkReaderSweepAudioRef.current.pause(); chunkReaderSweepAudioRef.current = null; } } catch (e) {}
+                                        if (chunkReaderSweepRafRef.current) { cancelAnimationFrame(chunkReaderSweepRafRef.current); chunkReaderSweepRafRef.current = null; }
+                                        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+                                    }
+                                }}
                                 totalSentences={(() => { const sbs = getSideBySideContent(generatedContent?.data); const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : (generatedContent?.data || '').split(new RegExp('\\n{2,}')); return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1; })()}
                             /><ErrorBoundary fallbackMessage="Speed reader encountered an error. Please close and reopen.">
                             <SpeedReaderOverlay
@@ -42582,6 +42682,18 @@ Return only the corrected version of this exact text:`;
                             <PerspectiveCrawlOverlay
                                 isOpen={isCrawlReaderActive}
                                 onClose={() => setIsCrawlReaderActive(false)}
+                                text={
+                                    (generatedContent?.immersiveData
+                                        ?.filter(w => w.pos !== 'newline')
+                                        ?.map(w => w.text)
+                                        ?.join(' ') || "")
+                                        .replace(/<[^>]*>/g, '')
+                                }
+                            />
+                            <KaraokeReaderOverlay
+                                isOpen={isKaraokeOverlayActive}
+                                onClose={() => setIsKaraokeOverlayActive(false)}
+                                getAudioUrl={(sentenceText) => callTTS(sentenceText).catch(() => null)}
                                 text={
                                     (generatedContent?.immersiveData
                                         ?.filter(w => w.pos !== 'newline')
