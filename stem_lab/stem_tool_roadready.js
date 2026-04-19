@@ -7300,14 +7300,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Road surface ──
           var centerX = Math.floor(MAP_SIZE / 2);
-          var roadGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
           var roadColor = isSnow ? 0x8899a6 : 0x333842;
           var roadMat = new T.MeshLambertMaterial({ color: roadColor });
-          var road = new T.Mesh(roadGeo, roadMat);
-          road.rotation.x = -Math.PI / 2;
-          road.position.set(centerX - MAP_SIZE / 2, 0.01, 0);
-          road.receiveShadow = true;
-          scene.add(road);
+          // Needed below in multiple places — hoisted here so curved helpers see it.
+          var _isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
+          var _isHwyCurve = currentScenario.id === 'highway';
+          if (_isRuralCurve || _isHwyCurve) {
+            // Segmented asphalt that follows the same sine curve as the lane lines.
+            // Previously the road plane was a straight rectangle while the dashes
+            // curved, so grass showed through wherever the curve bulged outward.
+            for (var _rs = -MAP_SIZE; _rs < MAP_SIZE; _rs += 2) {
+              var _rSegGeo = new T.PlaneGeometry(7, 2.15); // 0.15 overlap prevents seams
+              var _rSeg = new T.Mesh(_rSegGeo, roadMat);
+              _rSeg.rotation.x = -Math.PI / 2;
+              var _rMY = _rs + MAP_SIZE / 2;
+              var _rCX = _isRuralCurve ? centerX + Math.sin(_rMY * 0.12) * 5
+                                       : centerX + Math.sin(_rMY * 0.06) * 3;
+              _rSeg.position.set(_rCX - MAP_SIZE / 2, 0.01, _rs + 1);
+              _rSeg.receiveShadow = true;
+              scene.add(_rSeg);
+            }
+          } else {
+            var roadGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
+            var road = new T.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.set(centerX - MAP_SIZE / 2, 0.01, 0);
+            road.receiveShadow = true;
+            scene.add(road);
+          }
 
           // ── Center line dashes (follow road curve) ──
           var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
@@ -7360,24 +7380,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
 
           // ── Sidewalks (concrete strips between road and grass) ──
+          // Curved scenarios get segmented sidewalks so they ride alongside the
+          // road instead of floating straight while the asphalt curves away.
           var sidewalkMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc0c8d0 : 0xb0a890 });
-          [-4.5, 4.5].forEach(function(offset) {
-            var swGeo = new T.PlaneGeometry(1.5, MAP_SIZE * 2);
-            var sw = new T.Mesh(swGeo, sidewalkMat);
-            sw.rotation.x = -Math.PI / 2;
-            sw.position.set(centerX - MAP_SIZE / 2 + offset, 0.015, 0);
-            sw.receiveShadow = true;
-            scene.add(sw);
-          });
+          if (_isRuralCurve || _isHwyCurve) {
+            [-4.5, 4.5].forEach(function(offset) {
+              for (var _sw = -MAP_SIZE; _sw < MAP_SIZE; _sw += 2) {
+                var _swMY = _sw + MAP_SIZE / 2;
+                var _swCX = _isRuralCurve ? centerX + Math.sin(_swMY * 0.12) * 5
+                                          : centerX + Math.sin(_swMY * 0.06) * 3;
+                var _swSeg = new T.Mesh(new T.PlaneGeometry(1.5, 2.15), sidewalkMat);
+                _swSeg.rotation.x = -Math.PI / 2;
+                _swSeg.position.set(_swCX - MAP_SIZE / 2 + offset, 0.015, _sw + 1);
+                _swSeg.receiveShadow = true;
+                scene.add(_swSeg);
+              }
+            });
+          } else {
+            [-4.5, 4.5].forEach(function(offset) {
+              var swGeo = new T.PlaneGeometry(1.5, MAP_SIZE * 2);
+              var sw = new T.Mesh(swGeo, sidewalkMat);
+              sw.rotation.x = -Math.PI / 2;
+              sw.position.set(centerX - MAP_SIZE / 2 + offset, 0.015, 0);
+              sw.receiveShadow = true;
+              scene.add(sw);
+            });
+          }
 
           // ── Curbs (raised edges between road and sidewalk) ──
           var curbMat = new T.MeshLambertMaterial({ color: 0x888888 });
-          [-3.5, 3.5].forEach(function(offset) {
-            var cGeo = new T.BoxGeometry(0.15, 0.12, MAP_SIZE * 2);
-            var curb = new T.Mesh(cGeo, curbMat);
-            curb.position.set(centerX - MAP_SIZE / 2 + offset, 0.06, 0);
-            scene.add(curb);
-          });
+          if (_isRuralCurve || _isHwyCurve) {
+            [-3.5, 3.5].forEach(function(offset) {
+              for (var _cb = -MAP_SIZE; _cb < MAP_SIZE; _cb += 2) {
+                var _cbMY = _cb + MAP_SIZE / 2;
+                var _cbCX = _isRuralCurve ? centerX + Math.sin(_cbMY * 0.12) * 5
+                                          : centerX + Math.sin(_cbMY * 0.06) * 3;
+                var _cbSeg = new T.Mesh(new T.BoxGeometry(0.15, 0.12, 2.1), curbMat);
+                _cbSeg.position.set(_cbCX - MAP_SIZE / 2 + offset, 0.06, _cb + 1);
+                scene.add(_cbSeg);
+              }
+            });
+          } else {
+            [-3.5, 3.5].forEach(function(offset) {
+              var cGeo = new T.BoxGeometry(0.15, 0.12, MAP_SIZE * 2);
+              var curb = new T.Mesh(cGeo, curbMat);
+              curb.position.set(centerX - MAP_SIZE / 2 + offset, 0.06, 0);
+              scene.add(curb);
+            });
+          }
 
           // ── Street lamps (poles with point lights — key for night immersion) ──
           var lampMeshes = [];

@@ -286,11 +286,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       vsi += vertAccel * dt * 0.3; // damped for stability
       vsi *= 0.98; // slight damping
       alt += vsi * dt;
-      alt = Math.max(0, alt);
+      // Field elevation (airport MSL) — passed in via state.fieldElev. Defaults to 0.
+      // The plane sits ON the runway at fieldElev, not at sea level. Without this,
+      // takeoff from Denver (5431 ft MSL airport) would treat the runway as airborne
+      // and the plane would fall from the start.
+      var fieldElev = state.fieldElev || 0;
+      if (alt < fieldElev) alt = fieldElev;
 
-      // Ground contact
-      if (alt <= 0) {
-        alt = 0;
+      // Ground contact (at field elevation, not sea level)
+      if (alt <= fieldElev) {
+        alt = fieldElev;
         vsi = Math.max(0, vsi);
         speed *= 0.995; // ground friction
       }
@@ -321,7 +326,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         lon: state.lon + lonChange,
         aoa: aoa,
         stalling: stalling,
-        onGround: alt <= 0,
+        // On the ground when at or below the field elevation (within 1ft tolerance)
+        onGround: alt <= (state.fieldElev || 0) + 1,
+        fieldElev: state.fieldElev || 0,
         forces: { lift: lift, drag: drag, thrust: thrust, weight: this.WEIGHT }
       };
     }
@@ -1680,7 +1687,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (Math.abs(relBrg) > 60) return; // not in view
 
         var screenX = W / 2 + (relBrg / 60) * (W / 2);
-        var proximity = 1 - nearDist / 10; // 0 to 1
+        // Clamp proximity to [0, 1] — the early-return at the top guards nearDist > 10,
+        // but if the threshold is ever raised (or this fn called from another path),
+        // negative proximity makes rwyWidth shrink past zero and breaks the geometry.
+        var proximity = Math.max(0, Math.min(1, 1 - nearDist / 10));
         var rwyWidth = 8 + proximity * 30;
         var rwyLen = 20 + proximity * 100;
         var rwyY = horizonY + (H - horizonY) * (0.3 + proximity * 0.5);
@@ -1890,7 +1900,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           } catch(e) { return; }
         }
         if (!a.ctx || !a.osc) return;
-        if (a.ctx.state === 'suspended') a.ctx.resume();
+        // resume() may reject if user hasn't interacted yet (browser autoplay policy).
+        // Wrap defensively so a rejection doesn't kill this audio update path.
+        if (a.ctx.state === 'suspended') { try { a.ctx.resume(); } catch (e) {} }
         // Frequency scales with throttle + speed
         var freq = 60 + throttle * 120 + Math.min(speed * 0.05, 80);
         var vol = Math.min(0.08, throttle * 0.06 + 0.01);
@@ -2060,6 +2072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var firstPlace = places[0];
         flightRef.current = {
           speed: route.speed, altitude: 35000, vsi: 0,
+          fieldElev: 0, // sprint mode = cruise at 35k MSL; ground floor stays at sea level
           heading: bearing(firstPlace.lat, firstPlace.lon, places[1].lat, places[1].lon),
           lat: firstPlace.lat, lon: firstPlace.lon,
           aoa: 0, stalling: false, onGround: false,
@@ -2573,7 +2586,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       var startFlying = function(startWaypoint) {
         var wp = WAYPOINTS.find(function(w) { return w.id === startWaypoint; }) || WAYPOINTS[0];
-        flightRef.current = { speed: 0, altitude: wp.alt, vsi: 0, heading: 0, lat: wp.lat, lon: wp.lon, aoa: 0, stalling: false, onGround: true, forces: { lift: 0, drag: 0, thrust: 0, weight: 2550 } };
+        // Plane starts ON THE RUNWAY at the airport's field elevation. Speed=0,
+        // throttle=0, parked at the runway threshold. Player must apply throttle and
+        // build airspeed before lift exceeds weight (proper takeoff sequence).
+        flightRef.current = {
+          speed: 0,
+          altitude: wp.alt,         // MSL — sits AT field elevation
+          fieldElev: wp.alt,        // ground floor for physics — lift can't push below this
+          vsi: 0, heading: 0,
+          lat: wp.lat, lon: wp.lon,
+          aoa: 0, stalling: false, onGround: true,
+          forces: { lift: 0, drag: 0, thrust: 0, weight: 2550 }
+        };
         controlsRef.current = { throttle: 0, pitch: 0, bank: 0 };
         timeRef.current = 0;
         flyingRef.current = true;
@@ -2711,6 +2735,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Physics step
           var state = Physics.step(flightRef.current, dt, ctrl);
           flightRef.current = state;
+
+          // Auto-dismiss the takeoff tutorial once the player is solidly airborne
+          // (>200 ft above the field). Persists in d so it doesn't reappear next drive.
+          if (!state.onGround && (state.altitude - (state.fieldElev || 0)) > 200 && !d.takeoffTutorialDismissed) {
+            upd('takeoffTutorialDismissed', true);
+          }
 
           // Engine sound
           updateEngineSound(ctrl.throttle, state.speed, state.altitude);
@@ -3733,7 +3763,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }, currentAC.icon + ' ' + currentAC.name.split(' ')[0]),
             h('div', { style: { padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.4)', color: '#4ade80', fontSize: '10px', fontWeight: 700, textAlign: 'center' }
             }, '🏆 ' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length)
-          )
+          ),
+          // ─── TAKEOFF TUTORIAL OVERLAY ───
+          // Shown when plane is on the ground at low speed. Auto-dismisses on liftoff.
+          // User can also dismiss manually with the X button. Tracks dismissal in
+          // d.takeoffTutorialSeen so it doesn't show again after the first liftoff.
+          (flightRef.current && flightRef.current.onGround && flightRef.current.speed < 30 && !d.takeoffTutorialDismissed) ? h('div', {
+            style: {
+              position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',
+              maxWidth: '340px', padding: '16px', borderRadius: '12px',
+              background: 'rgba(2,6,23,0.92)', border: '2px solid #38bdf8',
+              color: '#e2e8f0', fontSize: '12px', lineHeight: '1.6', zIndex: 20,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
+            }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '14px', fontWeight: 900, color: '#38bdf8' } }, '🛫 Ready for Takeoff'),
+              h('button', { onClick: function() { upd('takeoffTutorialDismissed', true); },
+                'aria-label': 'Dismiss takeoff tutorial',
+                style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }
+              }, '✕')
+            ),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, "You're parked on the runway. Here's how to get airborne:"),
+            h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, '1. Add throttle: '),
+                'Hold ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'Shift'),
+                ' to spool up the engine to 100%. Watch your speed (kts) climb.'
+              ),
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, '2. Build airspeed: '),
+                'Roll down the runway. Don\'t pull up yet. Wait for ', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '~55–65 kts'),
+                ' (Cessna rotation speed).'
+              ),
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, '3. Rotate: '),
+                'Press ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
+                ' (or ↑) to pitch the nose up gently — about 10°. The plane will lift off naturally.'
+              ),
+              h('li', null,
+                h('b', { style: { color: '#fbbf24' } }, '4. Climb: '),
+                'Keep nose up ~5–10° to maintain a steady climb. Don\'t over-rotate or you\'ll stall.'
+              )
+            ),
+            h('div', { style: { padding: '10px', background: 'rgba(56,189,248,0.1)', borderRadius: '6px', borderLeft: '3px solid #38bdf8', fontSize: '11px' } },
+              h('div', { style: { fontWeight: 800, color: '#38bdf8', marginBottom: '4px' } }, '🔬 The Science'),
+              h('div', { style: { color: '#cbd5e1' } },
+                'Lift = ½ × air density × velocity² × wing area × C',
+                h('sub', null, 'L'),
+                '. Lift grows with the SQUARE of speed. Doubling airspeed = 4× the lift. At ~55 kts with a small angle of attack, your wings produce just enough lift to overcome the plane\'s weight (2,550 lbs for a Cessna 172).'
+              )
+            )
+          ) : null
         );
       }
 
