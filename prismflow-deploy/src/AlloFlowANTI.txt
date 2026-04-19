@@ -8120,27 +8120,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8156,7 +8156,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a6e6e89/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -15843,10 +15843,11 @@ Return only the corrected version of this exact text:`;
     return <div className={`leading-relaxed ${className}`}>{renderFormattedText(str)}</div>;
   });
   // Peel a trailing "Source Text References" block (or translated/variant heading) off the body.
-  // Matches trailing references heading. Covers English, French (both "Sources du texte" and
-  // "Références du texte source"), Spanish "Referencias", German "Quellen", and generic
-  // "References"/"Sources" with or without slash-separated bilingual labels.
-  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Sources?\s+du\s+texte[^\n]*|R[ée]f[ée]rences?\s+du\s+texte[^\n]*|R[ée]f[ée]rences?[^\n]*|Accuracy\s+Check\s+References|Verified\s+Sources|Referencias[^\n]*|Quellen[^\n]*|Fuentes[^\n]*|Sources?\s*(?:\/[^\n]*)?|References?[^\n]*)\s*\n/i;
+  // Matches our own canonical references heading appended by the app. The Gemini prompt
+  // now forbids the model from emitting any references section (in any language), so we
+  // only need to match the headers the app itself produces: "### Source Text References",
+  // "### Accuracy Check References", "### Verified Sources", or a bare "## Sources".
+  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Sources?\s*(?:\/[^\n]*)?)\s*\n/i;
   const splitReferencesFromBody = (text) => {
       if (!text) return { body: text || '', references: '' };
       const m = text.match(REFERENCES_HEADER_RE);
@@ -28538,6 +28539,7 @@ Return ONLY JSON.`;
                   ${leveledTextCustomInstructions ? `Custom Instructions: ${leveledTextCustomInstructions}` : ''}
                   ${useEmojis ? '- Use emojis liberally.' : '- Do not use emojis.'}
                   ${keepCitations ? '- CITATION PRESERVATION: Retain [⁽¹⁾](url) markers.' : '- Remove citations.'}
+                  - DO NOT emit any "Sources", "References", "Bibliography", or equivalent section (in any language). The references list is appended automatically by the app.
                   ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
                   1. If quantitative comparisons exist, insert a Chart on its own line: [[CHART: { "type": "bar", ... }]]
                   2. If a single percentage is highlighted, use a Donut Chart: [[CHART: { "type": "donut", ... }]]
@@ -28612,6 +28614,7 @@ Return ONLY JSON.`;
               ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
               ${useEmojis ? '- Use emojis liberally throughout the text to provide visual cues and engagement (e.g., "The sun ☀️ is a star ⭐").' : '- Do not use emojis.'}
               ${keepCitations ? '- CITATION PRESERVATION (CRITICAL): The source text uses specific markdown citations like [⁽¹⁾](url). You MUST retain this exact format (Superscript in brackets + Link). Do NOT convert to [1], (1), or loose text. Ensure links remain clickable.' : '- Remove all hyperlinks and citations.'}
+              - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
               ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
               1. If quantitative comparisons exist, insert a Chart on its own line (NO line breaks inside brackets):
                  [[CHART: { "type": "bar", "title": "Title", "data": [{"label": "A", "value": 10}, {"label": "B", "value": 20}] }]]
