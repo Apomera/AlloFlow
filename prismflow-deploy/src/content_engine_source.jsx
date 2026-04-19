@@ -140,11 +140,34 @@ var createContentEngine = function(deps) {
     if (!text || !originalChunks || originalChunks.length === 0) return { renumberedText: text, reorderedChunks: originalChunks || [] };
     var reverseMap = {'⁰':0,'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9};
     var decodeSuperscript = function(str) { return parseInt(str.split('').map(function(c){return reverseMap[c];}).join(''), 10); };
-    var newChunksMap = new Map(); var reorderedChunks = []; var nextIndex = 1;
+    // Normalize URL for dedupe: lowercase host, strip trailing slash, #hash, ?query (grounding
+    // sometimes appends tracking params that vary across Gemini passes for the same source).
+    var normalizeUrl = function(u) { return String(u || '').trim().toLowerCase().replace(/[#?].*$/, '').replace(/\/+$/, ''); };
+    var newChunksMap = new Map();           // oldIdx -> newIdx (caches per-old-chunk lookup)
+    var urlToNewIdx = new Map();            // normalized URL -> newIdx (dedupe key)
+    var reorderedChunks = [];
+    var nextIndex = 1;
     var renumberedText = text.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, function(match, digits) {
       var oldIdx = decodeSuperscript(digits) - 1;
       if (!originalChunks[oldIdx]) return match;
-      var newIdx; if (newChunksMap.has(oldIdx)) { newIdx = newChunksMap.get(oldIdx); } else { newIdx = nextIndex++; newChunksMap.set(oldIdx, newIdx); reorderedChunks.push(originalChunks[oldIdx]); }
+      var newIdx;
+      if (newChunksMap.has(oldIdx)) {
+        newIdx = newChunksMap.get(oldIdx);
+      } else {
+        // Multi-section generations (e.g. two Gemini passes concatenated) often re-ground
+        // the same source as a fresh chunk. Collapse by URL so the bibliography and in-body
+        // markers both converge on the first occurrence's number.
+        var u = normalizeUrl(originalChunks[oldIdx].web && originalChunks[oldIdx].web.uri);
+        if (u && urlToNewIdx.has(u)) {
+          newIdx = urlToNewIdx.get(u);
+          newChunksMap.set(oldIdx, newIdx);
+        } else {
+          newIdx = nextIndex++;
+          newChunksMap.set(oldIdx, newIdx);
+          if (u) urlToNewIdx.set(u, newIdx);
+          reorderedChunks.push(originalChunks[oldIdx]);
+        }
+      }
       return '⁽' + toSuperscript(newIdx) + '⁾';
     });
     return reorderedChunks.length === 0 ? { renumberedText: text, reorderedChunks: [] } : { renumberedText: renumberedText, reorderedChunks: reorderedChunks };

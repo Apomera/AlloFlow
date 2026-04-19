@@ -1968,6 +1968,348 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ HONEY CHEMISTRY DIAGRAM (nectar → honey: enzymatic + evaporative conversion) ═══
+          function drawHoneyChemistry() {
+            // Warm cream/amber background
+            var hcGrad = c.createLinearGradient(0, 0, 0, H);
+            hcGrad.addColorStop(0, '#fef3c7'); hcGrad.addColorStop(1, '#fbbf24');
+            c.fillStyle = hcGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🍯 Nectar → Honey: The Chemistry of the Hive', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('80% water sugar-water becomes 18% water liquid gold — through enzymes, fanning, and time', W / 2, 46);
+
+            // 4 stages side-by-side (vertical panels)
+            var pW = W / 4;
+            var pY = 70;
+            var pH = H - pY - 110;
+
+            // ══ PANEL 1: NECTAR COLLECTION (flower + bee proboscis) ══
+            (function() {
+              var px = pW * 0.5;
+              c.save();
+              // Panel bg
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(10, pY, pW - 20, pH, 10); else c.rect(10, pY, pW - 20, pH); c.fill();
+              c.strokeStyle = '#ec4899'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(10, pY, pW - 20, pH, 10); else c.rect(10, pY, pW - 20, pH); c.stroke();
+              c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#9d174d';
+              c.fillText('① COLLECTION', px, pY + 22);
+              c.font = '10px system-ui'; c.fillStyle = '#831843';
+              c.fillText('Bee extracts nectar with proboscis', px, pY + 38);
+              // Flower
+              var fy = pY + pH * 0.55;
+              c.save(); c.translate(px, fy);
+              c.strokeStyle = '#166534'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(0, 60); c.lineTo(0, 0); c.stroke();
+              c.fillStyle = '#f472b6';
+              for (var pt = 0; pt < 6; pt++) {
+                var pa = pt * 1.047 + t2 * 0.003;
+                c.beginPath(); c.ellipse(Math.cos(pa) * 18, Math.sin(pa) * 18, 14, 7, pa, 0, 6.28); c.fill();
+              }
+              c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(0, 0, 7, 0, 6.28); c.fill();
+              c.restore();
+              // Nectar droplet (animates down into bee)
+              var ndPhase = (t2 * 0.03) % 100 / 100;
+              var ndY = fy + ndPhase * -30;
+              c.fillStyle = '#fed7aa'; c.globalAlpha = 1 - ndPhase;
+              c.beginPath(); c.ellipse(px, ndY, 3, 4, 0, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+              // Bee hovering above with extended proboscis
+              var bY = fy - 50;
+              c.save(); c.translate(px, bY);
+              c.shadowColor = '#fbbf24'; c.shadowBlur = 4;
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.ellipse(0, 0, 16, 10, 0, 0, 6.28); c.fill();
+              c.restore();
+              // Stripes
+              c.fillStyle = '#292524';
+              c.fillRect(px - 3, bY - 8, 3, 16);
+              c.fillRect(px + 2, bY - 7, 2.5, 14);
+              // Proboscis extended down
+              c.strokeStyle = '#78350f'; c.lineWidth = 1.5;
+              c.beginPath(); c.moveTo(px, bY + 10); c.lineTo(px, fy - 6); c.stroke();
+              // Wings animated
+              var wP = Math.sin(t2 * 0.5) * 2;
+              c.globalAlpha = 0.4; c.fillStyle = '#bfdbfe';
+              c.beginPath(); c.ellipse(px - 4, bY - 8 + wP, 12, 4, -0.3, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(px + 4, bY - 8 - wP, 12, 4, 0.3, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+              // Fact at bottom of panel
+              c.font = 'italic 9px system-ui'; c.fillStyle = '#831843'; c.textAlign = 'center';
+              c.fillText('Nectar: ~80% water', px, pY + pH - 30);
+              c.fillText('+ sucrose sugar', px, pY + pH - 18);
+              c.restore();
+            })();
+
+            // ══ PANEL 2: ENZYMATIC CONVERSION (inside honey stomach) ══
+            (function() {
+              var px = pW + pW * 0.5;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pW + 10, pY, pW - 20, pH, 10); else c.rect(pW + 10, pY, pW - 20, pH); c.fill();
+              c.strokeStyle = '#7c3aed'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pW + 10, pY, pW - 20, pH, 10); else c.rect(pW + 10, pY, pW - 20, pH); c.stroke();
+              c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#5b21b6';
+              c.fillText('② ENZYMATIC BREAKDOWN', px, pY + 22);
+              c.font = '10px system-ui'; c.fillStyle = '#4c1d95';
+              c.fillText('Invertase splits sucrose into simple sugars', px, pY + 38);
+
+              // Chemistry diagram (sucrose -> glucose + fructose)
+              var cyY = pY + pH * 0.4;
+              // Sucrose molecule (2 joined hexagons)
+              c.save(); c.translate(px - 55, cyY);
+              c.fillStyle = '#a78bfa'; c.strokeStyle = '#5b21b6'; c.lineWidth = 1.2;
+              for (var mh = 0; mh < 2; mh++) {
+                c.beginPath();
+                for (var mhs = 0; mhs < 6; mhs++) {
+                  var mhA = mhs * 1.047 + 0.524;
+                  var mpx = mh * 18 + Math.cos(mhA) * 10;
+                  var mpy = Math.sin(mhA) * 10;
+                  mhs === 0 ? c.moveTo(mpx, mpy) : c.lineTo(mpx, mpy);
+                }
+                c.closePath(); c.fill(); c.stroke();
+              }
+              c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillStyle = '#fff';
+              c.fillText('S', 0, 3); c.fillText('S', 18, 3);
+              c.restore();
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#5b21b6';
+              c.fillText('Sucrose', px - 55, cyY + 25);
+
+              // Enzyme arrow with "invertase" label
+              c.strokeStyle = '#dc2626'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(px - 20, cyY); c.lineTo(px + 20, cyY); c.stroke();
+              c.beginPath(); c.moveTo(px + 20, cyY); c.lineTo(px + 14, cyY - 3); c.lineTo(px + 14, cyY + 3); c.closePath();
+              c.fillStyle = '#dc2626'; c.fill();
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#7c2d12'; c.textAlign = 'center';
+              c.fillText('invertase', px, cyY - 8);
+              c.font = 'italic 8px system-ui';
+              c.fillText('(enzyme)', px, cyY + 16);
+
+              // Glucose + Fructose (2 separate hexagons)
+              c.save(); c.translate(px + 55, cyY);
+              c.fillStyle = '#fbbf24'; c.strokeStyle = '#a16207'; c.lineWidth = 1.2;
+              c.beginPath();
+              for (var gH = 0; gH < 6; gH++) {
+                var gA = gH * 1.047 + 0.524;
+                var gpx = Math.cos(gA) * 8 - 12;
+                var gpy = Math.sin(gA) * 8;
+                gH === 0 ? c.moveTo(gpx, gpy) : c.lineTo(gpx, gpy);
+              }
+              c.closePath(); c.fill(); c.stroke();
+              c.fillStyle = '#f59e0b';
+              c.beginPath();
+              for (var fH = 0; fH < 6; fH++) {
+                var fA = fH * 1.047 + 0.524;
+                var fpx = Math.cos(fA) * 8 + 12;
+                var fpy = Math.sin(fA) * 8;
+                fH === 0 ? c.moveTo(fpx, fpy) : c.lineTo(fpx, fpy);
+              }
+              c.closePath(); c.fill(); c.stroke();
+              c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillStyle = '#78350f';
+              c.fillText('G', -12, 3); c.fillText('F', 12, 3);
+              c.restore();
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#a16207';
+              c.fillText('Glucose + Fructose', px + 55, cyY + 25);
+
+              // Fact at bottom
+              c.font = 'italic 9px system-ui'; c.fillStyle = '#4c1d95'; c.textAlign = 'center';
+              c.fillText('+ gluconic acid (preservative)', px, pY + pH - 42);
+              c.fillText('+ hydrogen peroxide (antiseptic)', px, pY + pH - 30);
+              c.fillText('pH drops to 3.9 · bacteria can\'t grow', px, pY + pH - 18);
+              c.restore();
+            })();
+
+            // ══ PANEL 3: EVAPORATION (wing fanning removes water) ══
+            (function() {
+              var px = pW * 2 + pW * 0.5;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pW * 2 + 10, pY, pW - 20, pH, 10); else c.rect(pW * 2 + 10, pY, pW - 20, pH); c.fill();
+              c.strokeStyle = '#0891b2'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pW * 2 + 10, pY, pW - 20, pH, 10); else c.rect(pW * 2 + 10, pY, pW - 20, pH); c.stroke();
+              c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#155e75';
+              c.fillText('③ EVAPORATION', px, pY + 22);
+              c.font = '10px system-ui'; c.fillStyle = '#164e63';
+              c.fillText('Wing fanning drives off water', px, pY + 38);
+
+              // Open comb cell with amber liquid
+              var cellY = pY + pH * 0.5;
+              c.save(); c.translate(px, cellY);
+              // Hexagonal cell
+              c.fillStyle = '#e5a04e'; c.strokeStyle = '#92400e'; c.lineWidth = 2;
+              c.beginPath();
+              for (var cc = 0; cc < 6; cc++) {
+                var ccA = cc * 1.047 + 0.524;
+                var ccx = Math.cos(ccA) * 35;
+                var ccy = Math.sin(ccA) * 35;
+                cc === 0 ? c.moveTo(ccx, ccy) : c.lineTo(ccx, ccy);
+              }
+              c.closePath(); c.fill(); c.stroke();
+              // Liquid (ripples)
+              c.fillStyle = '#fbbf24';
+              c.beginPath();
+              for (var cr = 0; cr < 6; cr++) {
+                var crA = cr * 1.047 + 0.524;
+                var crR = 28 + Math.sin(t2 * 0.05 + cr) * 1;
+                var crx = Math.cos(crA) * crR;
+                var cry = Math.sin(crA) * crR;
+                cr === 0 ? c.moveTo(crx, cry) : c.lineTo(crx, cry);
+              }
+              c.closePath(); c.fill();
+              // Surface shimmer
+              c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 0.8;
+              c.beginPath(); c.ellipse(0, -2, 18 + Math.sin(t2 * 0.06) * 3, 3, 0, 0, 3.14);
+              c.stroke();
+              c.restore();
+
+              // Bee fanning on the rim (wings beating rapidly)
+              var fbY = cellY - 38;
+              c.save(); c.translate(px, fbY);
+              c.shadowColor = '#fbbf24'; c.shadowBlur = 3;
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.ellipse(0, 0, 10, 6, 0, 0, 6.28); c.fill();
+              c.restore();
+              c.fillStyle = '#292524';
+              c.fillRect(px - 2, fbY - 5, 2, 10);
+              c.fillRect(px + 1, fbY - 4, 1.5, 8);
+              // Rapid wing blur (big translucent ovals)
+              var wF = Math.sin(t2 * 0.8) * 5;
+              c.globalAlpha = 0.35; c.fillStyle = '#e0f2fe';
+              c.beginPath(); c.ellipse(px - 10, fbY - 3 + wF, 14, 3, -0.3, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(px + 10, fbY - 3 - wF, 14, 3, 0.3, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+
+              // Water molecules rising (steam-like particles)
+              c.fillStyle = 'rgba(186,230,253,0.85)';
+              for (var wm = 0; wm < 8; wm++) {
+                var wmT = ((t2 * 0.15 + wm * 20) % 120) / 120;
+                var wmx = px - 15 + wm * 4 + Math.sin(t2 * 0.04 + wm) * 3;
+                var wmy = cellY - 35 - wmT * 60;
+                c.globalAlpha = (1 - wmT) * 0.7;
+                c.beginPath(); c.arc(wmx, wmy, 1.5 + (1 - wmT) * 1, 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
+              // H2O label on a rising molecule
+              c.font = 'bold 8px system-ui'; c.fillStyle = 'rgba(14,116,144,0.9)'; c.textAlign = 'center';
+              c.fillText('H₂O', px, cellY - 70);
+              c.fillText('↑', px, cellY - 58);
+
+              // Water % gauge (animated from 80% down to 18%)
+              var waterPhase = (Math.sin(t2 * 0.015) + 1) / 2;
+              var waterPct = Math.round(80 - waterPhase * 62);
+              var gY = pY + pH - 55;
+              c.fillStyle = 'rgba(0,0,0,0.1)';
+              c.fillRect(px - 40, gY, 80, 10);
+              c.fillStyle = waterPct > 40 ? '#0891b2' : waterPct > 25 ? '#eab308' : '#ea580c';
+              c.fillRect(px - 40, gY, 80 * (waterPct / 80), 10);
+              c.font = 'bold 11px monospace'; c.fillStyle = '#164e63'; c.textAlign = 'center';
+              c.fillText(waterPct + '% water', px, gY + 8);
+              c.font = 'italic 8px system-ui'; c.fillStyle = '#155e75';
+              c.fillText('goal: 18%', px, gY + 22);
+
+              c.restore();
+            })();
+
+            // ══ PANEL 4: CAPPING & SHELF LIFE ══
+            (function() {
+              var px = pW * 3 + pW * 0.5;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pW * 3 + 10, pY, pW - 20, pH, 10); else c.rect(pW * 3 + 10, pY, pW - 20, pH); c.fill();
+              c.strokeStyle = '#059669'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pW * 3 + 10, pY, pW - 20, pH, 10); else c.rect(pW * 3 + 10, pY, pW - 20, pH); c.stroke();
+              c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#065f46';
+              c.fillText('④ CAPPING · STORAGE', px, pY + 22);
+              c.font = '10px system-ui'; c.fillStyle = '#064e3b';
+              c.fillText('Wax cap at 18.6% water — forever honey', px, pY + 38);
+
+              // Comb with mix of capped + uncapped cells
+              var combY = pY + pH * 0.45;
+              var cellsLayout = [
+                { x: -40, y: -20, capped: true },
+                { x: -10, y: -32, capped: true },
+                { x: 20, y: -20, capped: false },
+                { x: -25, y: 5, capped: true },
+                { x: 5, y: -8, capped: true },
+                { x: 35, y: 5, capped: false },
+                { x: -40, y: 30, capped: true },
+                { x: -10, y: 18, capped: false },
+                { x: 20, y: 30, capped: true }
+              ];
+              cellsLayout.forEach(function(cl) {
+                c.save(); c.translate(px + cl.x, combY + cl.y);
+                // Hex cell
+                c.fillStyle = cl.capped ? '#fcd34d' : '#f59e0b';
+                c.strokeStyle = '#92400e'; c.lineWidth = 1.2;
+                c.beginPath();
+                for (var ch = 0; ch < 6; ch++) {
+                  var chA = ch * 1.047 + 0.524;
+                  var chx = Math.cos(chA) * 14;
+                  var chy = Math.sin(chA) * 14;
+                  ch === 0 ? c.moveTo(chx, chy) : c.lineTo(chx, chy);
+                }
+                c.closePath(); c.fill(); c.stroke();
+                // If capped, show wax cap (lighter circle on top)
+                if (cl.capped) {
+                  c.fillStyle = 'rgba(255,245,210,0.7)';
+                  c.beginPath(); c.arc(0, 0, 11, 0, 6.28); c.fill();
+                  c.strokeStyle = 'rgba(146,64,14,0.4)'; c.lineWidth = 0.5;
+                  for (var ccx = -8; ccx < 8; ccx += 4) {
+                    c.beginPath(); c.moveTo(ccx, -9); c.lineTo(ccx, 9); c.stroke();
+                  }
+                }
+                c.restore();
+              });
+
+              // Legend
+              c.font = '9px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'left';
+              var lX = px - 35;
+              // Capped swatch
+              c.fillStyle = '#fcd34d';
+              c.fillRect(lX, combY + 75, 10, 8);
+              c.strokeStyle = '#92400e'; c.lineWidth = 0.8;
+              c.strokeRect(lX, combY + 75, 10, 8);
+              c.fillStyle = '#065f46';
+              c.fillText('capped (ripe)', lX + 14, combY + 82);
+              // Uncapped
+              c.fillStyle = '#f59e0b';
+              c.fillRect(lX, combY + 90, 10, 8);
+              c.strokeRect(lX, combY + 90, 10, 8);
+              c.fillStyle = '#065f46';
+              c.fillText('uncapped (curing)', lX + 14, combY + 97);
+
+              // Shelf-life fact at bottom
+              c.font = 'italic 10px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'center';
+              c.fillText('Shelf life: FOREVER', px, pY + pH - 30);
+              c.font = 'italic 9px system-ui';
+              c.fillText('3,000-year-old honey found edible', px, pY + pH - 18);
+              c.fillText('in Egyptian tombs — still sweet!', px, pY + pH - 6);
+
+              c.restore();
+            })();
+
+            // ── Bottom: master stat strip ──
+            var stripY = H - 52;
+            c.fillStyle = 'rgba(120,53,15,0.92)';
+            c.fillRect(0, stripY, W, 52);
+            c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillStyle = '#fef3c7';
+            c.fillText('Input: ~10,000 flower visits per tablespoon of honey', W / 2, stripY + 20);
+            c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#fcd34d';
+            var honeyFacts = [
+              'A single worker bee produces ~1/12 teaspoon of honey in her entire 6-week lifetime.',
+              'Honey is the ONLY food produced by an insect that humans regularly consume.',
+              'Raw honey contains ~200 substances including enzymes, antioxidants, and trace vitamins.',
+              '1 lb of honey = 2 million flowers visited + 55,000 miles flown by foragers.',
+              'pH of 3.9 + 80% sugars + H₂O₂ + low water = natural antimicrobial — why honey never spoils.'
+            ];
+            var hfIdx = Math.floor(t2 / 420) % honeyFacts.length;
+            c.fillText('💡 ' + honeyFacts[hfIdx], W / 2, stripY + 38);
+          }
+
           // ═══ FLIGHT PHYSICS DIAGRAM (animated wing cross-section with vortex visualization) ═══
           function drawFlightPhysics() {
             // Cool sky-blue gradient (like wind-tunnel visualization)
@@ -2176,6 +2518,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'lifecycle') {
                 drawLifeCycle();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'honey') {
+                drawHoneyChemistry();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -5024,7 +5371,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene' },
                 { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram' },
                 { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' },
-                { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' }
+                { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' },
+                { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation' }
               ].map(function(v) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,

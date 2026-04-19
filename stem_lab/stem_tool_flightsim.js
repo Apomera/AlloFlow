@@ -5316,11 +5316,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           hudRef.current.nearDist = nearDist;
 
           // ── RENDER ──
-          // Sky gradient
+          // Day/night cycle — computed FIRST so the sky gradient, horizon hills,
+          // and terrain draws all get the correct time-of-day palette. Used to
+          // be computed post-terrain which meant drawTerrain received undefined.
+          var dayNight = getDayNight(state.lon || 0, timeRef.current || 0) || { brightness: 0.8, isNight: false, isDusk: false, solarHour: 12 };
+          // Sunrise/sunset warmth — peaks within ±2h of solar 06:00 and 18:00.
+          var solarHrEarly = (dayNight.solarHour != null ? dayNight.solarHour : 12);
+          var dawnProx = Math.max(0, 1 - Math.abs(solarHrEarly - 6) / 2);
+          var duskProx = Math.max(0, 1 - Math.abs(solarHrEarly - 18) / 2);
+          var goldenProx = Math.max(dawnProx, duskProx);
+          var goldenSide = dawnProx > duskProx ? 'east' : 'west'; // east = left, west = right
+
+          // Sky gradient — biased warmer at the horizon during golden hour.
           var skyGrad = gfx.createLinearGradient(0, 0, 0, H * 0.6);
           var altFactor = Math.min(1, state.altitude / 40000);
-          skyGrad.addColorStop(0, 'rgb(' + Math.round(10 + altFactor * 5) + ',' + Math.round(10 + altFactor * 20) + ',' + Math.round(40 + altFactor * 60) + ')');
-          skyGrad.addColorStop(1, 'rgb(' + Math.round(80 - altFactor * 40) + ',' + Math.round(140 - altFactor * 40) + ',' + Math.round(220 - altFactor * 20) + ')');
+          var topR = 10 + altFactor * 5;
+          var topG = 10 + altFactor * 20 + goldenProx * 10;
+          var topB = 40 + altFactor * 60 - goldenProx * 10;
+          var botR = 80 - altFactor * 40 + goldenProx * 120;
+          var botG = 140 - altFactor * 40 + goldenProx * 30;
+          var botB = 220 - altFactor * 20 - goldenProx * 80;
+          skyGrad.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
+          skyGrad.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
           gfx.fillStyle = skyGrad;
           gfx.fillRect(0, 0, W, H);
 
