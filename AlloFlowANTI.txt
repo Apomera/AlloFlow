@@ -16340,7 +16340,7 @@ const parseTaggedContent = (text) => {
           warnLog("Gemini Prompt Blocked:", data.promptFeedback);
           throw new Error(`Content Blocked: ${data.promptFeedback.blockReason}`);
       }
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (data.candidates?.[0]?.finishReason) {
            const reason = data.candidates[0].finishReason;
            if (reason === 'MAX_TOKENS') {
@@ -16361,6 +16361,26 @@ const parseTaggedContent = (text) => {
            else if (reason !== 'STOP') {
                throw new Error(`Generation Stopped: ${reason}`);
            }
+      }
+      // Defensive cleanup: web-search grounding or the LLM cleanup round-trip at
+      // content_engine_source.jsx:760 sometimes leaves a broken markdown link near the
+      // end of the text (e.g. "[¹⁴](https://www.webmd." + orphan "\n#"). Iterate so
+      // the trailing-link $ anchor keeps reaching the actual tail after each peel.
+      if (text && typeof text === 'string' && !jsonMode) {
+          const before = text.length;
+          let prev = null;
+          while (prev !== text) {
+              prev = text;
+              text = text
+                  .replace(/[\s\u00a0]+$/, '')
+                  .replace(/\n#+\s*$/, '')
+                  .replace(/\n[.,;:!?]+\s*$/, '')
+                  .replace(/\s*\[[^\]\n]*\]\(https?:\/\/[^\s)\n]*$/, '')
+                  .replace(/\s+https?:\/\/[^\s)\n]*$/, '');
+          }
+          if (text.length !== before) {
+              debugLog && debugLog("[callGemini] Trimmed " + (before - text.length) + " chars of truncated trailing content (broken citation link or orphan fragment).");
+          }
       }
       if (useSearch) {
           return {
@@ -28496,6 +28516,9 @@ Return ONLY JSON.`;
             }
             if (keepCitations && content) {
                 content = normalizeCitationPlacement(content);
+            }
+            if (keepCitations && extractedReferences) {
+                content += `\n\n${extractedReferences}`;
             }
             metaInfo = `${effectiveGrade} - ${effectiveLanguage} ${textFormat !== 'Standard Text' ? `(${textFormat})` : ''}${wasRepaired ? ' (Refined)' : ''}`;
         }

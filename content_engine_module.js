@@ -71,15 +71,22 @@ var createContentEngine = function (deps) {
   };
   var repairSourceMarkdown = function (rawText) {
     if (!rawText) return rawText;
-    // Fix broken/truncated citations (Gemini token limit truncation)
+
+    // ── Fix broken/truncated citations (common when Gemini hits token limit) ──
+    // 1. Remove truncated citation links: [⁽¹⁸⁾](https://partial.url  (no closing paren)
     rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
+    // 2. Remove truncated citations at end of text (URL cut off mid-string, no closing bracket)
     rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
+    // 3. Fix citation links missing closing paren: [⁽¹⁾](url  → [⁽¹⁾](url)
     rawText = rawText.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
-    rawText = rawText.replace(/\s*\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
+    // 4. Remove orphan superscript citations with no link: ⁽¹⁸⁾ at end of line with no []() wrapper
+    rawText = rawText.replace(/\s*\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function (match, offset) {
+      // Only strip if it's truly orphaned (not part of a [⁽N⁾](url) pattern)
       var before = rawText.substring(Math.max(0, offset - 5), offset);
-      if (before.includes('](')) return match;
+      if (before.includes('](')) return match; // it's inside a proper link
       return '';
     });
+    // 5. Remove stray lone # (orphaned heading markers from truncation)
     rawText = rawText.replace(/\n\s*#\s*$/gm, '');
     rawText = rawText.replace(/\n\s*#\s*\n/g, '\n');
     var bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
@@ -94,7 +101,11 @@ var createContentEngine = function (deps) {
       }
     }
     rawText = body + bib;
+    // Ensure headings always start on a new line with a blank line before them
+    // Handle cases where citations appear between text and heading:
+    // "...text. [⁽⁷⁾](url) [⁽⁸⁾](url) ### Heading" → "...text. [⁽⁷⁾](url) [⁽⁸⁾](url)\n\n### Heading"
     rawText = rawText.replace(/([.!?])(\s*(?:\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]*\)\s*)*)\s*(#{1,6}\s+)/g, '$1$2\n\n$3');
+    // Also catch headings directly after any text (no punctuation)
     rawText = rawText.replace(/([^\n])\n?(#{1,6}\s+)/g, '$1\n\n$2');
     var lines = rawText.split('\n');
     var titleProcessed = false;
@@ -201,15 +212,20 @@ var createContentEngine = function (deps) {
     });
     return repairedText;
   };
+  // Filter non-educational sources (YouTube music, IMDB, Rotten Tomatoes, social media, shopping)
   var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
   var _rejectSourceTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
-  var filterSources = function(chunks) {
+  var filterSources = function (chunks) {
     if (!chunks || !Array.isArray(chunks)) return chunks;
-    return chunks.filter(function(c) {
-      var uri = (c && c.web && c.web.uri) || '';
-      var title = (c && c.web && c.web.title) || '';
-      for (var i = 0; i < _rejectSourceUrl.length; i++) { if (_rejectSourceUrl[i].test(uri)) return false; }
-      for (var j = 0; j < _rejectSourceTitle.length; j++) { if (_rejectSourceTitle[j].test(title)) return false; }
+    return chunks.filter(function (c) {
+      var uri = c && c.web && c.web.uri || '';
+      var title = c && c.web && c.web.title || '';
+      for (var i = 0; i < _rejectSourceUrl.length; i++) {
+        if (_rejectSourceUrl[i].test(uri)) return false;
+      }
+      for (var j = 0; j < _rejectSourceTitle.length; j++) {
+        if (_rejectSourceTitle[j].test(title)) return false;
+      }
       return true;
     });
   };
@@ -398,7 +414,6 @@ var createContentEngine = function (deps) {
     if (overrides && overrides.nativeEvent) {
       overrides = {};
     }
-    console.error('[CE-TRACE] handleGenerateSource called. sourceTopic:', sourceTopic, 'inputText.length:', (inputText || '').length, 'callGemini:', typeof callGemini);
     const effTopic = overrides && typeof overrides.topic === 'string' ? overrides.topic : sourceTopic;
     const effGrade = overrides && typeof overrides.grade === 'string' ? overrides.grade : sourceLevel;
     const effStandards = overrides && typeof overrides.standards === 'string' ? overrides.standards : standardsPromptString;
@@ -409,11 +424,7 @@ var createContentEngine = function (deps) {
     const effVocabulary = overrides && overrides.vocabulary ? overrides.vocabulary : sourceVocabulary;
     const effCustomInstructions = overrides && overrides.customInstructions ? overrides.customInstructions : sourceCustomInstructions;
     const effectiveLanguage = leveledTextLanguage;
-    console.error('[CE-TRACE] effTopic:', JSON.stringify(effTopic), 'effStandards:', JSON.stringify(effStandards), 'effectiveLanguage:', effectiveLanguage);
-    if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) {
-      console.error('[CE-TRACE] EARLY RETURN: no topic and no standards');
-      return;
-    }
+    if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) return;
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
     console.error('[CE-TRACE] About to setIsGeneratingSource. typeof:', typeof setIsGeneratingSource);
     setIsGeneratingSource(true);
@@ -434,8 +445,7 @@ var createContentEngine = function (deps) {
       if (effIncludeCitations) {
         setGenerationStep(t('status_steps.researching_topic'));
         try {
-          var _ai, _ai2;
-          const isLocalBackend = ((_ai = ai) === null || _ai === void 0 ? void 0 : _ai.backend) === 'ollama' || ((_ai2 = ai) === null || _ai2 === void 0 ? void 0 : _ai2.backend) === 'localai';
+          const isLocalBackend = ai?.backend === 'ollama' || ai?.backend === 'localai';
           if (isLocalBackend) {
             // ── For local backends: web search + LLM research ──
             let searchContext = '';
@@ -481,7 +491,7 @@ var createContentEngine = function (deps) {
               try {
                 if (rAttempt > 0) console.log(`[Research] 🔄 Grounding retry ${rAttempt + 1}/${maxResearchRetries + 1}...`);
                 const researchResult = await callGemini(researchPrompt, false, true);
-                if (typeof researchResult === 'object' && researchResult !== null && researchResult !== void 0 && researchResult.text) {
+                if (typeof researchResult === 'object' && researchResult?.text) {
                   researchContext = researchResult.text;
                 } else if (researchResult) {
                   researchContext = String(researchResult);
@@ -489,7 +499,7 @@ var createContentEngine = function (deps) {
                 researchSuccess = true;
                 if (rAttempt > 0) console.log(`[Research] ✅ Grounding succeeded on attempt ${rAttempt + 1}`);
               } catch (rErr) {
-                console.warn(`[Research] ⚠️ Grounding attempt ${rAttempt + 1} failed:`, rErr === null || rErr === void 0 ? void 0 : rErr.message);
+                console.warn(`[Research] ⚠️ Grounding attempt ${rAttempt + 1} failed:`, rErr?.message);
                 if (rAttempt < maxResearchRetries) {
                   await new Promise(r => setTimeout(r, 2000));
                 } else {
@@ -600,10 +610,9 @@ var createContentEngine = function (deps) {
           if (typeof result === 'object' && result !== null) {
             const rawSection = result.text || "";
             if (effIncludeCitations && rawSection) {
-              var _result$groundingMeta;
               const cleanedSection = rawSection.replace(/\[cite:\s*[^\]]*\]\.?\s*/gi, '').replace(/,?\s*\d+\s+in\s+step\s+\d+/gi, '').trim();
               let processedSection = processGrounding(cleanedSection, result.groundingMetadata, 'Links Only', false, false);
-              if ((_result$groundingMeta = result.groundingMetadata) !== null && _result$groundingMeta !== void 0 && _result$groundingMeta.groundingChunks) {
+              if (result.groundingMetadata?.groundingChunks) {
                 const chunkCount = result.groundingMetadata.groundingChunks.length;
                 processedSection = processedSection.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, (match, digits) => {
                   const reverseMap = {
@@ -630,9 +639,8 @@ var createContentEngine = function (deps) {
                   const converted = nums.map(num => {
                     const localIdx = num - 1;
                     if (localIdx >= 0 && localIdx < sectionChunks.length) {
-                      var _sectionChunks$localI;
                       const globalIdx = localIdx + currentCitationOffset + 1;
-                      const uri = (_sectionChunks$localI = sectionChunks[localIdx]) === null || _sectionChunks$localI === void 0 || (_sectionChunks$localI = _sectionChunks$localI.web) === null || _sectionChunks$localI === void 0 ? void 0 : _sectionChunks$localI.uri;
+                      const uri = sectionChunks[localIdx]?.web?.uri;
                       const label = `⁽${toSuperscript(globalIdx)}⁾`;
                       return uri ? `[${label}](${uri})` : label;
                     }
@@ -752,6 +760,7 @@ IMPORTANT: Plan for DIALOGUE, not narration. 70%+ should be spoken lines.
           storyOutline = '';
         }
       }
+      const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
       const prompt = isDialogueMode ? `
 You are generating an EDUCATIONAL DIALOGUE between two characters who explore a topic through natural conversation.
 Topic: "${effTopic}"
@@ -852,6 +861,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         - Ensure factual accuracy and clarity.
         - ${effTone === 'Persuasive' || effTone === 'Persuasive / Opinion' ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.' : effTone === 'Humorous' || effTone === 'Humorous / Engaging' ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.' : effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural' ? 'Write clear step-by-step instructions with numbered steps and helpful tips.' : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.'}
         - Do not include any intro/outro conversational text (like "Here is the text"). Just provide the content.
+        ${dialectInstruction}
+        ${bilingualInstruction}
       `;
       const shouldUseJsonMode = false;
       const creativeTemperature = isNarrativeMode ? 1.6 : null;
@@ -891,7 +902,6 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           const cleanedRawText = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
           const rawWithCitations = processGrounding(cleanedRawText, result.groundingMetadata, 'Links Only', false, false);
           if (isShortText) {
-            var _result$groundingMeta2;
             // ── Short text: deterministic citation cleanup (no lossy LLM round-trip) ──
             setGenerationStep(t('status_steps.optimizing_citations'));
             let processedText = rawWithCitations
@@ -906,7 +916,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             // Remove remaining Source N references
             .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '');
             text = processedText.trim();
-            if ((_result$groundingMeta2 = result.groundingMetadata) !== null && _result$groundingMeta2 !== void 0 && _result$groundingMeta2.groundingChunks) {
+            if (result.groundingMetadata?.groundingChunks) {
               const {
                 renumberedText,
                 reorderedChunks
@@ -936,7 +946,6 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${rawWithCitations}
               `;
             try {
-              var _result$groundingMeta3;
               const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Optimization timed out")), 60000));
               const cleaned = await Promise.race([callGemini(cleanupPrompt), timeoutPromise]);
               if (!cleaned) throw new Error("Cleanup returned empty");
@@ -948,7 +957,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
               }
               let strippedText = cleaned.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n');
               text = strippedText.trim();
-              if ((_result$groundingMeta3 = result.groundingMetadata) !== null && _result$groundingMeta3 !== void 0 && _result$groundingMeta3.groundingChunks) {
+              if (result.groundingMetadata?.groundingChunks) {
                 const {
                   renumberedText,
                   reorderedChunks
@@ -963,12 +972,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 text += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
               }
             } catch (cleanupErr) {
-              var _result$groundingMeta4;
               warnLog("Citation placement optimization skipped (Timeout or Error):", cleanupErr);
               const cleanedFallback = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
               let fallbackText = processGrounding(cleanedFallback, result.groundingMetadata, 'Links Only', false, false);
               fallbackText = fallbackText.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').trim();
-              if ((_result$groundingMeta4 = result.groundingMetadata) !== null && _result$groundingMeta4 !== void 0 && _result$groundingMeta4.groundingChunks) {
+              if (result.groundingMetadata?.groundingChunks) {
                 const {
                   renumberedText,
                   reorderedChunks
@@ -996,10 +1004,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       }
       if (isDialogueMode && text) {
         try {
-          var _sjp = (window.__alloUtils && window.__alloUtils.safeJsonParse) || function(t) { try { return JSON.parse(t.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()); } catch(e) { return null; } };
-          const dialogueData = _sjp(text);
+          const dialogueData = safeJsonParse(text);
           if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
-            var _dialogueData$charact, _dialogueData$charact2;
             let formattedScript = '';
             if (dialogueData.title) {
               formattedScript += `# ${dialogueData.title}\n\n`;
@@ -1007,8 +1013,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             if (dialogueData.setting) {
               formattedScript += `*${dialogueData.setting}*\n\n`;
             }
-            const learnerName = ((_dialogueData$charact = dialogueData.characters) === null || _dialogueData$charact === void 0 || (_dialogueData$charact = _dialogueData$charact.learner) === null || _dialogueData$charact === void 0 ? void 0 : _dialogueData$charact.name) || 'LEARNER';
-            const guideName = ((_dialogueData$charact2 = dialogueData.characters) === null || _dialogueData$charact2 === void 0 || (_dialogueData$charact2 = _dialogueData$charact2.guide) === null || _dialogueData$charact2 === void 0 ? void 0 : _dialogueData$charact2.name) || 'GUIDE';
+            const learnerName = dialogueData.characters?.learner?.name || 'LEARNER';
+            const guideName = dialogueData.characters?.guide?.name || 'GUIDE';
             for (const line of dialogueData.dialogue) {
               const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
               const action = line.action ? ` ${line.action}` : '';
@@ -1021,9 +1027,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         }
       }
       if (effIncludeCitations && text) {
-        var _result;
         text = sanitizeRawUrls(text);
-        if ((_result = result) !== null && _result !== void 0 && (_result = _result.groundingMetadata) !== null && _result !== void 0 && _result.groundingChunks) {
+        if (result?.groundingMetadata?.groundingChunks) {
           text = validateAndRepairCitations(text, result.groundingMetadata.groundingChunks);
         }
         const hasCitationMarkers = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/.test(text) || /Source Text References/i.test(text);
@@ -1034,12 +1039,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             setGenerationStep(t('status_steps.retrying_citations') || 'Retrying for better citations...');
             const retryResult = await callGemini(prompt, shouldUseJsonMode, useSearchForThisCall, creativeTemperature);
             if (typeof retryResult === 'object' && retryResult !== null && retryResult.text) {
-              var _retryResult$groundin;
               const retryRaw = retryResult.text.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
               let retryText = processGrounding(retryRaw, retryResult.groundingMetadata, 'Links Only', false, false);
               // Apply deterministic cleanup
               retryText = retryText.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1').replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2').replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1').replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1').replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '').trim();
-              if ((_retryResult$groundin = retryResult.groundingMetadata) !== null && _retryResult$groundin !== void 0 && _retryResult$groundin.groundingChunks) {
+              if (retryResult.groundingMetadata?.groundingChunks) {
                 const {
                   renumberedText,
                   reorderedChunks
@@ -1075,12 +1079,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       setInputText(text);
       setShowSourceGen(false);
     } catch (err) {
-      var _err$message, _err$message2, _err$message3, _err$message4;
       console.error('[CE-TRACE] CAUGHT ERROR in handleGenerateSource:', err);
-      if (!((_err$message = err.message) !== null && _err$message !== void 0 && _err$message.includes("401"))) {
+      if (!err.message?.includes("401")) {
         warnLog("Unhandled error:", err);
       }
-      const errMsg = (_err$message2 = err.message) !== null && _err$message2 !== void 0 && _err$message2.includes("Blocked") ? "Content blocked by safety filters." : (_err$message3 = err.message) !== null && _err$message3 !== void 0 && _err$message3.includes("Stopped") ? "Generation stopped by AI model." : (_err$message4 = err.message) !== null && _err$message4 !== void 0 && _err$message4.includes("401") ? "Daily Usage Limit Reached. Please try again later." : "Error generating content. Please try again.";
+      const errMsg = err.message?.includes("Blocked") ? "Content blocked by safety filters." : err.message?.includes("Stopped") ? "Generation stopped by AI model." : err.message?.includes("401") ? "Daily Usage Limit Reached. Please try again later." : "Error generating content. Please try again.";
       setError(errMsg);
       addToast(errMsg, "error");
       if (isBotVisible && alloBotRef.current) {
@@ -1131,8 +1134,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     if (e.key === 'Enter') addConcept();
   };
   const handleDownloadImage = () => {
-    var _generatedContent, _generatedContent2, _generatedContent3, _generatedContent4;
-    if (((_generatedContent = generatedContent) === null || _generatedContent === void 0 ? void 0 : _generatedContent.type) !== 'image' || !((_generatedContent2 = generatedContent) !== null && _generatedContent2 !== void 0 && (_generatedContent2 = _generatedContent2.data) !== null && _generatedContent2 !== void 0 && _generatedContent2.imageUrl)) return;
+    if (generatedContent?.type !== 'image' || !generatedContent?.data?.imageUrl) return;
     const downloadWithLabels = (imgUrl, labels, filename) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -1184,20 +1186,18 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       };
       img.src = imgUrl;
     };
-    if ((_generatedContent3 = generatedContent) !== null && _generatedContent3 !== void 0 && _generatedContent3.data.visualPlan && ((_generatedContent4 = generatedContent) === null || _generatedContent4 === void 0 ? void 0 : _generatedContent4.data.visualPlan.panels.length) > 1) {
-      var _generatedContent5, _generatedContent6;
+    if (generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1) {
       const labelsHidden = document.querySelector('[data-labels-hidden]');
-      (_generatedContent5 = generatedContent) === null || _generatedContent5 === void 0 || _generatedContent5.data.visualPlan.panels.forEach((panel, idx) => {
+      generatedContent?.data.visualPlan.panels.forEach((panel, idx) => {
         if (!panel.imageUrl) return;
         const labels = !labelsHidden ? panel.labels || [] : [];
         setTimeout(() => {
           downloadWithLabels(panel.imageUrl, labels, `udl-visual-panel-${idx + 1}-${Date.now()}.png`);
         }, idx * 500);
       });
-      addToast(t('visual_director.panels_downloaded') || `${(_generatedContent6 = generatedContent) === null || _generatedContent6 === void 0 ? void 0 : _generatedContent6.data.visualPlan.panels.length} panels downloaded!`, "success");
+      addToast(t('visual_director.panels_downloaded') || `${generatedContent?.data.visualPlan.panels.length} panels downloaded!`, "success");
     } else {
-      var _generatedContent7;
-      downloadWithLabels((_generatedContent7 = generatedContent) === null || _generatedContent7 === void 0 ? void 0 : _generatedContent7.data.imageUrl, [], `udl-visual-support-${Date.now()}.png`);
+      downloadWithLabels(generatedContent?.data.imageUrl, [], `udl-visual-support-${Date.now()}.png`);
       addToast(t('toasts.image_saved'), "success");
     }
   };
@@ -1248,8 +1248,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       y: selectionMenu.y
     });
     try {
-      var _generatedContent8, _generatedContent9;
-      const currentFullText = typeof ((_generatedContent8 = generatedContent) === null || _generatedContent8 === void 0 ? void 0 : _generatedContent8.data) === 'string' ? (_generatedContent9 = generatedContent) === null || _generatedContent9 === void 0 ? void 0 : _generatedContent9.data : '';
+      const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
       const isBilingual = currentFullText.includes("--- ENGLISH TRANSLATION ---");
       if (isBilingual && (action === 'simplify' || action === 'custom')) {
         const prompt = `
@@ -1394,11 +1393,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         addToast(t('toasts.phonics_parse_failed'), "error");
         return;
       }
-      setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
+      setPhonicsData(prev => reqId === _phonicsReqId && prev ? {
         ...prev,
         data: data,
         isLoading: false
-      } : prev));
+      } : prev);
       try {
         const audioUrl = await callTTS(word, selectedVoice);
         if (reqId !== _phonicsReqId) return;
@@ -1407,10 +1406,10 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           audio.playbackRate = voiceSpeed;
           await audio.play();
           if (reqId !== _phonicsReqId) return;
-          setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
+          setPhonicsData(prev => reqId === _phonicsReqId && prev ? {
             ...prev,
             audioUrl: audioUrl
-          } : prev));
+          } : prev);
         }
       } catch (audioError) {
         warnLog("Phonics audio error:", audioError);
@@ -1424,9 +1423,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     }
   };
   const applyTextRevision = () => {
-    var _generatedContent0, _generatedContent1;
     if (!revisionData || !revisionData.result || !generatedContent) return;
-    const currentFullText = typeof ((_generatedContent0 = generatedContent) === null || _generatedContent0 === void 0 ? void 0 : _generatedContent0.data) === 'string' ? (_generatedContent1 = generatedContent) === null || _generatedContent1 === void 0 ? void 0 : _generatedContent1.data : '';
+    const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
     let newFullText = currentFullText;
     if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
       let notFoundCount = 0;
@@ -1462,8 +1460,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
   };
   const closeDefinition = () => setDefinitionData(null);
   const closePhonics = () => {
-    var _phonicsData;
-    if ((_phonicsData = phonicsData) !== null && _phonicsData !== void 0 && _phonicsData.audioUrl) {
+    if (phonicsData?.audioUrl) {
       URL.revokeObjectURL(phonicsData.audioUrl);
     }
     setPhonicsData(null);
@@ -1503,15 +1500,18 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     } finally {}
   };
   const stopPlayback = () => {
+    // Read refs from window state bag (they're React refs in the main component)
     var _state = window.__contentEngineState || window.__docPipelineState || {};
     var _playbackRef = _state.playbackSessionRef || (typeof playbackSessionRef !== 'undefined' ? playbackSessionRef : null);
     var _audioRef = _state.audioRef || (typeof audioRef !== 'undefined' ? audioRef : null);
     var _blobUrlsRef = _state.activeBlobUrlsRef || (typeof activeBlobUrlsRef !== 'undefined' ? activeBlobUrlsRef : null);
+    // Invalidate the current playback session so any in-flight playSequence
+    // chain stops at its next iteration check
     if (_playbackRef) _playbackRef.current = -1;
     if (_audioRef && _audioRef.current) {
       const currentSrc = _audioRef.current.src;
       _audioRef.current.pause();
-      _audioRef.current.onended = null;
+      _audioRef.current.onended = null; // prevent chained playback
       if (currentSrc && currentSrc.startsWith('blob:') && _blobUrlsRef) {
         URL.revokeObjectURL(currentSrc);
         _blobUrlsRef.current.delete(currentSrc);
@@ -1526,17 +1526,19 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     }
     // Cancel any browser speechSynthesis
     if (window.speechSynthesis) window.speechSynthesis.cancel();
+    // Clear any pending playback timeout
     var _timeoutRef = _state.playbackTimeoutRef || null;
     if (_timeoutRef && _timeoutRef.current) {
       clearTimeout(_timeoutRef.current);
       _timeoutRef.current = null;
     }
-    if (typeof setIsPlaying === 'function') setIsPlaying(false);
-    else if (_state.setIsPlaying) _state.setIsPlaying(false);
-    if (typeof setIsPaused === 'function') setIsPaused(false);
-    else if (_state.setIsPaused) _state.setIsPaused(false);
+    if (typeof setIsPlaying === 'function') setIsPlaying(false);else if (_state.setIsPlaying) _state.setIsPlaying(false);
+    if (typeof setIsPaused === 'function') setIsPaused(false);else if (_state.setIsPaused) _state.setIsPaused(false);
     if (typeof setPlayingContentId === 'function') setPlayingContentId(null);
-    if (typeof setPlaybackState === 'function') setPlaybackState({ sentences: [], currentIdx: -1 });
+    if (typeof setPlaybackState === 'function') setPlaybackState({
+      sentences: [],
+      currentIdx: -1
+    });
     if (isPlayingRef) isPlayingRef.current = false;
     if (isSystemAudioActiveRef) isSystemAudioActiveRef.current = false;
   };
@@ -1582,5 +1584,4 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createContentEngine = createContentEngine;
 window.AlloModules.ContentEngineModule = true;
-console.log('[ContentEngineModule] Content engine factory registered');
-})();
+console.log('[ContentEngineModule] Content engine factory registered');})();

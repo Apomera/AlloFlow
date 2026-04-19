@@ -1562,6 +1562,8 @@
                                     "show_etymology": "Show word roots"
     },
     "etymology_label": "Word roots",
+    "etymology_roots_label": "Source roots",
+    "related_words_label": "Related words:",
     "settings": {
       "include_etymology": "Include word roots / etymology",
         "etymology_scope_both": "Also include for academic (Tier 2) terms"

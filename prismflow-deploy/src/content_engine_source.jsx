@@ -595,6 +595,7 @@ IMPORTANT: Plan for DIALOGUE, not narration. 70%+ should be spoken lines.
           storyOutline = '';
         }
       }
+      const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
       const prompt = isDialogueMode ? `
 You are generating an EDUCATIONAL DIALOGUE between two characters who explore a topic through natural conversation.
 Topic: "${effTopic}"
@@ -695,6 +696,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         - Ensure factual accuracy and clarity.
         - ${effTone === 'Persuasive' || effTone === 'Persuasive / Opinion' ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.' : effTone === 'Humorous' || effTone === 'Humorous / Engaging' ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.' : effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural' ? 'Write clear step-by-step instructions with numbered steps and helpful tips.' : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.'}
         - Do not include any intro/outro conversational text (like "Here is the text"). Just provide the content.
+        ${dialectInstruction}
+        ${bilingualInstruction}
       `;
       const shouldUseJsonMode = false;
       const creativeTemperature = isNarrativeMode ? 1.6 : null;
