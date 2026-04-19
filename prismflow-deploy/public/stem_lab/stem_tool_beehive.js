@@ -1548,12 +1548,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (!_bees.current || _bees.current.length === 0) {
                 // More bees for a livelier scene — cap bumped 60→90, trigger 300→250 workers/bee.
                 var ba = [], nb = Math.max(14, Math.min(90, Math.floor((safeWorkers || 10000) / 250)));
-                for (var bi = 0; bi < nb; bi++) ba.push({
-                  x: W * 0.3 + Math.random() * W * 0.5, y: H * 0.15 + Math.random() * H * 0.45,
-                  vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 1.5,
-                  sz: 2.5 + Math.random() * 2, ph: Math.random() * 6.28,
-                  carry: Math.random() > 0.6, toFlower: Math.random() > 0.5, wp: Math.random() * 6.28
-                });
+                for (var bi = 0; bi < nb; bi++) {
+                  // Every ~8th bee is a bumblebee cameo: larger, fuzzier, slower.
+                  var isBumble = (bi % 8) === 3;
+                  ba.push({
+                    x: W * 0.3 + Math.random() * W * 0.5, y: H * 0.15 + Math.random() * H * 0.45,
+                    vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 1.5,
+                    sz: isBumble ? (4 + Math.random() * 1.5) : (2.5 + Math.random() * 2),
+                    ph: Math.random() * 6.28,
+                    carry: Math.random() > 0.6, toFlower: Math.random() > 0.5,
+                    wp: Math.random() * 6.28,
+                    bumble: isBumble
+                  });
+                }
                 _bees.current = ba;
               }
               if (!_flowers.current || _flowers.current.length === 0) {
@@ -1593,7 +1600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = season === 3 ? '#d0dae8' : '#ffe066';
               c.beginPath(); c.arc(W * 0.85, sunY, sunR, 0, 6.28); c.fill();
               c.restore();
-              // Sun rays (not winter)
+              // Sun rays (not winter) — short radiating spikes
               if (season !== 3) {
                 c.strokeStyle = 'rgba(255,220,100,0.15)'; c.lineWidth = 1;
                 for (var ri = 0; ri < 8; ri++) {
@@ -1602,6 +1609,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.lineTo(W * 0.85 + Math.cos(ra) * (sunR + 14), sunY + Math.sin(ra) * (sunR + 14));
                   c.stroke();
                 }
+                // ── Volumetric god rays: wide slanted beams from sun toward ground ──
+                c.save();
+                var raySrcX = W * 0.85, raySrcY = sunY;
+                for (var gr = 0; gr < 5; gr++) {
+                  var rayAng = 1.3 + gr * 0.12 + Math.sin(t2 * 0.0015 + gr) * 0.04; // angle radiating downward-ish
+                  var rayLen = H * 1.1;
+                  var rayWidth = 26 + gr * 8;
+                  var grd = c.createLinearGradient(raySrcX, raySrcY, raySrcX + Math.cos(rayAng) * rayLen, raySrcY + Math.sin(rayAng) * rayLen);
+                  grd.addColorStop(0, 'rgba(255,235,160,0.18)');
+                  grd.addColorStop(0.6, 'rgba(255,220,120,0.05)');
+                  grd.addColorStop(1, 'rgba(255,220,120,0)');
+                  c.fillStyle = grd;
+                  c.translate(raySrcX, raySrcY);
+                  c.rotate(rayAng);
+                  c.beginPath();
+                  c.moveTo(0, -rayWidth * 0.4);
+                  c.lineTo(rayLen, -rayWidth * 1.6);
+                  c.lineTo(rayLen, rayWidth * 1.6);
+                  c.lineTo(0, rayWidth * 0.4);
+                  c.closePath(); c.fill();
+                  c.rotate(-rayAng);
+                  c.translate(-raySrcX, -raySrcY);
+                }
+                c.restore();
+              }
+
+              // ── Time-of-day warm breath (gentle hourly tint to break up flat seasonal sky) ──
+              var _tod = Math.sin(t2 * 0.00025); // slow cycle, -1..1
+              if (_tod > 0 && season !== 3) {
+                c.fillStyle = 'rgba(255,170,90,' + (_tod * 0.12) + ')';
+                c.fillRect(0, 0, W, H * 0.55);
+              } else if (_tod < -0.3 && season !== 2) {
+                // dusk / cool blue moment
+                c.fillStyle = 'rgba(90,110,160,' + (-_tod * 0.10) + ')';
+                c.fillRect(0, 0, W, H * 0.55);
               }
 
               // Clouds (parallax, layered)
@@ -1658,6 +1700,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fff';
                 for (var sn = 0; sn < 25; sn++) {
                   c.beginPath(); c.arc((sn * 41 + t2 * 0.25) % W, (sn * 23 + t2 * 0.4) % H, 1.2 + Math.random() * 0.8, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Ground flora: clover + dandelions scattered in grass ──
+              if (season === 0 || season === 1) {
+                // White clover (small triple dots)
+                c.fillStyle = 'rgba(255,255,255,0.8)';
+                for (var cl = 0; cl < 40; cl++) {
+                  var clx = (cl * 31 + 17) % W;
+                  var cly = H * 0.78 + (cl * 7) % (H * 0.20);
+                  c.beginPath(); c.arc(clx, cly, 0.9, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(clx + 1.3, cly, 0.9, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(clx + 0.6, cly - 1.1, 0.9, 0, 6.28); c.fill();
+                }
+                // Dandelions (yellow heads with subtle green stem)
+                c.fillStyle = '#facc15';
+                for (var dd = 0; dd < 22; dd++) {
+                  var ddx = (dd * 53 + 29) % W;
+                  var ddy = H * 0.79 + (dd * 13) % (H * 0.18);
+                  c.beginPath(); c.arc(ddx, ddy, 1.6, 0, 6.28); c.fill();
+                  c.strokeStyle = '#65a30d'; c.lineWidth = 0.5;
+                  c.beginPath(); c.moveTo(ddx, ddy + 1.5); c.lineTo(ddx, ddy + 5); c.stroke();
+                }
+              }
+
+              // ── Autumn falling leaves ──
+              if (season === 2) {
+                var leafColors = ['#c2410c', '#ea580c', '#eab308', '#a16207', '#7c2d12'];
+                for (var lf = 0; lf < 28; lf++) {
+                  var lfFall = t2 * 0.6 + lf * 37;
+                  var lfx = (lf * 53 + Math.sin(lfFall * 0.03 + lf) * 40) % W;
+                  var lfy = (lfFall * 0.4 + lf * 13) % (H * 0.76);
+                  var lfRot = lfFall * 0.05 + lf;
+                  var lfCol = leafColors[lf % leafColors.length];
+                  c.save(); c.translate(lfx, lfy); c.rotate(lfRot);
+                  c.fillStyle = lfCol; c.globalAlpha = 0.85;
+                  c.beginPath(); c.ellipse(0, 0, 3.5, 1.6, 0, 0, 6.28); c.fill();
+                  c.globalAlpha = 1; c.restore();
+                }
+              }
+
+              // ── Spring light rain (season 0, periodic) ──
+              if (season === 0 && Math.sin(t2 * 0.0009) > 0.6) {
+                c.strokeStyle = 'rgba(180,210,255,0.35)'; c.lineWidth = 0.8;
+                for (var rd = 0; rd < 35; rd++) {
+                  var rdx = (rd * 41 + t2 * 3) % W;
+                  var rdy = (rd * 23 + t2 * 8) % (H * 0.76);
+                  c.beginPath(); c.moveTo(rdx, rdy); c.lineTo(rdx - 2, rdy + 5); c.stroke();
+                }
+              }
+
+              // ── Wooden garden fence along the ground ──
+              c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
+              var fenceBaseY = H * 0.775;
+              var fenceH = 8;
+              // Horizontal rails
+              c.fillRect(0, fenceBaseY, W, 1.5);
+              c.fillRect(0, fenceBaseY + 4, W, 1.5);
+              // Posts every ~80px
+              for (var fp = 0; fp < W / 70; fp++) {
+                var fpx = fp * 70 + 20;
+                if (fpx < hiveX - 10 || fpx > hiveX + hiveW + 10) {
+                  c.fillRect(fpx, fenceBaseY - 2, 2.5, fenceH);
+                  // post top highlight
+                  c.fillStyle = 'rgba(255,255,255,0.2)';
+                  c.fillRect(fpx, fenceBaseY - 2, 1, fenceH);
+                  c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
                 }
               }
 
@@ -1849,12 +1958,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var tX = b.toFlower ? (W * 0.6 + Math.sin(b.ph) * W * 0.15) : (hiveX + hiveW * 0.5);
                 var tY = b.toFlower ? (H * 0.55 + Math.cos(b.ph * 0.7) * 18) : (hiveY + hiveH - 4);
                 // Slower, gentler physics: reduced seek force + jitter + more damping.
-                b.vx += (tX - b.x) * 0.002 + (Math.random() - 0.5) * 0.12;
-                b.vy += (tY - b.y) * 0.002 + (Math.random() - 0.5) * 0.09;
+                // Bumblebees move even slower (heavier) — 60% seek, 70% jitter.
+                var _seek = b.bumble ? 0.0012 : 0.002;
+                var _jit = b.bumble ? 0.08 : 0.12;
+                b.vx += (tX - b.x) * _seek + (Math.random() - 0.5) * _jit;
+                b.vy += (tY - b.y) * _seek + (Math.random() - 0.5) * (_jit * 0.75);
                 b.vx *= 0.93; b.vy *= 0.93;
-                // Cap top speed so bees never zip across the scene.
+                // Cap top speed (lower for bumbles).
+                var _cap = b.bumble ? 0.95 : 1.4;
                 var _sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-                if (_sp > 1.4) { b.vx *= 1.4 / _sp; b.vy *= 1.4 / _sp; }
+                if (_sp > _cap) { b.vx *= _cap / _sp; b.vy *= _cap / _sp; }
                 b.x += b.vx; b.y += b.vy;
                 if (Math.abs(b.x - tX) < 12 && Math.abs(b.y - tY) < 12) {
                   b.toFlower = !b.toFlower;
@@ -1872,14 +1985,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
                 // Body glow
                 c.save();
-                c.shadowColor = '#fbbf24'; c.shadowBlur = 3;
-                c.fillStyle = '#fbbf24'; c.beginPath();
-                c.ellipse(b.x, b.y, b.sz, b.sz * 0.6, angle, 0, 6.28); c.fill();
+                c.shadowColor = b.bumble ? '#fb923c' : '#fbbf24';
+                c.shadowBlur = b.bumble ? 5 : 3;
+                c.fillStyle = b.bumble ? '#fb923c' : '#fbbf24';
+                c.beginPath();
+                // Bumblebees are rounder (0.7 aspect) vs worker bees (0.6)
+                c.ellipse(b.x, b.y, b.sz, b.sz * (b.bumble ? 0.75 : 0.6), angle, 0, 6.28); c.fill();
                 c.restore();
-                // Stripes
+                // Fuzz halo for bumblebees (small translucent outer ring)
+                if (b.bumble) {
+                  c.save(); c.globalAlpha = 0.25; c.fillStyle = '#fdba74';
+                  c.beginPath(); c.ellipse(b.x, b.y, b.sz * 1.25, b.sz * 0.95, angle, 0, 6.28); c.fill();
+                  c.restore();
+                }
+                // Stripes — bumblebees get THREE bold stripes, workers keep two
                 c.fillStyle = '#292524';
                 c.save(); c.translate(b.x, b.y); c.rotate(angle);
-                c.fillRect(-b.sz * 0.15, -b.sz * 0.5, b.sz * 0.25, b.sz); c.fillRect(b.sz * 0.25, -b.sz * 0.4, b.sz * 0.2, b.sz * 0.8);
+                if (b.bumble) {
+                  c.fillRect(-b.sz * 0.5, -b.sz * 0.5, b.sz * 0.22, b.sz);
+                  c.fillRect(-b.sz * 0.05, -b.sz * 0.5, b.sz * 0.22, b.sz);
+                  c.fillRect(b.sz * 0.4, -b.sz * 0.4, b.sz * 0.2, b.sz * 0.8);
+                } else {
+                  c.fillRect(-b.sz * 0.15, -b.sz * 0.5, b.sz * 0.25, b.sz);
+                  c.fillRect(b.sz * 0.25, -b.sz * 0.4, b.sz * 0.2, b.sz * 0.8);
+                }
                 c.restore();
                 // Wings (animated, translucent)
                 var wy = Math.sin(b.wp) * 2.5;
