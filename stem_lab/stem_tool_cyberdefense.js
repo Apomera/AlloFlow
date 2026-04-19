@@ -385,7 +385,7 @@
 
           // ── War Room Timer (Threat Hunter difficulty only; auto-resolves when time hits 0 if plays exist) ──
           if (window._cyberWarRoomTimer) { clearTimeout(window._cyberWarRoomTimer); window._cyberWarRoomTimer = null; }
-          var warTimerActive = cyberTab === 'warroom' && d.warRoomActive && d.warRoomDifficulty === 'threatHunter' && !d.warRoomRoundResolved && !d.warRoomVerdict && !d.warRoomHotSeatPassScreen;
+          var warTimerActive = cyberTab === 'warroom' && d.warRoomActive && d.warRoomDifficulty === 'threatHunter' && !d.warRoomRoundResolved && !d.warRoomVerdict && !d.warRoomHotSeatPassScreen && !warLiveIsObserving;
           if (warTimerActive && warRoomTimeLeft > 0) {
             window._cyberWarRoomTimer = setTimeout(function() {
               var nextTime = warRoomTimeLeft - 1;
@@ -4818,7 +4818,7 @@
                       title: 'Download .txt transcript \u2014 easy to share or paste into a gradebook',
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDCDD Transcript'),
-                    el('button', { onClick: function() { upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
+                    el('button', { onClick: function() { warTtsStop(); upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
                       style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                       '\u2694\uFE0F New Campaign')
                   )

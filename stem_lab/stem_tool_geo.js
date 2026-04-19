@@ -706,9 +706,15 @@ var d = labToolData || {};
               highlightCountry(geoTarget.iso, '#22c55e', 1400);
 
               // Spaced repetition: if this country was on the review list, they've
-              // now learned it — remove it.
+              // now learned it — remove it. If the review list is now empty AND
+              // we're in review mode, exit review mode (was leaving the user stuck).
               if (geoMissed.indexOf(geoTarget.iso) !== -1) {
-                upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+                var newMissed = geoMissed.filter(function(iso) { return iso !== geoTarget.iso; });
+                upd('geoMissed', newMissed);
+                if (newMissed.length === 0 && geoReviewMode) {
+                  upd('geoReviewMode', false);
+                  if (addToast) addToast('\u2705 Review complete! Back to full rotation.', 'success');
+                }
               }
 
               recordContinentStat(geoTarget.continent, true);
@@ -777,7 +783,12 @@ var d = labToolData || {};
 
               // Spaced repetition: remove from review pool if they nailed it
               if (geoMissed.indexOf(geoTarget.iso) !== -1) {
-                upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+                var newMissedCap = geoMissed.filter(function(iso) { return iso !== geoTarget.iso; });
+                upd('geoMissed', newMissedCap);
+                if (newMissedCap.length === 0 && geoReviewMode) {
+                  upd('geoReviewMode', false);
+                  if (addToast) addToast('\u2705 Review complete! Back to full rotation.', 'success');
+                }
               }
 
               recordContinentStat(geoTarget.continent, true);
@@ -1731,7 +1742,12 @@ var d = labToolData || {};
 
                           // Spaced repetition: remove from review if they nailed it
                           if (geoMissed.indexOf(geoTarget.iso) !== -1) {
-                            upd('geoMissed', geoMissed.filter(function(iso) { return iso !== geoTarget.iso; }));
+                            var newMissedCont = geoMissed.filter(function(iso) { return iso !== geoTarget.iso; });
+                            upd('geoMissed', newMissedCont);
+                            if (newMissedCont.length === 0 && geoReviewMode) {
+                              upd('geoReviewMode', false);
+                              if (addToast) addToast('\u2705 Review complete! Back to full rotation.', 'success');
+                            }
                           }
 
                           recordContinentStat(geoTarget.continent, true);

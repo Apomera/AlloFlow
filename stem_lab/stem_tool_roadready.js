@@ -4372,13 +4372,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Hill grade: slope of road height at the car's position. Positive
           // slope = uphill (opposes forward motion), negative = downhill (assists).
           // Grade force = m * g * sin(atan(slope)) ≈ m * g * slope for small angles.
+          // Sample slope in the FORWARD direction of travel — the previous code always
+          // used heightAt(y+1) which gave INVERTED gradient for NB drivers (whose forward
+          // is car.y - 1). Result: NB drivers got DECELERATION when going downhill and
+          // ACCELERATION when climbing — the opposite of physics.
           var gradeForce = 0;
           if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
             var sp = infiniteWorldRef.current.spline;
             var hHere = sp.heightAt(car.y);
-            var hAhead = sp.heightAt(car.y + 1);
-            var slope = (hAhead - hHere); // rise per 1 cell
-            gradeForce = veh.mass * 9.81 * slope * 0.18; // scaled down — full gravity grade is too harsh for gameplay
+            var aheadDirG = Math.sin(car.heading) >= 0 ? 1 : -1;
+            var hAhead = sp.heightAt(car.y + aheadDirG);
+            var slope = (hAhead - hHere); // rise per 1 cell IN FORWARD DIRECTION
+            gradeForce = veh.mass * 9.81 * slope * 0.18;
           }
           var netForce = thrust - (Fd + Fr + brakeForce) * resistSign - gradeForce * resistSign;
           var accel = netForce / veh.mass;
