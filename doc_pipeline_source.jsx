@@ -621,6 +621,12 @@ var createDocPipeline = function(deps) {
       // with `["`; when joined they render as a visible paragraph between real content.
       .replace(/<p[^>]*>\s*"\s*\]\s*\[\s*"\s*<\/p>/gi, '')
       .replace(/"\s*\]\s*\[\s*"/g, '')
+      // Paragraph that STARTS with a trailing-wrapper fragment (`"]`) followed by real
+      // content — happens when chunk N+1's Gemini response opened with `"content"]` and the
+      // leading-strip missed it because the opening `[` was absent. Keep the real content.
+      .replace(/(<p[^>]*>)\s*"\s*\]\s+(?=\S)/gi, '$1')
+      // Paragraph that STARTS with a leading-wrapper fragment (`[ "`) followed by real content.
+      .replace(/(<p[^>]*>)\s*\[\s*"\s*(?=\S)/gi, '$1')
       .replace(/>\s*\[\s*"?\s*(<\/[^>]+>)/g, '>$1')
       .replace(/\[\s*"\s*<\//g, '</')
       .replace(/^\s*\[\s*"\s*$/gm, '')
@@ -4658,14 +4664,28 @@ HTML section ${chunkNum}/${chunks.length}:
     });
 
     // ── Pass 2: Fix color:rgb() and color:rgba() declarations ──
-    fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)/gi, (match, r, g, b) => {
+    // Alpha is captured and normalized: values < 0.75 collapse to opaque because low-alpha
+    // text looks washed-out/gray regardless of its raw RGB contrast. A common failure case
+    // was banner watermark text styled with `color: rgba(255,255,255,0.4)` on a dark
+    // gradient — the RGB contrast (white on navy) reads 14:1 and passes the old check, but
+    // the rendered text is unreadable because of the alpha.
+    fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/gi, (match, r, g, b, a) => {
       const rgb = [parseInt(r), parseInt(g), parseInt(b)];
+      const alpha = a !== undefined ? parseFloat(a) : 1;
+      let out = rgb;
+      let changed = false;
       if (contrastRatio(rgb, defaultBg) < 4.5) {
-        const [fr, fg, fb] = fixToPass(rgb, defaultBg);
+        out = fixToPass(rgb, defaultBg);
         fixCount++;
-        return 'color:' + rgbToHex(fr, fg, fb);
+        changed = true;
       }
-      return match;
+      if (alpha < 0.75) {
+        // Drop alpha — convert to opaque hex. Low-alpha text is a readability failure even
+        // when the underlying RGB contrast is fine.
+        if (!changed) fixCount++;
+        return 'color:' + rgbToHex(out[0], out[1], out[2]);
+      }
+      return changed ? 'color:' + rgbToHex(out[0], out[1], out[2]) : match;
     });
 
     // ── Pass 3: Fix named CSS color values ──
@@ -9781,6 +9801,11 @@ tr { page-break-inside: avoid; }
     if (blocks.length === 0) {
       return { html, stillMissing: missingList, restoredViaSentence: [] };
     }
+    // Whole-doc text cache for the broader duplicate-presence check: if a target source
+    // sentence's distinctive content words already appear elsewhere in the doc (not just
+    // in the best-matched block), the sentence is present — possibly in the References
+    // section at the top — and we should NOT insert a duplicate copy.
+    const fullDocText = normalize(body.textContent || '');
     const restored = [];
     const usedSentenceIndices = new Set();
     // Orphan tracking: source-sentence indices whose anchor-match failed, and which missing words
@@ -9827,23 +9852,48 @@ tr { page-break-inside: avoid; }
       };
       const matched = pickBest(0.6) || pickBest(0.4);
       if (!matched) {
+        // Even without an anchor, check whole-doc presence before treating as orphan —
+        // the sentence may already be in the References section (common) or elsewhere in
+        // the body, and dumping it into the end-of-doc preserved section would duplicate.
+        const orphanContentWords = normalize(targetSentence).split(' ').filter(w => w.length >= 5).slice(0, 8);
+        if (orphanContentWords.length >= 3) {
+          let docMatched = 0;
+          orphanContentWords.forEach(w => { if (fullDocText.indexOf(w) !== -1) docMatched++; });
+          if (docMatched / orphanContentWords.length >= 0.8) {
+            usedSentenceIndices.add(sentIdx);
+            restored.push({ word: m.word, sentence: targetSentence, anchorScore: 0, alreadyPresent: true, matchedVia: 'whole-doc-orphan' });
+            continue;
+          }
+        }
         orphanSentenceIndices.add(sentIdx);
         orphanByWord.push({ word: m.word, sentIdx });
         continue;
       }
       const bestBlock = matched.block;
       const bestScore = matched.score;
-      // Duplicate guard: if the target sentence's distinctive content words (length >= 5) are
-      // already ≥60% present in the matched block's text, skip the insertion — the sentence is
-      // already substantively there, just counted differently by the tokenizer.
-      const targetContentWords = normalize(targetSentence).split(' ').filter(w => w.length >= 5).slice(0, 6);
+      // Duplicate guard (two-tier):
+      // (1) Whole-doc check — if ≥ 80% of the target sentence's distinctive content words
+      //     (length ≥ 5, up to 8 tokens) already appear anywhere in the doc, the sentence is
+      //     already present (commonly in the References section when the target is a citation).
+      //     Skip to avoid mashing a duplicate reference into the body flow.
+      // (2) Anchor-block check — if ≥ 60% of those words appear in the best-matched block's
+      //     text, the sentence is already substantively there, just counted differently by the
+      //     tokenizer. Skip insertion.
+      const targetContentWords = normalize(targetSentence).split(' ').filter(w => w.length >= 5).slice(0, 8);
       if (targetContentWords.length >= 3) {
+        let docMatched = 0;
+        targetContentWords.forEach(w => { if (fullDocText.indexOf(w) !== -1) docMatched++; });
+        if (docMatched / targetContentWords.length >= 0.8) {
+          usedSentenceIndices.add(sentIdx);
+          restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100, alreadyPresent: true, matchedVia: 'whole-doc' });
+          continue;
+        }
         const blockText = normalize(bestBlock.el.textContent || '');
         let matchedCount = 0;
         targetContentWords.forEach(w => { if (blockText.indexOf(w) !== -1) matchedCount++; });
         if (matchedCount / targetContentWords.length >= 0.6) {
           usedSentenceIndices.add(sentIdx);
-          restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100, alreadyPresent: true });
+          restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100, alreadyPresent: true, matchedVia: 'anchor-block' });
           continue;
         }
       }
