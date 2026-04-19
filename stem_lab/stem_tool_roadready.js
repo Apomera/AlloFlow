@@ -3646,6 +3646,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var dt = Math.min(0.1, (now - lastT) / 1000);
           lastT = now;
           pollGamepad();
+          // ── Suspend audio while paused ──
+          // The update loop is gated on !paused, so updateAudio() never fires while paused
+          // — but engine/siren oscillators keep running at whatever frequency/gain they
+          // had at pause-time. Suspending the AudioContext freezes ALL audio cleanly.
+          if (audioRef.current && audioRef.current.ctx) {
+            var ctxState = audioRef.current.ctx.state;
+            if (pausedRef.current && ctxState === 'running') {
+              try { audioRef.current.ctx.suspend(); } catch (e) {}
+            } else if (!pausedRef.current && ctxState === 'suspended') {
+              try { audioRef.current.ctx.resume(); } catch (e) {}
+            }
+          }
           if (!pausedRef.current) {
             timeRef.current += dt;
             // Clamp safety/efficiency scores to [0, 100] each frame. Without this they
@@ -5980,6 +5992,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var updateCyclists = function(dt) {
           var cySpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           cyclistsRef.current.forEach(function(cy) {
+            // Skip the spline lerp + motion entirely for hit cyclists — they should
+            // stay parked far off-screen (cy.x = -99) until the drive ends.
+            if (cy._hit) return;
             // Spline-aware heading + lateral hold so cyclists stay on the bike lane
             // edge through curves instead of drifting into trees / oncoming traffic.
             if (cySpline && !cy.crossStreet) {
@@ -6171,6 +6186,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               statsRef.current.safetyScore -= 50;
               addToast('💥 Struck a ' + cy.type + '! -50');
               eventToastRef.current = { msg: '💥 You struck a ' + cy.type + '. In real life this is a serious injury or fatality.', until: timeRef.current + 5 };
+              // Mark hit so the spline lateral-correction in updateCyclists doesn't snap
+              // the cyclist back into the bike lane (the cy.x = -99 alone would visually
+              // blink the cyclist back to its lane within ~0.5s as the perp lerp pulled
+              // it back). With _hit set, the update skips lateral correction.
+              cy._hit = true;
               cy.x = -99;
             }
           });

@@ -569,6 +569,14 @@ var d = labToolData || {};
             upd('geoSessionStats', next);
           }
 
+          // Plain-text feedback announcer for screen readers.
+          function announceFeedback(msg) {
+            if (!msg) return;
+            if (typeof announceToSR === 'function') announceToSR(msg);
+            var live = document.getElementById('allo-live-geo');
+            if (live) live.textContent = msg;
+          }
+
           // ── Region filter ──
           // Supports: 'world', continent keys (africa/asia/europe/n_america/s_america/oceania),
           // 'americas' (legacy combined), and 'r:<Sub-Region Name>' for finer-grained UN regions.
@@ -684,9 +692,9 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! +' + (pts + bonus) + ' pts' + (bonus > 0 ? ' (\uD83D\uDD25 streak!)' : '') });
 
+              announceFeedback('Correct. ' + geoTarget.name + ' is in ' + geoTarget.continent + '. Plus ' + (pts + bonus) + ' points.');
+
               if (typeof stemBeep === 'function') stemBeep('correct');
-              // Confetti on milestone streaks only (was firing on every correct at 5+,
-              // which spammed the celebration on long streaks).
               if (typeof stemCelebrate === 'function' && (newStreak === 5 || newStreak === 10 || newStreak === 15 || newStreak === 20 || (newStreak >= 25 && newStreak % 25 === 0))) stemCelebrate();
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Identified ' + geoTarget.name);
@@ -716,6 +724,8 @@ var d = labToolData || {};
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, msg: '\u274C You picked ' + pickedLabel + '. The answer is ' + geoTarget.name + '.' });
+
+              announceFeedback('Incorrect. You picked ' + pickedLabel + '. The answer is ' + geoTarget.name + ', in ' + geoTarget.continent + '.');
 
               // Spatial learning: flash the wrong pick in red, then reveal the
               // correct country in green and fly to it so the student SEES where it is.
@@ -756,6 +766,8 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! The capital of ' + geoTarget.name + ' is ' + geoTarget.capital });
 
+              announceFeedback('Correct. The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + '.');
+
               if (typeof stemBeep === 'function') stemBeep('correct');
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Knew capital of ' + geoTarget.name);
@@ -779,6 +791,8 @@ var d = labToolData || {};
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, picked: input.trim(), msg: '\u274C The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + ', not "' + input.trim() + '".' });
+
+              announceFeedback('Incorrect. The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + '.');
 
               // Spaced repetition: add to review pool (dedup)
               if (geoMissed.indexOf(geoTarget.iso) === -1) {
@@ -1137,6 +1151,8 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: true, picked: pickedIso, msg: '\u2705 Correct! ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is bigger.' });
 
+              announceFeedback('Correct. ' + bigger.name + ', at ' + bigger.area.toLocaleString() + ' square kilometers, is larger.');
+
               if (typeof stemBeep === 'function') stemBeep('correct');
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Size compare');
 
@@ -1152,6 +1168,8 @@ var d = labToolData || {};
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, picked: pickedIso, msg: '\u274C ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is actually bigger than ' + smaller.name + ' (' + smaller.area.toLocaleString() + ' km\u00b2).' });
+
+              announceFeedback('Incorrect. ' + bigger.name + ' is larger than ' + smaller.name + '.');
 
               setTimeout(pickSizePair, 3200);
 
@@ -1224,11 +1242,13 @@ var d = labToolData || {};
               upd('geoStreak', geoStreak + 1);
               upd('geoDistCorrect', geoDistCorrect + 1);
               upd('geoDistFeedback', { correct: true, actual: actual, guess: guess, pctOff: pctOff, msg: '✅ Great! Actual: ' + actual.toLocaleString() + ' km (you were ' + Math.round(pctOff * 100) + '% off) +' + pts + ' pts' });
+              announceFeedback('Close enough! Actual distance ' + actual.toLocaleString() + ' kilometers. You were ' + Math.round(pctOff * 100) + ' percent off.');
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Distance estimate');
               setTimeout(pickDistancePair, 3500);
             } else {
               upd('geoStreak', 0);
               upd('geoDistFeedback', { correct: false, actual: actual, guess: guess, pctOff: pctOff, msg: '❌ Actual distance: ' + actual.toLocaleString() + ' km. You guessed ' + guess.toLocaleString() + ' km (' + Math.round(pctOff * 100) + '% off). Within 15% to score!' });
+              announceFeedback('Not quite. Actual distance ' + actual.toLocaleString() + ' kilometers. You were ' + Math.round(pctOff * 100) + ' percent off.');
               setTimeout(pickDistancePair, 4500);
             }
           }
@@ -1700,6 +1720,8 @@ var d = labToolData || {};
 
                           upd('geoFeedback', { correct: true, picked: cont, msg: '\u2705 ' + geoTarget.name + ' is in ' + cont + '!' });
 
+                          announceFeedback('Correct. ' + geoTarget.name + ' is in ' + cont + '.');
+
                           if (typeof stemBeep === 'function') stemBeep('correct');
 
                           if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Continent sort');
@@ -1718,6 +1740,8 @@ var d = labToolData || {};
                           upd('geoStreak', 0);
 
                           upd('geoFeedback', { correct: false, picked: cont, msg: '\u274C ' + geoTarget.name + ' is in ' + geoTarget.continent + ', not ' + cont });
+
+                          announceFeedback('Incorrect. ' + geoTarget.name + ' is in ' + geoTarget.continent + ', not ' + cont + '.');
 
                           if (typeof stemBeep === 'function') stemBeep('wrong');
 
@@ -1816,6 +1840,7 @@ var d = labToolData || {};
                     upd('geoScore', geoScore + 10);
                     upd('geoStreak', geoStreak + 1);
                     upd('geoLandmarkQuizFb', { correct: true, msg: '\u2705 Yes! ' + lm.name + ' is in ' + lm.country + '.' });
+                    announceFeedback('Correct. ' + lm.name + ' is in ' + lm.country + '.');
                     if (typeof stemBeep === 'function') stemBeep('correct');
                     if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'ID\'d ' + lm.name);
                     recordContinentStat(lmContinent, true);
@@ -1823,6 +1848,7 @@ var d = labToolData || {};
                   } else {
                     upd('geoStreak', 0);
                     upd('geoLandmarkQuizFb', { correct: false, picked: pickedName, msg: '\u274C That\'s ' + pickedName + '. ' + lm.name + ' is in ' + lm.country + '.' });
+                    announceFeedback('Incorrect. ' + lm.name + ' is in ' + lm.country + ', not ' + pickedName + '.');
                     if (typeof stemBeep === 'function') stemBeep('wrong');
                     recordContinentStat(lmContinent, false);
                     setTimeout(advanceLandmark, 2600);
@@ -2275,10 +2301,12 @@ var d = labToolData || {};
                     upd('geoScore', geoScore + 10);
                     upd('geoQuizCorrectCount', quizCorrectCount + 1);
                     upd('geoFeedback', { correct: true, msg: '\u2705 Correct! ' + (q.fact || '') });
+                    announceFeedback('Correct. ' + (q.fact || ''));
                     if (typeof stemBeep === 'function') stemBeep('correct');
                     if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'AI quiz answer');
                   } else {
                     upd('geoFeedback', { correct: false, msg: '\u274C Answer: ' + q.answer + '. ' + (q.fact || '') });
+                    announceFeedback('Incorrect. The answer was ' + q.answer + '. ' + (q.fact || ''));
                     if (typeof stemBeep === 'function') stemBeep('wrong');
                   }
                   upd('geoQuizAnswer', '');

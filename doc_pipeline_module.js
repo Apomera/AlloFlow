@@ -3141,6 +3141,9 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           c = c.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
           // Unescape common JSON escapes that survived the unwrap.
           c = c.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          // Decode \uXXXX surrogate-pair escapes (otherwise 📷 renders as literal
+          // "\ud83d\udcf7" and … renders as "\u2026" in the final HTML).
+          c = c.replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
         }
         // Strip a stray trailing `[ "` or `[ "}` left by truncated JSON — common cause of the
         // `[ "` fragment that occasionally appears at the bottom of a rendered page.
@@ -4617,8 +4620,28 @@ HTML section ${chunkNum}/${chunks.length}:
     const defaultBg = detectDocBg(htmlContent);
 
     // ── Pass 1: Fix color:#hex declarations against detected background ──
-    fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
+    // Skip any match that lives inside an inline style="..." attribute that ALSO
+    // declares its own background — Pass 4 below handles those holistically with
+    // the correct local bg context. Previously this pass naively darkened #ffffff
+    // against the document background when it actually sits on a blue button, so
+    // white button text rendered as dark-orange-on-blue.
+    fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex, offset, fullStr) => {
       try {
+        // Look backward for the opening of an inline style="..." attribute. If found
+        // unclosed before this match, inspect the full style fragment for a background.
+        const back = fullStr.substring(Math.max(0, offset - 400), offset);
+        const lastStyleOpen = back.lastIndexOf('style="');
+        if (lastStyleOpen !== -1) {
+          const afterStyleOpen = back.substring(lastStyleOpen + 7);
+          if (!afterStyleOpen.includes('"')) {
+            const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 400));
+            const closingQuote = fwd.indexOf('"');
+            const styleFragment = afterStyleOpen + (closingQuote >= 0 ? fwd.substring(0, closingQuote) : fwd);
+            if (/background(?:-color)?\s*:/i.test(styleFragment)) {
+              return match; // Pass 4 owns this inline style
+            }
+          }
+        }
         const rgb = hexToRgb(hex);
         if (contrastRatio(rgb, defaultBg) < 4.5) {
           const [fr, fg, fb] = fixToPass(rgb, defaultBg);
@@ -5960,6 +5983,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         currentHtml = currentHtml.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t');
         // Remove JSON wrapper artifacts
         currentHtml = currentHtml.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '').replace(/\\"/g, '"');
+        // Decode \uXXXX surrogate-pair escapes so emoji/ellipsis render as real characters.
+        currentHtml = currentHtml.replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
 
         // ── Post-reassembly: full-document deterministic pass ──
         // Document-level fixes that don't work on fragments: skip-link, <main> landmark, lang attribute,
@@ -9505,9 +9530,21 @@ tr { page-break-inside: avoid; }
         const origWord = srcWordsRaw[posForCtx] || targetWord;
         // Guard: if the word is already present anywhere in the doc, it's a count-diff
         // artifact (e.g. running-header dedupe), not a real content loss — skip appendix.
+        // Hyphen variants: "physical-biological" tokenizes as one key but may appear in the
+        // doc as "physicalbiological" (joined) or "physical biological" (split). Test all
+        // three forms so compound / hyphenated terms don't false-flag as missing.
         const docText = ((root && root.textContent) || '').toLowerCase();
-        const escaped = targetWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const alreadyPresent = escaped && new RegExp('\\b' + escaped + '\\b').test(docText);
+        const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escaped = escRe(targetWord);
+        const variants = [targetWord];
+        if (targetWord.indexOf('-') !== -1) {
+          variants.push(targetWord.replace(/-/g, ''));
+          variants.push(targetWord.replace(/-/g, ' '));
+        }
+        const alreadyPresent = escaped && variants.some(v => {
+          const esc = escRe(v);
+          return esc && new RegExp('\\b' + esc + '\\b').test(docText);
+        });
         if (alreadyPresent) {
           restored.push({ word: origWord, context: '(present in doc — count-diff artifact)' });
         } else {
@@ -9836,6 +9873,162 @@ tr { page-break-inside: avoid; }
     try { outHtml = doctypePrefix + (doc.documentElement ? doc.documentElement.outerHTML : html); }
     catch (e) { outHtml = html; }
     return { html: outHtml, stillMissing, restoredViaSentence: restored };
+  };
+
+  // ── Stage D: Duplicate detection + tiered cleanup ──
+  // Auto-removes provably-wrong duplicates (byte-identical sentences ≥ 40 chars AND
+  // mid-word truncation fragments left by chunk-boundary stutter). Highlights
+  // medium-confidence matches (≥ 85% word overlap + 8-word N-gram repeats) via
+  // <mark class="allo-duplicate-suspect"> so the user can curate without destruction.
+  // Skip zones: headings, captions, th, figcaption, and our own data-source-restored
+  // / data-source-preserved-block / data-image-recovery / data-content-recovery
+  // sections (that content SHOULD sometimes echo other text by design).
+  const detectAndHandleDuplicates = (html) => {
+    if (!html) return { html: html || '', autoRemoved: [], highlighted: [] };
+    const doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
+    const doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
+    let doc;
+    try { doc = new DOMParser().parseFromString(html, 'text/html'); }
+    catch (e) { return { html, autoRemoved: [], highlighted: [] }; }
+    const body = doc.body || doc.documentElement;
+    if (!body) return { html, autoRemoved: [], highlighted: [] };
+    const splitSentences = (txt) => (txt || '').match(/[^.!?]+[.!?]+/g) || [];
+    const normalizeText = (s) => (s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const wordArr = (s) => normalizeText(s).split(' ').filter(Boolean);
+    const isTruncationFragment = (s) => {
+      const t = (s || '').trim();
+      if (t.length < 20) return false;
+      if (/[\u2026…]\s*\)?$/.test(t)) return true; // explicit ellipsis
+      if (/[a-zA-Z]-$/.test(t)) return true;       // ends with hyphen mid-word
+      // Ends on an alphanumeric char with no sentence punctuation — likely truncation
+      if (/[A-Za-z0-9]$/.test(t) && !/[.!?)]$/.test(t)) return true;
+      return false;
+    };
+    const isInSkipZone = (el) => {
+      if (!el) return true;
+      // Structural elements that may legitimately repeat text
+      if (el.closest('h1, h2, h3, h4, h5, h6, caption, th, figcaption, thead')) return true;
+      // Our own restoration / recovery sections
+      if (el.closest('section[data-content-recovery="true"]')) return true;
+      if (el.closest('section[data-source-preserved-block="true"]')) return true;
+      if (el.closest('section[data-image-recovery="true"]')) return true;
+      if (el.hasAttribute && el.hasAttribute('data-source-restored')) return true;
+      return false;
+    };
+    const blocks = Array.from(body.querySelectorAll('p, li, blockquote, td')).filter(el => {
+      if (isInSkipZone(el)) return false;
+      return (el.textContent || '').trim().length >= 40;
+    });
+    const autoRemoved = [];
+    const highlighted = [];
+    const blocksToRemove = new Set();
+
+    // ── Tier 1: exact-duplicate full blocks — auto-remove 2nd+ occurrence ──
+    const seenNormalized = new Map();
+    blocks.forEach(el => {
+      const txt = (el.textContent || '').trim();
+      if (txt.length < 40) return;
+      const norm = normalizeText(txt);
+      if (norm.length < 40) return;
+      if (seenNormalized.has(norm)) {
+        blocksToRemove.add(el);
+        autoRemoved.push({ text: txt.slice(0, 100) + (txt.length > 100 ? '…' : ''), reason: 'exact-duplicate' });
+      } else {
+        seenNormalized.set(norm, el);
+      }
+    });
+
+    // ── Tier 2: truncation fragments — auto-remove mid-word/ellipsis cutoffs ──
+    blocks.forEach(el => {
+      if (blocksToRemove.has(el)) return;
+      const txt = (el.textContent || '').trim();
+      if (!isTruncationFragment(txt)) return;
+      // Extra safety: only auto-remove if the block is short (< 300 chars) — long truncations
+      // likely contain real content the user wants to keep and manually fix.
+      if (txt.length >= 300) {
+        highlighted.push({ el, reason: 'truncation-fragment-long', text: txt.slice(0, 80) + '…' });
+        return;
+      }
+      blocksToRemove.add(el);
+      autoRemoved.push({ text: txt.slice(0, 100) + (txt.length > 100 ? '…' : ''), reason: 'truncation-fragment' });
+    });
+
+    // Safety cap: if we're about to remove more than 30% of blocks, abort auto-removal entirely
+    // (something is wrong with the detection or the doc is highly repetitive by design).
+    if (blocks.length > 0 && blocksToRemove.size > Math.max(3, blocks.length * 0.3)) {
+      warnLog('[Dedup] Safety cap hit: would remove ' + blocksToRemove.size + ' of ' + blocks.length + ' blocks — aborting auto-removal and falling back to highlight-only.');
+      blocksToRemove.forEach(el => {
+        const txt = (el.textContent || '').trim();
+        highlighted.push({ el, reason: 'safety-cap-skip', text: txt.slice(0, 80) + '…' });
+      });
+      blocksToRemove.clear();
+      autoRemoved.length = 0;
+    }
+
+    // Apply Tier 1+2 removals
+    blocksToRemove.forEach(el => { if (el.parentNode) el.parentNode.removeChild(el); });
+    const remaining = blocks.filter(el => !blocksToRemove.has(el));
+
+    // ── Tier 3: ≥ 85% word overlap between distinct blocks — highlight only ──
+    const remainingWithWords = remaining.map(el => ({ el, words: new Set(wordArr(el.textContent || '')) }));
+    for (let i = 0; i < remainingWithWords.length; i++) {
+      for (let j = i + 1; j < remainingWithWords.length; j++) {
+        const a = remainingWithWords[i], b = remainingWithWords[j];
+        if (a.words.size < 6 || b.words.size < 6) continue;
+        let common = 0;
+        a.words.forEach(w => { if (b.words.has(w)) common++; });
+        const overlap = common / Math.min(a.words.size, b.words.size);
+        if (overlap >= 0.85) {
+          // Highlight only the SECOND occurrence — leaves the first as the canonical copy
+          if (!b.el.classList.contains('allo-duplicate-suspect')) {
+            highlighted.push({ el: b.el, reason: 'near-duplicate', text: (b.el.textContent || '').trim().slice(0, 80) + '…' });
+          }
+        }
+      }
+    }
+
+    // ── Tier 4: 8-word N-gram repeats across blocks — highlight only ──
+    const ngramMap = new Map();
+    remaining.forEach(el => {
+      const words = wordArr(el.textContent || '');
+      for (let i = 0; i + 8 <= words.length; i++) {
+        const key = words.slice(i, i + 8).join(' ');
+        if (!ngramMap.has(key)) ngramMap.set(key, new Set());
+        ngramMap.get(key).add(el);
+      }
+    });
+    ngramMap.forEach((elSet) => {
+      if (elSet.size < 2) return;
+      const arr = Array.from(elSet);
+      // Skip the first occurrence; flag the rest
+      arr.slice(1).forEach(el => {
+        if (!highlighted.some(h => h.el === el)) {
+          highlighted.push({ el, reason: 'ngram-repeat', text: (el.textContent || '').trim().slice(0, 80) + '…' });
+        }
+      });
+    });
+
+    // Apply highlight class + one-time CSS rule if any flags
+    if (highlighted.length > 0) {
+      const head = doc.head;
+      if (head && !head.querySelector('style[data-allo-duplicate-style]')) {
+        const style = doc.createElement('style');
+        style.setAttribute('data-allo-duplicate-style', 'true');
+        style.textContent = '.allo-duplicate-suspect { background: #fef3c7; border-bottom: 2px solid #f59e0b; padding: 0 2px; } .allo-duplicate-suspect::before { content: "⚠ possible duplicate — review"; display: block; font-size: 0.7em; color: #92400e; font-weight: 700; margin-bottom: 0.25em; }';
+        head.appendChild(style);
+      }
+      highlighted.forEach(h => {
+        if (h.el && !h.el.classList.contains('allo-duplicate-suspect')) {
+          h.el.classList.add('allo-duplicate-suspect');
+          h.el.setAttribute('data-allo-duplicate-reason', h.reason);
+        }
+      });
+    }
+
+    let outHtml;
+    try { outHtml = doctypePrefix + (doc.documentElement ? doc.documentElement.outerHTML : html); }
+    catch (e) { outHtml = html; }
+    return { html: outHtml, autoRemoved, highlighted: highlighted.map(h => ({ reason: h.reason, text: h.text })) };
   };
 
   // Side-effecting wrapper — reads current HTML from the preview iframe (authoritative, since
@@ -11165,6 +11358,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     applyWordRestorationInPlace: _wrap(applyWordRestorationInPlace),
     retargetMissingWordsViaGemini: _wrapAsync(retargetMissingWordsViaGemini),
     restoreSentencesDeterministic: restoreSentencesDeterministic, // pure DOM work
+    detectAndHandleDuplicates: detectAndHandleDuplicates, // pure DOM work
     runAutonomousRemediation: _wrapAsync(runAutonomousRemediation), // Expert Workbench — autonomous agent loop
     processExpertCommand: _wrapAsync(processExpertCommand),        // Expert Workbench — command bar interpreter
     // Multi-session + Tier 2/2.5/3 — restored after 1ce8054 regression (see comment on
