@@ -1968,6 +1968,172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ THREATS & CCD DIAGRAM (what's killing honeybees + what helps) ═══
+          function drawThreats() {
+            // Ominous dark red → orange gradient
+            var trGrad = c.createLinearGradient(0, 0, 0, H);
+            trGrad.addColorStop(0, '#fff1f2'); trGrad.addColorStop(1, '#fecaca');
+            c.fillStyle = trGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#7f1d1d'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🚨 Threats to Honeybees · The Four Horsemen of Colony Loss', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#991b1b';
+            c.fillText('US beekeepers lose 30–50% of colonies annually since 2006. Understanding WHY lets us help.', W / 2, 46);
+
+            // 2×2 grid of threat panels
+            var gridW = W / 2 - 15;
+            var gridH = (H - 70 - 90) / 2;
+            var threats = [
+              {
+                col: 0, row: 0, color: '#dc2626',
+                icon: '🕷️', title: 'VARROA MITES',
+                sub: 'Varroa destructor · the #1 killer',
+                facts: [
+                  '· Parasitic mite that feeds on bee fat body',
+                  '· Transmits 22+ viruses (DWV, IAPV, etc)',
+                  '· Untreated hive dies in ~2 years',
+                  '· Arrived in US ~1987 — global now'
+                ],
+                help: '✓ IPM: oxalic acid, thymol, drone-brood trapping'
+              },
+              {
+                col: 1, row: 0, color: '#7c2d12',
+                icon: '☠️', title: 'PESTICIDES',
+                sub: 'Neonicotinoids + systemic pesticides',
+                facts: [
+                  '· Neonics coat seeds → nectar & pollen → bees',
+                  '· Sub-lethal doses damage navigation + memory',
+                  '· Foragers can\'t find their way home',
+                  '· EU banned 3 neonics in 2018 · US permits most'
+                ],
+                help: '✓ Choose organic · avoid spraying during bloom'
+              },
+              {
+                col: 0, row: 1, color: '#15803d',
+                icon: '🌾', title: 'HABITAT LOSS',
+                sub: 'Monoculture + no forage diversity',
+                facts: [
+                  '· Modern farms = 1000s of acres of ONE crop',
+                  '· Corn / soy fields are "food deserts" for bees',
+                  '· 70% of wildflowers lost to development',
+                  '· Bees need 6–8 month continuous bloom'
+                ],
+                help: '✓ Plant native wildflowers · reduce lawn area'
+              },
+              {
+                col: 1, row: 1, color: '#7c3aed',
+                icon: '🌀', title: 'COLONY COLLAPSE DISORDER',
+                sub: 'CCD · the mystery syndrome',
+                facts: [
+                  '· Workers abandon hive — queen & brood left',
+                  '· No dead bees found · they just vanish',
+                  '· First identified ~2006',
+                  '· Likely combination: varroa + pesticides + stress'
+                ],
+                help: '✓ Research continues · multi-factor approach'
+              }
+            ];
+
+            threats.forEach(function(th) {
+              var pX = 10 + th.col * (gridW + 10);
+              var pY = 60 + th.row * (gridH + 10);
+              c.save();
+              // Panel background
+              c.fillStyle = 'rgba(255,255,255,0.75)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, gridW, gridH, 10); else c.rect(pX, pY, gridW, gridH); c.fill();
+              c.strokeStyle = th.color; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, gridW, gridH, 10); else c.rect(pX, pY, gridW, gridH); c.stroke();
+              // Icon + title
+              c.font = '32px system-ui'; c.textAlign = 'left'; c.fillStyle = th.color;
+              c.fillText(th.icon, pX + 16, pY + 42);
+              c.font = 'bold 14px Georgia, serif'; c.fillStyle = th.color;
+              c.fillText(th.title, pX + 58, pY + 28);
+              c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#1e293b';
+              c.fillText(th.sub, pX + 58, pY + 44);
+              // Facts
+              c.font = '10px system-ui'; c.fillStyle = '#0f172a'; c.textAlign = 'left';
+              var fY = pY + 68;
+              th.facts.forEach(function(f) {
+                c.fillText(f, pX + 16, fY);
+                fY += 14;
+              });
+              // Help box at bottom
+              c.fillStyle = 'rgba(34,197,94,0.15)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX + 10, pY + gridH - 28, gridW - 20, 20, 6); else c.rect(pX + 10, pY + gridH - 28, gridW - 20, 20); c.fill();
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'left';
+              c.fillText(th.help, pX + 16, pY + gridH - 14);
+              c.restore();
+
+              // Visual mini-illustration on the right side of each panel
+              c.save();
+              c.translate(pX + gridW - 50, pY + gridH * 0.4);
+              if (th.title === 'VARROA MITES') {
+                // Draw a bee with varroa mites on back
+                c.fillStyle = '#fbbf24'; c.beginPath(); c.ellipse(0, 0, 18, 12, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#292524'; c.fillRect(-4, -10, 2, 20); c.fillRect(4, -8, 2, 16);
+                // Varroa mites (red dots pulsing)
+                var mitePulse = 0.5 + Math.sin(t2 * 0.08) * 0.3;
+                c.fillStyle = 'rgba(220,38,38,' + mitePulse + ')';
+                c.beginPath(); c.arc(-5, -3, 2.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(3, 2, 2.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(8, -5, 2.2, 0, 6.28); c.fill();
+              } else if (th.title === 'PESTICIDES') {
+                // Skull + crossbones + falling bee
+                c.font = '28px system-ui'; c.fillStyle = '#7c2d12'; c.textAlign = 'center';
+                c.fillText('💀', 0, -4);
+                // Tumbling bee below
+                var tumble = t2 * 0.08;
+                c.save(); c.translate(0, 18); c.rotate(tumble);
+                c.fillStyle = '#fbbf24'; c.beginPath(); c.ellipse(0, 0, 8, 5, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#292524'; c.fillRect(-1.5, -4, 1.5, 8);
+                c.restore();
+              } else if (th.title === 'HABITAT LOSS') {
+                // Row of identical yellow corn stalks (monoculture)
+                c.fillStyle = '#ca8a04';
+                for (var mo = 0; mo < 5; mo++) {
+                  c.fillRect(mo * 7 - 14, -10, 2, 22);
+                  c.beginPath(); c.arc(mo * 7 - 13, -12, 2, 0, 6.28); c.fill();
+                }
+                // Desert/dry sparse ground
+                c.strokeStyle = '#92400e'; c.lineWidth = 1;
+                c.beginPath(); c.moveTo(-25, 14); c.lineTo(25, 14); c.stroke();
+              } else if (th.title === 'COLONY COLLAPSE DISORDER') {
+                // Empty hive silhouette with "?" inside
+                c.fillStyle = '#d4aa40'; c.fillRect(-18, -12, 36, 24);
+                c.strokeStyle = '#92400e'; c.lineWidth = 1.5; c.strokeRect(-18, -12, 36, 24);
+                c.fillStyle = '#fbbf24';
+                c.font = 'bold 24px Georgia, serif'; c.textAlign = 'center';
+                var qMarkPhase = 0.3 + Math.sin(t2 * 0.06) * 0.3;
+                c.globalAlpha = qMarkPhase;
+                c.fillText('?', 0, 6);
+                c.globalAlpha = 1;
+                // Ghostly bee trail leaving
+                c.fillStyle = 'rgba(251,191,36,0.4)';
+                for (var gb = 0; gb < 4; gb++) {
+                  var gbx = 20 + gb * 5 + Math.sin(t2 * 0.05 + gb) * 2;
+                  var gby = -5 + gb * 3 + Math.cos(t2 * 0.04 + gb) * 1;
+                  c.beginPath(); c.arc(gbx, gby, 2 - gb * 0.4, 0, 6.28); c.fill();
+                }
+              }
+              c.restore();
+            });
+
+            // Bottom: hopeful action strip
+            var stripY = H - 88;
+            c.fillStyle = 'rgba(20,83,45,0.94)';
+            c.fillRect(0, stripY, W, 88);
+            c.font = 'bold 13px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#bbf7d0';
+            c.fillText('🌻 WHAT HELPS: what ANYONE can do', W / 2, stripY + 22);
+            c.font = '10px system-ui'; c.fillStyle = '#dcfce7';
+            var helpLine = ['Plant natives   ·   Leave dandelions   ·   Skip pesticides', 'Support local beekeepers   ·   Build a bee waterer   ·   Reduce lawn area'];
+            c.fillText(helpLine[0], W / 2, stripY + 42);
+            c.fillText(helpLine[1], W / 2, stripY + 58);
+            c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#86efac';
+            c.fillText('⅓ of every bite you eat depends on pollinators. They can\'t survive without us — or we them.', W / 2, stripY + 76);
+          }
+
           // ═══ PHEROMONES DIAGRAM (the chemical language of the hive) ═══
           function drawPheromones() {
             // Deep-purple / indigo background to feel "mysterious / chemical"
@@ -3570,6 +3736,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
+              if (_bv === 'threats') {
+                drawThreats();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
               // Recompute bee/flower arrays + hive rect each frame so resize/reinit is live.
               // Previously these were captured once before frame() → stale after resize.
               if (!_bees.current || _bees.current.length === 0) {
@@ -5075,11 +5246,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             else if (key === '5') { e.preventDefault(); if (ks.colonySurvived) advanceDays(5); }
             else if (key === '3') { e.preventDefault(); if (ks.colonySurvived) advanceDays(30); }
             else if (key === '?') { e.preventDefault(); upd('showKeys', true); }
-            // Shift+1..9 → switch educational canvas view
-            else if (e.shiftKey && /^[1-9]$/.test(e.key)) {
+            // Shift+1..9 / Shift+0 → switch educational canvas view
+            else if (e.shiftKey && /^[0-9]$/.test(e.key)) {
               e.preventDefault();
-              var views = ['scene', 'anatomy', 'physics', 'lifecycle', 'honey', 'waggle', 'thermo', 'castes', 'pheromones'];
-              var idx = parseInt(e.key, 10) - 1;
+              var views = ['scene', 'anatomy', 'physics', 'lifecycle', 'honey', 'waggle', 'thermo', 'castes', 'pheromones', 'threats'];
+              var idx = e.key === '0' ? 9 : parseInt(e.key, 10) - 1;
               if (views[idx]) upd('beeView', views[idx]);
             }
           }
@@ -6428,7 +6599,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (Shift+6)' },
                 { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering (Shift+7)' },
                 { id: 'castes', icon: '👑', label: 'Castes', desc: 'Queen, worker, drone (Shift+8)' },
-                { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' }
+                { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' },
+                { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
