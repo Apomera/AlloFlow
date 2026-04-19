@@ -3184,6 +3184,179 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.arc(px, py, sz * 0.25, 0, Math.PI * 2);
             gfx.fill();
           });
+        } else if (t === 'palm_island') {
+          // Palm Jumeirah: palm tree-shaped archipelago (top-down view)
+          // Water background
+          gfx.fillStyle = 'rgba(80,150,195,0.6)';
+          gfx.beginPath();
+          gfx.ellipse(x, y, sz * 3, sz * 2, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Trunk (vertical)
+          gfx.fillStyle = '#e8dcc0';
+          gfx.fillRect(x - sz * 0.25, y - sz * 0.3, sz * 0.5, sz * 1.8);
+          // Frond fronds (17 palm leaves, fanning out from top)
+          var frondCount = 17;
+          for (var fr = 0; fr < frondCount; fr++) {
+            var frAng = -Math.PI + (fr / (frondCount - 1)) * Math.PI;
+            var frLen = sz * 1.4;
+            var frEndX = x + Math.cos(frAng) * frLen;
+            var frEndY = y - sz * 0.3 + Math.sin(frAng) * frLen * 0.7;
+            gfx.strokeStyle = '#e8dcc0';
+            gfx.lineWidth = sz * 0.18;
+            gfx.beginPath();
+            gfx.moveTo(x, y - sz * 0.3);
+            gfx.lineTo(frEndX, frEndY);
+            gfx.stroke();
+            // Small hotels/villas as dots along frond
+            gfx.fillStyle = 'rgba(200,100,80,0.8)';
+            for (var vd = 0; vd < 4; vd++) {
+              var vt = (vd + 1) / 5;
+              var vdX = x + Math.cos(frAng) * frLen * vt;
+              var vdY = y - sz * 0.3 + Math.sin(frAng) * frLen * 0.7 * vt;
+              gfx.fillRect(vdX - 0.5, vdY - 0.5, 1, 1);
+            }
+          }
+          // Crescent breakwater (outer ring)
+          gfx.strokeStyle = '#d0c4a8';
+          gfx.lineWidth = sz * 0.15;
+          gfx.beginPath();
+          gfx.arc(x, y + sz * 0.1, sz * 2.2, Math.PI * 0.15, Math.PI * 0.85);
+          gfx.stroke();
+        } else if (t === 'pentagon') {
+          // Pentagon: 5-sided building with inner courtyard (top-down)
+          gfx.fillStyle = '#b8b4a8';
+          gfx.beginPath();
+          for (var pe = 0; pe < 5; pe++) {
+            var peAng = -Math.PI / 2 + pe * Math.PI * 2 / 5;
+            var pePx = x + Math.cos(peAng) * sz * 1.8;
+            var pePy = y + Math.sin(peAng) * sz * 1.8;
+            if (pe === 0) gfx.moveTo(pePx, pePy); else gfx.lineTo(pePx, pePy);
+          }
+          gfx.closePath();
+          gfx.fill();
+          // Inner courtyard (hollow pentagon)
+          gfx.fillStyle = '#6b8c4a';
+          gfx.beginPath();
+          for (var pe2 = 0; pe2 < 5; pe2++) {
+            var pe2Ang = -Math.PI / 2 + pe2 * Math.PI * 2 / 5;
+            var pe2Px = x + Math.cos(pe2Ang) * sz * 0.7;
+            var pe2Py = y + Math.sin(pe2Ang) * sz * 0.7;
+            if (pe2 === 0) gfx.moveTo(pe2Px, pe2Py); else gfx.lineTo(pe2Px, pe2Py);
+          }
+          gfx.closePath();
+          gfx.fill();
+          // Ring corridors (concentric pentagons)
+          gfx.strokeStyle = '#8e8a80';
+          gfx.lineWidth = 0.5;
+          for (var pRing = 1; pRing < 5; pRing++) {
+            var pRadius = sz * 0.7 + pRing * sz * 0.22;
+            gfx.beginPath();
+            for (var pe3 = 0; pe3 < 5; pe3++) {
+              var pe3Ang = -Math.PI / 2 + pe3 * Math.PI * 2 / 5;
+              var pe3Px = x + Math.cos(pe3Ang) * pRadius;
+              var pe3Py = y + Math.sin(pe3Ang) * pRadius;
+              if (pe3 === 0) gfx.moveTo(pe3Px, pe3Py); else gfx.lineTo(pe3Px, pe3Py);
+            }
+            gfx.closePath();
+            gfx.stroke();
+          }
+        } else if (t === 'kaaba') {
+          // Kaaba: black cube in center of mosque courtyard with concentric pilgrims
+          // Mosque marble plaza
+          gfx.fillStyle = '#f0ede0';
+          gfx.beginPath();
+          gfx.ellipse(x, y, sz * 2.8, sz * 2.0, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Pilgrim rings (concentric circles of white dots — tawaf)
+          for (var pr = 0; pr < 4; pr++) {
+            var prR = sz * (0.55 + pr * 0.4);
+            var prCount = 12 + pr * 8;
+            for (var prI = 0; prI < prCount; prI++) {
+              // Slight rotation over time to animate circumambulation
+              var prAng = (prI / prCount) * Math.PI * 2 + time * 0.15 * (1 - pr * 0.1);
+              gfx.fillStyle = 'rgba(255,255,255,0.85)';
+              gfx.beginPath();
+              gfx.arc(x + Math.cos(prAng) * prR, y + Math.sin(prAng) * prR * 0.7, 0.7, 0, Math.PI * 2);
+              gfx.fill();
+            }
+          }
+          // Kaaba (black cube in exact center)
+          gfx.fillStyle = '#1a1a1a';
+          gfx.fillRect(x - sz * 0.35, y - sz * 0.35, sz * 0.7, sz * 0.7);
+          // Gold kiswa trim (top band)
+          gfx.fillStyle = '#d4a017';
+          gfx.fillRect(x - sz * 0.35, y - sz * 0.35, sz * 0.7, sz * 0.08);
+          // Minarets around plaza (9 slim towers)
+          gfx.fillStyle = '#e8dcb8';
+          for (var mnR = 0; mnR < 9; mnR++) {
+            var mnAng = mnR * Math.PI * 2 / 9;
+            var mnX = x + Math.cos(mnAng) * sz * 2.7;
+            var mnY = y + Math.sin(mnAng) * sz * 1.9;
+            gfx.fillRect(mnX - sz * 0.05, mnY - sz * 0.4, sz * 0.1, sz * 0.4);
+          }
+        } else if (t === 'karst_bay') {
+          // Ha Long Bay: emerald water with karst pillars rising
+          // Water
+          gfx.fillStyle = 'rgba(70,160,150,0.8)';
+          gfx.fillRect(x - sz * 2.5, y - sz * 0.2, sz * 5, sz * 0.5);
+          // Karst islands (irregular rocky pillars with trees on top)
+          var karstPos = [[-2.0, -0.9, 1.1], [-1.1, -1.3, 1.4], [-0.3, -0.7, 0.9], [0.5, -1.5, 1.6], [1.3, -0.8, 1.0], [2.0, -1.2, 1.3]];
+          karstPos.forEach(function(kp) {
+            var kpX = x + kp[0] * sz;
+            var kpY = y + kp[1] * sz * 0.5;
+            var kpH = kp[2] * sz;
+            // Rock column
+            gfx.fillStyle = '#6a7568';
+            gfx.beginPath();
+            gfx.moveTo(kpX - sz * 0.25, y - sz * 0.2);
+            gfx.quadraticCurveTo(kpX - sz * 0.35, kpY, kpX - sz * 0.15, kpY - sz * 0.1);
+            gfx.lineTo(kpX + sz * 0.2, kpY - sz * 0.2);
+            gfx.quadraticCurveTo(kpX + sz * 0.35, kpY, kpX + sz * 0.25, y - sz * 0.2);
+            gfx.closePath();
+            gfx.fill();
+            // Foliage crown
+            gfx.fillStyle = '#4a7048';
+            gfx.beginPath();
+            gfx.ellipse(kpX, kpY - sz * 0.2, sz * 0.25, sz * 0.12, 0, 0, Math.PI * 2);
+            gfx.fill();
+            // Reflection
+            gfx.fillStyle = 'rgba(90,140,130,0.5)';
+            gfx.beginPath();
+            gfx.moveTo(kpX - sz * 0.25, y - sz * 0.2);
+            gfx.lineTo(kpX + sz * 0.25, y - sz * 0.2);
+            gfx.lineTo(kpX + sz * 0.15, y + sz * 0.1);
+            gfx.lineTo(kpX - sz * 0.15, y + sz * 0.1);
+            gfx.closePath();
+            gfx.fill();
+          });
+        } else if (t === 'hex_columns') {
+          // Giant's Causeway: hexagonal basalt column field
+          gfx.fillStyle = 'rgba(70,120,150,0.6)';
+          gfx.fillRect(x + sz * 1.5, y - sz * 0.3, sz * 1.5, sz * 0.5);
+          // Hexagonal columns (different heights packed tight)
+          var hexR = sz * 0.25;
+          for (var hexX = 0; hexX < 10; hexX++) {
+            for (var hexY = 0; hexY < 4; hexY++) {
+              var hcX = x - sz * 2 + hexX * hexR * 1.7 + (hexY % 2) * hexR * 0.85;
+              var hcY = y - hexY * hexR * 1.4;
+              var hcDepth = terrainHash(hexX, hexY) * sz * 0.3;
+              // Top hex face (lighter)
+              var hcShade = 120 + terrainHash(hexX + 3, hexY) * 40;
+              gfx.fillStyle = 'rgb(' + Math.round(hcShade) + ',' + Math.round(hcShade * 0.9) + ',' + Math.round(hcShade * 0.7) + ')';
+              gfx.beginPath();
+              for (var hxAi = 0; hxAi < 6; hxAi++) {
+                var hcAng = hxAi * Math.PI / 3;
+                var hcPx = hcX + Math.cos(hcAng) * hexR;
+                var hcPy = hcY - hcDepth + Math.sin(hcAng) * hexR * 0.5;
+                if (hxAi === 0) gfx.moveTo(hcPx, hcPy); else gfx.lineTo(hcPx, hcPy);
+              }
+              gfx.closePath();
+              gfx.fill();
+              // Column side (darker)
+              gfx.fillStyle = 'rgba(60,50,40,0.85)';
+              gfx.fillRect(hcX - hexR, hcY - hcDepth, hexR * 2, hcDepth);
+            }
+          }
         } else {
           // Fallback: generic landmark marker
           gfx.fillStyle = '#fde68a';
