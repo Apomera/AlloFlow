@@ -2422,6 +2422,239 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('💡 ' + nbFacts[nbIdx], W / 2, tickY + 10);
           }
 
+          // ═══ BEE COGNITION · bees are smarter than you think ═══
+          function drawBeeCognition() {
+            // Brain-scan purple gradient
+            var cgGrad = c.createLinearGradient(0, 0, 0, H);
+            cgGrad.addColorStop(0, '#1e1b4b'); cgGrad.addColorStop(0.5, '#312e81'); cgGrad.addColorStop(1, '#1e3a8a');
+            c.fillStyle = cgGrad; c.fillRect(0, 0, W, H);
+
+            // Neural-network speckle overlay (subtle)
+            for (var nn = 0; nn < 40; nn++) {
+              var nnx = (Math.sin(t2 / 60 + nn * 0.7) * 0.5 + 0.5) * W;
+              var nny = (Math.cos(t2 / 80 + nn * 1.1) * 0.5 + 0.5) * H;
+              c.fillStyle = 'rgba(167,139,250,' + (0.1 + Math.sin(t2 / 30 + nn) * 0.08) + ')';
+              c.beginPath(); c.arc(nnx, nny, 1.5, 0, Math.PI * 2); c.fill();
+            }
+
+            // Title
+            c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🧠 Bee Cognition · 960,000 neurons, surprising intelligence', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('A honeybee brain has fewer neurons than a grain of rice has cells — yet does extraordinary things', W / 2, 44);
+
+            // ═══ Central: bee brain diagram (schematic) ═══
+            var brX = W / 2, brY = H * 0.42;
+            var brScale = Math.min(W, H) * 0.11;
+
+            // Mushroom bodies — the seat of learning/memory in insects
+            var pulse = 0.9 + Math.sin(t2 / 18) * 0.1;
+            c.save(); c.translate(brX, brY);
+
+            // Main brain outline (rough bean shape)
+            var brainGrad = c.createRadialGradient(0, 0, brScale * 0.3, 0, 0, brScale * 1.5);
+            brainGrad.addColorStop(0, '#fbcfe8'); brainGrad.addColorStop(0.6, '#ec4899'); brainGrad.addColorStop(1, '#831843');
+            c.fillStyle = brainGrad;
+            c.beginPath();
+            c.ellipse(0, 0, brScale * 1.4, brScale * 1.05, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = 'rgba(253,230,138,0.7)'; c.lineWidth = 1.5;
+            c.stroke();
+
+            // Mushroom bodies (two lobed structures — the "cognitive engine")
+            c.fillStyle = '#fef3c7';
+            c.beginPath(); c.arc(-brScale * 0.55, -brScale * 0.15, brScale * 0.38 * pulse, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(brScale * 0.55, -brScale * 0.15, brScale * 0.38 * pulse, 0, Math.PI * 2); c.fill();
+
+            // Optic lobes (left/right extremes — vision processing)
+            c.fillStyle = 'rgba(250,204,21,0.9)';
+            c.beginPath(); c.arc(-brScale * 1.15, 0.05 * brScale, brScale * 0.32, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(brScale * 1.15, 0.05 * brScale, brScale * 0.32, 0, Math.PI * 2); c.fill();
+
+            // Antennal lobes (smell/pheromone processing)
+            c.fillStyle = 'rgba(56,189,248,0.85)';
+            c.beginPath(); c.arc(-brScale * 0.25, brScale * 0.5, brScale * 0.22, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(brScale * 0.25, brScale * 0.5, brScale * 0.22, 0, Math.PI * 2); c.fill();
+
+            // Label the parts with leader lines
+            c.strokeStyle = 'rgba(253,230,138,0.6)'; c.lineWidth = 1;
+            c.fillStyle = '#fde68a'; c.font = 'bold 10px "Inter", sans-serif'; c.textAlign = 'left';
+            // Mushroom body label
+            c.beginPath(); c.moveTo(-brScale * 0.55, -brScale * 0.35); c.lineTo(-brScale * 2.0, -brScale * 1.3); c.stroke();
+            c.textAlign = 'right';
+            c.fillText('Mushroom Body', -brScale * 2.1, -brScale * 1.35);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#e9d5ff';
+            c.fillText('learning · memory · decisions', -brScale * 2.1, -brScale * 1.20);
+            // Optic lobe
+            c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+            c.beginPath(); c.moveTo(brScale * 1.4, 0.05 * brScale); c.lineTo(brScale * 2.1, -brScale * 0.55); c.stroke();
+            c.textAlign = 'left';
+            c.fillText('Optic Lobe', brScale * 2.2, -brScale * 0.60);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#fde047';
+            c.fillText('UV + color vision', brScale * 2.2, -brScale * 0.45);
+            // Antennal lobe
+            c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+            c.beginPath(); c.moveTo(0, brScale * 0.72); c.lineTo(brScale * 1.5, brScale * 1.35); c.stroke();
+            c.textAlign = 'left';
+            c.fillText('Antennal Lobe', brScale * 1.6, brScale * 1.40);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#7dd3fc';
+            c.fillText('smell · pheromones', brScale * 1.6, brScale * 1.55);
+
+            c.restore();
+
+            // Neuron count callout below brain
+            c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('960,000 neurons · 1 mm³', brX, brY + brScale * 1.6);
+            c.font = '9.5px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('(humans: 86 billion · mouse: 71 million)', brX, brY + brScale * 1.6 + 14);
+
+            // ═══ LEFT column: cognitive achievements ═══
+            var leftX = 16, leftY = 66;
+            var achievements = [
+              { icon: '🔢', title: 'Counts to 4', body: 'Can tell 2 dots from 3, 3 from 4 — trained honeybees out-perform some birds' },
+              { icon: '0️⃣', title: 'Understands ZERO', body: 'Bees grasp "none" as a quantity — a concept humans don\'t acquire until age 4' },
+              { icon: '👤', title: 'Recognizes faces', body: 'Trained to discriminate human faces like dogs or sheep; uses same config cues' },
+              { icon: '🧩', title: 'Solves puzzles', body: 'Pulls strings, rolls balls to get sugar — teaches other bees by demonstration' }
+            ];
+            achievements.forEach(function(a, i) {
+              var ay = leftY + i * 82;
+              c.fillStyle = 'rgba(88,28,135,0.7)';
+              if (c.roundRect) { c.beginPath(); c.roundRect(leftX, ay, 170, 72, 8); c.fill(); }
+              else c.fillRect(leftX, ay, 170, 72);
+              c.strokeStyle = 'rgba(196,181,253,0.5)'; c.lineWidth = 1;
+              if (c.roundRect) { c.beginPath(); c.roundRect(leftX, ay, 170, 72, 8); c.stroke(); }
+              c.fillStyle = '#fde68a'; c.textAlign = 'left';
+              c.font = 'bold 18px "Inter", sans-serif';
+              c.fillText(a.icon, leftX + 10, ay + 24);
+              c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(a.title, leftX + 40, ay + 22);
+              c.font = '9px "Inter", sans-serif'; c.fillStyle = '#e9d5ff';
+              // Wrap body text
+              var bodyWords = a.body.split(' ');
+              var line1 = '', line2 = '', widthLimit = 150;
+              for (var wi = 0; wi < bodyWords.length; wi++) {
+                var trial = line1 + (line1 ? ' ' : '') + bodyWords[wi];
+                if (c.measureText(trial).width < widthLimit) line1 = trial;
+                else { line2 = bodyWords.slice(wi).join(' '); break; }
+              }
+              c.fillText(line1, leftX + 10, ay + 42);
+              if (line2) {
+                var line3 = '';
+                var line2Words = line2.split(' ');
+                var finalLine2 = '';
+                for (var wi2 = 0; wi2 < line2Words.length; wi2++) {
+                  var trial2 = finalLine2 + (finalLine2 ? ' ' : '') + line2Words[wi2];
+                  if (c.measureText(trial2).width < widthLimit) finalLine2 = trial2;
+                  else { line3 = line2Words.slice(wi2).join(' '); break; }
+                }
+                c.fillText(finalLine2, leftX + 10, ay + 55);
+                if (line3) c.fillText(line3, leftX + 10, ay + 67);
+              }
+            });
+
+            // ═══ RIGHT column: animated "puzzle" demonstrations ═══
+            var rightX = W - 186, rightY = 66;
+
+            // Puzzle 1: bee pulling a string for sugar
+            c.fillStyle = 'rgba(49,46,129,0.7)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.fill(); }
+            else c.fillRect(rightX, rightY, 170, 140);
+            c.strokeStyle = 'rgba(196,181,253,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.stroke(); }
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('String-Pulling Test', rightX + 85, rightY + 16);
+            // Draw a sugar disc under a plexi
+            var sugarX = rightX + 85, sugarY = rightY + 100;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.arc(sugarX, sugarY, 10, 0, Math.PI * 2); c.fill();
+            c.fillStyle = 'rgba(255,255,255,0.15)';
+            c.fillRect(rightX + 20, rightY + 80, 130, 40); // plexi cover
+            c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 1;
+            c.strokeRect(rightX + 20, rightY + 80, 130, 40);
+            // String
+            var pullPhase = (t2 / 30) % 4; // 0-4 cycle
+            var pullAmt = Math.min(1, pullPhase / 3); // pull completes over 3 units
+            var stringEnd = rightX + 20 - pullAmt * 50;
+            c.strokeStyle = '#a855f7'; c.lineWidth = 1.5;
+            c.beginPath(); c.moveTo(sugarX, sugarY); c.lineTo(rightX + 25, rightY + 100); c.lineTo(stringEnd, rightY + 100); c.stroke();
+            // Bee pulling
+            var beeX = stringEnd - 8, beeY = rightY + 100;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(beeX, beeY, 8, 5, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#1f2937';
+            c.fillRect(beeX - 2, beeY - 4, 1.5, 8);
+            c.fillRect(beeX + 1, beeY - 4, 1.5, 8);
+            // Tiny wings flutter
+            c.fillStyle = 'rgba(255,255,255,0.5)';
+            c.beginPath(); c.ellipse(beeX, beeY - 3 - Math.sin(t2) * 1, 5, 2, 0, 0, Math.PI * 2); c.fill();
+            // Caption
+            c.fillStyle = '#c4b5fd'; c.textAlign = 'center';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('Naïve bees watch → then learn.', rightX + 85, rightY + 130);
+
+            // Puzzle 2: face recognition
+            rightY += 150;
+            c.fillStyle = 'rgba(49,46,129,0.7)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.fill(); }
+            else c.fillRect(rightX, rightY, 170, 140);
+            c.strokeStyle = 'rgba(196,181,253,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.stroke(); }
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Face Discrimination', rightX + 85, rightY + 16);
+            // Two "faces" — rewarded vs unrewarded
+            var faces = [
+              { fx: rightX + 40, fy: rightY + 70, reward: true, ecc: (t2 / 40) % 2 < 1 },
+              { fx: rightX + 130, fy: rightY + 70, reward: false, ecc: (t2 / 40) % 2 >= 1 }
+            ];
+            faces.forEach(function(f) {
+              c.fillStyle = f.reward ? '#86efac' : '#fca5a5';
+              c.beginPath(); c.arc(f.fx, f.fy, 22, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#1f2937'; c.lineWidth = 1; c.stroke();
+              // Simple face — eyes + mouth
+              c.fillStyle = '#1f2937';
+              c.beginPath(); c.arc(f.fx - 7, f.fy - 5, 2, 0, Math.PI * 2); c.fill();
+              c.beginPath(); c.arc(f.fx + 7, f.fy - 5, 2, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#1f2937'; c.lineWidth = 1.5;
+              c.beginPath();
+              if (f.reward) c.arc(f.fx, f.fy + 4, 6, 0, Math.PI);
+              else c.moveTo(f.fx - 6, f.fy + 8), c.lineTo(f.fx + 6, f.fy + 8);
+              c.stroke();
+              // Reward marker
+              c.fillStyle = f.reward ? '#16a34a' : '#dc2626';
+              c.textAlign = 'center'; c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(f.reward ? '+🍯' : '—', f.fx, f.fy + 36);
+            });
+            // Bee hovering at the rewarded face
+            var bFx = faces[0].fx, bFy = faces[0].fy - 30 + Math.sin(t2 / 10) * 3;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(bFx, bFy, 6, 4, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = 'rgba(255,255,255,0.5)';
+            c.beginPath(); c.ellipse(bFx, bFy - 2, 4, 2, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#c4b5fd'; c.textAlign = 'center';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('Bees learn which face = food (Dyer 2005).', rightX + 85, rightY + 125);
+
+            // ═══ Bottom fact strip ═══
+            var cgStripY = H - 28;
+            c.fillStyle = 'rgba(30,27,75,0.95)'; c.fillRect(0, cgStripY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var cgFacts = [
+              'Bees can be trained to associate colors with sugar in under 5 trials — faster than many vertebrates.',
+              'Lars Chittka showed bees solve novel problems via observation — a form of social learning.',
+              'A bee that visits 100 flowers on a trip must remember which ones it already drained.',
+              'Bees can perform reverse-learning: once rule flips, they switch strategies faster than rats.',
+              'The waggle dance is symbolic communication — one of only a handful of examples in non-humans.',
+              'Howard et al. 2019: bees trained to pick "smaller" understood zero as less-than-one.'
+            ];
+            var cgIdx = Math.floor(t2 / 420) % cgFacts.length;
+            c.fillText('💡 ' + cgFacts[cgIdx], W / 2, cgStripY + 10);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -4402,6 +4635,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'native') {
                 drawNativeBees();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'cognition') {
+                drawBeeCognition();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -7267,7 +7505,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' },
                 { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' },
                 { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' },
-                { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' }
+                { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' },
+                { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
