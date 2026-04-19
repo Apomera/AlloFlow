@@ -1521,6 +1521,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
 
           // Bees & flowers now (re)initialized lazily inside frame() so resize works correctly.
+          // Butterflies live at doSetup scope — reset on resize/remount, preserved across frames.
+          var _butterflies = null;
+          function _initButterflies() {
+            _butterflies = [];
+            for (var bf2 = 0; bf2 < 3; bf2++) _butterflies.push({
+              x: -60 - bf2 * 240, y: H * 0.30 + Math.random() * H * 0.30,
+              vx: 0.28 + Math.random() * 0.22, amp: 8 + Math.random() * 8, ph: Math.random() * 6.28,
+              col: ['#f472b6', '#fbbf24', '#60a5fa', '#a78bfa'][bf2 % 4], wp: 0
+            });
+          }
 
           function frame() {
             try {
@@ -1536,7 +1546,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Recompute bee/flower arrays + hive rect each frame so resize/reinit is live.
               // Previously these were captured once before frame() → stale after resize.
               if (!_bees.current || _bees.current.length === 0) {
-                var ba = [], nb = Math.max(8, Math.min(60, Math.floor((safeWorkers || 10000) / 300)));
+                // More bees for a livelier scene — cap bumped 60→90, trigger 300→250 workers/bee.
+                var ba = [], nb = Math.max(14, Math.min(90, Math.floor((safeWorkers || 10000) / 250)));
                 for (var bi = 0; bi < nb; bi++) ba.push({
                   x: W * 0.3 + Math.random() * W * 0.5, y: H * 0.15 + Math.random() * H * 0.45,
                   vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 1.5,
@@ -1546,13 +1557,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 _bees.current = ba;
               }
               if (!_flowers.current || _flowers.current.length === 0) {
-                var fa = [], nf = Math.min(12, 3 + Math.floor(((ls && ls.habitat) || 50) / 10));
-                var flColors2 = ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa','#e879f9','#38bdf8'];
-                for (var fj = 0; fj < nf; fj++) fa.push({
-                  x: W * 0.52 + fj * (W * 0.42 / nf) + (Math.random() - 0.5) * 16,
-                  y: H * 0.68 + (Math.random() - 0.5) * 14,
-                  col: flColors2[fj % flColors2.length], sz: 4.5 + Math.random() * 4, sp: Math.random() * 6.28
-                });
+                // Richer meadow — 2 rows of flowers, more species variety.
+                var fa = [], nf = Math.min(28, 8 + Math.floor(((ls && ls.habitat) || 50) / 6));
+                var flColors2 = ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa','#e879f9','#38bdf8','#fcd34d','#fda4af'];
+                for (var fj = 0; fj < nf; fj++) {
+                  var _row = fj % 2; // alternating rows for depth
+                  fa.push({
+                    x: W * 0.47 + (fj / 2) * (W * 0.50 / (nf / 2)) + (Math.random() - 0.5) * 14,
+                    y: H * 0.68 + _row * 6 + (Math.random() - 0.5) * 10,
+                    col: flColors2[fj % flColors2.length], sz: 4 + Math.random() * 5, sp: Math.random() * 6.28
+                  });
+                }
                 _flowers.current = fa;
               }
               var bees = _bees.current, flowers = _flowers.current;
@@ -1600,6 +1615,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
+              // ── Distant mountain silhouettes (depth layer, non-winter uses blue-gray) ──
+              var mtnColor = season === 3 ? 'rgba(140,160,180,0.55)' : season === 2 ? 'rgba(120,95,70,0.5)' : 'rgba(100,130,160,0.45)';
+              c.fillStyle = mtnColor;
+              c.beginPath();
+              c.moveTo(0, H * 0.62);
+              for (var mx = 0; mx <= W; mx += 40) {
+                var mh = Math.sin(mx * 0.011) * 28 + Math.sin(mx * 0.027) * 14 + Math.cos(mx * 0.006) * 8;
+                c.lineTo(mx, H * 0.62 - 40 + mh);
+              }
+              c.lineTo(W, H * 0.76); c.lineTo(0, H * 0.76); c.closePath(); c.fill();
+              // Second, closer mountain layer (darker, slightly different offset)
+              c.fillStyle = season === 3 ? 'rgba(110,130,150,0.65)' : season === 2 ? 'rgba(100,75,55,0.6)' : 'rgba(80,110,140,0.55)';
+              c.beginPath();
+              c.moveTo(0, H * 0.68);
+              for (var mx2 = 0; mx2 <= W; mx2 += 34) {
+                var mh2 = Math.sin(mx2 * 0.015 + 1) * 18 + Math.sin(mx2 * 0.031 + 0.4) * 9;
+                c.lineTo(mx2, H * 0.68 - 22 + mh2);
+              }
+              c.lineTo(W, H * 0.76); c.lineTo(0, H * 0.76); c.closePath(); c.fill();
+
               // ── Ground with texture ──
               var gCol = season === 3 ? '#dfe6ed' : season === 2 ? '#b5833a' : '#4ade80';
               c.fillStyle = gCol; c.fillRect(0, H * 0.76, W, H * 0.24);
@@ -1624,6 +1659,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 for (var sn = 0; sn < 25; sn++) {
                   c.beginPath(); c.arc((sn * 41 + t2 * 0.25) % W, (sn * 23 + t2 * 0.4) % H, 1.2 + Math.random() * 0.8, 0, 6.28); c.fill();
                 }
+              }
+
+              // ── Tree line (mid-ground, adds scale) ──
+              for (var tr = 0; tr < 8; tr++) {
+                var trX = 20 + tr * (W / 9) + (tr % 2 === 0 ? 0 : W * 0.5);
+                if (trX < hiveX - 30 || trX > hiveX + hiveW + 30) {
+                  var trY = H * 0.76;
+                  var trH = 24 + (tr % 3) * 10;
+                  // Trunk
+                  c.fillStyle = season === 3 ? '#6b4226' : '#5a3820';
+                  c.fillRect(trX - 2, trY - trH, 4, trH);
+                  // Canopy
+                  var canopyCol = season === 3 ? '#8a9a8e' : season === 2 ? '#c9602a' : season === 0 ? '#6bb567' : '#4a9f4a';
+                  c.fillStyle = canopyCol;
+                  c.beginPath(); c.arc(trX, trY - trH - 4, 10 + (tr % 3) * 3, 0, 6.28); c.fill();
+                  // Highlight
+                  c.fillStyle = 'rgba(255,255,255,0.12)';
+                  c.beginPath(); c.arc(trX - 3, trY - trH - 7, 4, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Butterflies (non-bee pollinators, spring/summer only) ──
+              if (season === 0 || season === 1) {
+                if (!_butterflies) _initButterflies();
+                _butterflies.forEach(function(bf) {
+                  bf.x += bf.vx; bf.ph += 0.05; bf.wp += 0.35;
+                  if (bf.x > W + 60) { bf.x = -60; bf.y = H * 0.28 + Math.random() * H * 0.30; }
+                  var bfy = bf.y + Math.sin(bf.ph) * bf.amp;
+                  var wspan = 4 + Math.abs(Math.sin(bf.wp)) * 4; // wing beats
+                  // Body
+                  c.fillStyle = '#1e293b';
+                  c.fillRect(bf.x - 0.5, bfy - 2, 1, 4);
+                  // Wings
+                  c.fillStyle = bf.col; c.globalAlpha = 0.85;
+                  c.beginPath(); c.ellipse(bf.x - wspan * 0.4, bfy - 0.5, wspan * 0.5, wspan * 0.35, -0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(bf.x + wspan * 0.4, bfy - 0.5, wspan * 0.5, wspan * 0.35, 0.3, 0, 6.28); c.fill();
+                  // Wing spots
+                  c.fillStyle = '#fff'; c.globalAlpha = 0.5;
+                  c.beginPath(); c.arc(bf.x - wspan * 0.45, bfy - 0.5, 0.6, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(bf.x + wspan * 0.45, bfy - 0.5, 0.6, 0, 6.28); c.fill();
+                  c.globalAlpha = 1;
+                });
               }
 
               // ── Flowers (enhanced with depth) ──
@@ -1754,6 +1831,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
                 c.globalAlpha = 1;
               }
+
+              // ── Bee shadows on ground (render BEFORE bees for proper layering) ──
+              c.fillStyle = 'rgba(0,0,0,0.18)';
+              bees.forEach(function(b) {
+                var altitude = Math.max(0, H * 0.76 - b.y);  // how high above ground
+                if (altitude > 4 && altitude < 260) {
+                  var shadowScale = Math.max(0.3, 1 - altitude / 280);
+                  c.save(); c.globalAlpha = 0.15 + shadowScale * 0.18;
+                  c.beginPath(); c.ellipse(b.x + altitude * 0.08, H * 0.765, b.sz * shadowScale * 1.2, b.sz * shadowScale * 0.35, 0, 0, 6.28); c.fill();
+                  c.restore();
+                }
+              });
 
               // ── Flying bees (physics-based, with waggle dance trail) ──
               bees.forEach(function(b) {
