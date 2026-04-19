@@ -8088,27 +8088,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8124,7 +8124,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@581d04d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f98cd91/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -15805,6 +15805,57 @@ Return only the corrected version of this exact text:`;
       );
     }
     return <div className={`leading-relaxed ${className}`}>{renderFormattedText(str)}</div>;
+  });
+  // Peel a trailing "Source Text References" block (or translated/variant heading) off the body.
+  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Sources\s+du\s+texte[^\n]*|Accuracy\s+Check\s+References|Verified\s+Sources|Sources?\s*(?:\/[^\n]*)?)\s*\n/i;
+  const splitReferencesFromBody = (text) => {
+      if (!text) return { body: text || '', references: '' };
+      const m = text.match(REFERENCES_HEADER_RE);
+      if (!m) return { body: text, references: '' };
+      return { body: text.substring(0, m.index).trim(), references: text.substring(m.index).trim() };
+  };
+  const parseReferenceItems = (referencesText) => {
+      if (!referencesText) return [];
+      const items = [];
+      const itemRe = /^\s*(\d+)\.\s*\[([^\]]+)\]\(([^)]+)\)/gm;
+      let m;
+      while ((m = itemRe.exec(referencesText)) !== null) {
+          items.push({ num: m[1], title: m[2].trim(), url: m[3].trim() });
+      }
+      return items;
+  };
+  const SourceReferencesPanel = React.memo(({ referencesText, className = "" }) => {
+      if (!referencesText) return null;
+      const items = parseReferenceItems(referencesText);
+      if (items.length === 0) {
+          return (
+              <div className={`mt-6 p-5 rounded-xl border border-indigo-200 bg-indigo-50/50 ${className}`}>
+                  <div className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 pb-2 border-b border-indigo-200">
+                      Source Text References
+                  </div>
+                  <div className="text-sm text-slate-700 leading-relaxed">
+                      {renderFormattedText(referencesText)}
+                  </div>
+              </div>
+          );
+      }
+      return (
+          <div className={`mt-6 p-5 rounded-xl border border-indigo-200 bg-indigo-50/50 ${className}`}>
+              <div className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 pb-2 border-b border-indigo-200">
+                  Source Text References
+              </div>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-slate-700 leading-relaxed marker:text-indigo-500 marker:font-bold">
+                  {items.map((item, i) => (
+                      <li key={i} className="pl-1">
+                          <a href={item.url} target="_blank" rel="noopener noreferrer"
+                             className="text-indigo-700 underline hover:text-indigo-900 break-words">
+                              {item.title}
+                          </a>
+                      </li>
+                  ))}
+              </ol>
+          </div>
+      );
   });
   const getSideBySideContent = (text) => {
     if (!text || typeof text !== 'string') return null;
@@ -28470,10 +28521,10 @@ Return ONLY JSON.`;
                 let currentTargetDisplay = fullTargetText.trim();
                 let currentEnglishDisplay = fullEnglishText.trim();
                 if (isLast && extractedReferences && keepCitations) {
+                    // Append only to the target (combined) display. SourceReferencesPanel extracts
+                    // and renders them once from the combined text; appending to the English half
+                    // too would cause the panel to appear twice after render-time split.
                     currentTargetDisplay += `\n\n${extractedReferences}`;
-                    if (effectiveLanguage !== 'English') {
-                        currentEnglishDisplay += `\n\n${extractedReferences}`;
-                    }
                 }
                 let currentTotal = currentTargetDisplay;
                 if (keepCitations) {
@@ -43818,7 +43869,15 @@ Return only the corrected version of this exact text:`;
                                 <div className="space-y-4">
                                     {(() => {
                                         const rawData = generatedContent?.data;
-                                        const safeData = (typeof rawData === 'string') ? rawData : String(rawData || '');
+                                        const _fullData = (typeof rawData === 'string') ? rawData : String(rawData || '');
+                                        // Peel trailing "Source Text References" and "--- ENGLISH TRANSLATION ---" blocks
+                                        // so each renders in its own dedicated styled panel below the main body.
+                                        const { body: _bodyNoRefs, references: _references } = splitReferencesFromBody(_fullData);
+                                        const _bilingualIdx = _bodyNoRefs.indexOf('--- ENGLISH TRANSLATION ---');
+                                        const _hasBilingual = _bilingualIdx !== -1;
+                                        const safeData = _hasBilingual ? _bodyNoRefs.substring(0, _bilingualIdx).trim() : _bodyNoRefs;
+                                        const _englishBlock = _hasBilingual ? _bodyNoRefs.substring(_bilingualIdx + '--- ENGLISH TRANSLATION ---'.length).trim() : '';
+                                        const _bodyEl = (() => {
                                         const sideBySideData = getSideBySideContent(safeData);
                                         if (sideBySideData) {
                                             let sentenceCounter = 0;
@@ -44126,6 +44185,23 @@ Return only the corrected version of this exact text:`;
                                                 );
                                             });
                                         }
+                                        })();
+                                        return (
+                                            <>
+                                                {_bodyEl}
+                                                {_hasBilingual && _englishBlock && (
+                                                    <div className="mt-6 pl-4 border-l-4 border-indigo-300 bg-slate-50 p-4 rounded-r-xl">
+                                                        <div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">
+                                                            English Translation
+                                                        </div>
+                                                        <div className="text-slate-700 italic leading-relaxed">
+                                                            {renderFormattedText(_englishBlock)}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <SourceReferencesPanel referencesText={_references} />
+                                            </>
+                                        );
                                     })()}
                                 </div>
                              ) : (
