@@ -4150,6 +4150,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillText(nearWp.code || '???', signX + 40, signY + 11);
         }
 
+        // ── Runway distance-remaining markers ──
+        // Black signs with big white numbers (thousands of feet remaining)
+        // mounted on the runway edges — 3, 2, 1 — exactly like every real
+        // tower-controlled airport. Placed alongside the runway at perspective
+        // t-values that roughly correspond to 3000/2000/1000 ft remaining.
+        if (groundFactor > 0.45) {
+          [ { t: 0.20, n: '3' }, { t: 0.32, n: '2' }, { t: 0.46, n: '1' } ].forEach(function(dm) {
+            var dmY = rwyTopY + (rwyBotY - rwyTopY) * (dm.t * dm.t);
+            var edgeOff = (rwyHalfWNear * groundFactor + rwyHalfWFar * (1 - groundFactor)) * dm.t + rwyHalfWFar * (1 - dm.t) + 5;
+            var dmSize = 4 + dm.t * 10;
+            // Right side (both sides would clutter — FAA convention is left-hand)
+            var dmX = W / 2 - edgeOff - dmSize;
+            gfx.fillStyle = '#0a0a0a';
+            gfx.fillRect(dmX, dmY - dmSize * 0.6, dmSize * 1.4, dmSize * 1.2);
+            gfx.strokeStyle = '#ffffff';
+            gfx.lineWidth = 0.7;
+            gfx.strokeRect(dmX, dmY - dmSize * 0.6, dmSize * 1.4, dmSize * 1.2);
+            gfx.fillStyle = '#ffffff';
+            gfx.font = 'bold ' + Math.round(dmSize * 1.3) + 'px monospace';
+            gfx.textAlign = 'center';
+            gfx.textBaseline = 'middle';
+            gfx.fillText(dm.n, dmX + dmSize * 0.7, dmY);
+          });
+        }
+
         // ── Windsock — classic orange cone on a striped pole beside the runway.
         // Angle and stretch scale with wind speed so the student can read the
         // wind at a glance (into-the-wind takeoff is cheaper). Weather is read
