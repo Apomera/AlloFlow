@@ -1968,6 +1968,280 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ EQUIPMENT DIAGRAM (Langstroth hive exploded view + beekeeper tools) ═══
+          function drawEquipment() {
+            // Warm wood-shop background
+            var eqGrad = c.createLinearGradient(0, 0, 0, H);
+            eqGrad.addColorStop(0, '#fef3c7'); eqGrad.addColorStop(1, '#fde68a');
+            c.fillStyle = eqGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🛠️ Beekeeping Equipment · The Langstroth Hive', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('Rev. L. L. Langstroth discovered "bee space" (3/8 in.) in 1851 — every modern hive uses his design', W / 2, 46);
+
+            // ═══ LEFT: exploded Langstroth hive ═══
+            var lhX = W * 0.30;
+            var lhY = H * 0.12 + 60;
+            var lhW = 140;
+            var gap = 6;
+            var layers = [
+              { name: 'Outer Cover', desc: 'Weatherproof telescoping lid', col: '#44403c', h: 12 },
+              { name: 'Inner Cover', desc: 'Insulating layer + vent hole', col: '#78350f', h: 9 },
+              { name: 'Honey Super', desc: 'Bees store surplus honey here', col: '#d4aa40', h: 26, honey: true },
+              { name: 'Queen Excluder', desc: 'Metal/plastic grid — workers pass, queen doesn\'t', col: '#9ca3af', h: 7, mesh: true },
+              { name: 'Brood Box (Deep Super)', desc: 'Queen lays eggs here · nursery', col: '#d4aa40', h: 36, brood: true },
+              { name: 'Bottom Board + Entrance', desc: 'Floor + landing board for foragers', col: '#92400e', h: 10 }
+            ];
+            // Draw each layer with a label + leader line
+            var totalH = layers.reduce(function(a, l) { return a + l.h + gap; }, 0);
+            var curY = lhY;
+            layers.forEach(function(lay) {
+              // Subtle shadow
+              c.fillStyle = 'rgba(0,0,0,0.15)';
+              c.fillRect(lhX - lhW / 2 + 2, curY + 2, lhW, lay.h);
+              // Body
+              c.fillStyle = lay.col;
+              c.fillRect(lhX - lhW / 2, curY, lhW, lay.h);
+              // Highlight top edge
+              c.fillStyle = 'rgba(255,255,255,0.15)';
+              c.fillRect(lhX - lhW / 2, curY, lhW, 2);
+              // Side woodgrain ticks
+              c.strokeStyle = 'rgba(0,0,0,0.2)'; c.lineWidth = 0.5;
+              for (var wg = 0; wg < lhW / 12; wg++) {
+                c.beginPath(); c.moveTo(lhX - lhW / 2 + wg * 12, curY + 2); c.lineTo(lhX - lhW / 2 + wg * 12, curY + lay.h - 2); c.stroke();
+              }
+              // Special-layer details
+              if (lay.mesh) {
+                // Queen excluder: draw horizontal slats
+                c.strokeStyle = '#e5e7eb'; c.lineWidth = 0.8;
+                for (var sl = 0; sl < lhW / 6; sl++) {
+                  c.beginPath(); c.moveTo(lhX - lhW / 2 + sl * 6, curY + 1); c.lineTo(lhX - lhW / 2 + sl * 6, curY + lay.h - 1); c.stroke();
+                }
+              }
+              if (lay.honey) {
+                // Honey supers: show hex comb pattern inside
+                c.strokeStyle = 'rgba(120,83,15,0.4)'; c.lineWidth = 0.5;
+                for (var hy = 0; hy < lay.h / 4 + 1; hy++) {
+                  for (var hx = 0; hx < lhW / 8 + 1; hx++) {
+                    var hcx = lhX - lhW / 2 + 4 + hx * 8 + (hy % 2) * 4;
+                    var hcy = curY + 3 + hy * 4;
+                    c.beginPath();
+                    for (var hh = 0; hh < 6; hh++) {
+                      var hha = hh * 1.047 + 0.524;
+                      var px = hcx + Math.cos(hha) * 2.3;
+                      var py = hcy + Math.sin(hha) * 2.3;
+                      hh === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
+                    }
+                    c.closePath(); c.stroke();
+                  }
+                }
+              }
+              if (lay.brood) {
+                // Brood box: fade toward darker center with tiny brood specks
+                c.fillStyle = 'rgba(234,88,12,0.15)';
+                c.fillRect(lhX - lhW / 2 + 6, curY + 3, lhW - 12, lay.h - 6);
+                // Queen icon mid-brood
+                c.font = '8px system-ui'; c.fillStyle = '#facc15'; c.textAlign = 'center';
+                c.fillText('👑', lhX, curY + lay.h / 2 + 3);
+                // brood dots
+                c.fillStyle = 'rgba(251,146,60,0.6)';
+                for (var bd = 0; bd < 14; bd++) {
+                  c.beginPath(); c.arc(lhX - lhW / 2 + 12 + (bd * 9) % (lhW - 24), curY + 8 + Math.floor(bd / 8) * 10, 1.5, 0, 6.28); c.fill();
+                }
+              }
+              // Bottom-board entrance slot
+              if (lay.name.indexOf('Bottom') !== -1) {
+                c.fillStyle = '#1c1917';
+                c.fillRect(lhX - 25, curY + lay.h - 3, 50, 3);
+                // Landing board
+                c.fillStyle = '#a0763a';
+                c.fillRect(lhX - 30, curY + lay.h, 60, 2);
+              }
+
+              // Label with leader line (to the left)
+              c.strokeStyle = '#78350f'; c.lineWidth = 0.8;
+              c.beginPath(); c.moveTo(lhX - lhW / 2, curY + lay.h / 2);
+              c.lineTo(lhX - lhW / 2 - 20, curY + lay.h / 2);
+              c.lineTo(lhX - lhW - 10, curY + lay.h / 2);
+              c.stroke();
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'right';
+              c.fillText(lay.name, lhX - lhW - 14, curY + lay.h / 2 - 1);
+              c.font = 'italic 8px system-ui'; c.fillStyle = '#92400e';
+              c.fillText(lay.desc, lhX - lhW - 14, curY + lay.h / 2 + 10);
+
+              curY += lay.h + gap;
+            });
+
+            // Ghost outline showing assembled hive (dashed)
+            c.strokeStyle = 'rgba(120,83,15,0.3)'; c.setLineDash([3, 3]); c.lineWidth = 1;
+            c.strokeRect(lhX + lhW / 2 + 4, lhY, 6, totalH - gap);
+            c.setLineDash([]);
+            c.font = 'italic 8px system-ui'; c.fillStyle = '#a16207'; c.textAlign = 'left';
+            c.fillText('(stacks', lhX + lhW / 2 + 12, lhY + totalH / 2 - 3);
+            c.fillText('together)', lhX + lhW / 2 + 12, lhY + totalH / 2 + 6);
+
+            // ═══ RIGHT: tools collection ═══
+            var tlX = W * 0.70;
+            var tlY = 70;
+            c.font = 'bold 13px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#78350f';
+            c.fillText('🧰 THE BEEKEEPER\'S TOOLKIT', tlX, tlY);
+            c.font = 'italic 9px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('Six essentials — everything else is optional', tlX, tlY + 14);
+
+            var tools = [
+              { name: 'Smoker', desc: 'Cool smoke triggers "fire! eat honey!" response — calms bees for inspections', draw: function(x, y) {
+                // Canister
+                c.fillStyle = '#44403c'; c.fillRect(x - 6, y, 12, 22);
+                c.fillStyle = '#57534e'; c.fillRect(x - 6, y, 12, 2.5);
+                // Cone spout on top
+                c.fillStyle = '#44403c'; c.beginPath();
+                c.moveTo(x - 4, y); c.lineTo(x, y - 8); c.lineTo(x + 4, y); c.closePath(); c.fill();
+                // Bellows (brown)
+                c.fillStyle = '#78350f'; c.fillRect(x + 6, y + 6, 7, 12);
+                // Smoke puffs
+                c.fillStyle = 'rgba(220,220,220,0.6)';
+                for (var sp = 0; sp < 3; sp++) {
+                  var spY = y - 10 - sp * 5 + Math.sin(t2 * 0.04 + sp) * 1;
+                  c.beginPath(); c.arc(x + Math.sin(t2 * 0.03 + sp) * 1.5, spY, 2 + sp, 0, 6.28); c.fill();
+                }
+              }},
+              { name: 'Hive Tool', desc: 'J-shaped pry bar to break propolis seals between frames + lift them out', draw: function(x, y) {
+                c.fillStyle = '#9ca3af';
+                c.fillRect(x - 2, y, 3, 22);
+                // Hooked end
+                c.fillRect(x - 2, y + 20, 8, 3);
+                // Scraper end (top wider)
+                c.fillStyle = '#d1d5db';
+                c.fillRect(x - 4, y - 2, 7, 3);
+              }},
+              { name: 'Bee Brush', desc: 'Soft bristles to gently move bees off frames during harvest — no crushed bees', draw: function(x, y) {
+                // Handle
+                c.fillStyle = '#78350f'; c.fillRect(x - 1, y + 8, 2, 14);
+                // Brush head
+                c.fillStyle = '#fef3c7'; c.fillRect(x - 8, y + 2, 16, 9);
+                // Bristles
+                c.strokeStyle = '#fbbf24'; c.lineWidth = 0.7;
+                for (var br = 0; br < 8; br++) {
+                  c.beginPath(); c.moveTo(x - 7 + br * 2, y); c.lineTo(x - 7 + br * 2, y + 6); c.stroke();
+                }
+              }},
+              { name: 'Veil + Suit', desc: 'Mesh hood + white coverall — bees react to dark colors as bear threats', draw: function(x, y) {
+                // Head hood (dome)
+                c.fillStyle = '#f8fafc';
+                c.beginPath(); c.arc(x, y + 5, 7, 0, 6.28); c.fill();
+                // Mesh (dark veil)
+                c.fillStyle = 'rgba(30,41,59,0.55)';
+                c.beginPath(); c.arc(x, y + 5, 5.5, 0, 6.28); c.fill();
+                // Mesh texture
+                c.strokeStyle = 'rgba(0,0,0,0.5)'; c.lineWidth = 0.3;
+                for (var mv = -4; mv < 4; mv += 1.5) {
+                  c.beginPath(); c.moveTo(x + mv, y); c.lineTo(x + mv, y + 10); c.stroke();
+                }
+                // Body outline
+                c.fillStyle = '#f8fafc'; c.fillRect(x - 5, y + 11, 10, 14);
+                // Gloves poking out
+                c.fillStyle = '#e5e7eb'; c.fillRect(x - 7, y + 17, 3, 5);
+                c.fillRect(x + 4, y + 17, 3, 5);
+              }},
+              { name: 'Frame (with foundation)', desc: 'Wooden rectangle with wax foundation sheet — bees build comb on it', draw: function(x, y) {
+                // Wooden frame outer
+                c.fillStyle = '#a16207';
+                c.fillRect(x - 11, y, 22, 24);
+                // Inner cut-out (the wax foundation area)
+                c.fillStyle = '#fbbf24';
+                c.fillRect(x - 9, y + 2, 18, 20);
+                // Hex pattern
+                c.strokeStyle = 'rgba(120,83,15,0.5)'; c.lineWidth = 0.4;
+                for (var fy = 0; fy < 4; fy++) {
+                  for (var fx = 0; fx < 4; fx++) {
+                    var fhx = x - 7 + fx * 5 + (fy % 2) * 2.5;
+                    var fhy = y + 5 + fy * 4.5;
+                    c.beginPath();
+                    for (var fh = 0; fh < 6; fh++) {
+                      var fha = fh * 1.047 + 0.524;
+                      var pxx = fhx + Math.cos(fha) * 2;
+                      var pyy = fhy + Math.sin(fha) * 2;
+                      fh === 0 ? c.moveTo(pxx, pyy) : c.lineTo(pxx, pyy);
+                    }
+                    c.closePath(); c.stroke();
+                  }
+                }
+              }},
+              { name: 'Hive Scale', desc: 'Digital scale under the hive — tracks daily weight = nectar flow', draw: function(x, y) {
+                // Scale body
+                c.fillStyle = '#6b7280'; c.fillRect(x - 9, y + 14, 18, 9);
+                c.strokeStyle = '#1f2937'; c.lineWidth = 0.6; c.strokeRect(x - 9, y + 14, 18, 9);
+                // Digital display
+                c.fillStyle = '#064e3b';
+                c.fillRect(x - 7, y + 16, 14, 4);
+                c.font = 'bold 6px monospace'; c.fillStyle = '#22c55e'; c.textAlign = 'center';
+                c.fillText('45.2 kg', x, y + 19.5);
+                // Hive on top (mini)
+                c.fillStyle = '#d4aa40';
+                c.fillRect(x - 7, y + 4, 14, 10);
+                c.strokeStyle = '#92400e'; c.lineWidth = 0.5; c.strokeRect(x - 7, y + 4, 14, 10);
+                c.fillStyle = '#3f3a36';
+                c.beginPath(); c.moveTo(x - 8, y + 4); c.lineTo(x, y); c.lineTo(x + 8, y + 4); c.closePath(); c.fill();
+              }}
+            ];
+
+            // 2x3 grid of tools
+            var toolGridX = W * 0.58;
+            var toolGridW = W * 0.40;
+            var toolColW = toolGridW / 2;
+            var toolRowH = (H - tlY - 120) / 3;
+            tools.forEach(function(tl, ti) {
+              var tc = ti % 2, tr = Math.floor(ti / 2);
+              var tx = toolGridX + tc * toolColW + toolColW / 2;
+              var ty = tlY + 30 + tr * toolRowH;
+              // Card background
+              c.fillStyle = 'rgba(255,255,255,0.65)';
+              c.beginPath(); if (c.roundRect) c.roundRect(tx - toolColW / 2 + 5, ty - 8, toolColW - 10, toolRowH - 8, 8); else c.rect(tx - toolColW / 2 + 5, ty - 8, toolColW - 10, toolRowH - 8); c.fill();
+              c.strokeStyle = '#ca8a04'; c.lineWidth = 1.5;
+              c.beginPath(); if (c.roundRect) c.roundRect(tx - toolColW / 2 + 5, ty - 8, toolColW - 10, toolRowH - 8, 8); else c.rect(tx - toolColW / 2 + 5, ty - 8, toolColW - 10, toolRowH - 8); c.stroke();
+              // Drawing slot (left side of card)
+              tl.draw(tx - toolColW / 2 + 28, ty + 8);
+              // Label + description (right side of card)
+              c.font = 'bold 11px system-ui'; c.textAlign = 'left'; c.fillStyle = '#78350f';
+              c.fillText(tl.name, tx - toolColW / 2 + 55, ty + 4);
+              c.font = '9px system-ui'; c.fillStyle = '#92400e';
+              // Word-wrap description
+              var tWords = tl.desc.split(' ');
+              var tLine = ''; var tY = ty + 18;
+              for (var tw = 0; tw < tWords.length; tw++) {
+                var tt = tLine + tWords[tw] + ' ';
+                if (c.measureText(tt).width > toolColW - 62 && tLine.length > 0) {
+                  c.fillText(tLine, tx - toolColW / 2 + 55, tY);
+                  tLine = tWords[tw] + ' ';
+                  tY += 10;
+                } else {
+                  tLine = tt;
+                }
+              }
+              if (tY < ty + toolRowH - 16) c.fillText(tLine, tx - toolColW / 2 + 55, tY);
+            });
+
+            // Bottom history strip
+            var stripY = H - 52;
+            c.fillStyle = 'rgba(120,53,15,0.92)';
+            c.fillRect(0, stripY, W, 52);
+            c.font = 'bold 11px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#fef3c7';
+            c.fillText('Langstroth\'s breakthrough: the 3/8-inch "bee space" lets bees move freely without sealing frames', W / 2, stripY + 20);
+            c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#fcd34d';
+            var eqFacts = [
+              'Lorenzo Lorraine Langstroth patented the movable-frame hive Oct 5, 1852.',
+              'Before Langstroth: honey meant destroying the comb. After: endlessly reusable frames.',
+              'A standard 10-frame deep super holds ~60 lbs of honey when full.',
+              'The queen excluder metal is spaced exactly 4.1 mm — workers fit, queens don\'t.',
+              'Modern commercial operations use hundreds or thousands of these boxes, identical everywhere.'
+            ];
+            var eqIdx = Math.floor(t2 / 420) % eqFacts.length;
+            c.fillText('💡 ' + eqFacts[eqIdx], W / 2, stripY + 38);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -3938,6 +4212,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'pollination') {
                 drawPollination();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'equipment') {
+                drawEquipment();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -6801,7 +7080,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'castes', icon: '👑', label: 'Castes', desc: 'Queen, worker, drone (Shift+8)' },
                 { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' },
                 { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' },
-                { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' }
+                { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' },
+                { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
