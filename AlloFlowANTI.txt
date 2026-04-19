@@ -5052,6 +5052,33 @@ const AdventureAmbience = React.memo((props) => {
  * and inconsistent spacing around citation groups.
  * Runs AFTER processGrounding and any LLM/regex cleanup as a final formatting pass.
  */
+// Sanitize citation fragments left behind when Gemini hits its token limit mid-citation.
+// Without this, users see raw fragments like [⁽¹⁴⁾](https://www.webmd.  and stray # at the end of
+// the simplified text. Mirrors repairSourceMarkdown in content_engine_source.jsx.
+const sanitizeTruncatedCitations = (text) => {
+    if (!text) return text;
+    // Allow the opening superscript paren ⁽ to be optional — Gemini systematically drops it
+    // on the last citation of the simplified output, producing things like [¹⁴⁾](url-trunc.
+    // Rule 1: Remove truncated citation link at end of line (no closing paren): [⁽¹⁴⁾](https://partial.url
+    text = text.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
+    // Rule 2: Same but at end of entire text.
+    text = text.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
+    // Rule 3: Fix citation links whose closing paren got lost before whitespace: [⁽¹⁾](url  → [⁽¹⁾](url)
+    text = text.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
+    // Rule 4: Remove orphan superscript citations at end of line with no []() wrapper.
+    text = text.replace(/\s*\[?⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, (match, offset) => {
+        const before = text.substring(Math.max(0, offset - 5), offset);
+        if (before.includes('](')) return match;
+        return '';
+    });
+    // Rule 5: Remove stray lone # (orphaned heading markers from truncation).
+    text = text.replace(/\n\s*#\s*$/gm, '');
+    text = text.replace(/\n\s*#\s*\n/g, '\n');
+    // Rule 6: Restore missing ⁽ in otherwise-complete citations: [N⁾](url) → [⁽N⁾](url)
+    // Guarded by requiring the full [...]()) shape to avoid eating other bracketed content.
+    text = text.replace(/\[([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\]\(([^)]+)\)/g, '[⁽$1⁾]($2)');
+    return text;
+};
 const normalizeCitationPlacement = (text) => {
     if (!text) return text;
     const CIT = '\\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\\]\\([^)]+\\)';
@@ -28450,8 +28477,10 @@ Return ONLY JSON.`;
                 }
                 let currentTotal = currentTargetDisplay;
                 if (keepCitations) {
+                    currentTotal = sanitizeTruncatedCitations(currentTotal);
                     currentTotal = normalizeCitationPlacement(currentTotal);
                     if (effectiveLanguage !== 'English') {
+                        currentEnglishDisplay = sanitizeTruncatedCitations(currentEnglishDisplay);
                         currentEnglishDisplay = normalizeCitationPlacement(currentEnglishDisplay);
                     }
                 }
@@ -28515,6 +28544,7 @@ Return ONLY JSON.`;
                  wasRepaired = true;
             }
             if (keepCitations && content) {
+                content = sanitizeTruncatedCitations(content);
                 content = normalizeCitationPlacement(content);
             }
             if (keepCitations && extractedReferences) {

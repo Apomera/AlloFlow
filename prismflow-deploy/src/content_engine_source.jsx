@@ -35,15 +35,17 @@ var createContentEngine = function(deps) {
   var repairSourceMarkdown = function(rawText) {
     if (!rawText) return rawText;
 
-    // ── Fix broken/truncated citations (common when Gemini hits token limit) ──
+    // ── Fix broken/truncated citations (Gemini systematically drops characters in the
+    // last citation of any generated text, regardless of length — missing ⁽ and/or closing ). ──
+    // The `⁽?` makes the opening superscript-paren optional so malformed [N⁾](url) also matches.
     // 1. Remove truncated citation links: [⁽¹⁸⁾](https://partial.url  (no closing paren)
-    rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
-    // 2. Remove truncated citations at end of text (URL cut off mid-string, no closing bracket)
-    rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
+    rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
+    // 2. Remove truncated citations at end of text (URL cut off mid-string, no closing paren)
+    rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
     // 3. Fix citation links missing closing paren: [⁽¹⁾](url  → [⁽¹⁾](url)
-    rawText = rawText.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
+    rawText = rawText.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
     // 4. Remove orphan superscript citations with no link: ⁽¹⁸⁾ at end of line with no []() wrapper
-    rawText = rawText.replace(/\s*\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
+    rawText = rawText.replace(/\s*\[?⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
       // Only strip if it's truly orphaned (not part of a [⁽N⁾](url) pattern)
       var before = rawText.substring(Math.max(0, offset - 5), offset);
       if (before.includes('](')) return match; // it's inside a proper link
@@ -52,6 +54,9 @@ var createContentEngine = function(deps) {
     // 5. Remove stray lone # (orphaned heading markers from truncation)
     rawText = rawText.replace(/\n\s*#\s*$/gm, '');
     rawText = rawText.replace(/\n\s*#\s*\n/g, '\n');
+    // 6. Restore missing opening ⁽ in otherwise-complete citations: [N⁾](url) → [⁽N⁾](url)
+    //    (must come AFTER rules 1-2 so we don't restore the opening on a citation we just stripped)
+    rawText = rawText.replace(/\[([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\]\(([^)]+)\)/g, '[⁽$1⁾]($2)');
 
     var bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
     var body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
