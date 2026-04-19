@@ -1682,6 +1682,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
+              // ── Distant farmhouse silhouette (beyond the mountains — adds rural scale) ──
+              if (season !== 3) {
+                var fhX = W * 0.72, fhY = H * 0.68;
+                // Body
+                c.fillStyle = 'rgba(90,70,55,0.55)';
+                c.fillRect(fhX - 12, fhY, 24, 14);
+                // Roof (triangle)
+                c.beginPath();
+                c.moveTo(fhX - 14, fhY);
+                c.lineTo(fhX, fhY - 10);
+                c.lineTo(fhX + 14, fhY);
+                c.closePath(); c.fill();
+                // Chimney
+                c.fillRect(fhX + 5, fhY - 8, 3, 5);
+                // Smoke from chimney (rises slowly)
+                c.fillStyle = 'rgba(200,200,200,0.4)';
+                for (var fs = 0; fs < 3; fs++) {
+                  var fsY = fhY - 10 - fs * 6 + Math.sin(t2 * 0.02 + fs) * 1.5;
+                  c.beginPath(); c.arc(fhX + 6 + Math.sin(t2 * 0.015 + fs) * 1.5, fsY, 1.5 + fs * 0.6, 0, 6.28); c.fill();
+                }
+                // Window glow (warm yellow)
+                c.fillStyle = 'rgba(255,200,100,0.6)';
+                c.fillRect(fhX - 6, fhY + 3, 3, 3);
+                c.fillRect(fhX + 3, fhY + 3, 3, 3);
+              }
+
               // ── Distant mountain silhouettes (depth layer, non-winter uses blue-gray) ──
               var mtnColor = season === 3 ? 'rgba(140,160,180,0.55)' : season === 2 ? 'rgba(120,95,70,0.5)' : 'rgba(100,130,160,0.45)';
               c.fillStyle = mtnColor;
@@ -1709,15 +1735,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var gg = c.createLinearGradient(0, H * 0.76, 0, H * 0.76 + 8);
               gg.addColorStop(0, 'rgba(255,255,255,0.15)'); gg.addColorStop(1, 'rgba(255,255,255,0)');
               c.fillStyle = gg; c.fillRect(0, H * 0.76, W, 8);
-              // Grass blades
+              // Grass blades (with coherent wind wave sweeping L→R)
               if (season !== 3) {
                 c.strokeStyle = season === 2 ? '#92702a' : '#22c55e'; c.lineWidth = 1;
-                for (var gi = 0; gi < 50; gi++) {
-                  var gx = gi * (W / 50) + Math.sin(gi * 1.7) * 4;
-                  var gsw = Math.sin(t2 * 0.018 + gi * 0.6) * 2.5;
+                for (var gi = 0; gi < 80; gi++) {
+                  var gx = gi * (W / 80) + Math.sin(gi * 1.7) * 4;
+                  // Wind-phase wave: sweeps across the screen every ~6s.
+                  var windPhase = Math.sin(t2 * 0.025 - gx * 0.015);
+                  var gsw = windPhase * 3.5 + Math.sin(t2 * 0.018 + gi * 0.6) * 1.5;
                   c.beginPath(); c.moveTo(gx, H * 0.76);
                   c.quadraticCurveTo(gx + gsw * 0.5, H * 0.76 - 5, gx + gsw, H * 0.76 - 7 - Math.random() * 3);
                   c.stroke();
+                }
+                // Ghost wind lines (faint horizontal streaks over grass showing gust direction)
+                c.strokeStyle = 'rgba(255,255,255,0.12)'; c.lineWidth = 0.6;
+                for (var wl = 0; wl < 4; wl++) {
+                  var wlY = H * 0.78 + wl * 5;
+                  var wlPhase = ((t2 * 1.2 + wl * 80) % (W + 160)) - 80;
+                  c.beginPath(); c.moveTo(wlPhase, wlY); c.lineTo(wlPhase + 40, wlY); c.stroke();
                 }
               }
               // Snow
@@ -1835,6 +1870,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(bbX + 8.7, bbY - 5.8, 0.6, 0.6);
               }
 
+              // ── Lavender bushes along the fence (major honeybee forage plant) ──
+              if (season === 0 || season === 1 || season === 2) {
+                var lavSpots = [W * 0.18, W * 0.37, W * 0.65, W * 0.88];
+                lavSpots.forEach(function(lvx) {
+                  // Skip if too close to hive
+                  if (lvx > hiveX - 20 && lvx < hiveX + hiveW + 20) return;
+                  var lvy = H * 0.77;
+                  // Bush foliage base (silver-green)
+                  c.fillStyle = season === 2 ? '#6b7f5a' : '#8fa67a';
+                  c.beginPath(); c.ellipse(lvx, lvy, 14, 5, 0, 0, 6.28); c.fill();
+                  // Individual lavender spikes (9 per bush)
+                  for (var lvs = 0; lvs < 9; lvs++) {
+                    var lvsX = lvx - 12 + lvs * 3 + (lvs % 2) * 1.5;
+                    var lvsTop = lvy - 8 - (lvs % 3) * 2;
+                    var lvSw = Math.sin(t2 * 0.02 + lvsX * 0.3) * 0.8;
+                    // Stem
+                    c.strokeStyle = '#6b7f5a'; c.lineWidth = 0.6;
+                    c.beginPath(); c.moveTo(lvsX, lvy); c.lineTo(lvsX + lvSw, lvsTop); c.stroke();
+                    // Purple flower cluster at tip
+                    c.fillStyle = season === 2 ? '#7c5a9d' : '#a78bfa';
+                    for (var lvd = 0; lvd < 4; lvd++) {
+                      c.beginPath(); c.arc(lvsX + lvSw + (lvd % 2) * 0.8, lvsTop + lvd * 1.1, 1.1, 0, 6.28); c.fill();
+                    }
+                  }
+                });
+              }
+
               // ── Wooden garden fence along the ground ──
               c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
               var fenceBaseY = H * 0.775;
@@ -1876,6 +1938,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var wa = 2.3 + wsp * 0.42;
                   c.beginPath(); c.moveTo(webX, webY); c.lineTo(webX + Math.cos(wa) * 11, webY + Math.sin(wa) * 11); c.stroke();
                 }
+              }
+
+              // ── Garden pinwheel (charming motion detail) ──
+              if (season !== 3) {
+                var pwX = W * 0.26, pwY = H * 0.74, pwAng = t2 * 0.12;
+                // Post
+                c.fillStyle = '#6b4a1f'; c.fillRect(pwX - 0.8, pwY + 8, 1.6, 14);
+                // 4 petals rotating
+                c.save(); c.translate(pwX, pwY + 8); c.rotate(pwAng);
+                var pwCols = ['#f472b6', '#fbbf24', '#60a5fa', '#34d399'];
+                for (var pwp = 0; pwp < 4; pwp++) {
+                  c.fillStyle = pwCols[pwp];
+                  c.save(); c.rotate(pwp * 1.5708);
+                  c.beginPath();
+                  c.moveTo(0, 0);
+                  c.lineTo(5, -2);
+                  c.lineTo(5, 2);
+                  c.closePath(); c.fill();
+                  c.restore();
+                }
+                // Center pin
+                c.fillStyle = '#4b5563';
+                c.beginPath(); c.arc(0, 0, 0.9, 0, 6.28); c.fill();
+                c.restore();
               }
 
               // ── Apiary sign mounted on fence (right side) ──
@@ -2070,6 +2156,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = 'rgba(255,255,255,0.15)';
               c.fillRect(standX + 2, standY + 2, standW - 4, 1);
 
+              // ── Ladybugs on flowers (spring/summer, static on 2 flowers) ──
+              if ((season === 0 || season === 1) && flowers.length > 3) {
+                [0, 5].forEach(function(flIdx) {
+                  if (flIdx >= flowers.length) return;
+                  var lfl = flowers[flIdx];
+                  var lbX = lfl.x + 3, lbY = lfl.y - 3;
+                  // Red shell
+                  c.fillStyle = '#dc2626';
+                  c.beginPath(); c.ellipse(lbX, lbY, 2.2, 1.8, 0, 0, 6.28); c.fill();
+                  // Black head
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(lbX - 1.6, lbY, 1, 0, 6.28); c.fill();
+                  // Wing split line
+                  c.strokeStyle = '#0a0a0a'; c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(lbX, lbY - 1.5); c.lineTo(lbX, lbY + 1.5); c.stroke();
+                  // Spots
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(lbX - 0.4, lbY - 0.7, 0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(lbX + 0.8, lbY + 0.5, 0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(lbX + 0.4, lbY - 0.7, 0.4, 0, 6.28); c.fill();
+                });
+              }
+
               // ── Hive (detailed cross-section with 3D-ish look) ──
               // Shadow
               c.fillStyle = 'rgba(0,0,0,0.12)';
@@ -2082,7 +2191,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#d4aa40'; c.beginPath(); c.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 7); c.fill();
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(hiveX + 5, hiveY + 5, hiveW - 10, 12);
-              // Painted hive number/name plaque (top-left of hive)
+              // Peaked roof with asphalt shingles (above the hive body)
+              var roofH = 10;
+              c.save();
+              // Roof base (dark gray slate)
+              c.fillStyle = '#3f3a36';
+              c.beginPath();
+              c.moveTo(hiveX - 4, hiveY + 2);
+              c.lineTo(hiveX + hiveW / 2, hiveY - roofH);
+              c.lineTo(hiveX + hiveW + 4, hiveY + 2);
+              c.closePath(); c.fill();
+              // Shingle rows (staggered for visual texture)
+              c.fillStyle = '#57534e';
+              for (var rsh = 0; rsh < 3; rsh++) {
+                var shY = hiveY - roofH + 3 + rsh * 3;
+                var shW = (hiveW + 8) * ((roofH - rsh * 3) / roofH);
+                var shX = hiveX + hiveW / 2 - shW / 2;
+                for (var shc = 0; shc < Math.floor(shW / 5); shc++) {
+                  if ((shc + rsh) % 2 === 0) {
+                    c.fillRect(shX + shc * 5, shY, 4.5, 2.5);
+                  }
+                }
+              }
+              // Ventilation diamond
+              c.fillStyle = '#1c1917';
+              c.save();
+              c.translate(hiveX + hiveW / 2, hiveY - 3);
+              c.rotate(Math.PI / 4);
+              c.fillRect(-2.5, -2.5, 5, 5);
+              c.restore();
+              c.restore();
+              // Painted hive number/name plaque (top-left of hive body)
               c.save();
               c.fillStyle = 'rgba(50,30,10,0.5)';
               c.beginPath(); c.roundRect(hiveX + 3, hiveY + 3, 24, 9, 2); c.fill();
