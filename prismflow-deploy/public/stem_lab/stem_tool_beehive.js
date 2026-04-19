@@ -2998,21 +2998,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        // ═══ EXTREME DIAGNOSTIC: return ONLY a hello-world div ═══
-        // If this doesn't show, the plugin is completely disconnected from the DOM.
-        // If this DOES show, the original JSX tree has a specific problem we can hunt down.
-        var _helloRetval = h('div', {
-          id: 'beehive-hello-marker',
-          style: { background: 'magenta', color: 'white', padding: '60px', fontSize: '36px', fontWeight: 'bold', textAlign: 'center', border: '8px solid cyan', margin: '20px' }
-        }, '🟣 HELLO FROM BEEHIVE PLUGIN — if you see this, the plugin DOES render ' + Date.now());
-        console.log('[Beehive DEBUG HELLO] returning simple hello div. element=',
-          _helloRetval ? ('$$typeof=' + String(_helloRetval.$$typeof) + ' type=' + _helloRetval.type + ' text=' + String(_helloRetval.props.children).slice(0, 30)) : 'NULL');
+        // ═══ BISECT: return ONLY outer div + marker + canvas container ═══
+        // If canvas mounts → the bug is in the REST of the original children.
+        // If canvas still doesn't mount → the bug is in one of these early elements.
+        var _bisectRetval = h('div', { className: 'space-y-4' },
+          h('div', { id: 'beehive-top', style: { background: 'magenta', color: 'white', padding: '16px', fontSize: '18px', fontWeight: 'bold', textAlign: 'center' } },
+            '🟣 BISECT TOP — plugin render output is committing ' + Date.now()),
+          // The beekeeper canvas container (EXACT original, no modifications)
+          viewMode === 'beekeeper' && h('div', {
+            id: 'beehive-canvas-container',
+            style: { height: '300px', border: '4px dashed red', position: 'relative', background: 'yellow' }
+          },
+            h('canvas', {
+              ref: _cvRef,
+              role: 'img',
+              'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
+              style: { width: '100%', height: '100%', display: 'block', background: 'lime' }
+            })
+          )
+        );
         setTimeout(function() {
-          var h1 = document.getElementById('beehive-hello-marker');
-          console.log('[Beehive DEBUG HELLO POST] 100ms after render, #beehive-hello-marker in DOM:',
-            h1 ? 'YES (parent: ' + (h1.parentElement ? h1.parentElement.tagName + '.' + h1.parentElement.className : 'none') + ')' : 'NO');
-        }, 100);
-        return _helloRetval;
+          var cc = document.getElementById('beehive-canvas-container');
+          var cv = cc ? cc.querySelector('canvas') : null;
+          console.log('[Beehive BISECT] canvas-container in DOM:', cc ? 'YES' : 'NO',
+            '| canvas in DOM:', cv ? 'YES (' + cv.clientWidth + 'x' + cv.clientHeight + ')' : 'NO',
+            '| _cvRef.current:', _cvRef.current ? 'ATTACHED' : 'NULL');
+        }, 150);
+        return _bisectRetval;
 
         // === ORIGINAL TREE (disabled for diagnostic) ===
         /* eslint-disable */

@@ -911,13 +911,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillRect(0, y - elevBump, W, rowH);
 
             // Terrain texture: forest patches (low elev, temperate)
-            if (elev < 2000 && !isDesert && !isTundra && depth > 0.3 && alt < 10000) {
+            // Forest density varies by biome — boreal forests at higher lat, deciduous mid-lat
+            var forestDensity = terrainHash(Math.floor(scanLat * 4), Math.floor(scanLon * 4));
+            var isBoreal = Math.abs(scanLat) > 45 && Math.abs(scanLat) < 65;
+            var isTropical = Math.abs(scanLat) < 23 && elev < 2000 && !isDesert;
+            var isDensedForest = (forestDensity > 0.55 && elev < 2500 && !isDesert && !isTundra);
+
+            if (isDensedForest && depth > 0.15 && alt < 12000) {
+              // Base forest color wash (darker green)
+              var forestR = isBoreal ? 20 : (isTropical ? 15 : 30);
+              var forestG = isBoreal ? 70 : (isTropical ? 95 : 85);
+              var forestB = isBoreal ? 45 : (isTropical ? 40 : 30);
+              gfx.fillStyle = 'rgba(' + forestR + ',' + forestG + ',' + forestB + ',' + (0.35 * depth) + ')';
+              var fStartX = terrainHash(scanLat * 6, scanLon * 6) * W * 0.5;
+              var fWide = W * 0.4 + terrainHash(r + 2, scanLat) * W * 0.3;
+              gfx.fillRect(fStartX, y - elevBump, fWide, rowH * 0.9);
+
+              // Tree canopy dots (visible at low altitude)
+              if (alt < 6000 && depth > 0.35) {
+                var treeCount = Math.floor(12 + depth * 20);
+                var treeSize = Math.max(1, 1.5 + depth * 2);
+                for (var tC = 0; tC < treeCount; tC++) {
+                  var tcx = fStartX + terrainHash(scanLat * 40 + tC, scanLon * 40 + tC) * fWide;
+                  var tcy = y - elevBump + terrainHash(tC + r, scanLat * 9) * rowH * 0.7;
+                  var tcHue = terrainHash(tC, scanLon * 7);
+                  var tcG = isBoreal ? 65 : (isTropical ? 100 : 90);
+                  var tcGShift = Math.round(tcG + tcHue * 30);
+                  gfx.fillStyle = 'rgba(' + (isBoreal ? 15 : 25) + ',' + tcGShift + ',' + (isBoreal ? 40 : 25) + ',' + (0.45 + depth * 0.3) + ')';
+                  gfx.beginPath();
+                  gfx.arc(tcx, tcy, treeSize, 0, Math.PI * 2);
+                  gfx.fill();
+                }
+              }
+            } else if (elev < 2000 && !isDesert && !isTundra && depth > 0.3 && alt < 10000) {
+              // Scattered light forest patches
               gfx.fillStyle = 'rgba(20,80,20,' + (0.1 * depth) + ')';
               for (var tr2 = 0; tr2 < 4; tr2++) {
                 var tx = (terrainHash(scanLat * 10 + tr2, scanLon * 10) * W);
                 var tw = 20 + terrainHash(tr2, r) * 40;
                 gfx.fillRect(tx, y - elevBump, tw, rowH * 0.8);
               }
+            }
+
+            // Farmland grid pattern (flat, low-elevation, temperate, not forest)
+            var isFarmland = !isDensedForest && !isDesert && !isTundra && elev < 1500 && Math.abs(scanLat) < 55 &&
+                             terrainHash(Math.floor(scanLat * 3) + 1, Math.floor(scanLon * 3) + 1) > 0.45 &&
+                             terrainHash(Math.floor(scanLat * 3) + 1, Math.floor(scanLon * 3) + 1) < 0.7;
+            if (isFarmland && depth > 0.3 && alt < 8000) {
+              var farmSeed = Math.floor(scanLat * 8) * 17 + Math.floor(scanLon * 8);
+              var farmStartX = terrainHash(farmSeed, 1) * W * 0.3;
+              var farmFields = 4 + Math.floor(depth * 4);
+              for (var fF = 0; fF < farmFields; fF++) {
+                var fFx = farmStartX + fF * (W * 0.5 / farmFields);
+                var fFw = (W * 0.5 / farmFields) * 0.9;
+                var fieldHue = terrainHash(farmSeed + fF, 2);
+                var fR, fG, fB;
+                if (fieldHue < 0.3) { fR = 180; fG = 170; fB = 90; }        // wheat/straw
+                else if (fieldHue < 0.55) { fR = 120; fG = 150; fB = 60; }  // green crops
+                else if (fieldHue < 0.8) { fR = 150; fG = 130; fB = 70; }   // tilled earth
+                else { fR = 90; fG = 130; fB = 50; }                        // pasture
+                gfx.fillStyle = 'rgba(' + fR + ',' + fG + ',' + fB + ',' + (0.25 * depth) + ')';
+                gfx.fillRect(fFx, y - elevBump, fFw, rowH * 0.75);
+              }
+              // Field divider lines
+              if (alt < 5000) {
+                gfx.strokeStyle = 'rgba(80,70,50,' + (0.15 * depth) + ')';
+                gfx.lineWidth = 0.5;
+                for (var fd = 0; fd < farmFields; fd++) {
+                  var fdx = farmStartX + fd * (W * 0.5 / farmFields);
+                  gfx.beginPath(); gfx.moveTo(fdx, y); gfx.lineTo(fdx + 2, y + rowH * 0.75); gfx.stroke();
+                }
+              }
+            }
+
+            // Small inland lakes/ponds (random low-lying pockets)
+            if (!isDesert && elev < 2500 && depth > 0.25 && alt < 12000 &&
+                terrainHash(Math.floor(scanLat * 12) + 7, Math.floor(scanLon * 12) + 3) > 0.82) {
+              var lakeX = terrainHash(scanLat * 17, scanLon * 17) * W;
+              var lakeW = 15 + terrainHash(r + 3, scanLat * 5) * 35;
+              var lakeH = rowH * 0.5;
+              gfx.fillStyle = 'rgba(70,130,180,' + (0.6 * depth) + ')';
+              gfx.beginPath();
+              gfx.ellipse(lakeX + lakeW / 2, y - elevBump + lakeH / 2, lakeW / 2, lakeH / 2, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Lake shore highlight
+              gfx.strokeStyle = 'rgba(180,210,230,' + (0.25 * depth) + ')';
+              gfx.lineWidth = 0.5;
+              gfx.stroke();
             }
 
             // River simulation (procedural)
@@ -997,29 +1077,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   gfx.fillRect(0, y - 20, W, 40);
                 }
               } else {
-                // Daytime: building silhouettes + grid pattern
-                var buildingDensity = Math.min(6, Math.floor(depth * 8));
-                for (var bi = 0; bi < buildingDensity; bi++) {
-                  var bx = terrainHash(scanLat * 18 + bi, scanLon * 18) * W;
-                  var bw2 = 2 + terrainHash(bi + 3, r) * 6;
-                  var bh = 2 + terrainHash(bi + r, scanLat * 12) * (6 * depth);
-                  gfx.fillStyle = 'rgba(120,125,135,' + (0.1 + depth * 0.08) + ')';
-                  gfx.fillRect(bx, y - elevBump - bh, bw2, bh);
+                // Daytime: proximity to nearest city center determines density
+                var minCityDist = 99;
+                for (var cPi = 0; cPi < WAYPOINTS.length; cPi++) {
+                  var cpd = Math.abs(scanLat - WAYPOINTS[cPi].lat) + Math.abs(scanLon - WAYPOINTS[cPi].lon);
+                  if (cpd < minCityDist) minCityDist = cpd;
                 }
-                // Road grid (visible at lower altitude)
-                if (alt < 8000 && depth > 0.3) {
-                  gfx.strokeStyle = 'rgba(160,155,150,' + (0.06 * depth) + ')';
-                  gfx.lineWidth = 0.5;
-                  for (var rgi = 0; rgi < 2; rgi++) {
-                    var rgx = terrainHash(scanLat * 14 + rgi, scanLon * 14) * W;
-                    gfx.beginPath(); gfx.moveTo(rgx, y); gfx.lineTo(rgx + 5, y + rowH); gfx.stroke();
+                var inDowntown = minCityDist < 0.5;
+                var inSuburb = minCityDist >= 0.5 && minCityDist < 1.8;
+
+                // Gray/beige urban base wash
+                var urbanR = inDowntown ? 145 : 165;
+                var urbanG = inDowntown ? 142 : 160;
+                var urbanB = inDowntown ? 138 : 150;
+                gfx.fillStyle = 'rgba(' + urbanR + ',' + urbanG + ',' + urbanB + ',' + (0.22 * depth) + ')';
+                var cityStartX = terrainHash(scanLat * 5, scanLon * 5) * W * 0.3;
+                var cityWide = W * 0.5 + terrainHash(r + 4, scanLat * 8) * W * 0.3;
+                gfx.fillRect(cityStartX, y - elevBump, cityWide, rowH * 0.9);
+
+                // DOWNTOWN SKYSCRAPERS: taller clustered buildings
+                if (inDowntown) {
+                  var skyCount = Math.min(14, Math.floor(6 + depth * 14));
+                  var skyBaseX = cityStartX + cityWide * 0.25;
+                  var skyRange = cityWide * 0.5;
+                  for (var sB = 0; sB < skyCount; sB++) {
+                    var sBx = skyBaseX + terrainHash(scanLat * 50 + sB, scanLon * 50) * skyRange;
+                    var sBw = 3 + terrainHash(sB + 2, r) * 5;
+                    var heightSeed = terrainHash(sB + r * 3, scanLat * 17);
+                    var sBh = 4 + heightSeed * heightSeed * (22 * depth); // tall skyscrapers
+                    // Front face
+                    var frontShade = Math.round(130 + terrainHash(sB, 1) * 30);
+                    gfx.fillStyle = 'rgba(' + frontShade + ',' + frontShade + ',' + (frontShade + 5) + ',' + (0.45 + depth * 0.25) + ')';
+                    gfx.fillRect(sBx, y - elevBump - sBh, sBw, sBh);
+                    // Window grid (faint)
+                    if (alt < 8000 && sBh > 8) {
+                      gfx.fillStyle = 'rgba(100,120,140,' + (0.3 + depth * 0.2) + ')';
+                      var wRows = Math.floor(sBh / 2);
+                      for (var wR = 1; wR < wRows; wR++) {
+                        gfx.fillRect(sBx + 0.5, y - elevBump - sBh + wR * 2, sBw - 1, 0.5);
+                      }
+                    }
+                    // Rooftop highlight
+                    gfx.fillStyle = 'rgba(200,200,210,' + (0.2 + depth * 0.2) + ')';
+                    gfx.fillRect(sBx, y - elevBump - sBh, sBw, 0.8);
                   }
                 }
+
+                // SUBURBAN HOUSES: small low buildings outside downtown
+                if (inSuburb || (!inDowntown && terrainHash(scanLat * 30, scanLon * 30) > 0.5)) {
+                  var subCount = Math.min(18, Math.floor(depth * 20));
+                  for (var sH = 0; sH < subCount; sH++) {
+                    var shx = cityStartX + terrainHash(scanLat * 55 + sH, scanLon * 55) * cityWide;
+                    var shw = 1.5 + terrainHash(sH + 4, r) * 2;
+                    var shh = 1 + terrainHash(sH + r, scanLat * 20) * 2.5;
+                    var roofHue = terrainHash(sH, scanLon * 11);
+                    var rR, rG, rB;
+                    if (roofHue < 0.35) { rR = 130; rG = 80; rB = 60; }      // red-brown roof
+                    else if (roofHue < 0.7) { rR = 100; rG = 100; rB = 100; } // gray roof
+                    else { rR = 140; rG = 130; rB = 110; }                    // tan roof
+                    gfx.fillStyle = 'rgba(' + rR + ',' + rG + ',' + rB + ',' + (0.3 + depth * 0.2) + ')';
+                    gfx.fillRect(shx, y - elevBump - shh, shw, shh);
+                  }
+                }
+
+                // Road grid (visible at lower altitude)
+                if (alt < 8000 && depth > 0.3) {
+                  gfx.strokeStyle = 'rgba(80,75,70,' + (0.15 * depth) + ')';
+                  gfx.lineWidth = 0.7;
+                  var gridCount = inDowntown ? 5 : 3;
+                  for (var rgi = 0; rgi < gridCount; rgi++) {
+                    var rgx = cityStartX + (rgi + 0.5) * (cityWide / gridCount);
+                    gfx.beginPath(); gfx.moveTo(rgx, y - elevBump); gfx.lineTo(rgx + (terrainHash(rgi, r) - 0.5) * 8, y + rowH * 0.8); gfx.stroke();
+                  }
+                  // Horizontal cross streets
+                  gfx.strokeStyle = 'rgba(80,75,70,' + (0.1 * depth) + ')';
+                  gfx.beginPath(); gfx.moveTo(cityStartX, y - elevBump + rowH * 0.4); gfx.lineTo(cityStartX + cityWide, y - elevBump + rowH * 0.4); gfx.stroke();
+                }
+
                 // Green parks within cities
-                if (terrainHash(scanLat * 25, scanLon * 25) > 0.75 && depth > 0.35) {
-                  gfx.fillStyle = 'rgba(60,140,60,' + (0.1 * depth) + ')';
-                  var parkW = 10 + terrainHash(r + 7, scanLat * 10) * 20;
-                  gfx.fillRect(terrainHash(scanLat * 22, scanLon * 22) * W, y - elevBump, parkW, rowH * 0.5);
+                if (terrainHash(scanLat * 25, scanLon * 25) > 0.72 && depth > 0.35) {
+                  gfx.fillStyle = 'rgba(60,140,60,' + (0.35 * depth) + ')';
+                  var parkX = cityStartX + terrainHash(scanLat * 22, scanLon * 22) * cityWide * 0.7;
+                  var parkW = 8 + terrainHash(r + 7, scanLat * 10) * 18;
+                  gfx.fillRect(parkX, y - elevBump, parkW, rowH * 0.45);
+                  // Park trees
+                  if (alt < 5000) {
+                    gfx.fillStyle = 'rgba(30,90,30,' + (0.5 * depth) + ')';
+                    for (var pt = 0; pt < 3; pt++) {
+                      gfx.beginPath();
+                      gfx.arc(parkX + pt * (parkW / 3) + 4, y - elevBump + rowH * 0.2, 1.5, 0, Math.PI * 2);
+                      gfx.fill();
+                    }
+                  }
+                }
+
+                // Highway/major artery leaving city (visible at low alt)
+                if (alt < 10000 && depth > 0.4 && inDowntown) {
+                  gfx.strokeStyle = 'rgba(60,60,65,' + (0.35 * depth) + ')';
+                  gfx.lineWidth = 1.2;
+                  var hwx = cityStartX + cityWide * 0.5;
+                  gfx.beginPath(); gfx.moveTo(hwx, y - elevBump); gfx.lineTo(hwx + (terrainHash(r, scanLat) - 0.5) * 40, y + rowH); gfx.stroke();
+                  // Lane markings
+                  gfx.strokeStyle = 'rgba(220,220,150,' + (0.3 * depth) + ')';
+                  gfx.lineWidth = 0.3;
+                  gfx.setLineDash([2, 3]);
+                  gfx.beginPath(); gfx.moveTo(hwx, y - elevBump); gfx.lineTo(hwx + (terrainHash(r, scanLat) - 0.5) * 40, y + rowH); gfx.stroke();
+                  gfx.setLineDash([]);
                 }
               }
             }
