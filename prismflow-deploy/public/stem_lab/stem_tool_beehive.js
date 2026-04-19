@@ -1968,6 +1968,248 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ CASTES DIAGRAM (three bee types: queen, worker, drone) ═══
+          function drawCastes() {
+            // Warm parchment background
+            var csGrad = c.createLinearGradient(0, 0, 0, H);
+            csGrad.addColorStop(0, '#fef3c7'); csGrad.addColorStop(1, '#fde68a');
+            c.fillStyle = csGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('👑 The Three Castes · Queen · Workers · Drones', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('A honeybee colony is a superorganism — each caste plays one irreplaceable role', W / 2, 46);
+
+            // Three panels side-by-side
+            var panelW = W / 3;
+
+            // Helper: draw a labeled bee at scale (cx, cy are CENTER)
+            function drawCasteBee(cx, cy, scale, type) {
+              c.save();
+              c.translate(cx, cy);
+              // Body glow
+              c.shadowColor = type === 'queen' ? '#c084fc' : type === 'drone' ? '#60a5fa' : '#fbbf24';
+              c.shadowBlur = 6;
+              // Abdomen
+              c.fillStyle = '#fbbf24';
+              var abL = type === 'queen' ? 45 : type === 'drone' ? 32 : 28;
+              var abH = type === 'queen' ? 16 : type === 'drone' ? 18 : 14;
+              c.beginPath(); c.ellipse(12 * scale, 0, abL * scale, abH * scale, 0, 0, 6.28); c.fill();
+              // Stripes
+              c.shadowBlur = 0;
+              c.fillStyle = '#292524';
+              for (var st = 0; st < 4; st++) {
+                c.fillRect((st * 10 - 5) * scale, -abH * 0.9 * scale, 3 * scale, abH * 1.8 * scale);
+              }
+              // Thorax (fuzzier, orange)
+              c.shadowColor = '#fb923c'; c.shadowBlur = 4;
+              c.fillStyle = '#d97706';
+              c.beginPath(); c.ellipse(-18 * scale, 0, 16 * scale, 14 * scale, 0, 0, 6.28); c.fill();
+              // Fuzz ring
+              c.shadowBlur = 0; c.globalAlpha = 0.35; c.fillStyle = '#fdba74';
+              for (var fh = 0; fh < 20; fh++) {
+                var fhA = fh * 0.314;
+                c.beginPath(); c.arc(-18 * scale + Math.cos(fhA) * 15 * scale, Math.sin(fhA) * 13 * scale, 1.2 * scale, 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
+              // Head (size varies by caste — drone has BIG eyes)
+              var hdOff = -38 * scale;
+              c.fillStyle = '#292524';
+              var hdR = type === 'drone' ? 14 : 11;
+              c.beginPath(); c.arc(hdOff, 0, hdR * scale, 0, 6.28); c.fill();
+              // Compound eye — giant for drones, smaller for queen/worker
+              c.fillStyle = '#1e293b';
+              var eyeR = type === 'drone' ? 12 : 7;
+              c.beginPath(); c.ellipse(hdOff - 3 * scale, -2 * scale, eyeR * scale * 0.7, eyeR * scale, -0.2, 0, 6.28); c.fill();
+              c.fillStyle = 'rgba(255,255,255,0.45)';
+              c.beginPath(); c.arc(hdOff - 5 * scale, -5 * scale, 1.5 * scale, 0, 6.28); c.fill();
+              // Antennae
+              c.strokeStyle = '#1c1917'; c.lineWidth = 1.5 * scale;
+              c.beginPath();
+              c.moveTo(hdOff - 2 * scale, -6 * scale);
+              c.quadraticCurveTo(hdOff - 10 * scale, -14 * scale, hdOff - 6 * scale, -18 * scale);
+              c.moveTo(hdOff + 2 * scale, -6 * scale);
+              c.quadraticCurveTo(hdOff - 4 * scale, -15 * scale, hdOff + 2 * scale, -19 * scale);
+              c.stroke();
+              // Wings (4 total — translucent, angled)
+              c.globalAlpha = 0.45; c.fillStyle = '#bfdbfe';
+              var wA = Math.sin(t2 * 0.3) * 2 * scale;
+              c.beginPath(); c.ellipse(-8 * scale, -10 * scale + wA, 22 * scale, 7 * scale, -0.4, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(0 * scale, -12 * scale - wA * 0.7, 18 * scale, 5 * scale, -0.3, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+              // Legs (6 total)
+              c.strokeStyle = '#1c1917'; c.lineWidth = 2 * scale;
+              for (var lg = 0; lg < 3; lg++) {
+                var lgX = -22 * scale + lg * 14 * scale;
+                c.beginPath(); c.moveTo(lgX, 8 * scale); c.lineTo(lgX + 4 * scale, 18 * scale); c.lineTo(lgX + 8 * scale, 22 * scale); c.stroke();
+              }
+              // Pollen basket on the back leg (only for worker)
+              if (type === 'worker') {
+                c.save(); c.shadowColor = '#facc15'; c.shadowBlur = 4;
+                c.fillStyle = '#facc15';
+                c.beginPath(); c.ellipse(6 * scale, 14 * scale, 4 * scale, 6 * scale, 0.3, 0, 6.28); c.fill();
+                c.restore();
+              }
+              // Stinger (worker: barbed; queen: smooth, reusable; drone: NONE)
+              if (type === 'worker') {
+                c.fillStyle = '#44403c';
+                c.beginPath(); c.moveTo(abL * scale + 12 * scale, 0);
+                c.lineTo(abL * scale + 22 * scale, -2 * scale);
+                c.lineTo(abL * scale + 22 * scale, 2 * scale); c.closePath(); c.fill();
+                // Barbs
+                c.strokeStyle = '#1c1917'; c.lineWidth = 0.5 * scale;
+                for (var bb = 0; bb < 2; bb++) {
+                  c.beginPath(); c.moveTo(abL * scale + 15 * scale + bb * 3 * scale, -0.5); c.lineTo(abL * scale + 17 * scale + bb * 3 * scale, -2); c.stroke();
+                }
+              } else if (type === 'queen') {
+                c.fillStyle = '#44403c';
+                c.beginPath(); c.moveTo(abL * scale + 12 * scale, 0);
+                c.lineTo(abL * scale + 24 * scale, -1.5 * scale);
+                c.lineTo(abL * scale + 24 * scale, 1.5 * scale); c.closePath(); c.fill();
+              }
+              // Crown marker for queen
+              if (type === 'queen') {
+                c.font = (14 * scale) + 'px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'center';
+                c.fillText('👑', -18 * scale, -22 * scale);
+              }
+              c.restore();
+            }
+
+            // ═══ PANEL 1: QUEEN (purple theme) ═══
+            (function() {
+              var pX = 10, pY = 60;
+              var pW2 = panelW - 20, pH2 = H - pY - 100;
+              c.save();
+              c.fillStyle = 'rgba(237,233,254,0.7)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.fill();
+              c.strokeStyle = '#7c3aed'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
+              c.font = 'bold 15px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#5b21b6';
+              c.fillText('👑 THE QUEEN', pX + pW2 / 2, pY + 26);
+              c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#6d28d9';
+              c.fillText('The colony\'s sole mother', pX + pW2 / 2, pY + 42);
+              // Bee
+              drawCasteBee(pX + pW2 / 2, pY + pH2 * 0.38, Math.min(pW2 * 0.006, pH2 * 0.004), 'queen');
+              // Stats
+              var sY = pY + pH2 * 0.58;
+              c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#5b21b6';
+              c.fillText('⏳ LIFESPAN: 2–5 years', pX + 18, sY);
+              c.fillText('🏠 COUNT: 1 per colony', pX + 18, sY + 15);
+              c.fillText('🥚 ROLE: Egg-laying machine', pX + 18, sY + 30);
+              c.font = '9px system-ui'; c.fillStyle = '#6d28d9';
+              c.fillText('· Lays ~1,500 eggs/day (her own body weight)', pX + 22, sY + 46);
+              c.fillText('· Emits Queen Mandibular Pheromone (QMP)', pX + 22, sY + 60);
+              c.fillText('· Mated once — stores 6M sperm for life', pX + 22, sY + 74);
+              c.fillText('· Stinger is SMOOTH (reusable) but rarely stings', pX + 22, sY + 88);
+              c.fillText('· Largest, longest body — twice a worker\'s abdomen', pX + 22, sY + 102);
+              c.font = 'italic 9px Georgia, serif'; c.fillStyle = '#581c87'; c.textAlign = 'center';
+              c.fillText('If the queen dies, the colony dies —', pX + pW2 / 2, pY + pH2 - 30);
+              c.fillText('unless workers can raise a new queen in 3 days.', pX + pW2 / 2, pY + pH2 - 18);
+              c.restore();
+            })();
+
+            // ═══ PANEL 2: WORKER (amber theme) ═══
+            (function() {
+              var pX = panelW + 10, pY = 60;
+              var pW2 = panelW - 20, pH2 = H - pY - 100;
+              c.save();
+              c.fillStyle = 'rgba(254,243,199,0.7)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.fill();
+              c.strokeStyle = '#ca8a04'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
+              c.font = 'bold 15px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#92400e';
+              c.fillText('🧑‍🏭 THE WORKERS (♀)', pX + pW2 / 2, pY + 26);
+              c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#a16207';
+              c.fillText('Everything except lay eggs', pX + pW2 / 2, pY + 42);
+              // Bee
+              drawCasteBee(pX + pW2 / 2, pY + pH2 * 0.38, Math.min(pW2 * 0.006, pH2 * 0.004), 'worker');
+              // Stats
+              var sY = pY + pH2 * 0.58;
+              c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#92400e';
+              c.fillText('⏳ LIFESPAN: 6 weeks summer / 4–6 months winter', pX + 18, sY);
+              c.fillText('🏠 COUNT: 20,000 – 60,000', pX + 18, sY + 15);
+              c.fillText('🛠️ ROLE: Everything', pX + 18, sY + 30);
+              c.font = '9px system-ui'; c.fillStyle = '#a16207';
+              c.fillText('· Age-based job progression (temporal polyethism):', pX + 22, sY + 46);
+              c.fillText('  Days 1–3: CLEAN cells', pX + 30, sY + 58);
+              c.fillText('  Days 4–11: NURSE brood (secrete royal jelly)', pX + 30, sY + 70);
+              c.fillText('  Days 12–17: BUILD comb (wax glands active)', pX + 30, sY + 82);
+              c.fillText('  Days 18–21: GUARD the entrance', pX + 30, sY + 94);
+              c.fillText('  Days 22+: FORAGE (last 3 weeks of life)', pX + 30, sY + 106);
+              c.font = 'italic 9px Georgia, serif'; c.fillStyle = '#78350f'; c.textAlign = 'center';
+              c.fillText('Barbed stinger — dies after stinging.', pX + pW2 / 2, pY + pH2 - 30);
+              c.fillText('A worker flies 500 mi / produces 1/12 tsp honey in her lifetime.', pX + pW2 / 2, pY + pH2 - 18);
+              c.restore();
+            })();
+
+            // ═══ PANEL 3: DRONE (blue theme) ═══
+            (function() {
+              var pX = panelW * 2 + 10, pY = 60;
+              var pW2 = panelW - 20, pH2 = H - pY - 100;
+              c.save();
+              c.fillStyle = 'rgba(219,234,254,0.7)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.fill();
+              c.strokeStyle = '#2563eb'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
+              c.font = 'bold 15px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#1e3a8a';
+              c.fillText('🚀 THE DRONES (♂)', pX + pW2 / 2, pY + 26);
+              c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#1e40af';
+              c.fillText('Mating specialists — that\'s it', pX + pW2 / 2, pY + 42);
+              // Bee (big eyes!)
+              drawCasteBee(pX + pW2 / 2, pY + pH2 * 0.38, Math.min(pW2 * 0.006, pH2 * 0.004), 'drone');
+              // Stats
+              var sY = pY + pH2 * 0.58;
+              c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#1e3a8a';
+              c.fillText('⏳ LIFESPAN: ~90 days (or until mating)', pX + 18, sY);
+              c.fillText('🏠 COUNT: A few hundred to a few thousand', pX + 18, sY + 15);
+              c.fillText('❤️ ROLE: Mate with queens from OTHER colonies', pX + 18, sY + 30);
+              c.font = '9px system-ui'; c.fillStyle = '#1e40af';
+              c.fillText('· GIANT eyes — find queens mid-flight at 200 ft+', pX + 22, sY + 46);
+              c.fillText('· NO stinger (cannot defend the hive)', pX + 22, sY + 60);
+              c.fillText('· NO pollen basket (cannot forage)', pX + 22, sY + 74);
+              c.fillText('· NO wax glands (cannot build)', pX + 22, sY + 88);
+              c.fillText('· Fed and groomed by workers until autumn', pX + 22, sY + 102);
+              c.font = 'italic 9px Georgia, serif'; c.fillStyle = '#1e3a8a'; c.textAlign = 'center';
+              c.fillText('Succeed in mating → die instantly (exploded endophallus).', pX + pW2 / 2, pY + pH2 - 30);
+              c.fillText('Fail by autumn → evicted by workers to starve outside.', pX + pW2 / 2, pY + pH2 - 18);
+              c.restore();
+            })();
+
+            // Bottom: colony-composition pie chart + key takeaway
+            var stripY = H - 78;
+            c.fillStyle = 'rgba(120,53,15,0.92)';
+            c.fillRect(0, stripY, W, 78);
+            // Pie chart on left
+            var pieX = 60, pieY = stripY + 38, pieR = 28;
+            // Big worker slice
+            c.fillStyle = '#ca8a04';
+            c.beginPath(); c.moveTo(pieX, pieY); c.arc(pieX, pieY, pieR, -Math.PI / 2, Math.PI / 2 + Math.PI * 1.8, false); c.closePath(); c.fill();
+            // Small drone slice (~2-5%)
+            c.fillStyle = '#2563eb';
+            c.beginPath(); c.moveTo(pieX, pieY); c.arc(pieX, pieY, pieR, Math.PI / 2 + Math.PI * 1.8, Math.PI / 2 + Math.PI * 1.97, false); c.closePath(); c.fill();
+            // Tiny queen slice (1/50,000 = basically invisible — show as dot)
+            c.fillStyle = '#7c3aed';
+            c.beginPath(); c.arc(pieX, pieY - pieR - 3, 2.5, 0, 6.28); c.fill();
+            // Pie border
+            c.strokeStyle = '#fef3c7'; c.lineWidth = 1.5;
+            c.beginPath(); c.arc(pieX, pieY, pieR, 0, 6.28); c.stroke();
+            c.font = 'bold 9px system-ui'; c.textAlign = 'left'; c.fillStyle = '#fef3c7';
+            c.fillText('COLONY COMPOSITION', pieX + 40, stripY + 20);
+            c.font = '9px system-ui';
+            c.fillStyle = '#ca8a04'; c.fillText('● Workers ~95%', pieX + 40, stripY + 35);
+            c.fillStyle = '#60a5fa'; c.fillText('● Drones ~5%', pieX + 40, stripY + 48);
+            c.fillStyle = '#c4b5fd'; c.fillText('● Queen 1/50,000', pieX + 40, stripY + 61);
+
+            // Key takeaway on right
+            c.font = 'bold 12px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#fef3c7';
+            c.fillText('THE SUPERORGANISM', W * 0.65, stripY + 24);
+            c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#fcd34d';
+            c.fillText('A colony is a single organism spread across 50,000 bodies.', W * 0.65, stripY + 42);
+            c.fillText('The queen is the reproductive organ · Workers are the immune system · Drones are the gametes.', W * 0.65, stripY + 58);
+          }
+
           // ═══ THERMOREGULATION DIAGRAM (summer cooling + winter clustering = 35°C year-round) ═══
           function drawThermoregulation() {
             // Split-panel backdrop: warm left (summer), cool right (winter)
@@ -3180,6 +3422,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'thermo') {
                 drawThermoregulation();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'castes') {
+                drawCastes();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -6031,7 +6278,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' },
                 { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation' },
                 { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (von Frisch 1973)' },
-                { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering = 35°C year-round' }
+                { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering = 35°C year-round' },
+                { id: 'castes', icon: '👑', label: 'Castes', desc: 'Queen, worker, drone — the three bee types' }
               ].map(function(v) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,
