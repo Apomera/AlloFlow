@@ -15533,6 +15533,10 @@ Return only the corrected version of this exact text:`;
     if (typeof text !== 'string') {
         return <div className="text-red-500 text-xs">Error: Invalid text format</div>;
     }
+    // Defensive render-time cleanup of truncated citation fragments (Gemini emits
+    // broken [⁽N⁾](url-cut-off) + stray # on the last citation even after the
+    // generation-time sanitizer runs). Idempotent on clean text.
+    text = sanitizeTruncatedCitations(text);
     const processedText = normalizeResourceLinks(text);
     const isSingleParagraph = !processedText.includes('\n\n') && processedText.length < 500 && !processedText.includes('|');
     let normalizedText = processedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
