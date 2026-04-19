@@ -15843,10 +15843,11 @@ Return only the corrected version of this exact text:`;
     return <div className={`leading-relaxed ${className}`}>{renderFormattedText(str)}</div>;
   });
   // Peel a trailing "Source Text References" block (or translated/variant heading) off the body.
-  // Matches trailing references heading. Covers English, French (both "Sources du texte" and
-  // "Références du texte source"), Spanish "Referencias", German "Quellen", and generic
-  // "References"/"Sources" with or without slash-separated bilingual labels.
-  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Sources?\s+du\s+texte[^\n]*|R[ée]f[ée]rences?\s+du\s+texte[^\n]*|R[ée]f[ée]rences?[^\n]*|Accuracy\s+Check\s+References|Verified\s+Sources|Referencias[^\n]*|Quellen[^\n]*|Fuentes[^\n]*|Sources?\s*(?:\/[^\n]*)?|References?[^\n]*)\s*\n/i;
+  // Matches our own canonical references heading appended by the app. The Gemini prompt
+  // now forbids the model from emitting any references section (in any language), so we
+  // only need to match the headers the app itself produces: "### Source Text References",
+  // "### Accuracy Check References", "### Verified Sources", or a bare "## Sources".
+  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Sources?\s*(?:\/[^\n]*)?)\s*\n/i;
   const splitReferencesFromBody = (text) => {
       if (!text) return { body: text || '', references: '' };
       const m = text.match(REFERENCES_HEADER_RE);
@@ -28538,6 +28539,7 @@ Return ONLY JSON.`;
                   ${leveledTextCustomInstructions ? `Custom Instructions: ${leveledTextCustomInstructions}` : ''}
                   ${useEmojis ? '- Use emojis liberally.' : '- Do not use emojis.'}
                   ${keepCitations ? '- CITATION PRESERVATION: Retain [⁽¹⁾](url) markers.' : '- Remove citations.'}
+                  - DO NOT emit any "Sources", "References", "Bibliography", or equivalent section (in any language). The references list is appended automatically by the app.
                   ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
                   1. If quantitative comparisons exist, insert a Chart on its own line: [[CHART: { "type": "bar", ... }]]
                   2. If a single percentage is highlighted, use a Donut Chart: [[CHART: { "type": "donut", ... }]]
@@ -28612,6 +28614,7 @@ Return ONLY JSON.`;
               ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
               ${useEmojis ? '- Use emojis liberally throughout the text to provide visual cues and engagement (e.g., "The sun ☀️ is a star ⭐").' : '- Do not use emojis.'}
               ${keepCitations ? '- CITATION PRESERVATION (CRITICAL): The source text uses specific markdown citations like [⁽¹⁾](url). You MUST retain this exact format (Superscript in brackets + Link). Do NOT convert to [1], (1), or loose text. Ensure links remain clickable.' : '- Remove all hyperlinks and citations.'}
+              - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
               ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
               1. If quantitative comparisons exist, insert a Chart on its own line (NO line breaks inside brackets):
                  [[CHART: { "type": "bar", "title": "Title", "data": [{"label": "A", "value": 10}, {"label": "B", "value": 20}] }]]
