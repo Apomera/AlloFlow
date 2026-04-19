@@ -1521,8 +1521,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
 
           // Bees & flowers now (re)initialized lazily inside frame() so resize works correctly.
-          // Butterflies live at doSetup scope — reset on resize/remount, preserved across frames.
+          // Butterflies + hummingbird live at doSetup scope — reset on resize/remount, preserved across frames.
           var _butterflies = null;
+          var _hummingbird = null;
           function _initButterflies() {
             _butterflies = [];
             for (var bf2 = 0; bf2 < 3; bf2++) _butterflies.push({
@@ -1530,6 +1531,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               vx: 0.28 + Math.random() * 0.22, amp: 8 + Math.random() * 8, ph: Math.random() * 6.28,
               col: ['#f472b6', '#fbbf24', '#60a5fa', '#a78bfa'][bf2 % 4], wp: 0
             });
+          }
+          function _initHummingbird() {
+            _hummingbird = {
+              x: W * 0.55, y: H * 0.58, targetX: W * 0.55, targetY: H * 0.58,
+              hoverT: 0, wp: 0, visible: false, vis0: Math.random() * 300
+            };
           }
 
           function frame() {
@@ -1633,6 +1640,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.translate(-raySrcX, -raySrcY);
                 }
                 c.restore();
+              }
+
+              // ── Pollen dust motes drifting in the god rays (magical atmosphere) ──
+              if (season !== 3) {
+                c.fillStyle = 'rgba(255,240,180,0.55)';
+                for (var dm = 0; dm < 18; dm++) {
+                  var dmSrcX = W * 0.85, dmSrcY = sunY;
+                  var dmAng = 1.4 + (dm * 0.037);
+                  var dmT = ((t2 * 0.2 + dm * 77) % 500) / 500; // 0..1 progress along ray
+                  var dmDist = 40 + dmT * 420;
+                  var dmx = dmSrcX + Math.cos(dmAng) * dmDist + Math.sin(t2 * 0.01 + dm) * 6;
+                  var dmy = dmSrcY + Math.sin(dmAng) * dmDist + Math.cos(t2 * 0.008 + dm * 2) * 4;
+                  if (dmy > H * 0.78) continue;
+                  var dmAlpha = Math.sin(dmT * 3.14) * 0.6;
+                  c.globalAlpha = dmAlpha;
+                  c.beginPath(); c.arc(dmx, dmy, 0.7 + Math.sin(t2 * 0.05 + dm) * 0.3, 0, 6.28); c.fill();
+                }
+                c.globalAlpha = 1;
               }
 
               // ── Time-of-day warm breath (gentle hourly tint to break up flat seasonal sky) ──
@@ -1871,6 +1896,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.beginPath(); c.arc(signX - 20, signY - 6, 0.7, 0, 6.28); c.fill();
               c.beginPath(); c.arc(signX + 24, signY - 6, 0.7, 0, 6.28); c.fill();
 
+              // ── Apple tree near the hive (classic beekeeping companion plant) ──
+              if (hiveX > 40) {
+                var atX = hiveX * 0.55;
+                var atY = H * 0.76;
+                var atTrunkH = 48;
+                // Trunk (textured bark)
+                c.fillStyle = '#4a2f1a';
+                c.fillRect(atX - 4, atY - atTrunkH, 8, atTrunkH);
+                // Trunk highlight
+                c.fillStyle = 'rgba(255,255,255,0.1)';
+                c.fillRect(atX - 3, atY - atTrunkH, 1.5, atTrunkH);
+                // Tree branches (a few visible stubs)
+                c.strokeStyle = '#4a2f1a'; c.lineWidth = 2.5;
+                c.beginPath();
+                c.moveTo(atX - 3, atY - atTrunkH + 8); c.lineTo(atX - 12, atY - atTrunkH - 2);
+                c.moveTo(atX + 3, atY - atTrunkH + 4); c.lineTo(atX + 14, atY - atTrunkH - 4);
+                c.stroke();
+                // Canopy (layered, seasonal)
+                var canopyY = atY - atTrunkH - 4;
+                var canBase = season === 2 ? '#a85820' : season === 3 ? '#7a7060' : season === 0 ? '#5fa85a' : '#3d8b4a';
+                c.fillStyle = canBase;
+                [[0, 0, 28], [-14, -6, 20], [14, -4, 22], [-6, -12, 18], [8, -14, 16]].forEach(function(b) {
+                  c.beginPath(); c.arc(atX + b[0], canopyY + b[1], b[2], 0, 6.28); c.fill();
+                });
+                // Canopy highlight
+                c.fillStyle = 'rgba(255,255,255,0.15)';
+                c.beginPath(); c.arc(atX - 6, canopyY - 8, 7, 0, 6.28); c.fill();
+                // Apples (red dots, only in summer/autumn — not spring blossom, not winter)
+                if (season === 1 || season === 2) {
+                  c.fillStyle = '#dc2626';
+                  var apples = [[0, -2], [-10, -4], [10, -6], [-4, -14], [6, -12], [-14, 2], [12, 4]];
+                  apples.forEach(function(a) {
+                    c.beginPath(); c.arc(atX + a[0], canopyY + a[1], 1.8, 0, 6.28); c.fill();
+                    // tiny highlight
+                    c.fillStyle = 'rgba(255,255,255,0.4)';
+                    c.beginPath(); c.arc(atX + a[0] - 0.6, canopyY + a[1] - 0.6, 0.5, 0, 6.28); c.fill();
+                    c.fillStyle = '#dc2626';
+                  });
+                }
+                // Spring blossoms (pink/white dots)
+                if (season === 0) {
+                  c.fillStyle = '#fce7f3';
+                  var blossoms = [[-4, -8], [8, -10], [-12, -4], [14, 0], [0, -16], [-8, 4], [10, -2]];
+                  blossoms.forEach(function(bl) {
+                    c.beginPath(); c.arc(atX + bl[0], canopyY + bl[1], 1.3, 0, 6.28); c.fill();
+                  });
+                }
+              }
+
               // ── Tree line (mid-ground, adds scale) ──
               for (var tr = 0; tr < 8; tr++) {
                 var trX = 20 + tr * (W / 9) + (tr % 2 === 0 ? 0 : W * 0.5);
@@ -1887,6 +1961,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   // Highlight
                   c.fillStyle = 'rgba(255,255,255,0.12)';
                   c.beginPath(); c.arc(trX - 3, trY - trH - 7, 4, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Hummingbird (spring/summer, flits between flowers, zips between hover points) ──
+              if ((season === 0 || season === 1) && flowers && flowers.length > 0) {
+                if (!_hummingbird) _initHummingbird();
+                var hb = _hummingbird;
+                hb.wp += 1.2; // wing beats very fast
+                hb.hoverT++;
+                // Pick a new flower target every ~120 frames
+                if (hb.hoverT > 120) {
+                  hb.hoverT = 0;
+                  var tflower = flowers[Math.floor(Math.random() * flowers.length)];
+                  hb.targetX = tflower.x + (Math.random() - 0.5) * 20;
+                  hb.targetY = tflower.y - 12 - Math.random() * 10;
+                }
+                // Zip toward target (fast)
+                hb.x += (hb.targetX - hb.x) * 0.06;
+                hb.y += (hb.targetY - hb.y) * 0.06;
+                var hbx = hb.x + Math.sin(t2 * 0.08) * 1.5; // tiny hover jitter
+                var hby = hb.y + Math.cos(t2 * 0.09) * 1.0;
+                // Long beak
+                c.strokeStyle = '#292524'; c.lineWidth = 0.8;
+                c.beginPath(); c.moveTo(hbx + 3, hby); c.lineTo(hbx + 8, hby + 0.5); c.stroke();
+                // Iridescent body (green/blue gradient emulation)
+                c.save(); c.shadowColor = '#10b981'; c.shadowBlur = 4;
+                c.fillStyle = '#059669';
+                c.beginPath(); c.ellipse(hbx, hby, 3.8, 1.8, 0, 0, 6.28); c.fill();
+                c.restore();
+                // Ruby throat patch
+                c.fillStyle = '#dc2626';
+                c.beginPath(); c.arc(hbx + 1.5, hby + 0.6, 0.9, 0, 6.28); c.fill();
+                // Blurred wings (two semi-transparent ellipses oscillating up/down)
+                var hbwing = Math.sin(hb.wp) * 2.8;
+                c.globalAlpha = 0.3; c.fillStyle = '#e0f2fe';
+                c.beginPath(); c.ellipse(hbx - 1, hby - 1 + hbwing, 4.5, 1.4, 0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(hbx - 1, hby - 1 - hbwing, 4.5, 1.4, -0.4, 0, 6.28); c.fill();
+                c.globalAlpha = 1;
+                // Tail fan
+                c.strokeStyle = '#064e3b'; c.lineWidth = 0.6;
+                for (var tf = -1; tf <= 1; tf++) {
+                  c.beginPath(); c.moveTo(hbx - 3, hby);
+                  c.lineTo(hbx - 6, hby + tf * 1.5); c.stroke();
                 }
               }
 
@@ -1938,6 +2055,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
 
+              // ── Wooden hive stand (elevates hive off ground — protects from ants + damp) ──
+              var standY = hiveY + hiveH + 4;
+              var standW = hiveW * 1.08;
+              var standX = hiveX - (standW - hiveW) / 2;
+              // Legs
+              c.fillStyle = '#6b4a1f';
+              c.fillRect(standX + 4, standY, 4, 12);
+              c.fillRect(standX + standW - 8, standY, 4, 12);
+              // Cross brace
+              c.fillStyle = '#8a6a2f';
+              c.fillRect(standX + 2, standY + 2, standW - 4, 3);
+              // Highlight
+              c.fillStyle = 'rgba(255,255,255,0.15)';
+              c.fillRect(standX + 2, standY + 2, standW - 4, 1);
+
               // ── Hive (detailed cross-section with 3D-ish look) ──
               // Shadow
               c.fillStyle = 'rgba(0,0,0,0.12)';
@@ -1950,6 +2082,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#d4aa40'; c.beginPath(); c.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 7); c.fill();
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(hiveX + 5, hiveY + 5, hiveW - 10, 12);
+              // Painted hive number/name plaque (top-left of hive)
+              c.save();
+              c.fillStyle = 'rgba(50,30,10,0.5)';
+              c.beginPath(); c.roundRect(hiveX + 3, hiveY + 3, 24, 9, 2); c.fill();
+              c.font = 'bold 7px Georgia, serif'; c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+              c.fillText('HIVE #1', hiveX + 15, hiveY + 10);
+              c.restore();
 
               // Honeycomb grid (larger, more visible)
               var csz = 6;
