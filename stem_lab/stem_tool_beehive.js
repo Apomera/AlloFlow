@@ -2242,6 +2242,186 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('💡 ' + eqFacts[eqIdx], W / 2, stripY + 38);
           }
 
+          // ═══ NATIVE BEES · biodiversity — honeybees are just 1 of ~20,000 species ═══
+          function drawNativeBees() {
+            // Soft meadow-at-dawn background
+            var nbGrad = c.createLinearGradient(0, 0, 0, H);
+            nbGrad.addColorStop(0, '#fde68a'); nbGrad.addColorStop(0.55, '#fef3c7'); nbGrad.addColorStop(1, '#d9f99d');
+            c.fillStyle = nbGrad; c.fillRect(0, 0, W, H);
+
+            // Ground line
+            c.strokeStyle = 'rgba(101,163,13,0.35)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(0, H - 60); c.lineTo(W, H - 60); c.stroke();
+
+            // Title
+            c.fillStyle = '#14532d'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🌎 Native Bees · Honeybees are ONE of ~20,000 species', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#15803d';
+            c.fillText('North America alone has ~4,000 native bee species — most are solitary, not social', W / 2, 44);
+
+            // Big fact bar (left) — biodiversity stats
+            var barX = 20, barY = 58, barW = 180, barH = 140;
+            c.fillStyle = 'rgba(20,83,45,0.88)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(barX, barY, barW, barH, 8); c.fill(); }
+            else c.fillRect(barX, barY, barW, barH);
+            c.fillStyle = '#fef3c7'; c.textAlign = 'left';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('🌍 GLOBAL BEE DIVERSITY', barX + 10, barY + 18);
+            c.font = '10px "Inter", sans-serif';
+            c.fillStyle = '#fde68a';
+            var facts = [
+              ['~20,000', 'known species worldwide'],
+              ['~4,000', 'native to North America'],
+              ['~270', 'native to UK'],
+              ['~70%', 'nest in the ground, not hives'],
+              ['~90%', 'are solitary (no colony)'],
+              ['Only 1', 'makes the honey you eat: Apis mellifera']
+            ];
+            facts.forEach(function(f, i) {
+              var fy = barY + 36 + i * 17;
+              c.fillStyle = '#fbbf24'; c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(f[0], barX + 10, fy);
+              c.fillStyle = '#fef3c7'; c.font = '9.5px "Inter", sans-serif';
+              c.fillText(f[1], barX + 56, fy);
+            });
+
+            // ═══ Bee species showcase (right) ═══
+            // Each bee drawn to rough relative scale. Position in a 3×2 grid.
+            var species = [
+              { name: 'Honeybee', sci: 'Apis mellifera', len: 14, bodyCol: '#eab308', stripes: 4, fuzzy: 0.3,
+                habit: 'Social · hives of 40k · introduced from Europe 1622',
+                pollinates: 'Alfalfa, apples, almonds, clover' },
+              { name: 'Bumblebee', sci: 'Bombus spp.', len: 22, bodyCol: '#1f2937', stripes: 2, fuzzy: 0.9,
+                habit: 'Social · small colonies · buzz-pollinates tomatoes',
+                pollinates: 'Tomatoes, blueberries, squash' },
+              { name: 'Mason Bee', sci: 'Osmia spp.', len: 12, bodyCol: '#1e40af', stripes: 0, fuzzy: 0.5, metallic: '#60a5fa',
+                habit: 'Solitary · nests in hollow stems · females work alone',
+                pollinates: 'Apples (120× more efficient than honeybees)' },
+              { name: 'Leafcutter', sci: 'Megachile spp.', len: 13, bodyCol: '#374151', stripes: 3, fuzzy: 0.4, bellyPollen: true,
+                habit: 'Solitary · cuts circles from leaves for nest cells',
+                pollinates: 'Alfalfa (commercially crucial)' },
+              { name: 'Squash Bee', sci: 'Peponapis pruinosa', len: 14, bodyCol: '#b45309', stripes: 3, fuzzy: 0.6,
+                habit: 'Solitary · flies at dawn · sleeps inside flowers',
+                pollinates: 'ONLY squash, pumpkin, zucchini, gourds' },
+              { name: 'Sweat Bee', sci: 'Halictidae', len: 8, bodyCol: '#16a34a', stripes: 0, fuzzy: 0.2, metallic: '#4ade80',
+                habit: 'Semi-social · attracted to sweat for salt',
+                pollinates: 'Wildflowers, strawberries, sunflowers' }
+            ];
+
+            var gridX0 = 220, gridY0 = 68;
+            var cellW = (W - gridX0 - 20) / 3;
+            var cellH = 150;
+            species.forEach(function(s, i) {
+              var col = i % 3, row = Math.floor(i / 3);
+              var cx = gridX0 + col * cellW + cellW / 2;
+              var cy = gridY0 + row * cellH + cellH / 2;
+
+              // Cell background
+              c.fillStyle = 'rgba(255,255,255,0.72)';
+              if (c.roundRect) { c.beginPath(); c.roundRect(gridX0 + col * cellW + 4, gridY0 + row * cellH + 4, cellW - 8, cellH - 8, 10); c.fill(); }
+              else c.fillRect(gridX0 + col * cellW + 4, gridY0 + row * cellH + 4, cellW - 8, cellH - 8);
+              c.strokeStyle = 'rgba(21,128,61,0.4)'; c.lineWidth = 1.5;
+              if (c.roundRect) { c.beginPath(); c.roundRect(gridX0 + col * cellW + 4, gridY0 + row * cellH + 4, cellW - 8, cellH - 8, 10); c.stroke(); }
+
+              // Draw the bee centered-ish in upper half of cell (relative scale, px/mm ~ 2.8)
+              var bx = cx, by = cy - 28;
+              var L = s.len * 2.3; // pixel length
+              // Wings shimmer
+              c.save(); c.translate(bx, by);
+              var wingAlpha = 0.35 + Math.sin(t2 / 14 + i) * 0.08;
+              c.fillStyle = 'rgba(255,255,255,' + wingAlpha + ')';
+              c.beginPath(); c.ellipse(-L * 0.1, -L * 0.28, L * 0.55, L * 0.22, -0.3, 0, Math.PI * 2); c.fill();
+              c.beginPath(); c.ellipse(L * 0.1, -L * 0.28, L * 0.55, L * 0.22, 0.3, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(100,116,139,0.4)'; c.lineWidth = 0.7;
+              c.beginPath(); c.ellipse(-L * 0.1, -L * 0.28, L * 0.55, L * 0.22, -0.3, 0, Math.PI * 2); c.stroke();
+              c.beginPath(); c.ellipse(L * 0.1, -L * 0.28, L * 0.55, L * 0.22, 0.3, 0, Math.PI * 2); c.stroke();
+
+              // Body (metallic or matte base)
+              if (s.metallic) {
+                var metGrad = c.createLinearGradient(0, -L * 0.35, 0, L * 0.35);
+                metGrad.addColorStop(0, s.metallic); metGrad.addColorStop(1, s.bodyCol);
+                c.fillStyle = metGrad;
+              } else {
+                c.fillStyle = s.bodyCol;
+              }
+              c.beginPath(); c.ellipse(0, 0, L * 0.5, L * 0.32, 0, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#1f2937'; c.lineWidth = 0.8; c.stroke();
+
+              // Stripes (only for non-metallic)
+              if (s.stripes > 0 && !s.metallic) {
+                c.fillStyle = s.bodyCol === '#eab308' ? '#1f2937' : '#fbbf24';
+                for (var st = 0; st < s.stripes; st++) {
+                  var sxp = -L * 0.28 + st * (L * 0.18);
+                  c.fillRect(sxp, -L * 0.25, L * 0.06, L * 0.5);
+                }
+              }
+
+              // Fuzzy overlay (thorax halo)
+              if (s.fuzzy > 0.3) {
+                c.fillStyle = 'rgba(251,191,36,' + (s.fuzzy * 0.5) + ')';
+                c.beginPath(); c.ellipse(-L * 0.05, -L * 0.08, L * 0.22, L * 0.2, 0, 0, Math.PI * 2); c.fill();
+              }
+
+              // Pollen belly (leafcutters carry pollen on abdomen)
+              if (s.bellyPollen) {
+                c.fillStyle = '#fde047';
+                c.beginPath(); c.arc(L * 0.28, L * 0.15, L * 0.09, 0, Math.PI * 2); c.fill();
+              }
+
+              // Head + eye
+              c.fillStyle = '#111827';
+              c.beginPath(); c.arc(-L * 0.52, 0, L * 0.13, 0, Math.PI * 2); c.fill();
+              c.fillStyle = '#9ca3af';
+              c.beginPath(); c.arc(-L * 0.54, -L * 0.04, L * 0.04, 0, Math.PI * 2); c.fill();
+
+              // Antennae
+              c.strokeStyle = '#111827'; c.lineWidth = 0.8;
+              c.beginPath(); c.moveTo(-L * 0.58, -L * 0.1); c.quadraticCurveTo(-L * 0.75, -L * 0.2, -L * 0.82, -L * 0.1); c.stroke();
+              c.beginPath(); c.moveTo(-L * 0.58, L * 0.1); c.quadraticCurveTo(-L * 0.75, L * 0.2, -L * 0.82, L * 0.1); c.stroke();
+
+              c.restore();
+
+              // Size ruler under the bee
+              var rulerY = cy + 2;
+              c.strokeStyle = 'rgba(21,128,61,0.5)'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(bx - L * 0.5, rulerY); c.lineTo(bx + L * 0.5, rulerY); c.stroke();
+              c.beginPath(); c.moveTo(bx - L * 0.5, rulerY - 3); c.lineTo(bx - L * 0.5, rulerY + 3); c.stroke();
+              c.beginPath(); c.moveTo(bx + L * 0.5, rulerY - 3); c.lineTo(bx + L * 0.5, rulerY + 3); c.stroke();
+              c.fillStyle = '#14532d'; c.font = 'bold 8.5px "Inter", sans-serif'; c.textAlign = 'center';
+              c.fillText(s.len + ' mm', bx, rulerY + 11);
+
+              // Name + scientific
+              c.fillStyle = '#14532d'; c.textAlign = 'center';
+              c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(s.name, cx, gridY0 + row * cellH + cellH - 44);
+              c.font = 'italic 9px "Inter", sans-serif'; c.fillStyle = '#15803d';
+              c.fillText(s.sci, cx, gridY0 + row * cellH + cellH - 32);
+              // Habit + pollinates (wrap if too long)
+              c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#374151';
+              c.fillText(s.habit, cx, gridY0 + row * cellH + cellH - 20);
+              c.fillStyle = '#b45309'; c.font = 'bold 8.5px "Inter", sans-serif';
+              c.fillText('🌸 ' + s.pollinates, cx, gridY0 + row * cellH + cellH - 8);
+            });
+
+            // Bottom fact ticker
+            var tickY = H - 28;
+            c.fillStyle = 'rgba(20,83,45,0.9)'; c.fillRect(0, tickY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var nbFacts = [
+              'Native bees pollinate ~80% of US crops — honeybees get the headlines, but natives do most of the work.',
+              'Squash bees evolved with squash — males sleep inside the closed flowers at night.',
+              'Mason bees pollinate apples 120× more efficiently than honeybees do.',
+              'A bumblebee queen hibernates alone all winter; she starts a new colony from scratch each spring.',
+              'Many native bees are solitary — no honey, no hive, no queen. Just one female raising young.',
+              'The Franklin\'s bumblebee (B. franklini) is likely extinct — last seen 2006 in Oregon.',
+              'Bees evolved from carnivorous wasps ~120 million years ago — coinciding with flowering plants.'
+            ];
+            var nbIdx = Math.floor(t2 / 420) % nbFacts.length;
+            c.fillText('💡 ' + nbFacts[nbIdx], W / 2, tickY + 10);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -4217,6 +4397,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'equipment') {
                 drawEquipment();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'native') {
+                drawNativeBees();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -7081,7 +7266,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' },
                 { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' },
                 { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' },
-                { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' }
+                { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' },
+                { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
