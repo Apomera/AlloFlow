@@ -2083,6 +2083,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              // ── Vegetable garden plot (raised bed with rows of crops) ──
+              if (season !== 3) {
+                var vgX = W * 0.08, vgY = H * 0.81, vgW = 55, vgH = 12;
+                // Raised-bed wood border
+                c.fillStyle = '#7c4a1c';
+                c.fillRect(vgX, vgY, vgW, vgH);
+                // Soil
+                c.fillStyle = '#3d2817';
+                c.fillRect(vgX + 2, vgY + 2, vgW - 4, vgH - 4);
+                // Crop rows
+                var cropRows = [
+                  { x: 6, col: '#dc2626', leaf: '#22c55e', name: 'tomato' },
+                  { x: 16, col: '#facc15', leaf: '#22c55e', name: 'squash' },
+                  { x: 26, col: '#8b5a2b', leaf: '#15803d', name: 'carrot' },
+                  { x: 36, col: '#dbeafe', leaf: '#22c55e', name: 'cabbage' },
+                  { x: 46, col: '#9333ea', leaf: '#15803d', name: 'eggplant' }
+                ];
+                cropRows.forEach(function(cr) {
+                  var crX = vgX + cr.x;
+                  // Leafy base
+                  c.fillStyle = cr.leaf;
+                  c.beginPath(); c.ellipse(crX, vgY + 4, 3, 2, 0, 0, 6.28); c.fill();
+                  // Fruit/vegetable
+                  if (cr.name === 'tomato' && season === 1) {
+                    c.fillStyle = cr.col;
+                    c.beginPath(); c.arc(crX - 1, vgY + 2, 1.2, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc(crX + 1, vgY + 3, 1.2, 0, 6.28); c.fill();
+                  } else if (cr.name === 'carrot' && season !== 0) {
+                    c.fillStyle = cr.col;
+                    c.fillRect(crX - 0.5, vgY + 5, 1, 3);
+                  } else if (cr.name === 'cabbage') {
+                    c.fillStyle = cr.col;
+                    c.beginPath(); c.arc(crX, vgY + 2, 1.8, 0, 6.28); c.fill();
+                  } else if (cr.name === 'squash' && (season === 1 || season === 2)) {
+                    c.fillStyle = cr.col;
+                    c.beginPath(); c.ellipse(crX, vgY + 2, 1.5, 1, 0, 0, 6.28); c.fill();
+                  } else if (cr.name === 'eggplant' && season === 1) {
+                    c.fillStyle = cr.col;
+                    c.beginPath(); c.ellipse(crX, vgY + 2, 0.8, 1.5, 0, 0, 6.28); c.fill();
+                  }
+                  // Tiny stake for vertical crops
+                  if (cr.name === 'tomato' || cr.name === 'eggplant') {
+                    c.strokeStyle = '#6b4a1f'; c.lineWidth = 0.5;
+                    c.beginPath(); c.moveTo(crX, vgY); c.lineTo(crX, vgY + 8); c.stroke();
+                  }
+                });
+              }
+
+              // ── Scarecrow in the far meadow (decorative guardian) ──
+              if (season !== 3) {
+                var scX = W * 0.68, scY = H * 0.76;
+                // Cross post
+                c.fillStyle = '#6b4a1f';
+                c.fillRect(scX - 0.8, scY - 24, 1.6, 24);
+                c.fillRect(scX - 10, scY - 18, 20, 1.2);
+                // Body (burlap sack shirt)
+                c.fillStyle = '#b5833a';
+                c.fillRect(scX - 5, scY - 18, 10, 12);
+                // Sleeve ends (dangling straw)
+                c.fillStyle = '#eab308';
+                c.fillRect(scX - 10, scY - 18, 2, 4);
+                c.fillRect(scX + 8, scY - 18, 2, 4);
+                // Head (pumpkin/sack)
+                c.fillStyle = '#c2410c';
+                c.beginPath(); c.arc(scX, scY - 22, 3, 0, 6.28); c.fill();
+                // Scarecrow face (ominous triangle eyes + jagged mouth)
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.moveTo(scX - 1.5, scY - 22.5); c.lineTo(scX - 0.5, scY - 22.5); c.lineTo(scX - 1, scY - 21.5); c.closePath(); c.fill();
+                c.beginPath(); c.moveTo(scX + 0.5, scY - 22.5); c.lineTo(scX + 1.5, scY - 22.5); c.lineTo(scX + 1, scY - 21.5); c.closePath(); c.fill();
+                c.strokeStyle = '#1c1917'; c.lineWidth = 0.4;
+                c.beginPath(); c.moveTo(scX - 1.5, scY - 20.5); c.lineTo(scX - 0.5, scY - 21); c.lineTo(scX + 0.5, scY - 20.5); c.lineTo(scX + 1.5, scY - 21); c.stroke();
+                // Hat
+                c.fillStyle = '#44403c';
+                c.fillRect(scX - 4, scY - 25, 8, 1.2);
+                c.beginPath(); c.moveTo(scX - 2.5, scY - 25); c.lineTo(scX, scY - 28); c.lineTo(scX + 2.5, scY - 25); c.closePath(); c.fill();
+                // Crow perched on shoulder (cameo)
+                if (Math.sin(t2 * 0.002) > 0.3) {
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.ellipse(scX + 6, scY - 19, 1.4, 1, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(scX + 7.2, scY - 19, 0.3, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Rabbit hopping across the meadow (periodic cameo, every ~20s) ──
+              if (season !== 3) {
+                var rbCycle = (t2 % 1200) / 1200; // 0..1 over ~20s
+                if (rbCycle > 0.3 && rbCycle < 0.9) {
+                  var rbProgress = (rbCycle - 0.3) / 0.6;
+                  var rbX = W * 1.05 - rbProgress * W * 1.15;
+                  var hopPhase = (rbX * 0.05) % Math.PI;
+                  var rbY = H * 0.815 - Math.abs(Math.sin(hopPhase * 2.2)) * 5;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.2)';
+                  c.beginPath(); c.ellipse(rbX, H * 0.825, 4, 1, 0, 0, 6.28); c.fill();
+                  // Body
+                  c.fillStyle = '#e7e5e4';
+                  c.beginPath(); c.ellipse(rbX, rbY, 4.5, 3, 0, 0, 6.28); c.fill();
+                  // Head
+                  c.beginPath(); c.arc(rbX - 4, rbY - 1, 2.2, 0, 6.28); c.fill();
+                  // Ears (angle backward in motion)
+                  c.fillStyle = '#e7e5e4';
+                  c.beginPath(); c.ellipse(rbX - 4.5, rbY - 4, 0.6, 2.4, -0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(rbX - 3.5, rbY - 4.2, 0.6, 2.4, -0.15, 0, 6.28); c.fill();
+                  // Eye
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(rbX - 5, rbY - 1.2, 0.4, 0, 6.28); c.fill();
+                  // Tail (white fluff)
+                  c.fillStyle = '#fff';
+                  c.beginPath(); c.arc(rbX + 4, rbY + 0.5, 1.2, 0, 6.28); c.fill();
+                  // Legs (visible during hop)
+                  if (Math.abs(Math.sin(hopPhase * 2.2)) > 0.3) {
+                    c.fillStyle = '#a8a29e';
+                    c.fillRect(rbX - 1, rbY + 2, 1, 2);
+                    c.fillRect(rbX + 1, rbY + 2, 1, 2);
+                  }
+                }
+              }
+
               // ── Lavender bushes along the fence (major honeybee forage plant) ──
               if (season === 0 || season === 1 || season === 2) {
                 var lavSpots = [W * 0.18, W * 0.37, W * 0.65, W * 0.88];
@@ -3464,6 +3583,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(W - 130, 12, 70, 6);
             c.fillStyle = ds.energy > 30 ? '#22c55e' : ds.energy > 10 ? '#eab308' : '#ef4444';
             c.fillRect(W - 130, 12, 70 * (ds.energy / maxEnergy), 6);
+
+            // ═══ VISUAL FLIGHT EFFECTS ═══
+            // Speed lines (radiating motion streaks when moving fast)
+            if (ds.speed > 1.2) {
+              c.save();
+              var spdIntensity = Math.min(1, (ds.speed - 1.2) / 4);
+              c.strokeStyle = 'rgba(255,255,255,' + (spdIntensity * 0.28) + ')';
+              c.lineWidth = 0.8;
+              for (var sl = 0; sl < 16; sl++) {
+                var slAng = (sl / 16) * 6.28 + now * 0.0008;
+                var slInnerR = 80 + ((now * 0.4 + sl * 50) % 100);
+                var slOuterR = slInnerR + 60 * spdIntensity;
+                c.beginPath();
+                c.moveTo(halfW + Math.cos(slAng) * slInnerR, halfH + Math.sin(slAng) * slInnerR);
+                c.lineTo(halfW + Math.cos(slAng) * slOuterR, halfH + Math.sin(slAng) * slOuterR);
+                c.stroke();
+              }
+              c.restore();
+            }
+
+            // Sun lens flare (renders in drone POV at horizon if in flight)
+            if (ds.phase !== 'end') {
+              var droneSunX = halfW + Math.sin(-ds.yaw - 0.3) * 400;
+              var droneSunY = horizonY - 40 + Math.sin(ds.pitch) * 80;
+              // Sun glow
+              c.save();
+              c.shadowColor = '#fef3c7'; c.shadowBlur = 30;
+              c.fillStyle = 'rgba(255,243,199,0.85)';
+              c.beginPath(); c.arc(droneSunX, droneSunY, 10, 0, 6.28); c.fill();
+              c.restore();
+              // Lens flare ghosts along line to screen center
+              c.save();
+              var flareVx = halfW - droneSunX, flareVy = halfH - droneSunY;
+              var flareHexCols = ['rgba(255,200,100,0.2)', 'rgba(255,150,100,0.15)', 'rgba(200,200,255,0.1)', 'rgba(255,240,150,0.08)'];
+              for (var lf = 1; lf <= 4; lf++) {
+                var lfT = lf / 5;
+                c.fillStyle = flareHexCols[lf - 1];
+                c.beginPath(); c.arc(droneSunX + flareVx * lfT, droneSunY + flareVy * lfT, 4 + lf * 2, 0, 6.28); c.fill();
+              }
+              c.restore();
+            }
+
+            // Low-energy red vignette warning (flashes when energy < 25%)
+            if (ds.energy < 25 && ds.phase !== 'end') {
+              var warnPulse = (Math.sin(now * 0.012) + 1) * 0.5;
+              var warnAlpha = (1 - ds.energy / 25) * 0.3 * warnPulse;
+              var warnG = c.createRadialGradient(halfW, halfH, Math.min(W, H) * 0.3, halfW, halfH, Math.max(W, H) * 0.7);
+              warnG.addColorStop(0, 'rgba(220,38,38,0)');
+              warnG.addColorStop(1, 'rgba(220,38,38,' + warnAlpha + ')');
+              c.fillStyle = warnG; c.fillRect(0, 0, W, H);
+              // Warning text
+              c.fillStyle = 'rgba(220,38,38,' + (0.7 + warnPulse * 0.3) + ')';
+              c.font = 'bold 14px system-ui'; c.textAlign = 'center';
+              c.fillText('⚠ LOW ENERGY', halfW, 90);
+            }
+
+            // Altitude warning: pull up! (if falling fast)
+            if (ds.y < 30 && ds.vy < -0.5 && ds.phase !== 'end' && ds.phase !== 'mating') {
+              var pullPulse = (Math.sin(now * 0.02) + 1) * 0.5;
+              c.fillStyle = 'rgba(220,38,38,' + (0.7 + pullPulse * 0.3) + ')';
+              c.font = 'bold 16px system-ui'; c.textAlign = 'center';
+              c.fillText('▲ PULL UP ▲', halfW, halfH - 30);
+            }
 
             // ═══ FLIGHT HUD: artificial horizon + altimeter + airspeed + compass ═══
             // Attitude indicator (bottom-left, round gauge showing pitch + roll)
