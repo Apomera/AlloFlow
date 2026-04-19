@@ -2655,6 +2655,225 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('💡 ' + cgFacts[cgIdx], W / 2, cgStripY + 10);
           }
 
+          // ═══ BEE VISION · UV + trichromatic + flicker fusion ═══
+          function drawBeeVision() {
+            // Split background: left = human sky, right = bee-vision indigo
+            var bvSplit = W * 0.5;
+            var hG = c.createLinearGradient(0, 0, 0, H);
+            hG.addColorStop(0, '#bae6fd'); hG.addColorStop(1, '#93c5fd');
+            c.fillStyle = hG; c.fillRect(0, 0, bvSplit, H);
+            var bG = c.createLinearGradient(0, 0, 0, H);
+            bG.addColorStop(0, '#1e1b4b'); bG.addColorStop(1, '#4c1d95');
+            c.fillStyle = bG; c.fillRect(bvSplit, 0, W - bvSplit, H);
+
+            // Dividing line
+            c.strokeStyle = 'rgba(250,204,21,0.6)'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(bvSplit, 0); c.lineTo(bvSplit, H); c.stroke();
+
+            // Title
+            c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🌸 Bee Vision · flowers have hidden runway lights', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif';
+            c.fillStyle = '#1e3a8a';
+            c.fillText('What humans see', W * 0.25, 44);
+            c.fillStyle = '#fde047';
+            c.fillText('What bees see (UV-sensitive)', W * 0.75, 44);
+
+            // ═══ Side-by-side flower (black-eyed susan) ═══
+            var flowY = H * 0.35;
+            var flowR = Math.min(W * 0.12, 80);
+
+            // Helper: draw radial petal flower
+            function drawPetals(cx, cy, petalFill, centerFill, showUVGuides) {
+              for (var p = 0; p < 13; p++) {
+                var angle = (p / 13) * Math.PI * 2 - Math.PI / 2;
+                c.save(); c.translate(cx, cy); c.rotate(angle);
+                c.fillStyle = petalFill;
+                c.beginPath();
+                c.ellipse(0, -flowR * 0.55, flowR * 0.18, flowR * 0.5, 0, 0, Math.PI * 2);
+                c.fill();
+                c.strokeStyle = 'rgba(0,0,0,0.15)'; c.lineWidth = 0.5; c.stroke();
+                // UV guides (visible only on bee side) — darken petal tips
+                if (showUVGuides) {
+                  var uvGrad = c.createRadialGradient(0, -flowR * 0.15, 0, 0, -flowR * 0.15, flowR * 0.6);
+                  uvGrad.addColorStop(0, 'rgba(15,23,42,0.95)');
+                  uvGrad.addColorStop(0.55, 'rgba(15,23,42,0.55)');
+                  uvGrad.addColorStop(1, 'rgba(15,23,42,0)');
+                  c.fillStyle = uvGrad;
+                  c.beginPath();
+                  c.ellipse(0, -flowR * 0.45, flowR * 0.16, flowR * 0.45, 0, 0, Math.PI * 2);
+                  c.fill();
+                }
+                c.restore();
+              }
+              // Disc (center)
+              c.fillStyle = centerFill;
+              c.beginPath(); c.arc(cx, cy, flowR * 0.3, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 0.8; c.stroke();
+              // Stippling on disc
+              for (var s = 0; s < 18; s++) {
+                var sa = Math.random() * Math.PI * 2;
+                var sr = Math.random() * flowR * 0.25;
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.arc(cx + Math.cos(sa) * sr, cy + Math.sin(sa) * sr, 0.8, 0, Math.PI * 2); c.fill();
+              }
+            }
+
+            // Left: human view — solid yellow flower
+            drawPetals(W * 0.25, flowY, '#fde047', '#78350f', false);
+
+            // Right: bee view — yellow→UV-dark bullseye pattern; center glows ultraviolet
+            drawPetals(W * 0.75, flowY, '#fde047', '#0f172a', true);
+            // UV glow overlay on bee-side center — simulate "bee purple"
+            var uvCenterGrad = c.createRadialGradient(W * 0.75, flowY, 0, W * 0.75, flowY, flowR * 0.4);
+            uvCenterGrad.addColorStop(0, 'rgba(168,85,247,0.95)');
+            uvCenterGrad.addColorStop(1, 'rgba(168,85,247,0)');
+            c.fillStyle = uvCenterGrad;
+            c.beginPath(); c.arc(W * 0.75, flowY, flowR * 0.4, 0, Math.PI * 2); c.fill();
+
+            // Pulsing "BULLSEYE / LAND HERE" marker on bee side
+            var pulse = 0.5 + Math.sin(t2 / 10) * 0.4;
+            c.strokeStyle = 'rgba(253,224,71,' + pulse + ')'; c.lineWidth = 2;
+            c.beginPath(); c.arc(W * 0.75, flowY, flowR * 0.35 + pulse * 3, 0, Math.PI * 2); c.stroke();
+
+            // Captions under each flower
+            c.textAlign = 'center';
+            c.fillStyle = '#1e3a8a'; c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Yellow, uniform', W * 0.25, flowY + flowR + 22);
+            c.font = '9.5px "Inter", sans-serif'; c.fillStyle = '#1e40af';
+            c.fillText('No special markings to us', W * 0.25, flowY + flowR + 36);
+
+            c.fillStyle = '#fde047'; c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('UV bullseye → "LAND HERE"', W * 0.75, flowY + flowR + 22);
+            c.font = '9.5px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('Nectar guides invisible to humans', W * 0.75, flowY + flowR + 36);
+
+            // ═══ Color wheel comparison (top-left and top-right) ═══
+            var cwR = 36;
+            // Human wheel — RGB
+            c.save(); c.translate(W * 0.12, 100);
+            var humanColors = [
+              { a: -Math.PI / 2, col: '#dc2626', name: 'R' },
+              { a: -Math.PI / 2 + 2 * Math.PI / 3, col: '#16a34a', name: 'G' },
+              { a: -Math.PI / 2 + 4 * Math.PI / 3, col: '#2563eb', name: 'B' }
+            ];
+            humanColors.forEach(function(col) {
+              c.fillStyle = col.col;
+              c.beginPath();
+              c.moveTo(0, 0);
+              c.arc(0, 0, cwR, col.a - Math.PI / 3, col.a + Math.PI / 3);
+              c.closePath();
+              c.fill();
+              c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 1; c.stroke();
+              var lx = Math.cos(col.a) * (cwR + 10), ly = Math.sin(col.a) * (cwR + 10);
+              c.fillStyle = '#1e3a8a'; c.textAlign = 'center';
+              c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(col.name, lx, ly + 3);
+            });
+            c.restore();
+            c.fillStyle = '#1e3a8a'; c.textAlign = 'center';
+            c.font = 'bold 9.5px "Inter", sans-serif';
+            c.fillText('Human: RGB', W * 0.12, 150);
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('700 - 400 nm', W * 0.12, 163);
+
+            // Bee wheel — UV/Blue/Green (no red!)
+            c.save(); c.translate(W * 0.88, 100);
+            var beeColors = [
+              { a: -Math.PI / 2, col: '#a855f7', name: 'UV' },
+              { a: -Math.PI / 2 + 2 * Math.PI / 3, col: '#2563eb', name: 'B' },
+              { a: -Math.PI / 2 + 4 * Math.PI / 3, col: '#16a34a', name: 'G' }
+            ];
+            beeColors.forEach(function(col) {
+              c.fillStyle = col.col;
+              c.beginPath();
+              c.moveTo(0, 0);
+              c.arc(0, 0, cwR, col.a - Math.PI / 3, col.a + Math.PI / 3);
+              c.closePath();
+              c.fill();
+              c.strokeStyle = 'rgba(253,224,71,0.7)'; c.lineWidth = 1; c.stroke();
+              var lx = Math.cos(col.a) * (cwR + 12), ly = Math.sin(col.a) * (cwR + 12);
+              c.fillStyle = '#fde047'; c.textAlign = 'center';
+              c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(col.name, lx, ly + 3);
+            });
+            c.restore();
+            c.fillStyle = '#fde047'; c.textAlign = 'center';
+            c.font = 'bold 9.5px "Inter", sans-serif';
+            c.fillText('Bee: UV-B-G', W * 0.88, 150);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('600 - 300 nm · no red', W * 0.88, 163);
+
+            // ═══ Compound eye diagram (center bottom) ═══
+            var ceY = H - 140;
+            var ceX = W / 2;
+            // Dark hexagon grid simulating ommatidia
+            var hexR = 6, hexGrid = 7;
+            c.fillStyle = 'rgba(30,27,75,0.85)';
+            c.beginPath();
+            c.ellipse(ceX, ceY, 70, 50, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = 'rgba(250,204,21,0.5)'; c.lineWidth = 1; c.stroke();
+            // Draw a 7x5 grid of hex facets within the ellipse
+            for (var hy = -2; hy <= 2; hy++) {
+              for (var hx = -4; hx <= 4; hx++) {
+                var hcx = ceX + hx * hexR * 1.6 + (hy % 2 ? hexR * 0.8 : 0);
+                var hcy = ceY + hy * hexR * 1.4;
+                var distR = Math.hypot((hcx - ceX) / 65, (hcy - ceY) / 45);
+                if (distR > 1) continue;
+                // Flickering color (motion detection metaphor)
+                var flicker = 0.5 + Math.sin(t2 / 8 + hx * 0.7 + hy * 1.1) * 0.45;
+                c.fillStyle = 'rgba(' + Math.floor(250 * flicker) + ',' + Math.floor(204 * flicker) + ',21,0.85)';
+                c.beginPath();
+                for (var he = 0; he < 6; he++) {
+                  var ha = he * Math.PI / 3;
+                  var px = hcx + Math.cos(ha) * hexR * 0.8;
+                  var py = hcy + Math.sin(ha) * hexR * 0.8;
+                  if (he === 0) c.moveTo(px, py); else c.lineTo(px, py);
+                }
+                c.closePath(); c.fill();
+                c.strokeStyle = 'rgba(15,23,42,0.6)'; c.lineWidth = 0.3; c.stroke();
+              }
+            }
+            // Labels
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Compound Eye · ~6,900 ommatidia', ceX, ceY - 62);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('Low resolution, high flicker-rate: 200 Hz (humans: 60 Hz)', ceX, ceY + 68);
+
+            // Stat callouts — flicker fusion comparison bars
+            var statY = ceY - 20;
+            // Left: 60 Hz human
+            c.fillStyle = '#1e3a8a'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('You: 60 Hz', ceX - 90, statY);
+            c.fillStyle = 'rgba(37,99,235,0.7)';
+            c.fillRect(ceX - 180, statY + 4, 60, 8);
+            // Right: 200 Hz bee
+            c.fillStyle = '#fde047'; c.textAlign = 'left';
+            c.fillText('Bee: 200 Hz', ceX + 90, statY);
+            c.fillStyle = 'rgba(250,204,21,0.8)';
+            c.fillRect(ceX + 120, statY + 4, 200 * 0.6, 8);
+
+            // ═══ Bottom fact strip ═══
+            var bvStripY = H - 28;
+            c.fillStyle = 'rgba(30,27,75,0.95)'; c.fillRect(0, bvStripY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var bvFacts = [
+              'Bees are RED-blind. A red rose looks black to them — but bees excel at seeing UV.',
+              'Sunflowers, dandelions, and black-eyed susans all have UV "bullseyes" humans can\'t see.',
+              'Bees see movement 3× faster than humans — explains why they dart between flowers effortlessly.',
+              'Karl von Frisch proved bee color vision in 1914 — finally overturning "bees are colorblind" dogma.',
+              'Each ommatidium is a tiny lens + 8 photoreceptors. 6,900 of them tile the bee\'s eye.',
+              'Bees can detect polarized light — they use the sun\'s polarization pattern as a compass even on cloudy days.'
+            ];
+            var bvIdx = Math.floor(t2 / 420) % bvFacts.length;
+            c.fillText('💡 ' + bvFacts[bvIdx], W / 2, bvStripY + 10);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -4640,6 +4859,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'cognition') {
                 drawBeeCognition();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'vision') {
+                drawBeeVision();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -7506,7 +7730,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' },
                 { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' },
                 { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' },
-                { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' }
+                { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' },
+                { id: 'vision', icon: '🌸', label: 'Vision', desc: 'UV flower patterns + 200 Hz flicker fusion — what bees see' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
