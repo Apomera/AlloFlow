@@ -2971,9 +2971,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var dk = isDark; // shorthand
         // DEBUG: Log render-time values that gate the canvas
         if (!window.__beehiveRenderLogged) window.__beehiveRenderLogged = 0;
-        if (window.__beehiveRenderLogged < 5) {
+        if (window.__beehiveRenderLogged < 3) {
           window.__beehiveRenderLogged++;
-          console.log('[Beehive DEBUG RENDER #' + window.__beehiveRenderLogged + '] viewMode=' + viewMode + ' colonySurvived=' + colonySurvived + ' day=' + day + ' showInspect=' + showInspect + ' d.viewMode=' + JSON.stringify(d.viewMode) + ' canvas-will-render=' + (viewMode === 'beekeeper'));
+          console.log('[Beehive DEBUG RENDER #' + window.__beehiveRenderLogged + '] viewMode=' + viewMode + ' colonySurvived=' + colonySurvived + ' day=' + day + ' showInspect=' + showInspect + ' canvas-will-render=' + (viewMode === 'beekeeper'));
+          // Decisive #1 — two React instances?
+          console.log('[Beehive DEBUG 2R] ctx.React === window.React:', (React === window.React),
+            '| ctx.React.createElement === window.React?.createElement:', (React.createElement === (window.React && window.React.createElement)),
+            '| React.version:', React.version,
+            '| window.React.version:', (window.React && window.React.version));
+          // Decisive #2 — does h('canvas', ...) actually produce a React element?
+          var _testEl = h('canvas', { 'aria-label': 'test', style: { width: 10, height: 10 } });
+          console.log('[Beehive DEBUG EL] h("canvas") result:',
+            _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
           // Header
@@ -3020,12 +3029,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })),
 
           // ═══ BEEKEEPER CANVAS (only in beekeeper mode) ═══
-          viewMode === 'beekeeper' && h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'), style: { height: '300px', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' } },
+          // DIAGNOSTIC: yellow MARKER + lime CANVAS + red border — if we see the marker but no canvas,
+          // React is specifically rejecting the canvas element (two-React-instance hypothesis).
+          viewMode === 'beekeeper' && h('div', { style: { height: '300px', border: '4px dashed red', position: 'relative' } },
+            h('div', { style: { background: 'yellow', color: 'black', padding: '8px', fontWeight: 'bold', fontSize: '14px' } }, '🟡 MARKER: canvas container reached render'),
             h('canvas', {
               ref: _cvRef,
               role: 'img',
-              'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
-              style: { width: '100%', height: '100%', display: 'block' }
+              'aria-label': 'test canvas',
+              style: { width: '100%', height: '240px', display: 'block', background: 'lime' }
             })
           ),
 

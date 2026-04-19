@@ -207,7 +207,7 @@
           var warOutcomeColors = warRoomA11y.colorBlindMode || warRoomA11y.colorBlind
             ? { mitigated: '#3b82f6', mitigatedSoft: '#93c5fd', detected: '#eab308', detectedSoft: '#fde047', succeeded: '#ea580c', succeededSoft: '#fdba74' }
             : { mitigated: '#22c55e', mitigatedSoft: '#86efac', detected: '#3b82f6', detectedSoft: '#93c5fd', succeeded: '#ef4444', succeededSoft: '#fca5a5' };
-          var warRoomCampaignHistory = d.warRoomCampaignHistory || [];
+          var warRoomCampaignHistory = Array.isArray(d.warRoomCampaignHistory) ? d.warRoomCampaignHistory : [];
           var warRoomTeacherDashOpen = d.warRoomTeacherDashOpen || false;
           // Live session broadcast
           var warRoomLiveMode = d.warRoomLiveMode || 'off'; // 'off' | 'hosting' | 'observing'
@@ -888,7 +888,12 @@
             { term: 'Macro', defn: 'Code embedded in an Office document (Word, Excel). Malicious macros run on open to drop malware.' },
             { term: 'Scheduled Task', defn: 'A Windows feature that runs a program on a schedule. Attackers abuse it to re-launch malware after reboots.' },
             { term: 'Typo-Squat', defn: 'Registering a look-alike domain (e.g. rnicrosoft.com) to trick users into thinking it\'s the real site.' },
-            { term: 'Living Off The Land', defn: 'Using built-in OS tools (PowerShell, schtasks, certutil) to avoid dropping detectable malware.' }
+            { term: 'Living Off The Land', defn: 'Using built-in OS tools (PowerShell, schtasks, certutil) to avoid dropping detectable malware.' },
+            { term: 'Zero-day', defn: 'A vulnerability no patch exists for yet \u2014 the vendor has had "zero days" to fix it. Highly valuable to attackers.' },
+            { term: 'Ransomware', defn: 'Malware that encrypts your files and demands payment (usually cryptocurrency) for the decryption key.' },
+            { term: 'APT', defn: 'Advanced Persistent Threat \u2014 typically a well-funded, patient adversary (often nation-state or organized crime) that stays undetected for long periods.' },
+            { term: 'MFA Fatigue', defn: 'An attack where the adversary spams MFA push notifications hoping the victim eventually taps "Approve" just to make them stop.' },
+            { term: 'Lateral Movement', defn: 'When an attacker moves from one compromised host to another inside the network, expanding their foothold.' }
           ];
 
           // ── Achievement badges catalog ──

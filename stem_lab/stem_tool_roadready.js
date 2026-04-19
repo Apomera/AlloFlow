@@ -8888,7 +8888,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // High beam toggle + headlight direction tracking
           if (s3.headlightL && s3.headlightR) {
-            var highBeams = d.highBeams;
+            // Defensive guard: a runtime error (TypeError: Cannot read properties of
+            // undefined reading 'highBeams') was reported here. Closure capture should
+            // always have `d` defined (line 2405 falls back to {}), but guard anyway in
+            // case of strict-mode double-invoke or HMR weirdness.
+            var highBeams = d && d.highBeams;
             var hlDist = highBeams ? 50 : 25;
             var hlAngle = highBeams ? Math.PI / 5 : Math.PI / 6;
             // Headlights only emit when actually needed: night, fog, or rain. In clear
