@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@35245a2/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@126bcf6/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -19562,6 +19562,7 @@ Return ONLY valid JSON:
   const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
   const retargetMissingWordsViaGemini = _docPipeline ? _docPipeline.retargetMissingWordsViaGemini : async (h) => ({ html: h, stillMissing: [], restoredViaRetry: [] });
   const restoreSentencesDeterministic = _docPipeline ? _docPipeline.restoreSentencesDeterministic : (h) => ({ html: h, stillMissing: [], restoredViaSentence: [] });
+  const detectAndHandleDuplicates = _docPipeline ? _docPipeline.detectAndHandleDuplicates : (h) => ({ html: h, autoRemoved: [], highlighted: [] });
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
@@ -19697,7 +19698,22 @@ Return ONLY valid JSON:
               try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
               catch (restoreErr) { /* warn already in pipeline */ }
             }
-            // Final fidelity measurement after all three stages applied + iframe re-rendered.
+            // Stage D — duplicate detection + tiered cleanup. Auto-removes byte-identical
+            // sentences and truncation fragments (provably-wrong); highlights ≥85% overlap
+            // and 8-word N-gram repeats for user curation. Runs AFTER Stage C so it can
+            // clean up any duplicates that the restoration stages may have introduced.
+            let dedupResult = { autoRemoved: [], highlighted: [] };
+            try {
+              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const dedup = detectAndHandleDuplicates(currentHtml);
+              if (dedup && dedup.html && dedup.html !== currentHtml) {
+                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
+                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: dedup.html });
+                }
+                dedupResult = { autoRemoved: dedup.autoRemoved || [], highlighted: dedup.highlighted || [] };
+              }
+            } catch (eD) { /* non-blocking */ }
+            // Final fidelity measurement after all four stages applied + iframe re-rendered.
             setTimeout(() => {
               try {
                 const remText2 = extractText();
@@ -19714,11 +19730,15 @@ Return ONLY valid JSON:
                 if (addToast) {
                   const fuzzyCount = ((restoreResult && restoreResult.restored) || []).length;
                   const uCount = ((restoreResult && restoreResult.unplaceable) || []).length;
+                  const dedupRemoved = (dedupResult.autoRemoved || []).length;
+                  const dedupFlagged = (dedupResult.highlighted || []).length;
                   const parts = [];
                   if (stageCounts.retry > 0) parts.push(stageCounts.retry + ' reinserted (AI)');
                   if (stageCounts.sentence > 0) parts.push(stageCounts.sentence + ' reinserted (sentence)');
                   if (fuzzyCount > 0) parts.push(fuzzyCount + ' reinserted (fuzzy)');
                   if (uCount > 0) parts.push(uCount + ' in recovery appendix');
+                  if (dedupRemoved > 0) parts.push(dedupRemoved + ' duplicate' + (dedupRemoved === 1 ? '' : 's') + ' removed');
+                  if (dedupFlagged > 0) parts.push(dedupFlagged + ' flagged for review');
                   const detail = parts.length > 0 ? ' · ' + parts.join(' · ') : '';
                   const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail;
                   addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
@@ -54151,6 +54171,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   tmp.innerHTML = html || '';
                                   remediatedText = tmp.textContent || tmp.innerText || '';
                                 } catch (e) { remediatedText = ''; }
+                                // Empty-remediation guard: if the preview iframe has no content (user ran
+                                // the check mid-remediation or after modal close), the raw diff would
+                                // falsely flag every source word as missing. Surface a helpful message
+                                // instead of a misleading 0% / N-thousand-missing report.
+                                if (!remediatedText || remediatedText.trim().length < 50) {
+                                  setFidelityResult({ missing: [], totalSrc: 0, totalRem: 0, totalMissing: 0, fidelity: null, notReady: true });
+                                  if (addToast) addToast('No remediated content to verify yet — run remediation first, then re-check fidelity.', 'info');
+                                  return;
+                                }
                                 setFidelityResult(_buildMissingList(sourceText, remediatedText));
                               };
                               const disagreements = (extractionData.ocr && extractionData.ocr.disagreements) || [];
@@ -54314,13 +54343,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       🔧 Restore missing words
                                     </button>
                                   )}
-                                  {fidelityResult && (
+                                  {fidelityResult && !fidelityResult.notReady && (
                                     <span className="text-[10px] text-slate-500 ml-auto">
                                       {fidelityResult.fidelity}% · {fidelityResult.totalMissing === 0 ? 'no missing words ✓' : `${fidelityResult.totalMissing} potentially missing`}
                                     </span>
                                   )}
                                 </div>
-                                {fidelityResult && (
+                                {fidelityResult && fidelityResult.notReady && (
+                                  <div className="bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-amber-900">
+                                    <strong>Remediation not ready.</strong> The fidelity check compares source text to the remediated preview, but the preview is empty. Finish (or start) remediation, then click Run fidelity check again.
+                                  </div>
+                                )}
+                                {fidelityResult && !fidelityResult.notReady && (
                                   <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
                                     <div className="flex items-baseline gap-3 text-xs flex-wrap">
                                       <span className={`font-bold ${fidelityResult.fidelity >= 99 ? 'text-emerald-700' : fidelityResult.fidelity >= 95 ? 'text-amber-700' : 'text-red-700'}`}>

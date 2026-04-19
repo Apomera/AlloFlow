@@ -569,7 +569,8 @@ var d = labToolData || {};
             upd('geoSessionStats', next);
           }
 
-          // Plain-text feedback announcer for screen readers.
+          // Plain-text feedback announcer for screen readers. The tool already sets
+          // up an aria-live region (above), but nothing was writing to it until now.
           function announceFeedback(msg) {
             if (!msg) return;
             if (typeof announceToSR === 'function') announceToSR(msg);
@@ -695,6 +696,8 @@ var d = labToolData || {};
               announceFeedback('Correct. ' + geoTarget.name + ' is in ' + geoTarget.continent + '. Plus ' + (pts + bonus) + ' points.');
 
               if (typeof stemBeep === 'function') stemBeep('correct');
+              // Confetti on milestone streaks only (was firing on every correct at 5+,
+              // which spammed the celebration on long streaks).
               if (typeof stemCelebrate === 'function' && (newStreak === 5 || newStreak === 10 || newStreak === 15 || newStreak === 20 || (newStreak >= 25 && newStreak % 25 === 0))) stemCelebrate();
 
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Identified ' + geoTarget.name);
